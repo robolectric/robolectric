@@ -1,6 +1,5 @@
 package com.xtremelabs.droidsugar.view;
 
-import android.*;
 import android.app.*;
 import android.view.*;
 import android.widget.*;
