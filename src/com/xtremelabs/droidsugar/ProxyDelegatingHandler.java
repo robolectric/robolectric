@@ -49,14 +49,15 @@ public class ProxyDelegatingHandler implements ClassHandler {
     }
 
     @Override
-    public Object methodInvoked(String className, String methodName, Object instance, String[] paramTypes, Object[] params) {
+    public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) {
         Class<?>[] paramClasses = new Class<?>[paramTypes.length];
 
+        ClassLoader classLoader = clazz.getClassLoader();
         for (int i = 0; i < paramTypes.length; i++) {
-            paramClasses[i] = loadClass(paramTypes[i], instance);
+            paramClasses[i] = loadClass(paramTypes[i], classLoader);
         }
 
-        Class<?> originalClass = loadClass(className, instance);
+        Class<?> originalClass = loadClass(clazz.getName(), classLoader);
 
         Class<?> declaringClass;
         if (methodName.equals("<init>")) {
@@ -74,21 +75,40 @@ public class ProxyDelegatingHandler implements ClassHandler {
         if (handlingClassName == null) {
             return null;
         }
-        Class<?> handlingClass = loadClass(handlingClassName, instance);
+        Class<?> handlingClass = loadClass(handlingClassName, classLoader);
 
         Method method;
         if (methodName.equals("<init>")) {
             methodName = "__constructor__";
         }
 
-        Object fakeObject = fakeObjectFor(instance);
-        try {
-            method = fakeObject.getClass().getMethod(methodName, paramClasses);
-        } catch (NoSuchMethodException e) {
-            if (debug) {
-                System.out.println("No method found for " + className + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + handlingClass.getName());
+        Object fakeObject;
+        if (instance != null) {
+            fakeObject = fakeObjectFor(instance);
+            try {
+                method = fakeObject.getClass().getMethod(methodName, paramClasses);
+            } catch (NoSuchMethodException e) {
+                if (debug) {
+                    System.out.println("No method found for " + clazz + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + handlingClass.getName());
+                }
+                return null;
             }
-            return null;
+        } else {
+            fakeObject = null;
+            String fakeClassName = getHandlingClassName(clazz);
+            Class<?> proxyClass = loadClass(fakeClassName, classLoader);
+            try {
+                method = proxyClass.getMethod(methodName, paramClasses);
+            } catch (NoSuchMethodException e) {
+                if (debug) {
+                    System.out.println("No method found for " + clazz + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + handlingClass.getName());
+                }
+                return null;
+            }
+        }
+
+        if ((instance == null) != Modifier.isStatic(method.getModifiers())) {
+            throw new RuntimeException("method staticness of " + clazz.getName() + "." + methodName + " and " + handlingClassName + "." + method.getName() + " don't match");
         }
 
         try {
@@ -102,7 +122,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
         }
     }
 
-    private Class<?> loadClass(String paramType, Object instance) {
+    private Class<?> loadClass(String paramType, ClassLoader classLoader) {
         Class primitiveClass = Type.findPrimitiveClass(paramType);
         if (primitiveClass != null) return primitiveClass;
 
@@ -114,7 +134,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
 
         Class<?> clazz;
         try {
-            clazz = instance.getClass().getClassLoader().loadClass(paramType);
+            clazz = classLoader.loadClass(paramType);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
@@ -139,7 +159,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
         if (debug)
             System.out.println("creating new " + fakeClassName + " as proxy for " + instance.getClass().getName());
         try {
-            Class<?> proxyClass = loadClass(fakeClassName, instance);
+            Class<?> proxyClass = loadClass(fakeClassName, instance.getClass().getClassLoader());
             Constructor<?> constructor = findConstructor(instance, proxyClass);
             Object fake;
             if (constructor != null) {

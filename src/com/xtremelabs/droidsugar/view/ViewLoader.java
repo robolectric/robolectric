@@ -11,8 +11,7 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,14 +25,16 @@ public class ViewLoader {
     private Map<String, Integer> resourceStringToId = new HashMap<String, Integer>();
     private Map<Integer, String> resourceIdToString = new HashMap<Integer, String>();
 
-    public ViewLoader(Class rClass, File layoutDir) throws Exception {
+    public ViewLoader(Class rClass, File... layoutDirs) throws Exception {
         documentBuilderFactory = DocumentBuilderFactory.newInstance();
         documentBuilderFactory.setNamespaceAware(true);
         documentBuilderFactory.setIgnoringComments(true);
         documentBuilderFactory.setIgnoringElementContentWhitespace(true);
 
         addRClass(rClass);
-        addXmlDir(layoutDir);
+        for (File layoutDir : layoutDirs) {
+            addXmlDir(layoutDir);
+        }
     }
 
     private void addXmlDir(File layoutDir) throws Exception {
@@ -105,7 +106,7 @@ public class ViewLoader {
         try {
             return viewNode.inflate(context);
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("error inflating " + key, e);
         }
     }
 
@@ -155,7 +156,14 @@ public class ViewLoader {
                 clazz = loadClass("android.widget." + name);
             }
 
-            return clazz.getConstructor(Context.class).newInstance(context);
+            if (clazz == null) {
+                throw new RuntimeException("couldn't find view class " + name);
+            }
+            Constructor<? extends View> constructor = clazz.getConstructor(Context.class);
+            if (constructor == null) {
+                throw new RuntimeException("no constructor " + clazz.getName() + "(Context context);");
+            }
+            return constructor.newInstance(context);
         }
 
         private Class<? extends View> loadClass(String className) {
