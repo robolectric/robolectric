@@ -1,27 +1,19 @@
 package com.xtremelabs.droidsugar.view;
 
-import android.content.Context;
-import android.view.View;
-import android.view.ViewGroup;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import android.content.*;
+import android.view.*;
+import org.w3c.dom.*;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
+import javax.xml.parsers.*;
+import java.io.*;
 import java.lang.reflect.*;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ViewLoader {
     public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
 
     private DocumentBuilderFactory documentBuilderFactory;
-    private Map<String, ViewNode> viewNodesById = new HashMap<String, ViewNode>();
+    private Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
     private Map<String, Integer> resourceStringToId = new HashMap<String, Integer>();
     private Map<Integer, String> resourceIdToString = new HashMap<Integer, String>();
 
@@ -59,10 +51,12 @@ public class ViewLoader {
     private void processXml(File xmlFile) throws Exception {
         Document document = parse(xmlFile);
 
-        ViewNode topLevelNode = new ViewNode("top-level");
+        ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>());
         processChildren(document.getChildNodes(), topLevelNode);
-        viewNodesById.put("layout/" + xmlFile.getName().replace(".xml", ""),
-                topLevelNode.getChildren().get(0));
+        viewNodesByLayoutName.put(
+            "layout/" + xmlFile.getName().replace(".xml", ""),
+            topLevelNode.getChildren().get(0)
+        );
     }
 
     private void processChildren(NodeList childNodes, ViewNode parent) {
@@ -74,15 +68,23 @@ public class ViewLoader {
 
     private void processNode(Node node, ViewNode parent) {
         String name = node.getNodeName();
+        NamedNodeMap attributes = node.getAttributes();
+        Map<String, String> attrMap = new HashMap<String, String>();
+        if (attributes != null) {
+            int length = attributes.getLength();
+            for (int i = 0; i < length; i++) {
+                Node attr = attributes.item(i);
+                attrMap.put(attr.getNodeName(), attr.getNodeValue());
+            }
+        }
 
         if (!name.startsWith("#")) {
-            ViewNode viewNode = new ViewNode(name);
+            ViewNode viewNode = new ViewNode(name, attrMap);
             if (parent != null) parent.addChild(viewNode);
 
             String idAttr = getIdAttr(node);
             if (idAttr != null && idAttr.startsWith("@+id/")) {
                 idAttr = idAttr.substring(5);
-                viewNodesById.put("id/" + idAttr, viewNode);
 
                 Integer id = resourceStringToId.get("id/" + idAttr);
                 if (id == null) {
@@ -102,7 +104,7 @@ public class ViewLoader {
     }
 
     public View inflateView(Context context, String key) {
-        ViewNode viewNode = viewNodesById.get(key);
+        ViewNode viewNode = viewNodesByLayoutName.get(key);
         try {
             return viewNode.inflate(context);
         } catch (Exception e) {
@@ -121,11 +123,14 @@ public class ViewLoader {
 
     private class ViewNode {
         private String name;
+        private final Map<String, String> attributes;
+
         private List<ViewNode> children = new ArrayList<ViewNode>();
         private Integer id;
 
-        public ViewNode(String name) {
+        public ViewNode(String name, Map<String, String> attributes) {
             this.name = name;
+            this.attributes = attributes;
         }
 
         public List<ViewNode> getChildren() {
@@ -148,22 +153,27 @@ public class ViewLoader {
         }
 
         private View create(Context context) throws Exception {
-            Class<? extends View> clazz = loadClass(name);
-            if (clazz == null) {
-                clazz = loadClass("android.view." + name);
-            }
-            if (clazz == null) {
-                clazz = loadClass("android.widget." + name);
-            }
+            if (name.equals("include")) {
+                String layout = attributes.get("layout");
+                return inflateView(context, layout.substring(1));
+            } else {
+                Class<? extends View> clazz = loadClass(name);
+                if (clazz == null) {
+                    clazz = loadClass("android.view." + name);
+                }
+                if (clazz == null) {
+                    clazz = loadClass("android.widget." + name);
+                }
 
-            if (clazz == null) {
-                throw new RuntimeException("couldn't find view class " + name);
+                if (clazz == null) {
+                    throw new RuntimeException("couldn't find view class " + name);
+                }
+                Constructor<? extends View> constructor = clazz.getConstructor(Context.class);
+                if (constructor == null) {
+                    throw new RuntimeException("no constructor " + clazz.getName() + "(Context context);");
+                }
+                return constructor.newInstance(context);
             }
-            Constructor<? extends View> constructor = clazz.getConstructor(Context.class);
-            if (constructor == null) {
-                throw new RuntimeException("no constructor " + clazz.getName() + "(Context context);");
-            }
-            return constructor.newInstance(context);
         }
 
         private Class<? extends View> loadClass(String className) {

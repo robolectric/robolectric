@@ -33,11 +33,11 @@ public class FakeView {
     }
 
     public View findViewById(int id) {
-        for (View child : children) {
-            if (child.getId() == id) {
-                return child;
-            }
+        if (id == this.id) {
+            return realView;
+        }
 
+        for (View child : children) {
             View found = child.findViewById(id);
             if (found != null) {
                 return found;

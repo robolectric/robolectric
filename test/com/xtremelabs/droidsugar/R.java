@@ -11,8 +11,9 @@ public final class R {
     private static int nextId = 0;
 
     public static final class id {
-        public static final int media_time = nextId++;
-        public static final int media_title = nextId++;
-        public static final int media_subtitle = nextId++;
+        public static final int time = nextId++;
+        public static final int title = nextId++;
+        public static final int subtitle = nextId++;
+        public static final int snippet_text = nextId++;
     }
 }

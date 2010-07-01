@@ -1,13 +1,30 @@
 package com.xtremelabs.droidsugar.view;
 
-import android.os.Bundle;
-import android.os.Parcelable;
+import android.content.*;
+import android.os.*;
 
-import java.io.Serializable;
+import java.io.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeIntent {
+    private Intent realIntent;
+
     private Bundle extras;
+    public String action;
+    public Class<?> componentClass;
+
+    public FakeIntent(Intent realIntent) {
+        this.realIntent = realIntent;
+    }
+
+    public void __constructor__(Context packageContext, Class cls) {
+        componentClass = cls;
+    }
+
+    public Intent setAction(String action) {
+        this.action = action;
+        return realIntent;
+    }
 
     public Bundle getExtras() {
         return extras;

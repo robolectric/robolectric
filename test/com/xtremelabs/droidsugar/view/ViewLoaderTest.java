@@ -46,8 +46,22 @@ public class ViewLoaderTest {
 
     @Test
     public void testFindsChildrenById() throws Exception {
-        ViewGroup view = (ViewGroup) viewLoader.inflateView(context, "layout/media");
-        TestUtil.assertInstanceOf(TextView.class, view.findViewById(R.id.media_title));
+        ViewGroup mediaView = (ViewGroup) viewLoader.inflateView(context, "layout/media");
+        TestUtil.assertInstanceOf(TextView.class, mediaView.findViewById(R.id.title));
+
+        ViewGroup mainView = (ViewGroup) viewLoader.inflateView(context, "layout/main");
+        TestUtil.assertInstanceOf(View.class, mainView.findViewById(R.id.title));
     }
 
+    @Test
+    public void testInclude() throws Exception {
+        ViewGroup mediaView = (ViewGroup) viewLoader.inflateView(context, "layout/media");
+        TestUtil.assertInstanceOf(TextView.class, mediaView.findViewById(R.id.snippet_text));
+    }
+
+    @Test
+    public void testViewGroupsLooksAtItsOwnId() throws Exception {
+        TextView mediaView = (TextView) viewLoader.inflateView(context, "layout/snippet");
+        assertSame(mediaView, mediaView.findViewById(R.id.snippet_text));
+    }
 }
