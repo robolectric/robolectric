@@ -1,0 +1,33 @@
+Setting up an Android project for droid-sugar: [warning: massively wrong]
+
+mkdir code aidls
+mv src gen code
+find all *.aidl under code and move under aidls
+
+create IntelliJ project. It should make a Code module (as a plain old java module) and Aidls module (with an Android Facet) for you.
+
+git submodule add git@github.com:xtremelabs/droid-sugar.git ./droid-sugar
+
+Go to Module Setup
+Select Code module -> Dependencies
+Add -> Global Library... -> Android x.x
+
+Select (main module) -> Android facet
+Select (*) Generate Java files under other source root: [ .../code/gen ]
+
+Select (main module) -> Dependencies
+Add -> Module dependency -> Code
+Add -> Module dependency -> Aidls
+
+Create new module -> use existing iml with droid-sugar/droid-sugar.iml.
+Select Code module -> Dependencies
+Add -> Module dependency -> droid-sugar
+Change scope from Compile to Test
+
+OK
+
+
+
+
+
+If you get an error complaining that (main module) includes code/gen, remove that from its Sources list.
