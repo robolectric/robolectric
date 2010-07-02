@@ -4,12 +4,12 @@ import android.content.*;
 import android.os.*;
 
 import java.io.*;
+import java.util.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeIntent {
     private Intent realIntent;
-
-    private Bundle extras;
+    public HashMap extras;
     public String action;
     public Class<?> componentClass;
 
@@ -27,22 +27,27 @@ public class FakeIntent {
     }
 
     public Bundle getExtras() {
-        return extras;
+        return new Bundle();
     }
 
     public void putExtra(String key, long value) {
         init();
-        extras.putLong(key, value);
+        extras.put(key, value);
     }
 
     public void putExtra(String key, Serializable value) {
         init();
-        extras.putSerializable(key, value);
+        extras.put(key, value);
     }
 
     public void putExtra(String key, Parcelable value) {
         init();
-        extras.putParcelable(key, value);
+        extras.put(key, value);
+    }
+
+    public void putExtra(String key, String value) {
+        init();
+        extras.put(key, value);
     }
 
     public Parcelable getParcelableExtra(String name) {
@@ -51,7 +56,7 @@ public class FakeIntent {
 
     private void init() {
         if (extras == null) {
-            extras = new Bundle();
+            extras = new HashMap();
         }
     }
 }
