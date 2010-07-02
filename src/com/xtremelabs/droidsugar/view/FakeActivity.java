@@ -6,7 +6,7 @@ import android.view.*;
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeActivity extends FakeContextWrapper {
     private Intent intent;
-    private View contentView;
+    public View contentView;
 
     public boolean finishWasCalled;
     public Intent startActivityIntent;
@@ -23,11 +23,19 @@ public class FakeActivity extends FakeContextWrapper {
         contentView = viewLoader.inflateView(null, layoutResID);
     }
 
+    public void setContentView(View view) {
+        contentView = view;
+    }
+
+    public LayoutInflater getLayoutInflater() {
+        return new FakeLayoutInflater(viewLoader);
+    }
+
     public View findViewById(int id) {
         if (contentView != null) {
             return contentView.findViewById(id);
         } else {
-            return null;
+            return getLayoutInflater().inflate(id, null);
         }
     }
 

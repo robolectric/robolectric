@@ -11,6 +11,7 @@ import static org.mockito.Mockito.*;
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeContextWrapper {
     static public ViewLoader viewLoader;
+    protected static Context contextForInflation = new ContextWrapper(null);
 
     public Resources getResources() {
         return new Resources(null, null, null);
@@ -26,14 +27,19 @@ public class FakeContextWrapper {
 
     public Object getSystemService(String name) {
         if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
-            return new FakeLayoutInflater(viewLoader);
+            return getFakeLayoutInflater();
         } else if (name.equals(Context.ALARM_SERVICE)) {
             return mock(AlarmManager.class);
         }
         return null;
     }
 
-    private class FakeLayoutInflater extends LayoutInflater {
+    public FakeLayoutInflater getFakeLayoutInflater() {
+        return new FakeLayoutInflater(viewLoader);
+    }
+
+    public static class FakeLayoutInflater extends LayoutInflater {
+
         private final ViewLoader viewLoader;
 
         public FakeLayoutInflater(ViewLoader viewLoader) {
@@ -43,7 +49,11 @@ public class FakeContextWrapper {
 
         @Override
         public View inflate(int resource, ViewGroup root) {
-            return viewLoader.inflateView(null, resource);
+            View view = viewLoader.inflateView(contextForInflation, resource);
+            if (root != null) {
+                root.addView(view);
+            }
+            return view;
         }
 
         @Override

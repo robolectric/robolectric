@@ -55,8 +55,7 @@ public class ViewLoader {
         processChildren(document.getChildNodes(), topLevelNode);
         viewNodesByLayoutName.put(
             "layout/" + xmlFile.getName().replace(".xml", ""),
-            topLevelNode.getChildren().get(0)
-        );
+            topLevelNode.getChildren().get(0));
     }
 
     private void processChildren(NodeList childNodes, ViewNode parent) {
