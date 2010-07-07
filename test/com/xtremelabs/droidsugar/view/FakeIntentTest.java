@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.view;
 
 import android.content.Intent;
+import android.net.Uri;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import junit.framework.TestCase;
 import org.junit.Before;
@@ -31,5 +32,15 @@ public class FakeIntentTest extends TestCase {
         Intent intent = new Intent();
         intent.setAction("foo");
         assertEquals("foo", intent.getAction());
+    }
+
+    @Test
+    public void testSetData() throws Exception {
+        Intent intent = new Intent();
+        Uri uri = Uri.parse("content://this/and/that");
+        intent.setData(uri);
+
+        FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
+        assertSame(uri, fakeIntent.data);
     }
 }

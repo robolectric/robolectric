@@ -2,6 +2,7 @@ package com.xtremelabs.droidsugar.view;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 
@@ -14,6 +15,7 @@ public class FakeIntent {
     public HashMap extras;
     public String action;
     public Class<?> componentClass;
+    public Uri data;
 
     public FakeIntent(Intent realIntent) {
         this.realIntent = realIntent;
@@ -31,7 +33,12 @@ public class FakeIntent {
     public String getAction() {
         return action;
     }
-    
+
+    public Intent setData(Uri data) {
+        this.data = data;
+        return realIntent;
+    }
+
     public Bundle getExtras() {
         return new Bundle();
     }
