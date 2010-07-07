@@ -30,6 +30,10 @@ public class FakeActivity extends FakeContextWrapper {
         contentView = view;
     }
 
+    public final void setResult(int resultCode) {
+        this.resultCode = resultCode;
+    }
+
     public final void setResult(int resultCode, Intent data) {
         this.resultCode = resultCode;
         resultIntent = data;
