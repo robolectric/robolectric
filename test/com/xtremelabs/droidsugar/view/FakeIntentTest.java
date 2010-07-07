@@ -1,10 +1,11 @@
 package com.xtremelabs.droidsugar.view;
 
-import android.content.*;
-import com.xtremelabs.droidsugar.*;
-import junit.framework.*;
-import org.junit.*;
-import org.junit.runner.*;
+import android.content.Intent;
+import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
+import junit.framework.TestCase;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class FakeIntentTest extends TestCase {
@@ -14,7 +15,7 @@ public class FakeIntentTest extends TestCase {
         DroidSugarAndroidTestRunner.addProxy(Intent.class, FakeIntent.class);
     }
 
-    @org.junit.Test
+    @Test
     public void testExtrasAreStored() throws Exception {
         Intent intent = new Intent();
         intent.putExtra("foo", "bar");
@@ -23,5 +24,12 @@ public class FakeIntentTest extends TestCase {
         assertNotNull(fakeIntent);
         assertNotNull(fakeIntent.extras);
         assertEquals("bar", fakeIntent.extras.get("foo"));
+    }
+
+    @Test
+    public void testGetActionReturnsWhatWasSet() throws Exception {
+        Intent intent = new Intent();
+        intent.setAction("foo");
+        assertEquals("foo", intent.getAction());
     }
 }

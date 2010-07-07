@@ -1,10 +1,12 @@
 package com.xtremelabs.droidsugar.view;
 
-import android.content.*;
-import android.os.*;
+import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
+import android.os.Parcelable;
 
-import java.io.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.HashMap;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeIntent {
@@ -26,6 +28,10 @@ public class FakeIntent {
         return realIntent;
     }
 
+    public String getAction() {
+        return action;
+    }
+    
     public Bundle getExtras() {
         return new Bundle();
     }
