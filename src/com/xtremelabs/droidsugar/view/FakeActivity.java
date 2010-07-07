@@ -1,7 +1,8 @@
 package com.xtremelabs.droidsugar.view;
 
-import android.content.*;
-import android.view.*;
+import android.content.Intent;
+import android.view.LayoutInflater;
+import android.view.View;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeActivity extends FakeContextWrapper {
@@ -10,6 +11,8 @@ public class FakeActivity extends FakeContextWrapper {
 
     public boolean finishWasCalled;
     public Intent startActivityIntent;
+    public int resultCode;
+    public Intent resultIntent;
 
     public void setIntent(Intent intent) {
         this.intent = intent;
@@ -25,6 +28,11 @@ public class FakeActivity extends FakeContextWrapper {
 
     public void setContentView(View view) {
         contentView = view;
+    }
+
+    public final void setResult(int resultCode, Intent data) {
+        this.resultCode = resultCode;
+        resultIntent = data;
     }
 
     public LayoutInflater getLayoutInflater() {
