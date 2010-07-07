@@ -8,6 +8,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.Serializable;
+
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class FakeIntentTest extends TestCase {
 
@@ -17,14 +19,34 @@ public class FakeIntentTest extends TestCase {
     }
 
     @Test
-    public void testExtrasAreStored() throws Exception {
+    public void testStringExtra() throws Exception {
         Intent intent = new Intent();
         intent.putExtra("foo", "bar");
 
         FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
-        assertNotNull(fakeIntent);
-        assertNotNull(fakeIntent.extras);
         assertEquals("bar", fakeIntent.extras.get("foo"));
+    }
+
+    @Test
+    public void testIntExtra() throws Exception {
+        Intent intent = new Intent();
+        intent.putExtra("foo", 2);
+        assertEquals(2, ((FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent)).extras.get("foo"));
+    }
+
+    @Test
+    public void testSerializableExtra() throws Exception {
+        Intent intent = new Intent();
+        TestSerializable serializable = new TestSerializable();
+        intent.putExtra("foo", serializable);
+        assertSame(serializable, ((FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent)).extras.get("foo"));
+    }
+
+    @Test
+    public void testLongExtra() throws Exception {
+        Intent intent = new Intent();
+        intent.putExtra("foo", 2L);
+        assertEquals(2L, ((FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent)).extras.get("foo"));
     }
 
     @Test
@@ -38,9 +60,12 @@ public class FakeIntentTest extends TestCase {
     public void testSetData() throws Exception {
         Intent intent = new Intent();
         Uri uri = Uri.parse("content://this/and/that");
-        intent.setData(uri);
+        Intent returnedIntent = intent.setData(uri);
 
         FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
         assertSame(uri, fakeIntent.data);
+        assertSame(intent, returnedIntent);
     }
+
+    private static class TestSerializable implements Serializable { }
 }

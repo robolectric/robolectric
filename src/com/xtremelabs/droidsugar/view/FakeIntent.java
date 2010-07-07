@@ -43,6 +43,11 @@ public class FakeIntent {
         return new Bundle();
     }
 
+    public void putExtra(String key, int value) {
+        init();
+        extras.put(key, value);
+    }
+
     public void putExtra(String key, long value) {
         init();
         extras.put(key, value);
