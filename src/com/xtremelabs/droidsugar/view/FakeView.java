@@ -15,6 +15,7 @@ public class FakeView {
     private List<View> children = new ArrayList<View>();
     private Context context;
     private int visibility;
+    public boolean selected;
 
     public FakeView(View view) {
         this.realView = view;
@@ -72,5 +73,9 @@ public class FakeView {
 
     public void setVisibility(int visibility) {
         this.visibility = visibility;
+    }
+
+    public void setSelected(boolean selected) {
+        this.selected = selected;
     }
 }
