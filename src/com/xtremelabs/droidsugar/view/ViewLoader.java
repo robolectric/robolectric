@@ -1,13 +1,23 @@
 package com.xtremelabs.droidsugar.view;
 
-import android.content.*;
-import android.view.*;
-import org.w3c.dom.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-import javax.xml.parsers.*;
-import java.io.*;
-import java.lang.reflect.*;
-import java.util.*;
+import android.content.Context;
+import android.view.View;
+import android.view.ViewGroup;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 public class ViewLoader {
     public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
@@ -54,8 +64,8 @@ public class ViewLoader {
         ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>());
         processChildren(document.getChildNodes(), topLevelNode);
         viewNodesByLayoutName.put(
-            "layout/" + xmlFile.getName().replace(".xml", ""),
-            topLevelNode.getChildren().get(0));
+                "layout/" + xmlFile.getName().replace(".xml", ""),
+                topLevelNode.getChildren().get(0));
     }
 
     private void processChildren(NodeList childNodes, ViewNode parent) {
@@ -142,7 +152,7 @@ public class ViewLoader {
 
         public View inflate(Context context) throws Exception {
             View view = create(context);
-            if (id != null) {
+            if (id != null && view.getId() == 0) {
                 view.setId(id);
             }
             for (ViewNode child : children) {
