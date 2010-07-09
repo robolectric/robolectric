@@ -6,7 +6,7 @@
         android:gravity="center_horizontal"
         >
 
-    <include layout="@layout/snippet"/>
+    <include android:id="@+id/include_id" layout="@layout/snippet"/>
 
     <View
             android:layout_width="fill_parent"
