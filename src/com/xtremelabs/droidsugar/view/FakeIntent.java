@@ -1,10 +1,13 @@
 package com.xtremelabs.droidsugar.view;
 
-import android.content.*;
-import android.os.*;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Parcelable;
 
-import java.io.*;
-import java.util.*;
+import java.io.Serializable;
+import java.util.HashMap;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeIntent {
@@ -12,6 +15,7 @@ public class FakeIntent {
     public HashMap extras;
     public String action;
     public Class<?> componentClass;
+    public Uri data;
 
     public FakeIntent(Intent realIntent) {
         this.realIntent = realIntent;
@@ -26,8 +30,22 @@ public class FakeIntent {
         return realIntent;
     }
 
+    public String getAction() {
+        return action;
+    }
+
+    public Intent setData(Uri data) {
+        this.data = data;
+        return realIntent;
+    }
+
     public Bundle getExtras() {
         return new Bundle();
+    }
+
+    public void putExtra(String key, int value) {
+        init();
+        extras.put(key, value);
     }
 
     public void putExtra(String key, long value) {
