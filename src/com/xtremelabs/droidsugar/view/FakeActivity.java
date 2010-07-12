@@ -47,7 +47,7 @@ public class FakeActivity extends FakeContextWrapper {
         if (contentView != null) {
             return contentView.findViewById(id);
         } else {
-            return getLayoutInflater().inflate(id, null);
+            throw new RuntimeException("you should have called setContentView() first");
         }
     }
 
