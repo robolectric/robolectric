@@ -1,5 +1,7 @@
 package com.xtremelabs.droidsugar;
 
+import java.lang.reflect.Method;
+
 import org.junit.internal.runners.JUnit4ClassRunner;
 import org.junit.runner.notification.RunNotifier;
 
@@ -18,10 +20,10 @@ public class AbstractAndroidTestRunner extends JUnit4ClassRunner {
     }
 
     @Override
-    public void run(RunNotifier notifier) {
+    protected void invokeTestMethod(Method method, RunNotifier notifier) {
         if (classHandler != null) classHandler.beforeTest();
 
-        super.run(notifier);
+        super.invokeTestMethod(method, notifier);
 
         if (classHandler != null) classHandler.afterTest();
     }
