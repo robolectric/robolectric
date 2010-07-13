@@ -73,7 +73,8 @@ public class FakeIntent {
     }
 
     public int getIntExtra(String name, int defaultValue) {
-        return (Integer) extras.get(name);
+        Integer foundValue = (Integer) extras.get(name);
+        return foundValue == null ? defaultValue : foundValue;
     }
 
     private void init() {
