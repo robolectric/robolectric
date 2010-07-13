@@ -114,6 +114,9 @@ public class ViewLoader {
 
     public View inflateView(Context context, String key) {
         ViewNode viewNode = viewNodesByLayoutName.get(key);
+        if (viewNode == null) {
+            throw new RuntimeException("no such layout " + key);
+        }
         try {
             return viewNode.inflate(context);
         } catch (Exception e) {

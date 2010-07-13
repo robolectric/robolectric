@@ -3,7 +3,7 @@ package com.xtremelabs.droidsugar;
 import org.junit.internal.runners.*;
 
 public class DroidSugarAndroidTestRunner extends AbstractAndroidTestRunner {
-  private static final ProxyDelegatingHandler PROXY_DELEGATING_HANDLER = new ProxyDelegatingHandler();
+  private static final ProxyDelegatingHandler PROXY_DELEGATING_HANDLER = ProxyDelegatingHandler.getInstance();
   private static final Loader LOADER = new Loader(PROXY_DELEGATING_HANDLER);
 
   public DroidSugarAndroidTestRunner(Class testClass) throws InitializationError {

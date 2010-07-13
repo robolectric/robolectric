@@ -1,19 +1,37 @@
 package com.xtremelabs.droidsugar;
 
-import javassist.*;
-
-import java.lang.reflect.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.CtField;
+import javassist.NotFoundException;
 
 public class ProxyDelegatingHandler implements ClassHandler {
     public static final String PROXY_DELEGATE_FIELD_NAME = "__proxyDelegate__";
+    private static ProxyDelegatingHandler singleton;
 
     private Map<String, String> classHandlers = new HashMap<String, String>();
     private Map<Class, Field> proxyFieldMap = new HashMap<Class, Field>();
     public boolean debug = false;
 
-    public ProxyDelegatingHandler() {
+    // sorry! it really only makes sense to have one per ClassLoader anyway though [xw/hu]
+    public static ProxyDelegatingHandler getInstance() {
+        if (singleton == null) {
+            singleton = new ProxyDelegatingHandler();
+        }
+        return singleton;
+    }
+
+    private ProxyDelegatingHandler() {
     }
 
     @Override

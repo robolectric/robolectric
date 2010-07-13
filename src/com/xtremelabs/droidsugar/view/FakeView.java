@@ -1,11 +1,12 @@
 package com.xtremelabs.droidsugar.view;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.view.View;
-
-import java.util.ArrayList;
-import java.util.List;
+import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 
 @SuppressWarnings({"ALL"})
 public class FakeView {
@@ -13,6 +14,7 @@ public class FakeView {
 
     private int id;
     private List<View> children = new ArrayList<View>();
+    private FakeView parent;
     private Context context;
     private int visibility;
     public boolean selected;
@@ -47,8 +49,18 @@ public class FakeView {
         return null;
     }
 
+    public View getRootView() {
+        FakeView root = this;
+        while(root.parent != null) {
+            root = root.parent;
+        }
+        return root.realView;
+    }
+
     public void addView(View child) {
         children.add(child);
+        FakeView childProxy = (FakeView) ProxyDelegatingHandler.getInstance().proxyFor(child);
+        childProxy.parent = this;
     }
 
     public int getChildCount() {
