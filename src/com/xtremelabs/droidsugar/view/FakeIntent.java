@@ -1,18 +1,18 @@
 package com.xtremelabs.droidsugar.view;
 
+import java.io.Serializable;
+import java.util.HashMap;
+
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 
-import java.io.Serializable;
-import java.util.HashMap;
-
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeIntent {
     private Intent realIntent;
-    public HashMap extras;
+    public HashMap extras = new HashMap();
     public String action;
     public Class<?> componentClass;
     public Uri data;
@@ -44,27 +44,22 @@ public class FakeIntent {
     }
 
     public void putExtra(String key, int value) {
-        init();
         extras.put(key, value);
     }
 
     public void putExtra(String key, long value) {
-        init();
         extras.put(key, value);
     }
 
     public void putExtra(String key, Serializable value) {
-        init();
         extras.put(key, value);
     }
 
     public void putExtra(String key, Parcelable value) {
-        init();
         extras.put(key, value);
     }
 
     public void putExtra(String key, String value) {
-        init();
         extras.put(key, value);
     }
 
@@ -75,11 +70,5 @@ public class FakeIntent {
     public int getIntExtra(String name, int defaultValue) {
         Integer foundValue = (Integer) extras.get(name);
         return foundValue == null ? defaultValue : foundValue;
-    }
-
-    private void init() {
-        if (extras == null) {
-            extras = new HashMap();
-        }
     }
 }
