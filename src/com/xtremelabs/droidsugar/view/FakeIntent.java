@@ -72,6 +72,11 @@ public class FakeIntent {
         return (Parcelable) extras.get(name);
     }
 
+    public int getIntExtra(String name, int defaultValue) {
+        Integer foundValue = (Integer) extras.get(name);
+        return foundValue == null ? defaultValue : foundValue;
+    }
+
     private void init() {
         if (extras == null) {
             extras = new HashMap();
