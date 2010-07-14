@@ -59,8 +59,11 @@ public class FakeView {
 
     public void addView(View child) {
         children.add(child);
-        FakeView childProxy = (FakeView) ProxyDelegatingHandler.getInstance().proxyFor(child);
-        childProxy.parent = this;
+        childProxy(child).parent = this;
+    }
+
+    private FakeView childProxy(View child) {
+        return (FakeView) ProxyDelegatingHandler.getInstance().proxyFor(child);
     }
 
     public int getChildCount() {
@@ -69,6 +72,13 @@ public class FakeView {
 
     public View getChildAt(int index) {
         return children.get(index);
+    }
+
+    public void removeAllViews() {
+        for (View child : children) {
+            childProxy(child).parent = null;
+        }
+        children.clear();
     }
 
     public final Context getContext() {
