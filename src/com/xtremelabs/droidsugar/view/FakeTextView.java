@@ -18,6 +18,10 @@ public class FakeTextView extends FakeView {
         this.text = text;
     }
 
+    public final void setText(int titleRes) {
+        this.text = "text from resource"; // todo: actually fetch strings
+    }
+
     public CharSequence getText() {
         return text;
     }

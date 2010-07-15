@@ -18,6 +18,7 @@ public class FakeView {
     private Context context;
     private int visibility;
     public boolean selected;
+    private View.OnClickListener onClickListener;
 
     public FakeView(View view) {
         this.realView = view;
@@ -99,5 +100,18 @@ public class FakeView {
 
     public void setSelected(boolean selected) {
         this.selected = selected;
+    }
+
+    public void setOnClickListener(View.OnClickListener onClickListener) {
+        this.onClickListener = onClickListener;
+    }
+
+    public boolean performClick() {
+        if (onClickListener != null) {
+            onClickListener.onClick(realView);
+            return true;
+        } else {
+            return false;
+        }
     }
 }
