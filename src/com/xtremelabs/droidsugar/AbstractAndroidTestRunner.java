@@ -23,8 +23,16 @@ public class AbstractAndroidTestRunner extends JUnit4ClassRunner {
     protected void invokeTestMethod(Method method, RunNotifier notifier) {
         if (classHandler != null) classHandler.beforeTest();
 
+        beforeTest(method);
         super.invokeTestMethod(method, notifier);
+        afterTest(method);
 
         if (classHandler != null) classHandler.afterTest();
+    }
+
+    protected void beforeTest(Method method) {
+    }
+
+    protected void afterTest(Method method) {
     }
 }
