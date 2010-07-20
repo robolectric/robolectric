@@ -3,6 +3,7 @@ package com.xtremelabs.droidsugar.view;
 import android.app.*;
 import android.content.*;
 import android.content.res.*;
+import android.location.LocationManager;
 import android.test.mock.*;
 import android.view.*;
 
@@ -12,6 +13,7 @@ import static org.mockito.Mockito.*;
 public class FakeContextWrapper {
     static public ViewLoader viewLoader;
     protected static Context contextForInflation = new ContextWrapper(null);
+    private LocationManager locationManager;
 
     public Resources getResources() {
         return new Resources(null, null, null);
@@ -30,6 +32,11 @@ public class FakeContextWrapper {
             return getFakeLayoutInflater();
         } else if (name.equals(Context.ALARM_SERVICE)) {
             return mock(AlarmManager.class);
+        } else if (name.equals(Context.LOCATION_SERVICE)) {
+            if (locationManager == null) {
+                locationManager = mock(LocationManager.class);
+            }
+            return locationManager;
         }
         return null;
     }
