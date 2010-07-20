@@ -1,13 +1,14 @@
 package com.xtremelabs.droidsugar.view;
 
-import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
+import android.text.style.URLSpan;
 import android.widget.TextView;
 
 @SuppressWarnings({"ALL"})
 public class FakeTextView extends FakeView {
     private CharSequence text;
-    Rectangle rectangle;
     public Directions compoundDrawablesWithIntrinsicBounds;
 
     public FakeTextView(TextView view) {
@@ -24,6 +25,17 @@ public class FakeTextView extends FakeView {
 
     public CharSequence getText() {
         return text;
+    }
+
+    public URLSpan[] getUrls() {
+        String[] words = text.toString().split("\\s+");
+        List<URLSpan> urlSpans = new ArrayList<URLSpan>();
+        for (String word : words) {
+            if (word.startsWith("http://")) {
+                urlSpans.add(new URLSpan(word));
+            }
+        }
+        return urlSpans.toArray(new URLSpan[urlSpans.size()]);
     }
 
     public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
