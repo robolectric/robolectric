@@ -48,12 +48,17 @@ public class FakeContextWrapper {
         }
 
         @Override
-        public View inflate(int resource, ViewGroup root) {
+        public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
             View view = viewLoader.inflateView(contextForInflation, resource);
-            if (root != null) {
+            if (root != null && attachToRoot) {
                 root.addView(view);
             }
             return view;
+        }
+
+        @Override
+        public View inflate(int resource, ViewGroup root) {
+            return inflate(resource, root, true);
         }
 
         @Override

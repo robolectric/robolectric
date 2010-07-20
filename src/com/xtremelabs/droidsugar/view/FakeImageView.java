@@ -1,11 +1,14 @@
 package com.xtremelabs.droidsugar.view;
 
 import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
 
 @SuppressWarnings({"ALL"})
 public class FakeImageView extends FakeView {
     private Bitmap imageBitmap;
+    public Drawable imageDrawable;
+    public int alpha;
 
     public FakeImageView(ImageView view) {
         super(view);
@@ -17,5 +20,13 @@ public class FakeImageView extends FakeView {
 
     public Bitmap getImageBitmap() {
         return imageBitmap;
+    }
+
+    public void setImageDrawable(Drawable drawable) {
+        this.imageDrawable = drawable;
+    }
+
+    public void setAlpha(int alpha) {
+        this.alpha = alpha;
     }
 }
