@@ -8,6 +8,7 @@ import android.widget.ImageView;
 public class FakeImageView extends FakeView {
     private Bitmap imageBitmap;
     public Drawable imageDrawable;
+    public int alpha;
 
     public FakeImageView(ImageView view) {
         super(view);
@@ -23,5 +24,9 @@ public class FakeImageView extends FakeView {
 
     public void setImageDrawable(Drawable drawable) {
         this.imageDrawable = drawable;
+    }
+
+    public void setAlpha(int alpha) {
+        this.alpha = alpha;
     }
 }
