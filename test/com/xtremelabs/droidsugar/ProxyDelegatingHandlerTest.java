@@ -63,6 +63,18 @@ public class ProxyDelegatingHandlerTest {
         System.out.println("textViewProxy = " + textViewProxy);
     }
 
+    @Test
+    public void testPrimitiveArrays() throws Exception {
+        Class<?> objArrayClass = ProxyDelegatingHandler.loadClass("java.lang.Object[]", getClass().getClassLoader());
+        assertTrue(objArrayClass.isArray());
+        assertEquals(Object.class, objArrayClass.getComponentType());
+
+        Class<?> intArrayClass = ProxyDelegatingHandler.loadClass("int[]", getClass().getClassLoader());
+        assertTrue(intArrayClass.isArray());
+        assertEquals(Integer.TYPE, intArrayClass.getComponentType());
+    }
+
+
     private TestFakeView proxyFor(View view) {
         return (TestFakeView) DroidSugarAndroidTestRunner.proxyFor(view);
     }
