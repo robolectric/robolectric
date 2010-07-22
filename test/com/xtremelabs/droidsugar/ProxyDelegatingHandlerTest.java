@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class ProxyDelegatingHandlerTest {

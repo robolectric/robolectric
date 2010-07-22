@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeIntent {
@@ -39,6 +40,12 @@ public class FakeIntent {
         return realIntent;
     }
 
+    public Intent putExtras(Intent src) {
+        FakeIntent srcFakeIntent = (FakeIntent) ProxyDelegatingHandler.getInstance().proxyFor(src);
+        extras = new HashMap(srcFakeIntent.extras);
+        return realIntent;
+    }
+
     public Bundle getExtras() {
         return new Bundle();
     }
@@ -63,6 +70,14 @@ public class FakeIntent {
         extras.put(key, value);
     }
 
+    public void putExtra(String key, byte[] value) {
+        extras.put(key, value);
+    }
+
+    public String getStringExtra(String name) {
+        return (String) extras.get(name);
+    }
+
     public Parcelable getParcelableExtra(String name) {
         return (Parcelable) extras.get(name);
     }
@@ -70,5 +85,9 @@ public class FakeIntent {
     public int getIntExtra(String name, int defaultValue) {
         Integer foundValue = (Integer) extras.get(name);
         return foundValue == null ? defaultValue : foundValue;
+    }
+
+    public byte[] getByteArrayExtra(String name) {
+        return (byte[]) extras.get(name);
     }
 }

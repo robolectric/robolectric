@@ -245,6 +245,9 @@ public class ProxyDelegatingHandler implements ClassHandler {
     }
 
     public Object proxyFor(Object instance) {
+        if (instance == null) {
+            throw new RuntimeException("no instance for which to get a proxy");
+        }
         Field field = getProxyField(instance);
         return getField(instance, field);
     }

@@ -1,17 +1,28 @@
 package com.xtremelabs.droidsugar.view;
 
-import android.app.*;
-import android.content.*;
-import android.content.res.*;
-import android.test.mock.*;
-import android.view.*;
+import java.util.ArrayList;
+import java.util.List;
 
-import static org.mockito.Mockito.*;
+import android.app.AlarmManager;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.res.Resources;
+import android.test.mock.MockContentResolver;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+
+import static org.mockito.Mockito.mock;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeContextWrapper {
     static public ViewLoader viewLoader;
+    
     protected static Context contextForInflation = new ContextWrapper(null);
+    public List<Intent> startedServices = new ArrayList<Intent>();
 
     public Resources getResources() {
         return new Resources(null, null, null);
@@ -36,6 +47,11 @@ public class FakeContextWrapper {
 
     public FakeLayoutInflater getFakeLayoutInflater() {
         return new FakeLayoutInflater(viewLoader);
+    }
+
+    public ComponentName startService(Intent service) {
+        startedServices.add(service);
+        return new ComponentName("some.service.package", "SomeServiceName");
     }
 
     public static class FakeLayoutInflater extends LayoutInflater {
