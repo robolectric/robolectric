@@ -1,5 +1,14 @@
 package com.xtremelabs.droidsugar.view;
 
+import android.content.Context;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
@@ -10,14 +19,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import android.content.Context;
-import android.view.View;
-import android.view.ViewGroup;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 public class ViewLoader {
     public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
@@ -168,6 +169,8 @@ public class ViewLoader {
             if (name.equals("include")) {
                 String layout = attributes.get("layout");
                 return inflateView(context, layout.substring(1));
+            } else if (name.equals("merge")) {
+                return new LinearLayout(context);
             } else {
                 Class<? extends View> clazz = loadClass(name);
                 if (clazz == null) {
