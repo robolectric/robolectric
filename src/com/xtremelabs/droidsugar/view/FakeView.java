@@ -1,12 +1,14 @@
 package com.xtremelabs.droidsugar.view;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.view.View;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SuppressWarnings({"ALL"})
 public class FakeView {
@@ -20,6 +22,7 @@ public class FakeView {
     public boolean selected;
     private View.OnClickListener onClickListener;
     private Object tag;
+    private Map<Integer, Object> tags = new HashMap<Integer, Object>();
 
     public FakeView(View view) {
         this.realView = view;
@@ -123,4 +126,13 @@ public class FakeView {
     public void setTag(Object tag) {
         this.tag = tag;
     }
+
+    public Object getTag(int key) {
+        return tags.get(key);
+    }
+
+    public void setTag(int key, Object value) {
+        tags.put(key, value);
+    }
+
 }
