@@ -103,6 +103,10 @@ public class FakeView {
         this.selected = selected;
     }
 
+    public boolean isSelected() {
+        return this.selected;
+    }
+
     public void setOnClickListener(View.OnClickListener onClickListener) {
         this.onClickListener = onClickListener;
     }
