@@ -1,5 +1,10 @@
 package com.xtremelabs.droidsugar;
 
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.CtField;
+import javassist.NotFoundException;
+
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -9,11 +14,6 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-
-import javassist.CannotCompileException;
-import javassist.CtClass;
-import javassist.CtField;
-import javassist.NotFoundException;
 
 public class ProxyDelegatingHandler implements ClassHandler {
     public static final String PROXY_DELEGATE_FIELD_NAME = "__proxyDelegate__";

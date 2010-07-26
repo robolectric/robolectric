@@ -30,7 +30,10 @@ public class AndroidTranslator implements Translator {
     }
 
     public void onLoad(ClassPool classPool, String className) throws NotFoundException, CannotCompileException {
-        boolean needsStripping = className.startsWith("android.") || className.startsWith("org.apache.http");
+        boolean needsStripping =
+                className.startsWith("android.")
+                        || className.startsWith("org.apache.http")
+                        || className.startsWith("com.google.android.");
 
         CtClass ctClass = classPool.get(className);
         if (needsStripping) {

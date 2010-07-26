@@ -16,5 +16,7 @@ public final class R {
         public static final int subtitle = nextId++;
         public static final int snippet_text = nextId++;
         public static final int include_id = nextId++;
+        public static final int inner_text = nextId++;
+        public static final int map_view = nextId++;
     }
 }
