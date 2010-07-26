@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.view;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -15,6 +16,11 @@ public class FakeActivity extends FakeContextWrapper {
     public int resultCode;
     public Intent resultIntent;
     public Activity parent;
+    public static Application application;
+
+    public final Application getApplication() {
+        return application;
+    }
 
     public void setIntent(Intent intent) {
         this.intent = intent;
