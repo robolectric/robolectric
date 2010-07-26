@@ -179,15 +179,21 @@ public class ViewLoader {
                 if (clazz == null) {
                     clazz = loadClass("android.widget." + name);
                 }
+                if (clazz == null) {
+                    clazz = loadClass("com.google.android.maps." + name);
+                }
 
                 if (clazz == null) {
                     throw new RuntimeException("couldn't find view class " + name);
                 }
-                Constructor<? extends View> constructor = clazz.getConstructor(Context.class);
-                if (constructor == null) {
-                    throw new RuntimeException("no constructor " + clazz.getName() + "(Context context);");
+                Constructor<? extends View> constructor;
+                try {
+                    constructor = clazz.getConstructor(Context.class);
+                    return constructor.newInstance(context);
+                } catch (NoSuchMethodException e) {
+                    constructor = clazz.getConstructor(Context.class, String.class);
+                    return constructor.newInstance(context, "");
                 }
-                return constructor.newInstance(context);
             }
         }
 

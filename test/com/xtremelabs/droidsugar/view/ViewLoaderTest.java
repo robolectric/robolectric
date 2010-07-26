@@ -1,16 +1,22 @@
 package com.xtremelabs.droidsugar.view;
 
-import android.test.mock.*;
-import android.view.*;
-import android.widget.*;
-import com.xtremelabs.droidsugar.*;
-import com.xtremelabs.droidsugar.util.*;
-import org.junit.*;
-import org.junit.runner.*;
+import android.test.mock.MockContext;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import com.google.android.maps.MapView;
+import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
+import com.xtremelabs.droidsugar.R;
+import com.xtremelabs.droidsugar.util.TestUtil;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import java.io.*;
+import java.io.File;
 
-import static android.test.MoreAsserts.*;
+import static android.test.MoreAsserts.assertNotEqual;
 import static org.junit.Assert.*;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
@@ -69,5 +75,11 @@ public class ViewLoaderTest {
     public void testViewGroupsLooksAtItsOwnId() throws Exception {
         TextView mediaView = (TextView) viewLoader.inflateView(context, "layout/snippet");
         assertSame(mediaView, mediaView.findViewById(R.id.snippet_text));
+    }
+
+    @Test
+    public void testMapView() throws Exception {
+        RelativeLayout mainView = (RelativeLayout) viewLoader.inflateView(context, "layout/mapview");
+        TestUtil.assertInstanceOf(MapView.class,  mainView.findViewById(R.id.map_view));
     }
 }
