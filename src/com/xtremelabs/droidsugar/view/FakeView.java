@@ -8,7 +8,7 @@ import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings({"ALL"})
+@SuppressWarnings({"UnusedDeclaration"})
 public class FakeView {
     private View realView;
 

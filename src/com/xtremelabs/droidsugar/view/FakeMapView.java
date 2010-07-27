@@ -17,7 +17,6 @@ public class FakeMapView extends FakeViewGroup {
 
     public FakeMapView(ViewGroup viewGroup) {
         super(viewGroup);
-
         mapController = mock(MapController.class);
     }
 
