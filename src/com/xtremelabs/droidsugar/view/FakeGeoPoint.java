@@ -1,5 +1,6 @@
 package com.xtremelabs.droidsugar.view;
 
+@SuppressWarnings({"UnusedDeclaration"})
 public class FakeGeoPoint {
     public int lat;
     public int lng;
