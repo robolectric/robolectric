@@ -1,24 +1,27 @@
 package com.xtremelabs.droidsugar.view;
 
-import java.awt.*;
-
 import android.widget.TextView;
+
+import java.awt.*;
 
 @SuppressWarnings({"ALL"})
 public class FakeTextView extends FakeView {
     private CharSequence text;
     Rectangle rectangle;
     public Directions compoundDrawablesWithIntrinsicBounds;
+    public int textResourceId = -1;
 
     public FakeTextView(TextView view) {
         super(view);
     }
 
     public final void setText(CharSequence text) {
+        this.textResourceId = -1;
         this.text = text;
     }
 
-    public final void setText(int titleRes) {
+    public final void setText(int textResourceId) {
+        this.textResourceId = textResourceId;
         this.text = "text from resource"; // todo: actually fetch strings
     }
 
