@@ -103,26 +103,19 @@ public class ProxyDelegatingHandler implements ClassHandler {
         Object fakeObject;
         if (instance != null) {
             fakeObject = fakeObjectFor(instance);
-            try {
-                method = fakeObject.getClass().getMethod(methodName, paramClasses);
-            } catch (NoSuchMethodException e) {
-                if (debug) {
-                    System.out.println("No method found for " + clazz + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + handlingClass.getName());
-                }
-                return null;
-            }
+            method = getMethod(fakeObject.getClass(), methodName, paramClasses);
         } else {
             fakeObject = null;
             String fakeClassName = getHandlingClassName(clazz);
             Class<?> proxyClass = loadClass(fakeClassName, classLoader);
-            try {
-                method = proxyClass.getMethod(methodName, paramClasses);
-            } catch (NoSuchMethodException e) {
-                if (debug) {
-                    System.out.println("No method found for " + clazz + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + handlingClass.getName());
-                }
-                return null;
+            method = getMethod(proxyClass, methodName, paramClasses);
+        }
+
+        if (method == null) {
+            if (debug) {
+                System.out.println("No method found for " + clazz + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + handlingClass.getName());
             }
+            return null;
         }
 
         if ((instance == null) != Modifier.isStatic(method.getModifiers())) {
@@ -130,6 +123,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
         }
 
         try {
+            method.setAccessible(true);
             return method.invoke(fakeObject, params);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException(fakeObject.getClass().getName() + " is not assignable from " + handlingClass.getName(), e);
@@ -137,6 +131,18 @@ public class ProxyDelegatingHandler implements ClassHandler {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private Method getMethod(Class<?> clazz, String methodName, Class<?>[] paramClasses) {
+        try {
+            return clazz.getMethod(methodName, paramClasses);
+        } catch (NoSuchMethodException e) {
+            try {
+                return clazz.getDeclaredMethod(methodName, paramClasses);
+            } catch (NoSuchMethodException e1) {
+                return null;
+            }
         }
     }
 
