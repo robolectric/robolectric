@@ -5,12 +5,15 @@ import android.widget.AdapterView;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeAdapterView extends FakeView {
+    private AdapterView realAdapterView;
+
     private Adapter adapter;
     private AdapterView.OnItemSelectedListener onItemSelectedListener;
     private AdapterView.OnItemClickListener onItemClickListener;
 
     public FakeAdapterView(AdapterView adapterView) {
         super(adapterView);
+        this.realAdapterView = adapterView;
     }
 
     public void setAdapter(Adapter adapter) {
@@ -35,5 +38,11 @@ public class FakeAdapterView extends FakeView {
 
     public final AdapterView.OnItemClickListener getOnItemClickListener() {
         return onItemClickListener;
+    }
+
+    public void setSelection(int position) {
+        if (onItemSelectedListener != null) {
+            onItemSelectedListener.onItemSelected(realAdapterView, null, position, -1);
+        }
     }
 }
