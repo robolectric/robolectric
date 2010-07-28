@@ -20,6 +20,7 @@ public class FakeView {
     public boolean selected;
     private View.OnClickListener onClickListener;
     private Object tag;
+    private boolean enabled = true;
 
     public FakeView(View view) {
         this.realView = view;
@@ -105,6 +106,14 @@ public class FakeView {
 
     public boolean isSelected() {
         return this.selected;
+    }
+
+    public boolean isEnabled() {
+        return this.enabled;
+    }
+    
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
     }
 
     public void setOnClickListener(View.OnClickListener onClickListener) {

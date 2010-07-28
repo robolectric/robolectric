@@ -15,12 +15,12 @@ public class FakeTextView extends FakeView {
         super(view);
     }
 
-    public final void setText(CharSequence text) {
+    public void setText(CharSequence text) {
         this.textResourceId = -1;
         this.text = text;
     }
 
-    public final void setText(int textResourceId) {
+    public void setText(int textResourceId) {
         this.textResourceId = textResourceId;
         this.text = "text from resource"; // todo: actually fetch strings
     }
