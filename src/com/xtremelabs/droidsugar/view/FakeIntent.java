@@ -26,6 +26,11 @@ public class FakeIntent {
         componentClass = cls;
     }
 
+    public void __constructor__(String action, Uri uri) {
+        this.action = action;
+        data = uri;
+    }
+
     public Intent setAction(String action) {
         this.action = action;
         return realIntent;
@@ -89,5 +94,18 @@ public class FakeIntent {
 
     public byte[] getByteArrayExtra(String name) {
         return (byte[]) extras.get(name);
+    }
+
+    public boolean realIntentEquals(FakeIntent o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        if (action != null ? !action.equals(o.action) : o.action != null) return false;
+        if (componentClass != null ? !componentClass.equals(o.componentClass) : o.componentClass != null)
+            return false;
+        if (data != null ? !data.equals(o.data) : o.data != null) return false;
+        if (extras != null ? !extras.equals(o.extras) : o.extras != null) return false;
+
+        return true;
     }
 }
