@@ -67,5 +67,15 @@ public class FakeIntentTest extends TestCase {
         assertSame(intent, returnedIntent);
     }
 
+    @Test
+    public void testSetClassName() throws Exception {
+        Intent intent = new Intent();
+        Class<? extends FakeIntentTest> thisClass = getClass();
+        intent.setClassName("package.name", thisClass.getName());
+        FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
+        assertSame(thisClass, fakeIntent.componentClass);
+        assertEquals("package.name", fakeIntent.componentPackageName);
+    }
+
     private static class TestSerializable implements Serializable { }
 }
