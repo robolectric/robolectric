@@ -1,13 +1,13 @@
 package com.xtremelabs.droidsugar.view;
 
-import java.io.Serializable;
-import java.util.HashMap;
-
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+
+import java.io.Serializable;
+import java.util.HashMap;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeIntent {
@@ -15,6 +15,7 @@ public class FakeIntent {
     public HashMap extras = new HashMap();
     public String action;
     public Class<?> componentClass;
+    public String componentPackageName;
     public Uri data;
 
     public FakeIntent(Intent realIntent) {
@@ -32,6 +33,16 @@ public class FakeIntent {
 
     public String getAction() {
         return action;
+    }
+
+    public Intent setClassName(String packageName, String className) {
+        this.componentPackageName = packageName;
+        try {
+            componentClass = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        return realIntent;
     }
 
     public Intent setData(Uri data) {
