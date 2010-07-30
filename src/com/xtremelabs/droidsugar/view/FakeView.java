@@ -21,6 +21,12 @@ public class FakeView {
     private View.OnClickListener onClickListener;
     private Object tag;
     private boolean enabled = true;
+    public int height;
+    public int width;
+    public int paddingLeft;
+    public int paddingTop;
+    public int paddingRight;
+    public int paddingBottom;
 
     public FakeView(View view) {
         this.realView = view;
@@ -135,5 +141,36 @@ public class FakeView {
 
     public void setTag(Object tag) {
         this.tag = tag;
+    }
+
+    public final int getHeight() {
+        return height;
+    }
+
+    public final int getWidth() {
+        return width;
+    }
+
+    public void setPadding(int left, int top, int right, int bottom) {
+        paddingLeft = left;
+        paddingTop = top;
+        paddingRight = right;
+        paddingBottom = bottom;
+    }
+
+    public int getPaddingTop() {
+        return paddingTop;
+    }
+
+    public int getPaddingLeft() {
+        return paddingLeft;
+    }
+
+    public int getPaddingRight() {
+        return paddingRight;
+    }
+
+    public int getPaddingBottom() {
+        return paddingBottom;
     }
 }
