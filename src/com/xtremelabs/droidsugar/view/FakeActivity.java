@@ -17,6 +17,11 @@ public class FakeActivity extends FakeContextWrapper {
     public Intent resultIntent;
     public Activity parent;
     public static Application application;
+    private Activity realActivity;
+
+    public FakeActivity(Activity realActivity) {
+        this.realActivity = realActivity;
+    }
 
     public final Application getApplication() {
         return application;
@@ -31,7 +36,7 @@ public class FakeActivity extends FakeContextWrapper {
     }
 
     public void setContentView(int layoutResID) {
-        contentView = viewLoader.inflateView(null, layoutResID);
+        contentView = viewLoader.inflateView(realActivity, layoutResID);
     }
 
     public void setContentView(View view) {

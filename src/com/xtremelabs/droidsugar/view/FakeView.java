@@ -10,17 +10,19 @@ import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeView {
+    public static final int UNINITIALIZED_ATTRIBUTE = -1000;
+
     private View realView;
 
     private int id;
     private List<View> children = new ArrayList<View>();
     private FakeView parent;
     private Context context;
-    private int visibility;
     public boolean selected;
     private View.OnClickListener onClickListener;
     private Object tag;
     private boolean enabled = true;
+    public int visibility = UNINITIALIZED_ATTRIBUTE;
     public int height;
     public int width;
     public int paddingLeft;

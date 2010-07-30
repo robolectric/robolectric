@@ -9,14 +9,16 @@ public class FakeTextView extends FakeView {
     private CharSequence text;
     Rectangle rectangle;
     public Directions compoundDrawablesWithIntrinsicBounds;
-    public int textResourceId = -1;
+    public int textResourceId = UNINITIALIZED_ATTRIBUTE;
+    public int textColorResourceId = UNINITIALIZED_ATTRIBUTE;
+    public int textSize = UNINITIALIZED_ATTRIBUTE;
 
     public FakeTextView(TextView view) {
         super(view);
     }
 
     public void setText(CharSequence text) {
-        this.textResourceId = -1;
+        this.textResourceId = UNINITIALIZED_ATTRIBUTE;
         this.text = text;
     }
 
@@ -27,6 +29,14 @@ public class FakeTextView extends FakeView {
 
     public CharSequence getText() {
         return text;
+    }
+
+    public void setTextColor(int color) {
+        textColorResourceId = color;
+    }
+
+    public void setTextSize(float size) {
+        textSize = (int) size;
     }
 
     public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
