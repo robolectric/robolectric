@@ -6,6 +6,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
 
@@ -63,6 +66,7 @@ public class FakeIntent {
     }
 
     public void putExtra(String key, Serializable value) {
+        verifySerializable(value);
         extras.put(key, value);
     }
 
@@ -74,12 +78,30 @@ public class FakeIntent {
         extras.put(key, value);
     }
 
-    public Parcelable getParcelableExtra(String name) {
-        return (Parcelable) extras.get(name);
+    public boolean hasExtra(String name) {
+        return extras.containsKey(name);
     }
 
     public int getIntExtra(String name, int defaultValue) {
         Integer foundValue = (Integer) extras.get(name);
         return foundValue == null ? defaultValue : foundValue;
+    }
+
+    public Serializable getSerializableExtra(String name) {
+        return (Serializable) extras.get(name);
+    }
+
+    public Parcelable getParcelableExtra(String name) {
+        return (Parcelable) extras.get(name);
+    }
+
+    private void verifySerializable (Serializable serializable) {
+        try {
+            ObjectOutputStream output = new ObjectOutputStream(new ByteArrayOutputStream());
+            output.writeObject(serializable);
+            output.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

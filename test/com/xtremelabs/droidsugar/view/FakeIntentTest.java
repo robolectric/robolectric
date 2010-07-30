@@ -2,6 +2,8 @@ package com.xtremelabs.droidsugar.view;
 
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Parcel;
+import android.os.Parcelable;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import junit.framework.TestCase;
 import org.junit.Before;
@@ -31,7 +33,9 @@ public class FakeIntentTest extends TestCase {
     public void testIntExtra() throws Exception {
         Intent intent = new Intent();
         intent.putExtra("foo", 2);
-        assertEquals(2, ((FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent)).extras.get("foo"));
+        FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
+        assertEquals(2, fakeIntent.extras.get("foo"));
+        assertEquals(2, fakeIntent.getIntExtra("foo", -1));
     }
 
     @Test
@@ -39,7 +43,19 @@ public class FakeIntentTest extends TestCase {
         Intent intent = new Intent();
         TestSerializable serializable = new TestSerializable();
         intent.putExtra("foo", serializable);
-        assertSame(serializable, ((FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent)).extras.get("foo"));
+        FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
+        assertSame(serializable, fakeIntent.extras.get("foo"));
+        assertSame(serializable, fakeIntent.getSerializableExtra("foo"));
+    }
+
+    @Test
+    public void testParcelableExtra() throws Exception {
+        Intent intent = new Intent();
+        Parcelable parcelable = new TestParcelable();
+        intent.putExtra("foo", parcelable);
+        FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
+        assertSame(parcelable, fakeIntent.extras.get("foo"));
+        assertSame(parcelable, fakeIntent.getParcelableExtra("foo"));
     }
 
     @Test
@@ -47,6 +63,14 @@ public class FakeIntentTest extends TestCase {
         Intent intent = new Intent();
         intent.putExtra("foo", 2L);
         assertEquals(2L, ((FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent)).extras.get("foo"));
+    }
+
+    @Test
+    public void testHasExtra() throws Exception {
+        Intent intent = new Intent();
+        intent.putExtra("foo", "");
+        assertTrue(intent.hasExtra("foo"));
+        assertFalse(intent.hasExtra("bar"));
     }
 
     @Test
@@ -78,4 +102,15 @@ public class FakeIntentTest extends TestCase {
     }
 
     private static class TestSerializable implements Serializable { }
+
+    private class TestParcelable implements Parcelable {
+        @Override
+        public int describeContents() {
+            return 0;
+        }
+
+        @Override
+        public void writeToParcel(Parcel dest, int flags) {
+        }
+    }
 }
