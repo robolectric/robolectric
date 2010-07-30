@@ -1,14 +1,14 @@
 package com.xtremelabs.droidsugar.view;
 
-import android.view.ViewGroup;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
+import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
+import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.mockito.Mockito.mock;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeMapView extends FakeViewGroup {
@@ -19,10 +19,10 @@ public class FakeMapView extends FakeViewGroup {
     public int longitudeSpan = 20;
     public int latitudeSpan = 30;
     public int zoomLevel = 1;
+    public FakeMapController fakeMapController;
 
-    public FakeMapView(ViewGroup viewGroup) {
-        super(viewGroup);
-        mapController = mock(MapController.class);
+    public FakeMapView(MapView mapView) {
+        super(mapView);
     }
 
     public void setSatellite(boolean satelliteOn) {
@@ -34,6 +34,16 @@ public class FakeMapView extends FakeViewGroup {
     }
 
     public MapController getController() {
+        if(mapController == null) {
+            try {
+                Constructor<MapController> constructor = MapController.class.getConstructor();
+                constructor.setAccessible(true);
+                mapController = constructor.newInstance();
+                fakeMapController = ((FakeMapController) ProxyDelegatingHandler.getInstance().proxyFor(mapController));
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
         return mapController;
     }
 
