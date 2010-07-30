@@ -3,6 +3,7 @@ package com.xtremelabs.droidsugar.view;
 import android.content.Context;
 import android.content.res.Resources;
 import android.view.View;
+import android.view.ViewGroup;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class FakeView {
     public int paddingTop;
     public int paddingRight;
     public int paddingBottom;
+    public ViewGroup.LayoutParams layoutParams;
 
     public FakeView(View view) {
         this.realView = view;
@@ -77,6 +79,10 @@ public class FakeView {
 
     public int getChildCount() {
         return children.size();
+    }
+
+    public ViewGroup.LayoutParams getLayoutParams() {
+        return layoutParams;
     }
 
     public View getChildAt(int index) {
