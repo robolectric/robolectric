@@ -146,7 +146,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
         }
     }
 
-    private Class<?> loadClass(String paramType, ClassLoader classLoader) {
+    static Class<?> loadClass(String paramType, ClassLoader classLoader) {
         Class primitiveClass = Type.findPrimitiveClass(paramType);
         if (primitiveClass != null) return primitiveClass;
 
@@ -156,11 +156,13 @@ public class ProxyDelegatingHandler implements ClassHandler {
             paramType = paramType.substring(0, paramType.length() - 2);
         }
 
-        Class<?> clazz;
-        try {
-            clazz = classLoader.loadClass(paramType);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        Class<?> clazz = Type.findPrimitiveClass(paramType);
+        if (clazz == null) {
+            try {
+                clazz = classLoader.loadClass(paramType);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         while (arrayLevel-- > 0) {
@@ -249,6 +251,9 @@ public class ProxyDelegatingHandler implements ClassHandler {
     }
 
     public Object proxyFor(Object instance) {
+        if (instance == null) {
+            throw new RuntimeException("no instance for which to get a proxy");
+        }
         Field field = getProxyField(instance);
         return getField(instance, field);
     }

@@ -7,7 +7,9 @@ import android.view.ViewGroup;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeView {
@@ -31,6 +33,7 @@ public class FakeView {
     public int paddingRight;
     public int paddingBottom;
     public ViewGroup.LayoutParams layoutParams;
+    private Map<Integer, Object> tags = new HashMap<Integer, Object>();
 
     public FakeView(View view) {
         this.realView = view;
@@ -180,5 +183,13 @@ public class FakeView {
 
     public int getPaddingBottom() {
         return paddingBottom;
+    }
+
+    public Object getTag(int key) {
+        return tags.get(key);
+    }
+
+    public void setTag(int key, Object value) {
+        tags.put(key, value);
     }
 }
