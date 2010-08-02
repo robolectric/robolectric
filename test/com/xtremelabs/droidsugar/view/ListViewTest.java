@@ -10,13 +10,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
-public class AdapterViewTest {
+public class ListViewTest {
     private Transcript transcript;
     private ListView listView;
 
     @Before
     public void setUp() throws Exception {
         DroidSugarAndroidTestRunner.addProxy(AdapterView.class, FakeAdapterView.class);
+        DroidSugarAndroidTestRunner.addProxy(ListView.class, FakeListView.class);
 
         transcript = new Transcript();
         listView = new ListView(null);
@@ -38,6 +39,19 @@ public class AdapterViewTest {
 
         listView.setSelection(0);
         transcript.assertEventsSoFar("item was selected: 0");
+    }
+
+    @Test
+    public void testPerformItemClick_ShouldFireOnItemClickListener() throws Exception {
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                transcript.add("item was clicked: " + position);
+            }
+        });
+
+        listView.performItemClick(null, 0, -1);
+        transcript.assertEventsSoFar("item was clicked: 0");
     }
 
     @Test
