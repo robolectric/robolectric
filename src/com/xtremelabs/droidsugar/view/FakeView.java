@@ -32,7 +32,7 @@ public class FakeView {
     public int paddingTop;
     public int paddingRight;
     public int paddingBottom;
-    public ViewGroup.LayoutParams layoutParams;
+    public ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(0, 0);
     private Map<Integer, Object> tags = new HashMap<Integer, Object>();
 
     public FakeView(View view) {
