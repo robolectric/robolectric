@@ -132,7 +132,7 @@ public class FakeIntent {
         return true;
     }
 
-    private void verifySerializable (Serializable serializable) {
+    private void verifySerializable(Serializable serializable) {
         try {
             ObjectOutputStream output = new ObjectOutputStream(new ByteArrayOutputStream());
             output.writeObject(serializable);
