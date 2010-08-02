@@ -5,11 +5,13 @@ import com.google.android.maps.GeoPoint;
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeMapController {
 
+    public FakeMapView fakeMapView;
     public GeoPoint geoPointAnimatedTo;
     public int zoomedLatSpan;
     public int zoomedLngSpan;
 
     public void animateTo(com.google.android.maps.GeoPoint geoPoint, java.lang.Runnable runnable) {
+        fakeMapView.mapCenter = geoPoint;
         geoPointAnimatedTo = geoPoint;
         runnable.run();
     }

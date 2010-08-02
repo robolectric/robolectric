@@ -1,19 +1,26 @@
 package com.xtremelabs.droidsugar;
 
-import android.accounts.*;
-import android.content.*;
+import android.accounts.AccountManager;
+import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.util.*;
+import android.test.ClassWithNoDefaultConstructor;
+import android.util.Log;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 import com.xtremelabs.droidsugar.view.FakeItemizedOverlay;
-import org.junit.*;
-import org.junit.runner.*;
+import org.hamcrest.CoreMatchers;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.lang.reflect.Constructor;
 
 import static com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner.proxyFor;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class AndroidTranslatorTest {
@@ -41,6 +48,17 @@ public class AndroidTranslatorTest {
     @Test
     public void testPrintlnWorks() throws Exception {
         Log.println(1, "tag", "msg");
+    }
+
+    @Test
+    public void testGeneratedDefaultConstructorIsWired() throws Exception {
+        DroidSugarAndroidTestRunner.addProxy(ClassWithNoDefaultConstructor.class, FakeClassWithNoDefaultConstructors.class);
+
+        Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
+        ctor.setAccessible(true);
+        ClassWithNoDefaultConstructor instance = ctor.newInstance();
+        assertThat(proxyFor(instance), not(CoreMatchers.<Object>nullValue()));
+        assertThat(proxyFor(instance), instanceOf(FakeClassWithNoDefaultConstructors.class));
     }
 
     public static class FakeItemizedOverlayForTests extends ItemizedOverlay {
@@ -72,5 +90,8 @@ public class AndroidTranslatorTest {
             FakeAccountManagerForTests.context = context;
             return mock(AccountManager.class);
         }
+    }
+
+    public static class FakeClassWithNoDefaultConstructors {
     }
 }

@@ -40,6 +40,7 @@ public class FakeMapView extends FakeViewGroup {
                 constructor.setAccessible(true);
                 mapController = constructor.newInstance();
                 fakeMapController = ((FakeMapController) ProxyDelegatingHandler.getInstance().proxyFor(mapController));
+                fakeMapController.fakeMapView = this;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

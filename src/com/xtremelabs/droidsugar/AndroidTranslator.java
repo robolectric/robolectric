@@ -1,6 +1,16 @@
 package com.xtremelabs.droidsugar;
 
-import javassist.*;
+import javassist.CannotCompileException;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtConstructor;
+import javassist.CtField;
+import javassist.CtMethod;
+import javassist.CtNewConstructor;
+import javassist.CtNewMethod;
+import javassist.Modifier;
+import javassist.NotFoundException;
+import javassist.Translator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -52,14 +62,9 @@ public class AndroidTranslator implements Translator {
 
     private void fixConstructors(CtClass ctClass) throws CannotCompileException, NotFoundException {
         boolean needsDefault = true;
-        for (CtConstructor ctConstructor : ctClass.getConstructors()) {
 
-            String methodBody = generateMethodBody(ctClass,
-                    new CtMethod(CtClass.voidType, "<init>", ctConstructor.getParameterTypes(), ctClass),
-                    CtClass.voidType,
-                    Type.VOID,
-                    true,
-                    false);
+        for (CtConstructor ctConstructor : ctClass.getConstructors()) {
+            String methodBody = generateConstructorBody(ctClass, ctConstructor.getParameterTypes());
 
             ctConstructor.setBody("{\n" + methodBody + "\n}");
             if (ctConstructor.getParameterTypes().length == 0) {
@@ -68,8 +73,18 @@ public class AndroidTranslator implements Translator {
         }
 
         if (needsDefault) {
-            ctClass.addConstructor(CtNewConstructor.skeleton(new CtClass[0], new CtClass[0], ctClass));
+            String methodBody = generateConstructorBody(ctClass, new CtClass[0]);
+            ctClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], methodBody, ctClass));
         }
+    }
+
+    private String generateConstructorBody(CtClass ctClass, CtClass[] parameterTypes) throws NotFoundException {
+        return generateMethodBody(ctClass,
+                new CtMethod(CtClass.voidType, "<init>", parameterTypes, ctClass),
+                CtClass.voidType,
+                Type.VOID,
+                true,
+                false);
     }
 
     private void fixMethods(CtClass ctClass) throws NotFoundException, CannotCompileException {

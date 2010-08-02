@@ -6,7 +6,7 @@ import com.google.android.maps.OverlayItem;
 public class FakeItemizedOverlay {
     public boolean populated;
     public boolean shouldHit;
-
+    
     protected final void populate() {
         populated = true;
     }
