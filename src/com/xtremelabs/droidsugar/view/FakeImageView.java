@@ -9,6 +9,7 @@ public class FakeImageView extends FakeView {
     private Bitmap imageBitmap;
     public Drawable imageDrawable;
     public int alpha;
+    private ImageView.ScaleType scaleType;
 
     public FakeImageView(ImageView view) {
         super(view);
@@ -28,5 +29,13 @@ public class FakeImageView extends FakeView {
 
     public void setAlpha(int alpha) {
         this.alpha = alpha;
+    }
+
+    public ImageView.ScaleType getScaleType() {
+        return scaleType;
+    }
+
+    public void setScaleType(ImageView.ScaleType scaleType) {
+        this.scaleType = scaleType;
     }
 }
