@@ -51,6 +51,14 @@ public class FakeView {
         return id;
     }
 
+    public static View inflate(Context context, int resource, ViewGroup root) {
+        View view = FakeContextWrapper.viewLoader.inflateView(context, resource);
+        if (root != null) {
+            root.addView(view);
+        }
+        return view;
+    }
+
     public View findViewById(int id) {
         if (id == this.id) {
             return realView;
