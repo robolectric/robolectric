@@ -1,59 +1,82 @@
 package com.xtremelabs.droidsugar.view;
 
+import org.junit.Before;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.*;
 
 public class SchedulerTest {
     private Transcript transcript;
+    private Scheduler scheduler;
+
+    @Before
+    public void setUp() throws Exception {
+        scheduler = new Scheduler();
+        transcript = new Transcript();
+    }
+
+    @Test
+    public void testTick_ReturnsTrueIffSomeJobWasRun() throws Exception {
+        scheduler.postDelayed(new AddToTranscript("one"), 0);
+        scheduler.postDelayed(new AddToTranscript("two"), 0);
+        scheduler.postDelayed(new AddToTranscript("three"), 1000);
+
+        assertThat(scheduler.tick(0), equalTo(true));
+        transcript.assertEventsSoFar("one", "two");
+        
+        assertThat(scheduler.tick(0), equalTo(false));
+        transcript.assertNoEventsSoFar();
+
+        assertThat(scheduler.tick(1000), equalTo(true));
+        transcript.assertEventsSoFar("three");
+    }
 
     @Test
     public void testFakePostDelayed() throws Exception {
-        transcript = new Transcript();
-        Scheduler Scheduler = new Scheduler();
-        Scheduler.postDelayed(new AddToTranscript("one"), 1000);
-        Scheduler.postDelayed(new AddToTranscript("two"), 2000);
-        Scheduler.postDelayed(new AddToTranscript("three"), 3000);
+        scheduler.postDelayed(new AddToTranscript("one"), 1000);
+        scheduler.postDelayed(new AddToTranscript("two"), 2000);
+        scheduler.postDelayed(new AddToTranscript("three"), 3000);
 
-        Scheduler.tick(1000);
+        scheduler.tick(1000);
         transcript.assertEventsSoFar("one");
 
-        Scheduler.tick(500);
+        scheduler.tick(500);
         transcript.assertNoEventsSoFar();
 
-        Scheduler.tick(501);
+        scheduler.tick(501);
         transcript.assertEventsSoFar("two");
 
-        Scheduler.tick(999);
+        scheduler.tick(999);
         transcript.assertEventsSoFar("three");
     }
 
     @Test
     public void testFakePostDelayed_WhenMoreItemsAreAdded() throws Exception {
-        transcript = new Transcript();
-        final Scheduler Scheduler = new Scheduler();
-        Scheduler.postDelayed(new Runnable() {
+        scheduler.postDelayed(new Runnable() {
             @Override
             public void run() {
                 transcript.add("one");
-                Scheduler.postDelayed(new Runnable() {
+                scheduler.postDelayed(new Runnable() {
                     @Override
                     public void run() {
                         transcript.add("two");
-                        Scheduler.postDelayed(new AddToTranscript("three"), 1000);
+                        scheduler.postDelayed(new AddToTranscript("three"), 1000);
                     }
                 }, 1000);
             }
         }, 1000);
 
-        Scheduler.tick(1000);
+        scheduler.tick(1000);
         transcript.assertEventsSoFar("one");
 
-        Scheduler.tick(500);
+        scheduler.tick(500);
         transcript.assertNoEventsSoFar();
 
-        Scheduler.tick(501);
+        scheduler.tick(501);
         transcript.assertEventsSoFar("two");
 
-        Scheduler.tick(999);
+        scheduler.tick(999);
         transcript.assertEventsSoFar("three");
     }
 

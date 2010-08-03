@@ -16,7 +16,9 @@ public class Scheduler {
         postedRunnables.add(new PostedRunnable(runnable, currentTime));
     }
 
-    public void tick(long intervalMs) {
+    public boolean tick(long intervalMs) {
+        boolean anyRan = false;
+
         Collections.sort(postedRunnables);
 
         long endingTime = currentTime + intervalMs;
@@ -30,9 +32,12 @@ public class Scheduler {
 
             PostedRunnable postedRunnable = postedRunnables.remove(0);
             postedRunnable.run();
+            anyRan = true;
         }
 
         currentTime += intervalMs;
+
+        return anyRan;
     }
 
     public int enqueuedTaskCount() {
