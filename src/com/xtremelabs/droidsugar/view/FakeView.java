@@ -90,6 +90,10 @@ public class FakeView {
         return layoutParams;
     }
 
+    public void setLayoutParams(ViewGroup.LayoutParams params) {
+        layoutParams = params;
+    }
+
     public View getChildAt(int index) {
         return children.get(index);
     }
