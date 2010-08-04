@@ -9,7 +9,7 @@ import java.util.List;
 
 @SuppressWarnings({"ALL"})
 public class FakeTextView extends FakeView {
-    private CharSequence text;
+    private CharSequence text = "";
     public CompoundDrawables compoundDrawablesWithIntrinsicBounds;
     public int textResourceId = UNINITIALIZED_ATTRIBUTE;
     public int textColorResourceId = UNINITIALIZED_ATTRIBUTE;
