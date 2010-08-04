@@ -34,6 +34,8 @@ public class FakeView {
     public int paddingBottom;
     public ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(0, 0);
     private Map<Integer, Object> tags = new HashMap<Integer, Object>();
+    public boolean clickable;
+    public boolean focusable;
 
     public FakeView(View view) {
         this.realView = view;
@@ -45,6 +47,14 @@ public class FakeView {
 
     public void setId(int id) {
         this.id = id;
+    }
+
+    public void setClickable(boolean clickable) {
+        this.clickable = clickable;
+    }
+
+    public void setFocusable(boolean focusable) {
+        this.focusable = focusable;
     }
 
     public int getId() {
