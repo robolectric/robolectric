@@ -19,4 +19,9 @@ public final class R {
         public static final int inner_text = nextId++;
         public static final int map_view = nextId++;
     }
+
+    public static final class string {
+        public static final int howdy = nextId++;
+        public static final int hello = nextId++;
+    }
 }

@@ -1,18 +1,24 @@
 package com.xtremelabs.droidsugar.view;
 
-import android.app.*;
-import android.view.*;
-import android.widget.*;
-import com.xtremelabs.droidsugar.*;
+import android.app.Activity;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageView;
+import android.widget.TextView;
+import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
+import com.xtremelabs.droidsugar.R;
 
-import java.io.*;
+import java.io.File;
 
 public class ViewAssist {
     public static final ViewLoader VIEW_LOADER;
 
     static {
         try {
-            VIEW_LOADER = new ViewLoader(R.class, new File("res/layout"));
+            ResourceExtractor resourceExtractor = new ResourceExtractor();
+            resourceExtractor.addRClass(R.class);
+            VIEW_LOADER = new ViewLoader(resourceExtractor);
+            VIEW_LOADER.loadDirs(new File("res/layout"));
             FakeActivity.viewLoader = VIEW_LOADER;
         } catch (Exception e) {
             throw new RuntimeException(e);

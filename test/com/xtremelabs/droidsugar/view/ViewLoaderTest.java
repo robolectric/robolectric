@@ -17,7 +17,7 @@ import org.junit.runner.RunWith;
 import java.io.File;
 
 import static android.test.MoreAsserts.assertNotEqual;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class ViewLoaderTest {
@@ -29,7 +29,10 @@ public class ViewLoaderTest {
         DroidSugarAndroidTestRunner.addProxy(View.class, FakeView.class);
         DroidSugarAndroidTestRunner.addProxy(ViewGroup.class, FakeViewGroup.class);
 
-        viewLoader = new ViewLoader(R.class, new File("test/res/layout"));
+        ResourceExtractor resourceExtractor = new ResourceExtractor();
+        resourceExtractor.addRClass(R.class);
+        viewLoader = new ViewLoader(resourceExtractor);
+        viewLoader.loadDirs(new File("test/res/layout"));
 
         context = new MockContext();
     }
