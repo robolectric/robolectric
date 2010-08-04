@@ -2,6 +2,7 @@ package com.xtremelabs.droidsugar.view;
 
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
+import android.view.KeyEvent;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -64,6 +65,14 @@ public class FakeTextView extends FakeView {
         compoundDrawablesWithIntrinsicBounds = new CompoundDrawables(left, top , right, bottom);
     }
 
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (onKeyListener != null) {
+            return onKeyListener.onKey(realView, keyCode, event);
+        } else {
+            return false;
+        }
+    }
+    
     public static class CompoundDrawables {
         public int left;
         public int top;

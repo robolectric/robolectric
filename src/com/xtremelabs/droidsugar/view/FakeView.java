@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 
 import java.util.ArrayList;
@@ -16,7 +17,7 @@ import java.util.Map;
 public class FakeView {
     public static final int UNINITIALIZED_ATTRIBUTE = -1000;
 
-    private View realView;
+    protected View realView;
 
     private int id;
     private List<View> children = new ArrayList<View>();
@@ -37,6 +38,9 @@ public class FakeView {
     private Map<Integer, Object> tags = new HashMap<Integer, Object>();
     public boolean clickable;
     public boolean focusable;
+    protected View.OnKeyListener onKeyListener;
+    public boolean hasFocus;
+    private View.OnFocusChangeListener onFocusChangeListener;
 
     public FakeView(View view) {
         this.realView = view;
@@ -121,6 +125,10 @@ public class FakeView {
         return children.get(index);
     }
 
+    public final ViewParent getParent() {
+        return (ViewParent) parent.realView;
+    }
+
     public void removeAllViews() {
         for (View child : children) {
             childProxy(child).parent = null;
@@ -173,6 +181,10 @@ public class FakeView {
         }
     }
 
+    public void setOnKeyListener(View.OnKeyListener onKeyListener) {
+        this.onKeyListener = onKeyListener;
+    }
+
     public Object getTag() {
         return this.tag;
     }
@@ -218,5 +230,20 @@ public class FakeView {
 
     public void setTag(int key, Object value) {
         tags.put(key, value);
+    }
+
+    public void setViewFocus(boolean hasFocus) {
+        this.hasFocus = hasFocus;
+        if (onFocusChangeListener != null) {
+            onFocusChangeListener.onFocusChange(realView, hasFocus);
+        }
+    }
+
+    public boolean hasFocus() {
+        return hasFocus;
+    }
+
+    public void setOnFocusChangeListener(View.OnFocusChangeListener listener) {
+        onFocusChangeListener = listener;
     }
 }
