@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.view;
 
 import android.text.style.URLSpan;
+import android.text.util.Linkify;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -13,6 +14,8 @@ public class FakeTextView extends FakeView {
     public int textResourceId = UNINITIALIZED_ATTRIBUTE;
     public int textColorResourceId = UNINITIALIZED_ATTRIBUTE;
     public int textSize = UNINITIALIZED_ATTRIBUTE;
+    public boolean autoLinkPhoneNumbers;
+    private int autoLinkMask;
 
     public FakeTextView(TextView view) {
         super(view);
@@ -49,6 +52,12 @@ public class FakeTextView extends FakeView {
             }
         }
         return urlSpans.toArray(new URLSpan[urlSpans.size()]);
+    }
+
+    public final void setAutoLinkMask(int mask) {
+        autoLinkMask = mask;
+
+        autoLinkPhoneNumbers = (mask & Linkify.PHONE_NUMBERS) != 0;
     }
 
     public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
