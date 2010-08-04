@@ -36,7 +36,7 @@ public class FakeActivity extends FakeContextWrapper {
     }
 
     public void setContentView(int layoutResID) {
-        contentView = viewLoader.inflateView(realActivity, layoutResID);
+        contentView = resourceLoader.viewLoader.inflateView(realActivity, layoutResID);
     }
 
     public void setContentView(View view) {
@@ -53,7 +53,7 @@ public class FakeActivity extends FakeContextWrapper {
     }
 
     public LayoutInflater getLayoutInflater() {
-        return new FakeLayoutInflater(viewLoader);
+        return new FakeLayoutInflater(resourceLoader.viewLoader);
     }
 
     public View findViewById(int id) {

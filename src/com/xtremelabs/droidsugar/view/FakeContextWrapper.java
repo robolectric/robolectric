@@ -20,8 +20,7 @@ import static org.mockito.Mockito.mock;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeContextWrapper {
-    public static ViewLoader viewLoader;
-    public static StringResourceLoader stringResourceLoader;
+    public static ResourceLoader resourceLoader;
 
     protected static Context contextForInflation = new ContextWrapper(null);
     public List<Intent> startedServices = new ArrayList<Intent>();
@@ -54,7 +53,7 @@ public class FakeContextWrapper {
     }
 
     public FakeLayoutInflater getFakeLayoutInflater() {
-        return new FakeLayoutInflater(viewLoader);
+        return new FakeLayoutInflater(resourceLoader.viewLoader);
     }
 
     public ComponentName startService(Intent service) {

@@ -71,7 +71,7 @@ public class FakeView {
     }
 
     public static View inflate(Context context, int resource, ViewGroup root) {
-        View view = FakeContextWrapper.viewLoader.inflateView(context, resource);
+        View view = FakeContextWrapper.resourceLoader.viewLoader.inflateView(context, resource);
         if (root != null) {
             root.addView(view);
         }
