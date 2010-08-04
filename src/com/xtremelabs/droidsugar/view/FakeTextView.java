@@ -1,16 +1,14 @@
 package com.xtremelabs.droidsugar.view;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.text.style.URLSpan;
 import android.widget.TextView;
 
-import java.awt.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings({"ALL"})
 public class FakeTextView extends FakeView {
-    private CharSequence text;
+    private CharSequence text = "";
     public Directions compoundDrawablesWithIntrinsicBounds;
     public int textResourceId = UNINITIALIZED_ATTRIBUTE;
     public int textColorResourceId = UNINITIALIZED_ATTRIBUTE;
