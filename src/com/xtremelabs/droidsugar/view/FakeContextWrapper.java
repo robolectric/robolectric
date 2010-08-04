@@ -20,8 +20,9 @@ import static org.mockito.Mockito.mock;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class FakeContextWrapper {
-    static public ViewLoader viewLoader;
-    
+    public static ViewLoader viewLoader;
+    public static StringResourceLoader stringResourceLoader;
+
     protected static Context contextForInflation = new ContextWrapper(null);
     public List<Intent> startedServices = new ArrayList<Intent>();
     private LocationManager locationManager;

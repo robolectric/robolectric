@@ -2,6 +2,7 @@ package com.xtremelabs.droidsugar.view;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
@@ -43,6 +44,10 @@ public class FakeView {
 
     public void __constructor__(Context context) {
         this.context = context;
+    }
+
+    public void __constructor__(Context context, AttributeSet attrs) {
+        __constructor__(context);
     }
 
     public void setId(int id) {

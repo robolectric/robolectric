@@ -25,7 +25,7 @@ public class FakeTextView extends FakeView {
 
     public void setText(int textResourceId) {
         this.textResourceId = textResourceId;
-        this.text = "text from resource"; // todo: actually fetch strings
+        this.text = getResources().getText(textResourceId);
     }
 
     public CharSequence getText() {

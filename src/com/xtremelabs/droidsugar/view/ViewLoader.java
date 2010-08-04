@@ -9,59 +9,22 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class ViewLoader {
-    public static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
-
-    private DocumentBuilderFactory documentBuilderFactory;
+public class ViewLoader extends XmlLoader {
     private Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
-    private Map<String, Integer> resourceStringToId = new HashMap<String, Integer>();
-    private Map<Integer, String> resourceIdToString = new HashMap<Integer, String>();
 
-    public ViewLoader(Class rClass, File... layoutDirs) throws Exception {
-        documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setNamespaceAware(true);
-        documentBuilderFactory.setIgnoringComments(true);
-        documentBuilderFactory.setIgnoringElementContentWhitespace(true);
-
-        addRClass(rClass);
-        for (File layoutDir : layoutDirs) {
-            addXmlDir(layoutDir);
-        }
+    public ViewLoader(ResourceExtractor resourceExtractor) {
+        super(resourceExtractor);
     }
 
-    private void addXmlDir(File layoutDir) throws Exception {
-        for (File file1 : layoutDir.listFiles()) {
-            processXml(file1);
-        }
-    }
-
-    private void addRClass(Class rClass) throws Exception {
-        for (Class innerClass : rClass.getClasses()) {
-            for (Field field : innerClass.getDeclaredFields()) {
-                if (field.getType().equals(Integer.TYPE) && Modifier.isStatic(field.getModifiers())) {
-                    String name = innerClass.getSimpleName() + "/" + field.getName();
-                    int value = field.getInt(null);
-                    resourceStringToId.put(name, value);
-                    resourceIdToString.put(value, name);
-                }
-            }
-        }
-    }
-
-    private void processXml(File xmlFile) throws Exception {
-        Document document = parse(xmlFile);
-
+    @Override
+    protected void processResourceXml(File xmlFile, Document document) throws Exception {
         ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>());
         processChildren(document.getChildNodes(), topLevelNode);
         viewNodesByLayoutName.put(
@@ -96,7 +59,7 @@ public class ViewLoader {
             if (idAttr != null && idAttr.startsWith("@+id/")) {
                 idAttr = idAttr.substring(5);
 
-                Integer id = resourceStringToId.get("id/" + idAttr);
+                Integer id = resourceExtractor.getResourceStringToId().get("id/" + idAttr);
                 if (id == null) {
                     throw new RuntimeException("unknown id " + getIdAttr(node));
                 }
@@ -105,12 +68,6 @@ public class ViewLoader {
 
             processChildren(node.getChildNodes(), viewNode);
         }
-    }
-
-    private String getIdAttr(Node node) {
-        NamedNodeMap attributes = node.getAttributes();
-        Node idAttr = attributes.getNamedItemNS(ANDROID_NS, "id");
-        return idAttr != null ? idAttr.getNodeValue() : null;
     }
 
     public View inflateView(Context context, String key) {
@@ -126,12 +83,7 @@ public class ViewLoader {
     }
 
     public View inflateView(Context context, int resourceId) {
-        return inflateView(context, resourceIdToString.get(resourceId));
-    }
-
-    private Document parse(File xmlFile) throws Exception {
-        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        return documentBuilder.parse(xmlFile);
+        return inflateView(context, resourceExtractor.getResourceName(resourceId));
     }
 
     private class ViewNode {
