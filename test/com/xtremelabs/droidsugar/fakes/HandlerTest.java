@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.droidsugar.fakes.FakeHelper.newInstanceOf;
+import static com.xtremelabs.droidsugar.util.FakeHelper.newInstanceOf;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class HandlerTest {

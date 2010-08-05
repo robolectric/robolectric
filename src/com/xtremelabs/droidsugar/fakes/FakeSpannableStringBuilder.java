@@ -1,8 +1,10 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.text.SpannableStringBuilder;
+import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(SpannableStringBuilder.class)
 public class FakeSpannableStringBuilder {
     private final SpannableStringBuilder real;
 

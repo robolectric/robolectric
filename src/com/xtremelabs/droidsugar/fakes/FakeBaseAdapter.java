@@ -1,11 +1,14 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.database.DataSetObserver;
+import android.widget.BaseAdapter;
+import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings({"ALL"})
+@SuppressWarnings({"UnusedDeclaration"})
+@Implements(BaseAdapter.class)
 public class FakeBaseAdapter {
     private final List<DataSetObserver> dataSetObservers = new ArrayList<DataSetObserver>();
 

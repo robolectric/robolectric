@@ -19,6 +19,7 @@ package com.xtremelabs.droidsugar.fakes;
 import android.content.ContentValues;
 import android.util.Log;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -26,6 +27,7 @@ import java.util.Map;
 import java.util.Set;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(ContentValues.class)
 public final class FakeContentValues {
     private HashMap<String, Object> values = new HashMap<String, Object>();
     private static final String TAG = "FakeContentValues";

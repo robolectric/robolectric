@@ -5,8 +5,10 @@ import android.app.Application;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
+import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(Activity.class)
 public class FakeActivity extends FakeContextWrapper {
     private Intent intent;
     public View contentView;

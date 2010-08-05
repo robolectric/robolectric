@@ -1,8 +1,11 @@
 package com.xtremelabs.droidsugar.fakes;
 
+import com.google.android.maps.GeoPoint;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(GeoPoint.class)
 public class FakeGeoPoint {
     public int lat;
     public int lng;

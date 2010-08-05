@@ -2,8 +2,10 @@ package com.xtremelabs.droidsugar.fakes;
 
 import android.widget.Adapter;
 import android.widget.AdapterView;
+import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(AdapterView.class)
 public class FakeAdapterView extends FakeView {
     private AdapterView realAdapterView;
 

@@ -1,8 +1,11 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import com.google.android.maps.GeoPoint;
+import com.google.android.maps.MapController;
+import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(MapController.class)
 public class FakeMapController {
 
     public FakeMapView fakeMapView;

@@ -1,7 +1,10 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.view.ViewGroup;
+import com.xtremelabs.droidsugar.util.Implements;
 
+@SuppressWarnings({"UnusedDeclaration"})
+@Implements(ViewGroup.LayoutParams.class)
 public class FakeLayoutParams {
     private final ViewGroup.LayoutParams realLayoutParams;
 

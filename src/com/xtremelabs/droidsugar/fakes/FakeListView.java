@@ -4,8 +4,10 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(ListView.class)
 public class FakeListView extends FakeAdapterView {
     public boolean itemsCanFocus;
     private ListView realListView;

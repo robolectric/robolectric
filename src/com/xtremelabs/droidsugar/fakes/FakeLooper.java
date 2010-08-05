@@ -1,11 +1,14 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.os.Looper;
+import com.xtremelabs.droidsugar.util.FakeHelper;
+import com.xtremelabs.droidsugar.util.Implements;
 import com.xtremelabs.droidsugar.util.Scheduler;
 
-import static com.xtremelabs.droidsugar.fakes.FakeHelper.newInstanceOf;
+import static com.xtremelabs.droidsugar.util.FakeHelper.newInstanceOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(Looper.class)
 public class FakeLooper {
     private static final ThreadLocal<Looper> sThreadLocal = new ThreadLocal<Looper>() {
         @Override

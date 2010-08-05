@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(View.class)
 public class FakeView {
     public static final int UNINITIALIZED_ATTRIBUTE = -1000;
 

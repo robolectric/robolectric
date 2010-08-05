@@ -4,11 +4,13 @@ import android.text.style.URLSpan;
 import android.text.util.Linkify;
 import android.view.KeyEvent;
 import android.widget.TextView;
+import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@SuppressWarnings({"ALL"})
+@SuppressWarnings({"UnusedDeclaration"})
+@Implements(TextView.class)
 public class FakeTextView extends FakeView {
     private CharSequence text = "";
     public CompoundDrawables compoundDrawablesWithIntrinsicBounds;

@@ -4,15 +4,17 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
+import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.xtremelabs.droidsugar.fakes.FakeHelper.newInstanceOf;
+import static com.xtremelabs.droidsugar.util.FakeHelper.newInstanceOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(SQLiteDatabase.class)
 public class FakeSQLiteDatabase {
 
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {

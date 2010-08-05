@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implements;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
@@ -14,6 +15,7 @@ import java.io.Serializable;
 import java.util.HashMap;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(Intent.class)
 public class FakeIntent {
     private Intent realIntent;
     public HashMap extras = new HashMap();

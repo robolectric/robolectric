@@ -12,6 +12,7 @@ import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.xtremelabs.droidsugar.util.Implements;
 import com.xtremelabs.droidsugar.util.ResourceLoader;
 import com.xtremelabs.droidsugar.util.ViewLoader;
 
@@ -21,6 +22,7 @@ import java.util.List;
 import static org.mockito.Mockito.mock;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(ContextWrapper.class)
 public class FakeContextWrapper {
     public static ResourceLoader resourceLoader;
 

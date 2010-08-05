@@ -1,12 +1,15 @@
 package com.xtremelabs.droidsugar.fakes;
 
+import android.os.Bundle;
 import android.os.Parcelable;
+import com.xtremelabs.droidsugar.util.Implements;
 
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
+@Implements(Bundle.class)
 public class FakeBundle {
     Map<String, Object> map = new HashMap<String, Object>();
 

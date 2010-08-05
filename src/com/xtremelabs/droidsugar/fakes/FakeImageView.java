@@ -3,8 +3,10 @@ package com.xtremelabs.droidsugar.fakes;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
+import com.xtremelabs.droidsugar.util.Implements;
 
-@SuppressWarnings({"ALL"})
+@SuppressWarnings({"UnusedDeclaration"})
+@Implements(ImageView.class)
 public class FakeImageView extends FakeView {
     public Drawable imageDrawable;
     public int alpha;

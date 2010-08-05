@@ -1,5 +1,10 @@
 package com.xtremelabs.droidsugar.fakes;
 
+import android.view.KeyEvent;
+import com.xtremelabs.droidsugar.util.Implements;
+
+@SuppressWarnings({"UnusedDeclaration"})
+@Implements(KeyEvent.class)
 public class FakeKeyEvent {
     private int action;
     private int code;
