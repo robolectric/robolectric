@@ -2,7 +2,7 @@ package com.xtremelabs.droidsugar.matchers;
 
 import android.widget.TextView;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
-import com.xtremelabs.droidsugar.view.FakeTextView;
+import com.xtremelabs.droidsugar.fakes.FakeTextView;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;

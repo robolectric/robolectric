@@ -7,7 +7,7 @@ import android.test.ClassWithNoDefaultConstructor;
 import android.util.Log;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
-import com.xtremelabs.droidsugar.view.FakeItemizedOverlay;
+import com.xtremelabs.droidsugar.fakes.FakeItemizedOverlay;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,7 +19,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
 @RunWith(DroidSugarAndroidTestRunner.class)

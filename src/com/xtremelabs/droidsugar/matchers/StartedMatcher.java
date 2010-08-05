@@ -3,81 +3,58 @@ package com.xtremelabs.droidsugar.matchers;
 import android.app.Activity;
 import android.content.Intent;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
-import com.xtremelabs.droidsugar.view.FakeActivity;
-import com.xtremelabs.droidsugar.view.FakeIntent;
-import org.hamcrest.BaseMatcher;
+import com.xtremelabs.droidsugar.fakes.FakeActivity;
+import com.xtremelabs.droidsugar.fakes.FakeIntent;
 import org.hamcrest.Description;
+import org.junit.internal.matchers.TypeSafeMatcher;
 
-public class StartedMatcher extends BaseMatcher<Activity> {
-    private final boolean matchIntent;
+public class StartedMatcher extends TypeSafeMatcher<Activity> {
     private final Intent expectedIntent;
-    private final Class<? extends Activity> expectedActivityClass;
-    private final String expectedAction;
 
-    private Intent actualStartedIntent;
-    private Class<?> actualStartedActivityClass;
-    private String actualAction;
+    private String message;
 
     public StartedMatcher(Intent expectedIntent) {
-        matchIntent = true;
         this.expectedIntent = expectedIntent;
-        this.expectedActivityClass = null;
-        this.expectedAction = null;
+    }
+
+    public StartedMatcher(String packageName, Class<? extends Activity> expectedActivityClass) {
+        this(createIntent(packageName, expectedActivityClass));
     }
 
     public StartedMatcher(Class<? extends Activity> expectedActivityClass) {
-        this(expectedActivityClass, null);
+        this(createIntent(expectedActivityClass));
     }
 
     public StartedMatcher(Class<? extends Activity> expectedActivityClass, String expectedAction) {
-        matchIntent = false;
-        this.expectedIntent = null;
-        this.expectedActivityClass = expectedActivityClass;
-        this.expectedAction = expectedAction;
+        this(createIntent(expectedActivityClass));
+
+        expectedIntent.setAction(expectedAction);
     }
 
     @Override
-    public boolean matches(Object o) {
-        Intent startedActivityIntent = proxyFor((Activity) o).startActivityIntent;
+    public boolean matchesSafely(Activity actualActivity) {
+        String expected = expectedIntent.toString();
+        message = "to start " + expected + ", but ";
 
-        if (matchIntent) {
-            actualStartedIntent = startedActivityIntent;
+        Intent actualStartedIntent = proxyFor(actualActivity).startActivityIntent;
 
-            return startedActivityIntent != null
-                    && proxyFor(expectedIntent).realIntentEquals(proxyFor(startedActivityIntent));
-        } else {
-            actualStartedActivityClass = proxyFor(startedActivityIntent).componentClass;
-            actualAction = startedActivityIntent.getAction();
-            return expectedActivityClass.equals(actualStartedActivityClass)
-                    && compareStrings(expectedAction, actualAction);
+        if (actualStartedIntent == null) {
+            message += "didn't start anything";
+            return false;
         }
+
+        FakeIntent proxyIntent = proxyFor(actualStartedIntent);
+
+        boolean intentsMatch = proxyFor(expectedIntent).realIntentEquals(proxyIntent);
+        if (!intentsMatch) {
+            message += "started " + actualStartedIntent;
+        }
+        return intentsMatch;
     }
 
     @Override
     public void describeTo(Description description) {
-        if (matchIntent) {
-            description.appendText("expected to start " + expectedIntent);
-            if (actualStartedIntent == null) {
-                description.appendText(" but didn't start anything");
-            } else {
-                description.appendText(" but started ");
-                description.appendValue(actualStartedIntent);
-            }
-        } else {
-            description.appendText("expected to start " + expectedActivityClass);
-            if (expectedAction != null) {
-                description.appendText(" with action " + expectedAction);
-            }
-            if (actualStartedActivityClass == null) {
-                description.appendText(" but didn't start anything");
-            } else {
-                description.appendText(" but started " + actualStartedActivityClass);
-                if (!compareStrings(expectedAction, actualAction)) {
-                    description.appendText(" with " + (actualAction == null ? "no action" : actualAction));
-                }
-                description.appendText(" instead");
-            }
-        }
+        description.appendText(message);
     }
 
     private FakeActivity proxyFor(Activity real) {
@@ -88,7 +65,26 @@ public class StartedMatcher extends BaseMatcher<Activity> {
         return (FakeIntent) ProxyDelegatingHandler.getInstance().proxyFor(real);
     }
 
-    private boolean compareStrings(String a, String b) {
-        return a == b || a.equals(b);
+    public static Intent createIntent(Class<? extends Activity> activityClass, String extraKey, String extraValue) {
+        Intent intent = createIntent(activityClass);
+        intent.putExtra(extraKey, extraValue);
+        return intent;
+    }
+
+    public static Intent createIntent(Class<? extends Activity> activityClass, String action) {
+        Intent intent = createIntent(activityClass);
+        intent.setAction(action);
+        return intent;
+    }
+
+    public static Intent createIntent(Class<? extends Activity> activityClass) {
+        String packageName = activityClass.getPackage().getName();
+        return createIntent(packageName, activityClass);
+    }
+
+    public static Intent createIntent(String packageName, Class<? extends Activity> activityClass) {
+        Intent intent = new Intent();
+        intent.setClassName(packageName, activityClass.getName());
+        return intent;
     }
 }
