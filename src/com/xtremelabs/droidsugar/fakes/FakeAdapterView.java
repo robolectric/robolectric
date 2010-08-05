@@ -26,6 +26,10 @@ public class FakeAdapterView extends FakeView {
         return adapter;
     }
 
+    public int getCount() {
+        return adapter.getCount();
+    }
+
     public void setOnItemSelectedListener(AdapterView.OnItemSelectedListener listener) {
         this.onItemSelectedListener = listener;
     }

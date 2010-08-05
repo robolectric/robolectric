@@ -1,14 +1,17 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ListView;
+import android.view.ViewGroup;
+import android.widget.*;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import com.xtremelabs.droidsugar.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static com.xtremelabs.droidsugar.matchers.TextViewHasTextMatcher.hasText;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class ListViewTest {
@@ -19,6 +22,8 @@ public class ListViewTest {
     public void setUp() throws Exception {
         DroidSugarAndroidTestRunner.addProxy(AdapterView.class, FakeAdapterView.class);
         DroidSugarAndroidTestRunner.addProxy(ListView.class, FakeListView.class);
+        DroidSugarAndroidTestRunner.addProxy(View.class, FakeView.class);
+        DroidSugarAndroidTestRunner.addProxy(TextView.class, FakeTextView.class);
 
         transcript = new Transcript();
         listView = new ListView(null);
@@ -60,4 +65,42 @@ public class ListViewTest {
         listView.setSelection(0);
     }
 
+    @Test
+    public void testSetAdapter_ShouldCauseViewsToBeRendered() throws Exception {
+        listView.setAdapter(new CountingAdapter(2));
+        assertThat(listView.getCount(), equalTo(2));
+        assertThat(listView.getChildCount(), equalTo(2));
+        assertThat((TextView) listView.getChildAt(0), hasText("Item 0"));
+        assertThat((TextView) listView.getChildAt(1), hasText("Item 1"));
+    }
+
+    private static class CountingAdapter extends BaseAdapter {
+        private int itemCount;
+
+        public CountingAdapter(int itemCount) {
+            this.itemCount = itemCount;
+        }
+
+        @Override
+        public int getCount() {
+            return itemCount;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return 0;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            TextView textView = new TextView(null);
+            textView.setText("Item " + position);
+            return textView;
+        }
+    }
 }

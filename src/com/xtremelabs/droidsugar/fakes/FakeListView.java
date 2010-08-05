@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -32,5 +33,17 @@ public class FakeListView extends FakeAdapterView {
 
     public void setAdapter(ListAdapter adapter) {
         super.setAdapter(adapter);
+        updateChildren();
+    }
+
+    private void updateChildren() {
+        removeAllViews();
+
+        Adapter adapter = getAdapter();
+        if (adapter != null) {
+            for (int i = 0; i < adapter.getCount(); i++) {
+                addView(adapter.getView(i, null, realListView));
+            }
+        }
     }
 }
