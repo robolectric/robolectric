@@ -7,9 +7,14 @@ import java.util.Map;
 
 public class TestSharedPreferences implements SharedPreferences {
 
-    public static final Hashtable<String, Hashtable<String, Object>> content = new Hashtable<String, Hashtable<String, Object>>();
+    public static Hashtable<String, Hashtable<String, Object>> content = new Hashtable<String, Hashtable<String, Object>>();
+    private static final Object lock = new Object();
     private String filename;
     public int mode;
+
+    public static void reset() {
+        content = new Hashtable<String, Hashtable<String, Object>>();
+    }
 
     public TestSharedPreferences(String name, int mode) {
         this.filename = name;
@@ -30,12 +35,14 @@ public class TestSharedPreferences implements SharedPreferences {
     }
 
     private Object getValue(String key, Object defValue) {
-        Object value = content.get(filename).get(key);
-        if (value == null) {
-            return defValue;
-        } else {
-            return value;
+        Hashtable<String, Object> fileHash = content.get(filename);
+        if (fileHash != null) {
+            Object value = fileHash.get(key);
+            if (value != null) {
+                return value;
+            }
         }
+        return defValue;
     }
 
     @Override
@@ -126,7 +133,7 @@ public class TestSharedPreferences implements SharedPreferences {
 
         @Override
         public boolean commit() {
-            synchronized (content) {
+            synchronized (lock) {
                 Hashtable<String, Object> previousContent = content.get(filename);
                 if (shouldClearOnCommit) {
                     previousContent.clear();
