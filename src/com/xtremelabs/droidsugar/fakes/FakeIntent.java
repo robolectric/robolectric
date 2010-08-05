@@ -7,12 +7,14 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.Implements;
+import com.xtremelabs.droidsugar.util.Join;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)
@@ -142,5 +144,25 @@ public class FakeIntent {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public String toString() {
+        return "Intent{" +
+                Join.join(
+                        ", ",
+                        ifWeHave(componentPackageName, "componentPackageName"),
+                        ifWeHave(componentClass, "componentClass"),
+                        ifWeHave(action, "action"),
+                        ifWeHave(extras, "extras"),
+                        ifWeHave(data, "data")
+                ) +
+                '}';
+    }
+
+    private String ifWeHave(Object o, String name) {
+        if (o == null) return null;
+        if (o instanceof Map && ((Map)o).isEmpty()) return null;
+        return name + "=" + o;
     }
 }
