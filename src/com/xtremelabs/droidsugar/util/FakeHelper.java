@@ -1,24 +1,6 @@
 package com.xtremelabs.droidsugar.util;
 
-import com.xtremelabs.droidsugar.fakes.FakeAbsSpinner;
-import com.xtremelabs.droidsugar.fakes.FakeActivity;
-import com.xtremelabs.droidsugar.fakes.FakeAdapterView;
-import com.xtremelabs.droidsugar.fakes.FakeContextWrapper;
-import com.xtremelabs.droidsugar.fakes.FakeGeoPoint;
-import com.xtremelabs.droidsugar.fakes.FakeHandler;
-import com.xtremelabs.droidsugar.fakes.FakeImageView;
-import com.xtremelabs.droidsugar.fakes.FakeIntent;
-import com.xtremelabs.droidsugar.fakes.FakeItemizedOverlay;
-import com.xtremelabs.droidsugar.fakes.FakeLayoutParams;
-import com.xtremelabs.droidsugar.fakes.FakeListView;
-import com.xtremelabs.droidsugar.fakes.FakeLooper;
-import com.xtremelabs.droidsugar.fakes.FakeMapActivity;
-import com.xtremelabs.droidsugar.fakes.FakeMapController;
-import com.xtremelabs.droidsugar.fakes.FakeMapView;
-import com.xtremelabs.droidsugar.fakes.FakeOverlayItem;
-import com.xtremelabs.droidsugar.fakes.FakeTextView;
-import com.xtremelabs.droidsugar.fakes.FakeView;
-import com.xtremelabs.droidsugar.fakes.FakeViewGroup;
+import com.xtremelabs.droidsugar.fakes.*;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -48,6 +30,7 @@ public class FakeHelper {
                 FakeActivity.class,
                 FakeAdapterView.class,
                 FakeContextWrapper.class,
+                FakeDialog.class,
                 FakeImageView.class,
                 FakeGeoPoint.class,
                 FakeHandler.class,
