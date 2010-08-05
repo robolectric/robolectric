@@ -16,6 +16,7 @@ import android.view.ViewGroup;
 import com.xtremelabs.droidsugar.util.Implements;
 import com.xtremelabs.droidsugar.util.ResourceLoader;
 import com.xtremelabs.droidsugar.util.ViewLoader;
+import com.xtremelabs.droidsugar.view.TestSharedPreferences;
 
 import java.util.ArrayList;
 import java.util.List;
