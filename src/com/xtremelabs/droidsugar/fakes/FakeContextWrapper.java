@@ -6,6 +6,7 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.location.LocationManager;
 import android.test.mock.MockContentResolver;
@@ -15,6 +16,7 @@ import android.view.ViewGroup;
 import com.xtremelabs.droidsugar.util.Implements;
 import com.xtremelabs.droidsugar.util.ResourceLoader;
 import com.xtremelabs.droidsugar.util.ViewLoader;
+import com.xtremelabs.droidsugar.view.TestSharedPreferences;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -63,6 +65,10 @@ public class FakeContextWrapper {
     public ComponentName startService(Intent service) {
         startedServices.add(service);
         return new ComponentName("some.service.package", "SomeServiceName");
+    }
+
+    public SharedPreferences getSharedPreferences(String name, int mode) {
+        return new TestSharedPreferences(name, mode);
     }
 
     public static class FakeLayoutInflater extends LayoutInflater {
