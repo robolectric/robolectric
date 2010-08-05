@@ -2,7 +2,7 @@
   <configuration default="false" name="AllTests" type="JUnit" factoryName="JUnit">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
       <pattern>
-        <option name="PATTERN" value="com.xtremelabs.droidsugar.view.*" />
+        <option name="PATTERN" value="com.xtremelabs.droidsugar.fakes.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

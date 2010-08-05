@@ -3,8 +3,8 @@ package com.xtremelabs.droidsugar.matchers;
 import android.app.Activity;
 import android.content.Intent;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
-import com.xtremelabs.droidsugar.view.FakeActivity;
-import com.xtremelabs.droidsugar.view.FakeIntent;
+import com.xtremelabs.droidsugar.fakes.FakeActivity;
+import com.xtremelabs.droidsugar.fakes.FakeIntent;
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
 
