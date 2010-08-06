@@ -29,6 +29,10 @@ public class FakeSpannableStringBuilder {
         return real;
     }
 
+    public int length() {
+        return builder.length();
+    }
+
     public String toString() {
         return builder.toString();
     }

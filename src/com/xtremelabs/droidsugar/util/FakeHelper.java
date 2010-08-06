@@ -37,16 +37,17 @@ public class FakeHelper {
                 FakeHandler.class,
                 FakeIntent.class,
                 FakeItemizedOverlay.class,
+                FakeLayoutParams.class,
                 FakeListView.class,
                 FakeLooper.class,
                 FakeMapController.class,
                 FakeMapActivity.class,
                 FakeMapView.class,
                 FakeOverlayItem.class,
+                FakeSpannableStringBuilder.class,
                 FakeTextView.class,
                 FakeView.class,
-                FakeViewGroup.class,
-                FakeLayoutParams.class
+                FakeViewGroup.class
         );
     }
 }
