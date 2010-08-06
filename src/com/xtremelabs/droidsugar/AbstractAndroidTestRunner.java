@@ -1,9 +1,9 @@
 package com.xtremelabs.droidsugar;
 
-import java.lang.reflect.Method;
-
 import org.junit.internal.runners.JUnit4ClassRunner;
 import org.junit.runner.notification.RunNotifier;
+
+import java.lang.reflect.Method;
 
 public class AbstractAndroidTestRunner extends JUnit4ClassRunner {
     private ClassHandler classHandler;

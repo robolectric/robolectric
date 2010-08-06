@@ -8,17 +8,14 @@ import android.util.Log;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 import com.xtremelabs.droidsugar.fakes.FakeItemizedOverlay;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.lang.reflect.Constructor;
 
 import static com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner.proxyFor;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
@@ -57,7 +54,7 @@ public class AndroidTranslatorTest {
         Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
         ctor.setAccessible(true);
         ClassWithNoDefaultConstructor instance = ctor.newInstance();
-        assertThat(proxyFor(instance), not(CoreMatchers.<Object>nullValue()));
+        assertThat(proxyFor(instance), not(nullValue()));
         assertThat(proxyFor(instance), instanceOf(FakeClassWithNoDefaultConstructors.class));
     }
 
