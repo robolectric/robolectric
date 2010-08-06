@@ -12,13 +12,14 @@ import java.lang.reflect.Method;
 @Implements(Dialog.class)
 public class FakeDialog {
     public static FakeDialog latestDialog;
-    
+
+    private Dialog realDialog;
     private boolean isShowing;
     public Context context;
     public int layoutId;
     public int themeId;
     private View inflatedView;
-    private Dialog realDialog;
+    public boolean hasBeenDismissed;
 
     public static void reset() {
         latestDialog = null;
@@ -50,12 +51,17 @@ public class FakeDialog {
         }
     }
 
+    public void hide() {
+        isShowing = false;
+    }
+
     public boolean isShowing() {
         return isShowing;
     }
 
     public void dismiss() {
         isShowing = false;
+        hasBeenDismissed = true;
     }
 
     public View findViewById(int viewId) {

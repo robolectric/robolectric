@@ -27,6 +27,8 @@ public class FakeHelper {
     public static List<Class<?>> getGenericProxies() {
         return Arrays.asList(
                 FakeAbsSpinner.class,
+                FakeAlertDialog.class,
+                FakeAlertDialog.FakeBuilder.class,
                 FakeActivity.class,
                 FakeAdapterView.class,
                 FakeBaseAdapter.class,
