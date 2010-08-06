@@ -29,6 +29,7 @@ public class FakeHelper {
                 FakeAbsSpinner.class,
                 FakeActivity.class,
                 FakeAdapterView.class,
+                FakeBaseAdapter.class,
                 FakeContextWrapper.class,
                 FakeDialog.class,
                 FakeImageView.class,
