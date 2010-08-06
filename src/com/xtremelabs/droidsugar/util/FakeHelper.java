@@ -3,6 +3,7 @@ package com.xtremelabs.droidsugar.util;
 import com.xtremelabs.droidsugar.fakes.FakeAbsSpinner;
 import com.xtremelabs.droidsugar.fakes.FakeActivity;
 import com.xtremelabs.droidsugar.fakes.FakeAdapterView;
+import com.xtremelabs.droidsugar.fakes.FakeBaseAdapter;
 import com.xtremelabs.droidsugar.fakes.FakeContextWrapper;
 import com.xtremelabs.droidsugar.fakes.FakeGeoPoint;
 import com.xtremelabs.droidsugar.fakes.FakeHandler;
@@ -47,6 +48,7 @@ public class FakeHelper {
                 FakeAbsSpinner.class,
                 FakeActivity.class,
                 FakeAdapterView.class,
+                FakeBaseAdapter.class,
                 FakeContextWrapper.class,
                 FakeImageView.class,
                 FakeGeoPoint.class,
