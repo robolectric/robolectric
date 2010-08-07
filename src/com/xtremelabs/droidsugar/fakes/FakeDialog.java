@@ -2,6 +2,7 @@ package com.xtremelabs.droidsugar.fakes;
 
 import android.app.Dialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import com.xtremelabs.droidsugar.util.Implements;
@@ -20,6 +21,7 @@ public class FakeDialog {
     public int themeId;
     private View inflatedView;
     public boolean hasBeenDismissed;
+    private DialogInterface.OnDismissListener onDismissListener;
 
     public static void reset() {
         latestDialog = null;
@@ -62,6 +64,10 @@ public class FakeDialog {
     public void dismiss() {
         isShowing = false;
         hasBeenDismissed = true;
+
+        if (onDismissListener != null) {
+            onDismissListener.onDismiss(realDialog);
+        }
     }
 
     public View findViewById(int viewId) {
@@ -76,5 +82,9 @@ public class FakeDialog {
 
     public void clickOn(int viewId) {
         findViewById(viewId).performClick();
+    }
+
+    public void setOnDismissListener(DialogInterface.OnDismissListener onDismissListener) {
+        this.onDismissListener = onDismissListener;
     }
 }
