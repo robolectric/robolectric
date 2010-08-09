@@ -1,8 +1,6 @@
 package com.xtremelabs.droidsugar.fakes;
 
-import android.database.DataSetObserver;
 import android.view.View;
-import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
@@ -34,30 +32,5 @@ public class FakeListView extends FakeAdapterView {
 
     public void setAdapter(ListAdapter adapter) {
         super.setAdapter(adapter);
-        adapter.registerDataSetObserver(new ListViewDataSetObserver());
-        updateChildren();
-    }
-
-    private void updateChildren() {
-        removeAllViews();
-
-        Adapter adapter = getAdapter();
-        if (adapter != null) {
-            for (int i = 0; i < adapter.getCount(); i++) {
-                addView(adapter.getView(i, null, realListView));
-            }
-        }
-    }
-
-    private class ListViewDataSetObserver extends DataSetObserver {
-        @Override
-        public void onChanged() {
-            updateChildren();
-        }
-
-        @Override
-        public void onInvalidated() {
-            updateChildren();
-        }
     }
 }

@@ -47,7 +47,7 @@ public class FakeHandler {
         return true;
     }
 
-    public static void processHandlerRunnables() {
+    public static void flush() {
         ((FakeLooper) ProxyDelegatingHandler.getInstance().proxyFor(Looper.myLooper())).idle();
     }
 }

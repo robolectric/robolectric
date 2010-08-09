@@ -1,5 +1,7 @@
 package com.xtremelabs.droidsugar.fakes;
 
+import android.database.DataSetObserver;
+import android.os.Handler;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import com.xtremelabs.droidsugar.util.Implements;
@@ -9,9 +11,10 @@ import com.xtremelabs.droidsugar.util.Implements;
 public class FakeAdapterView extends FakeView {
     private AdapterView realAdapterView;
 
-    private Adapter adapter;
+    Adapter adapter;
     private AdapterView.OnItemSelectedListener onItemSelectedListener;
     private AdapterView.OnItemClickListener onItemClickListener;
+    private boolean valid = false;
 
     public FakeAdapterView(AdapterView adapterView) {
         super(adapterView);
@@ -20,6 +23,29 @@ public class FakeAdapterView extends FakeView {
 
     public void setAdapter(Adapter adapter) {
         this.adapter = adapter;
+        adapter.registerDataSetObserver(new AdapterViewDataSetObserver());
+
+        invalidateAndScheduleUpdate();
+
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                setSelection(0);
+            }
+        });
+    }
+
+    private void invalidateAndScheduleUpdate() {
+        valid = false;
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                if (!valid) {
+                    update();
+                    valid = true;
+                }
+            }
+        });
     }
 
     public Adapter getAdapter() {
@@ -53,7 +79,30 @@ public class FakeAdapterView extends FakeView {
 
     public void setSelection(int position) {
         if (onItemSelectedListener != null) {
-            onItemSelectedListener.onItemSelected(realAdapterView, null, position, -1);
+            onItemSelectedListener.onItemSelected(realAdapterView, getChildAt(position), position, getAdapter().getItemId(position));
+        }
+    }
+
+    private void update() {
+        removeAllViews();
+
+        Adapter adapter = getAdapter();
+        if (adapter != null) {
+            for (int i = 0; i < adapter.getCount(); i++) {
+                addView(adapter.getView(i, null, realAdapterView));
+            }
+        }
+    }
+
+    protected class AdapterViewDataSetObserver extends DataSetObserver {
+        @Override
+        public void onChanged() {
+            invalidateAndScheduleUpdate();
+        }
+
+        @Override
+        public void onInvalidated() {
+            invalidateAndScheduleUpdate();
         }
     }
 }
