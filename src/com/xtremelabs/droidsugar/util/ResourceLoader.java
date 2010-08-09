@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.util;
 
 import java.io.File;
+import java.io.FileFilter;
 
 public class ResourceLoader {
     public final ViewLoader viewLoader;
@@ -11,7 +12,15 @@ public class ResourceLoader {
         resourceExtractor.addRClass(rClass);
 
         viewLoader = new ViewLoader(resourceExtractor);
-        viewLoader.addResourceXmlDir(new File(resourceDir, "layout"));
+        File[] layoutDirs = resourceDir.listFiles(new FileFilter() {
+            @Override
+            public boolean accept(File pathname) {
+                return pathname.getPath().contains("/layout");
+            }
+        });
+        for (File layoutDir : layoutDirs) {
+            viewLoader.addResourceXmlDir(layoutDir);
+        }
 
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
         stringResourceLoader.addResourceXmlDir(new File(resourceDir, "values"));
