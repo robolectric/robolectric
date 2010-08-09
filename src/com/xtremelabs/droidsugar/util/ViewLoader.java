@@ -11,6 +11,7 @@ import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -109,8 +110,6 @@ public class ViewLoader extends XmlLoader {
         public View inflate(Context context) throws Exception {
             View view = create(context);
 
-            applyAttributes(view);
-
             if (id != null && view.getId() == 0) {
                 view.setId(id);
             }
@@ -140,29 +139,37 @@ public class ViewLoader extends XmlLoader {
             } else if (name.equals("merge")) {
                 return new LinearLayout(context);
             } else {
-                Class<? extends View> clazz = loadClass(name);
-                if (clazz == null) {
-                    clazz = loadClass("android.view." + name);
-                }
-                if (clazz == null) {
-                    clazz = loadClass("android.widget." + name);
-                }
-                if (clazz == null) {
-                    clazz = loadClass("com.google.android.maps." + name);
-                }
-
-                if (clazz == null) {
-                    throw new RuntimeException("couldn't find view class " + name);
-                }
-                Constructor<? extends View> constructor;
-                try {
-                    constructor = clazz.getConstructor(Context.class);
-                    return constructor.newInstance(context);
-                } catch (NoSuchMethodException e) {
-                    constructor = clazz.getConstructor(Context.class, String.class);
-                    return constructor.newInstance(context, "");
-                }
+                View view = constructView(context);
+                applyAttributes(view);
+                return view;
             }
+        }
+
+        private View constructView(Context context) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+            Class<? extends View> clazz = pickViewClass();
+            try {
+                return ((Constructor<? extends View>) clazz.getConstructor(Context.class)).newInstance(context);
+            } catch (NoSuchMethodException e) {
+                return ((Constructor<? extends View>) clazz.getConstructor(Context.class, String.class)).newInstance(context, "");
+            }
+        }
+
+        private Class<? extends View> pickViewClass() {
+            Class<? extends View> clazz = loadClass(name);
+            if (clazz == null) {
+                clazz = loadClass("android.view." + name);
+            }
+            if (clazz == null) {
+                clazz = loadClass("android.widget." + name);
+            }
+            if (clazz == null) {
+                clazz = loadClass("com.google.android.maps." + name);
+            }
+
+            if (clazz == null) {
+                throw new RuntimeException("couldn't find view class " + name);
+            }
+            return clazz;
         }
 
         private Class<? extends View> loadClass(String className) {

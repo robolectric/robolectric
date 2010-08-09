@@ -19,6 +19,7 @@ import java.io.File;
 
 import static android.test.MoreAsserts.assertNotEqual;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
@@ -69,6 +70,12 @@ public class ViewLoaderTest {
     public void testInclude() throws Exception {
         ViewGroup mediaView = (ViewGroup) viewLoader.inflateView(context, "layout/media");
         TestUtil.assertInstanceOf(TextView.class, mediaView.findViewById(R.id.snippet_text));
+    }
+
+    @Test
+    public void testIncludeShouldRetainAttributes() throws Exception {
+        ViewGroup mediaView = (ViewGroup) viewLoader.inflateView(context, "layout/media");
+        assertThat(mediaView.findViewById(R.id.snippet_text).getVisibility(), is(View.GONE));
     }
 
     @Test
