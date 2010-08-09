@@ -42,6 +42,7 @@
             android:maxHeight="36dip"
             android:textSize="14dip"
             android:textColor="#fff"
+            android:visibility="gone"
             />
 
 </LinearLayout>

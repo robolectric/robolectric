@@ -25,6 +25,9 @@ public class ListViewTest {
 
     @Test
     public void testSetSelection_ShouldFireOnItemSelectedListener() throws Exception {
+        listView.setAdapter(new CountingAdapter(1));
+        FakeHandler.flush();
+
         listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {

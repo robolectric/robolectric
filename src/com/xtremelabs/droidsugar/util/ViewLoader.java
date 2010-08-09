@@ -108,6 +108,9 @@ public class ViewLoader extends XmlLoader {
 
         public View inflate(Context context) throws Exception {
             View view = create(context);
+
+            applyAttributes(view);
+
             if (id != null && view.getId() == 0) {
                 view.setId(id);
             }
@@ -115,6 +118,19 @@ public class ViewLoader extends XmlLoader {
                 ((ViewGroup) view).addView(child.inflate(context));
             }
             return view;
+        }
+
+        private void applyAttributes(View view) {
+            view.setVisibility(View.VISIBLE);
+
+            String visibility = attributes.get("android:visibility");
+            if (visibility != null) {
+                if (visibility.equals("gone")) {
+                    view.setVisibility(View.GONE);
+                } else if (visibility.equals("invisible")) {
+                    view.setVisibility(View.INVISIBLE);
+                }
+            }
         }
 
         private View create(Context context) throws Exception {

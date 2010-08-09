@@ -18,7 +18,9 @@ import org.junit.runner.RunWith;
 import java.io.File;
 
 import static android.test.MoreAsserts.assertNotEqual;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class ViewLoaderTest {
@@ -79,6 +81,13 @@ public class ViewLoaderTest {
     public void testViewGroupsLooksAtItsOwnId() throws Exception {
         TextView mediaView = (TextView) viewLoader.inflateView(context, "layout/snippet");
         assertSame(mediaView, mediaView.findViewById(R.id.snippet_text));
+    }
+
+    @Test
+    public void testViewVisibilityIsSet() throws Exception {
+        View mediaView = viewLoader.inflateView(context, "layout/media");
+        assertThat(mediaView.findViewById(R.id.title).getVisibility(), equalTo(View.VISIBLE));
+        assertThat(mediaView.findViewById(R.id.subtitle).getVisibility(), equalTo(View.GONE));
     }
 
     @Test
