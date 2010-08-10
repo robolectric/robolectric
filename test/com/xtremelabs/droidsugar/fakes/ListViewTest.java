@@ -63,6 +63,6 @@ public class ListViewTest {
 
     @Test
     public void shouldHaveAdapterViewCommonBehavior() throws Exception {
-        AdapterViewTest.shouldActAsAdapterView(listView);
+        AdapterViewBehavior.shouldActAsAdapterView(listView);
     }
 }

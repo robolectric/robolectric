@@ -22,6 +22,6 @@ public class AbsSpinnerTest {
 
     @Test
     public void shouldHaveAdapterViewCommonBehavior() throws Exception {
-        AdapterViewTest.shouldActAsAdapterView(adapterView);
+        AdapterViewBehavior.shouldActAsAdapterView(adapterView);
     }
 }

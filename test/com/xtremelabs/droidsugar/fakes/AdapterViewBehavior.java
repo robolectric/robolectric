@@ -11,7 +11,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-public class AdapterViewTest {
+public class AdapterViewBehavior {
     public static void shouldActAsAdapterView(AdapterView adapterView) throws Exception {
         testSetAdapter_ShouldCauseViewsToBeRenderedAsynchronously(adapterView);
         testSetAdapter_ShouldSelectFirstItemAsynchronously(adapterView);
