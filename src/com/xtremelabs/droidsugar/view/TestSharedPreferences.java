@@ -2,12 +2,13 @@ package com.xtremelabs.droidsugar.view;
 
 import android.content.SharedPreferences;
 
+import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
 public class TestSharedPreferences implements SharedPreferences {
 
-    public static Hashtable<String, Hashtable<String, Object>> content = new Hashtable<String, Hashtable<String, Object>>();
+    public static Map<String, Hashtable<String, Object>> content = new HashMap<String, Hashtable<String, Object>>();
     private static final Object lock = new Object();
     private String filename;
     public int mode;
@@ -26,7 +27,7 @@ public class TestSharedPreferences implements SharedPreferences {
 
     @Override
     public Map<String, ?> getAll() {
-        return null; // NYI
+        return null;
     }
 
     @Override
@@ -77,12 +78,10 @@ public class TestSharedPreferences implements SharedPreferences {
 
     @Override
     public void registerOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
-        // NYI
     }
 
     @Override
     public void unregisterOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
-        // NYI
     }
 
     private class FakeSharedPreferencesEditor implements Editor {
@@ -122,7 +121,7 @@ public class TestSharedPreferences implements SharedPreferences {
 
         @Override
         public Editor remove(String key) {
-            return null; // NYI
+            return null;
         }
 
         @Override
@@ -133,17 +132,15 @@ public class TestSharedPreferences implements SharedPreferences {
 
         @Override
         public boolean commit() {
-            synchronized (lock) {
-                Hashtable<String, Object> previousContent = content.get(filename);
-                if (shouldClearOnCommit) {
-                    previousContent.clear();
-                } else {
-                    for (String key : editsThatNeedCommit.keySet()) {
-                        previousContent.put(key, editsThatNeedCommit.get(key));
-                    }
+            Map<String, Object> previousContent = content.get(filename);
+            if (shouldClearOnCommit) {
+                previousContent.clear();
+            } else {
+                for (String key : editsThatNeedCommit.keySet()) {
+                    previousContent.put(key, editsThatNeedCommit.get(key));
                 }
-                return true;
             }
+            return true;
         }
     }
 }
