@@ -17,8 +17,12 @@ public class Transcript {
         assertEquals(0, events.size());
     }
 
-    public void assertEventsSoFar(String... expectedEvent) {
-        assertEquals(Arrays.asList(expectedEvent), events);
+    public void assertEventsSoFar(String... expectedEvents) {
+        assertEquals(Arrays.asList(expectedEvents), events);
         events.clear();
+    }
+
+    public List<String> getEvents() {
+        return events;
     }
 }
