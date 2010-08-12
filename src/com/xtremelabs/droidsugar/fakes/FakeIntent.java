@@ -9,10 +9,7 @@ import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.Implements;
 import com.xtremelabs.droidsugar.util.Join;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -82,8 +79,7 @@ public class FakeIntent {
     }
 
     public void putExtra(String key, Serializable value) {
-        verifySerializable(value);
-        extras.put(key, value);
+        extras.put(key, serializeCycle(value));
     }
 
     public void putExtra(String key, Parcelable value) {
@@ -136,12 +132,19 @@ public class FakeIntent {
         return true;
     }
 
-    private void verifySerializable(Serializable serializable) {
+    private Serializable serializeCycle(Serializable serializable) {
         try {
-            ObjectOutputStream output = new ObjectOutputStream(new ByteArrayOutputStream());
+            ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
+            ObjectOutputStream output = new ObjectOutputStream(byteArrayOutputStream);
             output.writeObject(serializable);
             output.close();
+
+            byte[] bytes = byteArrayOutputStream.toByteArray();
+            ObjectInputStream input = new ObjectInputStream(new ByteArrayInputStream(bytes));
+            return (Serializable) input.readObject();
         } catch (IOException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
     }
