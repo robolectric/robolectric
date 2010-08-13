@@ -1,25 +1,22 @@
 package com.xtremelabs.droidsugar;
 
-import javassist.CannotCompileException;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtField;
-import javassist.CtMethod;
-import javassist.CtNewConstructor;
-import javassist.CtNewMethod;
-import javassist.Modifier;
-import javassist.NotFoundException;
-import javassist.Translator;
+import javassist.*;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.jar.JarEntry;
+import java.util.jar.JarOutputStream;
 
 public class AndroidTranslator implements Translator {
     private static final List<AndroidTranslator> INSTANCES = new ArrayList<AndroidTranslator>();
 
     private int index;
     private ClassHandler classHandler;
+    private Map<String, byte[]> modifiedClasses = new HashMap<String, byte[]>();
 
     public AndroidTranslator(ClassHandler classHandler) {
         this.classHandler = classHandler;
@@ -57,6 +54,12 @@ public class AndroidTranslator implements Translator {
             classHandler.instrument(ctClass);
             fixConstructors(ctClass);
             fixMethods(ctClass);
+
+            try {
+                modifiedClasses.put(className, ctClass.toBytecode());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
@@ -132,13 +135,13 @@ public class AndroidTranslator implements Translator {
             }
 
             CtMethod newMethod = CtNewMethod.make(
-                ctMethod.getModifiers(),
-                returnCtClass,
-                methodName,
-                paramTypes,
-                ctMethod.getExceptionTypes(),
-                "{\n" + methodBody + "\n}",
-                ctClass);
+                    ctMethod.getModifiers(),
+                    returnCtClass,
+                    methodName,
+                    paramTypes,
+                    ctMethod.getExceptionTypes(),
+                    "{\n" + methodBody + "\n}",
+                    ctClass);
             ctMethod.setBody(newMethod, null);
         }
     }
@@ -303,6 +306,31 @@ public class AndroidTranslator implements Translator {
             return ctClass.getMethod(methodName, desc);
         } catch (NotFoundException e) {
             return null;
+        }
+    }
+
+    public void saveAllClassesToCache(String filename) {
+        if (modifiedClasses.size() > 0) {
+            JarOutputStream jarOutputStream = null;
+            try {
+                jarOutputStream = new JarOutputStream(new FileOutputStream(filename, true));
+                for (Map.Entry<String, byte[]> entry : modifiedClasses.entrySet()) {
+                    String key = entry.getKey();
+                    jarOutputStream.putNextEntry(new JarEntry(key.replace('.', '/') + ".class"));
+                    jarOutputStream.write(entry.getValue());
+                    jarOutputStream.closeEntry();
+                }
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } finally {
+                if (jarOutputStream != null) {
+                    try {
+                        jarOutputStream.close();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
+            }
         }
     }
 }
