@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.util;
 
 import com.xtremelabs.droidsugar.fakes.*;
+import com.xtremelabs.droidsugar.view.TestSharedPreferences;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -48,8 +49,14 @@ public class FakeHelper {
                 FakeOverlayItem.class,
                 FakeSpannableStringBuilder.class,
                 FakeTextView.class,
+                FakeToast.class,
                 FakeView.class,
                 FakeViewGroup.class
         );
+    }
+
+    public static void resetDroidSugarTestState() {
+        TestSharedPreferences.reset();
+        FakeToast.reset();
     }
 }
