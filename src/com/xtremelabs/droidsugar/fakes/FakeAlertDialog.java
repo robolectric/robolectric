@@ -40,9 +40,14 @@ public class FakeAlertDialog extends FakeDialog {
         private String title;
         private String message;
         private AlertDialog.Builder realBuilder;
+        private Context context;
 
         public FakeBuilder(AlertDialog.Builder realBuilder) {
             this.realBuilder = realBuilder;
+        }
+
+        public void __constructor__(Context context) {
+            this.context = context;
         }
 
         public AlertDialog.Builder setItems(CharSequence[] items, final DialogInterface.OnClickListener listener) {
@@ -53,6 +58,11 @@ public class FakeAlertDialog extends FakeDialog {
 
         public AlertDialog.Builder setTitle(CharSequence title) {
             this.title = title.toString();
+            return realBuilder;
+        }
+
+        public AlertDialog.Builder setTitle(int titleId) {
+            this.title = context.getResources().getString(titleId);
             return realBuilder;
         }
 
@@ -72,6 +82,7 @@ public class FakeAlertDialog extends FakeDialog {
             }
 
             FakeAlertDialog latestAlertDialog = proxyFor(realDialog);
+            latestAlertDialog.context = context;
             latestAlertDialog.realDialog = realDialog;
             latestAlertDialog.items = items;
             latestAlertDialog.title = title;

@@ -22,6 +22,7 @@ public class FakeDialog {
     private View inflatedView;
     public boolean hasBeenDismissed;
     private DialogInterface.OnDismissListener onDismissListener;
+    public CharSequence title;
 
     public static void reset() {
         latestDialog = null;
@@ -40,6 +41,14 @@ public class FakeDialog {
 
     public void setContentView(int layoutResID) {
         layoutId = layoutResID;
+    }
+
+    public void setTitle(int stringResourceId) {
+        this.title = context.getResources().getText(stringResourceId);
+    }
+
+    public void setTitle(CharSequence title) {
+        this.title = title;
     }
 
     public void show() {
