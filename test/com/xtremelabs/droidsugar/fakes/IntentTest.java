@@ -41,11 +41,13 @@ public class IntentTest extends TestCase {
     @Test
     public void testSerializableExtra() throws Exception {
         Intent intent = new Intent();
-        TestSerializable serializable = new TestSerializable();
+        TestSerializable serializable = new TestSerializable("some string");
         intent.putExtra("foo", serializable);
         FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
-        assertSame(serializable, fakeIntent.extras.get("foo"));
-        assertSame(serializable, fakeIntent.getSerializableExtra("foo"));
+        assertEquals(serializable, fakeIntent.extras.get("foo"));
+        assertNotSame(serializable, fakeIntent.extras.get("foo"));
+        assertEquals(serializable, fakeIntent.getSerializableExtra("foo"));
+        assertNotSame(serializable, fakeIntent.getSerializableExtra("foo"));
     }
 
     @Test
@@ -101,7 +103,30 @@ public class IntentTest extends TestCase {
         assertEquals("package.name", fakeIntent.componentPackageName);
     }
 
-    private static class TestSerializable implements Serializable { }
+    private static class TestSerializable implements Serializable {
+        private String someValue;
+
+        public TestSerializable(String someValue) {
+            this.someValue = someValue;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            TestSerializable that = (TestSerializable) o;
+
+            if (someValue != null ? !someValue.equals(that.someValue) : that.someValue != null) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return someValue != null ? someValue.hashCode() : 0;
+        }
+    }
 
     private class TestParcelable implements Parcelable {
         @Override
