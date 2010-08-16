@@ -38,6 +38,10 @@ public class FakeTextView extends FakeView {
         return text;
     }
 
+    public int length() {
+        return text.length();
+    }
+
     public void setTextColor(int color) {
         textColorResourceId = color;
     }
