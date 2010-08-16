@@ -11,6 +11,7 @@ import java.util.List;
 @Implements(Toast.class)
 public class FakeToast {
     public static List<CharSequence> toastMessages = new ArrayList<CharSequence>();
+    public static boolean wasShown;
 
     public static Toast makeText(Context context, int resId, int duration) {
         toastMessages.add(context.getResources().getString(resId));
@@ -26,7 +27,12 @@ public class FakeToast {
         return toastMessages.contains(message);
     }
 
+    public void show() {
+        wasShown = true;
+    }
+
     public static void reset() {
         toastMessages.clear();
+        wasShown = false;
     }
 }
