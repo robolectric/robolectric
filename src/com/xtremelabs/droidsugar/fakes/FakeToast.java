@@ -12,6 +12,11 @@ import java.util.List;
 public class FakeToast {
     public static List<CharSequence> toastMessages = new ArrayList<CharSequence>();
 
+    public static Toast makeText(Context context, int resId, int duration) {
+        toastMessages.add(context.getResources().getString(resId));
+        return new Toast(null);
+    }
+
     public static Toast makeText(Context context, CharSequence text, int duration) {
         toastMessages.add(text);
         return new Toast(null);
