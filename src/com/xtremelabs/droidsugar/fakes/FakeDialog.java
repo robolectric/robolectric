@@ -51,6 +51,10 @@ public class FakeDialog {
         this.title = title;
     }
 
+    public Context getContext() {
+        return context;
+    }
+
     public void show() {
         isShowing = true;
         try {
