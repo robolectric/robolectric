@@ -9,41 +9,37 @@
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="module-library">
+      <library name="main not exported">
+        <CLASSES>
+          <root url="jar://$MODULE_DIR$/lib/main/mockito-core-1.8.5.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/main/hamcrest-all-1.3.0RC1.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/main/com.springsource.org.objenesis-1.0.0.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/main/junit-dep-4.8.2.jar!/" />
+        </CLASSES>
+        <JAVADOC />
+        <SOURCES />
+      </library>
+    </orderEntry>
+    <orderEntry type="module-library" exported="">
       <library>
         <CLASSES>
-          <root url="jar://$APPLICATION_HOME_DIR$/lib/junit-4.7.jar!/" />
+          <root url="jar://$MODULE_DIR$/lib/main/javassist-3.12.GA.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library name="Android">
+    <orderEntry type="module-library" scope="TEST">
+      <library name="test">
         <CLASSES>
-          <root url="jar://$MODULE_DIR$/../../android/platforms/android-1.6/android.jar!/" />
+          <root url="file://$MODULE_DIR$/lib/test" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
+        <jarDirectory url="file://$MODULE_DIR$/lib/test" recursive="false" />
       </library>
     </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/javassist-3.12.GA.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
-    <orderEntry type="module-library">
-      <library>
-        <CLASSES>
-          <root url="jar://$MODULE_DIR$/lib/mockito-all-1.8.4.jar!/" />
-        </CLASSES>
-        <JAVADOC />
-        <SOURCES />
-      </library>
-    </orderEntry>
+    <orderEntry type="library" name="Android 2.2 Google APIs" level="application" />
   </component>
 </module>
 

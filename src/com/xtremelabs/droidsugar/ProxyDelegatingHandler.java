@@ -1,19 +1,32 @@
 package com.xtremelabs.droidsugar;
 
-import javassist.*;
+import javassist.CannotCompileException;
+import javassist.CtClass;
+import javassist.CtField;
+import javassist.NotFoundException;
 
 import java.lang.reflect.*;
-import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ProxyDelegatingHandler implements ClassHandler {
-    public static final String PROXY_DELEGATE_FIELD_NAME = "__proxyDelegate__";
+    public static final String FAKE_FIELD_NAME = "__fake__";
+    private static ProxyDelegatingHandler singleton;
 
     private Map<String, String> classHandlers = new HashMap<String, String>();
-    private Map<Class, Field> proxyFieldMap = new HashMap<Class, Field>();
+    private Map<Class, Field> fakeFieldMap = new HashMap<Class, Field>();
     public boolean debug = false;
 
-    public ProxyDelegatingHandler() {
+    // sorry! it really only makes sense to have one per ClassLoader anyway though [xw/hu]
+    public static ProxyDelegatingHandler getInstance() {
+        if (singleton == null) {
+            singleton = new ProxyDelegatingHandler();
+        }
+        return singleton;
+    }
+
+    private ProxyDelegatingHandler() {
     }
 
     @Override
@@ -21,9 +34,9 @@ public class ProxyDelegatingHandler implements ClassHandler {
         try {
             CtClass objectClass = ctClass.getClassPool().get(Object.class.getName());
             try {
-                ctClass.getField(PROXY_DELEGATE_FIELD_NAME);
+                ctClass.getField(FAKE_FIELD_NAME);
             } catch (NotFoundException e) {
-                CtField field = new CtField(objectClass, PROXY_DELEGATE_FIELD_NAME, ctClass);
+                CtField field = new CtField(objectClass, FAKE_FIELD_NAME, ctClass);
                 field.setModifiers(Modifier.PUBLIC);
                 ctClass.addField(field);
             }
@@ -49,14 +62,15 @@ public class ProxyDelegatingHandler implements ClassHandler {
     }
 
     @Override
-    public Object methodInvoked(String className, String methodName, Object instance, String[] paramTypes, Object[] params) {
+    public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) {
         Class<?>[] paramClasses = new Class<?>[paramTypes.length];
 
+        ClassLoader classLoader = clazz.getClassLoader();
         for (int i = 0; i < paramTypes.length; i++) {
-            paramClasses[i] = loadClass(paramTypes[i], instance);
+            paramClasses[i] = loadClass(paramTypes[i], classLoader);
         }
 
-        Class<?> originalClass = loadClass(className, instance);
+        Class<?> originalClass = loadClass(clazz.getName(), classLoader);
 
         Class<?> declaringClass;
         if (methodName.equals("<init>")) {
@@ -74,24 +88,37 @@ public class ProxyDelegatingHandler implements ClassHandler {
         if (handlingClassName == null) {
             return null;
         }
-        Class<?> handlingClass = loadClass(handlingClassName, instance);
+        Class<?> handlingClass = loadClass(handlingClassName, classLoader);
 
         Method method;
         if (methodName.equals("<init>")) {
             methodName = "__constructor__";
         }
 
-        Object fakeObject = fakeObjectFor(instance);
-        try {
-            method = fakeObject.getClass().getMethod(methodName, paramClasses);
-        } catch (NoSuchMethodException e) {
+        Object fakeObject;
+        if (instance != null) {
+            fakeObject = fakeObjectFor(instance);
+            method = getMethod(fakeObject.getClass(), methodName, paramClasses);
+        } else {
+            fakeObject = null;
+            String fakeClassName = getHandlingClassName(clazz);
+            Class<?> fakeClass = loadClass(fakeClassName, classLoader);
+            method = getMethod(fakeClass, methodName, paramClasses);
+        }
+
+        if (method == null) {
             if (debug) {
-                System.out.println("No method found for " + className + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + handlingClass.getName());
+                System.out.println("No method found for " + clazz + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + handlingClass.getName());
             }
             return null;
         }
 
+        if ((instance == null) != Modifier.isStatic(method.getModifiers())) {
+            throw new RuntimeException("method staticness of " + clazz.getName() + "." + methodName + " and " + handlingClassName + "." + method.getName() + " don't match");
+        }
+
         try {
+            method.setAccessible(true);
             return method.invoke(fakeObject, params);
         } catch (IllegalArgumentException e) {
             throw new RuntimeException(fakeObject.getClass().getName() + " is not assignable from " + handlingClass.getName(), e);
@@ -102,7 +129,19 @@ public class ProxyDelegatingHandler implements ClassHandler {
         }
     }
 
-    private Class<?> loadClass(String paramType, Object instance) {
+    private Method getMethod(Class<?> clazz, String methodName, Class<?>[] paramClasses) {
+        try {
+            return clazz.getMethod(methodName, paramClasses);
+        } catch (NoSuchMethodException e) {
+            try {
+                return clazz.getDeclaredMethod(methodName, paramClasses);
+            } catch (NoSuchMethodException e1) {
+                return null;
+            }
+        }
+    }
+
+    static Class<?> loadClass(String paramType, ClassLoader classLoader) {
         Class primitiveClass = Type.findPrimitiveClass(paramType);
         if (primitiveClass != null) return primitiveClass;
 
@@ -112,11 +151,13 @@ public class ProxyDelegatingHandler implements ClassHandler {
             paramType = paramType.substring(0, paramType.length() - 2);
         }
 
-        Class<?> clazz;
-        try {
-            clazz = instance.getClass().getClassLoader().loadClass(paramType);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
+        Class<?> clazz = Type.findPrimitiveClass(paramType);
+        if (clazz == null) {
+            try {
+                clazz = classLoader.loadClass(paramType);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         while (arrayLevel-- > 0) {
@@ -127,25 +168,24 @@ public class ProxyDelegatingHandler implements ClassHandler {
     }
 
     public Object fakeObjectFor(Object instance) {
-        Field field = getProxyField(instance);
-        Object proxy = getField(instance, field);
+        Field field = getFakeField(instance);
+        Object fake = getField(instance, field);
 
-        if (proxy != null) {
-            return proxy;
+        if (fake != null) {
+            return fake;
         }
 
         String fakeClassName = getHandlingClassName(instance.getClass());
 
         if (debug)
-            System.out.println("creating new " + fakeClassName + " as proxy for " + instance.getClass().getName());
+            System.out.println("creating new " + fakeClassName + " as fake for " + instance.getClass().getName());
         try {
-            Class<?> proxyClass = loadClass(fakeClassName, instance);
-            Constructor<?> constructor = findConstructor(instance, proxyClass);
-            Object fake;
+            Class<?> fakeClass = loadClass(fakeClassName, instance.getClass().getClassLoader());
+            Constructor<?> constructor = findConstructor(instance, fakeClass);
             if (constructor != null) {
                 fake = constructor.newInstance(instance);
             } else {
-                fake = proxyClass.newInstance();
+                fake = fakeClass.newInstance();
             }
             field.set(instance, fake);
 
@@ -168,13 +208,13 @@ public class ProxyDelegatingHandler implements ClassHandler {
         return fakeClassName;
     }
 
-    private Constructor<?> findConstructor(Object instance, Class<?> proxyClass) {
+    private Constructor<?> findConstructor(Object instance, Class<?> fakeClass) {
         Class clazz = instance.getClass();
 
         Constructor constructor;
         for (constructor = null; constructor == null && clazz != null; clazz = clazz.getSuperclass()) {
             try {
-                constructor = proxyClass.getConstructor(clazz);
+                constructor = fakeClass.getConstructor(clazz);
             } catch (NoSuchMethodException e) {
                 // expected
             }
@@ -190,22 +230,25 @@ public class ProxyDelegatingHandler implements ClassHandler {
         }
     }
 
-    private Field getProxyField(Object instance) {
+    private Field getFakeField(Object instance) {
         Class clazz = instance.getClass();
-        Field field = proxyFieldMap.get(clazz);
+        Field field = fakeFieldMap.get(clazz);
         if (field == null) {
             try {
-                field = clazz.getField(PROXY_DELEGATE_FIELD_NAME);
+                field = clazz.getField(FAKE_FIELD_NAME);
             } catch (NoSuchFieldException e) {
-                throw new RuntimeException(instance.getClass().getName() + " has no proxy field", e);
+                throw new RuntimeException(instance.getClass().getName() + " has no fake field", e);
             }
-            proxyFieldMap.put(clazz, field);
+            fakeFieldMap.put(clazz, field);
         }
         return field;
     }
 
     public Object proxyFor(Object instance) {
-        Field field = getProxyField(instance);
+        if (instance == null) {
+            throw new RuntimeException("no instance for which to get a proxy");
+        }
+        Field field = getFakeField(instance);
         return getField(instance, field);
     }
 }

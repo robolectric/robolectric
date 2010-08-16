@@ -11,8 +11,17 @@ public final class R {
     private static int nextId = 0;
 
     public static final class id {
-        public static final int media_time = nextId++;
-        public static final int media_title = nextId++;
-        public static final int media_subtitle = nextId++;
+        public static final int time = nextId++;
+        public static final int title = nextId++;
+        public static final int subtitle = nextId++;
+        public static final int snippet_text = nextId++;
+        public static final int include_id = nextId++;
+        public static final int inner_text = nextId++;
+        public static final int map_view = nextId++;
+    }
+
+    public static final class string {
+        public static final int howdy = nextId++;
+        public static final int hello = nextId++;
     }
 }

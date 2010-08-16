@@ -6,20 +6,19 @@
         android:gravity="center_horizontal"
         >
 
-    <include android:id="@+id/include_id" layout="@layout/snippet"/>
+    <include layout="@layout/snippet"/>
 
     <View
             android:layout_width="fill_parent"
             android:layout_height="10dip"
             />
 
-    <TextView
+    <View
             android:id="@+id/time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textSize="14dip"
             android:textColor="#fff"
-            android:text="14 minutes ago"
             />
 
     <TextView
@@ -42,7 +41,6 @@
             android:maxHeight="36dip"
             android:textSize="14dip"
             android:textColor="#fff"
-            android:visibility="gone"
             />
 
 </LinearLayout>

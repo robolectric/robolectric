@@ -10,6 +10,7 @@ import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class ProxyDelegatingHandlerTest {
@@ -62,6 +63,18 @@ public class ProxyDelegatingHandlerTest {
         TestFakeTextView textViewProxy = proxyFor(textView);
         System.out.println("textViewProxy = " + textViewProxy);
     }
+
+    @Test
+    public void testPrimitiveArrays() throws Exception {
+        Class<?> objArrayClass = ProxyDelegatingHandler.loadClass("java.lang.Object[]", getClass().getClassLoader());
+        assertTrue(objArrayClass.isArray());
+        assertEquals(Object.class, objArrayClass.getComponentType());
+
+        Class<?> intArrayClass = ProxyDelegatingHandler.loadClass("int[]", getClass().getClassLoader());
+        assertTrue(intArrayClass.isArray());
+        assertEquals(Integer.TYPE, intArrayClass.getComponentType());
+    }
+
 
     private TestFakeView proxyFor(View view) {
         return (TestFakeView) DroidSugarAndroidTestRunner.proxyFor(view);

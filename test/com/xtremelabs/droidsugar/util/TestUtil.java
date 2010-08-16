@@ -1,16 +1,20 @@
 package com.xtremelabs.droidsugar.util;
 
-import android.app.*;
-import android.content.*;
-import android.view.*;
-import android.widget.*;
-import org.mockito.*;
-import org.mockito.invocation.*;
-import org.mockito.stubbing.*;
+import android.app.Activity;
+import android.content.Intent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AbsSpinner;
+import android.widget.AdapterView;
+import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
 import java.util.*;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.*;
 
 public class TestUtil {
@@ -147,6 +151,14 @@ public class TestUtil {
         public Object answer(InvocationOnMock invocationOnMock) throws Throwable {
             arguments = invocationOnMock.getArguments();
             return null;
+        }
+    }
+
+    public static void addAllProxies() {
+        List<Class<?>> genericProxies = FakeHelper.getGenericProxies();
+        for (Class<?> genericProxy : genericProxies) {
+            Implements implementsClass = genericProxy.getAnnotation(Implements.class);
+            DroidSugarAndroidTestRunner.addProxy(implementsClass.value(), genericProxy);
         }
     }
 }
