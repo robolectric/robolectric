@@ -2,4 +2,8 @@
 <resources>
     <string name="howdy">Howdy</string>
     <string name="hello">Hello</string>
+    <string-array name="items">
+        <item>foo</item>
+        <item>bar</item>
+    </string-array>
 </resources>
