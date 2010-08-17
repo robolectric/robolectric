@@ -2,37 +2,42 @@ package com.xtremelabs.droidsugar.fakes;
 
 import android.content.Context;
 import android.widget.Toast;
+import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.Implements;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Toast.class)
 public class FakeToast {
-    public static List<CharSequence> toastMessages = new ArrayList<CharSequence>();
-    public static boolean wasShown;
+    private static Map<CharSequence, Toast> toasts = new HashMap<CharSequence, Toast>();
+
+    private boolean wasShown = false;
 
     public static Toast makeText(Context context, int resId, int duration) {
-        toastMessages.add(context.getResources().getString(resId));
-        return new Toast(null);
+        return makeText(context, context.getResources().getString(resId), duration);
     }
 
     public static Toast makeText(Context context, CharSequence text, int duration) {
-        toastMessages.add(text);
-        return new Toast(null);
+        Toast toast = new Toast(null);
+        toasts.put(text, toast);
+        return toast;
     }
 
-    public static boolean madeToast(CharSequence message) {
-        return toastMessages.contains(message);
+    public static boolean showedToast(CharSequence message) {
+        return toasts.containsKey(message) && proxyFor(toasts.get(message)).wasShown;
+    }
+
+    private static FakeToast proxyFor(Toast toast) {
+        return (FakeToast) ProxyDelegatingHandler.getInstance().proxyFor(toast);
+    }
+
+    public static void reset() {
+        toasts.clear();
     }
 
     public void show() {
         wasShown = true;
-    }
-
-    public static void reset() {
-        toastMessages.clear();
-        wasShown = false;
     }
 }
