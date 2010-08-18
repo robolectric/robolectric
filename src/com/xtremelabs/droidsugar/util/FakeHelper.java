@@ -58,5 +58,7 @@ public class FakeHelper {
     public static void resetDroidSugarTestState() {
         TestSharedPreferences.reset();
         FakeToast.reset();
+        FakeAlertDialog.reset();
+        FakeDialog.reset();
     }
 }

@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.util;
 
 import android.content.Context;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -148,9 +149,14 @@ public class ViewLoader extends XmlLoader {
         private View constructView(Context context) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
             Class<? extends View> clazz = pickViewClass();
             try {
-                return ((Constructor<? extends View>) clazz.getConstructor(Context.class)).newInstance(context);
+                TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor);
+                return ((Constructor<? extends View>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
             } catch (NoSuchMethodException e) {
-                return ((Constructor<? extends View>) clazz.getConstructor(Context.class, String.class)).newInstance(context, "");
+                try {
+                    return ((Constructor<? extends View>) clazz.getConstructor(Context.class)).newInstance(context);
+                } catch (NoSuchMethodException e1) {
+                    return ((Constructor<? extends View>) clazz.getConstructor(Context.class, String.class)).newInstance(context, "");
+                }
             }
         }
 

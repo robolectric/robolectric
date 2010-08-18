@@ -91,6 +91,12 @@ public class ViewLoaderTest {
     }
 
     @Test
+    public void shouldConstructCustomViewsWithAttributesConstructor() throws Exception {
+        CustomView view = (CustomView) viewLoader.inflateView(context, "layout/custom_layout");
+        assertThat(view.attributeResourceValue, equalTo(R.string.hello));
+    }
+
+    @Test
     public void testViewVisibilityIsSet() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/media");
         assertThat(mediaView.findViewById(R.id.title).getVisibility(), equalTo(View.VISIBLE));
