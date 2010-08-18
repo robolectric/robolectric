@@ -34,4 +34,9 @@ public class StringResourceLoader extends XmlLoader {
         String resourceName = resourceExtractor.getResourceName(resourceId);
         return values.get(resourceName);
     }
+
+    public String getValue(String resourceIdAsString) {
+        int key = resourceExtractor.getResourceStringToId().get(resourceIdAsString);
+        return getValue(key);
+    }
 }

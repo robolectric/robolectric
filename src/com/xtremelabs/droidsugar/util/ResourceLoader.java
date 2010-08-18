@@ -11,7 +11,10 @@ public class ResourceLoader {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(rClass);
 
-        viewLoader = new ViewLoader(resourceExtractor);
+        stringResourceLoader = new StringResourceLoader(resourceExtractor);
+        stringResourceLoader.addResourceXmlDir(new File(resourceDir, "values"));
+
+        viewLoader = new ViewLoader(resourceExtractor, stringResourceLoader);
         File[] layoutDirs = resourceDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
@@ -21,8 +24,5 @@ public class ResourceLoader {
         for (File layoutDir : layoutDirs) {
             viewLoader.addResourceXmlDir(layoutDir);
         }
-
-        stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        stringResourceLoader.addResourceXmlDir(new File(resourceDir, "values"));
     }
 }
