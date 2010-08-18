@@ -69,4 +69,9 @@ public class StringResourceLoader extends XmlLoader {
             stringArrayValues.put("array/" + name, arrayValues.toArray(new String[arrayValues.size()]));
         }
     }
+
+    public String getValue(String resourceIdAsString) {
+        int key = resourceExtractor.getResourceStringToId().get(resourceIdAsString);
+        return getValue(key);
+    }
 }

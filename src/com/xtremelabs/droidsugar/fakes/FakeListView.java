@@ -33,4 +33,8 @@ public class FakeListView extends FakeAdapterView {
     public void setAdapter(ListAdapter adapter) {
         super.setAdapter(adapter);
     }
+
+    public boolean performItemClick(int position) {
+        return realListView.performItemClick(realListView.getChildAt(position), position, realListView.getItemIdAtPosition(position));
+    }
 }
