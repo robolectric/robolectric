@@ -6,7 +6,9 @@ import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Toast.class)
@@ -39,5 +41,15 @@ public class FakeToast {
 
     public void show() {
         wasShown = true;
+    }
+
+    public static Set<String> showedToasts() {
+        HashSet<String> strings = new HashSet<String>();
+        for (CharSequence toastString : toasts.keySet()) {
+            if (proxyFor(toasts.get(toastString.toString())).wasShown) {
+                strings.add(toastString.toString());
+            }
+        }
+        return strings;
     }
 }

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -19,9 +20,11 @@ import java.util.Map;
 
 public class ViewLoader extends XmlLoader {
     private Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
+    private StringResourceLoader stringResourceLoader;
 
-    public ViewLoader(ResourceExtractor resourceExtractor) {
+    public ViewLoader(ResourceExtractor resourceExtractor, StringResourceLoader stringResourceLoader) {
         super(resourceExtractor);
+        this.stringResourceLoader = stringResourceLoader;
     }
 
     @Override
@@ -128,6 +131,17 @@ public class ViewLoader extends XmlLoader {
                     view.setVisibility(View.GONE);
                 } else if (visibility.equals("invisible")) {
                     view.setVisibility(View.INVISIBLE);
+                }
+            }
+
+            if (view instanceof TextView) {
+                String text = attributes.get("android:text");
+                if (text != null) {
+                    if (text.startsWith("@string/")) {
+                        text = stringResourceLoader.getValue(text.substring(1));
+                    }
+
+                    ((TextView) view).setText(text);
                 }
             }
         }

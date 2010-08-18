@@ -9,6 +9,7 @@ import android.widget.TextView;
 import com.google.android.maps.MapView;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import com.xtremelabs.droidsugar.R;
+import com.xtremelabs.droidsugar.fakes.FakeTextView;
 import com.xtremelabs.droidsugar.fakes.FakeView;
 import com.xtremelabs.droidsugar.fakes.FakeViewGroup;
 import org.junit.Before;
@@ -32,10 +33,13 @@ public class ViewLoaderTest {
     public void setUp() throws Exception {
         DroidSugarAndroidTestRunner.addProxy(View.class, FakeView.class);
         DroidSugarAndroidTestRunner.addProxy(ViewGroup.class, FakeViewGroup.class);
+        DroidSugarAndroidTestRunner.addProxy(TextView.class, FakeTextView.class);
 
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);
-        viewLoader = new ViewLoader(resourceExtractor);
+        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
+        stringResourceLoader.loadDirs(new File("test/res/values"));
+        viewLoader = new ViewLoader(resourceExtractor, stringResourceLoader);
         viewLoader.loadDirs(new File("test/res/layout"));
 
         context = new MockContext();
@@ -95,6 +99,13 @@ public class ViewLoaderTest {
         View mediaView = viewLoader.inflateView(context, "layout/media");
         assertThat(mediaView.findViewById(R.id.title).getVisibility(), equalTo(View.VISIBLE));
         assertThat(mediaView.findViewById(R.id.subtitle).getVisibility(), equalTo(View.GONE));
+    }
+
+    @Test
+    public void testTextViewTextIsSet() throws Exception {
+        View mediaView = viewLoader.inflateView(context, "layout/main");
+        assertThat(((TextView) mediaView.findViewById(R.id.title)).getText().toString(), equalTo("ÁHola!"));
+        assertThat(((TextView) mediaView.findViewById(R.id.subtitle)).getText().toString(), equalTo("Hello"));
     }
 
     @Test
