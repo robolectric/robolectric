@@ -22,10 +22,12 @@ import java.util.Map;
 public class ViewLoader extends XmlLoader {
     private Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
     private StringResourceLoader stringResourceLoader;
+    private AttrResourceLoader attrResourceLoader;
 
-    public ViewLoader(ResourceExtractor resourceExtractor, StringResourceLoader stringResourceLoader) {
+    public ViewLoader(ResourceExtractor resourceExtractor, StringResourceLoader stringResourceLoader, AttrResourceLoader attrResourceLoader) {
         super(resourceExtractor);
         this.stringResourceLoader = stringResourceLoader;
+        this.attrResourceLoader = attrResourceLoader;
     }
 
     @Override
@@ -163,7 +165,7 @@ public class ViewLoader extends XmlLoader {
         private View constructView(Context context) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
             Class<? extends View> clazz = pickViewClass();
             try {
-                TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor);
+                TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, clazz);
                 return ((Constructor<? extends View>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
             } catch (NoSuchMethodException e) {
                 try {

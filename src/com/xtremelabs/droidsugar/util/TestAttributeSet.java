@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.util;
 
 import android.util.AttributeSet;
+import android.view.View;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -8,10 +9,15 @@ import java.util.Map;
 public class TestAttributeSet implements AttributeSet {
     Map<String, String> attributes = new HashMap<String, String>();
     private ResourceExtractor resourceExtractor;
+    private AttrResourceLoader attrResourceLoader;
+    private Class<? extends View> viewClass;
 
-    public TestAttributeSet(Map<String, String> attributes, ResourceExtractor resourceExtractor) {
+    public TestAttributeSet(Map<String, String> attributes, ResourceExtractor resourceExtractor,
+                            AttrResourceLoader attrResourceLoader, Class<? extends View> viewClass) {
         this.attributes = attributes;
         this.resourceExtractor = resourceExtractor;
+        this.attrResourceLoader = attrResourceLoader;
+        this.viewClass = viewClass;
     }
 
     @Override public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
@@ -22,6 +28,20 @@ public class TestAttributeSet implements AttributeSet {
     @Override public boolean getAttributeBooleanValue(String namespace, String attribute, boolean defaultValue) {
         String value = getAttributeValueInMap(attribute);
         return (value != null) ? Boolean.valueOf(value) : defaultValue;
+    }
+
+    @Override public String getAttributeValue(String namespace, String attribute) {
+        return getAttributeValueInMap(attribute);
+    }
+
+    @Override public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
+        String value = getAttributeValueInMap(attribute);
+
+        if (attrResourceLoader.handles(viewClass.getName(), "xxx", attribute)) {
+            value = attrResourceLoader.convertValueToEnum(viewClass.getName(), "xxx", attribute, value);
+        }
+
+        return (value != null) ? Integer.valueOf(value) : defaultValue;
     }
 
     @Override public int getAttributeCount() {
@@ -36,10 +56,6 @@ public class TestAttributeSet implements AttributeSet {
         throw new UnsupportedOperationException();
     }
 
-    @Override public String getAttributeValue(String namespace, String name) {
-        throw new UnsupportedOperationException();
-    }
-
     @Override public String getPositionDescription() {
         throw new UnsupportedOperationException();
     }
@@ -49,10 +65,6 @@ public class TestAttributeSet implements AttributeSet {
     }
 
     @Override public int getAttributeListValue(String namespace, String attribute, String[] options, int defaultValue) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
         throw new UnsupportedOperationException();
     }
 

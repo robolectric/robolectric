@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="com.xtremelabs.droidsugar.util.CustomView">
+        <attr name="itemType" format="enum">
+            <enum name="integer" value="0"/>
+            <enum name="string" value="1"/>
+        </attr>
+    </declare-styleable>
+</resources>
