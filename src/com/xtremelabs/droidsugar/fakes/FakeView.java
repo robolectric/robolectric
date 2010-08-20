@@ -40,6 +40,7 @@ public class FakeView {
     private Map<Integer, Object> tags = new HashMap<Integer, Object>();
     public boolean clickable;
     public boolean focusable;
+    public int backgroundResourceId = -1;
     protected View.OnKeyListener onKeyListener;
     public boolean hasFocus;
     private View.OnFocusChangeListener onFocusChangeListener;
@@ -144,6 +145,10 @@ public class FakeView {
 
     public Resources getResources() {
         return context.getResources();
+    }
+
+    public void setBackgroundResource(int backgroundResourceId) {
+        this.backgroundResourceId = backgroundResourceId;
     }
 
     public int getVisibility() {
