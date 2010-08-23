@@ -21,7 +21,7 @@ public class FakeAlertDialog extends FakeDialog {
     private AlertDialog realDialog;
     private boolean isMultiItem;
     private DialogInterface.OnMultiChoiceClickListener multiChoiceClickListener;
-    private boolean[] checkedItems;
+    public boolean[] checkedItems;
 
     public FakeAlertDialog(AlertDialog dialog) {
         super(dialog);
