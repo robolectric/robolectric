@@ -1,5 +1,6 @@
 package com.xtremelabs.droidsugar.util;
 
+import android.view.View;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -36,12 +37,23 @@ public class AttrResourceLoader extends XmlLoader {
         }
     }
 
-    public String convertValueToEnum(String viewClass, String namespace, String attrName, String attrValue) {
-        return classAttrEnumToValue.get(key(viewClass, attrName, attrValue));
+    public String convertValueToEnum(Class<? extends View> viewClass, String namespace, String attrName, String attrValue) {
+        String className = findKnownAttrClass(attrName, viewClass).getName();
+        return classAttrEnumToValue.get(key(className, attrName, attrValue));
     }
 
-    public boolean handles(String viewClass, String namespace, String attrName) {
-        return knownClassAttrs.contains(key(viewClass, attrName));
+    public boolean hasAttributeFor(Class<? extends View> viewClass, String namespace, String attrName) {
+        return findKnownAttrClass(attrName, viewClass) != null;
+    }
+
+    private Class<?> findKnownAttrClass(String attrName, Class<?> clazz) {
+        while (clazz != null) {
+            if (knownClassAttrs.contains(key(clazz.getName(), attrName))) {
+                return clazz;
+            }
+            clazz = clazz.getSuperclass();
+        }
+        return null;
     }
 
     private String key(String viewName, String attrName, String name) {

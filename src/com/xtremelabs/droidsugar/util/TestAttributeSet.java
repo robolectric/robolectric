@@ -37,8 +37,8 @@ public class TestAttributeSet implements AttributeSet {
     @Override public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
         String value = getAttributeValueInMap(attribute);
 
-        if (attrResourceLoader.handles(viewClass.getName(), "xxx", attribute)) {
-            value = attrResourceLoader.convertValueToEnum(viewClass.getName(), "xxx", attribute, value);
+        if (attrResourceLoader.hasAttributeFor(viewClass, "xxx", attribute)) {
+            value = attrResourceLoader.convertValueToEnum(viewClass, "xxx", attribute, value);
         }
 
         return (value != null) ? Integer.valueOf(value) : defaultValue;
