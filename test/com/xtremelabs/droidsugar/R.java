@@ -18,6 +18,9 @@ public final class R {
         public static final int include_id = nextId++;
         public static final int inner_text = nextId++;
         public static final int map_view = nextId++;
+        public static final int true_checkbox = nextId++;
+        public static final int false_checkbox = nextId++;
+        public static final int default_checkbox = nextId++;
     }
 
     public static final class string {

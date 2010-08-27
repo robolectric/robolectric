@@ -45,4 +45,8 @@
             android:textColor="#fff"
             />
 
+    <CheckBox android:id="@+id/true_checkbox" android:checked="true"/>
+    <CheckBox android:id="@+id/false_checkbox" android:checked="false"/>
+    <CheckBox android:id="@+id/default_checkbox"/>
+
 </LinearLayout>

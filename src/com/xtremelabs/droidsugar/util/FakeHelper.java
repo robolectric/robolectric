@@ -33,6 +33,7 @@ public class FakeHelper {
                 FakeActivity.class,
                 FakeAdapterView.class,
                 FakeBaseAdapter.class,
+                FakeCompoundButton.class,
                 FakeContextWrapper.class,
                 FakeDialog.class,
                 FakeImageView.class,

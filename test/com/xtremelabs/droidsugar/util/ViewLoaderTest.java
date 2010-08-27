@@ -3,12 +3,11 @@ package com.xtremelabs.droidsugar.util;
 import android.test.mock.MockContext;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.widget.*;
 import com.google.android.maps.MapView;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import com.xtremelabs.droidsugar.R;
+import com.xtremelabs.droidsugar.fakes.FakeCompoundButton;
 import com.xtremelabs.droidsugar.fakes.FakeTextView;
 import com.xtremelabs.droidsugar.fakes.FakeView;
 import com.xtremelabs.droidsugar.fakes.FakeViewGroup;
@@ -34,6 +33,7 @@ public class ViewLoaderTest {
         DroidSugarAndroidTestRunner.addProxy(View.class, FakeView.class);
         DroidSugarAndroidTestRunner.addProxy(ViewGroup.class, FakeViewGroup.class);
         DroidSugarAndroidTestRunner.addProxy(TextView.class, FakeTextView.class);
+        DroidSugarAndroidTestRunner.addProxy(CompoundButton.class, FakeCompoundButton.class);
 
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);
@@ -112,6 +112,14 @@ public class ViewLoaderTest {
         View mediaView = viewLoader.inflateView(context, "layout/main");
         assertThat(((TextView) mediaView.findViewById(R.id.title)).getText().toString(), equalTo("Hola!"));
         assertThat(((TextView) mediaView.findViewById(R.id.subtitle)).getText().toString(), equalTo("Hello"));
+    }
+
+    @Test
+    public void testCheckBoxCheckedIsSet() throws Exception {
+        View mediaView = viewLoader.inflateView(context, "layout/main");
+        assertThat(((CheckBox) mediaView.findViewById(R.id.true_checkbox)).isChecked(), equalTo(true));
+        assertThat(((CheckBox) mediaView.findViewById(R.id.false_checkbox)).isChecked(), equalTo(false));
+        assertThat(((CheckBox) mediaView.findViewById(R.id.default_checkbox)).isChecked(), equalTo(false));
     }
 
     @Test
