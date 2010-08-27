@@ -48,6 +48,7 @@ public class FakeHelper {
                 FakeMapView.class,
                 FakeOverlayItem.class,
                 FakeSpannableStringBuilder.class,
+                FakeTextUtils.class,
                 FakeTextView.class,
                 FakeToast.class,
                 FakeView.class,

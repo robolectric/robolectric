@@ -8,9 +8,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.Assert.*;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class ProxyDelegatingHandlerTest {
@@ -60,8 +59,7 @@ public class ProxyDelegatingHandlerTest {
         DroidSugarAndroidTestRunner.addProxy(TextView.class, TestFakeTextView.class);
 
         TextView textView = new TextView(context);
-        TestFakeTextView textViewProxy = proxyFor(textView);
-        System.out.println("textViewProxy = " + textViewProxy);
+        assertThat(proxyFor(textView), instanceOf(TestFakeTextView.class));
     }
 
     @Test

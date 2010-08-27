@@ -23,6 +23,7 @@ public final class R {
     public static final class string {
         public static final int howdy = nextId++;
         public static final int hello = nextId++;
+        public static final int some_html = nextId++;
     }
     
     public static final class array {
