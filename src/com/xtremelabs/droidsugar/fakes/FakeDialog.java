@@ -32,6 +32,10 @@ public class FakeDialog {
         realDialog = dialog;
     }
 
+    public void __constructor__(Context context) {
+        __constructor__(context, -1);
+    }
+
     public void __constructor__(Context context, int themeId) {
         this.context = context;
         this.themeId = themeId;

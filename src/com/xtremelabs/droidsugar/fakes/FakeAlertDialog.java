@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
+import android.widget.Button;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.Implements;
 
@@ -22,6 +23,10 @@ public class FakeAlertDialog extends FakeDialog {
     private boolean isMultiItem;
     private DialogInterface.OnMultiChoiceClickListener multiChoiceClickListener;
     public boolean[] checkedItems;
+    private Button positiveButton;
+    private Button negativeButton;
+    private Button neutralButton;
+    private boolean isCancelable;
 
     public FakeAlertDialog(AlertDialog dialog) {
         super(dialog);
@@ -41,6 +46,18 @@ public class FakeAlertDialog extends FakeDialog {
         }
     }
 
+    public Button getButton(int whichButton) {
+        switch (whichButton) {
+            case AlertDialog.BUTTON_POSITIVE:
+                return positiveButton;
+            case AlertDialog.BUTTON_NEGATIVE:
+                return negativeButton;
+            case AlertDialog.BUTTON_NEUTRAL:
+                return neutralButton;
+        }
+        throw new RuntimeException("huh?");
+    }
+
     @Implements(AlertDialog.Builder.class)
     public static class FakeBuilder {
         private CharSequence[] items;
@@ -52,6 +69,13 @@ public class FakeAlertDialog extends FakeDialog {
         private boolean isMultiItem;
         private DialogInterface.OnMultiChoiceClickListener multiChoiceClickListener;
         private boolean[] checkedItems;
+        private CharSequence positiveText;
+        private DialogInterface.OnClickListener positiveListener;
+        private CharSequence negativeText;
+        private DialogInterface.OnClickListener negativeListener;
+        private CharSequence neutralText;
+        private DialogInterface.OnClickListener neutralListener;
+        private boolean isCancelable;
 
         public FakeBuilder(AlertDialog.Builder realBuilder) {
             this.realBuilder = realBuilder;
@@ -70,7 +94,7 @@ public class FakeAlertDialog extends FakeDialog {
         }
 
         public AlertDialog.Builder setMultiChoiceItems(CharSequence[] items, boolean[] checkedItems,
-                final DialogInterface.OnMultiChoiceClickListener listener) {
+                                                       final DialogInterface.OnMultiChoiceClickListener listener) {
             this.isMultiItem = true;
 
             this.items = items;
@@ -101,6 +125,29 @@ public class FakeAlertDialog extends FakeDialog {
             return realBuilder;
         }
 
+        public AlertDialog.Builder setPositiveButton(CharSequence text, final DialogInterface.OnClickListener listener) {
+            this.positiveText = text;
+            this.positiveListener = listener;
+            return realBuilder;
+        }
+
+        public AlertDialog.Builder setNegativeButton(CharSequence text, final DialogInterface.OnClickListener listener) {
+            this.negativeText = text;
+            this.negativeListener = listener;
+            return realBuilder;
+        }
+
+        public AlertDialog.Builder setNeutralButton(CharSequence text, final DialogInterface.OnClickListener listener) {
+            this.neutralText = text;
+            this.neutralListener = listener;
+            return realBuilder;
+        }
+
+        public AlertDialog.Builder setCancelable(boolean cancelable) {
+            this.isCancelable = cancelable;
+            return realBuilder;
+        }
+
         public AlertDialog create() {
             AlertDialog realDialog;
             try {
@@ -121,10 +168,31 @@ public class FakeAlertDialog extends FakeDialog {
             latestAlertDialog.isMultiItem = isMultiItem;
             latestAlertDialog.multiChoiceClickListener = multiChoiceClickListener;
             latestAlertDialog.checkedItems = checkedItems;
+            latestAlertDialog.positiveButton = createButton(realDialog, AlertDialog.BUTTON_POSITIVE, positiveText, positiveListener);
+            latestAlertDialog.negativeButton = createButton(realDialog, AlertDialog.BUTTON_NEGATIVE, negativeText, negativeListener);
+            latestAlertDialog.neutralButton = createButton(realDialog, AlertDialog.BUTTON_NEUTRAL, neutralText, neutralListener);
+            latestAlertDialog.isCancelable = isCancelable;
 
             FakeAlertDialog.latestAlertDialog = latestAlertDialog;
 
             return realDialog;
+        }
+
+        public AlertDialog show() {
+            AlertDialog dialog = realBuilder.create();
+            dialog.show();
+            return dialog;
+        }
+
+        private Button createButton(final DialogInterface dialog, final int which, CharSequence text, final DialogInterface.OnClickListener listener) {
+            Button button = new Button(context);
+            button.setText(text);
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override public void onClick(View v) {
+                    listener.onClick(dialog, which);
+                }
+            });
+            return button;
         }
     }
 
