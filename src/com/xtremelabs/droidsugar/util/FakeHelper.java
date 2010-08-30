@@ -47,6 +47,7 @@ public class FakeHelper {
                 FakeMapController.class,
                 FakeMapActivity.class,
                 FakeMapView.class,
+                FakeMotionEvent.class,
                 FakeOverlayItem.class,
                 FakeSpannableStringBuilder.class,
                 FakeTextUtils.class,
