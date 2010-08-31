@@ -21,8 +21,10 @@ public class FakeAlertDialog extends FakeDialog {
     private DialogInterface.OnClickListener clickListener;
     private AlertDialog realDialog;
     private boolean isMultiItem;
+    private boolean isSingleItem;
     private DialogInterface.OnMultiChoiceClickListener multiChoiceClickListener;
     public boolean[] checkedItems;
+    private int checkedItemIndex;
     private Button positiveButton;
     private Button negativeButton;
     private Button neutralButton;
@@ -42,6 +44,9 @@ public class FakeAlertDialog extends FakeDialog {
             checkedItems[index] = !checkedItems[index];
             multiChoiceClickListener.onClick(realDialog, index, checkedItems[index]);
         } else {
+            if (isSingleItem) {
+                checkedItemIndex = index;
+            }
             clickListener.onClick(realDialog, index);
         }
     }
@@ -76,6 +81,8 @@ public class FakeAlertDialog extends FakeDialog {
         private CharSequence neutralText;
         private DialogInterface.OnClickListener neutralListener;
         private boolean isCancelable;
+        private boolean isSingleItem;
+        private int checkedItem;
 
         public FakeBuilder(AlertDialog.Builder realBuilder) {
             this.realBuilder = realBuilder;
@@ -88,6 +95,14 @@ public class FakeAlertDialog extends FakeDialog {
         public AlertDialog.Builder setItems(CharSequence[] items, final DialogInterface.OnClickListener listener) {
             this.isMultiItem = false;
 
+            this.items = items;
+            this.clickListener = listener;
+            return realBuilder;
+        }
+
+        public AlertDialog.Builder setSingleChoiceItems(CharSequence[] items, int checkedItem, final DialogInterface.OnClickListener listener) {
+            this.isSingleItem = true;
+            this.checkedItem = checkedItem;
             this.items = items;
             this.clickListener = listener;
             return realBuilder;
@@ -166,6 +181,8 @@ public class FakeAlertDialog extends FakeDialog {
             latestAlertDialog.message = message;
             latestAlertDialog.clickListener = clickListener;
             latestAlertDialog.isMultiItem = isMultiItem;
+            latestAlertDialog.isSingleItem = isSingleItem;
+            latestAlertDialog.checkedItemIndex = checkedItem;
             latestAlertDialog.multiChoiceClickListener = multiChoiceClickListener;
             latestAlertDialog.checkedItems = checkedItems;
             latestAlertDialog.positiveButton = createButton(realDialog, AlertDialog.BUTTON_POSITIVE, positiveText, positiveListener);
