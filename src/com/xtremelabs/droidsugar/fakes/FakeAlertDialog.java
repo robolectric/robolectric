@@ -39,6 +39,10 @@ public class FakeAlertDialog extends FakeDialog {
         return null;
     }
 
+    public static void reset() {
+        latestAlertDialog = null;
+    }
+
     public void clickOnItem(int index) {
         if (isMultiItem) {
             checkedItems[index] = !checkedItems[index];
