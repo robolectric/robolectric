@@ -33,6 +33,11 @@ public class StartedMatcher extends TypeSafeMatcher<Activity> {
 
     @Override
     public boolean matchesSafely(Activity actualActivity) {
+        if (expectedIntent == null) {
+            message = "null intent (did you mean to expect null?)";
+            return false;
+        }
+
         String expected = expectedIntent.toString();
         message = "to start " + expected + ", but ";
 
