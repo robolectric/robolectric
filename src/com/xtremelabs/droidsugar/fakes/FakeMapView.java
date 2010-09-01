@@ -1,5 +1,6 @@
 package com.xtremelabs.droidsugar.fakes;
 
+import android.widget.ZoomButtonsController;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
@@ -22,9 +23,11 @@ public class FakeMapView extends FakeViewGroup {
     public int latitudeSpan = 30;
     public int zoomLevel = 1;
     public FakeMapController fakeMapController;
+    private ZoomButtonsController zoomButtonsController;
 
     public FakeMapView(MapView mapView) {
         super(mapView);
+        zoomButtonsController = new ZoomButtonsController(mapView);
     }
 
     public void setSatellite(boolean satelliteOn) {
@@ -48,6 +51,10 @@ public class FakeMapView extends FakeViewGroup {
             }
         }
         return mapController;
+    }
+
+    public ZoomButtonsController getZoomButtonsController() {
+        return zoomButtonsController;
     }
 
     public List<Overlay> getOverlays() {

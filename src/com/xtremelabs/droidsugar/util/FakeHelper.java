@@ -54,8 +54,9 @@ public class FakeHelper {
                 FakeTextView.class,
                 FakeToast.class,
                 FakeView.class,
-                FakeViewGroup.class
-        );
+                FakeViewGroup.class,
+                FakeZoomButtonsController.class
+                );
     }
 
     public static void resetDroidSugarTestState() {

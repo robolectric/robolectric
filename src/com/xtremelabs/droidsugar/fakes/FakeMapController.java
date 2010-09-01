@@ -12,6 +12,7 @@ public class FakeMapController {
     public GeoPoint geoPointAnimatedTo;
     public int zoomedLatSpan;
     public int zoomedLngSpan;
+    public int zoomLevel = 0;
 
     public void animateTo(com.google.android.maps.GeoPoint geoPoint, java.lang.Runnable runnable) {
         fakeMapView.mapCenter = geoPoint;
@@ -22,5 +23,15 @@ public class FakeMapController {
     public void zoomToSpan(int latSpan, int lngSpan) {
         zoomedLatSpan = latSpan;
         zoomedLngSpan = lngSpan;
+    }
+
+    public boolean zoomIn() {
+        zoomLevel++;
+        return true;
+    }
+
+    public boolean zoomOut() {
+        zoomLevel--;
+        return true;
     }
 }
