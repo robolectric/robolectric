@@ -44,6 +44,7 @@ public class FakeView {
     protected View.OnKeyListener onKeyListener;
     public boolean hasFocus;
     private View.OnFocusChangeListener onFocusChangeListener;
+    public boolean wasInvalidated;
 
     public FakeView(View view) {
         this.realView = view;
@@ -252,5 +253,9 @@ public class FakeView {
 
     public void setOnFocusChangeListener(View.OnFocusChangeListener listener) {
         onFocusChangeListener = listener;
+    }
+
+    public void invalidate() {
+        wasInvalidated = true;
     }
 }
