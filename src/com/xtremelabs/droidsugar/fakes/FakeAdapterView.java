@@ -2,6 +2,7 @@ package com.xtremelabs.droidsugar.fakes;
 
 import android.database.DataSetObserver;
 import android.os.Handler;
+import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import com.xtremelabs.droidsugar.util.Implements;
@@ -81,6 +82,14 @@ public class FakeAdapterView extends FakeView {
         if (onItemSelectedListener != null) {
             onItemSelectedListener.onItemSelected(realAdapterView, getChildAt(position), position, getAdapter().getItemId(position));
         }
+    }
+
+    public boolean performItemClick(View view, int position, long id) {
+        if(onItemClickListener != null) {
+            onItemClickListener.onItemClick(realAdapterView, view, position, id);
+            return true;
+        }
+        return false;
     }
 
     private void update() {
