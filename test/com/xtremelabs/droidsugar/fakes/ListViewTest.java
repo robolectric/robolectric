@@ -40,6 +40,7 @@ public class ListViewTest {
         });
 
         listView.setSelection(0);
+        FakeHandler.flush();
         transcript.assertEventsSoFar("item was selected: 0");
     }
 
