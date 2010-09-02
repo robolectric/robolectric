@@ -137,7 +137,7 @@ public class TestMenuItem implements MenuItem {
     }
 
     public void simulateClick() {
-        if (enabled) {
+        if (enabled && menuItemClickListener != null) {
             menuItemClickListener.onMenuItemClick(this);
         }
     }
