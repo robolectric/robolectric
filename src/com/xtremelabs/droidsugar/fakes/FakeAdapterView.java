@@ -16,6 +16,7 @@ public class FakeAdapterView extends FakeView {
     private AdapterView.OnItemSelectedListener onItemSelectedListener;
     private AdapterView.OnItemClickListener onItemClickListener;
     private boolean valid = false;
+    private int selectedPosition;
 
     public FakeAdapterView(AdapterView adapterView) {
         super(adapterView);
@@ -27,13 +28,7 @@ public class FakeAdapterView extends FakeView {
         adapter.registerDataSetObserver(new AdapterViewDataSetObserver());
 
         invalidateAndScheduleUpdate();
-
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                setSelection(0);
-            }
-        });
+        setSelection(0);
     }
 
     private void invalidateAndScheduleUpdate() {
@@ -47,6 +42,10 @@ public class FakeAdapterView extends FakeView {
                 }
             }
         });
+    }
+
+    public int getSelectedItemPosition() {
+      return selectedPosition;
     }
 
     public Adapter getAdapter() {
@@ -78,14 +77,20 @@ public class FakeAdapterView extends FakeView {
         return (adapter == null || position < 0) ? null : adapter.getItem(position);
     }
 
-    public void setSelection(int position) {
-        if (onItemSelectedListener != null) {
-            onItemSelectedListener.onItemSelected(realAdapterView, getChildAt(position), position, getAdapter().getItemId(position));
-        }
+    public void setSelection(final int position) {
+        selectedPosition = position;
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                if (onItemSelectedListener != null) {
+                    onItemSelectedListener.onItemSelected(realAdapterView, getChildAt(position), position, getAdapter().getItemId(position));
+                }
+            }
+        });
     }
 
     public boolean performItemClick(View view, int position, long id) {
-        if(onItemClickListener != null) {
+        if (onItemClickListener != null) {
             onItemClickListener.onItemClick(realAdapterView, view, position, id);
             return true;
         }
