@@ -2,15 +2,16 @@ package com.xtremelabs.droidsugar.fakes;
 
 import android.widget.CheckBox;
 import android.widget.Checkable;
-import android.widget.TextView;
+import android.widget.CompoundButton;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(CheckBox.class)
 public class FakeCompoundButton extends FakeTextView implements Checkable {
     private boolean mmmmmChecked;
+    private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
 
-    public FakeCompoundButton(TextView view) {
+    public FakeCompoundButton(CompoundButton view) {
         super(view);
     }
 
@@ -30,6 +31,14 @@ public class FakeCompoundButton extends FakeTextView implements Checkable {
     @Override public void setChecked(boolean checked) {
         if (mmmmmChecked != checked) {
             mmmmmChecked = checked;
+
+            if (mOnCheckedChangeListener != null) {
+                mOnCheckedChangeListener.onCheckedChanged((CompoundButton) realView, mmmmmChecked);
+            }
         }
+    }
+
+    public void setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener listener) {
+        mOnCheckedChangeListener = listener;
     }
 }
