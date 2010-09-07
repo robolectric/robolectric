@@ -19,6 +19,7 @@ public class FakeTextView extends FakeView {
     public int textSize = UNINITIALIZED_ATTRIBUTE;
     public boolean autoLinkPhoneNumbers;
     private int autoLinkMask;
+    private CharSequence hintText;
 
     public FakeTextView(TextView view) {
         super(view);
@@ -48,6 +49,14 @@ public class FakeTextView extends FakeView {
 
     public void setTextSize(float size) {
         textSize = (int) size;
+    }
+
+    public final void setHint(int resId) {
+        this.hintText = getResources().getText(resId);
+    }
+
+    public CharSequence getHint() {
+        return hintText;
     }
 
     public URLSpan[] getUrls() {
