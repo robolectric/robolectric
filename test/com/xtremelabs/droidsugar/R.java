@@ -32,4 +32,10 @@ public final class R {
     public static final class array {
         public static final int items = nextId++;
     }
+
+    public static final class color {
+        public static final int black = nextId++;
+        public static final int white = nextId++;
+        public static final int clear = nextId++;
+    }
 }

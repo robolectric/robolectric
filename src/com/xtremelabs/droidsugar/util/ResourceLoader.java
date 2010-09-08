@@ -7,16 +7,22 @@ public class ResourceLoader {
     public final ViewLoader viewLoader;
     public final StringResourceLoader stringResourceLoader;
     public final AttrResourceLoader attrResourceLoader;
+    public final ColorResourceLoader colorResourceLoader;
 
     public ResourceLoader(Class rClass, File resourceDir) throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(rClass);
 
+        File xmlDir = new File(resourceDir, "values");
+        
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        stringResourceLoader.addResourceXmlDir(new File(resourceDir, "values"));
+        stringResourceLoader.addResourceXmlDir(xmlDir);
+
+        colorResourceLoader = new ColorResourceLoader(resourceExtractor);
+        colorResourceLoader.addResourceXmlDir(xmlDir);
 
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
-        attrResourceLoader.addResourceXmlDir(new File(resourceDir, "values"));
+        attrResourceLoader.addResourceXmlDir(xmlDir);
         
         viewLoader = new ViewLoader(resourceExtractor, stringResourceLoader, attrResourceLoader);
         File[] layoutDirs = resourceDir.listFiles(new FileFilter() {

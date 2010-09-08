@@ -15,7 +15,7 @@ public class FakeTextView extends FakeView {
     private CharSequence text = "";
     public CompoundDrawables compoundDrawablesWithIntrinsicBounds;
     public int textResourceId = UNINITIALIZED_ATTRIBUTE;
-    public int textColorResourceId = UNINITIALIZED_ATTRIBUTE;
+    public int textColorHexValue = UNINITIALIZED_ATTRIBUTE;
     public int textSize = UNINITIALIZED_ATTRIBUTE;
     public boolean autoLinkPhoneNumbers;
     private int autoLinkMask;
@@ -44,7 +44,7 @@ public class FakeTextView extends FakeView {
     }
 
     public void setTextColor(int color) {
-        textColorResourceId = color;
+        textColorHexValue = color;
     }
 
     public void setTextSize(float size) {
