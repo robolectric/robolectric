@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
+import android.view.Window;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.lang.reflect.Method;
@@ -24,6 +25,7 @@ public class FakeDialog {
     private DialogInterface.OnDismissListener onDismissListener;
     public CharSequence title;
     private DialogInterface.OnCancelListener onCancelListener;
+    private Window window;
 
     public static void reset() {
         latestDialog = null;
@@ -115,5 +117,12 @@ public class FakeDialog {
 
     public void setOnCancelListener(final DialogInterface.OnCancelListener listener) {
         this.onCancelListener = listener;
+    }
+
+    public Window getWindow() {
+        if(window == null) {
+            window = new TestWindow(realDialog.getContext());
+        }
+        return window;
     }
 }
