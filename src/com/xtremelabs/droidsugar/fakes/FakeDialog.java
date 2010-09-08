@@ -23,6 +23,7 @@ public class FakeDialog {
     public boolean hasBeenDismissed;
     private DialogInterface.OnDismissListener onDismissListener;
     public CharSequence title;
+    private DialogInterface.OnCancelListener onCancelListener;
 
     public static void reset() {
         latestDialog = null;
@@ -103,5 +104,16 @@ public class FakeDialog {
 
     public void setOnDismissListener(DialogInterface.OnDismissListener onDismissListener) {
         this.onDismissListener = onDismissListener;
+    }
+
+    public void cancel() {
+        if(onCancelListener != null) {
+            onCancelListener.onCancel(realDialog);
+        }
+        dismiss();
+    }
+
+    public void setOnCancelListener(final DialogInterface.OnCancelListener listener) {
+        this.onCancelListener = listener;
     }
 }
