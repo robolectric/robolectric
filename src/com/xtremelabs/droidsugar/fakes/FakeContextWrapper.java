@@ -1,15 +1,13 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.app.AlarmManager;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.Intent;
-import android.content.SharedPreferences;
+import android.content.*;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.LocationManager;
 import android.test.mock.MockContentResolver;
+import android.test.mock.MockPackageManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,6 +29,7 @@ public class FakeContextWrapper {
     protected static Context contextForInflation = new ContextWrapper(null);
     public List<Intent> startedServices = new ArrayList<Intent>();
     private LocationManager locationManager;
+    private MockPackageManager packageManager;
 
     public Resources getResources() {
         return new Resources(null, null, null);
@@ -42,6 +41,23 @@ public class FakeContextWrapper {
 
     public ContentResolver getContentResolver() {
         return new MockContentResolver();
+    }
+
+    public PackageManager getPackageManager() {
+        if(packageManager == null) {
+            packageManager = new MockPackageManager() {
+                public PackageInfo packageInfo;
+                @Override
+                public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
+                    if(packageInfo == null) {
+                        packageInfo = new PackageInfo();
+                        packageInfo.versionName = "1.0";
+                    }
+                    return packageInfo;
+                }
+            };
+        }
+        return packageManager;
     }
 
     public Object getSystemService(String name) {
