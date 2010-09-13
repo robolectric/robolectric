@@ -25,8 +25,11 @@ public class FakeHandler {
     }
 
     public final boolean post(Runnable r) {
-        FakeLooper fakeLooper = (FakeLooper) ProxyDelegatingHandler.getInstance().proxyFor(looper);
-        fakeLooper.post(r);
+        return postDelayed(r, 0);
+    }
+
+    public final boolean postDelayed(Runnable r, long delayMillis) {
+        proxyFor(looper).post(r, delayMillis);
         return true;
     }
 
@@ -48,6 +51,10 @@ public class FakeHandler {
     }
 
     public static void flush() {
-        ((FakeLooper) ProxyDelegatingHandler.getInstance().proxyFor(Looper.myLooper())).idle();
+        proxyFor(Looper.myLooper()).idle();
+    }
+
+    private static FakeLooper proxyFor(Looper looper) {
+        return (FakeLooper) ProxyDelegatingHandler.getInstance().proxyFor(looper);
     }
 }

@@ -1,7 +1,6 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.os.Looper;
-import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implements;
 import com.xtremelabs.droidsugar.util.Scheduler;
 
@@ -16,7 +15,8 @@ public class FakeLooper {
             return newInstanceOf(Looper.class);
         }
     };
-    private static final Looper MAIN_LOOPER = FakeHelper.newInstanceOf(Looper.class);
+    
+    private static final Looper MAIN_LOOPER = sThreadLocal.get();
 
     public static Looper getMainLooper() {
         return MAIN_LOOPER;
@@ -32,7 +32,7 @@ public class FakeLooper {
         scheduler.tick(0);
     }
 
-    public void post(Runnable r) {
-        scheduler.post(r);
+    public void post(Runnable r, long delayMillis) {
+        scheduler.postDelayed(r, delayMillis);
     }
 }
