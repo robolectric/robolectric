@@ -41,7 +41,7 @@ public class StartedMatcher extends TypeSafeMatcher<Activity> {
         String expected = expectedIntent.toString();
         message = "to start " + expected + ", but ";
 
-        Intent actualStartedIntent = proxyFor(actualActivity).startActivityIntent;
+        Intent actualStartedIntent = proxyFor(actualActivity).startedIntent;
 
         if (actualStartedIntent == null) {
             message += "didn't start anything";

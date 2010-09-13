@@ -30,6 +30,7 @@ public class FakeContextWrapper {
     public List<Intent> startedServices = new ArrayList<Intent>();
     private LocationManager locationManager;
     private MockPackageManager packageManager;
+    public Intent startedIntent;
 
     public Resources getResources() {
         return new Resources(null, null, null);
@@ -81,6 +82,10 @@ public class FakeContextWrapper {
     public ComponentName startService(Intent service) {
         startedServices.add(service);
         return new ComponentName("some.service.package", "SomeServiceName");
+    }
+
+    public void startActivity(Intent intent) {
+        startedIntent = intent;
     }
 
     public SharedPreferences getSharedPreferences(String name, int mode) {

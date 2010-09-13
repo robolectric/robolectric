@@ -15,7 +15,6 @@ public class FakeActivity extends FakeContextWrapper {
     public View contentView;
 
     public boolean finishWasCalled;
-    public Intent startActivityIntent;
     public int resultCode;
     public Intent resultIntent;
     public Activity parent;
@@ -70,10 +69,6 @@ public class FakeActivity extends FakeContextWrapper {
 
     public final Activity getParent() {
         return parent;
-    }
-
-    public void startActivity(Intent intent) {
-        startActivityIntent = intent;
     }
 
     public void finish() {
