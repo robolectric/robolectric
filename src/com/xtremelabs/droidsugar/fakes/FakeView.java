@@ -3,6 +3,7 @@ package com.xtremelabs.droidsugar.fakes;
 import android.content.Context;
 import android.content.res.Resources;
 import android.util.AttributeSet;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -45,6 +46,7 @@ public class FakeView {
     public boolean hasFocus;
     private View.OnFocusChangeListener onFocusChangeListener;
     public boolean wasInvalidated;
+    private View.OnTouchListener onTouchListener;
 
     public FakeView(View view) {
         this.realView = view;
@@ -209,6 +211,10 @@ public class FakeView {
         return width;
     }
 
+    public final int getMeasuredWidth() {
+        return width;
+    }
+    
     public void setPadding(int left, int top, int right, int bottom) {
         paddingLeft = left;
         paddingTop = top;
@@ -257,5 +263,16 @@ public class FakeView {
 
     public void invalidate() {
         wasInvalidated = true;
+    }
+
+    public void setOnTouchListener(View.OnTouchListener onTouchListener) {
+        this.onTouchListener = onTouchListener;
+    }
+
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (onTouchListener != null) {
+            return onTouchListener.onTouch(realView, event);
+        }
+        return false;
     }
 }

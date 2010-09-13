@@ -1,5 +1,6 @@
 package com.xtremelabs.droidsugar.fakes;
 
+import android.graphics.drawable.Drawable;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
 import android.view.KeyEvent;
@@ -80,6 +81,23 @@ public class FakeTextView extends FakeView {
         compoundDrawablesWithIntrinsicBounds = new CompoundDrawables(left, top , right, bottom);
     }
 
+    public void setCompoundDrawablesWithIntrinsicBounds(Drawable left, Drawable top,
+                                                        Drawable right, Drawable bottom) {
+        compoundDrawablesWithIntrinsicBounds = new CompoundDrawables(left, top , right, bottom);
+    }
+
+    public Drawable[] getCompoundDrawables() {
+        if (compoundDrawablesWithIntrinsicBounds == null) {
+            return new Drawable[]{null, null, null, null};
+        }
+        return new Drawable[]{
+                compoundDrawablesWithIntrinsicBounds.leftDrawable,
+                compoundDrawablesWithIntrinsicBounds.topDrawable,
+                compoundDrawablesWithIntrinsicBounds.rightDrawable,
+                compoundDrawablesWithIntrinsicBounds.bottomDrawable
+        };
+    }
+
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (onKeyListener != null) {
             return onKeyListener.onKey(realView, keyCode, event);
@@ -87,12 +105,24 @@ public class FakeTextView extends FakeView {
             return false;
         }
     }
-    
+
     public static class CompoundDrawables {
         public int left;
         public int top;
         public int right;
         public int bottom;
+        
+        public Drawable leftDrawable;
+        public Drawable topDrawable;
+        public Drawable rightDrawable;
+        public Drawable bottomDrawable;
+
+        public CompoundDrawables(Drawable left, Drawable top, Drawable right, Drawable bottom) {
+            leftDrawable = left;
+            topDrawable = top;
+            rightDrawable = right;
+            bottomDrawable = bottom;
+        }
 
         public CompoundDrawables(int left, int top, int right, int bottom) {
             this.left = left;
