@@ -3,6 +3,7 @@ package com.xtremelabs.droidsugar.fakes;
 import android.os.Handler;
 import android.os.Looper;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
+import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
@@ -52,13 +53,16 @@ public class HandlerTest {
 
     @Test
     public void testDifferentLoopersGetDifferentQueues() throws Exception {
-        Handler handler1 = new Handler(Looper.getMainLooper());
+        Looper looper1 = FakeHelper.newInstanceOf(Looper.class);
+        Looper looper2 = FakeHelper.newInstanceOf(Looper.class);
+
+        Handler handler1 = new Handler(looper1);
         handler1.post(new Say("first thing"));
 
-        Handler handler2 = new Handler(Looper.myLooper());
+        Handler handler2 = new Handler(looper2);
         handler2.post(new Say("second thing"));
 
-        proxyFor(Looper.myLooper()).idle();
+        proxyFor(looper2).idle();
 
         transcript.assertEventsSoFar("second thing");
     }
