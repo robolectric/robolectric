@@ -4,6 +4,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -21,6 +22,7 @@ public class FakeListView extends FakeAdapterView {
         this.itemsCanFocus = itemsCanFocus;
     }
 
+    @Override
     public boolean performItemClick(View view, int position, long id) {
         AdapterView.OnItemClickListener onItemClickListener = getOnItemClickListener();
         if (onItemClickListener != null) {
@@ -36,5 +38,32 @@ public class FakeListView extends FakeAdapterView {
 
     public boolean performItemClick(int position) {
         return realListView.performItemClick(realListView.getChildAt(position), position, realListView.getItemIdAtPosition(position));
+    }
+
+    public int findIndexOfItemContainingText(String targetText) {
+        for (int i = 0; i < realListView.getChildCount(); i++) {
+            View childView = realListView.getChildAt(i);
+            String innerText = ((FakeView) ProxyDelegatingHandler.getInstance().proxyFor(childView)).innerText();
+            if (innerText.contains(targetText)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public View findItemContainingText(String targetText) {
+        int itemIndex = findIndexOfItemContainingText(targetText);
+        if (itemIndex == -1) {
+            return null;
+        }
+        return realListView.getChildAt(itemIndex);
+    }
+
+    public void clickFirstItemContainingText(String targetText) {
+        int itemIndex = findIndexOfItemContainingText(targetText);
+        if (itemIndex == -1) {
+            throw new IllegalArgumentException("No item found containing text \"" + targetText + "\"");
+        }
+        performItemClick(itemIndex);
     }
 }

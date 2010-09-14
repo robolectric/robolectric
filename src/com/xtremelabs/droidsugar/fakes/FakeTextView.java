@@ -106,6 +106,11 @@ public class FakeTextView extends FakeView {
         }
     }
 
+    @Override
+    public String innerText() {
+        return text == null ? "" : text.toString();
+    }
+
     public static class CompoundDrawables {
         public int left;
         public int top;

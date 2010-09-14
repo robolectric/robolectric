@@ -275,4 +275,8 @@ public class FakeView {
         }
         return false;
     }
+
+    public String innerText() {
+        return "";
+    }
 }

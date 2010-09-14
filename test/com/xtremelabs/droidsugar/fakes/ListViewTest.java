@@ -10,6 +10,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner.proxyFor;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertThat;
+
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class ListViewTest {
     private Transcript transcript;
@@ -65,5 +70,44 @@ public class ListViewTest {
     @Test
     public void shouldHaveAdapterViewCommonBehavior() throws Exception {
         AdapterViewBehavior.shouldActAsAdapterView(listView);
+    }
+
+    @Test
+    public void findItemContainingText_shouldFindChildByString() throws Exception {
+        FakeListView fakeListView = prepareListWithThreeItems();
+        View item1 = fakeListView.findItemContainingText("Item 1");
+        assertThat(item1, sameInstance(listView.getChildAt(1)));
+    }
+
+    @Test
+    public void findItemContainingText_shouldReturnNullIfNotFound() throws Exception {
+        FakeListView fakeListView = prepareListWithThreeItems();
+        assertThat(fakeListView.findItemContainingText("Non-existant item"), nullValue());
+    }
+
+    @Test
+    public void clickItemContainingText_shouldPerformItemClickOnList() throws Exception {
+        FakeListView fakeListView = prepareListWithThreeItems();
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                transcript.add("clicked on item " + position);
+            }
+        });
+        fakeListView.clickFirstItemContainingText("Item 1");
+        transcript.assertEventsSoFar("clicked on item 1");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void clickItemContainingText_shouldThrowExceptionIfNotFound() throws Exception {
+        FakeListView fakeListView = prepareListWithThreeItems();
+        fakeListView.clickFirstItemContainingText("Non-existant item");
+    }
+
+    private FakeListView prepareListWithThreeItems() {
+        listView.setAdapter(new CountingAdapter(3));
+        FakeHandler.flush();
+
+        return (FakeListView) proxyFor(listView);
     }
 }
