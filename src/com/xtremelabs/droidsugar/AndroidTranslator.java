@@ -2,6 +2,7 @@ package com.xtremelabs.droidsugar;
 
 import javassist.*;
 
+import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -309,11 +310,17 @@ public class AndroidTranslator implements Translator {
         }
     }
 
-    public void saveAllClassesToCache(String filename) {
+    public void saveAllClassesToCache(File file) {
         if (modifiedClasses.size() > 0) {
             JarOutputStream jarOutputStream = null;
             try {
-                jarOutputStream = new JarOutputStream(new FileOutputStream(filename, true));
+                File cacheJarDir = file.getParentFile();
+                if (!cacheJarDir.exists()) {
+                    //noinspection ResultOfMethodCallIgnored
+                    cacheJarDir.mkdirs();
+                }
+
+                jarOutputStream = new JarOutputStream(new FileOutputStream(file, true));
                 for (Map.Entry<String, byte[]> entry : modifiedClasses.entrySet()) {
                     String key = entry.getKey();
                     jarOutputStream.putNextEntry(new JarEntry(key.replace('.', '/') + ".class"));

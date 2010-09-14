@@ -6,6 +6,7 @@ import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.jar.JarEntry;
@@ -31,14 +32,15 @@ public class Loader extends javassist.Loader {
         } catch (CannotCompileException e) {
             throw new RuntimeException(e);
         }
+        final File cacheJarFile = new File("tmp/cached-droid-sugar-classes.jar");
         try {
-            cacheFile = new JarFile("/tmp/cached-droid-sugar-classes.jar");
+            cacheFile = new JarFile(cacheJarFile);
         } catch (IOException e) {
             // no problem
         }
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override public void run() {
-                androidTranslator.saveAllClassesToCache("/tmp/cached-droid-sugar-classes.jar");
+                androidTranslator.saveAllClassesToCache(cacheJarFile);
             }
         });
     }
