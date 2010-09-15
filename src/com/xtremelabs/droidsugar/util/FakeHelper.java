@@ -44,6 +44,7 @@ public class FakeHelper {
                 FakeItemizedOverlay.class,
                 FakeLayoutParams.class,
                 FakeListView.class,
+                FakeLocation.class,
                 FakeLooper.class,
                 FakeMapController.class,
                 FakeMapActivity.class,
