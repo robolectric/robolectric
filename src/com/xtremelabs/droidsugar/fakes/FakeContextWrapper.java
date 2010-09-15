@@ -16,8 +16,7 @@ import com.xtremelabs.droidsugar.util.ResourceLoader;
 import com.xtremelabs.droidsugar.util.ViewLoader;
 import com.xtremelabs.droidsugar.view.TestSharedPreferences;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 import static org.mockito.Mockito.mock;
 
@@ -26,11 +25,21 @@ import static org.mockito.Mockito.mock;
 public class FakeContextWrapper {
     public static ResourceLoader resourceLoader;
 
+    // todo: why not just use this context?
     protected static Context contextForInflation = new ContextWrapper(null);
+
+    private ContextWrapper realContextWrapper;
+
     public List<Intent> startedServices = new ArrayList<Intent>();
     private LocationManager locationManager;
     private MockPackageManager packageManager;
     public Intent startedIntent;
+
+    public Map<String, BroadcastReceiver> registeredReceivers = new HashMap<String, BroadcastReceiver>();
+
+    public FakeContextWrapper(ContextWrapper realContextWrapper) {
+        this.realContextWrapper = realContextWrapper;
+    }
 
     public Resources getResources() {
         return new Resources(null, null, null);
@@ -44,13 +53,40 @@ public class FakeContextWrapper {
         return new MockContentResolver();
     }
 
+    public void sendBroadcast(Intent intent) {
+        BroadcastReceiver broadcastReceiver = registeredReceivers.get(intent.getAction());
+        if (broadcastReceiver != null) {
+            broadcastReceiver.onReceive(realContextWrapper, intent);
+        }
+    }
+
+    public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+        Iterator<String> iterator = filter.actionsIterator();
+        while (iterator.hasNext()) {
+            String action =  iterator.next();
+            registeredReceivers.put(action, receiver);
+        }
+        return null;
+    }
+
+    public void unregisterReceiver(BroadcastReceiver receiver) {
+        Iterator<Map.Entry<String, BroadcastReceiver>> entryIterator = registeredReceivers.entrySet().iterator();
+        while (entryIterator.hasNext()) {
+            Map.Entry<String, BroadcastReceiver> stringBroadcastReceiverEntry = entryIterator.next();
+            if (stringBroadcastReceiverEntry.getValue() == receiver) {
+                entryIterator.remove();
+            }
+        }
+    }
+
     public PackageManager getPackageManager() {
-        if(packageManager == null) {
+        if (packageManager == null) {
             packageManager = new MockPackageManager() {
                 public PackageInfo packageInfo;
+
                 @Override
                 public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
-                    if(packageInfo == null) {
+                    if (packageInfo == null) {
                         packageInfo = new PackageInfo();
                         packageInfo.versionName = "1.0";
                     }

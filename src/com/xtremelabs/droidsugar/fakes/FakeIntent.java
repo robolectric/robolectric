@@ -36,6 +36,10 @@ public class FakeIntent {
         data = uri;
     }
 
+    public void __constructor__(String action) {
+        __constructor__(action, null);
+    }
+
     public Intent setAction(String action) {
         this.action = action;
         return realIntent;

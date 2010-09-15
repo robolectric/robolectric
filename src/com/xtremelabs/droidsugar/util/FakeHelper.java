@@ -40,6 +40,7 @@ public class FakeHelper {
                 FakeGeoPoint.class,
                 FakeHandler.class,
                 FakeIntent.class,
+                FakeIntentFilter.class,
                 FakeItemizedOverlay.class,
                 FakeLayoutParams.class,
                 FakeListView.class,

@@ -23,6 +23,7 @@ public class FakeActivity extends FakeContextWrapper {
     private TestWindow window;
 
     public FakeActivity(Activity realActivity) {
+        super(realActivity);
         this.realActivity = realActivity;
     }
 
