@@ -14,7 +14,7 @@ public class Transcript {
     }
 
     public void assertNoEventsSoFar() {
-        assertEquals(0, events.size());
+        assertEquals("Expected no events but got " + events + ".", 0, events.size());
     }
 
     public void assertEventsSoFar(String... expectedEvents) {
