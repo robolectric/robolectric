@@ -18,6 +18,7 @@ import java.util.Map;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(View.class)
 public class FakeView {
+    @Deprecated
     public static final int UNINITIALIZED_ATTRIBUTE = -1000;
 
     protected View realView;
@@ -30,7 +31,7 @@ public class FakeView {
     private View.OnClickListener onClickListener;
     private Object tag;
     private boolean enabled = true;
-    public int visibility = UNINITIALIZED_ATTRIBUTE;
+    public int visibility = View.VISIBLE;
     public int height;
     public int width;
     public int paddingLeft;
@@ -132,7 +133,7 @@ public class FakeView {
     }
 
     public final ViewParent getParent() {
-        return (ViewParent) parent.realView;
+        return parent == null ? null : (ViewParent) parent.realView;
     }
 
     public void removeAllViews() {
@@ -140,6 +141,10 @@ public class FakeView {
             childProxy(child).parent = null;
         }
         children.clear();
+    }
+
+    public void removeViewAt(int position) {
+        childProxy(children.remove(position)).parent = null;
     }
 
     public final Context getContext() {
