@@ -28,6 +28,9 @@ public class FakeTextView extends FakeView {
 
     public void setText(CharSequence text) {
         this.textResourceId = UNINITIALIZED_ATTRIBUTE;
+        if (text == null) {
+            text = "";
+        }
         this.text = text;
     }
 
