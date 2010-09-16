@@ -12,6 +12,10 @@ import java.util.List;
 public class FakeBaseAdapter {
     private final List<DataSetObserver> dataSetObservers = new ArrayList<DataSetObserver>();
 
+    public boolean areAllItemsEnabled() {
+        return true;
+    }
+
     public void registerDataSetObserver(DataSetObserver observer) {
         dataSetObservers.add(observer);
     }
