@@ -15,15 +15,16 @@ public class FakeViewGroup extends FakeView {
     @Override
     public String innerText() {
         String innerText = "";
-        boolean first = true;
+        String delimiter = "";
+
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
             String childText = ((FakeView) ProxyDelegatingHandler.getInstance().proxyFor(child)).innerText();
-            if (!first && childText.length() > 0) {
-                innerText += " ";
+            if (childText.length() > 0) {
+                innerText += delimiter;
+                delimiter = " ";
             }
             innerText += childText;
-            first = false;
         }
         return innerText;
     }

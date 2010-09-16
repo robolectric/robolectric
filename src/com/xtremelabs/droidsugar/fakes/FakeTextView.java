@@ -10,6 +10,8 @@ import com.xtremelabs.droidsugar.util.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.view.View.VISIBLE;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextView.class)
 public class FakeTextView extends FakeView {
@@ -111,7 +113,7 @@ public class FakeTextView extends FakeView {
 
     @Override
     public String innerText() {
-        return text == null ? "" : text.toString();
+        return (text == null || visibility != VISIBLE) ? "" : text.toString();
     }
 
     public static class CompoundDrawables {
