@@ -6,7 +6,7 @@ import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.junit.internal.matchers.TypeSafeMatcher;
 
-public class TextViewHasTextMatcher extends TypeSafeMatcher<TextView> {
+public class TextViewHasTextMatcher<T extends TextView> extends TypeSafeMatcher<T> {
     private String expected;
     private String actualText;
 
@@ -15,7 +15,7 @@ public class TextViewHasTextMatcher extends TypeSafeMatcher<TextView> {
     }
 
     @Override
-    public boolean matchesSafely(TextView actual) {
+    public boolean matchesSafely(T actual) {
         if (actual == null) {
             return false;
         }
@@ -36,7 +36,7 @@ public class TextViewHasTextMatcher extends TypeSafeMatcher<TextView> {
     }
 
     @Factory
-    public static Matcher<TextView> hasText(String expectedTextViewText) {
-        return new TextViewHasTextMatcher(expectedTextViewText);
+    public static <T extends TextView> Matcher<T> hasText(String expectedTextViewText) {
+        return new TextViewHasTextMatcher<T>(expectedTextViewText);
     }
 }
