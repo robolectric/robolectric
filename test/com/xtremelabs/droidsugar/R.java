@@ -8,7 +8,7 @@
 package com.xtremelabs.droidsugar;
 
 public final class R {
-    private static int nextId = 0;
+    private static int nextId = 1234;
 
     public static final class id {
         public static final int time = nextId++;
@@ -21,6 +21,7 @@ public final class R {
         public static final int true_checkbox = nextId++;
         public static final int false_checkbox = nextId++;
         public static final int default_checkbox = nextId++;
+        public static final int image = nextId++;
     }
 
     public static final class string {
@@ -37,5 +38,9 @@ public final class R {
         public static final int black = nextId++;
         public static final int white = nextId++;
         public static final int clear = nextId++;
+    }
+
+    public static final class drawable {
+        public static final int an_image = nextId++;
     }
 }

@@ -5,6 +5,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import org.w3c.dom.Document;
@@ -153,6 +154,16 @@ public class ViewLoader extends XmlLoader {
                 String text = attributes.get("android:checked");
                 if (text != null) {
                     ((CheckBox)view).setChecked(Boolean.valueOf(text));
+                }
+            }
+
+            if (view instanceof ImageView) {
+                String text = attributes.get("android:src");
+                if (text != null) {
+                    if (text.startsWith("@drawable/")) {
+                        Integer resId = resourceExtractor.getResourceStringToId().get(text.substring(1));
+                        ((ImageView) view).setImageResource(resId);
+                    }
                 }
             }
         }

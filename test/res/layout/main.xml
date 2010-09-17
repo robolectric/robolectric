@@ -49,4 +49,10 @@
     <CheckBox android:id="@+id/false_checkbox" android:checked="false"/>
     <CheckBox android:id="@+id/default_checkbox"/>
 
+    <ImageView
+            android:id="@+id/image"
+            android:src="@drawable/an_image"
+            />
+
+
 </LinearLayout>

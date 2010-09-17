@@ -3,14 +3,14 @@ package com.xtremelabs.droidsugar.util;
 import android.test.mock.MockContext;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.*;
+import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import com.google.android.maps.MapView;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import com.xtremelabs.droidsugar.R;
-import com.xtremelabs.droidsugar.fakes.FakeCompoundButton;
-import com.xtremelabs.droidsugar.fakes.FakeTextView;
-import com.xtremelabs.droidsugar.fakes.FakeView;
-import com.xtremelabs.droidsugar.fakes.FakeViewGroup;
+import com.xtremelabs.droidsugar.fakes.FakeImageView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,6 +18,7 @@ import org.junit.runner.RunWith;
 import java.io.File;
 
 import static android.test.MoreAsserts.assertNotEqual;
+import static com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner.proxyFor;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertSame;
@@ -30,10 +31,7 @@ public class ViewLoaderTest {
 
     @Before
     public void setUp() throws Exception {
-        DroidSugarAndroidTestRunner.addProxy(View.class, FakeView.class);
-        DroidSugarAndroidTestRunner.addProxy(ViewGroup.class, FakeViewGroup.class);
-        DroidSugarAndroidTestRunner.addProxy(TextView.class, FakeTextView.class);
-        DroidSugarAndroidTestRunner.addProxy(CompoundButton.class, FakeCompoundButton.class);
+        DroidSugarAndroidTestRunner.addGenericProxies();
 
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);
@@ -120,6 +118,12 @@ public class ViewLoaderTest {
         assertThat(((CheckBox) mediaView.findViewById(R.id.true_checkbox)).isChecked(), equalTo(true));
         assertThat(((CheckBox) mediaView.findViewById(R.id.false_checkbox)).isChecked(), equalTo(false));
         assertThat(((CheckBox) mediaView.findViewById(R.id.default_checkbox)).isChecked(), equalTo(false));
+    }
+
+    @Test
+    public void testImageViewSrcIsSet() throws Exception {
+        View mediaView = viewLoader.inflateView(context, "layout/main");
+        assertThat(((FakeImageView) proxyFor(mediaView.findViewById(R.id.image))).resourceId, equalTo(R.drawable.an_image));
     }
 
     @Test
