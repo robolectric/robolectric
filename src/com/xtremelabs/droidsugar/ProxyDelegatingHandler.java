@@ -123,7 +123,11 @@ public class ProxyDelegatingHandler implements ClassHandler {
         } catch (IllegalArgumentException e) {
             throw new RuntimeException(fakeObject.getClass().getName() + " is not assignable from " + handlingClass.getName(), e);
         } catch (InvocationTargetException e) {
-            throw new RuntimeException("Did your fake implementation of a method throw an exception? Refer to the bottom of this stack trace.", e);
+            if (e.getCause() instanceof RuntimeException) {
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw new RuntimeException("Did your fake implementation of a method throw an exception? Refer to the bottom of this stack trace.", e);
+            }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
