@@ -10,10 +10,17 @@ import org.junit.internal.matchers.TypeSafeMatcher;
 
 public class ViewHasTextMatcher<T extends View> extends TypeSafeMatcher<T> {
     private String expected;
+    private int expectedResourceId;
     private String actualText;
 
     public ViewHasTextMatcher(String expected) {
         this.expected = expected;
+        expectedResourceId = -1;
+    }
+
+    public ViewHasTextMatcher(int expectedResourceId) {
+        this.expected = null;
+        this.expectedResourceId = expectedResourceId;
     }
 
     @Override
@@ -21,11 +28,17 @@ public class ViewHasTextMatcher<T extends View> extends TypeSafeMatcher<T> {
         if (actual == null) {
             return false;
         }
+
+        if (expectedResourceId != -1) {
+            expected = actual.getContext().getResources().getString(expectedResourceId);
+        }
+
         final CharSequence charSequence = proxyFor(actual).innerText();
         if (charSequence == null || charSequence.toString() == null) {
             return false;
         }
         actualText = charSequence.toString();
+
         return actualText.equals(expected);
     }
 
@@ -40,6 +53,11 @@ public class ViewHasTextMatcher<T extends View> extends TypeSafeMatcher<T> {
     @Factory
     public static <T extends View> Matcher<T> hasText(String expectedTextViewText) {
         return new ViewHasTextMatcher<T>(expectedTextViewText);
+    }
+
+    @Factory
+    public static <T extends View> Matcher<T> hasText(int expectedTextViewResourceId) {
+        return new ViewHasTextMatcher<T>(expectedTextViewResourceId);
     }
 
     private FakeView proxyFor(View actual) {

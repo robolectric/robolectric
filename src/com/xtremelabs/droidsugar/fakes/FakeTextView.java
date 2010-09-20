@@ -17,7 +17,6 @@ import static android.view.View.VISIBLE;
 public class FakeTextView extends FakeView {
     private CharSequence text = "";
     public CompoundDrawables compoundDrawablesWithIntrinsicBounds;
-    public int textResourceId = UNINITIALIZED_ATTRIBUTE;
     public int textColorHexValue = UNINITIALIZED_ATTRIBUTE;
     public int textSize = UNINITIALIZED_ATTRIBUTE;
     public boolean autoLinkPhoneNumbers;
@@ -29,7 +28,6 @@ public class FakeTextView extends FakeView {
     }
 
     public void setText(CharSequence text) {
-        this.textResourceId = UNINITIALIZED_ATTRIBUTE;
         if (text == null) {
             text = "";
         }
@@ -37,7 +35,6 @@ public class FakeTextView extends FakeView {
     }
 
     public void setText(int textResourceId) {
-        this.textResourceId = textResourceId;
         this.text = getResources().getText(textResourceId);
     }
 
