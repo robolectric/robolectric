@@ -12,6 +12,7 @@ public class TestWindow extends Window {
     public int requestedFeatureId;
     public int featureDrawableResourceFeatureId;
     public int featureDrawableResourceResId;
+    public int softInputMode;
 
     TestWindow(Context context) {
         super(context);
@@ -155,5 +156,9 @@ public class TestWindow extends Window {
 
     @Override public int getVolumeControlStream() {
         return 0;
+    }
+
+    @Override public void setSoftInputMode(int softInputMode) {
+        this.softInputMode = softInputMode;
     }
 }
