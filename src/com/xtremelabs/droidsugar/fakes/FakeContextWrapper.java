@@ -6,11 +6,11 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.LocationManager;
-import android.test.mock.MockContentResolver;
 import android.test.mock.MockPackageManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implements;
 import com.xtremelabs.droidsugar.util.ResourceLoader;
 import com.xtremelabs.droidsugar.util.ViewLoader;
@@ -46,11 +46,11 @@ public class FakeContextWrapper {
     }
 
     public Context getApplicationContext() {
-        return new ContextWrapper(null);
+        return FakeHelper.application;
     }
 
     public ContentResolver getContentResolver() {
-        return new MockContentResolver();
+        return getApplicationContext().getContentResolver();
     }
 
     public void sendBroadcast(Intent intent) {
@@ -63,7 +63,7 @@ public class FakeContextWrapper {
     public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
         Iterator<String> iterator = filter.actionsIterator();
         while (iterator.hasNext()) {
-            String action =  iterator.next();
+            String action = iterator.next();
             registeredReceivers.put(action, receiver);
         }
         return null;

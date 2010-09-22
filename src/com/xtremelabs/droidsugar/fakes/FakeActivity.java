@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -18,7 +19,6 @@ public class FakeActivity extends FakeContextWrapper {
     public int resultCode;
     public Intent resultIntent;
     public Activity parent;
-    public static Application application;
     private Activity realActivity;
     private TestWindow window;
 
@@ -28,7 +28,7 @@ public class FakeActivity extends FakeContextWrapper {
     }
 
     public final Application getApplication() {
-        return application;
+        return FakeHelper.application;
     }
 
     public void setIntent(Intent intent) {

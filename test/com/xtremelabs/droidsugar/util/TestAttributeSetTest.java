@@ -90,7 +90,6 @@ public class TestAttributeSetTest {
     public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributes() throws Exception {
         attributes.put("itemType", "string");
 
-        System.out.println("" + new File(".").getAbsolutePath());
         AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
         attrResourceLoader.loadDirs(new File("test/res/values"));
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, attrResourceLoader, CustomView.class);

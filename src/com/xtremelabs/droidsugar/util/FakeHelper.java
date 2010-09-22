@@ -1,5 +1,6 @@
 package com.xtremelabs.droidsugar.util;
 
+import android.app.Application;
 import com.xtremelabs.droidsugar.fakes.*;
 import com.xtremelabs.droidsugar.view.TestSharedPreferences;
 
@@ -9,6 +10,8 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FakeHelper {
+    public static Application application;
+
     public static <T> T newInstanceOf(Class<T> clazz) {
         try {
             Constructor<T> defaultConstructor = clazz.getDeclaredConstructor();
@@ -28,10 +31,11 @@ public class FakeHelper {
     public static List<Class<?>> getGenericProxies() {
         return Arrays.asList(
                 FakeAbsSpinner.class,
-                FakeAlertDialog.class,
-                FakeAlertDialog.FakeBuilder.class,
                 FakeActivity.class,
                 FakeAdapterView.class,
+                FakeAlertDialog.class,
+                FakeAlertDialog.FakeBuilder.class,
+                FakeApplication.class,
                 FakeBaseAdapter.class,
                 FakeCompoundButton.class,
                 FakeContextWrapper.class,
@@ -45,6 +49,7 @@ public class FakeHelper {
                 FakeLayoutParams.class,
                 FakeListView.class,
                 FakeLocation.class,
+                FakeLocationManager.class,
                 FakeLooper.class,
                 FakeMapController.class,
                 FakeMapActivity.class,
@@ -52,6 +57,9 @@ public class FakeHelper {
                 FakeMotionEvent.class,
                 FakeOverlayItem.class,
                 FakeResources.class,
+                FakeSettings.class,
+                FakeSettings.FakeSecure.class,
+                FakeSettings.FakeSystem.class,
                 FakeSpannableStringBuilder.class,
                 FakeTextUtils.class,
                 FakeTextView.class,
