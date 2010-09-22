@@ -19,6 +19,7 @@
             android:layout_height="wrap_content"
             android:textSize="14dip"
             android:textColor="#fff"
+            android:enabled="false"
             />
 
     <TextView

@@ -139,6 +139,16 @@ public class ViewLoader extends XmlLoader {
                 }
             }
 
+            String enabled = attributes.get("android:enabled");
+            if (enabled != null) {
+                if (enabled.equals("true")) {
+                    view.setEnabled(true);
+                } else if (enabled.equals("false")) {
+                    view.setEnabled(false);
+                }
+            }
+
+
             if (view instanceof TextView) {
                 String text = attributes.get("android:text");
                 if (text != null) {
