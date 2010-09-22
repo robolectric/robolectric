@@ -2,6 +2,7 @@ package com.xtremelabs.droidsugar.fakes;
 
 import android.content.ContentResolver;
 import android.provider.Settings;
+import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.HashMap;
@@ -40,5 +41,14 @@ public class FakeSettings {
 
     @Implements(Settings.Secure.class)
     public static class FakeSecure extends SettingsImpl {
+    }
+
+    public static void setAirplaneMode(boolean isAirplaneMode) {
+        Settings.System.putInt(FakeHelper.application.getContentResolver(), Settings.System.AIRPLANE_MODE_ON, isAirplaneMode ? 1 : 0);
+        setWifiOn(!isAirplaneMode);
+    }
+
+    public static void setWifiOn(boolean isOn) {
+        Settings.Secure.putInt(FakeHelper.application.getContentResolver(), Settings.Secure.WIFI_ON, isOn ? 1 : 0);
     }
 }
