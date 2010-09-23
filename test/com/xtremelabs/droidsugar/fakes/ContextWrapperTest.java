@@ -70,4 +70,20 @@ public class ContextWrapperTest {
 
         assertThat(activity.getContentResolver(), sameInstance(new Activity().getContentResolver()));
     }
+
+    @Test
+    public void shouldReturnSameLocationManagerEveryTime() throws Exception {
+        Activity activity = new Activity();
+        assertThat(activity.getSystemService(Context.LOCATION_SERVICE), sameInstance(activity.getSystemService(Context.LOCATION_SERVICE)));
+
+        assertThat(activity.getSystemService(Context.LOCATION_SERVICE), sameInstance(new Activity().getSystemService(Context.LOCATION_SERVICE)));
+    }
+
+    @Test
+    public void shouldReturnSameWifiManagerEveryTime() throws Exception {
+        Activity activity = new Activity();
+        assertThat(activity.getSystemService(Context.WIFI_SERVICE), sameInstance(activity.getSystemService(Context.WIFI_SERVICE)));
+
+        assertThat(activity.getSystemService(Context.WIFI_SERVICE), sameInstance(new Activity().getSystemService(Context.WIFI_SERVICE)));
+    }
 }

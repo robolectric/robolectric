@@ -1,11 +1,11 @@
 package com.xtremelabs.droidsugar.fakes;
 
-import android.app.AlarmManager;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.location.LocationManager;
+import android.net.wifi.WifiManager;
 import android.test.mock.MockPackageManager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,8 +17,6 @@ import com.xtremelabs.droidsugar.util.ViewLoader;
 import com.xtremelabs.droidsugar.view.TestSharedPreferences;
 
 import java.util.*;
-
-import static org.mockito.Mockito.mock;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
@@ -36,6 +34,7 @@ public class FakeContextWrapper {
     public Intent startedIntent;
 
     public Map<String, BroadcastReceiver> registeredReceivers = new HashMap<String, BroadcastReceiver>();
+    private WifiManager wifiManager;
 
     public FakeContextWrapper(ContextWrapper realContextWrapper) {
         this.realContextWrapper = realContextWrapper;
@@ -51,6 +50,10 @@ public class FakeContextWrapper {
 
     public ContentResolver getContentResolver() {
         return getApplicationContext().getContentResolver();
+    }
+
+    public Object getSystemService(String name) {
+        return getApplicationContext().getSystemService(name);
     }
 
     public void sendBroadcast(Intent intent) {
@@ -95,24 +98,6 @@ public class FakeContextWrapper {
             };
         }
         return packageManager;
-    }
-
-    public Object getSystemService(String name) {
-        if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
-            return getFakeLayoutInflater();
-        } else if (name.equals(Context.ALARM_SERVICE)) {
-            return mock(AlarmManager.class);
-        } else if (name.equals(Context.LOCATION_SERVICE)) {
-            if (locationManager == null) {
-                locationManager = mock(LocationManager.class);
-            }
-            return locationManager;
-        }
-        return null;
-    }
-
-    public FakeLayoutInflater getFakeLayoutInflater() {
-        return new FakeLayoutInflater(resourceLoader.viewLoader);
     }
 
     public ComponentName startService(Intent service) {
