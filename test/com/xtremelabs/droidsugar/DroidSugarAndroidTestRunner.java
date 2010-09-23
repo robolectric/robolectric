@@ -2,7 +2,7 @@ package com.xtremelabs.droidsugar;
 
 import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implements;
-import org.junit.internal.runners.InitializationError;
+import org.junit.runners.model.InitializationError;
 
 import java.util.List;
 
