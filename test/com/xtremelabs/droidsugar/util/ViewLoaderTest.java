@@ -131,4 +131,10 @@ public class ViewLoaderTest {
         RelativeLayout mainView = (RelativeLayout) viewLoader.inflateView(context, "layout/mapview");
         TestUtil.assertInstanceOf(MapView.class,  mainView.findViewById(R.id.map_view));
     }
+
+    @Test
+    public void testViewEnabled() throws Exception {
+        View mediaView = viewLoader.inflateView(context, "layout/main");
+        assertThat(mediaView.findViewById(R.id.time).isEnabled(), equalTo(false));
+    }
 }
