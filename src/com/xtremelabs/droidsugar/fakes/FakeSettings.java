@@ -45,7 +45,6 @@ public class FakeSettings {
 
     public static void setAirplaneMode(boolean isAirplaneMode) {
         Settings.System.putInt(FakeHelper.application.getContentResolver(), Settings.System.AIRPLANE_MODE_ON, isAirplaneMode ? 1 : 0);
-        setWifiOn(!isAirplaneMode);
     }
 
     public static void setWifiOn(boolean isOn) {

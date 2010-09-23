@@ -69,6 +69,7 @@ public class FakeHelper {
                 FakeToast.class,
                 FakeView.class,
                 FakeViewGroup.class,
+                FakeWifiManager.class,
                 FakeZoomButtonsController.class
                 );
     }
