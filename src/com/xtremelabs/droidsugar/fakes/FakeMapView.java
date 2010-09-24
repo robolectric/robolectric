@@ -7,9 +7,9 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implements;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,8 +22,8 @@ public class FakeMapView extends FakeViewGroup {
     public GeoPoint mapCenter = new GeoPoint(10, 10);
     public int longitudeSpan = 20;
     public int latitudeSpan = 30;
-    public int zoomLevel = 1;
-    public FakeMapController fakeMapController;
+    int zoomLevel = 1;
+    FakeMapController fakeMapController;
     private ZoomButtonsController zoomButtonsController;
     private MapView realMapView;
 
@@ -44,9 +44,7 @@ public class FakeMapView extends FakeViewGroup {
     public MapController getController() {
         if(mapController == null) {
             try {
-                Constructor<MapController> constructor = MapController.class.getConstructor();
-                constructor.setAccessible(true);
-                mapController = constructor.newInstance();
+                mapController = FakeHelper.newInstanceOf(MapController.class);
                 fakeMapController = ((FakeMapController) ProxyDelegatingHandler.getInstance().proxyFor(mapController));
                 fakeMapController.fakeMapView = this;
             } catch (Exception e) {
@@ -86,6 +84,9 @@ public class FakeMapView extends FakeViewGroup {
                 return true;
             }
         }
+
+
+//        mapCenter = new GeoPoint(lat, lng);
 
         return super.dispatchTouchEvent(event);
     }

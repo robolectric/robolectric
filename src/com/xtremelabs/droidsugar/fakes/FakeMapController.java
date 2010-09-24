@@ -7,31 +7,40 @@ import com.xtremelabs.droidsugar.util.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MapController.class)
 public class FakeMapController {
-
     public FakeMapView fakeMapView;
     public GeoPoint geoPointAnimatedTo;
-    public int zoomedLatSpan;
-    public int zoomedLngSpan;
-    public int zoomLevel = 0;
+
+    public void animateTo(com.google.android.maps.GeoPoint geoPoint) {
+        setCenter(geoPoint);
+        geoPointAnimatedTo = geoPoint;
+    }
 
     public void animateTo(com.google.android.maps.GeoPoint geoPoint, java.lang.Runnable runnable) {
-        fakeMapView.mapCenter = geoPoint;
-        geoPointAnimatedTo = geoPoint;
+        animateTo(geoPoint);
         runnable.run();
     }
 
+    public void setCenter(com.google.android.maps.GeoPoint geoPoint) {
+        fakeMapView.mapCenter = geoPoint;
+    }
+
     public void zoomToSpan(int latSpan, int lngSpan) {
-        zoomedLatSpan = latSpan;
-        zoomedLngSpan = lngSpan;
+        fakeMapView.latitudeSpan = latSpan;
+        fakeMapView.longitudeSpan = lngSpan;
     }
 
     public boolean zoomIn() {
-        zoomLevel++;
+        fakeMapView.zoomLevel++;
         return true;
     }
 
     public boolean zoomOut() {
-        zoomLevel--;
+        fakeMapView.zoomLevel--;
         return true;
+    }
+
+    public int setZoom(int i) {
+        fakeMapView.zoomLevel = i;
+        return i;
     }
 }

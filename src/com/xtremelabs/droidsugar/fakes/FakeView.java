@@ -32,8 +32,10 @@ public class FakeView {
     private Object tag;
     private boolean enabled = true;
     public int visibility = View.VISIBLE;
-    public int height;
-    public int width;
+    public int left;
+    public int top;
+    public int right;
+    public int bottom;
     public int paddingLeft;
     public int paddingTop;
     public int paddingRight;
@@ -209,15 +211,24 @@ public class FakeView {
     }
 
     public final int getHeight() {
-        return height;
+        return bottom - top;
     }
 
     public final int getWidth() {
-        return width;
+        return right - left;
     }
 
     public final int getMeasuredWidth() {
-        return width;
+        return getWidth();
+    }
+
+    public final void layout(int l, int t, int r, int b) {
+        left = l;
+        top = t;
+        right = r;
+        bottom = b;
+
+// todo:       realView.onLayout();
     }
     
     public void setPadding(int left, int top, int right, int bottom) {
