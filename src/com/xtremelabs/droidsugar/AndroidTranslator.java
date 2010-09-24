@@ -129,7 +129,7 @@ public class AndroidTranslator implements Translator {
             boolean isStatic = Modifier.isStatic(modifiers);
 
             String methodBody;
-            if (!wasNative && !isAbstract) {
+            if (!isAbstract) {
                 methodBody = generateMethodBody(ctClass, ctMethod, returnCtClass, returnType, returnsVoid, isStatic);
             } else {
                 methodBody = returnsVoid ? "" : "return " + returnType.defaultReturnString() + ";";
