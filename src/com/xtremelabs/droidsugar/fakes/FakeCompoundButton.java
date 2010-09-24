@@ -7,7 +7,7 @@ import com.xtremelabs.droidsugar.util.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(CompoundButton.class)
 public class FakeCompoundButton extends FakeTextView implements Checkable {
-    private boolean mmmmmChecked;
+    private boolean mmChecked;
     private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
 
     public FakeCompoundButton(CompoundButton view) {
@@ -15,7 +15,7 @@ public class FakeCompoundButton extends FakeTextView implements Checkable {
     }
 
     @Override public void toggle() {
-        setChecked(!mmmmmChecked);
+        setChecked(!mmChecked);
     }
 
     @Override public boolean performClick() {
@@ -24,15 +24,15 @@ public class FakeCompoundButton extends FakeTextView implements Checkable {
     }
 
     @Override public boolean isChecked() {
-        return mmmmmChecked;
+        return mmChecked;
     }
 
     @Override public void setChecked(boolean checked) {
-        if (mmmmmChecked != checked) {
-            mmmmmChecked = checked;
+        if (mmChecked != checked) {
+            mmChecked = checked;
 
             if (mOnCheckedChangeListener != null) {
-                mOnCheckedChangeListener.onCheckedChanged((CompoundButton) realView, mmmmmChecked);
+                mOnCheckedChangeListener.onCheckedChanged((CompoundButton) realView, mmChecked);
             }
         }
     }
