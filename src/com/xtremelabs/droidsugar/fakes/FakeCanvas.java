@@ -9,10 +9,21 @@ import com.xtremelabs.droidsugar.util.Implements;
 @Implements(Canvas.class)
 public class FakeCanvas {
     public Path drawnPath;
-    public Paint lastPaint;
+    public Paint pathPaint;
+    public Paint circlePaint;
+    public float circleCenterX;
+    public float circleCenterY;
+    public float circleRadius;
 
     public void drawPath(Path path, Paint paint) {
         drawnPath = path;
-        lastPaint = paint;
+        pathPaint = paint;
+    }
+
+    public void drawCircle(float cx, float cy, float radius, Paint paint) {
+        circleCenterX = cx;
+        circleCenterY = cy;
+        circleRadius = radius;
+        circlePaint = paint;
     }
 }
