@@ -15,6 +15,7 @@ public class ViewTest {
     public void testHasEmptyLayoutParams() throws Exception {
         DroidSugarAndroidTestRunner.addProxy(View.class, FakeView.class);
 
+        
         ViewGroup.LayoutParams layoutParams = new View(null).getLayoutParams();
         assertThat(layoutParams, notNullValue());
     }

@@ -16,7 +16,6 @@ public class AbsSpinnerTest {
     @Before
     public void setUp() throws Exception {
         TestUtil.addAllProxies();
-
         adapterView = new Gallery(new Activity());
     }
 
