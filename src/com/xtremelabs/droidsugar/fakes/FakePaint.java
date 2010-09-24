@@ -12,6 +12,10 @@ public class FakePaint {
     public Paint.Cap cap;
     public Paint.Join join;
     public float width;
+    public float shadowRadius;
+    public float shadowDx;
+    public float shadowDy;
+    public int shadowColor;
 
     public void setColor(int color) {
         this.color = color;
@@ -53,4 +57,26 @@ public class FakePaint {
         return width;
     }
 
+    public void setShadowLayer(float radius, float dx, float dy, int color) {
+        shadowRadius = radius;
+        shadowDx = dx;
+        shadowDy = dy;
+        shadowColor = color;
+    }
+
+    public float getShadowRadius() {
+        return shadowRadius;
+    }
+
+    public float getShadowDx() {
+        return shadowDx;
+    }
+
+    public float getShadowDy() {
+        return shadowDy;
+    }
+
+    public int getShadowColor() {
+        return shadowColor;
+    }
 }

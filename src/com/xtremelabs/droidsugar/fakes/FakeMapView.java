@@ -25,6 +25,7 @@ public class FakeMapView extends FakeViewGroup {
     private ZoomButtonsController zoomButtonsController;
     private MapView realMapView;
     private Projection projection;
+    public boolean useBuiltInZoomMapControls;
 
     public FakeMapView(MapView mapView) {
         super(mapView);
@@ -65,6 +66,10 @@ public class FakeMapView extends FakeViewGroup {
         return zoomButtonsController;
     }
 
+    public void setBuiltInZoomControls(boolean useBuiltInZoomMapControls) {
+        this.useBuiltInZoomMapControls = useBuiltInZoomMapControls;
+    }
+    
     public com.google.android.maps.Projection getProjection() {
         if (projection == null) {
             projection = new Projection() {
