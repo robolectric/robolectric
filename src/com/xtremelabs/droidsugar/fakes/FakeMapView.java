@@ -1,5 +1,6 @@
 package com.xtremelabs.droidsugar.fakes;
 
+import android.view.MotionEvent;
 import android.widget.ZoomButtonsController;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
@@ -24,9 +25,11 @@ public class FakeMapView extends FakeViewGroup {
     public int zoomLevel = 1;
     public FakeMapController fakeMapController;
     private ZoomButtonsController zoomButtonsController;
+    private MapView realMapView;
 
     public FakeMapView(MapView mapView) {
         super(mapView);
+        realMapView = mapView;
         zoomButtonsController = new ZoomButtonsController(mapView);
     }
 
@@ -75,5 +78,15 @@ public class FakeMapView extends FakeViewGroup {
 
     public int getZoomLevel() {
         return zoomLevel;
+    }
+
+    @Override public boolean dispatchTouchEvent(MotionEvent event) {
+        for (Overlay overlay : overlays) {
+            if (overlay.onTouchEvent(event, realMapView)) {
+                return true;
+            }
+        }
+
+        return super.dispatchTouchEvent(event);
     }
 }
