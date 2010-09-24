@@ -13,7 +13,6 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class ViewTest {
-
     private View view;
 
     @Before public void setUp() throws Exception {
