@@ -73,8 +73,8 @@ public class FakeMapView extends FakeViewGroup {
                         point = new Point();
                     }
 
-                    point.x = scaleLL(geoPoint.getLongitudeE6(), left, right, mapCenter.getLongitudeE6(), longitudeSpan);
                     point.y = scaleLL(geoPoint.getLatitudeE6(), top, bottom, mapCenter.getLatitudeE6(), latitudeSpan);
+                    point.x = scaleLL(geoPoint.getLongitudeE6(), left, right, mapCenter.getLongitudeE6(), longitudeSpan);
                     return point;
                 }
 
@@ -102,8 +102,9 @@ public class FakeMapView extends FakeViewGroup {
     private int scaleLL(int ll, int minPixel, int maxPixel, int centerLL, int spanLL) {
         int minLl = centerLL - spanLL / 2;
         int offsetLls = ll - minLl;
-        double ratio = offsetLls / ((double) minLl + spanLL);
-        return (int) (minPixel + maxPixel * ratio);
+        double ratio = offsetLls / ((double) spanLL);
+        int spanPixels = maxPixel - minPixel;
+        return (int) (minPixel + spanPixels * ratio);
     }
 
     public List<Overlay> getOverlays() {
@@ -134,7 +135,8 @@ public class FakeMapView extends FakeViewGroup {
         }
 
 
-//        mapCenter = new GeoPoint(lat, lng);
+        // todo: this is wrong
+        mapCenter = getProjection().fromPixels((int) event.getX(), (int) event.getY());
 
         return super.dispatchTouchEvent(event);
     }

@@ -76,40 +76,40 @@ public class MapViewTest {
 
     @Test
     public void getProjection_fromPixels_shouldPerformCorrectTranslations() throws Exception {
-        int centerLat = 10;
-        int centerLng = 15;
+        int centerLat = 11;
+        int centerLng = 16;
         int spanLat = 20;
         int spanLng = 30;
 
         mapView.getController().setCenter(new GeoPoint(toE6(centerLat), toE6(centerLng)));
         mapView.getController().zoomToSpan(toE6(spanLat), toE6(spanLng));
-        mapView.layout(0, 0, 600, 400);
+        mapView.layout(50, 60, 650, 460);
 
-        assertThat(mapView.getProjection().fromPixels(0, 0),
+        assertThat(mapView.getProjection().fromPixels(50, 60),
                 equalTo(new GeoPoint(toE6(centerLat - spanLat / 2), toE6(centerLng - spanLng / 2))));
-        assertThat(mapView.getProjection().fromPixels(300, 200),
+        assertThat(mapView.getProjection().fromPixels(350, 260),
                 equalTo(new GeoPoint(toE6(centerLat), toE6(centerLng))));
-        assertThat(mapView.getProjection().fromPixels(600, 400),
+        assertThat(mapView.getProjection().fromPixels(650, 460),
                 equalTo(new GeoPoint(toE6(centerLat + spanLat / 2), toE6(centerLng + spanLng / 2))));
     }
 
     @Test
     public void getProjection_toPixels_shouldPerformCorrectTranslations() throws Exception {
-        int centerLat = 10;
-        int centerLng = 15;
+        int centerLat = 11;
+        int centerLng = 16;
         int spanLat = 20;
         int spanLng = 30;
 
         mapView.getController().setCenter(new GeoPoint(toE6(centerLat), toE6(centerLng)));
         mapView.getController().zoomToSpan(toE6(spanLat), toE6(spanLng));
-        mapView.layout(0, 0, 600, 400);
+        mapView.layout(50, 60, 650, 460);
 
         assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat - spanLat / 2), toE6(centerLng - spanLng / 2)), null),
-                equalTo(new Point(0, 0)));
+                equalTo(new Point(50, 60)));
         assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat), toE6(centerLng)), null),
-                equalTo(new Point(300, 200)));
+                equalTo(new Point(350, 260)));
         assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat + spanLat / 2), toE6(centerLng + spanLng / 2)), null),
-                equalTo(new Point(600, 400)));
+                equalTo(new Point(650, 460)));
     }
 
     private static class MyOnTouchListener implements View.OnTouchListener {
