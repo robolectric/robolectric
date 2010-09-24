@@ -4,6 +4,8 @@ import com.google.android.maps.GeoPoint;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.Implements;
 
+import static com.xtremelabs.droidsugar.fakes.FakeMapView.fromE6;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(GeoPoint.class)
 public class FakeGeoPoint {
@@ -41,5 +43,12 @@ public class FakeGeoPoint {
         int result = lat;
         result = 31 * result + lng;
         return result;
+    }
+
+    @Override public String toString() {
+        return "FakeGeoPoint{" +
+                "lat=" + fromE6(lat) +
+                ", lng=" + fromE6(lng) +
+                '}';
     }
 }

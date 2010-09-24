@@ -1,8 +1,10 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.app.Activity;
+import android.graphics.Point;
 import android.view.MotionEvent;
 import android.view.View;
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 import com.xtremelabs.droidsugar.AndroidTranslatorTest;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
@@ -10,8 +12,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
+import static com.xtremelabs.droidsugar.fakes.FakeMapView.toE6;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
@@ -70,6 +72,44 @@ public class MapViewTest {
         assertThat(overlay1.lastMotionEvent, sameInstance(sourceEvent));
         assertThat(overlay2.lastMotionEvent, sameInstance(sourceEvent));
         assertThat(mapTouchListener.lastMotionEvent, sameInstance(sourceEvent));
+    }
+
+    @Test
+    public void getProjection_fromPixels_shouldPerformCorrectTranslations() throws Exception {
+        int centerLat = 10;
+        int centerLng = 15;
+        int spanLat = 20;
+        int spanLng = 30;
+
+        mapView.getController().setCenter(new GeoPoint(toE6(centerLat), toE6(centerLng)));
+        mapView.getController().zoomToSpan(toE6(spanLat), toE6(spanLng));
+        mapView.layout(0, 0, 600, 400);
+
+        assertThat(mapView.getProjection().fromPixels(0, 0),
+                equalTo(new GeoPoint(toE6(centerLat - spanLat / 2), toE6(centerLng - spanLng / 2))));
+        assertThat(mapView.getProjection().fromPixels(300, 200),
+                equalTo(new GeoPoint(toE6(centerLat), toE6(centerLng))));
+        assertThat(mapView.getProjection().fromPixels(600, 400),
+                equalTo(new GeoPoint(toE6(centerLat + spanLat / 2), toE6(centerLng + spanLng / 2))));
+    }
+
+    @Test
+    public void getProjection_toPixels_shouldPerformCorrectTranslations() throws Exception {
+        int centerLat = 10;
+        int centerLng = 15;
+        int spanLat = 20;
+        int spanLng = 30;
+
+        mapView.getController().setCenter(new GeoPoint(toE6(centerLat), toE6(centerLng)));
+        mapView.getController().zoomToSpan(toE6(spanLat), toE6(spanLng));
+        mapView.layout(0, 0, 600, 400);
+
+        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat - spanLat / 2), toE6(centerLng - spanLng / 2)), null),
+                equalTo(new Point(0, 0)));
+        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat), toE6(centerLng)), null),
+                equalTo(new Point(300, 200)));
+        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat + spanLat / 2), toE6(centerLng + spanLng / 2)), null),
+                equalTo(new Point(600, 400)));
     }
 
     private static class MyOnTouchListener implements View.OnTouchListener {

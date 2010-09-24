@@ -59,6 +59,7 @@ public class FakeHelper {
                 FakeOverlayItem.class,
                 FakePaint.class,
                 FakePath.class,
+                FakePoint.class,
                 FakeResources.class,
                 FakeSettings.class,
                 FakeSettings.FakeSecure.class,
