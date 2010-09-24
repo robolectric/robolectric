@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.app.Activity;
+import android.graphics.Point;
 import android.view.MotionEvent;
 import android.view.View;
 import com.google.android.maps.GeoPoint;
@@ -11,8 +12,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.Matchers.nullValue;
-import static org.hamcrest.Matchers.sameInstance;
+import static com.xtremelabs.droidsugar.fakes.FakeMapView.toE6;
+import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
@@ -74,46 +75,41 @@ public class MapViewTest {
     }
 
     @Test
-    public void getProjection_shouldPerformCorrectTranslations() throws Exception {
+    public void getProjection_fromPixels_shouldPerformCorrectTranslations() throws Exception {
+        int centerLat = 10;
+        int centerLng = 15;
+        int spanLat = 20;
+        int spanLng = 30;
 
+        mapView.getController().setCenter(new GeoPoint(toE6(centerLat), toE6(centerLng)));
+        mapView.getController().zoomToSpan(toE6(spanLat), toE6(spanLng));
+        mapView.layout(0, 0, 600, 400);
+
+        assertThat(mapView.getProjection().fromPixels(0, 0),
+                equalTo(new GeoPoint(toE6(centerLat - spanLat / 2), toE6(centerLng - spanLng / 2))));
+        assertThat(mapView.getProjection().fromPixels(300, 200),
+                equalTo(new GeoPoint(toE6(centerLat), toE6(centerLng))));
+        assertThat(mapView.getProjection().fromPixels(600, 400),
+                equalTo(new GeoPoint(toE6(centerLat + spanLat / 2), toE6(centerLng + spanLng / 2))));
     }
 
     @Test
-    public void shouldPositionCaptionAboveTappedPin() throws Exception {
-        mapView.getController().setCenter(new GeoPoint(toE6(10), toE6(15)));
-        mapView.getController().zoomToSpan(toE6(20), toE6(30));
+    public void getProjection_toPixels_shouldPerformCorrectTranslations() throws Exception {
+        int centerLat = 10;
+        int centerLng = 15;
+        int spanLat = 20;
+        int spanLng = 30;
+
+        mapView.getController().setCenter(new GeoPoint(toE6(centerLat), toE6(centerLng)));
+        mapView.getController().zoomToSpan(toE6(spanLat), toE6(spanLng));
         mapView.layout(0, 0, 600, 400);
-//        fakeMapView.height = 400;
-//        fakeMapView.width = 600;
-//
-//        captionLayoutParams.height = 5;
-//        captionLayoutParams.width = 10;
-//
-//        proxyFor(pinDrawable).bounds = new Rect(0, 0, 5, 10);
-//
-//        overlay = new ListingsPinOverlay(mapView, pinDrawable, captionViewWrapper, captionView, listener);
-//        overlay.setListings(listings.iterator());
-//
-//        overlay.onTap(0);
-//        // bottom of pin (at middle of the MapView), minus 10 for pin height, minus 5 for padding between pin and caption, minus 5 for caption height
-//        int centerOfMap = fakeMapView.height / 2;
-//        int pinHeight = pinDrawable.getBounds().height();
-//        int captionHeight = captionLayoutParams.height;
-//        int pinCaptionPadding = 5;
-//        expect(captionViewWrapper.getPaddingTop()).toEqual(centerOfMap - pinHeight - pinCaptionPadding - captionHeight);
-//        expect(captionViewWrapper.getPaddingLeft()).toEqual(295);
-//
-//        overlay.onTap(1);
-//        expect(captionViewWrapper.getPaddingTop()).toEqual(200);
-//        expect(captionViewWrapper.getPaddingLeft()).toEqual(275);
-    }
 
-    public static int toE6(double d) {
-        return (int) (d * 1e6);
-    }
-
-    public static double fromE6(int i) {
-        return i / 1e6;
+        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat - spanLat / 2), toE6(centerLng - spanLng / 2)), null),
+                equalTo(new Point(0, 0)));
+        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat), toE6(centerLng)), null),
+                equalTo(new Point(300, 200)));
+        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat + spanLat / 2), toE6(centerLng + spanLng / 2)), null),
+                equalTo(new Point(600, 400)));
     }
 
     private static class MyOnTouchListener implements View.OnTouchListener {
