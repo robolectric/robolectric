@@ -26,6 +26,7 @@ public class FakeMapView extends FakeViewGroup {
     public FakeMapController fakeMapController;
     private ZoomButtonsController zoomButtonsController;
     private MapView realMapView;
+    public boolean useBuiltInZoomMapControls;
 
     public FakeMapView(MapView mapView) {
         super(mapView);
@@ -58,6 +59,10 @@ public class FakeMapView extends FakeViewGroup {
 
     public ZoomButtonsController getZoomButtonsController() {
         return zoomButtonsController;
+    }
+
+    public void setBuiltInZoomControls(boolean useBuiltInZoomMapControls) {
+        this.useBuiltInZoomMapControls = useBuiltInZoomMapControls;
     }
 
     public List<Overlay> getOverlays() {
