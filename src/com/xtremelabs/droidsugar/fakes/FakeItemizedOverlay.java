@@ -9,6 +9,7 @@ import com.xtremelabs.droidsugar.util.Implements;
 public class FakeItemizedOverlay {
     public boolean populated;
     public boolean shouldHit;
+    public boolean lastFocusedIndexWasReset;
     
     protected final void populate() {
         populated = true;
@@ -16,5 +17,9 @@ public class FakeItemizedOverlay {
 
     protected boolean hitTest(OverlayItem item, android.graphics.drawable.Drawable drawable, int i, int i1) {
         return shouldHit;
+    }
+
+    protected void setLastFocusedIndex(int i) {
+        lastFocusedIndexWasReset = (i == -1);
     }
 }
