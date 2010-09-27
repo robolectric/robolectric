@@ -26,6 +26,9 @@ public class FakeMapView extends FakeViewGroup {
     private MapView realMapView;
     private Projection projection;
     public boolean useBuiltInZoomMapControls;
+    private boolean mouseDownOnMe = false;
+    private Point lastTouchEventPoint;
+    private GeoPoint mouseDownCenter;
 
     public FakeMapView(MapView mapView) {
         super(mapView);
@@ -69,7 +72,7 @@ public class FakeMapView extends FakeViewGroup {
     public void setBuiltInZoomControls(boolean useBuiltInZoomMapControls) {
         this.useBuiltInZoomMapControls = useBuiltInZoomMapControls;
     }
-    
+
     public com.google.android.maps.Projection getProjection() {
         if (projection == null) {
             projection = new Projection() {
@@ -139,10 +142,45 @@ public class FakeMapView extends FakeViewGroup {
             }
         }
 
+        GeoPoint mouseGeoPoint = getProjection().fromPixels((int) event.getX(), (int) event.getY());
+        int diffX = 0;
+        int diffY = 0;
+        if (mouseDownOnMe) {
+            diffX = (int) event.getX() - lastTouchEventPoint.x;
+            diffY = (int) event.getY() - lastTouchEventPoint.y;
+        }
 
-        // todo: this is wrong
-        mapCenter = getProjection().fromPixels((int) event.getX(), (int) event.getY());
+        switch (event.getAction()) {
+            case MotionEvent.ACTION_DOWN:
+                mouseDownOnMe = true;
+                mouseDownCenter = getMapCenter();
+                break;
+            case MotionEvent.ACTION_MOVE:
+                if (mouseDownOnMe) {
+                    moveByPixels(-diffX, -diffY);
+                }
+                break;
+            case MotionEvent.ACTION_UP:
+                if (mouseDownOnMe) {
+                    moveByPixels(-diffX, -diffY);
+                    mouseDownOnMe = false;
+                }
+                break;
+
+            case MotionEvent.ACTION_CANCEL:
+                getController().setCenter(mouseDownCenter);
+                mouseDownOnMe = false;
+                break;
+        }
+
+        lastTouchEventPoint = new Point((int) event.getX(), (int) event.getY());
 
         return super.dispatchTouchEvent(event);
+    }
+
+    private void moveByPixels(int x, int y) {
+        Point center = getProjection().toPixels(mapCenter, null);
+        center.offset(x, y);
+        mapCenter = getProjection().fromPixels(center.x, center.y);
     }
 }

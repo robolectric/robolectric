@@ -75,6 +75,44 @@ public class MapViewTest {
     }
 
     @Test
+    public void dispatchTouchEvents_shouldDragMapByCorrectAmount() throws Exception {
+        initMapForDrag();
+
+        dispatchTouchEvent(MotionEvent.ACTION_DOWN, 10, 10);
+        dispatchTouchEvent(MotionEvent.ACTION_UP, 11, 11);
+        assertThat(mapView.getMapCenter(), equalTo(new GeoPoint(toE6(24), toE6(24))));
+    }
+
+    @Test
+    public void dispatchTouchEvents_shouldDragMapByCorrectAmountInMultipleSteps() throws Exception {
+        initMapForDrag();
+
+        dispatchTouchEvent(MotionEvent.ACTION_DOWN, 10, 10);
+        dispatchTouchEvent(MotionEvent.ACTION_MOVE, 11, 11);
+        dispatchTouchEvent(MotionEvent.ACTION_MOVE, 12, 12);
+        dispatchTouchEvent(MotionEvent.ACTION_UP, 11, 11);
+        assertThat(mapView.getMapCenter(), equalTo(new GeoPoint(toE6(24), toE6(24))));
+    }
+
+    @Test
+    public void dispatchTouchEvents_shouldMoveBackToCenterOnCancel() throws Exception {
+        initMapForDrag();
+
+        dispatchTouchEvent(MotionEvent.ACTION_DOWN, 10, 10);
+        dispatchTouchEvent(MotionEvent.ACTION_MOVE, 11, 11);
+        dispatchTouchEvent(MotionEvent.ACTION_MOVE, 12, 12);
+        dispatchTouchEvent(MotionEvent.ACTION_CANCEL, 11, 11);
+        assertThat(mapView.getMapCenter(), equalTo(new GeoPoint(toE6(25), toE6(25))));
+    }
+
+    private void initMapForDrag() {
+        mapView = new MapView(null, "");
+        mapView.layout(0, 0, 50, 50);
+        mapView.getController().setCenter(new GeoPoint(toE6(25), toE6(25)));
+        mapView.getController().zoomToSpan(toE6(50), toE6(50));
+    }
+
+    @Test
     public void getProjection_fromPixels_shouldPerformCorrectTranslations() throws Exception {
         int centerLat = 11;
         int centerLng = 16;
@@ -110,6 +148,10 @@ public class MapViewTest {
                 equalTo(new Point(350, 260)));
         assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat + spanLat / 2), toE6(centerLng + spanLng / 2)), null),
                 equalTo(new Point(650, 460)));
+    }
+
+    private void dispatchTouchEvent(int action, int x, int y) {
+        mapView.dispatchTouchEvent(MotionEvent.obtain(0, 0, action, x, y, 0));
     }
 
     private static class MyOnTouchListener implements View.OnTouchListener {
