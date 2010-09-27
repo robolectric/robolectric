@@ -80,7 +80,7 @@ public class MapViewTest {
 
         dispatchTouchEvent(MotionEvent.ACTION_DOWN, 10, 10);
         dispatchTouchEvent(MotionEvent.ACTION_UP, 11, 11);
-        assertThat(mapView.getMapCenter(), equalTo(new GeoPoint(toE6(24), toE6(24))));
+        assertThat(mapView.getMapCenter(), equalTo(new GeoPoint(toE6(26), toE6(24))));
     }
 
     @Test
@@ -91,7 +91,7 @@ public class MapViewTest {
         dispatchTouchEvent(MotionEvent.ACTION_MOVE, 11, 11);
         dispatchTouchEvent(MotionEvent.ACTION_MOVE, 12, 12);
         dispatchTouchEvent(MotionEvent.ACTION_UP, 11, 11);
-        assertThat(mapView.getMapCenter(), equalTo(new GeoPoint(toE6(24), toE6(24))));
+        assertThat(mapView.getMapCenter(), equalTo(new GeoPoint(toE6(26), toE6(24))));
     }
 
     @Test
@@ -124,11 +124,11 @@ public class MapViewTest {
         mapView.layout(50, 60, 650, 460);
 
         assertThat(mapView.getProjection().fromPixels(50, 60),
-                equalTo(new GeoPoint(toE6(centerLat - spanLat / 2), toE6(centerLng - spanLng / 2))));
+                equalTo(new GeoPoint(toE6(21), toE6(1))));
         assertThat(mapView.getProjection().fromPixels(350, 260),
-                equalTo(new GeoPoint(toE6(centerLat), toE6(centerLng))));
+                equalTo(new GeoPoint(toE6(11), toE6(16))));
         assertThat(mapView.getProjection().fromPixels(650, 460),
-                equalTo(new GeoPoint(toE6(centerLat + spanLat / 2), toE6(centerLng + spanLng / 2))));
+                equalTo(new GeoPoint(toE6(1), toE6(31))));
     }
 
     @Test
@@ -142,11 +142,11 @@ public class MapViewTest {
         mapView.getController().zoomToSpan(toE6(spanLat), toE6(spanLng));
         mapView.layout(50, 60, 650, 460);
 
-        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat - spanLat / 2), toE6(centerLng - spanLng / 2)), null),
+        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(21), toE6(1)), null),
                 equalTo(new Point(50, 60)));
-        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat), toE6(centerLng)), null),
+        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(11), toE6(16)), null),
                 equalTo(new Point(350, 260)));
-        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(centerLat + spanLat / 2), toE6(centerLng + spanLng / 2)), null),
+        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(1), toE6(31)), null),
                 equalTo(new Point(650, 460)));
     }
 

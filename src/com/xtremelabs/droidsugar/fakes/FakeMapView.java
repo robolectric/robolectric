@@ -81,13 +81,13 @@ public class FakeMapView extends FakeViewGroup {
                         point = new Point();
                     }
 
-                    point.y = scaleLL(geoPoint.getLatitudeE6(), top, bottom, mapCenter.getLatitudeE6(), latitudeSpan);
-                    point.x = scaleLL(geoPoint.getLongitudeE6(), left, right, mapCenter.getLongitudeE6(), longitudeSpan);
+                    point.y = scaleDegree(geoPoint.getLatitudeE6(), bottom, top, mapCenter.getLatitudeE6(), latitudeSpan);
+                    point.x = scaleDegree(geoPoint.getLongitudeE6(), left, right, mapCenter.getLongitudeE6(), longitudeSpan);
                     return point;
                 }
 
                 @Override public GeoPoint fromPixels(int x, int y) {
-                    int lat = scalePixel(y, top, realMapView.getHeight(), mapCenter.getLatitudeE6(), latitudeSpan);
+                    int lat = scalePixel(y, bottom, -realMapView.getHeight(), mapCenter.getLatitudeE6(), latitudeSpan);
                     int lng = scalePixel(x, left, realMapView.getWidth(), mapCenter.getLongitudeE6(), longitudeSpan);
                     return new GeoPoint(lat, lng);
                 }
@@ -100,17 +100,17 @@ public class FakeMapView extends FakeViewGroup {
         return projection;
     }
 
-    private int scalePixel(int pixel, int minPixel, int maxPixel, int centerLl, int spanLl) {
+    private int scalePixel(int pixel, int minPixel, int maxPixel, int centerDegree, int spanDegrees) {
         int offsetPixels = pixel - minPixel;
         double ratio = offsetPixels / ((double) maxPixel);
-        int minLl = centerLl - spanLl / 2;
-        return (int) (minLl + spanLl * ratio);
+        int minDegrees = centerDegree - spanDegrees / 2;
+        return (int) (minDegrees + spanDegrees * ratio);
     }
 
-    private int scaleLL(int ll, int minPixel, int maxPixel, int centerLL, int spanLL) {
-        int minLl = centerLL - spanLL / 2;
-        int offsetLls = ll - minLl;
-        double ratio = offsetLls / ((double) spanLL);
+    private int scaleDegree(int degree, int minPixel, int maxPixel, int centerDegree, int spanDegrees) {
+        int minDegree = centerDegree - spanDegrees / 2;
+        int offsetDegrees = degree - minDegree;
+        double ratio = offsetDegrees / ((double) spanDegrees);
         int spanPixels = maxPixel - minPixel;
         return (int) (minPixel + spanPixels * ratio);
     }
