@@ -1,4 +1,4 @@
-Setting up an Android project for droid-sugar: [warning: massively wrong]
+Setting up an Android project for robolectric: [warning: massively wrong]
 
 mkdir code aidls
 mv src gen code
@@ -6,7 +6,7 @@ find all *.aidl under code and move under aidls
 
 create IntelliJ project. It should make a Code module (as a plain old java module) and Aidls module (with an Android Facet) for you.
 
-git submodule add git@github.com:xtremelabs/droid-sugar.git ./droid-sugar
+git submodule add git@github.com:xtremelabs/robolectric.git ./robolectric
 
 Go to Module Setup
 Select Code module -> Dependencies
@@ -19,9 +19,9 @@ Select (main module) -> Dependencies
 Add -> Module dependency -> Code
 Add -> Module dependency -> Aidls
 
-Create new module -> use existing iml with droid-sugar/droid-sugar.iml.
+Create new module -> use existing iml with robolectric/robolectric.iml.
 Select Code module -> Dependencies
-Add -> Module dependency -> droid-sugar
+Add -> Module dependency -> robolectric
 Change scope from Compile to Test
 
 OK

@@ -32,7 +32,7 @@ public class Loader extends javassist.Loader {
         } catch (CannotCompileException e) {
             throw new RuntimeException(e);
         }
-        final File cacheJarFile = new File("tmp/cached-droid-sugar-classes.jar");
+        final File cacheJarFile = new File("tmp/cached-robolectric-classes.jar");
         try {
             cacheFile = new JarFile(cacheJarFile);
         } catch (IOException e) {
