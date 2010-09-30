@@ -9,14 +9,23 @@ import static com.xtremelabs.droidsugar.util.FakeHelper.newInstanceOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Looper.class)
 public class FakeLooper {
-    private static final ThreadLocal<Looper> sThreadLocal = new ThreadLocal<Looper>() {
-        @Override
-        protected Looper initialValue() {
-            return newInstanceOf(Looper.class);
-        }
-    };
-    
-    private static final Looper MAIN_LOOPER = sThreadLocal.get();
+    private static ThreadLocal<Looper> sThreadLocal;
+    private static Looper MAIN_LOOPER;
+
+    static {
+        resetAll();
+    }
+
+    public static void resetAll() {
+        sThreadLocal = new ThreadLocal<Looper>() {
+            @Override
+            protected Looper initialValue() {
+                return newInstanceOf(Looper.class);
+            }
+        };
+
+        MAIN_LOOPER = sThreadLocal.get();
+    }
 
     public static Looper getMainLooper() {
         return MAIN_LOOPER;
@@ -34,5 +43,9 @@ public class FakeLooper {
 
     public void post(Runnable r, long delayMillis) {
         scheduler.postDelayed(r, delayMillis);
+    }
+
+    public void reset() {
+        scheduler.reset();
     }
 }

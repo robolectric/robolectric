@@ -44,6 +44,10 @@ public class Scheduler {
         return postedRunnables.size();
     }
 
+    public void reset() {
+        postedRunnables.clear();
+    }
+
     class PostedRunnable implements Comparable<PostedRunnable> {
         Runnable runnable;
         long scheduledTime;

@@ -33,6 +33,7 @@ public class FakeHelper {
                 FakeAbsSpinner.class,
                 FakeActivity.class,
                 FakeAdapterView.class,
+                FakeAddress.class,
                 FakeAlertDialog.class,
                 FakeAlertDialog.FakeBuilder.class,
                 FakeApplication.class,
@@ -41,6 +42,7 @@ public class FakeHelper {
                 FakeCompoundButton.class,
                 FakeContextWrapper.class,
                 FakeDialog.class,
+                FakeEditText.class,
                 FakeGeoPoint.class,
                 FakeHandler.class,
                 FakeImageView.class,
@@ -48,6 +50,7 @@ public class FakeHelper {
                 FakeIntentFilter.class,
                 FakeItemizedOverlay.class,
                 FakeLayoutParams.class,
+                FakeListActivity.class,
                 FakeListView.class,
                 FakeLocation.class,
                 FakeLocationManager.class,
@@ -60,6 +63,7 @@ public class FakeHelper {
                 FakePaint.class,
                 FakePath.class,
                 FakePoint.class,
+                FakeRect.class,
                 FakeResources.class,
                 FakeSettings.class,
                 FakeSettings.FakeSecure.class,
@@ -80,5 +84,6 @@ public class FakeHelper {
         FakeToast.reset();
         FakeAlertDialog.reset();
         FakeDialog.reset();
+        FakeLooper.resetAll();
     }
 }
