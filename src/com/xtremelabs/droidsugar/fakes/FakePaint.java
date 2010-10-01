@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.graphics.Paint;
+import android.graphics.Shader;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -16,6 +17,26 @@ public class FakePaint {
     public float shadowDx;
     public float shadowDy;
     public int shadowColor;
+    public Shader shader;
+    private int alpha;
+
+    public Shader setShader(Shader shader) {
+        this.shader = shader;
+        return shader;
+    }
+
+    public int getAlpha() {
+        return alpha;
+    }
+
+    public void setAlpha(int alpha) {
+        this.alpha = alpha;
+    }
+
+
+    public Shader getShader() {
+        return shader;
+    }
 
     public void setColor(int color) {
         this.color = color;

@@ -12,11 +12,16 @@ import java.util.List;
 @Implements(Canvas.class)
 public class FakeCanvas {
     private List<PaintEvents> pathPaintEvents = new ArrayList<PaintEvents>();
+    public Paint drawnPaint;
     public Paint circlePaint;
     public float circleCenterX;
     public float circleCenterY;
     public float circleRadius;
     public boolean drewSomethingAfterCircle;
+
+    public void drawPaint(Paint paint) {
+        drawnPaint = paint;
+    }
 
     public void drawPath(Path path, Paint paint) {
         pathPaintEvents.add(new PaintEvents(path, paint));
