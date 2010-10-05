@@ -7,6 +7,9 @@ import android.widget.Adapter;
 import android.widget.AdapterView;
 import com.xtremelabs.droidsugar.util.Implements;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
 public class FakeAdapterView extends FakeView {
@@ -17,6 +20,8 @@ public class FakeAdapterView extends FakeView {
     private AdapterView.OnItemClickListener onItemClickListener;
     private boolean valid = false;
     private int selectedPosition;
+
+    private List<Object> previousItems = new ArrayList<Object>();
 
     public FakeAdapterView(AdapterView adapterView) {
         super(adapterView);
@@ -42,6 +47,18 @@ public class FakeAdapterView extends FakeView {
                 }
             }
         });
+    }
+
+    /**
+     * Check if our adapter's items have changed without onChanged() or onInvalidated having been called.
+     *
+     * If the items have changed without notification, an exception will be thrown.
+     *
+     * @return true if the object is valid, false if not
+     */
+    public boolean checkValidity() {
+        update();
+        return valid;
     }
 
     public int getSelectedItemPosition() {
@@ -102,9 +119,20 @@ public class FakeAdapterView extends FakeView {
 
         Adapter adapter = getAdapter();
         if (adapter != null) {
+            if (valid && previousItems.size() != adapter.getCount()) {
+                throw new ArrayIndexOutOfBoundsException("view is valid but adapter.getCount() has changed from " + previousItems.size() + " to " + adapter.getCount());
+            }
+
+            List<Object> newItems = new ArrayList<Object>();
             for (int i = 0; i < adapter.getCount(); i++) {
+                newItems.add(adapter.getItem(i));
                 addView(adapter.getView(i, null, realAdapterView));
             }
+            
+            if (valid && !newItems.equals(previousItems)) {
+                throw new RuntimeException("view is valid but current items <" + newItems + "> don't match previous items <" + previousItems + ">");
+            }
+            previousItems = newItems;
         }
     }
 

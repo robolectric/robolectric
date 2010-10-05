@@ -1,7 +1,9 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.BaseAdapter;
 import android.widget.ListView;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import com.xtremelabs.droidsugar.util.TestUtil;
@@ -10,7 +12,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner.proxyFor;
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -104,10 +110,69 @@ public class ListViewTest {
         fakeListView.clickFirstItemContainingText("Non-existant item");
     }
 
+    @Test
+    public void revalidate_whenItemsHaveNotChanged_shouldWork() throws Exception {
+        prepareWithListAdapter();
+        ((FakeAdapterView) proxyFor(listView)).checkValidity();
+    }
+
+    @Test(expected = ArrayIndexOutOfBoundsException.class)
+    public void revalidate_removingAnItemWithoutInvalidating_shouldExplode() throws Exception {
+        ListAdapter adapter = prepareWithListAdapter();
+        adapter.items.remove(0);
+        ((FakeAdapterView) proxyFor(listView)).checkValidity(); // should 'splode!
+    }
+
+    @Test(expected = ArrayIndexOutOfBoundsException.class)
+    public void revalidate_addingAnItemWithoutInvalidating_shouldExplode() throws Exception {
+        ListAdapter adapter = prepareWithListAdapter();
+        adapter.items.add("x");
+        ((FakeAdapterView) proxyFor(listView)).checkValidity(); // should 'splode!
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void revalidate_changingAnItemWithoutInvalidating_shouldExplode() throws Exception {
+        ListAdapter adapter = prepareWithListAdapter();
+        adapter.items.remove(2);
+        adapter.items.add("x");
+        ((FakeAdapterView) proxyFor(listView)).checkValidity(); // should 'splode!
+    }
+
+    private ListAdapter prepareWithListAdapter() {
+        ListAdapter adapter = new ListAdapter("a", "b", "c");
+        listView.setAdapter(adapter);
+        FakeHandler.flush();
+        return adapter;
+    }
+
     private FakeListView prepareListWithThreeItems() {
         listView.setAdapter(new CountingAdapter(3));
         FakeHandler.flush();
 
         return (FakeListView) proxyFor(listView);
+    }
+
+    private static class ListAdapter extends BaseAdapter {
+        public List<String> items = new ArrayList<String>();
+
+        public ListAdapter(String... items) {
+            this.items.addAll(asList(items));
+        }
+
+        @Override public int getCount() {
+            return items.size();
+        }
+
+        @Override public Object getItem(int position) {
+            return items.get(position);
+        }
+
+        @Override public long getItemId(int position) {
+            return 0;
+        }
+
+        @Override public View getView(int position, View convertView, ViewGroup parent) {
+            return new View(null);
+        }
     }
 }
