@@ -4,11 +4,10 @@ import android.app.Activity;
 import android.app.ActivityGroup;
 import android.app.AliasActivity;
 import android.app.ListActivity;
-import android.content.ContextWrapper;
+import android.content.Context;
 import android.content.Intent;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
-import com.xtremelabs.droidsugar.fakes.FakeActivity;
-import com.xtremelabs.droidsugar.fakes.FakeIntent;
+import com.xtremelabs.droidsugar.util.FakeHelper;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
@@ -27,8 +26,8 @@ public class StartedMatcherTest {
 
     @Before
     public void setUp() throws Exception {
-        DroidSugarAndroidTestRunner.addProxy(Activity.class, FakeActivity.class);
-        DroidSugarAndroidTestRunner.addProxy(Intent.class, FakeIntent.class);
+        DroidSugarAndroidTestRunner.addGenericProxies();
+        FakeHelper.resetDroidSugarTestState();
 
         activity = new Activity();
         intentWithExtra = createIntent(AliasActivity.class, "someExtra", "value");
@@ -37,28 +36,30 @@ public class StartedMatcherTest {
     @Test
     public void shouldSayDidntStartAnythingIfNothingWasStarted() throws Exception {
         assertThat(new StartedMatcher(ActivityGroup.class),
-                givesFailureMessage((ContextWrapper) activity, "to start " + createIntent(ActivityGroup.class) + ", but didn't start anything"));
+                givesFailureMessage((Context) activity, "to start " + createIntent(ActivityGroup.class) + ", but didn't start anything"));
 
         assertThat(new StartedMatcher(ActivityGroup.class, "view"),
-                givesFailureMessage((ContextWrapper) activity, "to start " + createIntent(ActivityGroup.class, "view") + ", but didn't start anything"));
+                givesFailureMessage((Context) activity, "to start " + createIntent(ActivityGroup.class, "view") + ", but didn't start anything"));
 
         assertThat(new StartedMatcher(intentWithExtra),
-                givesFailureMessage((ContextWrapper) activity, "to start " + intentWithExtra + ", but didn't start anything"));
+                givesFailureMessage((Context) activity, "to start " + intentWithExtra + ", but didn't start anything"));
     }
 
     @Test
     public void shouldSayStartedSomethingIfWrongThingWasStarted() throws Exception {
         Intent actualIntent = createIntent(ListActivity.class, "anotherExtra", "anotherValue");
+
         activity.startActivity(actualIntent);
-
         assertThat(new StartedMatcher(ActivityGroup.class),
-                givesFailureMessage((ContextWrapper) activity, "to start " + createIntent(ActivityGroup.class) + ", but started " + actualIntent));
+                givesFailureMessage((Context) activity, "to start " + createIntent(ActivityGroup.class) + ", but started " + actualIntent));
 
+        activity.startActivity(actualIntent);
         assertThat(new StartedMatcher(ActivityGroup.class, "view"),
-                givesFailureMessage((ContextWrapper) activity, "to start " + createIntent(ActivityGroup.class, "view") + ", but started " + actualIntent));
+                givesFailureMessage((Context) activity, "to start " + createIntent(ActivityGroup.class, "view") + ", but started " + actualIntent));
 
+        activity.startActivity(actualIntent);
         assertThat(new StartedMatcher(intentWithExtra),
-                givesFailureMessage((ContextWrapper) activity, "to start " + intentWithExtra + ", but started " + actualIntent));
+                givesFailureMessage((Context) activity, "to start " + intentWithExtra + ", but started " + actualIntent));
     }
 
     private <T> Matcher<Matcher<T>> givesFailureMessage(final T actual, final String expectedFailureMessage) {

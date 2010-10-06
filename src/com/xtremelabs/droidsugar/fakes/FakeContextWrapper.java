@@ -10,6 +10,7 @@ import android.test.mock.MockPackageManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implements;
 import com.xtremelabs.droidsugar.util.ResourceLoader;
@@ -31,7 +32,6 @@ public class FakeContextWrapper {
     public List<Intent> startedServices = new ArrayList<Intent>();
     private LocationManager locationManager;
     private MockPackageManager packageManager;
-    public Intent startedIntent;
 
     public Map<String, BroadcastReceiver> registeredReceivers = new HashMap<String, BroadcastReceiver>();
     private WifiManager wifiManager;
@@ -106,7 +106,11 @@ public class FakeContextWrapper {
     }
 
     public void startActivity(Intent intent) {
-        startedIntent = intent;
+        getApplicationContext().startActivity(intent);
+    }
+
+    public Intent getNextStartedIntent() {
+        return ((FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(getApplicationContext())).getNextStartedIntent();
     }
 
     public SharedPreferences getSharedPreferences(String name, int mode) {

@@ -5,11 +5,15 @@ import android.app.Application;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockContentResolver;
 import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implements;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.mockito.Mockito.mock;
 
@@ -19,6 +23,7 @@ public class FakeApplication extends ContextWrapper {
     private MockContentResolver contentResolver = new MockContentResolver();
     private LocationManager locationManager;
     private WifiManager wifiManager;
+    public List<Intent> startedIntents = new ArrayList<Intent>();
 
     public FakeApplication(Application base) {
         super(base);
@@ -51,4 +56,15 @@ public class FakeApplication extends ContextWrapper {
         return new FakeContextWrapper.FakeLayoutInflater(FakeContextWrapper.resourceLoader.viewLoader);
     }
 
+    @Override public void startActivity(Intent intent) {
+        startedIntents.add(intent);
+    }
+
+    public Intent getNextStartedIntent() {
+        if (startedIntents.isEmpty()) {
+            return null;
+        } else {
+            return startedIntents.remove(0);
+        }
+    }
 }

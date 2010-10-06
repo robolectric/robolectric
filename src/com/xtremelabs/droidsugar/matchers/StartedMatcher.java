@@ -1,16 +1,19 @@
 package com.xtremelabs.droidsugar.matchers;
 
 import android.app.Activity;
+import android.app.Application;
+import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.fakes.FakeActivity;
+import com.xtremelabs.droidsugar.fakes.FakeApplication;
 import com.xtremelabs.droidsugar.fakes.FakeContextWrapper;
 import com.xtremelabs.droidsugar.fakes.FakeIntent;
 import org.hamcrest.Description;
 import org.junit.internal.matchers.TypeSafeMatcher;
 
-public class StartedMatcher extends TypeSafeMatcher<ContextWrapper> {
+public class StartedMatcher extends TypeSafeMatcher<Context> {
     private final Intent expectedIntent;
 
     private String message;
@@ -34,7 +37,7 @@ public class StartedMatcher extends TypeSafeMatcher<ContextWrapper> {
     }
 
     @Override
-    public boolean matchesSafely(ContextWrapper actualContextWrapper) {
+    public boolean matchesSafely(Context actualContext) {
         if (expectedIntent == null) {
             message = "null intent (did you mean to expect null?)";
             return false;
@@ -43,7 +46,7 @@ public class StartedMatcher extends TypeSafeMatcher<ContextWrapper> {
         String expected = expectedIntent.toString();
         message = "to start " + expected + ", but ";
 
-        Intent actualStartedIntent = proxyFor(actualContextWrapper).startedIntent;
+        Intent actualStartedIntent = proxyFor((ContextWrapper) actualContext).getNextStartedIntent();
 
         if (actualStartedIntent == null) {
             message += "didn't start anything";
@@ -70,6 +73,10 @@ public class StartedMatcher extends TypeSafeMatcher<ContextWrapper> {
 
     private FakeContextWrapper proxyFor(ContextWrapper real) {
         return (FakeContextWrapper) ProxyDelegatingHandler.getInstance().proxyFor(real);
+    }
+
+    private FakeApplication proxyFor(Application real) {
+        return (FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(real);
     }
 
     private FakeIntent proxyFor(Intent real) {

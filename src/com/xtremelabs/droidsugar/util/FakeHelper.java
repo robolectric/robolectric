@@ -81,6 +81,7 @@ public class FakeHelper {
     }
 
     public static void resetDroidSugarTestState() {
+        FakeHelper.application = new Application();
         TestSharedPreferences.reset();
         FakeToast.reset();
         FakeAlertDialog.reset();
