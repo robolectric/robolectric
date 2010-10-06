@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.ActivityGroup;
 import android.app.AliasActivity;
 import android.app.ListActivity;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import com.xtremelabs.droidsugar.fakes.FakeActivity;
@@ -36,13 +37,13 @@ public class StartedMatcherTest {
     @Test
     public void shouldSayDidntStartAnythingIfNothingWasStarted() throws Exception {
         assertThat(new StartedMatcher(ActivityGroup.class),
-                givesFailureMessage(activity, "to start " + createIntent(ActivityGroup.class) + ", but didn't start anything"));
+                givesFailureMessage((ContextWrapper) activity, "to start " + createIntent(ActivityGroup.class) + ", but didn't start anything"));
 
         assertThat(new StartedMatcher(ActivityGroup.class, "view"),
-                givesFailureMessage(activity, "to start " + createIntent(ActivityGroup.class, "view") + ", but didn't start anything"));
+                givesFailureMessage((ContextWrapper) activity, "to start " + createIntent(ActivityGroup.class, "view") + ", but didn't start anything"));
 
         assertThat(new StartedMatcher(intentWithExtra),
-                givesFailureMessage(activity, "to start " + intentWithExtra + ", but didn't start anything"));
+                givesFailureMessage((ContextWrapper) activity, "to start " + intentWithExtra + ", but didn't start anything"));
     }
 
     @Test
@@ -51,13 +52,13 @@ public class StartedMatcherTest {
         activity.startActivity(actualIntent);
 
         assertThat(new StartedMatcher(ActivityGroup.class),
-                givesFailureMessage(activity, "to start " + createIntent(ActivityGroup.class) + ", but started " + actualIntent));
+                givesFailureMessage((ContextWrapper) activity, "to start " + createIntent(ActivityGroup.class) + ", but started " + actualIntent));
 
         assertThat(new StartedMatcher(ActivityGroup.class, "view"),
-                givesFailureMessage(activity, "to start " + createIntent(ActivityGroup.class, "view") + ", but started " + actualIntent));
+                givesFailureMessage((ContextWrapper) activity, "to start " + createIntent(ActivityGroup.class, "view") + ", but started " + actualIntent));
 
         assertThat(new StartedMatcher(intentWithExtra),
-                givesFailureMessage(activity, "to start " + intentWithExtra + ", but started " + actualIntent));
+                givesFailureMessage((ContextWrapper) activity, "to start " + intentWithExtra + ", but started " + actualIntent));
     }
 
     private <T> Matcher<Matcher<T>> givesFailureMessage(final T actual, final String expectedFailureMessage) {

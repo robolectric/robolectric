@@ -1,14 +1,16 @@
 package com.xtremelabs.droidsugar.matchers;
 
 import android.app.Activity;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.fakes.FakeActivity;
+import com.xtremelabs.droidsugar.fakes.FakeContextWrapper;
 import com.xtremelabs.droidsugar.fakes.FakeIntent;
 import org.hamcrest.Description;
 import org.junit.internal.matchers.TypeSafeMatcher;
 
-public class StartedMatcher extends TypeSafeMatcher<Activity> {
+public class StartedMatcher extends TypeSafeMatcher<ContextWrapper> {
     private final Intent expectedIntent;
 
     private String message;
@@ -32,7 +34,7 @@ public class StartedMatcher extends TypeSafeMatcher<Activity> {
     }
 
     @Override
-    public boolean matchesSafely(Activity actualActivity) {
+    public boolean matchesSafely(ContextWrapper actualContextWrapper) {
         if (expectedIntent == null) {
             message = "null intent (did you mean to expect null?)";
             return false;
@@ -41,7 +43,7 @@ public class StartedMatcher extends TypeSafeMatcher<Activity> {
         String expected = expectedIntent.toString();
         message = "to start " + expected + ", but ";
 
-        Intent actualStartedIntent = proxyFor(actualActivity).startedIntent;
+        Intent actualStartedIntent = proxyFor(actualContextWrapper).startedIntent;
 
         if (actualStartedIntent == null) {
             message += "didn't start anything";
@@ -64,6 +66,10 @@ public class StartedMatcher extends TypeSafeMatcher<Activity> {
 
     private FakeActivity proxyFor(Activity real) {
         return (FakeActivity) ProxyDelegatingHandler.getInstance().proxyFor(real);
+    }
+
+    private FakeContextWrapper proxyFor(ContextWrapper real) {
+        return (FakeContextWrapper) ProxyDelegatingHandler.getInstance().proxyFor(real);
     }
 
     private FakeIntent proxyFor(Intent real) {
