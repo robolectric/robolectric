@@ -72,6 +72,7 @@ public class FakeHelper {
                 FakeTextUtils.class,
                 FakeTextView.class,
                 FakeToast.class,
+                FakeTypedValue.class,
                 FakeView.class,
                 FakeViewGroup.class,
                 FakeWifiManager.class,
