@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>{% if page.title %}{{ page.title }} | {% endif %}{{site.title}}</title>
+  <!--[if IE]>
+  <script type="text/javascript" src="js/html5.js"/>
+  <![endif]-->
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+  <link rel="stylesheet" type="text/css" media="screen, projection" href="css/screen.css"/>
+  <link rel="stylesheet" type="text/css" media="screen, projection" href="css/pygments.css"/>
+</head>
+<body>
+<a href="http://github.com/pivotal/robolectric"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+<div id="wrap" class="container_16">
+  <header class="grid_16 alpha omega">
+    <h1><a href="http://pivotal.github.com/robolectric">
+	<!-- <img src="images/robolectric_logo.png" alt="Robolectric"/> -->Robolectric
+	</a></h1>
+  </header>
+  <div class="clear"></div>
+  <section class="grid_5 alpha">
+    {% capture toc %} {% include toc.html %} {% endcapture %}
+    {{ toc | textilize }}
+  </section>
+  <section class="grid_11 omega">
+    {{ content }}
+  </section>
+  <div class="clear"></div>
+  <footer>
+    <div class="grid_16 alpha omega">
+      <span class="small">Powered by &nbsp;
+        <a href="http://pivotallabs.com/">
+          <img src="images/pivotal_logo.gif" alt="Pivotal Labs, Inc."/>
+        </a>
+      </span>
+    </div>
+  </footer>
+  <div class="clear"></div>
+</div>
+<!-- .container_16 -->
+</body>
+</html>

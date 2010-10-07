@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Robolectric: Unit Test your Android Application | robolectric</title>
+  <!--[if IE]>
+  <script type="text/javascript" src="js/html5.js"/>
+  <![endif]-->
+  <link rel="shortcut icon" type="image/x-icon" href="favicon.ico"/>
+  <link rel="stylesheet" type="text/css" media="screen, projection" href="css/screen.css"/>
+  <link rel="stylesheet" type="text/css" media="screen, projection" href="css/pygments.css"/>
+</head>
+<body>
+<a href="http://github.com/pivotal/robolectric"><img style="position: absolute; top: 0; right: 0; border: 0;" src="http://s3.amazonaws.com/github/ribbons/forkme_right_darkblue_121621.png" alt="Fork me on GitHub" /></a>
+<div id="wrap" class="container_16">
+  <header class="grid_16 alpha omega">
+    <h1><a href="http://pivotal.github.com/robolectric">
+	<!-- <img src="images/robolectric_logo.png" alt="Robolectric"/> -->Robolectric
+	</a></h1>
+  </header>
+  <div class="clear"></div>
+  <section class="grid_5 alpha">
+    
+    <nav>
+<ul>
+ 	<li><a href="user-guide.html">User Guide</a></li>
+</ul>
+</nav>
+  </section>
+  <section class="grid_11 omega">
+    <h1 id='making_tdd_for_your_android_application_possible'>Making TDD for your Android Application possible</h1>
+
+<p>Have you tried to write unit tests for your Android project and been thwarted by the dreaded &#8216;java.lang.RuntimeException: Stub!&#8217;? Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test drive the development of your App. Dream of writing tests like this?</p>
+<pre>
+
+@RunWith(FastAndroidTestRunner.class)
+public class MyActivityTest {
+    private MyActivity activity;
+    private Button pressMeButton;
+    private TextView resultsTextView;
+    
+    @Before
+    public void setUp() throws Exception {
+        activity = new MyActivity();
+        activity.onCreate(null);
+        pressMeButton = (Button) activity.findViewById(R.id.press_me_button_id);
+        resultsTextView = (TextView) activity.findViewById(R.id.results_text_view_id);
+    }
+
+    @Test
+    public void shouldUpdateTheTextOfTheTextViewWhenTheButtonIsPressed() throws Exception {
+        pressMeButton.performClick();	
+        assertThat(resultsTextView.getText().toString(), equalTo("Testing Android Rocks!"));
+    }
+}
+
+</pre>
+<p>Robolectric makes this possible by intercepting the loading of the Android classes and rewrites the method bodies. By default the methods defined by the SDK jar return null (or 0, false, etc.) instead of throwing a RuntimeException. The other, and more important, part of what Roblectric does is to delegate to fake Android objects. Robolectric provides a large number of fake objects covering most of what an application would need to test drive the business logic and functionality. Layout and other XML resources are parsed and loaded. Headless versions of view classes are loaded allowing #findViewById() methods to return objects representing the view. This allows tests to assert on view state such as visibility and enabled state.</p>
+
+<p>Because you are writing your tests with JUnit, you can run your tests on your workstation, or on your Continuous Integration environment.</p>
+
+<h2 id='support'>Support</h2>
+
+<p><strong>Group email:</strong> <a href='mailto:robolectric@googlegroups.com'>robolectric@googlegroups.com</a></p>
+  </section>
+  <div class="clear"></div>
+  <footer>
+    <div class="grid_16 alpha omega">
+      <span class="small">Powered by &nbsp;
+        <a href="http://pivotallabs.com/">
+          <img src="images/pivotal_logo.gif" alt="Pivotal Labs, Inc."/>
+        </a>
+      </span>
+    </div>
+  </footer>
+  <div class="clear"></div>
+</div>
+<!-- .container_16 -->
+</body>
+</html>
