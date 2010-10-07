@@ -13,7 +13,7 @@ import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
-public class FakeAdapterView extends FakeView {
+public class FakeAdapterView extends FakeViewGroup {
     private AdapterView realAdapterView;
 
     Adapter adapter;

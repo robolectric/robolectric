@@ -30,7 +30,7 @@ public class FakeListActivity extends FakeActivity {
         if (parent instanceof ListView) {
             return (ListView) parent;
         }
-        FakeView proxyView = (FakeView) ProxyDelegatingHandler.getInstance().proxyFor(parent);
+        FakeViewGroup proxyView = (FakeViewGroup) ProxyDelegatingHandler.getInstance().proxyFor(parent);
         for (int i = 0; i < proxyView.getChildCount(); i++) {
             ListView listView = findListView(proxyView.getChildAt(i));
             if (listView != null) {

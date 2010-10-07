@@ -7,13 +7,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -25,8 +22,7 @@ public class FakeView {
     protected View realView;
 
     private int id;
-    private List<View> children = new ArrayList<View>();
-    private FakeView parent;
+    FakeView parent;
     private Context context;
     public boolean selected;
     private View.OnClickListener onClickListener;
@@ -99,12 +95,6 @@ public class FakeView {
             return realView;
         }
 
-        for (View child : children) {
-            View found = child.findViewById(id);
-            if (found != null) {
-                return found;
-            }
-        }
         return null;
     }
 
@@ -117,21 +107,6 @@ public class FakeView {
         return root.realView;
     }
 
-//    @Implementation
-    public void addView(View child) {
-        children.add(child);
-        childProxy(child).parent = this;
-    }
-
-    private FakeView childProxy(View child) {
-        return (FakeView) ProxyDelegatingHandler.getInstance().proxyFor(child);
-    }
-
-//    @Implementation
-    public int getChildCount() {
-        return children.size();
-    }
-
     @Implementation
     public ViewGroup.LayoutParams getLayoutParams() {
         return layoutParams;
@@ -142,27 +117,9 @@ public class FakeView {
         layoutParams = params;
     }
 
-//    @Implementation
-    public View getChildAt(int index) {
-        return children.get(index);
-    }
-
     @Implementation
     public final ViewParent getParent() {
         return parent == null ? null : (ViewParent) parent.realView;
-    }
-
-//    @Implementation
-    public void removeAllViews() {
-        for (View child : children) {
-            childProxy(child).parent = null;
-        }
-        children.clear();
-    }
-
-//    @Implementation
-    public void removeViewAt(int position) {
-        childProxy(children.remove(position)).parent = null;
     }
 
     @Implementation
