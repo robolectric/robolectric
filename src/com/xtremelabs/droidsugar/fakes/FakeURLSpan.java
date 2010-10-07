@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.text.style.URLSpan;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -12,6 +13,7 @@ public class FakeURLSpan {
         this.url = url;
     }
 
+    @Implementation
     public String getURL() {
         return url;
     }

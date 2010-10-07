@@ -4,6 +4,7 @@ import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.widget.EditText;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
@@ -18,6 +19,7 @@ public class FakeEditText extends FakeTextView {
         super(view);
     }
 
+    @Implementation
     @Override
     public void setText(CharSequence text) {
         super.setText(text);
@@ -26,6 +28,7 @@ public class FakeEditText extends FakeTextView {
         }
     }
 
+    @Implementation
     @Override
     public void setText(int textResourceId) {
         super.setText(textResourceId);
@@ -34,6 +37,7 @@ public class FakeEditText extends FakeTextView {
         }
     }
 
+    @Implementation
     @Override
     public Editable getText() {
         CharSequence text = super.getText();
@@ -43,6 +47,7 @@ public class FakeEditText extends FakeTextView {
         return (Editable) text;
     }
 
+    @Implementation
     public void addTextChangedListener(TextWatcher watcher) {
         this.watchers.add(watcher);
     }

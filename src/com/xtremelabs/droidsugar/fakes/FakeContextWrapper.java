@@ -9,6 +9,7 @@ import android.net.wifi.WifiManager;
 import android.test.mock.MockPackageManager;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.FakeHelper;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 import com.xtremelabs.droidsugar.util.ResourceLoader;
 import com.xtremelabs.droidsugar.view.TestSharedPreferences;
@@ -33,22 +34,27 @@ public class FakeContextWrapper {
         this.realContextWrapper = realContextWrapper;
     }
 
+    @Implementation
     public Resources getResources() {
         return new Resources(null, null, null);
     }
 
+    @Implementation
     public Context getApplicationContext() {
         return FakeHelper.application;
     }
 
+    @Implementation
     public ContentResolver getContentResolver() {
         return getApplicationContext().getContentResolver();
     }
 
+    @Implementation
     public Object getSystemService(String name) {
         return getApplicationContext().getSystemService(name);
     }
 
+    @Implementation
     public void sendBroadcast(Intent intent) {
         BroadcastReceiver broadcastReceiver = registeredReceivers.get(intent.getAction());
         if (broadcastReceiver != null) {
@@ -56,6 +62,7 @@ public class FakeContextWrapper {
         }
     }
 
+    @Implementation
     public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
         Iterator<String> iterator = filter.actionsIterator();
         while (iterator.hasNext()) {
@@ -65,6 +72,7 @@ public class FakeContextWrapper {
         return null;
     }
 
+    @Implementation
     public void unregisterReceiver(BroadcastReceiver receiver) {
         Iterator<Map.Entry<String, BroadcastReceiver>> entryIterator = registeredReceivers.entrySet().iterator();
         while (entryIterator.hasNext()) {
@@ -75,6 +83,7 @@ public class FakeContextWrapper {
         }
     }
 
+    @Implementation
     public PackageManager getPackageManager() {
         if (packageManager == null) {
             packageManager = new MockPackageManager() {
@@ -93,11 +102,13 @@ public class FakeContextWrapper {
         return packageManager;
     }
 
+    @Implementation
     public ComponentName startService(Intent service) {
         startedServices.add(service);
         return new ComponentName("some.service.package", "SomeServiceName");
     }
 
+    @Implementation
     public void startActivity(Intent intent) {
         getApplicationContext().startActivity(intent);
     }
@@ -106,6 +117,7 @@ public class FakeContextWrapper {
         return ((FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(getApplicationContext())).getNextStartedIntent();
     }
 
+    @Implementation
     public SharedPreferences getSharedPreferences(String name, int mode) {
         return new TestSharedPreferences(name, mode);
     }

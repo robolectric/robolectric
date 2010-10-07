@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.content.IntentFilter;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
@@ -16,14 +17,17 @@ public class FakeIntentFilter {
         actions.add(action);
     }
 
+    @Implementation
     public void addAction(String action) {
         actions.add(action);
     }
 
+    @Implementation
     public String getAction(int index) {
         return actions.get(index);
     }
 
+    @Implementation
     public final Iterator<String> actionsIterator() {
         return actions.iterator();
     }

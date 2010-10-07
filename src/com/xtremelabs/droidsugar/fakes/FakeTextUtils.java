@@ -1,11 +1,13 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.text.TextUtils;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextUtils.class)
 public class FakeTextUtils {
+    @Implementation
     public static CharSequence expandTemplate(CharSequence template,
                                               CharSequence... values) {
         String s = template.toString();

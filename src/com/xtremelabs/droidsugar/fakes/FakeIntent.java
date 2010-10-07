@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 import com.xtremelabs.droidsugar.util.Join;
 
@@ -40,15 +41,18 @@ public class FakeIntent {
         __constructor__(action, null);
     }
 
+    @Implementation
     public Intent setAction(String action) {
         this.action = action;
         return realIntent;
     }
 
+    @Implementation
     public String getAction() {
         return action;
     }
 
+    @Implementation
     public Intent setClassName(String packageName, String className) {
         this.componentPackageName = packageName;
         try {
@@ -59,66 +63,81 @@ public class FakeIntent {
         return realIntent;
     }
 
+    @Implementation
     public Intent setData(Uri data) {
         this.data = data;
         return realIntent;
     }
 
+    @Implementation
     public Intent putExtras(Intent src) {
         FakeIntent srcFakeIntent = (FakeIntent) ProxyDelegatingHandler.getInstance().proxyFor(src);
         extras = new HashMap(srcFakeIntent.extras);
         return realIntent;
     }
 
+    @Implementation
     public Bundle getExtras() {
         return new Bundle();
     }
 
+    @Implementation
     public void putExtra(String key, int value) {
         extras.put(key, value);
     }
 
+    @Implementation
     public void putExtra(String key, long value) {
         extras.put(key, value);
     }
 
+    @Implementation
     public void putExtra(String key, Serializable value) {
         extras.put(key, serializeCycle(value));
     }
 
+    @Implementation
     public void putExtra(String key, Parcelable value) {
         extras.put(key, value);
     }
 
+    @Implementation
     public void putExtra(String key, String value) {
         extras.put(key, value);
     }
 
+    @Implementation
     public boolean hasExtra(String name) {
         return extras.containsKey(name);
     }
 
+    @Implementation
     public void putExtra(String key, byte[] value) {
         extras.put(key, value);
     }
 
+    @Implementation
     public String getStringExtra(String name) {
         return (String) extras.get(name);
     }
 
+    @Implementation
     public Parcelable getParcelableExtra(String name) {
         return (Parcelable) extras.get(name);
     }
 
+    @Implementation
     public int getIntExtra(String name, int defaultValue) {
         Integer foundValue = (Integer) extras.get(name);
         return foundValue == null ? defaultValue : foundValue;
     }
 
+    @Implementation
     public byte[] getByteArrayExtra(String name) {
         return (byte[]) extras.get(name);
     }
 
+    @Implementation
     public Serializable getSerializableExtra(String name) {
         return (Serializable) extras.get(name);
     }

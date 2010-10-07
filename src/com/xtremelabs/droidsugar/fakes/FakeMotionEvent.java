@@ -2,6 +2,7 @@ package com.xtremelabs.droidsugar.fakes;
 
 import android.view.MotionEvent;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.lang.reflect.Constructor;
@@ -13,6 +14,7 @@ public class FakeMotionEvent {
     private float x;
     private float y;
 
+    @Implementation
     public static MotionEvent obtain(long downTime, long eventTime, int action, float x, float y, int metaState) {
         try {
             Constructor<MotionEvent> constructor = MotionEvent.class.getDeclaredConstructor();
@@ -28,14 +30,17 @@ public class FakeMotionEvent {
         }
     }
 
+    @Implementation
     public int getAction() {
         return action;
     }
 
+    @Implementation
     public final float getX() {
         return x;
     }
 
+    @Implementation
     public final float getY() {
         return y;
     }

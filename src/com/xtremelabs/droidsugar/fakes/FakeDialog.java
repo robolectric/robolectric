@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.lang.reflect.Method;
@@ -46,22 +47,27 @@ public class FakeDialog {
         latestDialog = this;
     }
 
+    @Implementation
     public void setContentView(int layoutResID) {
         layoutId = layoutResID;
     }
 
+    @Implementation
     public void setTitle(int stringResourceId) {
         this.title = context.getResources().getText(stringResourceId);
     }
 
+    @Implementation
     public void setTitle(CharSequence title) {
         this.title = title;
     }
 
+    @Implementation
     public Context getContext() {
         return context;
     }
 
+    @Implementation
     public void show() {
         isShowing = true;
         try {
@@ -73,14 +79,17 @@ public class FakeDialog {
         }
     }
 
+    @Implementation
     public void hide() {
         isShowing = false;
     }
 
+    @Implementation
     public boolean isShowing() {
         return isShowing;
     }
 
+    @Implementation
     public void dismiss() {
         isShowing = false;
         hasBeenDismissed = true;
@@ -90,6 +99,7 @@ public class FakeDialog {
         }
     }
 
+    @Implementation
     public View findViewById(int viewId) {
         if (layoutId > 0 && context != null) {
             if (inflatedView == null) {
@@ -104,10 +114,12 @@ public class FakeDialog {
         findViewById(viewId).performClick();
     }
 
+    @Implementation
     public void setOnDismissListener(DialogInterface.OnDismissListener onDismissListener) {
         this.onDismissListener = onDismissListener;
     }
 
+    @Implementation
     public void cancel() {
         if(onCancelListener != null) {
             onCancelListener.onCancel(realDialog);
@@ -115,10 +127,12 @@ public class FakeDialog {
         dismiss();
     }
 
+    @Implementation
     public void setOnCancelListener(final DialogInterface.OnCancelListener listener) {
         this.onCancelListener = listener;
     }
 
+    @Implementation
     public Window getWindow() {
         if(window == null) {
             window = new TestWindow(realDialog.getContext());

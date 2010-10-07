@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.text.SpannableStringBuilder;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -19,16 +20,19 @@ public class FakeSpannableStringBuilder {
         builder.append(text);
     }
 
+    @Implementation
     public SpannableStringBuilder append(char text) {
         builder.append(text);
         return real;
     }
 
+    @Implementation
     public SpannableStringBuilder append(CharSequence text) {
         builder.append(text);
         return real;
     }
 
+    @Implementation
     public int length() {
         return builder.length();
     }

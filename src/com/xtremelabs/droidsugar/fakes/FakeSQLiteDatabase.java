@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
@@ -23,12 +24,14 @@ public class FakeSQLiteDatabase {
 
     Map<String, Table> tables = new HashMap<String, Table>();
 
+    @Implementation
     public long insert(String table, String nullColumnHack, ContentValues values) {
         Table theTable = getTable(table);
         theTable.insert(values);
         return -1;
     }
 
+    @Implementation
     public Cursor query(final String table, final String[] columns, String selection,
                         String[] selectionArgs, String groupBy, String having,
                         String orderBy) {

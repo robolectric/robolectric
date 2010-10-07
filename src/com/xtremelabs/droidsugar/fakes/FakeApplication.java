@@ -9,6 +9,7 @@ import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockContentResolver;
 import com.xtremelabs.droidsugar.util.FakeHelper;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
@@ -30,10 +31,12 @@ public class FakeApplication extends FakeContextWrapper {
         this.realApplication = realApplication;
     }
 
+    @Implementation
     @Override public ContentResolver getContentResolver() {
         return contentResolver;
     }
 
+    @Implementation
     @Override public Object getSystemService(String name) {
         if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
             return getFakeLayoutInflater();
@@ -57,6 +60,7 @@ public class FakeApplication extends FakeContextWrapper {
         return new RobolectricLayoutInflater(FakeContextWrapper.resourceLoader.viewLoader, realApplication);
     }
 
+    @Implementation
     @Override public void startActivity(Intent intent) {
         startedIntents.add(intent);
     }

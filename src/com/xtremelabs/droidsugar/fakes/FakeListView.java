@@ -5,6 +5,7 @@ import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -18,10 +19,12 @@ public class FakeListView extends FakeAdapterView {
         this.realListView = listView;
     }
 
+    @Implementation
     public void setItemsCanFocus(boolean itemsCanFocus) {
         this.itemsCanFocus = itemsCanFocus;
     }
 
+    @Implementation
     @Override
     public boolean performItemClick(View view, int position, long id) {
         AdapterView.OnItemClickListener onItemClickListener = getOnItemClickListener();
@@ -32,6 +35,7 @@ public class FakeListView extends FakeAdapterView {
         return false;
     }
 
+    @Implementation
     public void setAdapter(ListAdapter adapter) {
         super.setAdapter(adapter);
     }

@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.graphics.Path;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
@@ -12,12 +13,14 @@ public class FakePath {
     private List<Point> points = new ArrayList<Point>();
     public Point wasMovedTo;
 
+    @Implementation
     public void moveTo(float x, float y) {
         Point p = new Point(x, y);
         points.add(p);
         wasMovedTo = p;
     }
 
+    @Implementation
     public void lineTo(float x, float y) {
         points.add(new Point(x, y));
     }

@@ -3,6 +3,7 @@ package com.xtremelabs.droidsugar.fakes;
 import android.content.Context;
 import android.widget.Toast;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.HashMap;
@@ -17,10 +18,12 @@ public class FakeToast {
 
     private boolean wasShown = false;
 
+    @Implementation
     public static Toast makeText(Context context, int resId, int duration) {
         return makeText(context, context.getResources().getString(resId), duration);
     }
 
+    @Implementation
     public static Toast makeText(Context context, CharSequence text, int duration) {
         Toast toast = new Toast(null);
         toasts.put(text, toast);
@@ -39,6 +42,7 @@ public class FakeToast {
         toasts.clear();
     }
 
+    @Implementation
     public void show() {
         wasShown = true;
     }

@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.view.KeyEvent;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -14,10 +15,12 @@ public class FakeKeyEvent {
         this.code = code;
     }
 
+    @Implementation
     public final int getAction() {
         return action;
     }
 
+    @Implementation
     public final int getKeyCode() {
         return code;
     }

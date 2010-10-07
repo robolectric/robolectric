@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.view.View;
 import android.widget.Button;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.lang.reflect.Constructor;
@@ -34,7 +35,7 @@ public class FakeAlertDialog extends FakeDialog {
         super(dialog);
     }
 
-    @Override
+    @Override @Implementation
     public View findViewById(int viewId) {
         return null;
     }
@@ -55,6 +56,7 @@ public class FakeAlertDialog extends FakeDialog {
         }
     }
 
+    @Implementation
     public Button getButton(int whichButton) {
         switch (whichButton) {
             case AlertDialog.BUTTON_POSITIVE:
@@ -96,6 +98,7 @@ public class FakeAlertDialog extends FakeDialog {
             this.context = context;
         }
 
+        @Implementation
         public AlertDialog.Builder setItems(CharSequence[] items, final DialogInterface.OnClickListener listener) {
             this.isMultiItem = false;
 
@@ -104,6 +107,7 @@ public class FakeAlertDialog extends FakeDialog {
             return realBuilder;
         }
 
+        @Implementation
         public AlertDialog.Builder setSingleChoiceItems(CharSequence[] items, int checkedItem, final DialogInterface.OnClickListener listener) {
             this.isSingleItem = true;
             this.checkedItem = checkedItem;
@@ -112,6 +116,7 @@ public class FakeAlertDialog extends FakeDialog {
             return realBuilder;
         }
 
+        @Implementation
         public AlertDialog.Builder setMultiChoiceItems(CharSequence[] items, boolean[] checkedItems,
                                                        final DialogInterface.OnMultiChoiceClickListener listener) {
             this.isMultiItem = true;
@@ -129,44 +134,52 @@ public class FakeAlertDialog extends FakeDialog {
             return realBuilder;
         }
 
+        @Implementation
         public AlertDialog.Builder setTitle(CharSequence title) {
             this.title = title.toString();
             return realBuilder;
         }
 
+        @Implementation
         public AlertDialog.Builder setTitle(int titleId) {
             this.title = context.getResources().getString(titleId);
             return realBuilder;
         }
 
+        @Implementation
         public AlertDialog.Builder setMessage(CharSequence message) {
             this.message = message.toString();
             return realBuilder;
         }
 
+        @Implementation
         public AlertDialog.Builder setPositiveButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.positiveText = text;
             this.positiveListener = listener;
             return realBuilder;
         }
 
+        @Implementation
         public AlertDialog.Builder setNegativeButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.negativeText = text;
             this.negativeListener = listener;
             return realBuilder;
         }
 
+        @Implementation
         public AlertDialog.Builder setNeutralButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.neutralText = text;
             this.neutralListener = listener;
             return realBuilder;
         }
 
+        @Implementation
         public AlertDialog.Builder setCancelable(boolean cancelable) {
             this.isCancelable = cancelable;
             return realBuilder;
         }
 
+        @Implementation
         public AlertDialog create() {
             AlertDialog realDialog;
             try {
@@ -199,6 +212,7 @@ public class FakeAlertDialog extends FakeDialog {
             return realDialog;
         }
 
+        @Implementation
         public AlertDialog show() {
             AlertDialog dialog = realBuilder.create();
             dialog.show();

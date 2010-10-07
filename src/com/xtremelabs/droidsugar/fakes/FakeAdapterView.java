@@ -5,6 +5,7 @@ import android.os.Handler;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
@@ -28,6 +29,7 @@ public class FakeAdapterView extends FakeView {
         this.realAdapterView = adapterView;
     }
 
+    @Implementation
     public void setAdapter(Adapter adapter) {
         this.adapter = adapter;
         adapter.registerDataSetObserver(new AdapterViewDataSetObserver());
@@ -65,35 +67,43 @@ public class FakeAdapterView extends FakeView {
       return selectedPosition;
     }
 
+    @Implementation
     public Adapter getAdapter() {
         return adapter;
     }
 
+    @Implementation
     public int getCount() {
         return adapter.getCount();
     }
 
+    @Implementation
     public void setOnItemSelectedListener(AdapterView.OnItemSelectedListener listener) {
         this.onItemSelectedListener = listener;
     }
 
+    @Implementation
     public final AdapterView.OnItemSelectedListener getOnItemSelectedListener() {
         return onItemSelectedListener;
     }
 
+    @Implementation
     public void setOnItemClickListener(AdapterView.OnItemClickListener listener) {
         this.onItemClickListener = listener;
     }
 
+    @Implementation
     public final AdapterView.OnItemClickListener getOnItemClickListener() {
         return onItemClickListener;
     }
 
+    @Implementation
     public Object getItemAtPosition(int position) {
         Adapter adapter = getAdapter();
         return (adapter == null || position < 0) ? null : adapter.getItem(position);
     }
 
+    @Implementation
     public void setSelection(final int position) {
         selectedPosition = position;
         new Handler().post(new Runnable() {
@@ -106,6 +116,7 @@ public class FakeAdapterView extends FakeView {
         });
     }
 
+    @Implementation
     public boolean performItemClick(View view, int position, long id) {
         if (onItemClickListener != null) {
             onItemClickListener.onItemClick(realAdapterView, view, position, id);

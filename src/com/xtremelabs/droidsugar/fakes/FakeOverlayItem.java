@@ -2,6 +2,7 @@ package com.xtremelabs.droidsugar.fakes;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.OverlayItem;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -13,6 +14,7 @@ public class FakeOverlayItem {
         this.geoPoint = geoPoint;
     }
 
+    @Implementation
     public GeoPoint getPoint() {
         return geoPoint;
     }

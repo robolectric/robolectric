@@ -5,6 +5,7 @@ import android.text.style.URLSpan;
 import android.text.util.Linkify;
 import android.view.KeyEvent;
 import android.widget.TextView;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
@@ -27,6 +28,7 @@ public class FakeTextView extends FakeView {
         super(view);
     }
 
+    @Implementation
     public void setText(CharSequence text) {
         if (text == null) {
             text = "";
@@ -34,34 +36,42 @@ public class FakeTextView extends FakeView {
         this.text = text;
     }
 
+    @Implementation
     public void setText(int textResourceId) {
         this.text = getResources().getText(textResourceId);
     }
 
+    @Implementation
     public CharSequence getText() {
         return text;
     }
 
+    @Implementation
     public int length() {
         return text.length();
     }
 
+    @Implementation
     public void setTextColor(int color) {
         textColorHexValue = color;
     }
 
+    @Implementation
     public void setTextSize(float size) {
         textSize = (int) size;
     }
 
+    @Implementation
     public final void setHint(int resId) {
         this.hintText = getResources().getText(resId);
     }
 
+    @Implementation
     public CharSequence getHint() {
         return hintText;
     }
 
+    @Implementation
     public URLSpan[] getUrls() {
         String[] words = text.toString().split("\\s+");
         List<URLSpan> urlSpans = new ArrayList<URLSpan>();
@@ -73,21 +83,25 @@ public class FakeTextView extends FakeView {
         return urlSpans.toArray(new URLSpan[urlSpans.size()]);
     }
 
+    @Implementation
     public final void setAutoLinkMask(int mask) {
         autoLinkMask = mask;
 
         autoLinkPhoneNumbers = (mask & Linkify.PHONE_NUMBERS) != 0;
     }
 
+    @Implementation
     public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
         compoundDrawablesWithIntrinsicBounds = new CompoundDrawables(left, top , right, bottom);
     }
 
+    @Implementation
     public void setCompoundDrawablesWithIntrinsicBounds(Drawable left, Drawable top,
                                                         Drawable right, Drawable bottom) {
         compoundDrawablesWithIntrinsicBounds = new CompoundDrawables(left, top , right, bottom);
     }
 
+    @Implementation
     public Drawable[] getCompoundDrawables() {
         if (compoundDrawablesWithIntrinsicBounds == null) {
             return new Drawable[]{null, null, null, null};
@@ -100,6 +114,7 @@ public class FakeTextView extends FakeView {
         };
     }
 
+    @Implementation
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (onKeyListener != null) {
             return onKeyListener.onKey(realView, keyCode, event);

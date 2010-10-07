@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.graphics.Rect;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -18,10 +19,12 @@ public class FakeRect {
         this.bottom = bottom;
     }
 
+    @Implementation
     public int width() {
         return right - left;
     }
 
+    @Implementation
     public int height() {
         return bottom - top;
     }

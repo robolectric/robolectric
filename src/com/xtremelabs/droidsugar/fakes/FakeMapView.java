@@ -7,6 +7,7 @@ import android.widget.ZoomButtonsController;
 import com.google.android.maps.*;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.FakeHelper;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
@@ -49,14 +50,17 @@ public class FakeMapView extends FakeViewGroup {
         return i / 1e6;
     }
 
+    @Implementation
     public void setSatellite(boolean satelliteOn) {
         this.satelliteOn = satelliteOn;
     }
 
+    @Implementation
     public boolean isSatellite() {
         return satelliteOn;
     }
 
+    @Implementation
     public MapController getController() {
         if (mapController == null) {
             try {
@@ -70,14 +74,17 @@ public class FakeMapView extends FakeViewGroup {
         return mapController;
     }
 
+    @Implementation
     public ZoomButtonsController getZoomButtonsController() {
         return zoomButtonsController;
     }
 
+    @Implementation
     public void setBuiltInZoomControls(boolean useBuiltInZoomMapControls) {
         this.useBuiltInZoomMapControls = useBuiltInZoomMapControls;
     }
 
+    @Implementation
     public com.google.android.maps.Projection getProjection() {
         if (projection == null) {
             projection = new Projection() {
@@ -120,26 +127,32 @@ public class FakeMapView extends FakeViewGroup {
         return (int) (minPixel + spanPixels * ratio);
     }
 
+    @Implementation
     public List<Overlay> getOverlays() {
         return overlays;
     }
 
+    @Implementation
     public GeoPoint getMapCenter() {
         return mapCenter;
     }
 
+    @Implementation
     public int getLatitudeSpan() {
         return latitudeSpan;
     }
 
+    @Implementation
     public int getLongitudeSpan() {
         return longitudeSpan;
     }
 
+    @Implementation
     public int getZoomLevel() {
         return zoomLevel;
     }
 
+    @Implementation
     @Override public boolean dispatchTouchEvent(MotionEvent event) {
         for (Overlay overlay : overlays) {
             if (overlay.onTouchEvent(event, realMapView)) {

@@ -3,6 +3,7 @@ package com.xtremelabs.droidsugar.fakes;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
@@ -16,10 +17,12 @@ public class FakeCanvas {
     public Paint drawnPaint;
     public boolean drewSomethingAfterCircle;
 
+    @Implementation
     public void drawPaint(Paint paint) {
         drawnPaint = paint;
     }
 
+    @Implementation
     public void drawPath(Path path, Paint paint) {
         pathPaintEvents.add(new PathPaintHistoryEvent(path, paint));
         if(hasDrawnCircle()) {
@@ -27,6 +30,7 @@ public class FakeCanvas {
         }
     }
 
+    @Implementation
     public void drawCircle(float cx, float cy, float radius, Paint paint) {
         circlePaintEvents.add(new CirclePaintHistoryEvent(cx, cy, radius, paint));
         drewSomethingAfterCircle = false;

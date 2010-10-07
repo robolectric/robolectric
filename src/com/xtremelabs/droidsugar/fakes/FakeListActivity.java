@@ -1,10 +1,10 @@
 package com.xtremelabs.droidsugar.fakes;
 
-import android.app.Activity;
 import android.app.ListActivity;
 import android.view.View;
 import android.widget.ListView;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -12,10 +12,11 @@ import com.xtremelabs.droidsugar.util.Implements;
 public class FakeListActivity extends FakeActivity {
     private ListView listView;
 
-    public FakeListActivity(Activity realActivity) {
+    public FakeListActivity(ListActivity realActivity) {
         super(realActivity);
     }
 
+    @Implementation
     public ListView getListView() {
         if (listView == null) {
             if ((listView = findListView(contentView)) == null) {

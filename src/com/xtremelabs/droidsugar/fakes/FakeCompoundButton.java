@@ -2,6 +2,7 @@ package com.xtremelabs.droidsugar.fakes;
 
 import android.widget.Checkable;
 import android.widget.CompoundButton;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -14,19 +15,23 @@ public class FakeCompoundButton extends FakeTextView implements Checkable {
         super(view);
     }
 
+    @Implementation
     @Override public void toggle() {
         setChecked(!mChecked);
     }
 
+    @Implementation
     @Override public boolean performClick() {
         toggle();
         return super.performClick();
     }
 
+    @Implementation
     @Override public boolean isChecked() {
         return mChecked;
     }
 
+    @Implementation
     @Override public void setChecked(boolean checked) {
         if (mChecked != checked) {
             mChecked = checked;
@@ -37,6 +42,7 @@ public class FakeCompoundButton extends FakeTextView implements Checkable {
         }
     }
 
+    @Implementation
     public void setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener listener) {
         mOnCheckedChangeListener = listener;
     }

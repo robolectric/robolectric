@@ -19,6 +19,7 @@ package com.xtremelabs.droidsugar.fakes;
 import android.content.ContentValues;
 import android.util.Log;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
@@ -40,92 +41,93 @@ public final class FakeContentValues {
         this.values = values;
     }
 
-    @Override
-    public boolean equals(Object object) {
-        if (!(object instanceof ContentValues)) {
-            return false;
-        }
-        return values.equals(proxyFor((ContentValues) object).values);
-    }
-
-    @Override
-    public int hashCode() {
-        return values.hashCode();
-    }
-
+    @Implementation
     public void put(String key, String value) {
         values.put(key, value);
     }
 
+    @Implementation
     public void putAll(ContentValues other) {
         values.putAll(proxyFor(other).values);
     }
 
-    private FakeContentValues proxyFor(ContentValues other) {
-        return ((FakeContentValues) ProxyDelegatingHandler.getInstance().proxyFor(other));
-    }
-
+    @Implementation
     public void put(String key, Byte value) {
         values.put(key, value);
     }
 
+    @Implementation
     public void put(String key, Short value) {
         values.put(key, value);
     }
 
+    @Implementation
     public void put(String key, Integer value) {
         values.put(key, value);
     }
 
+    @Implementation
     public void put(String key, Long value) {
         values.put(key, value);
     }
 
+    @Implementation
     public void put(String key, Float value) {
         values.put(key, value);
     }
 
+    @Implementation
     public void put(String key, Double value) {
         values.put(key, value);
     }
 
+    @Implementation
     public void put(String key, Boolean value) {
         values.put(key, value);
     }
 
+    @Implementation
     public void put(String key, byte[] value) {
         values.put(key, value);
     }
 
+    @Implementation
     public void putNull(String key) {
         values.put(key, null);
     }
 
+    @Implementation
     public int size() {
         return values.size();
     }
 
+    @Implementation
     public void remove(String key) {
         values.remove(key);
     }
 
+    @Implementation
     public void clear() {
         values.clear();
     }
 
+    @Implementation
     public boolean containsKey(String key) {
         return values.containsKey(key);
     }
 
+    @Implementation
     public Object get(String key) {
         return values.get(key);
     }
 
+    @Implementation
     public String getAsString(String key) {
         Object value = values.get(key);
         return value != null ? value.toString() : null;
     }
 
+    @Implementation
     public Long getAsLong(String key) {
         Object value = values.get(key);
         try {
@@ -145,6 +147,7 @@ public final class FakeContentValues {
         }
     }
 
+    @Implementation
     public Integer getAsInteger(String key) {
         Object value = values.get(key);
         try {
@@ -164,6 +167,7 @@ public final class FakeContentValues {
         }
     }
 
+    @Implementation
     public Short getAsShort(String key) {
         Object value = values.get(key);
         try {
@@ -183,6 +187,7 @@ public final class FakeContentValues {
         }
     }
 
+    @Implementation
     public Byte getAsByte(String key) {
         Object value = values.get(key);
         try {
@@ -202,6 +207,7 @@ public final class FakeContentValues {
         }
     }
 
+    @Implementation
     public Double getAsDouble(String key) {
         Object value = values.get(key);
         try {
@@ -221,6 +227,7 @@ public final class FakeContentValues {
         }
     }
 
+    @Implementation
     public Float getAsFloat(String key) {
         Object value = values.get(key);
         try {
@@ -240,6 +247,7 @@ public final class FakeContentValues {
         }
     }
 
+    @Implementation
     public Boolean getAsBoolean(String key) {
         Object value = values.get(key);
         try {
@@ -254,6 +262,7 @@ public final class FakeContentValues {
         }
     }
 
+    @Implementation
     public byte[] getAsByteArray(String key) {
         Object value = values.get(key);
         if (value instanceof byte[]) {
@@ -263,23 +272,40 @@ public final class FakeContentValues {
         }
     }
 
+    @Implementation
     public Set<Map.Entry<String, Object>> valueSet() {
         return values.entrySet();
     }
 
+    @Implementation
     public int describeContents() {
         return 0;
     }
 
+    @Implementation
     @Deprecated
     public void putStringArrayList(String key, ArrayList<String> value) {
         values.put(key, value);
     }
 
+    @Implementation
     @SuppressWarnings("unchecked")
     @Deprecated
     public ArrayList<String> getStringArrayList(String key) {
         return (ArrayList<String>) values.get(key);
+    }
+
+    @Override
+    public boolean equals(Object object) {
+        if (!(object instanceof ContentValues)) {
+            return false;
+        }
+        return values.equals(proxyFor((ContentValues) object).values);
+    }
+
+    @Override
+    public int hashCode() {
+        return values.hashCode();
     }
 
     @Override
@@ -291,5 +317,9 @@ public final class FakeContentValues {
             sb.append(name + "=" + value);
         }
         return sb.toString();
+    }
+
+    private FakeContentValues proxyFor(ContentValues other) {
+        return ((FakeContentValues) ProxyDelegatingHandler.getInstance().proxyFor(other));
     }
 }

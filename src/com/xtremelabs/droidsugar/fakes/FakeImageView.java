@@ -3,6 +3,7 @@ package com.xtremelabs.droidsugar.fakes;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -18,6 +19,7 @@ public class FakeImageView extends FakeView {
         super(view);
     }
 
+    @Implementation
     public void setImageBitmap(Bitmap imageBitmap) {
         this.imageBitmap = imageBitmap;
     }
@@ -26,14 +28,17 @@ public class FakeImageView extends FakeView {
         return imageBitmap;
     }
 
+    @Implementation
     public void setImageDrawable(Drawable drawable) {
         this.imageDrawable = drawable;
     }
 
+    @Implementation
     public void setImageResource(int resId) {
         this.resourceId = resId;
     }
 
+    @Implementation
     public void setAlpha(int alpha) {
         this.alpha = alpha;
     }
@@ -42,6 +47,7 @@ public class FakeImageView extends FakeView {
         return scaleType;
     }
 
+    @Implementation
     public void setScaleType(ImageView.ScaleType scaleType) {
         this.scaleType = scaleType;
     }

@@ -1,6 +1,7 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.location.Location;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -11,34 +12,42 @@ public class FakeLocation {
     private double latitude;
     private double longitude;
 
+    @Implementation
     public String getProvider() {
         return provider;
     }
 
+    @Implementation
     public void setProvider(String provider) {
         this.provider = provider;
     }
 
+    @Implementation
     public long getTime() {
         return time;
     }
 
+    @Implementation
     public void setTime(long time) {
         this.time = time;
     }
 
+    @Implementation
     public double getLatitude() {
         return latitude;
     }
 
+    @Implementation
     public void setLatitude(double latitude) {
         this.latitude = latitude;
     }
 
+    @Implementation
     public double getLongitude() {
         return longitude;
     }
 
+    @Implementation
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }

@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.ArrayList;
@@ -63,22 +64,27 @@ public class FakeView {
         __constructor__(context);
     }
 
+    @Implementation
     public void setId(int id) {
         this.id = id;
     }
 
+    @Implementation
     public void setClickable(boolean clickable) {
         this.clickable = clickable;
     }
 
+    @Implementation
     public void setFocusable(boolean focusable) {
         this.focusable = focusable;
     }
 
+    @Implementation
     public int getId() {
         return id;
     }
 
+    @Implementation
     public static View inflate(Context context, int resource, ViewGroup root) {
         View view = FakeContextWrapper.resourceLoader.viewLoader.inflateView(context, resource);
         if (root != null) {
@@ -87,6 +93,7 @@ public class FakeView {
         return view;
     }
 
+    @Implementation
     public View findViewById(int id) {
         if (id == this.id) {
             return realView;
@@ -101,6 +108,7 @@ public class FakeView {
         return null;
     }
 
+    @Implementation
     public View getRootView() {
         FakeView root = this;
         while(root.parent != null) {
@@ -109,6 +117,7 @@ public class FakeView {
         return root.realView;
     }
 
+//    @Implementation
     public void addView(View child) {
         children.add(child);
         childProxy(child).parent = this;
@@ -118,26 +127,32 @@ public class FakeView {
         return (FakeView) ProxyDelegatingHandler.getInstance().proxyFor(child);
     }
 
+//    @Implementation
     public int getChildCount() {
         return children.size();
     }
 
+    @Implementation
     public ViewGroup.LayoutParams getLayoutParams() {
         return layoutParams;
     }
 
+    @Implementation
     public void setLayoutParams(ViewGroup.LayoutParams params) {
         layoutParams = params;
     }
 
+//    @Implementation
     public View getChildAt(int index) {
         return children.get(index);
     }
 
+    @Implementation
     public final ViewParent getParent() {
         return parent == null ? null : (ViewParent) parent.realView;
     }
 
+//    @Implementation
     public void removeAllViews() {
         for (View child : children) {
             childProxy(child).parent = null;
@@ -145,50 +160,62 @@ public class FakeView {
         children.clear();
     }
 
+//    @Implementation
     public void removeViewAt(int position) {
         childProxy(children.remove(position)).parent = null;
     }
 
+    @Implementation
     public final Context getContext() {
         return context;
     }
 
+    @Implementation
     public Resources getResources() {
         return context.getResources();
     }
 
+    @Implementation
     public void setBackgroundResource(int backgroundResourceId) {
         this.backgroundResourceId = backgroundResourceId;
     }
 
+    @Implementation
     public int getVisibility() {
         return visibility;
     }
 
+    @Implementation
     public void setVisibility(int visibility) {
         this.visibility = visibility;
     }
 
+    @Implementation
     public void setSelected(boolean selected) {
         this.selected = selected;
     }
 
+    @Implementation
     public boolean isSelected() {
         return this.selected;
     }
 
+    @Implementation
     public boolean isEnabled() {
         return this.enabled;
     }
     
+    @Implementation
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }
 
+    @Implementation
     public void setOnClickListener(View.OnClickListener onClickListener) {
         this.onClickListener = onClickListener;
     }
 
+    @Implementation
     public boolean performClick() {
         if (onClickListener != null) {
             onClickListener.onClick(realView);
@@ -198,30 +225,37 @@ public class FakeView {
         }
     }
 
+    @Implementation
     public void setOnKeyListener(View.OnKeyListener onKeyListener) {
         this.onKeyListener = onKeyListener;
     }
 
+    @Implementation
     public Object getTag() {
         return this.tag;
     }
 
+    @Implementation
     public void setTag(Object tag) {
         this.tag = tag;
     }
 
+    @Implementation
     public final int getHeight() {
         return bottom - top;
     }
 
+    @Implementation
     public final int getWidth() {
         return right - left;
     }
 
+    @Implementation
     public final int getMeasuredWidth() {
         return getWidth();
     }
 
+    @Implementation
     public final void layout(int l, int t, int r, int b) {
         left = l;
         top = t;
@@ -231,6 +265,7 @@ public class FakeView {
 // todo:       realView.onLayout();
     }
     
+    @Implementation
     public void setPadding(int left, int top, int right, int bottom) {
         paddingLeft = left;
         paddingTop = top;
@@ -238,26 +273,32 @@ public class FakeView {
         paddingBottom = bottom;
     }
 
+    @Implementation
     public int getPaddingTop() {
         return paddingTop;
     }
 
+    @Implementation
     public int getPaddingLeft() {
         return paddingLeft;
     }
 
+    @Implementation
     public int getPaddingRight() {
         return paddingRight;
     }
 
+    @Implementation
     public int getPaddingBottom() {
         return paddingBottom;
     }
 
+    @Implementation
     public Object getTag(int key) {
         return tags.get(key);
     }
 
+    @Implementation
     public void setTag(int key, Object value) {
         tags.put(key, value);
     }
@@ -269,22 +310,27 @@ public class FakeView {
         }
     }
 
+    @Implementation
     public boolean hasFocus() {
         return hasFocus;
     }
 
+    @Implementation
     public void setOnFocusChangeListener(View.OnFocusChangeListener listener) {
         onFocusChangeListener = listener;
     }
 
+    @Implementation
     public void invalidate() {
         wasInvalidated = true;
     }
 
+    @Implementation
     public void setOnTouchListener(View.OnTouchListener onTouchListener) {
         this.onTouchListener = onTouchListener;
     }
 
+    @Implementation
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (onTouchListener != null) {
             return onTouchListener.onTouch(realView, event);

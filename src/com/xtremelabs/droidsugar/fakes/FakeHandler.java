@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -24,22 +25,26 @@ public class FakeHandler {
         this.looper = looper;
     }
 
-    public final boolean post(Runnable r) {
+    @Implementation
+    public boolean post(Runnable r) {
         return postDelayed(r, 0);
     }
 
-    public final boolean postDelayed(Runnable r, long delayMillis) {
+    @Implementation
+    public boolean postDelayed(Runnable r, long delayMillis) {
         proxyFor(looper).post(r, delayMillis);
         return true;
     }
 
-    public final Message obtainMessage(int what, Object obj) {
+    @Implementation
+    public Message obtainMessage(int what, Object obj) {
         Message message = new Message();
         message.what = what;
         message.obj = obj;
         return message;
     }
 
+    @Implementation
     public final boolean sendMessage(final Message msg) {
         post(new Runnable() {
             @Override

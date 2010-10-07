@@ -3,6 +3,7 @@ package com.xtremelabs.droidsugar.fakes;
 import android.content.ContentResolver;
 import android.provider.Settings;
 import com.xtremelabs.droidsugar.util.FakeHelper;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import java.util.HashMap;
@@ -15,16 +16,19 @@ public class FakeSettings {
     private static class SettingsImpl {
         private static final WeakHashMap<ContentResolver, Map<String, Integer>> dataMap = new WeakHashMap<ContentResolver, Map<String, Integer>>();
 
+        @Implementation
         public static boolean putInt(ContentResolver cr, String name, int value) {
             get(cr).put(name, value);
             return true;
         }
 
+        @Implementation
         public static int getInt(ContentResolver cr, String name, int def) {
             Integer value = get(cr).get(name);
             return value == null ? def : value;
         }
 
+        @Implementation
         private static Map<String, Integer> get(ContentResolver cr) {
             Map<String, Integer> map = dataMap.get(cr);
             if (map == null) {

@@ -2,6 +2,7 @@ package com.xtremelabs.droidsugar.fakes;
 
 import com.google.android.maps.GeoPoint;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
 import static com.xtremelabs.droidsugar.fakes.FakeMapView.fromE6;
@@ -17,10 +18,12 @@ public class FakeGeoPoint {
         this.lng = lng;
     }
 
+    @Implementation
     public int getLatitudeE6() {
         return lat;
     }
 
+    @Implementation
     public int getLongitudeE6() {
         return lng;
     }

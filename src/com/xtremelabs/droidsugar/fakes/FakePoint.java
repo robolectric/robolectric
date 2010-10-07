@@ -1,9 +1,9 @@
 package com.xtremelabs.droidsugar.fakes;
 
 import android.graphics.Point;
+import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Point.class)
 public class FakePoint {
     private Point realPoint;
@@ -22,16 +22,19 @@ public class FakePoint {
         realPoint.y = src.y;
     }
 
+    @Implementation
     public void set(int x, int y) {
         realPoint.x = x;
         realPoint.y = y;
     }
 
+    @Implementation
     public final void negate() {
         realPoint.x = -realPoint.x;
         realPoint.y = -realPoint.y;
     }
 
+    @Implementation
     public final void offset(int dx, int dy) {
         realPoint.x += dx;
         realPoint.y += dy;
