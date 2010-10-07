@@ -4,7 +4,6 @@ import android.app.AlarmManager;
 import android.app.Application;
 import android.content.ContentResolver;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
@@ -19,14 +18,16 @@ import static org.mockito.Mockito.mock;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Application.class)
-public class FakeApplication extends ContextWrapper {
+public class FakeApplication extends FakeContextWrapper {
+    private Application realApplication;
     private MockContentResolver contentResolver = new MockContentResolver();
     private LocationManager locationManager;
     private WifiManager wifiManager;
     public List<Intent> startedIntents = new ArrayList<Intent>();
 
-    public FakeApplication(Application base) {
-        super(base);
+    public FakeApplication(Application realApplication) {
+        super(realApplication);
+        this.realApplication = realApplication;
     }
 
     @Override public ContentResolver getContentResolver() {
@@ -52,15 +53,15 @@ public class FakeApplication extends ContextWrapper {
         return null;
     }
 
-    public FakeContextWrapper.FakeLayoutInflater getFakeLayoutInflater() {
-        return new FakeContextWrapper.FakeLayoutInflater(FakeContextWrapper.resourceLoader.viewLoader);
+    public RobolectricLayoutInflater getFakeLayoutInflater() {
+        return new RobolectricLayoutInflater(FakeContextWrapper.resourceLoader.viewLoader, realApplication);
     }
 
     @Override public void startActivity(Intent intent) {
         startedIntents.add(intent);
     }
 
-    public Intent getNextStartedIntent() {
+    @Override public Intent getNextStartedIntent() {
         if (startedIntents.isEmpty()) {
             return null;
         } else {

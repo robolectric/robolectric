@@ -7,14 +7,10 @@ import android.content.res.Resources;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockPackageManager;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implements;
 import com.xtremelabs.droidsugar.util.ResourceLoader;
-import com.xtremelabs.droidsugar.util.ViewLoader;
 import com.xtremelabs.droidsugar.view.TestSharedPreferences;
 
 import java.util.*;
@@ -23,9 +19,6 @@ import java.util.*;
 @Implements(ContextWrapper.class)
 public class FakeContextWrapper {
     public static ResourceLoader resourceLoader;
-
-    // todo: why not just use this context?
-    protected static Context contextForInflation = new ContextWrapper(null);
 
     private ContextWrapper realContextWrapper;
 
@@ -115,34 +108,5 @@ public class FakeContextWrapper {
 
     public SharedPreferences getSharedPreferences(String name, int mode) {
         return new TestSharedPreferences(name, mode);
-    }
-
-    public static class FakeLayoutInflater extends LayoutInflater {
-
-        private final ViewLoader viewLoader;
-
-        public FakeLayoutInflater(ViewLoader viewLoader) {
-            super(null);
-            this.viewLoader = viewLoader;
-        }
-
-        @Override
-        public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
-            View view = viewLoader.inflateView(contextForInflation, resource);
-            if (root != null && attachToRoot) {
-                root.addView(view);
-            }
-            return view;
-        }
-
-        @Override
-        public View inflate(int resource, ViewGroup root) {
-            return inflate(resource, root, true);
-        }
-
-        @Override
-        public LayoutInflater cloneInContext(Context context) {
-            return this;
-        }
     }
 }

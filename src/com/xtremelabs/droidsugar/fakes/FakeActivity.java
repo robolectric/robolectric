@@ -57,7 +57,7 @@ public class FakeActivity extends FakeContextWrapper {
     }
 
     public LayoutInflater getLayoutInflater() {
-        return new FakeLayoutInflater(resourceLoader.viewLoader);
+        return new RobolectricLayoutInflater(resourceLoader.viewLoader, realActivity);
     }
 
     public View findViewById(int id) {
