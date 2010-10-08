@@ -11,22 +11,22 @@ Have you tried to write unit tests for your Android project and been thwarted by
 
 @RunWith(FastAndroidTestRunner.class)
 public class MyActivityTest {
-    private MyActivity activity;
+    private Activity activity;
     private Button pressMeButton;
-    private TextView resultsTextView;
+    private TextView results;
     
     @Before
     public void setUp() throws Exception {
         activity = new MyActivity();
         activity.onCreate(null);
-        pressMeButton = (Button) activity.findViewById(R.id.press_me_button_id);
-        resultsTextView = (TextView) activity.findViewById(R.id.results_text_view_id);
+        pressMeButton = (Button) activity.findViewById(R.id.press_me_button);
+        results = (TextView) activity.findViewById(R.id.results_text_view);
     }
 
     @Test
-    public void shouldUpdateTheTextOfTheTextViewWhenTheButtonIsPressed() throws Exception {
+    public void shouldUpdateTheResultsWhenTheButtonIsClicked() throws Exception {
         pressMeButton.performClick();	
-        assertThat(resultsTextView.getText().toString(), equalTo("Testing Android Rocks!"));
+        assertThat(results.getText().toString(), equalTo("Testing Android Rocks!"));
     }
 }
 
@@ -37,11 +37,11 @@ Robolectric makes this possible by intercepting the loading of the Android class
 #### View Support
 
 Robolectric handles inflation of views, string resource lookups, etc. Some view attributes (id, visibility,
-enabled, text, checked, and src) are currently parsed and applied to inflated views. Activities and Views <code>#findViewById()</code> methods to return objects representing the view, with support for include and merge tags. This allows tests to assert on view state such as visibility and enabled state.
+enabled, text, checked, and src) are parsed and applied to inflated views. Activity and View <code>#findViewById()</code> methods return Android view objects. Support exists for <code>include</code> and <code>merge</code> tags. These features allow tests to assert on view state.
 
 #### Run Tests Outside of the Emulator
 
-Run your tests on your workstation, or on your Continuous Integration environment. Because tests run on your workstation (and not in the emulator), the code generation, dexing, and packaging steps are not necessary, allowing you to iterate quickly and refactor your code with confidence.
+Run your tests on your workstation, or on your Continuous Integration environment. Because tests run on your workstation (and not in the emulator), the code generation, dexing, packaging, and package installation on the emulator steps are not necessary - allowing you to iterate quickly and refactor your code with confidence.
 
 ## Contributing
 
