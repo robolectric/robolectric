@@ -3,7 +3,7 @@ layout: default
 title: "Robolectric: Unit Test your Android Application"
 ---
 
-# Making TDD for your Android Application possible
+# Making TDD for your Android Application Possible
 
 Have you tried to write unit tests for your Android project and been thwarted by the dreaded 'java.lang.RuntimeException: Stub!'? Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test drive the development of your App.  Dream of writing tests like this?
 
@@ -32,10 +32,22 @@ public class MyActivityTest {
 
 </pre>
 
-Robolectric makes this possible by intercepting the loading of the Android classes and rewrites the method bodies. By default the methods defined by the SDK jar return null (or 0, false, etc.) instead of throwing a RuntimeException. The other, and more important, part of what Roblectric does is to delegate to fake Android objects. Robolectric provides a large number of fake objects covering most of what an application would need to test drive the business logic and functionality. Layout and other XML resources are parsed and loaded. Headless versions of view classes are loaded allowing #findViewById() methods to return objects representing the view. This allows tests to assert on view state such as visibility and enabled state.
+Robolectric makes this possible by intercepting the loading of the Android classes and rewrites the method bodies. By default the methods defined by the SDK jar return null (or 0, false, etc.) instead of throwing a RuntimeException. The other and more important part of what Robolectric does is to proxy to fake Android objects. Robolectric provides a large number of fake objects covering most of what an application would need to test drive the business logic and functionality of your application. Coverage of the SDK is improving every day.
 
-Because you are writing your tests with JUnit, you can run your tests on your workstation, or on your Continuous Integration environment.
+#### View Support
+
+Robolectric handles inflation of views, string resource lookups, etc. Some view attributes (id, visibility,
+enabled, text, checked, and src) are currently parsed and applied to inflated views. Activities and Views <code>#findViewById()</code> methods to return objects representing the view, with support for include and merge tags. This allows tests to assert on view state such as visibility and enabled state.
+
+#### Run Tests Outside of the Emulator
+
+Run your tests on your workstation, or on your Continuous Integration environment. Because tests run on your workstation (and not in the emulator), the code generation, dexing, and packaging steps are not necessary, allowing you to iterate quickly and refactor your code with confidence.
+
+## Contributing
+
+We welcome contributions. Please fork and submit pull requests!
 
 ## Support
 
 __Group email:__ [robolectric@googlegroups.com](mailto:robolectric@googlegroups.com)  
+__Samples:__ [http://github.com/pivotal/RobolectricSample](http://github.com/pivota/RobolectricSample)
