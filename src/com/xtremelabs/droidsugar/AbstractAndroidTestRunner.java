@@ -1,5 +1,6 @@
 package com.xtremelabs.droidsugar;
 
+import com.xtremelabs.droidsugar.util.TestHelperInterface;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -8,18 +9,32 @@ import org.junit.runners.model.Statement;
 import java.lang.reflect.Method;
 
 public class AbstractAndroidTestRunner extends BlockJUnit4ClassRunner {
+    private Loader loader;
     private ClassHandler classHandler;
-    protected static FrameworkMethod currentFrameworkMethod;
+    private Class<? extends TestHelperInterface> testHelperClass;
+    private TestHelperInterface testHelper;
 
     public AbstractAndroidTestRunner(Class<?> testClass, Loader loader) throws InitializationError {
         super(loader.bootstrap(testClass));
+        this.loader = loader;
+
+        this.loader.delegateLoadingOf(TestHelperInterface.class.getName());
     }
 
+    @Deprecated
     public AbstractAndroidTestRunner(Class<?> testClass, Loader loader, ClassHandler classHandler) throws InitializationError {
         this(testClass, loader);
-        this.classHandler = classHandler;
+        
+        setClassHandler(classHandler);
+    }
 
+    public void setClassHandler(ClassHandler classHandler) {
+        this.classHandler = classHandler;
         loader.delegateLoadingOf(getClass().getName());
+    }
+
+    public void setTestHelperClass(Class<? extends TestHelperInterface> testHelperClass) {
+        this.testHelperClass = testHelperClass;
     }
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
@@ -40,9 +55,39 @@ public class AbstractAndroidTestRunner extends BlockJUnit4ClassRunner {
         };
     }
 
-    protected void beforeTest(Method method) {
-    }
+     protected void beforeTest(Method method) {
+         if (testHelperClass != null) {
+             testHelper = createTestHelper(method);
+             testHelper.before(method);
+         }
+     }
 
-    protected void afterTest(Method method) {
-    }
+     protected void afterTest(Method method) {
+         if (testHelperClass != null) {
+             testHelper.after(method);
+         }
+     }
+
+     @Override
+     protected Object createTest() throws Exception {
+         Object test = super.createTest();
+         if (testHelperClass != null) {
+             testHelper.prepareTest(test);
+         }
+         return test;
+     }
+
+     private TestHelperInterface createTestHelper(Method method) {
+         Class<?> testClass = method.getDeclaringClass();
+         try {
+             return (TestHelperInterface) testClass.getClassLoader().loadClass(testHelperClass.getName()).newInstance();
+         } catch (ClassNotFoundException e) {
+             throw new RuntimeException(e);
+         } catch (InstantiationException e) {
+             throw new RuntimeException(e);
+         } catch (IllegalAccessException e) {
+             throw new RuntimeException(e);
+         }
+     }
+
 }
