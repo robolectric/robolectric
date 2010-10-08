@@ -2,12 +2,14 @@ package com.xtremelabs.droidsugar.fakes;
 
 import android.app.AlarmManager;
 import android.app.Application;
+import android.appwidget.AppWidgetManager;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockContentResolver;
+import android.view.LayoutInflater;
 import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
@@ -26,6 +28,10 @@ public class FakeApplication extends FakeContextWrapper {
     private WifiManager wifiManager;
     public List<Intent> startedIntents = new ArrayList<Intent>();
 
+    // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
+    public LayoutInflater layoutInflater;
+    public AppWidgetManager appWidgetManager;
+
     public FakeApplication(Application realApplication) {
         super(realApplication);
         this.realApplication = realApplication;
@@ -39,7 +45,7 @@ public class FakeApplication extends FakeContextWrapper {
     @Implementation
     @Override public Object getSystemService(String name) {
         if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
-            return getFakeLayoutInflater();
+            return LayoutInflater.from(realApplication);
         } else if (name.equals(Context.ALARM_SERVICE)) {
             return mock(AlarmManager.class);
         } else if (name.equals(Context.LOCATION_SERVICE)) {
@@ -54,10 +60,6 @@ public class FakeApplication extends FakeContextWrapper {
             return wifiManager;
         }
         return null;
-    }
-
-    public RobolectricLayoutInflater getFakeLayoutInflater() {
-        return new RobolectricLayoutInflater(FakeContextWrapper.resourceLoader.viewLoader, realApplication);
     }
 
     @Implementation

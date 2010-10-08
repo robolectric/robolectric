@@ -18,7 +18,15 @@ import java.util.Map;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AppWidgetManager.class)
 public class FakeAppWidgetManager {
-    private static AppSingletonizer<AppWidgetManager> instances = new AppSingletonizer<AppWidgetManager>(AppWidgetManager.class);
+    private static AppSingletonizer<AppWidgetManager> instances = new AppSingletonizer<AppWidgetManager>(AppWidgetManager.class) {
+        @Override protected AppWidgetManager get(FakeApplication fakeApplication) {
+            return fakeApplication.appWidgetManager;
+        }
+
+        @Override protected void set(FakeApplication fakeApplication, AppWidgetManager instance) {
+            fakeApplication.appWidgetManager = instance;
+        }
+    };
 
     private AppWidgetManager realAppWidgetManager;
     private Context context;

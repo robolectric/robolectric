@@ -66,7 +66,7 @@ public class FakeActivity extends FakeContextWrapper {
 
     @Implementation
     public LayoutInflater getLayoutInflater() {
-        return new RobolectricLayoutInflater(resourceLoader.viewLoader, realActivity);
+        return LayoutInflater.from(realActivity);
     }
 
     @Implementation

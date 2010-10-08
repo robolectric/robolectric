@@ -1,0 +1,78 @@
+package com.xtremelabs.droidsugar.fakes;
+
+import android.app.Application;
+import android.content.Context;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.util.AppSingletonizer;
+import com.xtremelabs.droidsugar.util.Implementation;
+import com.xtremelabs.droidsugar.util.Implements;
+import com.xtremelabs.droidsugar.util.ViewLoader;
+
+@Implements(LayoutInflater.class)
+public class FakeLayoutInflater {
+    private static AppSingletonizer<LayoutInflater> instances = new LayoutInflaterAppSingletonizer();
+
+    private ViewLoader viewLoader;
+    private Context context;
+
+    @Implementation
+    public static LayoutInflater from(Context context) {
+        return inject(instances.getInstance(context), FakeContextWrapper.resourceLoader.viewLoader, context);
+    }
+
+    @Implementation
+    public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
+        View view = viewLoader.inflateView(context, resource);
+        if (root != null && attachToRoot) {
+            root.addView(view);
+        }
+        return view;
+    }
+
+    @Implementation
+    public View inflate(int resource, ViewGroup root) {
+        return inflate(resource, root, true);
+    }
+
+    private static LayoutInflater inject(LayoutInflater layoutInflater, ViewLoader viewLoader, Context context) {
+        FakeLayoutInflater fakeLayoutInflater = proxyFor(layoutInflater);
+        fakeLayoutInflater.viewLoader = viewLoader;
+        fakeLayoutInflater.context = context;
+        return layoutInflater;
+    }
+
+    private static FakeLayoutInflater proxyFor(LayoutInflater instance) {
+        return ((FakeLayoutInflater) ProxyDelegatingHandler.getInstance().proxyFor(instance));
+    }
+
+    private static class LayoutInflaterAppSingletonizer extends AppSingletonizer<LayoutInflater> {
+        public LayoutInflaterAppSingletonizer() {
+            super(LayoutInflater.class);
+        }
+
+        @Override protected LayoutInflater get(FakeApplication fakeApplication) {
+            return fakeApplication.layoutInflater;
+        }
+
+        @Override protected void set(FakeApplication fakeApplication, LayoutInflater instance) {
+            fakeApplication.layoutInflater = instance;
+        }
+
+        @Override protected LayoutInflater createInstance(Application applicationContext) {
+            return new MyLayoutInflater(applicationContext);
+        }
+
+        private static class MyLayoutInflater extends LayoutInflater {
+            public MyLayoutInflater(Context context) {
+                super(context);
+            }
+
+            @Override public LayoutInflater cloneInContext(Context newContext) {
+                return inject(new MyLayoutInflater(newContext), proxyFor(this).viewLoader, newContext);
+            }
+        }
+    }
+}

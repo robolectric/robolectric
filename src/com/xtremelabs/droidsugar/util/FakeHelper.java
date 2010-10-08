@@ -50,6 +50,7 @@ public class FakeHelper {
                 FakeIntent.class,
                 FakeIntentFilter.class,
                 FakeItemizedOverlay.class,
+                FakeLayoutInflater.class,
                 FakeLayoutParams.class,
                 FakeListActivity.class,
                 FakeListView.class,

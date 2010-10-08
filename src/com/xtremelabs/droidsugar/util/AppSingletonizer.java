@@ -2,11 +2,10 @@ package com.xtremelabs.droidsugar.util;
 
 import android.app.Application;
 import android.content.Context;
+import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.fakes.FakeApplication;
 
-import java.util.WeakHashMap;
-
-public class AppSingletonizer<T> {
-    private WeakHashMap<Application, T> instances = new WeakHashMap<Application,T>();
+public abstract class AppSingletonizer<T> {
     private Class<T> clazz;
 
     public AppSingletonizer(Class<T> clazz) {
@@ -14,16 +13,21 @@ public class AppSingletonizer<T> {
     }
 
     synchronized public T getInstance(Context context) {
-        @SuppressWarnings({"RedundantCast"})
-        T instance = instances.get((Application) context.getApplicationContext());
+        Application applicationContext = (Application) context.getApplicationContext();
+        FakeApplication fakeApplication = (FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(applicationContext);
+        T instance = get(fakeApplication);
         if (instance == null) {
-            instance = createInstance();
-            instances.put((Application) context, instance);
+            instance = createInstance(applicationContext);
+            set(fakeApplication, instance);
         }
         return instance;
     }
 
-    protected T createInstance() {
+    protected abstract T get(FakeApplication fakeApplication);
+
+    protected abstract void set(FakeApplication fakeApplication, T instance);
+
+    protected T createInstance(Application applicationContext) {
         return FakeHelper.newInstanceOf(clazz);
     }
 }
