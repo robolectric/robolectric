@@ -8,7 +8,6 @@ title: "Robolectric: Unit Test your Android Application"
 Have you tried to write unit tests for your Android project and been thwarted by the dreaded 'java.lang.RuntimeException: Stub!'? Robolectric is a unit test framework that de-fangs the Android SDK jar so you can test drive the development of your App.  Dream of writing tests like this?
 
 <pre>
-
 @RunWith(FastAndroidTestRunner.class)
 public class MyActivityTest {
     private Activity activity;
@@ -29,7 +28,6 @@ public class MyActivityTest {
         assertThat(results.getText().toString(), equalTo("Testing Android Rocks!"));
     }
 }
-
 </pre>
 
 Robolectric makes this possible by intercepting the loading of the Android classes and rewrites the method bodies. By default the methods defined by the SDK jar return null (or 0, false, etc.) instead of throwing a RuntimeException. The other and more important part of what Robolectric does is to proxy to fake Android objects. Robolectric provides a large number of fake objects covering most of what an application would need to test drive the business logic and functionality of your application. Coverage of the SDK is improving every day.
