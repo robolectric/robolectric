@@ -1,29 +1,31 @@
 package com.xtremelabs.droidsugar.fakes;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
-import junit.framework.TestCase;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.Serializable;
 
-@RunWith(DroidSugarAndroidTestRunner.class)
-public class IntentTest extends TestCase {
+import static org.junit.Assert.*;
 
+@RunWith(DroidSugarAndroidTestRunner.class)
+public class IntentTest {
     @Before
     public void setUp() throws Exception {
         DroidSugarAndroidTestRunner.addProxy(Intent.class, FakeIntent.class);
+        DroidSugarAndroidTestRunner.addProxy(ComponentName.class, FakeComponentName.class);
     }
 
     @Test
     public void testStringExtra() throws Exception {
         Intent intent = new Intent();
-        intent.putExtra("foo", "bar");
+        assertSame(intent, intent.putExtra("foo", "bar"));
 
         FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
         assertEquals("bar", fakeIntent.extras.get("foo"));
@@ -32,7 +34,7 @@ public class IntentTest extends TestCase {
     @Test
     public void testIntExtra() throws Exception {
         Intent intent = new Intent();
-        intent.putExtra("foo", 2);
+        assertSame(intent, intent.putExtra("foo", 2));
         FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
         assertEquals(2, fakeIntent.extras.get("foo"));
         assertEquals(2, fakeIntent.getIntExtra("foo", -1));
@@ -42,7 +44,7 @@ public class IntentTest extends TestCase {
     public void testSerializableExtra() throws Exception {
         Intent intent = new Intent();
         TestSerializable serializable = new TestSerializable("some string");
-        intent.putExtra("foo", serializable);
+        assertSame(intent, intent.putExtra("foo", serializable));
         FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
         assertEquals(serializable, fakeIntent.extras.get("foo"));
         assertNotSame(serializable, fakeIntent.extras.get("foo"));
@@ -54,7 +56,7 @@ public class IntentTest extends TestCase {
     public void testParcelableExtra() throws Exception {
         Intent intent = new Intent();
         Parcelable parcelable = new TestParcelable();
-        intent.putExtra("foo", parcelable);
+        assertSame(intent, intent.putExtra("foo", parcelable));
         FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
         assertSame(parcelable, fakeIntent.extras.get("foo"));
         assertSame(parcelable, fakeIntent.getParcelableExtra("foo"));
@@ -63,14 +65,14 @@ public class IntentTest extends TestCase {
     @Test
     public void testLongExtra() throws Exception {
         Intent intent = new Intent();
-        intent.putExtra("foo", 2L);
+        assertSame(intent, intent.putExtra("foo", 2L));
         assertEquals(2L, ((FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent)).extras.get("foo"));
     }
 
     @Test
     public void testHasExtra() throws Exception {
         Intent intent = new Intent();
-        intent.putExtra("foo", "");
+        assertSame(intent, intent.putExtra("foo", ""));
         assertTrue(intent.hasExtra("foo"));
         assertFalse(intent.hasExtra("bar"));
     }
@@ -78,7 +80,7 @@ public class IntentTest extends TestCase {
     @Test
     public void testGetActionReturnsWhatWasSet() throws Exception {
         Intent intent = new Intent();
-        intent.setAction("foo");
+        assertSame(intent, intent.setAction("foo"));
         assertEquals("foo", intent.getAction());
     }
 
@@ -98,9 +100,8 @@ public class IntentTest extends TestCase {
         Intent intent = new Intent();
         Class<? extends IntentTest> thisClass = getClass();
         intent.setClassName("package.name", thisClass.getName());
-        FakeIntent fakeIntent = (FakeIntent) DroidSugarAndroidTestRunner.proxyFor(intent);
-        assertSame(thisClass, fakeIntent.componentClass);
-        assertEquals("package.name", fakeIntent.componentPackageName);
+        assertSame(thisClass.getName(), intent.getComponent().getClassName());
+        assertEquals("package.name", intent.getComponent().getPackageName());
     }
 
     private static class TestSerializable implements Serializable {

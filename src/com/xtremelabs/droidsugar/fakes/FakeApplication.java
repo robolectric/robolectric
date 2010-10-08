@@ -3,6 +3,7 @@ package com.xtremelabs.droidsugar.fakes;
 import android.app.AlarmManager;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
+import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -26,7 +27,8 @@ public class FakeApplication extends FakeContextWrapper {
     private MockContentResolver contentResolver = new MockContentResolver();
     private LocationManager locationManager;
     private WifiManager wifiManager;
-    public List<Intent> startedIntents = new ArrayList<Intent>();
+    private List<Intent> startedActivities = new ArrayList<Intent>();
+    private List<Intent> startedServices = new ArrayList<Intent>();
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     public LayoutInflater layoutInflater;
@@ -64,14 +66,28 @@ public class FakeApplication extends FakeContextWrapper {
 
     @Implementation
     @Override public void startActivity(Intent intent) {
-        startedIntents.add(intent);
+        startedActivities.add(intent);
     }
 
-    @Override public Intent getNextStartedIntent() {
-        if (startedIntents.isEmpty()) {
+    @Implementation
+    @Override public ComponentName startService(Intent intent) {
+        startedServices.add(intent);
+        return new ComponentName("some.service.package", "SomeServiceName-FIXME");
+    }
+
+    @Override public Intent getNextStartedActivity() {
+        if (startedActivities.isEmpty()) {
             return null;
         } else {
-            return startedIntents.remove(0);
+            return startedActivities.remove(0);
+        }
+    }
+
+    @Override public Intent getNextStartedService() {
+        if (startedServices.isEmpty()) {
+            return null;
+        } else {
+            return startedServices.remove(0);
         }
     }
 }

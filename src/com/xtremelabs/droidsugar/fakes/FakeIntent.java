@@ -1,5 +1,6 @@
 package com.xtremelabs.droidsugar.fakes;
 
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -18,10 +19,9 @@ import java.util.Map;
 @Implements(Intent.class)
 public class FakeIntent {
     private Intent realIntent;
-    public HashMap extras = new HashMap();
+    public HashMap<String, Object> extras = new HashMap<String, Object>();
     public String action;
-    public Class<?> componentClass;
-    public String componentPackageName;
+    public ComponentName componentName;
     public Uri data;
 
     public FakeIntent(Intent realIntent) {
@@ -29,7 +29,7 @@ public class FakeIntent {
     }
 
     public void __constructor__(Context packageContext, Class cls) {
-        componentClass = cls;
+        componentName = new ComponentName(packageContext, cls);
     }
 
     public void __constructor__(String action, Uri uri) {
@@ -54,12 +54,7 @@ public class FakeIntent {
 
     @Implementation
     public Intent setClassName(String packageName, String className) {
-        this.componentPackageName = packageName;
-        try {
-            componentClass = Class.forName(className);
-        } catch (ClassNotFoundException e) {
-            throw new RuntimeException(e);
-        }
+        componentName = new ComponentName(packageName, className);
         return realIntent;
     }
 
@@ -76,34 +71,43 @@ public class FakeIntent {
         return realIntent;
     }
 
+    public ComponentName getComponent() {
+        return componentName;
+    }
+
     @Implementation
     public Bundle getExtras() {
         return new Bundle();
     }
 
     @Implementation
-    public void putExtra(String key, int value) {
+    public Intent putExtra(String key, int value) {
         extras.put(key, value);
+        return realIntent;
     }
 
     @Implementation
-    public void putExtra(String key, long value) {
+    public Intent putExtra(String key, long value) {
         extras.put(key, value);
+        return realIntent;
     }
 
     @Implementation
-    public void putExtra(String key, Serializable value) {
+    public Intent putExtra(String key, Serializable value) {
         extras.put(key, serializeCycle(value));
+        return realIntent;
     }
 
     @Implementation
-    public void putExtra(String key, Parcelable value) {
+    public Intent putExtra(String key, Parcelable value) {
         extras.put(key, value);
+        return realIntent;
     }
 
     @Implementation
-    public void putExtra(String key, String value) {
+    public Intent putExtra(String key, String value) {
         extras.put(key, value);
+        return realIntent;
     }
 
     @Implementation
@@ -147,7 +151,7 @@ public class FakeIntent {
         if (o == null || getClass() != o.getClass()) return false;
 
         if (action != null ? !action.equals(o.action) : o.action != null) return false;
-        if (componentClass != null ? !componentClass.equals(o.componentClass) : o.componentClass != null)
+        if (componentName != null ? !componentName.equals(o.componentName) : o.componentName != null)
             return false;
         if (data != null ? !data.equals(o.data) : o.data != null) return false;
         if (extras != null ? !extras.equals(o.extras) : o.extras != null) return false;
@@ -177,8 +181,7 @@ public class FakeIntent {
         return "Intent{" +
                 Join.join(
                         ", ",
-                        ifWeHave(componentPackageName, "componentPackageName"),
-                        ifWeHave(componentClass, "componentClass"),
+                        ifWeHave(componentName, "componentName"),
                         ifWeHave(action, "action"),
                         ifWeHave(extras, "extras"),
                         ifWeHave(data, "data")

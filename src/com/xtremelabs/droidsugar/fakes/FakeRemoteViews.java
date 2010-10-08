@@ -1,5 +1,6 @@
 package com.xtremelabs.droidsugar.fakes;
 
+import android.app.PendingIntent;
 import android.content.Context;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -20,6 +21,23 @@ public class FakeRemoteViews {
         viewUpdaters.add(new ViewUpdater(viewId) {
             @Override public void doUpdate(View view) {
                 ((TextView) view).setText(text);
+            }
+        });
+    }
+
+    @Implementation
+    public void setOnClickPendingIntent(int viewId, final PendingIntent pendingIntent) {
+        viewUpdaters.add(new ViewUpdater(viewId) {
+            @Override void doUpdate(final View view) {
+                view.setOnClickListener(new View.OnClickListener() {
+                    @Override public void onClick(View v) {
+                        try {
+                            pendingIntent.send(view.getContext(), 0, null);
+                        } catch (PendingIntent.CanceledException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                });
             }
         });
     }

@@ -44,7 +44,7 @@ public class AppWidgetManagerTest {
 
     @Test
     public void createWidget_shouldInflateViewAndAssignId() throws Exception {
-        int widgetId = fakeAppWidgetManager.createWidget(Espa–olTestAppWidgetProvider.class, R.layout.main);
+        int widgetId = fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
         View widgetView = fakeAppWidgetManager.getViewFor(widgetId);
 
         assertEquals("Hola", ((TextView) widgetView.findViewById(R.id.subtitle)).getText());
@@ -52,7 +52,7 @@ public class AppWidgetManagerTest {
 
     @Test
     public void getViewFor_shouldReturnSameViewEveryTimeForGivenWidgetId() throws Exception {
-        int widgetId = fakeAppWidgetManager.createWidget(Espa–olTestAppWidgetProvider.class, R.layout.main);
+        int widgetId = fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
         View widgetView = fakeAppWidgetManager.getViewFor(widgetId);
 
         assertNotNull(widgetView);
@@ -61,20 +61,20 @@ public class AppWidgetManagerTest {
 
     @Test
     public void createWidget_shouldAllowForMultipleInstancesOfWidgets() throws Exception {
-        int widgetId = fakeAppWidgetManager.createWidget(Espa–olTestAppWidgetProvider.class, R.layout.main);
+        int widgetId = fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
         View widgetView = fakeAppWidgetManager.getViewFor(widgetId);
 
         assertNotSame(widgetId,
-                fakeAppWidgetManager.createWidget(Espa–olTestAppWidgetProvider.class, R.layout.main));
+                fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main));
         assertNotSame(widgetView,
-                fakeAppWidgetManager.getViewFor(fakeAppWidgetManager.createWidget(Espa–olTestAppWidgetProvider.class, R.layout.main)));
+                fakeAppWidgetManager.getViewFor(fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main)));
     }
 
     private FakeAppWidgetManager proxyFor(AppWidgetManager instance) {
         return (FakeAppWidgetManager) ProxyDelegatingHandler.getInstance().proxyFor(instance);
     }
 
-    public static class Espa–olTestAppWidgetProvider extends AppWidgetProvider {
+    public static class SpanishTestAppWidgetProvider extends AppWidgetProvider {
         @Override public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
             RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.main);
             remoteViews.setTextViewText(R.id.subtitle, "Hola");
