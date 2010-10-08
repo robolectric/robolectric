@@ -41,7 +41,13 @@ enabled, text, checked, and src) are parsed and applied to inflated views. Activ
 
 #### Run Tests Outside of the Emulator
 
-Run your tests on your workstation, or on your Continuous Integration environment. Because tests run on your workstation (and not in the emulator), the code generation, dexing, packaging, and package installation on the emulator steps are not necessary - allowing you to iterate quickly and refactor your code with confidence.
+Run your tests on your workstation, or on your Continuous Integration environment. Because tests run on your workstation in a JVM, (and not in the emulator), the code generation, dexing, packaging, and package installation on the emulator steps are not necessary - allowing you to iterate quickly and refactor your code with confidence.
+
+## No Mocking Frameworks Required
+
+An alternate approach to Robolectric is to use mock frameworks such as [Mockito](http://code.google.com/p/mockito/) to mock out the Android SDK. While this is a valid approach, we find it less useful. The use of mock frameworks can make tests hard to read and understand. Mocking causes tests to become reverse implementations of the production code. 
+
+[Robolectric](http://github.com/pivotal/robolectric) allows a test style that is closer to black box testing, making the tests more effective for refactoring and allowing the tests to focus on the behavior of the application instead of the implementation of Android. 
 
 ## Contributing
 
