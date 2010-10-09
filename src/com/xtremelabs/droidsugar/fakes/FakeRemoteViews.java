@@ -49,6 +49,15 @@ public class FakeRemoteViews {
         }
     }
 
+    @Implementation
+    public void setViewVisibility(int viewId, final int visibility) {
+        viewUpdaters.add(new ViewUpdater(viewId) {
+            @Override public void doUpdate(View view) {
+                view.setVisibility(visibility);
+            }
+        });
+    }
+
     private abstract class ViewUpdater {
         private int viewId;
 
