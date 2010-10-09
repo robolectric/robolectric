@@ -60,7 +60,7 @@ public class ViewLoader extends XmlLoader {
             }
         }
 
-        if (!name.startsWith("#")) {
+        if (!name.startsWith("#") && !name.equals("requestFocus")) {
             ViewNode viewNode = new ViewNode(name, attrMap);
             if (parent != null) parent.addChild(viewNode);
 

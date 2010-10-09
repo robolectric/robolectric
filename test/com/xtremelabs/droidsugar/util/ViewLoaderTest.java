@@ -21,8 +21,7 @@ import static android.test.MoreAsserts.assertNotEqual;
 import static com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner.proxyFor;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class ViewLoaderTest {
@@ -78,6 +77,12 @@ public class ViewLoaderTest {
     public void testIncludeShouldRetainAttributes() throws Exception {
         ViewGroup mediaView = (ViewGroup) viewLoader.inflateView(context, "layout/media");
         assertThat(mediaView.findViewById(R.id.snippet_text).getVisibility(), is(View.GONE));
+    }
+
+    @Test
+    public void shouldIgnoreRequestFocus() throws Exception {
+        ViewGroup viewGroup = (ViewGroup) viewLoader.inflateView(context, "layout/request_focus");
+        assertEquals(1, viewGroup.getChildCount());
     }
 
     @Test
