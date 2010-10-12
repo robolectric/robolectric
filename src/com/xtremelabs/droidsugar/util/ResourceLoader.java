@@ -2,6 +2,8 @@ package com.xtremelabs.droidsugar.util;
 
 import java.io.File;
 import java.io.FileFilter;
+import java.util.HashMap;
+import java.util.Map;
 
 public class ResourceLoader {
     public final ViewLoader viewLoader;
@@ -9,12 +11,15 @@ public class ResourceLoader {
     public final AttrResourceLoader attrResourceLoader;
     public final ColorResourceLoader colorResourceLoader;
 
+    // todo: get these value from the xml resources instead [xw 20101011]
+    public final Map<Integer, Integer> dimensions = new HashMap<Integer, Integer>();
+
     public ResourceLoader(Class rClass, File resourceDir) throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(rClass);
 
         File xmlDir = new File(resourceDir, "values");
-        
+
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
         stringResourceLoader.addResourceXmlDir(xmlDir);
 
@@ -23,7 +28,7 @@ public class ResourceLoader {
 
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
         attrResourceLoader.addResourceXmlDir(xmlDir);
-        
+
         viewLoader = new ViewLoader(resourceExtractor, stringResourceLoader, attrResourceLoader);
         File[] layoutDirs = resourceDir.listFiles(new FileFilter() {
             @Override
