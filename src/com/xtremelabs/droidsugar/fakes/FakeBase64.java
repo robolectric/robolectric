@@ -11,7 +11,6 @@ public class FakeBase64 {
 
     @Implementation
     public static String encodeToString(byte[] input, int flags) {
-        System.out.println("HELLO!!!");
         return new String(input) + "__fake_Base64_encode_string__" + flags;
     }
 }
