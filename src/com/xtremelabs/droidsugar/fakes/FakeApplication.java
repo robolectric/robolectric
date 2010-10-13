@@ -83,11 +83,27 @@ public class FakeApplication extends FakeContextWrapper {
         }
     }
 
+    public Intent peekNextStartedActivity() {
+        if (startedActivities.isEmpty()) {
+            return null;
+        } else {
+            return startedActivities.get(0);
+        }
+    }
+
     @Override public Intent getNextStartedService() {
         if (startedServices.isEmpty()) {
             return null;
         } else {
             return startedServices.remove(0);
+        }
+    }
+
+    public Intent peekNextStartedService() {
+        if (startedServices.isEmpty()) {
+            return null;
+        } else {
+            return startedServices.get(0);
         }
     }
 }

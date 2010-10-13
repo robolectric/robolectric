@@ -122,8 +122,16 @@ public class FakeContextWrapper {
         return getFakeApplication().getNextStartedActivity();
     }
 
+    public Intent peekNextStartedActivity() {
+        return getFakeApplication().peekNextStartedActivity();
+    }
+
     public Intent getNextStartedService() {
         return getFakeApplication().getNextStartedService();
+    }
+
+    public Intent peekNextStartedService() {
+        return getFakeApplication().peekNextStartedService();
     }
 
     private FakeApplication getFakeApplication() {
