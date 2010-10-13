@@ -38,7 +38,6 @@ public class FakeHelper {
                 FakeAlertDialog.FakeBuilder.class,
                 FakeApplication.class,
                 FakeAppWidgetManager.class,
-                FakeBase64.class,
                 FakeBaseAdapter.class,
                 FakeCanvas.class,
                 FakeCompoundButton.class,
