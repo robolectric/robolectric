@@ -19,7 +19,7 @@ public class AttrResourceLoaderTest {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
-        attrResourceLoader.loadDirs(new File("test/res/values"));
+        new DocumentLoader(attrResourceLoader).loadResourceXmlDir(new File("test/res/values"));
     }
 
     @Test

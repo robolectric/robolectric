@@ -91,7 +91,7 @@ public class TestAttributeSetTest {
         attributes.put("itemType", "string");
 
         AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
-        attrResourceLoader.loadDirs(new File("test/res/values"));
+        new DocumentLoader(attrResourceLoader).loadResourceXmlDir(new File("test/res/values"));
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, attrResourceLoader, CustomView.class);
         assertThat(testAttributeSet.getAttributeIntValue("some namespace", "itemType", 0), equalTo(1));
     }

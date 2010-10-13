@@ -16,7 +16,7 @@ public class ColorResourceLoaderTest {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);
         colorResourceLoader = new ColorResourceLoader(resourceExtractor);
-        colorResourceLoader.loadDirs(new File("test/res/values"));
+        new DocumentLoader(colorResourceLoader).loadResourceXmlDir(new File("test/res/values"));
     }
 
     @Test

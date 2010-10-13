@@ -19,29 +19,21 @@ public class ResourceLoader {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(rClass);
 
-        File xmlDir = new File(resourceDir, "values");
-
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        stringResourceLoader.addResourceXmlDir(xmlDir);
-
         stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor);
-        stringArrayResourceLoader.addResourceXmlDir(xmlDir);
-
         colorResourceLoader = new ColorResourceLoader(resourceExtractor);
-        colorResourceLoader.addResourceXmlDir(xmlDir);
-
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
-        attrResourceLoader.addResourceXmlDir(xmlDir);
+        DocumentLoader resourcesDocumentLoader = new DocumentLoader(stringResourceLoader, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader);
+        resourcesDocumentLoader.loadResourceXmlDir(new File(resourceDir, "values"));
 
         viewLoader = new ViewLoader(resourceExtractor, stringResourceLoader, attrResourceLoader);
+        DocumentLoader viewDocumentLoader = new DocumentLoader(viewLoader);
         File[] layoutDirs = resourceDir.listFiles(new FileFilter() {
             @Override
             public boolean accept(File pathname) {
                 return pathname.getPath().contains("/layout");
             }
         });
-        for (File layoutDir : layoutDirs) {
-            viewLoader.addResourceXmlDir(layoutDir);
-        }
+        viewDocumentLoader.loadResourceXmlDirs(layoutDirs);
     }
 }

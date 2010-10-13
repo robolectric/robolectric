@@ -35,9 +35,9 @@ public class ViewLoaderTest {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        stringResourceLoader.loadDirs(new File("test/res/values"));
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(new File("test/res/values"));
         viewLoader = new ViewLoader(resourceExtractor, stringResourceLoader, new AttrResourceLoader(resourceExtractor));
-        viewLoader.loadDirs(new File("test/res/layout"));
+        new DocumentLoader(viewLoader).loadResourceXmlDir(new File("test/res/layout"));
 
         context = new MockContext();
     }
