@@ -30,7 +30,7 @@ public class FakeResources {
 
     @Implementation
     public String[] getStringArray(int id) throws Resources.NotFoundException {
-        String[] arrayValue = FakeContextWrapper.resourceLoader.stringResourceLoader.getArrayValue(id);
+        String[] arrayValue = FakeContextWrapper.resourceLoader.stringArrayResourceLoader.getArrayValue(id);
         if (arrayValue == null) {
             throw new Resources.NotFoundException();
         }

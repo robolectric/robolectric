@@ -8,6 +8,7 @@ import java.util.Map;
 public class ResourceLoader {
     public final ViewLoader viewLoader;
     public final StringResourceLoader stringResourceLoader;
+    public final StringArrayResourceLoader stringArrayResourceLoader;
     public final AttrResourceLoader attrResourceLoader;
     public final ColorResourceLoader colorResourceLoader;
 
@@ -22,6 +23,9 @@ public class ResourceLoader {
 
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
         stringResourceLoader.addResourceXmlDir(xmlDir);
+
+        stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor);
+        stringArrayResourceLoader.addResourceXmlDir(xmlDir);
 
         colorResourceLoader = new ColorResourceLoader(resourceExtractor);
         colorResourceLoader.addResourceXmlDir(xmlDir);

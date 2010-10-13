@@ -1,21 +1,15 @@
 package com.xtremelabs.droidsugar.util;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathFactory;
-import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ColorResourceLoader extends XmlLoader {
+public class ColorResourceLoader extends XpathResourceXmlLoader {
     private Map<String, Integer> colorValues = new HashMap<String, Integer>();
 
     public ColorResourceLoader(ResourceExtractor resourceExtractor) {
-        super(resourceExtractor);
+        super(resourceExtractor, "/resources/color");
     }
 
     public int getValue(int colorId) {
@@ -23,15 +17,9 @@ public class ColorResourceLoader extends XmlLoader {
         return colorValues.get(resourceName);
     }
 
-    @Override protected void processResourceXml(File xmlFile, Document document) throws Exception {
-        XPathExpression stringsXPath = XPathFactory.newInstance().newXPath().compile("/resources/color");
-        NodeList colorNodes = (NodeList) stringsXPath.evaluate(document, XPathConstants.NODESET);
-        for (int i = 0; i < colorNodes.getLength(); i++) {
-            Node node = colorNodes.item(i);
-            String name = node.getAttributes().getNamedItem("name").getNodeValue();
-            String rawValue = node.getTextContent();
-            long value = Long.valueOf(rawValue.replaceAll("#", ""), 16);
-            colorValues.put("color/" + name, (int) value);
-        }
+    @Override protected void processNode(Node node, String name) {
+        String rawValue = node.getTextContent();
+        long value = Long.valueOf(rawValue.replaceAll("#", ""), 16);
+        colorValues.put("color/" + name, (int) value);
     }
 }
