@@ -1,4 +1,4 @@
-package com.xtremelabs.droidsugar.util;
+package com.xtremelabs.droidsugar.res;
 
 import java.io.File;
 import java.io.FileFilter;

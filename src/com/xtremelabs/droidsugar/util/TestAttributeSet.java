@@ -2,6 +2,8 @@ package com.xtremelabs.droidsugar.util;
 
 import android.util.AttributeSet;
 import android.view.View;
+import com.xtremelabs.droidsugar.res.AttrResourceLoader;
+import com.xtremelabs.droidsugar.res.ResourceExtractor;
 
 import java.util.HashMap;
 import java.util.Map;
