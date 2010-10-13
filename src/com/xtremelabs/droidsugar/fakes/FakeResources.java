@@ -30,7 +30,7 @@ public class FakeResources {
 
     @Implementation
     public String[] getStringArray(int id) throws Resources.NotFoundException {
-        String[] arrayValue = FakeContextWrapper.resourceLoader.stringResourceLoader.getArrayValue(id);
+        String[] arrayValue = FakeContextWrapper.resourceLoader.stringArrayResourceLoader.getArrayValue(id);
         if (arrayValue == null) {
             throw new Resources.NotFoundException();
         }
@@ -53,12 +53,29 @@ public class FakeResources {
     }
 
     @Implementation
-    public int getDimensionPixelSize(int id) throws Resources.NotFoundException {
+    public float getDimension(int id) throws Resources.NotFoundException {
+        // todo: get this value from the xml resources and scale it by display metrics [xw 20101011]
+        if (FakeContextWrapper.resourceLoader.dimensions.containsKey(id)) {
+            return FakeContextWrapper.resourceLoader.dimensions.get(id);
+        }
+        return id - 0x7f000000;
+    }
 
+    @Implementation
+    public int getDimensionPixelSize(int id) throws Resources.NotFoundException {
         // The int value returned from here is probably going to be handed to TextView.setTextSize(),
         // which takes a float. Avoid int-to-float conversion errors by returning a value generated from this
         // resource ID but which isn't too big (resource values in R.java are all greater than 0x7f000000).
 
-        return id - 0x7f000000;
+        return (int) getDimension(id);
+    }
+
+    @Implementation
+    public int getDimensionPixelOffset(int id) throws Resources.NotFoundException {
+        return (int) getDimension(id);
+    }
+
+    public void setDimension(int id, int value) {
+        FakeContextWrapper.resourceLoader.dimensions.put(id, value);
     }
 }

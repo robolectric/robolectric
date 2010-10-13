@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.res.Resources;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import com.xtremelabs.droidsugar.R;
-import com.xtremelabs.droidsugar.util.ResourceLoader;
+import com.xtremelabs.droidsugar.res.ResourceLoader;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

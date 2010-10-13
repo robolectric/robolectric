@@ -1,8 +1,10 @@
-package com.xtremelabs.droidsugar.util;
+package com.xtremelabs.droidsugar.res;
 
 import android.view.View;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import com.xtremelabs.droidsugar.R;
+import com.xtremelabs.droidsugar.util.CustomView;
+import com.xtremelabs.droidsugar.util.TestAttributeSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -91,7 +93,7 @@ public class TestAttributeSetTest {
         attributes.put("itemType", "string");
 
         AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
-        attrResourceLoader.loadDirs(new File("test/res/values"));
+        new DocumentLoader(attrResourceLoader).loadResourceXmlDir(new File("test/res/values"));
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, attrResourceLoader, CustomView.class);
         assertThat(testAttributeSet.getAttributeIntValue("some namespace", "itemType", 0), equalTo(1));
     }

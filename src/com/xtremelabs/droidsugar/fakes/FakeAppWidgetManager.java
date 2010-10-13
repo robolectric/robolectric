@@ -12,7 +12,9 @@ import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -63,6 +65,23 @@ public class FakeAppWidgetManager {
         AppWidgetProvider appWidgetProvider = FakeHelper.newInstanceOf(appWidgetProviderClass);
         appWidgetProvider.onUpdate(context, realAppWidgetManager, new int[] { nextWidgetId });
         return nextWidgetId++;
+    }
+
+    public List<Integer> createWidgets(int howManyToCreate, Class<? extends AppWidgetProvider> appWidgetProviderClass, int widgetLayoutId) {
+        int[] newWidgetIds = new int[howManyToCreate];
+        AppWidgetProvider appWidgetProvider = FakeHelper.newInstanceOf(appWidgetProviderClass);
+        for (int i = 0; i < howManyToCreate; i++) {
+            View widgetView = new Activity().getLayoutInflater().inflate(widgetLayoutId, null);
+            widgetViews.put(nextWidgetId, widgetView);
+            newWidgetIds[i] = nextWidgetId++;
+        }
+        appWidgetProvider.onUpdate(context, realAppWidgetManager, newWidgetIds);
+
+        ArrayList<Integer> integers = new ArrayList<Integer>();
+        for (int id : newWidgetIds) {
+            integers.add(id);
+        }
+        return integers;
     }
 
     public View getViewFor(int widgetId) {

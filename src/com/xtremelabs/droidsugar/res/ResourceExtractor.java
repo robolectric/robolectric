@@ -1,4 +1,4 @@
-package com.xtremelabs.droidsugar.util;
+package com.xtremelabs.droidsugar.res;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

@@ -1,4 +1,4 @@
-package com.xtremelabs.droidsugar.util;
+package com.xtremelabs.droidsugar.res;
 
 import android.test.mock.MockContext;
 import android.view.View;
@@ -11,6 +11,8 @@ import com.google.android.maps.MapView;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import com.xtremelabs.droidsugar.R;
 import com.xtremelabs.droidsugar.fakes.FakeImageView;
+import com.xtremelabs.droidsugar.util.CustomView;
+import com.xtremelabs.droidsugar.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,8 +23,7 @@ import static android.test.MoreAsserts.assertNotEqual;
 import static com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner.proxyFor;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class ViewLoaderTest {
@@ -36,9 +37,9 @@ public class ViewLoaderTest {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        stringResourceLoader.loadDirs(new File("test/res/values"));
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(new File("test/res/values"));
         viewLoader = new ViewLoader(resourceExtractor, stringResourceLoader, new AttrResourceLoader(resourceExtractor));
-        viewLoader.loadDirs(new File("test/res/layout"));
+        new DocumentLoader(viewLoader).loadResourceXmlDir(new File("test/res/layout"));
 
         context = new MockContext();
     }
@@ -78,6 +79,12 @@ public class ViewLoaderTest {
     public void testIncludeShouldRetainAttributes() throws Exception {
         ViewGroup mediaView = (ViewGroup) viewLoader.inflateView(context, "layout/media");
         assertThat(mediaView.findViewById(R.id.snippet_text).getVisibility(), is(View.GONE));
+    }
+
+    @Test
+    public void shouldIgnoreRequestFocus() throws Exception {
+        ViewGroup viewGroup = (ViewGroup) viewLoader.inflateView(context, "layout/request_focus");
+        assertEquals(1, viewGroup.getChildCount());
     }
 
     @Test

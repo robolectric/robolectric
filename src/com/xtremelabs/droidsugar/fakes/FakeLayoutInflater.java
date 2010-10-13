@@ -6,10 +6,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.res.ViewLoader;
 import com.xtremelabs.droidsugar.util.AppSingletonizer;
 import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
-import com.xtremelabs.droidsugar.util.ViewLoader;
 
 @Implements(LayoutInflater.class)
 public class FakeLayoutInflater {

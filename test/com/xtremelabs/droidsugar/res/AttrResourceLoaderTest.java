@@ -1,8 +1,9 @@
-package com.xtremelabs.droidsugar.util;
+package com.xtremelabs.droidsugar.res;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import com.xtremelabs.droidsugar.R;
+import com.xtremelabs.droidsugar.util.CustomView;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -19,7 +20,7 @@ public class AttrResourceLoaderTest {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
-        attrResourceLoader.loadDirs(new File("test/res/values"));
+        new DocumentLoader(attrResourceLoader).loadResourceXmlDir(new File("test/res/values"));
     }
 
     @Test

@@ -8,13 +8,15 @@ import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockPackageManager;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.res.ResourceLoader;
 import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
-import com.xtremelabs.droidsugar.util.ResourceLoader;
 import com.xtremelabs.droidsugar.view.TestSharedPreferences;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
@@ -23,7 +25,6 @@ public class FakeContextWrapper {
 
     private ContextWrapper realContextWrapper;
 
-    public List<Intent> startedServices = new ArrayList<Intent>();
     private LocationManager locationManager;
     private MockPackageManager packageManager;
 
@@ -84,6 +85,11 @@ public class FakeContextWrapper {
     }
 
     @Implementation
+    public String getPackageName() {
+        return "some.package.name";
+    }
+
+    @Implementation
     public PackageManager getPackageManager() {
         if (packageManager == null) {
             packageManager = new MockPackageManager() {
@@ -104,8 +110,7 @@ public class FakeContextWrapper {
 
     @Implementation
     public ComponentName startService(Intent service) {
-        startedServices.add(service);
-        return new ComponentName("some.service.package", "SomeServiceName");
+        return getApplicationContext().startService(service);
     }
 
     @Implementation
@@ -113,8 +118,16 @@ public class FakeContextWrapper {
         getApplicationContext().startActivity(intent);
     }
 
-    public Intent getNextStartedIntent() {
-        return ((FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(getApplicationContext())).getNextStartedIntent();
+    public Intent getNextStartedActivity() {
+        return getFakeApplication().getNextStartedActivity();
+    }
+
+    public Intent getNextStartedService() {
+        return getFakeApplication().getNextStartedService();
+    }
+
+    private FakeApplication getFakeApplication() {
+        return ((FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(getApplicationContext()));
     }
 
     @Implementation
