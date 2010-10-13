@@ -1,4 +1,4 @@
-package com.xtremelabs.droidsugar.util;
+package com.xtremelabs.droidsugar.res;
 
 import com.xtremelabs.droidsugar.R;
 import org.junit.Before;

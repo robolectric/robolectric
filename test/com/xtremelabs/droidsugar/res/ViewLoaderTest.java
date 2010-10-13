@@ -1,4 +1,4 @@
-package com.xtremelabs.droidsugar.util;
+package com.xtremelabs.droidsugar.res;
 
 import android.test.mock.MockContext;
 import android.view.View;
@@ -11,6 +11,8 @@ import com.google.android.maps.MapView;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import com.xtremelabs.droidsugar.R;
 import com.xtremelabs.droidsugar.fakes.FakeImageView;
+import com.xtremelabs.droidsugar.util.CustomView;
+import com.xtremelabs.droidsugar.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
