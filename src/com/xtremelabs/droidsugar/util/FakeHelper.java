@@ -44,6 +44,7 @@ public class FakeHelper {
                 FakeCanvas.class,
                 FakeCompoundButton.class,
                 FakeComponentName.class,
+                FakeContext.class,
                 FakeContextWrapper.class,
                 FakeDialog.class,
                 FakeEditText.class,

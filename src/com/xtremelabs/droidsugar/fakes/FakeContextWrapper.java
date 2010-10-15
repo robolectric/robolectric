@@ -19,7 +19,7 @@ import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
-public class FakeContextWrapper {
+public class FakeContextWrapper extends FakeContext {
     private ContextWrapper realContextWrapper;
 
     private LocationManager locationManager;
@@ -29,6 +29,7 @@ public class FakeContextWrapper {
     private WifiManager wifiManager;
 
     public FakeContextWrapper(ContextWrapper realContextWrapper) {
+        super(realContextWrapper);
         this.realContextWrapper = realContextWrapper;
     }
 
