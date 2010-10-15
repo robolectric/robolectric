@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
+import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
@@ -48,8 +49,11 @@ public class FakeResources {
     }
 
     @Implementation
-    public Drawable getDrawable(int id) throws Resources.NotFoundException {
-        return new BitmapDrawable();
+    public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
+        BitmapDrawable bitmapDrawable = new BitmapDrawable();
+        FakeBitmapDrawable fake = (FakeBitmapDrawable) ProxyDelegatingHandler.getInstance().proxyFor(bitmapDrawable);
+        fake.loadedFromResourceId = drawableResourceId;
+        return bitmapDrawable;
     }
 
     @Implementation

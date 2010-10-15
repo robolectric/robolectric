@@ -1,5 +1,6 @@
 package com.xtremelabs.droidsugar.fakes;
 
+import android.graphics.drawable.Drawable;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 import com.xtremelabs.droidsugar.util.Implementation;
@@ -25,5 +26,10 @@ public class FakeItemizedOverlay {
     @Implementation
     protected void setLastFocusedIndex(int i) {
         lastFocusedIndexWasReset = (i == -1);
+    }
+
+    @Implementation
+    protected static Drawable boundCenterBottom(Drawable drawable) {
+        return drawable;
     }
 }
