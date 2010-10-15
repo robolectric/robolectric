@@ -34,7 +34,7 @@ public class FakeContextWrapper {
 
     @Implementation
     public Resources getResources() {
-        return new Resources(null, null, null);
+        return FakeResources.bind(new Resources(null, null, null), FakeHelper.resourceLoader);
     }
 
     @Implementation

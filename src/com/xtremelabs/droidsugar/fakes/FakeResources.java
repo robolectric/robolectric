@@ -4,7 +4,8 @@ import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
-import com.xtremelabs.droidsugar.util.FakeHelper;
+import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
+import com.xtremelabs.droidsugar.res.ResourceLoader;
 import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
@@ -13,14 +14,23 @@ import java.util.Locale;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)
 public class FakeResources {
+    static Resources bind(Resources resources, ResourceLoader resourceLoader) {
+        FakeResources fakeResources = (FakeResources) ProxyDelegatingHandler.getInstance().proxyFor(resources);
+        if (fakeResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
+        fakeResources.resourceLoader = resourceLoader;
+        return resources;
+    }
+
+    private ResourceLoader resourceLoader;
+
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
-        return FakeHelper.resourceLoader.colorResourceLoader.getValue(id);
+        return resourceLoader.colorResourceLoader.getValue(id);
     }
 
     @Implementation
     public String getString(int id) throws Resources.NotFoundException {
-        return FakeHelper.resourceLoader.stringResourceLoader.getValue(id);
+        return resourceLoader.stringResourceLoader.getValue(id);
     }
 
     @Implementation
@@ -31,7 +41,7 @@ public class FakeResources {
 
     @Implementation
     public String[] getStringArray(int id) throws Resources.NotFoundException {
-        String[] arrayValue = FakeHelper.resourceLoader.stringArrayResourceLoader.getArrayValue(id);
+        String[] arrayValue = resourceLoader.stringArrayResourceLoader.getArrayValue(id);
         if (arrayValue == null) {
             throw new Resources.NotFoundException();
         }
@@ -56,8 +66,8 @@ public class FakeResources {
     @Implementation
     public float getDimension(int id) throws Resources.NotFoundException {
         // todo: get this value from the xml resources and scale it by display metrics [xw 20101011]
-        if (FakeHelper.resourceLoader.dimensions.containsKey(id)) {
-            return FakeHelper.resourceLoader.dimensions.get(id);
+        if (resourceLoader.dimensions.containsKey(id)) {
+            return resourceLoader.dimensions.get(id);
         }
         return id - 0x7f000000;
     }
@@ -77,6 +87,6 @@ public class FakeResources {
     }
 
     public void setDimension(int id, int value) {
-        FakeHelper.resourceLoader.dimensions.put(id, value);
+        resourceLoader.dimensions.put(id, value);
     }
 }
