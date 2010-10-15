@@ -261,6 +261,17 @@ public class FakeView {
         tags.put(key, value);
     }
 
+    @Implementation
+    public final boolean requestFocus() {
+        return requestFocus(View.FOCUS_DOWN);
+    }
+
+    @Implementation
+    public final boolean requestFocus(int direction) {
+        setViewFocus(true);
+        return true;
+    }
+
     public void setViewFocus(boolean hasFocus) {
         this.hasFocus = hasFocus;
         if (onFocusChangeListener != null) {
@@ -269,8 +280,18 @@ public class FakeView {
     }
 
     @Implementation
+    public boolean isFocused() {
+        return hasFocus;
+    }
+
+    @Implementation
     public boolean hasFocus() {
         return hasFocus;
+    }
+
+    @Implementation
+    public void clearFocus() {
+        setViewFocus(false);
     }
 
     @Implementation

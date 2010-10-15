@@ -3,13 +3,14 @@ package com.xtremelabs.droidsugar.fakes;
 import android.view.View;
 import android.view.ViewGroup;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
+import com.xtremelabs.droidsugar.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 @RunWith(DroidSugarAndroidTestRunner.class)
 public class ViewTest {
@@ -35,5 +36,31 @@ public class ViewTest {
         view.layout(100, 200, 303, 404);
         assertThat(view.getWidth(), equalTo(303 - 100));
         assertThat(view.getHeight(), equalTo(404 - 200));
+    }
+
+    @Test
+    public void shouldFocus() throws Exception {
+        final Transcript transcript = new Transcript();
+
+        view.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                transcript.add(hasFocus ? "Gained focus" : "Lost focus");
+            }
+        });
+
+        assertFalse(view.isFocused());
+        assertFalse(view.hasFocus());
+        transcript.assertNoEventsSoFar();
+
+        view.requestFocus();
+        assertTrue(view.isFocused());
+        assertTrue(view.hasFocus());
+        transcript.assertEventsSoFar("Gained focus");
+
+        view.clearFocus();
+        assertFalse(view.isFocused());
+        assertFalse(view.hasFocus());
+        transcript.assertEventsSoFar("Lost focus");
     }
 }
