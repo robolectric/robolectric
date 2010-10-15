@@ -63,65 +63,13 @@ public class ProxyDelegatingHandler implements ClassHandler {
 
     @Override
     public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) {
-        Class<?>[] paramClasses = new Class<?>[paramTypes.length];
-
-        ClassLoader classLoader = clazz.getClassLoader();
-        for (int i = 0; i < paramTypes.length; i++) {
-            paramClasses[i] = loadClass(paramTypes[i], classLoader);
-        }
-
-        Class<?> originalClass = loadClass(clazz.getName(), classLoader);
-
-        Class<?> declaringClass;
-        if (methodName.equals("<init>")) {
-            declaringClass = originalClass;
-        } else {
-            Method originalMethod;
-            try {
-                originalMethod = originalClass.getDeclaredMethod(methodName, paramClasses);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-            declaringClass = originalMethod.getDeclaringClass();
-        }
-        String handlingClassName = getHandlingClassName(declaringClass);
-        if (handlingClassName == null) {
-            return null;
-        }
-        Class<?> handlingClass = loadClass(handlingClassName, classLoader);
-
-        Method method;
-        if (methodName.equals("<init>")) {
-            methodName = "__constructor__";
-        }
-
-        Object fakeObject;
-        if (instance != null) {
-            fakeObject = fakeObjectFor(instance);
-            method = getMethod(fakeObject.getClass(), methodName, paramClasses);
-        } else {
-            fakeObject = null;
-            String fakeClassName = getHandlingClassName(clazz);
-            Class<?> fakeClass = loadClass(fakeClassName, classLoader);
-            method = getMethod(fakeClass, methodName, paramClasses);
-        }
-
-        if (method == null) {
-            if (debug) {
-                System.out.println("No method found for " + clazz + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + handlingClass.getName());
-            }
-            return null;
-        }
-
-        if ((instance == null) != Modifier.isStatic(method.getModifiers())) {
-            throw new RuntimeException("method staticness of " + clazz.getName() + "." + methodName + " and " + handlingClassName + "." + method.getName() + " don't match");
-        }
+        InvocationPlan invocationPlan = new InvocationPlan(clazz, methodName, instance, paramTypes);
+        if (!invocationPlan.prepare()) return null;
 
         try {
-            method.setAccessible(true);
-            return method.invoke(fakeObject, params);
+            return invocationPlan.getMethod().invoke(invocationPlan.getFakeObject(), params);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException(fakeObject.getClass().getName() + " is not assignable from " + handlingClass.getName(), e);
+            throw new RuntimeException(invocationPlan.getFakeObject().getClass().getName() + " is not assignable from " + invocationPlan.getHandlingClass().getName(), e);
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
@@ -130,18 +78,6 @@ public class ProxyDelegatingHandler implements ClassHandler {
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    private Method getMethod(Class<?> clazz, String methodName, Class<?>[] paramClasses) {
-        try {
-            return clazz.getMethod(methodName, paramClasses);
-        } catch (NoSuchMethodException e) {
-            try {
-                return clazz.getDeclaredMethod(methodName, paramClasses);
-            } catch (NoSuchMethodException e1) {
-                return null;
-            }
         }
     }
 
@@ -254,5 +190,104 @@ public class ProxyDelegatingHandler implements ClassHandler {
         }
         Field field = getFakeField(instance);
         return getField(instance, field);
+    }
+
+    private class InvocationPlan {
+        private Class clazz;
+        private String methodName;
+        private Object instance;
+        private String[] paramTypes;
+        private Class<?> handlingClass;
+        private Method method;
+        private Object fakeObject;
+
+        public InvocationPlan(Class clazz, String methodName, Object instance, String... paramTypes) {
+            this.clazz = clazz;
+            this.methodName = methodName;
+            this.instance = instance;
+            this.paramTypes = paramTypes;
+        }
+
+        public Class<?> getHandlingClass() {
+            return handlingClass;
+        }
+
+        public Method getMethod() {
+            return method;
+        }
+
+        public Object getFakeObject() {
+            return fakeObject;
+        }
+
+        public boolean prepare() {
+            Class<?>[] paramClasses = new Class<?>[paramTypes.length];
+
+            ClassLoader classLoader = clazz.getClassLoader();
+            for (int i = 0; i < paramTypes.length; i++) {
+                paramClasses[i] = loadClass(paramTypes[i], classLoader);
+            }
+
+            Class<?> originalClass = loadClass(clazz.getName(), classLoader);
+
+            Class<?> declaringClass;
+            if (methodName.equals("<init>")) {
+                declaringClass = originalClass;
+            } else {
+                Method originalMethod;
+                try {
+                    originalMethod = originalClass.getDeclaredMethod(methodName, paramClasses);
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+                declaringClass = originalMethod.getDeclaringClass();
+            }
+            String handlingClassName = getHandlingClassName(declaringClass);
+            if (handlingClassName == null) {
+                return false;
+            }
+            handlingClass = loadClass(handlingClassName, classLoader);
+
+            if (methodName.equals("<init>")) {
+                methodName = "__constructor__";
+            }
+
+            if (instance != null) {
+                fakeObject = fakeObjectFor(instance);
+                method = getMethod(fakeObject.getClass(), methodName, paramClasses);
+            } else {
+                fakeObject = null;
+                String fakeClassName = getHandlingClassName(clazz);
+                Class<?> fakeClass = loadClass(fakeClassName, classLoader);
+                method = getMethod(fakeClass, methodName, paramClasses);
+            }
+
+            if (method == null) {
+                if (debug) {
+                    System.out.println("No method found for " + clazz + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + handlingClass.getName());
+                }
+                return false;
+            }
+
+            if ((instance == null) != Modifier.isStatic(method.getModifiers())) {
+                throw new RuntimeException("method staticness of " + clazz.getName() + "." + methodName + " and " + handlingClassName + "." + method.getName() + " don't match");
+            }
+
+            method.setAccessible(true);
+
+            return true;
+        }
+
+        private Method getMethod(Class<?> clazz, String methodName, Class<?>[] paramClasses) {
+            try {
+                return clazz.getMethod(methodName, paramClasses);
+            } catch (NoSuchMethodException e) {
+                try {
+                    return clazz.getDeclaredMethod(methodName, paramClasses);
+                } catch (NoSuchMethodException e1) {
+                    return null;
+                }
+            }
+        }
     }
 }

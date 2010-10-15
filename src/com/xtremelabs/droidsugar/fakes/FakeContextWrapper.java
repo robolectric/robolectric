@@ -8,7 +8,6 @@ import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockPackageManager;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
-import com.xtremelabs.droidsugar.res.ResourceLoader;
 import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
@@ -20,9 +19,7 @@ import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
-public class FakeContextWrapper {
-    public static ResourceLoader resourceLoader;
-
+public class FakeContextWrapper extends FakeContext {
     private ContextWrapper realContextWrapper;
 
     private LocationManager locationManager;
@@ -32,12 +29,13 @@ public class FakeContextWrapper {
     private WifiManager wifiManager;
 
     public FakeContextWrapper(ContextWrapper realContextWrapper) {
+        super(realContextWrapper);
         this.realContextWrapper = realContextWrapper;
     }
 
     @Implementation
     public Resources getResources() {
-        return new Resources(null, null, null);
+        return FakeResources.bind(new Resources(null, null, null), FakeHelper.resourceLoader);
     }
 
     @Implementation

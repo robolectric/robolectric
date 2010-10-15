@@ -5,6 +5,7 @@ import android.content.res.Resources;
 import com.xtremelabs.droidsugar.DroidSugarAndroidTestRunner;
 import com.xtremelabs.droidsugar.R;
 import com.xtremelabs.droidsugar.res.ResourceLoader;
+import com.xtremelabs.droidsugar.util.FakeHelper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -15,7 +16,7 @@ public class ResourcesTest {
     @Test(expected = Resources.NotFoundException.class)
     public void getStringArray_shouldThrowExceptionIfNotFound() throws Exception {
         DroidSugarAndroidTestRunner.addGenericProxies();
-        FakeContextWrapper.resourceLoader = new ResourceLoader(R.class, new File("test/res"));
+        FakeHelper.resourceLoader = new ResourceLoader(R.class, new File("test/res"));
 
         new Activity().getResources().getStringArray(-1);
     }
