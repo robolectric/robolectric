@@ -36,4 +36,15 @@ public class ResourceLoader {
         });
         viewDocumentLoader.loadResourceXmlDirs(layoutDirs);
     }
+
+    /**
+     * For tests only...
+     */
+    protected ResourceLoader(StringResourceLoader stringResourceLoader, StringArrayResourceLoader stringArrayResourceLoader, ColorResourceLoader colorResourceLoader, AttrResourceLoader attrResourceLoader, ViewLoader viewLoader) {
+        this.stringResourceLoader = stringResourceLoader;
+        this.stringArrayResourceLoader = stringArrayResourceLoader;
+        this.colorResourceLoader = colorResourceLoader;
+        this.attrResourceLoader = attrResourceLoader;
+        this.viewLoader = viewLoader;
+    }
 }

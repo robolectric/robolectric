@@ -8,7 +8,6 @@ import android.view.ViewGroup;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.AppSingletonizer;
-import com.xtremelabs.robolectric.util.FakeHelper;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -16,21 +15,24 @@ import com.xtremelabs.robolectric.util.Implements;
 public class FakeLayoutInflater {
     private static AppSingletonizer<LayoutInflater> instances = new LayoutInflaterAppSingletonizer();
 
-    private ViewLoader viewLoader;
     private Context context;
 
     @Implementation
     public static LayoutInflater from(Context context) {
-        return inject(instances.getInstance(context), FakeHelper.resourceLoader.viewLoader, context);
+        return bind(instances.getInstance(context), context);
     }
 
     @Implementation
     public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
-        View view = viewLoader.inflateView(context, resource);
+        View view = getViewLoader().inflateView(context, resource);
         if (root != null && attachToRoot) {
             root.addView(view);
         }
         return view;
+    }
+
+    private ViewLoader getViewLoader() {
+        return ((FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(context.getApplicationContext())).getResourceLoader().viewLoader;
     }
 
     @Implementation
@@ -38,9 +40,8 @@ public class FakeLayoutInflater {
         return inflate(resource, root, true);
     }
 
-    private static LayoutInflater inject(LayoutInflater layoutInflater, ViewLoader viewLoader, Context context) {
+    private static LayoutInflater bind(LayoutInflater layoutInflater, Context context) {
         FakeLayoutInflater fakeLayoutInflater = proxyFor(layoutInflater);
-        fakeLayoutInflater.viewLoader = viewLoader;
         fakeLayoutInflater.context = context;
         return layoutInflater;
     }
@@ -72,7 +73,7 @@ public class FakeLayoutInflater {
             }
 
             @Override public LayoutInflater cloneInContext(Context newContext) {
-                return inject(new MyLayoutInflater(newContext), proxyFor(this).viewLoader, newContext);
+                return bind(new MyLayoutInflater(newContext), newContext);
             }
         }
     }

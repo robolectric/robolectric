@@ -8,7 +8,6 @@ import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockPackageManager;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.util.FakeHelper;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
@@ -21,6 +20,7 @@ import java.util.Map;
 @Implements(ContextWrapper.class)
 public class FakeContextWrapper extends FakeContext {
     private ContextWrapper realContextWrapper;
+    private Context baseContext;
 
     private LocationManager locationManager;
     private MockPackageManager packageManager;
@@ -33,14 +33,18 @@ public class FakeContextWrapper extends FakeContext {
         this.realContextWrapper = realContextWrapper;
     }
 
-    @Implementation
-    public Resources getResources() {
-        return FakeResources.bind(new Resources(null, null, null), FakeHelper.resourceLoader);
+    public void __constructor__(Context baseContext) {
+        this.baseContext = baseContext;
     }
 
     @Implementation
     public Context getApplicationContext() {
-        return FakeHelper.application;
+        return baseContext.getApplicationContext();
+    }
+
+    @Implementation
+    public Resources getResources() {
+        return getApplicationContext().getResources();
     }
 
     @Implementation

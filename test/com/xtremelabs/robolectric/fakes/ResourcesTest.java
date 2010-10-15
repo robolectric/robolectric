@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.fakes;
 
 import android.app.Activity;
+import android.app.Application;
 import android.content.res.Resources;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
@@ -16,7 +17,7 @@ public class ResourcesTest {
     @Test(expected = Resources.NotFoundException.class)
     public void getStringArray_shouldThrowExceptionIfNotFound() throws Exception {
         RobolectricAndroidTestRunner.addGenericProxies();
-        FakeHelper.resourceLoader = new ResourceLoader(R.class, new File("test/res"));
+        FakeHelper.application = FakeApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
 
         new Activity().getResources().getStringArray(-1);
     }

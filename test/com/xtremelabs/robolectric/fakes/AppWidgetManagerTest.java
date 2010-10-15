@@ -8,9 +8,9 @@ import android.content.ContextWrapper;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.FakeHelper;
 import org.junit.Before;
@@ -29,8 +29,7 @@ public class AppWidgetManagerTest {
     @Before
     public void setUp() throws Exception {
         RobolectricAndroidTestRunner.addGenericProxies();
-        FakeHelper.application = new Application();
-        FakeHelper.resourceLoader = new ResourceLoader(R.class, new File("test/res"));
+        FakeHelper.application = FakeApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
         appWidgetManager = AppWidgetManager.getInstance(FakeHelper.application);
         fakeAppWidgetManager = proxyFor(appWidgetManager);
     }

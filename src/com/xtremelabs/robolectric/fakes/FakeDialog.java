@@ -6,7 +6,6 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
-import com.xtremelabs.robolectric.util.FakeHelper;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -104,7 +103,7 @@ public class FakeDialog {
     public View findViewById(int viewId) {
         if (layoutId > 0 && context != null) {
             if (inflatedView == null) {
-                inflatedView = FakeHelper.resourceLoader.viewLoader.inflateView(context, layoutId);
+                inflatedView = FakeLayoutInflater.from(context).inflate(layoutId, null);
             }
             return inflatedView.findViewById(viewId);
         }

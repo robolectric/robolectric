@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.fakes;
 
 import android.app.Activity;
+import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
@@ -28,7 +29,17 @@ public class FakeAppWidgetManager {
         @Override protected void set(FakeApplication fakeApplication, AppWidgetManager instance) {
             fakeApplication.appWidgetManager = instance;
         }
+
+        @Override
+        protected AppWidgetManager createInstance(Application applicationContext) {
+            AppWidgetManager appWidgetManager = super.createInstance(applicationContext);
+            proxyFor(appWidgetManager).context = applicationContext;
+            return appWidgetManager;
+        }
     };
+
+    private static void bind(AppWidgetManager appWidgetManager, Context context) {
+    }
 
     private AppWidgetManager realAppWidgetManager;
     private Context context;
@@ -41,9 +52,7 @@ public class FakeAppWidgetManager {
 
     @Implementation
     public static AppWidgetManager getInstance(Context context) {
-        AppWidgetManager appWidgetManager = instances.getInstance(context);
-        proxyFor(appWidgetManager).context = context;
-        return appWidgetManager;
+        return instances.getInstance(context);
     }
 
     @Implementation

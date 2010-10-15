@@ -34,6 +34,11 @@ public class FakeActivity extends FakeContextWrapper {
     }
 
     @Implementation
+    public final Application getApplicationContext() {
+        return getApplication();
+    }
+
+    @Implementation
     public void setIntent(Intent intent) {
         this.intent = intent;
     }

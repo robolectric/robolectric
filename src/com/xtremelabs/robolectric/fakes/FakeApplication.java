@@ -7,10 +7,13 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
+import com.xtremelabs.robolectric.ProxyDelegatingHandler;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.FakeHelper;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
@@ -23,7 +26,15 @@ import static org.mockito.Mockito.mock;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Application.class)
 public class FakeApplication extends FakeContextWrapper {
+    public static Application bind(Application application, ResourceLoader resourceLoader) {
+        FakeApplication fakeApplication = (FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(application);
+        if (fakeApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
+        fakeApplication.resourceLoader = resourceLoader;
+        return application;
+    }
+
     private Application realApplication;
+    private ResourceLoader resourceLoader;
     private MockContentResolver contentResolver = new MockContentResolver();
     private LocationManager locationManager;
     private WifiManager wifiManager;
@@ -37,6 +48,16 @@ public class FakeApplication extends FakeContextWrapper {
     public FakeApplication(Application realApplication) {
         super(realApplication);
         this.realApplication = realApplication;
+    }
+
+    @Implementation
+    public Context getApplicationContext() {
+        return realApplication;
+    }
+
+    @Implementation
+    public Resources getResources() {
+        return FakeResources.bind(new Resources(null, null, null), resourceLoader);
     }
 
     @Implementation
@@ -105,5 +126,9 @@ public class FakeApplication extends FakeContextWrapper {
         } else {
             return startedServices.get(0);
         }
+    }
+
+    ResourceLoader getResourceLoader() {
+        return resourceLoader;
     }
 }
