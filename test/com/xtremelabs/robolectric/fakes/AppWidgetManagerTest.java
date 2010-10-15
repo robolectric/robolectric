@@ -30,7 +30,7 @@ public class AppWidgetManagerTest {
     public void setUp() throws Exception {
         RobolectricAndroidTestRunner.addGenericProxies();
         FakeHelper.application = new Application();
-        FakeContextWrapper.resourceLoader = new ResourceLoader(R.class, new File("test/res"));
+        FakeHelper.resourceLoader = new ResourceLoader(R.class, new File("test/res"));
         appWidgetManager = AppWidgetManager.getInstance(FakeHelper.application);
         fakeAppWidgetManager = proxyFor(appWidgetManager);
     }

@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 
 import java.lang.reflect.Constructor;
 
-import static com.xtremelabs.robolectric.Robolex    ctricAndroidTestRunner.proxyFor;
+import static com.xtremelabs.robolectric.RobolectricAndroidTestRunner.proxyFor;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;

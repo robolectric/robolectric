@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.AppSingletonizer;
+import com.xtremelabs.robolectric.util.FakeHelper;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -20,7 +21,7 @@ public class FakeLayoutInflater {
 
     @Implementation
     public static LayoutInflater from(Context context) {
-        return inject(instances.getInstance(context), FakeContextWrapper.resourceLoader.viewLoader, context);
+        return inject(instances.getInstance(context), FakeHelper.resourceLoader.viewLoader, context);
     }
 
     @Implementation

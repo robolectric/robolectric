@@ -1,7 +1,9 @@
 package com.xtremelabs.robolectric.util;
 
 import android.app.Application;
+import com.xtremelabs.droidsugar.fakes.FakeContext;
 import com.xtremelabs.robolectric.fakes.*;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
 import java.lang.reflect.Constructor;
@@ -10,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FakeHelper {
+    public static ResourceLoader resourceLoader;
     public static Application application;
 
     public static <T> T newInstanceOf(Class<T> clazz) {
@@ -42,6 +45,7 @@ public class FakeHelper {
                 FakeCanvas.class,
                 FakeCompoundButton.class,
                 FakeComponentName.class,
+                FakeContext.class,
                 FakeContextWrapper.class,
                 FakeDialog.class,
                 FakeEditText.class,

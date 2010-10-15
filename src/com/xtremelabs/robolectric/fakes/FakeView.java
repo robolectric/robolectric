@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import com.xtremelabs.robolectric.util.FakeHelper;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -82,7 +83,7 @@ public class FakeView {
 
     @Implementation
     public static View inflate(Context context, int resource, ViewGroup root) {
-        View view = FakeContextWrapper.resourceLoader.viewLoader.inflateView(context, resource);
+        View view = FakeHelper.resourceLoader.viewLoader.inflateView(context, resource);
         if (root != null) {
             root.addView(view);
         }
