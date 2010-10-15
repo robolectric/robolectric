@@ -2,7 +2,7 @@
   <configuration default="false" name="AllTests" type="JUnit" factoryName="JUnit">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
       <pattern>
-        <option name="PATTERN" value="com.xtremelabs.droidsugar.fakes.*" />
+        <option name="PATTERN" value="com.xtremelabs.robolectric.fakes.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
@@ -10,7 +10,7 @@
     <module name="droid-sugar" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
     <option name="ALTERNATIVE_JRE_PATH" value="" />
-    <option name="PACKAGE_NAME" value="com.xtremelabs.droidsugar" />
+    <option name="PACKAGE_NAME" value="com.xtremelabs.robolectric" />
     <option name="MAIN_CLASS_NAME" value="" />
     <option name="METHOD_NAME" value="" />
     <option name="TEST_OBJECT" value="package" />
