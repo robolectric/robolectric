@@ -53,6 +53,11 @@ public class FakeIntent {
     }
 
     @Implementation
+    public Uri getData() {
+        return data;
+    }
+
+    @Implementation
     public Intent setClassName(String packageName, String className) {
         componentName = new ComponentName(packageName, className);
         return realIntent;
