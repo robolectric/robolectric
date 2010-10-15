@@ -11,8 +11,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
+import java.util.jar.Manifest;
 
 public class AndroidTranslator implements Translator {
+    public static final int CACHE_VERSION = 1;
     private static final List<AndroidTranslator> INSTANCES = new ArrayList<AndroidTranslator>();
 
     private int index;
@@ -26,7 +28,7 @@ public class AndroidTranslator implements Translator {
 
     synchronized static private int addInstance(AndroidTranslator androidTranslator) {
         INSTANCES.add(androidTranslator);
-        return INSTANCES.size() - 1;
+        return INSTANCES.size() - CACHE_VERSION;
     }
 
     synchronized static public AndroidTranslator get(int index) {
@@ -217,7 +219,7 @@ public class AndroidTranslator implements Translator {
                 if (i > 0) buf.append(", ");
                 buf.append(AndroidTranslator.class.getName());
                 buf.append(".autobox(");
-                buf.append("$").append(i + 1);
+                buf.append("$").append(i + CACHE_VERSION);
                 buf.append(")");
             }
             buf.append("}");
@@ -310,7 +312,7 @@ public class AndroidTranslator implements Translator {
         }
     }
 
-    public void saveAllClassesToCache(File file) {
+    public void saveAllClassesToCache(File file, Manifest manifest) {
         if (modifiedClasses.size() > 0) {
             JarOutputStream jarOutputStream = null;
             try {
@@ -320,7 +322,11 @@ public class AndroidTranslator implements Translator {
                     cacheJarDir.mkdirs();
                 }
 
-                jarOutputStream = new JarOutputStream(new FileOutputStream(file, true));
+                if (file.exists()) {
+                    jarOutputStream = new JarOutputStream(new FileOutputStream(file, true));
+                } else {
+                    jarOutputStream = new JarOutputStream(new FileOutputStream(file), manifest);
+                }
                 for (Map.Entry<String, byte[]> entry : modifiedClasses.entrySet()) {
                     String key = entry.getKey();
                     jarOutputStream.putNextEntry(new JarEntry(key.replace('.', '/') + ".class"));

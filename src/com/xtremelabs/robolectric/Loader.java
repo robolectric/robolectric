@@ -9,10 +9,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 
 public class Loader extends javassist.Loader {
+    private static final Attributes.Name VERSION_ATTRIBUTE = new Attributes.Name("version");
     private AndroidTranslator androidTranslator;
     private JarFile cacheFile;
 
@@ -35,12 +38,32 @@ public class Loader extends javassist.Loader {
         final File cacheJarFile = new File("tmp/cached-robolectric-classes.jar");
         try {
             cacheFile = new JarFile(cacheJarFile);
+            int cacheVersion = 0;
+            Manifest manifest = cacheFile.getManifest();
+            if (manifest != null) {
+                Attributes attributes = manifest.getEntries().get("robolectric");
+                if (attributes != null) {
+                    String cacheVersionStr = (String) attributes.get(VERSION_ATTRIBUTE);
+                    if (cacheVersionStr != null) {
+                        cacheVersion = Integer.parseInt(cacheVersionStr);
+                    }
+                }
+            }
+            if (cacheVersion != AndroidTranslator.CACHE_VERSION) {
+                cacheJarFile.delete();
+                cacheFile = new JarFile(cacheJarFile);
+            }
         } catch (IOException e) {
             // no problem
         }
         Runtime.getRuntime().addShutdownHook(new Thread() {
             @Override public void run() {
-                androidTranslator.saveAllClassesToCache(cacheJarFile);
+                Manifest manifest = new Manifest();
+                Attributes attributes = new Attributes();
+                attributes.put(VERSION_ATTRIBUTE, String.valueOf(AndroidTranslator.CACHE_VERSION));
+                manifest.getEntries().put("robolectric", attributes);
+
+                androidTranslator.saveAllClassesToCache(cacheJarFile, manifest);
             }
         });
     }
