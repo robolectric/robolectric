@@ -8,6 +8,7 @@ import android.view.ViewGroup;
 import com.xtremelabs.droidsugar.ProxyDelegatingHandler;
 import com.xtremelabs.droidsugar.res.ViewLoader;
 import com.xtremelabs.droidsugar.util.AppSingletonizer;
+import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
@@ -20,7 +21,7 @@ public class FakeLayoutInflater {
 
     @Implementation
     public static LayoutInflater from(Context context) {
-        return inject(instances.getInstance(context), FakeContextWrapper.resourceLoader.viewLoader, context);
+        return inject(instances.getInstance(context), FakeHelper.resourceLoader.viewLoader, context);
     }
 
     @Implementation

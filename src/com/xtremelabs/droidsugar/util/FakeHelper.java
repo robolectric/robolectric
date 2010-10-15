@@ -2,6 +2,7 @@ package com.xtremelabs.droidsugar.util;
 
 import android.app.Application;
 import com.xtremelabs.droidsugar.fakes.*;
+import com.xtremelabs.droidsugar.res.ResourceLoader;
 import com.xtremelabs.droidsugar.view.TestSharedPreferences;
 
 import java.lang.reflect.Constructor;
@@ -10,6 +11,7 @@ import java.util.Arrays;
 import java.util.List;
 
 public class FakeHelper {
+    public static ResourceLoader resourceLoader;
     public static Application application;
 
     public static <T> T newInstanceOf(Class<T> clazz) {

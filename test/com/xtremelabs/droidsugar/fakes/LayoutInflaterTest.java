@@ -24,7 +24,7 @@ public class LayoutInflaterTest {
     public void setUp() throws Exception {
         DroidSugarAndroidTestRunner.addGenericProxies();
         FakeHelper.application = new Application();
-        FakeContextWrapper.resourceLoader = new ResourceLoader(R.class, new File("test/res"));
+        FakeHelper.resourceLoader = new ResourceLoader(R.class, new File("test/res"));
         layoutInflater = LayoutInflater.from(FakeHelper.application);
     }
     

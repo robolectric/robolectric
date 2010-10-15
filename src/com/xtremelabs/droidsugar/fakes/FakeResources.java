@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
+import com.xtremelabs.droidsugar.util.FakeHelper;
 import com.xtremelabs.droidsugar.util.Implementation;
 import com.xtremelabs.droidsugar.util.Implements;
 
@@ -14,12 +15,12 @@ import java.util.Locale;
 public class FakeResources {
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
-        return FakeContextWrapper.resourceLoader.colorResourceLoader.getValue(id);
+        return FakeHelper.resourceLoader.colorResourceLoader.getValue(id);
     }
 
     @Implementation
     public String getString(int id) throws Resources.NotFoundException {
-        return FakeContextWrapper.resourceLoader.stringResourceLoader.getValue(id);
+        return FakeHelper.resourceLoader.stringResourceLoader.getValue(id);
     }
 
     @Implementation
@@ -30,7 +31,7 @@ public class FakeResources {
 
     @Implementation
     public String[] getStringArray(int id) throws Resources.NotFoundException {
-        String[] arrayValue = FakeContextWrapper.resourceLoader.stringArrayResourceLoader.getArrayValue(id);
+        String[] arrayValue = FakeHelper.resourceLoader.stringArrayResourceLoader.getArrayValue(id);
         if (arrayValue == null) {
             throw new Resources.NotFoundException();
         }
@@ -55,8 +56,8 @@ public class FakeResources {
     @Implementation
     public float getDimension(int id) throws Resources.NotFoundException {
         // todo: get this value from the xml resources and scale it by display metrics [xw 20101011]
-        if (FakeContextWrapper.resourceLoader.dimensions.containsKey(id)) {
-            return FakeContextWrapper.resourceLoader.dimensions.get(id);
+        if (FakeHelper.resourceLoader.dimensions.containsKey(id)) {
+            return FakeHelper.resourceLoader.dimensions.get(id);
         }
         return id - 0x7f000000;
     }
@@ -76,6 +77,6 @@ public class FakeResources {
     }
 
     public void setDimension(int id, int value) {
-        FakeContextWrapper.resourceLoader.dimensions.put(id, value);
+        FakeHelper.resourceLoader.dimensions.put(id, value);
     }
 }
