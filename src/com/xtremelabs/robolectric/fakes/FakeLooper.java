@@ -5,7 +5,7 @@ import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.Scheduler;
 
-import static com.xtremelabs.robolectric.util.FakeHelper.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Looper.class)

@@ -12,7 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.util.FakeHelper.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(SQLiteDatabase.class)

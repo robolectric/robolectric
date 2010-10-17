@@ -13,8 +13,8 @@ import android.net.wifi.WifiManager;
 import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.util.FakeHelper;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -78,7 +78,7 @@ public class FakeApplication extends FakeContextWrapper {
             return locationManager;
         } else if (name.equals(Context.WIFI_SERVICE)) {
             if (wifiManager == null) {
-                wifiManager = FakeHelper.newInstanceOf(WifiManager.class);
+                wifiManager = Robolectric.newInstanceOf(WifiManager.class);
             }
             return wifiManager;
         }

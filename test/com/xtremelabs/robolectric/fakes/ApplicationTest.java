@@ -5,10 +5,10 @@ import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
 import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.StringResourceLoader;
-import com.xtremelabs.robolectric.util.FakeHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,13 +25,13 @@ public class ApplicationTest {
     public void setUp() throws Exception {
         RobolectricAndroidTestRunner.addGenericProxies();
 
-        FakeHelper.application = new Application();
+        Robolectric.application = new Application();
     }
 
     @Test
     public void shouldBeAContext() throws Exception {
-        assertThat(new Activity().getApplication(), sameInstance(FakeHelper.application));
-        assertThat(new Activity().getApplication().getApplicationContext(), sameInstance((Context)FakeHelper.application));
+        assertThat(new Activity().getApplication(), sameInstance(Robolectric.application));
+        assertThat(new Activity().getApplication().getApplicationContext(), sameInstance((Context) Robolectric.application));
     }
 
     @Test

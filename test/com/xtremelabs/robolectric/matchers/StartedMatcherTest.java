@@ -6,8 +6,8 @@ import android.app.AliasActivity;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
-import com.xtremelabs.robolectric.util.FakeHelper;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
@@ -27,7 +27,7 @@ public class StartedMatcherTest {
     @Before
     public void setUp() throws Exception {
         RobolectricAndroidTestRunner.addGenericProxies();
-        FakeHelper.resetRobolectricTestState();
+        Robolectric.resetStaticState();
 
         activity = new Activity();
         intentWithExtra = createIntent(AliasActivity.class, "someExtra", "value");

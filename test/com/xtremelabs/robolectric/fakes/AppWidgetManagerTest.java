@@ -10,9 +10,9 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.util.FakeHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,16 +29,16 @@ public class AppWidgetManagerTest {
     @Before
     public void setUp() throws Exception {
         RobolectricAndroidTestRunner.addGenericProxies();
-        FakeHelper.application = FakeApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
-        appWidgetManager = AppWidgetManager.getInstance(FakeHelper.application);
+        Robolectric.application = FakeApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
+        appWidgetManager = AppWidgetManager.getInstance(Robolectric.application);
         fakeAppWidgetManager = proxyFor(appWidgetManager);
     }
 
     @Test
     public void getInstance_shouldReturnSameInstance() throws Exception {
         assertNotNull(appWidgetManager);
-        assertSame(AppWidgetManager.getInstance(FakeHelper.application), appWidgetManager);
-        assertSame(AppWidgetManager.getInstance(new ContextWrapper(FakeHelper.application)), appWidgetManager);
+        assertSame(AppWidgetManager.getInstance(Robolectric.application), appWidgetManager);
+        assertSame(AppWidgetManager.getInstance(new ContextWrapper(Robolectric.application)), appWidgetManager);
     }
 
     @Test

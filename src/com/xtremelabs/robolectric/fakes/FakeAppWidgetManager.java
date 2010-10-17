@@ -8,8 +8,8 @@ import android.content.Context;
 import android.view.View;
 import android.widget.RemoteViews;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.AppSingletonizer;
-import com.xtremelabs.robolectric.util.FakeHelper;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -71,14 +71,14 @@ public class FakeAppWidgetManager {
         View widgetView = new Activity().getLayoutInflater().inflate(widgetLayoutId, null);
         widgetViews.put(nextWidgetId, widgetView);
 
-        AppWidgetProvider appWidgetProvider = FakeHelper.newInstanceOf(appWidgetProviderClass);
+        AppWidgetProvider appWidgetProvider = Robolectric.newInstanceOf(appWidgetProviderClass);
         appWidgetProvider.onUpdate(context, realAppWidgetManager, new int[] { nextWidgetId });
         return nextWidgetId++;
     }
 
     public List<Integer> createWidgets(int howManyToCreate, Class<? extends AppWidgetProvider> appWidgetProviderClass, int widgetLayoutId) {
         int[] newWidgetIds = new int[howManyToCreate];
-        AppWidgetProvider appWidgetProvider = FakeHelper.newInstanceOf(appWidgetProviderClass);
+        AppWidgetProvider appWidgetProvider = Robolectric.newInstanceOf(appWidgetProviderClass);
         for (int i = 0; i < howManyToCreate; i++) {
             View widgetView = new Activity().getLayoutInflater().inflate(widgetLayoutId, null);
             widgetViews.put(nextWidgetId, widgetView);

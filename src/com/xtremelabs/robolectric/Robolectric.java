@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.util;
+package com.xtremelabs.robolectric;
 
 import android.app.Application;
 import com.xtremelabs.robolectric.fakes.*;
@@ -9,7 +9,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
-public class FakeHelper {
+public class Robolectric {
     public static Application application;
 
     public static <T> T newInstanceOf(Class<T> clazz) {
@@ -89,8 +89,8 @@ public class FakeHelper {
                 );
     }
 
-    public static void resetRobolectricTestState() {
-        FakeHelper.application = new Application();
+    public static void resetStaticState() {
+        Robolectric.application = new Application();
         TestSharedPreferences.reset();
         FakeToast.reset();
         FakeAlertDialog.reset();

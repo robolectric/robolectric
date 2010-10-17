@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsSpinner;
 import android.widget.AdapterView;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
@@ -155,7 +156,7 @@ public class TestUtil {
     }
 
     public static void addAllProxies() {
-        List<Class<?>> genericProxies = FakeHelper.getGenericProxies();
+        List<Class<?>> genericProxies = Robolectric.getGenericProxies();
         for (Class<?> genericProxy : genericProxies) {
             Implements implementsClass = genericProxy.getAnnotation(Implements.class);
             RobolectricAndroidTestRunner.addProxy(implementsClass.value(), genericProxy);

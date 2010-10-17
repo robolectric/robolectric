@@ -4,7 +4,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.util.FakeHelper;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -16,7 +16,7 @@ public class FakePendingIntent {
 
     @Implementation
     public static PendingIntent getService(Context context, int requestCode, Intent intent, int flags) {
-        PendingIntent pendingIntent = FakeHelper.newInstanceOf(PendingIntent.class);
+        PendingIntent pendingIntent = Robolectric.newInstanceOf(PendingIntent.class);
         FakePendingIntent fakePendingIntent = (FakePendingIntent) ProxyDelegatingHandler.getInstance().proxyFor(pendingIntent);
         fakePendingIntent.savedIntent = intent;
         fakePendingIntent.isServiceIntent = true;

@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.util;
 import android.app.Application;
 import android.content.Context;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.fakes.FakeApplication;
 
 public abstract class AppSingletonizer<T> {
@@ -28,6 +29,6 @@ public abstract class AppSingletonizer<T> {
     protected abstract void set(FakeApplication fakeApplication, T instance);
 
     protected T createInstance(Application applicationContext) {
-        return FakeHelper.newInstanceOf(clazz);
+        return Robolectric.newInstanceOf(clazz);
     }
 }

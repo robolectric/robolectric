@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.ContentResolver;
 import android.provider.Settings;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
-import com.xtremelabs.robolectric.util.FakeHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +21,7 @@ public class SettingsTest {
     @Before
     public void setUp() throws Exception {
         RobolectricAndroidTestRunner.addGenericProxies();
-        FakeHelper.application = new Application();
+        Robolectric.application = new Application();
         activity = new Activity();
         contentResolver = activity.getContentResolver();
     }
@@ -41,7 +41,7 @@ public class SettingsTest {
         Settings.System.putInt(contentResolver, "property", 1);
         assertThat(Settings.System.getInt(contentResolver, "property", 0), equalTo(1));
 
-        FakeHelper.application = new Application();
+        Robolectric.application = new Application();
         activity = new Activity();
         contentResolver = activity.getContentResolver();
         assertThat(Settings.System.getInt(contentResolver, "property", 0), equalTo(0));

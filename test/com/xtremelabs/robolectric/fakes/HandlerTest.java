@@ -2,14 +2,14 @@ package com.xtremelabs.robolectric.fakes;
 
 import android.os.Handler;
 import android.os.Looper;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
-import com.xtremelabs.robolectric.util.FakeHelper;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.util.FakeHelper.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 
 @RunWith(RobolectricAndroidTestRunner.class)
 public class HandlerTest {
@@ -53,8 +53,8 @@ public class HandlerTest {
 
     @Test
     public void testDifferentLoopersGetDifferentQueues() throws Exception {
-        Looper looper1 = FakeHelper.newInstanceOf(Looper.class);
-        Looper looper2 = FakeHelper.newInstanceOf(Looper.class);
+        Looper looper1 = Robolectric.newInstanceOf(Looper.class);
+        Looper looper2 = Robolectric.newInstanceOf(Looper.class);
 
         Handler handler1 = new Handler(looper1);
         handler1.post(new Say("first thing"));

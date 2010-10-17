@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.util;
 
+import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -21,7 +22,7 @@ public class RobolectricWiringTest {
     @Test
     public void testAllImplementationMethodsHaveCorrentSignature() throws Exception {
 
-        for (Class<?> lectricClass : FakeHelper.getGenericProxies()) {
+        for (Class<?> lectricClass : Robolectric.getGenericProxies()) {
             verifyClass(lectricClass);
         }
 

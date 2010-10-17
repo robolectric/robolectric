@@ -6,7 +6,7 @@ import android.view.MotionEvent;
 import android.widget.ZoomButtonsController;
 import com.google.android.maps.*;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.util.FakeHelper;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -64,7 +64,7 @@ public class FakeMapView extends FakeViewGroup {
     public MapController getController() {
         if (mapController == null) {
             try {
-                mapController = FakeHelper.newInstanceOf(MapController.class);
+                mapController = Robolectric.newInstanceOf(MapController.class);
                 fakeMapController = ((FakeMapController) ProxyDelegatingHandler.getInstance().proxyFor(mapController));
                 fakeMapController.fakeMapView = this;
             } catch (Exception e) {

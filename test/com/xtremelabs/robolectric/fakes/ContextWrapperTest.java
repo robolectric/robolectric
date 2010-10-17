@@ -3,8 +3,8 @@ package com.xtremelabs.robolectric.fakes;
 import android.app.Activity;
 import android.app.Application;
 import android.content.*;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
-import com.xtremelabs.robolectric.util.FakeHelper;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,7 +20,7 @@ public class ContextWrapperTest {
     @Before public void setUp() throws Exception {
         RobolectricAndroidTestRunner.addGenericProxies();
 
-        FakeHelper.application = new Application();
+        Robolectric.application = new Application();
 
         transcript = new Transcript();
     }

@@ -6,7 +6,7 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
-import com.xtremelabs.robolectric.util.FakeHelper;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -30,7 +30,7 @@ public class FakeActivity extends FakeContextWrapper {
 
     @Implementation
     public final Application getApplication() {
-        return FakeHelper.application;
+        return Robolectric.application;
     }
 
     @Implementation

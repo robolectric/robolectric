@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.fakes;
 
 import android.content.ContentResolver;
 import android.provider.Settings;
-import com.xtremelabs.robolectric.util.FakeHelper;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -48,10 +48,10 @@ public class FakeSettings {
     }
 
     public static void setAirplaneMode(boolean isAirplaneMode) {
-        Settings.System.putInt(FakeHelper.application.getContentResolver(), Settings.System.AIRPLANE_MODE_ON, isAirplaneMode ? 1 : 0);
+        Settings.System.putInt(Robolectric.application.getContentResolver(), Settings.System.AIRPLANE_MODE_ON, isAirplaneMode ? 1 : 0);
     }
 
     public static void setWifiOn(boolean isOn) {
-        Settings.Secure.putInt(FakeHelper.application.getContentResolver(), Settings.Secure.WIFI_ON, isOn ? 1 : 0);
+        Settings.Secure.putInt(Robolectric.application.getContentResolver(), Settings.Secure.WIFI_ON, isOn ? 1 : 0);
     }
 }

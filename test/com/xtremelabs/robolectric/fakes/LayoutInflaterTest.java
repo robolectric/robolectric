@@ -4,9 +4,9 @@ import android.app.Application;
 import android.content.ContextWrapper;
 import android.view.LayoutInflater;
 import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.util.FakeHelper;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,14 +23,14 @@ public class LayoutInflaterTest {
     @Before
     public void setUp() throws Exception {
         RobolectricAndroidTestRunner.addGenericProxies();
-        FakeHelper.application = FakeApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
-        layoutInflater = LayoutInflater.from(FakeHelper.application);
+        Robolectric.application = FakeApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
+        layoutInflater = LayoutInflater.from(Robolectric.application);
     }
     
     @Test
     public void getInstance_shouldReturnSameInstance() throws Exception {
         assertNotNull(layoutInflater);
-        assertSame(LayoutInflater.from(FakeHelper.application), layoutInflater);
-        assertSame(LayoutInflater.from(new ContextWrapper(FakeHelper.application)), layoutInflater);
+        assertSame(LayoutInflater.from(Robolectric.application), layoutInflater);
+        assertSame(LayoutInflater.from(new ContextWrapper(Robolectric.application)), layoutInflater);
     }
 }

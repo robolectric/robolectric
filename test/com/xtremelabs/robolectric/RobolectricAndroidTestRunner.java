@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric;
 
-import com.xtremelabs.robolectric.util.FakeHelper;
 import com.xtremelabs.robolectric.util.Implements;
 import org.junit.runners.model.InitializationError;
 
@@ -30,6 +29,6 @@ public class RobolectricAndroidTestRunner extends AbstractAndroidTestRunner {
     }
 
     public static void addGenericProxies() {
-        addProxies(FakeHelper.getGenericProxies());
+        addProxies(Robolectric.getGenericProxies());
     }
 }
