@@ -14,7 +14,12 @@ import java.util.jar.JarOutputStream;
 import java.util.jar.Manifest;
 
 public class AndroidTranslator implements Translator {
+    /**
+     * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
+     * so the cache file can be invalidated.
+     */
     public static final int CACHE_VERSION = 1;
+
     private static final List<AndroidTranslator> INSTANCES = new ArrayList<AndroidTranslator>();
 
     private int index;
@@ -36,9 +41,11 @@ public class AndroidTranslator implements Translator {
     }
 
 
+    @Override
     public void start(ClassPool classPool) throws NotFoundException, CannotCompileException {
     }
 
+    @Override
     public void onLoad(ClassPool classPool, String className) throws NotFoundException, CannotCompileException {
         boolean needsStripping =
                 className.startsWith("android.")
@@ -96,9 +103,7 @@ public class AndroidTranslator implements Translator {
     private void fixMethods(CtClass ctClass) throws NotFoundException, CannotCompileException {
         for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
             int modifiers = ctMethod.getModifiers();
-            boolean wasNative = false;
             if (Modifier.isNative(modifiers)) {
-                wasNative = true;
                 modifiers = modifiers & ~Modifier.NATIVE;
             }
             if (Modifier.isFinal(modifiers)) {
