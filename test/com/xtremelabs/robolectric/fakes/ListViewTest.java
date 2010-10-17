@@ -17,9 +17,11 @@ import java.util.List;
 
 import static com.xtremelabs.robolectric.RobolectricAndroidTestRunner.proxyFor;
 import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @RunWith(RobolectricAndroidTestRunner.class)
 public class ListViewTest {
@@ -53,6 +55,49 @@ public class ListViewTest {
         listView.setSelection(0);
         FakeHandler.flush();
         transcript.assertEventsSoFar("item was selected: 0");
+    }
+
+    @Test
+    public void addHeaderView_ShouldThrowIfAdapterIsAlreadySet() throws Exception {
+        listView.setAdapter(new CountingAdapter(1));
+        try {
+            listView.addHeaderView(new View(null));
+            fail();
+        } catch (java.lang.IllegalStateException exception) {
+            assertThat(exception.getMessage(), equalTo("Cannot add header view to list -- setAdapter has already been called"));
+        }
+    }
+
+    @Test
+    public void addHeaderView_ShouldRecordHeaders() throws Exception {
+        View view0 = new View(null);
+        View view1 = new View(null);
+        listView.addHeaderView(view0);
+        listView.addHeaderView(view1);
+        assertThat(((FakeListView) proxyFor(listView)).headerViews.get(0), sameInstance(view0));
+        assertThat(((FakeListView) proxyFor(listView)).headerViews.get(1), sameInstance(view1));
+    }
+
+    @Test
+    public void addFooterView_ShouldThrowIfAdapterIsAlreadySet() throws Exception {
+        listView.setAdapter(new CountingAdapter(1));
+        try {
+            listView.addFooterView(new View(null));
+            fail();
+        } catch (java.lang.IllegalStateException exception) {
+            assertThat(exception.getMessage(), equalTo("Cannot add footer view to list -- setAdapter has already been called"));
+
+        }
+    }
+
+    @Test
+    public void addFooterView_ShouldRecordHeaders() throws Exception {
+        View view0 = new View(null);
+        View view1 = new View(null);
+        listView.addFooterView(view0);
+        listView.addFooterView(view1);
+        assertThat(((FakeListView) proxyFor(listView)).footerViews.get(0), sameInstance(view0));
+        assertThat(((FakeListView) proxyFor(listView)).footerViews.get(1), sameInstance(view1));
     }
 
     @Test

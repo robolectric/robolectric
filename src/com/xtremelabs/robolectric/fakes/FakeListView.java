@@ -8,10 +8,15 @@ import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListView.class)
 public class FakeListView extends FakeAdapterView {
     public boolean itemsCanFocus;
+    public List<View> headerViews = new ArrayList<View>();
+    public List<View> footerViews = new ArrayList<View>();
     private ListView realListView;
 
     public FakeListView(ListView listView) {
@@ -39,6 +44,24 @@ public class FakeListView extends FakeAdapterView {
     public void setAdapter(ListAdapter adapter) {
         super.setAdapter(adapter);
     }
+
+    @Implementation
+    public void addHeaderView(View headerView) {
+        ensureAdapterNotSet("header");
+        headerViews.add(headerView);
+    }
+
+    @Implementation
+    public void addFooterView(View footerView, Object data, boolean isSelectable) {
+        ensureAdapterNotSet("footer");
+        footerViews.add(footerView);
+    }
+
+    @Implementation
+    public void addFooterView(View footerView) {
+        addFooterView(footerView, null, false);
+    }
+
 
     public boolean performItemClick(int position) {
         return realListView.performItemClick(realListView.getChildAt(position), position, realListView.getItemIdAtPosition(position));
@@ -69,5 +92,11 @@ public class FakeListView extends FakeAdapterView {
             throw new IllegalArgumentException("No item found containing text \"" + targetText + "\"");
         }
         performItemClick(itemIndex);
+    }
+
+    private void ensureAdapterNotSet(String view) {
+        if (adapter != null) {
+            throw new IllegalStateException("Cannot add " + view + " view to list -- setAdapter has already been called");
+        }
     }
 }
