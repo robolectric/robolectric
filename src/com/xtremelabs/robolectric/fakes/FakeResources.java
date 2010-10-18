@@ -60,7 +60,7 @@ public class FakeResources {
 
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
-        BitmapDrawable bitmapDrawable = new BitmapDrawable();
+        RobolectricBitmapDrawable bitmapDrawable = new RobolectricBitmapDrawable(drawableResourceId);
         FakeBitmapDrawable fake = (FakeBitmapDrawable) ProxyDelegatingHandler.getInstance().proxyFor(bitmapDrawable);
         fake.loadedFromResourceId = drawableResourceId;
         return bitmapDrawable;
@@ -92,4 +92,31 @@ public class FakeResources {
     public void setDimension(int id, int value) {
         resourceLoader.dimensions.put(id, value);
     }
+
+    private static class RobolectricBitmapDrawable extends BitmapDrawable {
+        private int drawableResourceId;
+
+        public RobolectricBitmapDrawable(int drawableResourceId) {
+            this.drawableResourceId = drawableResourceId;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            RobolectricBitmapDrawable that = (RobolectricBitmapDrawable) o;
+
+            if (drawableResourceId != that.drawableResourceId) return false;
+            if (!getBounds().equals(that.getBounds())) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return drawableResourceId;
+        }
+    }
+
 }

@@ -22,11 +22,6 @@ public class TestAttributeSet implements AttributeSet {
         this.viewClass = viewClass;
     }
 
-    @Override public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
-        String value = getAttributeValueInMap(attribute);
-        return (value != null) ? resourceExtractor.getResourceStringToId().get(value.substring(1)) : defaultValue;
-    }
-
     @Override public boolean getAttributeBooleanValue(String namespace, String attribute, boolean defaultValue) {
         String value = getAttributeValueInMap(attribute);
         return (value != null) ? Boolean.valueOf(value) : defaultValue;
@@ -86,8 +81,15 @@ public class TestAttributeSet implements AttributeSet {
         throw new UnsupportedOperationException();
     }
 
+    @Override public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
+        String value = getAttributeValueInMap(attribute);
+        return (value != null) ? resourceExtractor.getResourceStringToId().get(value.substring(1)) : defaultValue;
+    }
+
     @Override public int getAttributeResourceValue(int index, int defaultValue) {
-        throw new UnsupportedOperationException();
+        String attrName = resourceExtractor.getResourceIdToString().get(index);
+        String value = getAttributeValueInMap(attrName);
+        return (value != null) ? resourceExtractor.getResourceStringToId().get(value.substring(1)) : defaultValue;
     }
 
     @Override public int getAttributeIntValue(int index, int defaultValue) {

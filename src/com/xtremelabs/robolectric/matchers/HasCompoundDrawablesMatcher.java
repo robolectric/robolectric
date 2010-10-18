@@ -23,7 +23,7 @@ public class HasCompoundDrawablesMatcher extends TypeSafeMatcher<TextView> {
             return false;
         }
 
-        FakeTextView.CompoundDrawables actualCompoundDrawables = proxyFor(actual).compoundDrawablesWithIntrinsicBounds;
+        FakeTextView.CompoundDrawables actualCompoundDrawables = proxyFor(actual).compoundDrawables;
         if (!expectedCompoundDrawables.equals(actualCompoundDrawables)) {
             message = "[" + actualCompoundDrawables + "] to equal [" + expectedCompoundDrawables + "]";
             return false;

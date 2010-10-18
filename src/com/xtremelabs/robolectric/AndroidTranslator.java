@@ -25,6 +25,7 @@ public class AndroidTranslator implements Translator {
     private int index;
     private ClassHandler classHandler;
     private Map<String, byte[]> modifiedClasses = new HashMap<String, byte[]>();
+    boolean startedWriting = false;
 
     public AndroidTranslator(ClassHandler classHandler) {
         this.classHandler = classHandler;
@@ -47,6 +48,10 @@ public class AndroidTranslator implements Translator {
 
     @Override
     public void onLoad(ClassPool classPool, String className) throws NotFoundException, CannotCompileException {
+        if (startedWriting) {
+            throw new IllegalStateException("shouldn't be modifying bytecode after we've started writing cache! class=" + className);
+        }
+        
         boolean needsStripping =
                 className.startsWith("android.")
                         || className.startsWith("org.apache.http")
@@ -335,6 +340,8 @@ public class AndroidTranslator implements Translator {
     }
 
     public void saveAllClassesToCache(File file, Manifest manifest) {
+        startedWriting = true;
+
         if (modifiedClasses.size() > 0) {
             JarOutputStream jarOutputStream = null;
             try {

@@ -17,12 +17,13 @@ import static android.view.View.VISIBLE;
 @Implements(TextView.class)
 public class FakeTextView extends FakeView {
     private CharSequence text = "";
-    public CompoundDrawables compoundDrawablesWithIntrinsicBounds;
+    public CompoundDrawables compoundDrawables;
     public int textColorHexValue = UNINITIALIZED_ATTRIBUTE;
     public int textSize = UNINITIALIZED_ATTRIBUTE;
     public boolean autoLinkPhoneNumbers;
     private int autoLinkMask;
     private CharSequence hintText;
+    private int compoundDrawablePadding;
 
     public FakeTextView(TextView view) {
         super(view);
@@ -92,26 +93,41 @@ public class FakeTextView extends FakeView {
 
     @Implementation
     public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
-        compoundDrawablesWithIntrinsicBounds = new CompoundDrawables(left, top , right, bottom);
+        compoundDrawables = new CompoundDrawables(left, top , right, bottom);
     }
 
     @Implementation
     public void setCompoundDrawablesWithIntrinsicBounds(Drawable left, Drawable top,
                                                         Drawable right, Drawable bottom) {
-        compoundDrawablesWithIntrinsicBounds = new CompoundDrawables(left, top , right, bottom);
+        compoundDrawables = new CompoundDrawables(left, top , right, bottom);
+    }
+
+    @Implementation
+    public void setCompoundDrawables(Drawable left, Drawable top, Drawable right, Drawable bottom) {
+        compoundDrawables = new CompoundDrawables(left, top , right, bottom);
     }
 
     @Implementation
     public Drawable[] getCompoundDrawables() {
-        if (compoundDrawablesWithIntrinsicBounds == null) {
+        if (compoundDrawables == null) {
             return new Drawable[]{null, null, null, null};
         }
         return new Drawable[]{
-                compoundDrawablesWithIntrinsicBounds.leftDrawable,
-                compoundDrawablesWithIntrinsicBounds.topDrawable,
-                compoundDrawablesWithIntrinsicBounds.rightDrawable,
-                compoundDrawablesWithIntrinsicBounds.bottomDrawable
+                compoundDrawables.leftDrawable,
+                compoundDrawables.topDrawable,
+                compoundDrawables.rightDrawable,
+                compoundDrawables.bottomDrawable
         };
+    }
+
+    @Implementation
+    public void setCompoundDrawablePadding(int compoundDrawablePadding) {
+        this.compoundDrawablePadding = compoundDrawablePadding;
+    }
+
+    @Implementation
+    public int getCompoundDrawablePadding() {
+        return compoundDrawablePadding;
     }
 
     @Implementation
