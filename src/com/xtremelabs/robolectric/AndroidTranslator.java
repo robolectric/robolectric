@@ -33,7 +33,7 @@ public class AndroidTranslator implements Translator {
 
     synchronized static private int addInstance(AndroidTranslator androidTranslator) {
         INSTANCES.add(androidTranslator);
-        return INSTANCES.size() - CACHE_VERSION;
+        return INSTANCES.size() - 1;
     }
 
     synchronized static public AndroidTranslator get(int index) {
@@ -224,7 +224,7 @@ public class AndroidTranslator implements Translator {
                 if (i > 0) buf.append(", ");
                 buf.append(AndroidTranslator.class.getName());
                 buf.append(".autobox(");
-                buf.append("$").append(i + CACHE_VERSION);
+                buf.append("$").append(i + 1);
                 buf.append(")");
             }
             buf.append("}");
