@@ -18,7 +18,7 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 1;
+    public static final int CACHE_VERSION = 2;
 
     private static final List<AndroidTranslator> INSTANCES = new ArrayList<AndroidTranslator>();
 
@@ -77,11 +77,10 @@ public class AndroidTranslator implements Translator {
         boolean needsDefault = true;
 
         for (CtConstructor ctConstructor : ctClass.getConstructors()) {
-            String methodBody = generateConstructorBody(ctClass, ctConstructor.getParameterTypes());
-
-            ctConstructor.setBody("{\n" + methodBody + "\n}");
-            if (ctConstructor.getParameterTypes().length == 0) {
-                needsDefault = false;
+            try {
+                needsDefault = fixConstructor(ctClass, needsDefault, ctConstructor);
+            } catch (Exception e) {
+                throw new RuntimeException("problem instrumenting " + ctConstructor, e);
             }
         }
 
@@ -89,6 +88,16 @@ public class AndroidTranslator implements Translator {
             String methodBody = generateConstructorBody(ctClass, new CtClass[0]);
             ctClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], methodBody, ctClass));
         }
+    }
+
+    private boolean fixConstructor(CtClass ctClass, boolean needsDefault, CtConstructor ctConstructor) throws NotFoundException, CannotCompileException {
+        String methodBody = generateConstructorBody(ctClass, ctConstructor.getParameterTypes());
+
+        ctConstructor.setBody("{\n" + methodBody + "\n}");
+        if (ctConstructor.getParameterTypes().length == 0) {
+            needsDefault = false;
+        }
+        return needsDefault;
     }
 
     private String generateConstructorBody(CtClass ctClass, CtClass[] parameterTypes) throws NotFoundException {
@@ -102,22 +111,31 @@ public class AndroidTranslator implements Translator {
 
     private void fixMethods(CtClass ctClass) throws NotFoundException, CannotCompileException {
         for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
-            int modifiers = ctMethod.getModifiers();
-            if (Modifier.isNative(modifiers)) {
-                modifiers = modifiers & ~Modifier.NATIVE;
+            try {
+                fixMethod(ctClass, ctMethod);
+            } catch (Exception e) {
+                throw new RuntimeException("problem instrumenting " + ctMethod, e);
             }
-            if (Modifier.isFinal(modifiers)) {
-                modifiers = modifiers & ~Modifier.FINAL;
-            }
-            ctMethod.setModifiers(modifiers);
+        }
+    }
 
-            CtClass returnCtClass = ctMethod.getReturnType();
-            Type returnType = Type.find(returnCtClass);
+    private void fixMethod(CtClass ctClass, CtMethod ctMethod) throws NotFoundException, CannotCompileException {
+        int modifiers = ctMethod.getModifiers();
+        if (Modifier.isNative(modifiers)) {
+            modifiers = modifiers & ~Modifier.NATIVE;
+        }
+        if (Modifier.isFinal(modifiers)) {
+            modifiers = modifiers & ~Modifier.FINAL;
+        }
+        ctMethod.setModifiers(modifiers);
 
-            String methodName = ctMethod.getName();
-            CtClass[] paramTypes = ctMethod.getParameterTypes();
+        CtClass returnCtClass = ctMethod.getReturnType();
+        Type returnType = Type.find(returnCtClass);
 
-            boolean isAbstract = (ctMethod.getModifiers() & Modifier.ABSTRACT) != 0;
+        String methodName = ctMethod.getName();
+        CtClass[] paramTypes = ctMethod.getParameterTypes();
+
+        boolean isAbstract = (ctMethod.getModifiers() & Modifier.ABSTRACT) != 0;
 //            if (!isAbstract) {
 //                if (methodName.startsWith("set") && paramTypes.length == 1) {
 //                    String fieldName = "__" + methodName.substring(3);
@@ -132,26 +150,25 @@ public class AndroidTranslator implements Translator {
 //                }
 //            }
 
-            boolean returnsVoid = returnType.isVoid();
-            boolean isStatic = Modifier.isStatic(modifiers);
+        boolean returnsVoid = returnType.isVoid();
+        boolean isStatic = Modifier.isStatic(modifiers);
 
-            String methodBody;
-            if (!isAbstract) {
-                methodBody = generateMethodBody(ctClass, ctMethod, returnCtClass, returnType, returnsVoid, isStatic);
-            } else {
-                methodBody = returnsVoid ? "" : "return " + returnType.defaultReturnString() + ";";
-            }
-
-            CtMethod newMethod = CtNewMethod.make(
-                    ctMethod.getModifiers(),
-                    returnCtClass,
-                    methodName,
-                    paramTypes,
-                    ctMethod.getExceptionTypes(),
-                    "{\n" + methodBody + "\n}",
-                    ctClass);
-            ctMethod.setBody(newMethod, null);
+        String methodBody;
+        if (!isAbstract) {
+            methodBody = generateMethodBody(ctClass, ctMethod, returnCtClass, returnType, returnsVoid, isStatic);
+        } else {
+            methodBody = returnsVoid ? "" : "return " + returnType.defaultReturnString() + ";";
         }
+
+        CtMethod newMethod = CtNewMethod.make(
+                ctMethod.getModifiers(),
+                returnCtClass,
+                methodName,
+                paramTypes,
+                ctMethod.getExceptionTypes(),
+                "{\n" + methodBody + "\n}",
+                ctClass);
+        ctMethod.setBody(newMethod, null);
     }
 
     private String generateMethodBody(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean returnsVoid, boolean aStatic) throws NotFoundException {

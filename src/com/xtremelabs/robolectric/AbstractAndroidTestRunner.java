@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric;
 
+import com.xtremelabs.robolectric.util.RealObject;
 import com.xtremelabs.robolectric.util.TestHelperInterface;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -19,6 +20,7 @@ public class AbstractAndroidTestRunner extends BlockJUnit4ClassRunner {
         this.loader = loader;
 
         this.loader.delegateLoadingOf(TestHelperInterface.class.getName());
+        this.loader.delegateLoadingOf(RealObject.class.getName());
     }
 
     @Deprecated

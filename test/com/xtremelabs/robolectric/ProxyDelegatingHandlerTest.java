@@ -4,6 +4,7 @@ import android.content.Context;
 import android.test.mock.MockContext;
 import android.view.View;
 import android.widget.TextView;
+import com.xtremelabs.robolectric.util.RealObject;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -34,7 +35,19 @@ public class ProxyDelegatingHandlerTest {
 
         View view = new View(context);
         assertSame(context, proxyFor(view).context);
-        assertSame(view, proxyFor(view).realView);
+        assertSame(view, proxyFor(view).realViewCtor);
+    }
+
+    @Test
+    public void testRealObjectAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
+        RobolectricAndroidTestRunner.addProxy(View.class, TestFakeView.class);
+
+        View view = new View(context);
+        assertSame(context, proxyFor(view).context);
+        assertSame(view, proxyFor(view).realViewField);
+
+        assertSame(view, proxyFor(view).realViewInConstructor);
+        assertSame(view, proxyFor(view).realViewInParentConstructor);
     }
 
     @Test
@@ -82,22 +95,40 @@ public class ProxyDelegatingHandlerTest {
         return (TestFakeTextView) RobolectricAndroidTestRunner.proxyFor(view);
     }
 
-    public static class TestFakeView {
-        private View realView;
+    public static class TestFakeView extends TestFakeViewParent {
+        @RealObject
+        private View realViewField;
+        private View realViewInConstructor;
+
+        private View realViewCtor;
+
         private Context context;
 
         public TestFakeView(View view) {
-            this.realView = view;
+            this.realViewCtor = view;
         }
 
+        @Override
         @SuppressWarnings({"UnusedDeclaration"})
         public void __constructor__(Context context) {
+            super.__constructor__(context);
             this.context = context;
+            realViewInConstructor = realViewField;
         }
 
         @SuppressWarnings({"UnusedDeclaration"})
         public Context getContext() {
             return context;
+        }
+    }
+
+    public static class TestFakeViewParent {
+        @RealObject
+        private View realView;
+        View realViewInParentConstructor;
+
+        public void __constructor__(Context context) {
+            realViewInParentConstructor = realView;
         }
     }
     

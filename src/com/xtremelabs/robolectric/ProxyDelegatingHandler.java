@@ -1,14 +1,13 @@
 package com.xtremelabs.robolectric;
 
+import com.xtremelabs.robolectric.util.RealObject;
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.NotFoundException;
 
 import java.lang.reflect.*;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ProxyDelegatingHandler implements ClassHandler {
     public static final String SHEEP_FIELD_NAME = "__sheep__";
@@ -16,6 +15,8 @@ public class ProxyDelegatingHandler implements ClassHandler {
 
     private Map<String, String> sheepClassMap = new HashMap<String, String>();
     private Map<Class, Field> sheepFieldMap = new HashMap<Class, Field>();
+    private final Map<Class, MetaSheep> metaSheepMap = new HashMap<Class, MetaSheep>();
+
     public boolean debug = false;
 
     // sorry! it really only makes sense to have one per ClassLoader anyway though [xw/hu]
@@ -129,6 +130,8 @@ public class ProxyDelegatingHandler implements ClassHandler {
             }
             field.set(instance, sheep);
 
+            injectRealObjectOn(sheep, sheepClass, instance);
+
             return sheep;
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
@@ -136,6 +139,28 @@ public class ProxyDelegatingHandler implements ClassHandler {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void injectRealObjectOn(Object sheep, Class<?> sheepClass, Object instance) {
+        MetaSheep metaSheep = getMetaSheep(sheepClass);
+        for (Field realObjectField : metaSheep.realObjectFields) {
+            try {
+                realObjectField.set(sheep, instance);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    private MetaSheep getMetaSheep(Class<?> sheepClass) {
+        synchronized (metaSheepMap) {
+            MetaSheep metaSheep = metaSheepMap.get(sheepClass);
+            if (metaSheep == null) {
+                metaSheep = new MetaSheep(sheepClass);
+                metaSheepMap.put(sheepClass, metaSheep);
+            }
+            return metaSheep;
         }
     }
 
@@ -288,6 +313,26 @@ public class ProxyDelegatingHandler implements ClassHandler {
                     return null;
                 }
             }
+        }
+    }
+
+    private class MetaSheep {
+        private Class<?> sheepClass;
+        List<Field> realObjectFields = new ArrayList<Field>();
+
+        public MetaSheep(Class<?> sheepClass) {
+            this.sheepClass = sheepClass;
+
+            while (sheepClass != null) {
+                for (Field field : sheepClass.getDeclaredFields()) {
+                    if (field.isAnnotationPresent(RealObject.class)) {
+                        field.setAccessible(true);
+                        realObjectFields.add(field);
+                    }
+                }
+                sheepClass = sheepClass.getSuperclass();
+            }
+
         }
     }
 }
