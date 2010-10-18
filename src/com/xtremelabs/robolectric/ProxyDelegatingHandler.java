@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtField;
@@ -82,7 +83,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
         }
     }
 
-    static Class<?> loadClass(String paramType, ClassLoader classLoader) {
+    public static Class<?> loadClass(String paramType, ClassLoader classLoader) {
         Class primitiveClass = Type.findPrimitiveClass(paramType);
         if (primitiveClass != null) return primitiveClass;
 
@@ -145,11 +146,10 @@ public class ProxyDelegatingHandler implements ClassHandler {
     private void injectRealObjectOn(Object sheep, Class<?> sheepClass, Object instance) {
         MetaSheep metaSheep = getMetaSheep(sheepClass);
         for (Field realObjectField : metaSheep.realObjectFields) {
-            try {
-                realObjectField.set(sheep, instance);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
+            writeField(sheep, instance, realObjectField);
+        }
+        for (Field sheepWranglerField : metaSheep.sheepWranglerFields) {
+            writeField(sheep, this, sheepWranglerField);
         }
     }
 
@@ -187,14 +187,6 @@ public class ProxyDelegatingHandler implements ClassHandler {
         return constructor;
     }
 
-    private Object readField(Object instance, Field field) {
-        try {
-            return field.get(instance);
-        } catch (IllegalAccessException e1) {
-            throw new RuntimeException(e1);
-        }
-    }
-
     private Field getSheepField(Object instance) {
         Class clazz = instance.getClass();
         Field field = sheepFieldMap.get(clazz);
@@ -215,6 +207,22 @@ public class ProxyDelegatingHandler implements ClassHandler {
         }
         Field field = getSheepField(instance);
         return readField(instance, field);
+    }
+
+    private Object readField(Object target, Field field) {
+        try {
+            return field.get(target);
+        } catch (IllegalAccessException e1) {
+            throw new RuntimeException(e1);
+        }
+    }
+
+    private void writeField(Object target, Object value, Field realObjectField) {
+        try {
+            realObjectField.set(target, value);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private class InvocationPlan {
@@ -319,6 +327,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
     private class MetaSheep {
         private Class<?> sheepClass;
         List<Field> realObjectFields = new ArrayList<Field>();
+        List<Field> sheepWranglerFields = new ArrayList<Field>();
 
         public MetaSheep(Class<?> sheepClass) {
             this.sheepClass = sheepClass;
@@ -328,6 +337,11 @@ public class ProxyDelegatingHandler implements ClassHandler {
                     if (field.isAnnotationPresent(RealObject.class)) {
                         field.setAccessible(true);
                         realObjectFields.add(field);
+                    }
+
+                    if (field.isAnnotationPresent(SheepWrangler.class)) {
+                        field.setAccessible(true);
+                        sheepWranglerFields.add(field);
                     }
                 }
                 sheepClass = sheepClass.getSuperclass();

@@ -5,6 +5,7 @@ import android.test.mock.MockContext;
 import android.view.View;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,6 +49,17 @@ public class ProxyDelegatingHandlerTest {
 
         assertSame(view, proxyFor(view).realViewInConstructor);
         assertSame(view, proxyFor(view).realViewInParentConstructor);
+    }
+
+    @Test
+    public void testSheepWranglerAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
+        RobolectricAndroidTestRunner.addProxy(View.class, TestFakeView.class);
+
+        View view = new View(context);
+        ProxyDelegatingHandler proxyDelegatingHandler = ProxyDelegatingHandler.getInstance();
+
+        assertSame(proxyDelegatingHandler, proxyFor(view).sheepWranglerInConstructor);
+        assertSame(proxyDelegatingHandler, proxyFor(view).sheepWranglerInParentConstructor);
     }
 
     @Test
@@ -100,6 +112,10 @@ public class ProxyDelegatingHandlerTest {
         private View realViewField;
         private View realViewInConstructor;
 
+        @SheepWrangler
+        ProxyDelegatingHandler sheepWranglerField;
+        ProxyDelegatingHandler sheepWranglerInConstructor;
+
         private View realViewCtor;
 
         private Context context;
@@ -114,6 +130,7 @@ public class ProxyDelegatingHandlerTest {
             super.__constructor__(context);
             this.context = context;
             realViewInConstructor = realViewField;
+            sheepWranglerInConstructor = sheepWranglerField;
         }
 
         @SuppressWarnings({"UnusedDeclaration"})
@@ -127,8 +144,13 @@ public class ProxyDelegatingHandlerTest {
         private View realView;
         View realViewInParentConstructor;
 
+        @SheepWrangler
+        ProxyDelegatingHandler sheepWranglerParentField;
+        ProxyDelegatingHandler sheepWranglerInParentConstructor;
+
         public void __constructor__(Context context) {
             realViewInParentConstructor = realView;
+            sheepWranglerInParentConstructor = sheepWranglerParentField;
         }
     }
     
