@@ -344,8 +344,7 @@ public class AndroidTranslator implements Translator {
                 if (jarOutputStream != null) {
                     try {
                         jarOutputStream.close();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
+                    } catch (IOException ignore) {
                     }
                 }
             }
