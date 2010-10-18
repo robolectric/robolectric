@@ -11,11 +11,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ProxyDelegatingHandler implements ClassHandler {
-    public static final String FAKE_FIELD_NAME = "__fake__";
+    public static final String SHEEP_FIELD_NAME = "__sheep__";
     private static ProxyDelegatingHandler singleton;
 
-    private Map<String, String> classHandlers = new HashMap<String, String>();
-    private Map<Class, Field> fakeFieldMap = new HashMap<Class, Field>();
+    private Map<String, String> sheepClassMap = new HashMap<String, String>();
+    private Map<Class, Field> sheepFieldMap = new HashMap<Class, Field>();
     public boolean debug = false;
 
     // sorry! it really only makes sense to have one per ClassLoader anyway though [xw/hu]
@@ -34,9 +34,9 @@ public class ProxyDelegatingHandler implements ClassHandler {
         try {
             CtClass objectClass = ctClass.getClassPool().get(Object.class.getName());
             try {
-                ctClass.getField(FAKE_FIELD_NAME);
+                ctClass.getField(SHEEP_FIELD_NAME);
             } catch (NotFoundException e) {
-                CtField field = new CtField(objectClass, FAKE_FIELD_NAME, ctClass);
+                CtField field = new CtField(objectClass, SHEEP_FIELD_NAME, ctClass);
                 field.setModifiers(Modifier.PUBLIC);
                 ctClass.addField(field);
             }
@@ -49,7 +49,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
 
     @Override
     public void beforeTest() {
-        classHandlers.clear();
+        sheepClassMap.clear();
     }
 
     @Override
@@ -57,7 +57,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
     }
 
     public void addProxyClass(Class<?> realClass, Class<?> handlerClass) {
-        classHandlers.put(realClass.getName(), handlerClass.getName());
+        sheepClassMap.put(realClass.getName(), handlerClass.getName());
         if (debug) System.out.println("handle " + realClass + " with " + handlerClass);
     }
 
@@ -67,9 +67,9 @@ public class ProxyDelegatingHandler implements ClassHandler {
         if (!invocationPlan.prepare()) return null;
 
         try {
-            return invocationPlan.getMethod().invoke(invocationPlan.getFakeObject(), params);
+            return invocationPlan.getMethod().invoke(invocationPlan.getSheep(), params);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException(invocationPlan.getFakeObject().getClass().getName() + " is not assignable from " + invocationPlan.getHandlingClass().getName(), e);
+            throw new RuntimeException(invocationPlan.getSheep().getClass().getName() + " is not assignable from " + invocationPlan.getHandlingClass().getName(), e);
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
@@ -107,29 +107,29 @@ public class ProxyDelegatingHandler implements ClassHandler {
         return clazz;
     }
 
-    public Object fakeObjectFor(Object instance) {
-        Field field = getFakeField(instance);
-        Object fake = getField(instance, field);
+    public Object sheepFor(Object instance) {
+        Field field = getSheepField(instance);
+        Object sheep = readField(instance, field);
 
-        if (fake != null) {
-            return fake;
+        if (sheep != null) {
+            return sheep;
         }
 
-        String fakeClassName = getHandlingClassName(instance.getClass());
+        String sheepClassName = getHandlingClassName(instance.getClass());
 
         if (debug)
-            System.out.println("creating new " + fakeClassName + " as fake for " + instance.getClass().getName());
+            System.out.println("creating new " + sheepClassName + " as fake for " + instance.getClass().getName());
         try {
-            Class<?> fakeClass = loadClass(fakeClassName, instance.getClass().getClassLoader());
-            Constructor<?> constructor = findConstructor(instance, fakeClass);
+            Class<?> sheepClass = loadClass(sheepClassName, instance.getClass().getClassLoader());
+            Constructor<?> constructor = findConstructor(instance, sheepClass);
             if (constructor != null) {
-                fake = constructor.newInstance(instance);
+                sheep = constructor.newInstance(instance);
             } else {
-                fake = fakeClass.newInstance();
+                sheep = sheepClass.newInstance();
             }
-            field.set(instance, fake);
+            field.set(instance, sheep);
 
-            return fake;
+            return sheep;
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
@@ -140,21 +140,21 @@ public class ProxyDelegatingHandler implements ClassHandler {
     }
 
     private String getHandlingClassName(Class clazz) {
-        String fakeClassName = null;
-        while (fakeClassName == null && clazz != null) {
-            fakeClassName = classHandlers.get(clazz.getName());
+        String sheepClassName = null;
+        while (sheepClassName == null && clazz != null) {
+            sheepClassName = sheepClassMap.get(clazz.getName());
             clazz = clazz.getSuperclass();
         }
-        return fakeClassName;
+        return sheepClassName;
     }
 
-    private Constructor<?> findConstructor(Object instance, Class<?> fakeClass) {
+    private Constructor<?> findConstructor(Object instance, Class<?> sheepClass) {
         Class clazz = instance.getClass();
 
         Constructor constructor;
         for (constructor = null; constructor == null && clazz != null; clazz = clazz.getSuperclass()) {
             try {
-                constructor = fakeClass.getConstructor(clazz);
+                constructor = sheepClass.getConstructor(clazz);
             } catch (NoSuchMethodException e) {
                 // expected
             }
@@ -162,7 +162,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
         return constructor;
     }
 
-    private Object getField(Object instance, Field field) {
+    private Object readField(Object instance, Field field) {
         try {
             return field.get(instance);
         } catch (IllegalAccessException e1) {
@@ -170,16 +170,16 @@ public class ProxyDelegatingHandler implements ClassHandler {
         }
     }
 
-    private Field getFakeField(Object instance) {
+    private Field getSheepField(Object instance) {
         Class clazz = instance.getClass();
-        Field field = fakeFieldMap.get(clazz);
+        Field field = sheepFieldMap.get(clazz);
         if (field == null) {
             try {
-                field = clazz.getField(FAKE_FIELD_NAME);
+                field = clazz.getField(SHEEP_FIELD_NAME);
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException(instance.getClass().getName() + " has no fake field", e);
             }
-            fakeFieldMap.put(clazz, field);
+            sheepFieldMap.put(clazz, field);
         }
         return field;
     }
@@ -188,8 +188,8 @@ public class ProxyDelegatingHandler implements ClassHandler {
         if (instance == null) {
             throw new RuntimeException("no instance for which to get a proxy");
         }
-        Field field = getFakeField(instance);
-        return getField(instance, field);
+        Field field = getSheepField(instance);
+        return readField(instance, field);
     }
 
     private class InvocationPlan {
@@ -199,7 +199,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
         private String[] paramTypes;
         private Class<?> handlingClass;
         private Method method;
-        private Object fakeObject;
+        private Object sheep;
 
         public InvocationPlan(Class clazz, String methodName, Object instance, String... paramTypes) {
             this.clazz = clazz;
@@ -216,8 +216,8 @@ public class ProxyDelegatingHandler implements ClassHandler {
             return method;
         }
 
-        public Object getFakeObject() {
-            return fakeObject;
+        public Object getSheep() {
+            return sheep;
         }
 
         public boolean prepare() {
@@ -253,13 +253,13 @@ public class ProxyDelegatingHandler implements ClassHandler {
             }
 
             if (instance != null) {
-                fakeObject = fakeObjectFor(instance);
-                method = getMethod(fakeObject.getClass(), methodName, paramClasses);
+                sheep = sheepFor(instance);
+                method = getMethod(sheep.getClass(), methodName, paramClasses);
             } else {
-                fakeObject = null;
-                String fakeClassName = getHandlingClassName(clazz);
-                Class<?> fakeClass = loadClass(fakeClassName, classLoader);
-                method = getMethod(fakeClass, methodName, paramClasses);
+                sheep = null;
+                String sheepClassName = getHandlingClassName(clazz);
+                Class<?> sheepClass = loadClass(sheepClassName, classLoader);
+                method = getMethod(sheepClass, methodName, paramClasses);
             }
 
             if (method == null) {
