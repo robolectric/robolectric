@@ -11,6 +11,7 @@ public class FakeAddress {
     private String locality;
     private String postalCode;
     private String adminArea;
+    private String countryCode;
 
     @Implementation
     public void setAddressLine(int index, String line) {
@@ -50,5 +51,15 @@ public class FakeAddress {
     @Implementation
     public void setPostalCode(String postalCode) {
         this.postalCode = postalCode;
+    }
+
+    @Implementation
+    public String getCountryCode() {
+        return countryCode;
+    }
+
+    @Implementation
+    public void setCountryCode(String countryCode) {
+        this.countryCode = countryCode;
     }
 }
