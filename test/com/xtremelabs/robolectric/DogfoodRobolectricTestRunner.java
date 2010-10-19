@@ -5,11 +5,11 @@ import org.junit.runners.model.InitializationError;
 
 import java.util.List;
 
-public class RobolectricAndroidTestRunner extends AbstractAndroidTestRunner {
+public class DogfoodRobolectricTestRunner extends AbstractRobolectricTestRunner {
   private static final ProxyDelegatingHandler PROXY_DELEGATING_HANDLER = ProxyDelegatingHandler.getInstance();
   private static final Loader LOADER = new Loader(PROXY_DELEGATING_HANDLER);
 
-  public RobolectricAndroidTestRunner(Class testClass) throws InitializationError {
+  public DogfoodRobolectricTestRunner(Class testClass) throws InitializationError {
       super(testClass, LOADER, PROXY_DELEGATING_HANDLER);
   }
 

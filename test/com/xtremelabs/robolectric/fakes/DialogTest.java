@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.fakes;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,11 +10,11 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class DialogTest {
     @Test
     public void shouldCallOnDismissListener() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(Dialog.class, FakeDialog.class);
+        DogfoodRobolectricTestRunner.addProxy(Dialog.class, FakeDialog.class);
 
         final Transcript transcript = new Transcript();
 

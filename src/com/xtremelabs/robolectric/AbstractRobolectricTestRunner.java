@@ -10,13 +10,13 @@ import org.junit.runners.model.Statement;
 
 import java.lang.reflect.Method;
 
-public class AbstractAndroidTestRunner extends BlockJUnit4ClassRunner {
+public class AbstractRobolectricTestRunner extends BlockJUnit4ClassRunner {
     private Loader loader;
     private ClassHandler classHandler;
     private Class<? extends TestHelperInterface> testHelperClass;
     private TestHelperInterface testHelper;
 
-    public AbstractAndroidTestRunner(Class<?> testClass, Loader loader) throws InitializationError {
+    public AbstractRobolectricTestRunner(Class<?> testClass, Loader loader) throws InitializationError {
         super(loader.bootstrap(testClass));
         this.loader = loader;
 
@@ -27,7 +27,7 @@ public class AbstractAndroidTestRunner extends BlockJUnit4ClassRunner {
     }
 
     @Deprecated
-    public AbstractAndroidTestRunner(Class<?> testClass, Loader loader, ClassHandler classHandler) throws InitializationError {
+    public AbstractRobolectricTestRunner(Class<?> testClass, Loader loader, ClassHandler classHandler) throws InitializationError {
         this(testClass, loader);
         
         setClassHandler(classHandler);

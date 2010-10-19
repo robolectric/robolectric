@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.*;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class ProxyDelegatingHandlerTest {
     private Context context;
 
@@ -24,15 +24,15 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnProxyClass() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(View.class, TestFakeView_WithDefaultConstructorAndNoConstructorDelegate.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView_WithDefaultConstructorAndNoConstructorDelegate.class);
 
         View view = new View(context);
-        assertEquals(TestFakeView_WithDefaultConstructorAndNoConstructorDelegate.class, RobolectricAndroidTestRunner.proxyFor(view).getClass());
+        assertEquals(TestFakeView_WithDefaultConstructorAndNoConstructorDelegate.class, DogfoodRobolectricTestRunner.proxyFor(view).getClass());
     }
 
     @Test
     public void testConstructorInvocation() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(View.class, TestFakeView.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView.class);
 
         View view = new View(context);
         assertSame(context, proxyFor(view).context);
@@ -41,7 +41,7 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testRealObjectAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(View.class, TestFakeView.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView.class);
 
         View view = new View(context);
         assertSame(context, proxyFor(view).context);
@@ -53,7 +53,7 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testSheepWranglerAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(View.class, TestFakeView.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView.class);
 
         View view = new View(context);
         ProxyDelegatingHandler proxyDelegatingHandler = ProxyDelegatingHandler.getInstance();
@@ -64,7 +64,7 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testMethodDelegation() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(View.class, TestFakeView.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView.class);
 
         View view = new View(context);
         assertSame(context, view.getContext());
@@ -72,16 +72,16 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testProxySelectionSearchesSuperclasses() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(View.class, TestFakeView.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView.class);
 
         TextView textView = new TextView(context);
-        assertEquals(TestFakeView.class, RobolectricAndroidTestRunner.proxyFor(textView).getClass());
+        assertEquals(TestFakeView.class, DogfoodRobolectricTestRunner.proxyFor(textView).getClass());
     }
 
     @Test
     public void testWeirdness() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(View.class, TestFakeView.class);
-        RobolectricAndroidTestRunner.addProxy(TextView.class, TestFakeTextView.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView.class);
+        DogfoodRobolectricTestRunner.addProxy(TextView.class, TestFakeTextView.class);
 
         TextView textView = new TextView(context);
         assertThat(proxyFor(textView), instanceOf(TestFakeTextView.class));
@@ -100,11 +100,11 @@ public class ProxyDelegatingHandlerTest {
 
 
     private TestFakeView proxyFor(View view) {
-        return (TestFakeView) RobolectricAndroidTestRunner.proxyFor(view);
+        return (TestFakeView) DogfoodRobolectricTestRunner.proxyFor(view);
     }
 
     private TestFakeTextView proxyFor(TextView view) {
-        return (TestFakeTextView) RobolectricAndroidTestRunner.proxyFor(view);
+        return (TestFakeTextView) DogfoodRobolectricTestRunner.proxyFor(view);
     }
 
     public static class TestFakeView extends TestFakeViewParent {

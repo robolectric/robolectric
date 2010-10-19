@@ -13,18 +13,18 @@ import org.junit.runner.RunWith;
 
 import java.lang.reflect.Constructor;
 
-import static com.xtremelabs.robolectric.RobolectricAndroidTestRunner.proxyFor;
+import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.proxyFor;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class AndroidTranslatorTest {
 
     @Test
     public void testStaticMethodsAreDelegated() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(AccountManager.class, FakeAccountManagerForTests.class);
+        DogfoodRobolectricTestRunner.addProxy(AccountManager.class, FakeAccountManagerForTests.class);
 
         Context context = mock(Context.class);
         AccountManager.get(context);
@@ -34,7 +34,7 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testProtectedMethodsAreDelegated() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(ItemizedOverlay.class, FakeItemizedOverlay.class);
+        DogfoodRobolectricTestRunner.addProxy(ItemizedOverlay.class, FakeItemizedOverlay.class);
 
         FakeItemizedOverlayForTests overlay = new FakeItemizedOverlayForTests(null);
         overlay.triggerProtectedCall();
@@ -49,7 +49,7 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testGeneratedDefaultConstructorIsWired() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(ClassWithNoDefaultConstructor.class, FakeClassWithNoDefaultConstructors.class);
+        DogfoodRobolectricTestRunner.addProxy(ClassWithNoDefaultConstructor.class, FakeClassWithNoDefaultConstructors.class);
 
         Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
         ctor.setAccessible(true);
