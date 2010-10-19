@@ -10,7 +10,8 @@ public class DogfoodRobolectricTestRunner extends AbstractRobolectricTestRunner 
   private static final Loader LOADER = new Loader(PROXY_DELEGATING_HANDLER);
 
   public DogfoodRobolectricTestRunner(Class testClass) throws InitializationError {
-      super(testClass, LOADER, PROXY_DELEGATING_HANDLER);
+      super(testClass, LOADER);
+      setClassHandler(PROXY_DELEGATING_HANDLER);
   }
 
   public static void addProxy(Class<?> realClass, Class<?> handlerClass) {
