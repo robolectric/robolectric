@@ -21,7 +21,8 @@ public class FakeRemoteViews {
     @Implementation
     public void setTextViewText(int viewId, final CharSequence text) {
         viewUpdaters.add(new ViewUpdater(viewId) {
-            @Override public void doUpdate(View view) {
+            @Override
+            public void doUpdate(View view) {
                 ((TextView) view).setText(text);
             }
         });
@@ -30,9 +31,11 @@ public class FakeRemoteViews {
     @Implementation
     public void setOnClickPendingIntent(int viewId, final PendingIntent pendingIntent) {
         viewUpdaters.add(new ViewUpdater(viewId) {
-            @Override void doUpdate(final View view) {
+            @Override
+            void doUpdate(final View view) {
                 view.setOnClickListener(new View.OnClickListener() {
-                    @Override public void onClick(View v) {
+                    @Override
+                    public void onClick(View v) {
                         try {
                             pendingIntent.send(view.getContext(), 0, null);
                         } catch (PendingIntent.CanceledException e) {
@@ -47,8 +50,19 @@ public class FakeRemoteViews {
     @Implementation
     public void setViewVisibility(int viewId, final int visibility) {
         viewUpdaters.add(new ViewUpdater(viewId) {
-            @Override public void doUpdate(View view) {
+            @Override
+            public void doUpdate(View view) {
                 view.setVisibility(visibility);
+            }
+        });
+    }
+
+    @Implementation
+    public void setImageViewResource(int viewId, final int resourceId) {
+        viewUpdaters.add(new ViewUpdater(viewId) {
+            @Override
+            public void doUpdate(View view) {
+                ((ImageView) view).setImageResource(resourceId);
             }
         });
     }
@@ -56,7 +70,8 @@ public class FakeRemoteViews {
     @Implementation
     public void setImageViewBitmap(int viewId, final Bitmap bitmap) {
         viewUpdaters.add(new ViewUpdater(viewId) {
-            @Override public void doUpdate(View view) {
+            @Override
+            public void doUpdate(View view) {
                 ((ImageView) view).setImageBitmap(bitmap);
             }
         });
