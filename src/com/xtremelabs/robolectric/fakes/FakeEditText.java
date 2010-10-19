@@ -17,6 +17,8 @@ public class FakeEditText extends FakeTextView {
 
     public FakeEditText(EditText view) {
         super(view);
+
+        focusable = true;
     }
 
     @Implementation

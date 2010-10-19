@@ -63,4 +63,12 @@ public class ViewTest {
         assertFalse(view.hasFocus());
         transcript.assertEventsSoFar("Lost focus");
     }
+
+    @Test
+    public void shouldNotBeFocusableByDefault() throws Exception {
+        assertFalse(view.isFocusable());
+
+        view.setFocusable(true);
+        assertTrue(view.isFocusable());
+    }
 }

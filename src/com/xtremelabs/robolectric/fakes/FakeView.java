@@ -40,7 +40,7 @@ public class FakeView {
     public ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(0, 0);
     private Map<Integer, Object> tags = new HashMap<Integer, Object>();
     public boolean clickable;
-    public boolean focusable;
+    protected boolean focusable;
     public int backgroundResourceId = -1;
     protected View.OnKeyListener onKeyListener;
     public boolean hasFocus;
@@ -73,6 +73,11 @@ public class FakeView {
     @Implementation
     public void setFocusable(boolean focusable) {
         this.focusable = focusable;
+    }
+
+    @Implementation
+    public boolean isFocusable() {
+        return focusable;
     }
 
     @Implementation
