@@ -26,13 +26,6 @@ public class AbstractRobolectricTestRunner extends BlockJUnit4ClassRunner {
         this.loader.delegateLoadingOf(ProxyDelegatingHandler.class.getName());
     }
 
-    @Deprecated
-    public AbstractRobolectricTestRunner(Class<?> testClass, Loader loader, ClassHandler classHandler) throws InitializationError {
-        this(testClass, loader);
-        
-        setClassHandler(classHandler);
-    }
-
     public void setClassHandler(ClassHandler classHandler) {
         this.classHandler = classHandler;
         loader.delegateLoadingOf(getClass().getName());
