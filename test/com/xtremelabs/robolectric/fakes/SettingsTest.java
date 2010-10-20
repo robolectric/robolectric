@@ -4,8 +4,8 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.ContentResolver;
 import android.provider.Settings;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,14 +13,14 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class SettingsTest {
     private Activity activity;
     private ContentResolver contentResolver;
 
     @Before
     public void setUp() throws Exception {
-        RobolectricAndroidTestRunner.addGenericProxies();
+        DogfoodRobolectricTestRunner.addGenericProxies();
         Robolectric.application = new Application();
         activity = new Activity();
         contentResolver = activity.getContentResolver();

@@ -6,10 +6,12 @@ import android.widget.ListView;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListActivity.class)
 public class FakeListActivity extends FakeActivity {
+    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private ListView listView;
 
     public FakeListActivity(ListActivity realActivity) {
@@ -30,7 +32,7 @@ public class FakeListActivity extends FakeActivity {
         if (parent instanceof ListView) {
             return (ListView) parent;
         }
-        FakeViewGroup proxyView = (FakeViewGroup) ProxyDelegatingHandler.getInstance().proxyFor(parent);
+        FakeViewGroup proxyView = (FakeViewGroup) proxyDelegatingHandler.proxyFor(parent);
         for (int i = 0; i < proxyView.getChildCount(); i++) {
             ListView listView = findListView(proxyView.getChildAt(i));
             if (listView != null) {

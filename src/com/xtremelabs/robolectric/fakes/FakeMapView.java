@@ -9,6 +9,7 @@ import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MapView.class)
 public class FakeMapView extends FakeViewGroup {
+    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private boolean satelliteOn;
     public MapController mapController;
     private List<Overlay> overlays = new ArrayList<Overlay>();
@@ -65,7 +67,7 @@ public class FakeMapView extends FakeViewGroup {
         if (mapController == null) {
             try {
                 mapController = Robolectric.newInstanceOf(MapController.class);
-                fakeMapController = ((FakeMapController) ProxyDelegatingHandler.getInstance().proxyFor(mapController));
+                fakeMapController = ((FakeMapController) proxyDelegatingHandler.proxyFor(mapController));
                 fakeMapController.fakeMapView = this;
             } catch (Exception e) {
                 throw new RuntimeException(e);

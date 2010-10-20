@@ -8,8 +8,8 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.google.android.maps.MapView;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
 import com.xtremelabs.robolectric.fakes.FakeImageView;
 import com.xtremelabs.robolectric.util.CustomView;
 import com.xtremelabs.robolectric.util.TestUtil;
@@ -20,19 +20,19 @@ import org.junit.runner.RunWith;
 import java.io.File;
 
 import static android.test.MoreAsserts.assertNotEqual;
-import static com.xtremelabs.robolectric.RobolectricAndroidTestRunner.proxyFor;
+import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.proxyFor;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class ViewLoaderTest {
     private ViewLoader viewLoader;
     private MockContext context;
 
     @Before
     public void setUp() throws Exception {
-        RobolectricAndroidTestRunner.addGenericProxies();
+        DogfoodRobolectricTestRunner.addGenericProxies();
 
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);

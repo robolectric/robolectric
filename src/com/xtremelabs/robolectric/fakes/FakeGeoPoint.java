@@ -4,12 +4,14 @@ import com.google.android.maps.GeoPoint;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 
 import static com.xtremelabs.robolectric.fakes.FakeMapView.fromE6;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(GeoPoint.class)
 public class FakeGeoPoint {
+    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     public int lat;
     public int lng;
 
@@ -33,7 +35,7 @@ public class FakeGeoPoint {
         if (this == o) return true;
         if (o == null) return false;
 
-        FakeGeoPoint that = (FakeGeoPoint) ProxyDelegatingHandler.getInstance().proxyFor(o);
+        FakeGeoPoint that = (FakeGeoPoint) proxyDelegatingHandler.proxyFor(o);
 
         if (lat != that.lat) return false;
         if (lng != that.lng) return false;

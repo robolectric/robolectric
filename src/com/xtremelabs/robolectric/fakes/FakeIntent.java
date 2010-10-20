@@ -10,6 +10,7 @@ import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.Join;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 
 import java.io.*;
 import java.util.HashMap;
@@ -18,6 +19,7 @@ import java.util.Map;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)
 public class FakeIntent {
+    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private Intent realIntent;
     public HashMap<String, Object> extras = new HashMap<String, Object>();
     public String action;
@@ -71,8 +73,8 @@ public class FakeIntent {
 
     @Implementation
     public Intent putExtras(Intent src) {
-        FakeIntent srcFakeIntent = (FakeIntent) ProxyDelegatingHandler.getInstance().proxyFor(src);
-        extras = new HashMap(srcFakeIntent.extras);
+        FakeIntent srcFakeIntent = (FakeIntent) proxyDelegatingHandler.proxyFor(src);
+        extras = new HashMap<String, Object>(srcFakeIntent.extras);
         return realIntent;
     }
 

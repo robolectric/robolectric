@@ -3,23 +3,23 @@ package com.xtremelabs.robolectric.fakes;
 import android.app.Application;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.test.MoreAsserts.assertNotEqual;
-import static com.xtremelabs.robolectric.RobolectricAndroidTestRunner.proxyFor;
+import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.proxyFor;
 import static org.junit.Assert.assertEquals;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class BitmapDrawableTest {
     private Resources resources;
 
     @Before
     public void setUp() throws Exception {
-        RobolectricAndroidTestRunner.addGenericProxies();
+        DogfoodRobolectricTestRunner.addGenericProxies();
 
         Application application = new Application();
         resources = application.getResources();

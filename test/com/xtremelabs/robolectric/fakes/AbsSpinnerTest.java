@@ -3,13 +3,13 @@ package com.xtremelabs.robolectric.fakes;
 import android.app.Activity;
 import android.widget.AdapterView;
 import android.widget.Gallery;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class AbsSpinnerTest {
     private AdapterView adapterView;
 

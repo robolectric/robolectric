@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.res;
 
 import android.view.View;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.util.CustomView;
 import com.xtremelabs.robolectric.util.TestAttributeSet;
@@ -15,7 +15,7 @@ import java.util.HashMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class TestAttributeSetTest {
     private HashMap<String, String> attributes;
     private ResourceExtractor resourceExtractor;
