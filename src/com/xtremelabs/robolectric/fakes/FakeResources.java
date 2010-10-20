@@ -8,6 +8,7 @@ import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 
 import java.util.Locale;
 
@@ -21,6 +22,7 @@ public class FakeResources {
         return resources;
     }
 
+    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private ResourceLoader resourceLoader;
 
     @Implementation
@@ -61,7 +63,7 @@ public class FakeResources {
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
         RobolectricBitmapDrawable bitmapDrawable = new RobolectricBitmapDrawable(drawableResourceId);
-        FakeBitmapDrawable fake = (FakeBitmapDrawable) ProxyDelegatingHandler.getInstance().proxyFor(bitmapDrawable);
+        FakeBitmapDrawable fake = (FakeBitmapDrawable) proxyDelegatingHandler.proxyFor(bitmapDrawable);
         fake.loadedFromResourceId = drawableResourceId;
         return bitmapDrawable;
     }

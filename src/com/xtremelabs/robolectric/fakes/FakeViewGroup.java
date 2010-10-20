@@ -5,6 +5,7 @@ import android.view.ViewGroup;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,6 +13,7 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewGroup.class)
 public class FakeViewGroup extends FakeView {
+    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private List<View> children = new ArrayList<View>();
 
     public FakeViewGroup(ViewGroup viewGroup) {
@@ -64,7 +66,7 @@ public class FakeViewGroup extends FakeView {
     }
 
     private FakeView childProxy(View child) {
-        return (FakeView) ProxyDelegatingHandler.getInstance().proxyFor(child);
+        return (FakeView) proxyDelegatingHandler.proxyFor(child);
     }
 
     @Override
@@ -74,7 +76,7 @@ public class FakeViewGroup extends FakeView {
 
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
-            String childText = ((FakeView) ProxyDelegatingHandler.getInstance().proxyFor(child)).innerText();
+            String childText = childProxy(child).innerText();
             if (childText.length() > 0) {
                 innerText += delimiter;
                 delimiter = " ";

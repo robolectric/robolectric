@@ -10,11 +10,13 @@ import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.AppSingletonizer;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 
 @Implements(LayoutInflater.class)
 public class FakeLayoutInflater {
     private static AppSingletonizer<LayoutInflater> instances = new LayoutInflaterAppSingletonizer();
 
+    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private Context context;
 
     @Implementation
@@ -32,7 +34,7 @@ public class FakeLayoutInflater {
     }
 
     private ViewLoader getViewLoader() {
-        return ((FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(context.getApplicationContext())).getResourceLoader().viewLoader;
+        return ((FakeApplication) proxyDelegatingHandler.proxyFor(context.getApplicationContext())).getResourceLoader().viewLoader;
     }
 
     @Implementation

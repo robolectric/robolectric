@@ -10,6 +10,7 @@ import android.test.mock.MockPackageManager;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
 import java.util.HashMap;
@@ -19,6 +20,7 @@ import java.util.Map;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
 public class FakeContextWrapper extends FakeContext {
+    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private ContextWrapper realContextWrapper;
     private Context baseContext;
 
@@ -142,7 +144,7 @@ public class FakeContextWrapper extends FakeContext {
     }
 
     private FakeApplication getFakeApplication() {
-        return ((FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(getApplicationContext()));
+        return ((FakeApplication) proxyDelegatingHandler.proxyFor(getApplicationContext()));
     }
 
     @Implementation

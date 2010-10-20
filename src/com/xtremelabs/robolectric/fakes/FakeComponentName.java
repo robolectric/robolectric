@@ -5,10 +5,12 @@ import android.content.Context;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ComponentName.class)
 public class FakeComponentName {
+    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private String pkg;
     private String cls;
 
@@ -44,7 +46,7 @@ public class FakeComponentName {
     public boolean equals(Object o) {
         if (this == o) return true;
 
-        FakeComponentName that = (FakeComponentName) ProxyDelegatingHandler.getInstance().proxyFor(o);
+        FakeComponentName that = (FakeComponentName) proxyDelegatingHandler.proxyFor(o);
 
         if (cls != null ? !cls.equals(that.cls) : that.cls != null) return false;
         if (pkg != null ? !pkg.equals(that.pkg) : that.pkg != null) return false;

@@ -21,6 +21,7 @@ import android.util.Log;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -30,6 +31,7 @@ import java.util.Set;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContentValues.class)
 public final class FakeContentValues {
+    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private HashMap<String, Object> values = new HashMap<String, Object>();
     private static final String TAG = "FakeContentValues";
 
@@ -320,6 +322,6 @@ public final class FakeContentValues {
     }
 
     private FakeContentValues proxyFor(ContentValues other) {
-        return ((FakeContentValues) ProxyDelegatingHandler.getInstance().proxyFor(other));
+        return ((FakeContentValues) proxyDelegatingHandler.proxyFor(other));
     }
 }
