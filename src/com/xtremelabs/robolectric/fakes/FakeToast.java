@@ -15,6 +15,7 @@ import java.util.Set;
 @Implements(Toast.class)
 public class FakeToast {
     private static Map<CharSequence, Toast> toasts = new HashMap<CharSequence, Toast>();
+    private static int shownToastCount = 0;
 
     private boolean wasShown = false;
 
@@ -30,7 +31,13 @@ public class FakeToast {
         return toast;
     }
 
-    public static boolean showedToast(CharSequence message) {
+    @Implementation
+    public void show() {
+        wasShown = true;
+        shownToastCount++;
+    }
+
+    public static boolean shownToast(CharSequence message) {
         return toasts.containsKey(message) && proxyFor(toasts.get(message)).wasShown;
     }
 
@@ -40,14 +47,14 @@ public class FakeToast {
 
     public static void reset() {
         toasts.clear();
+        shownToastCount = 0;
     }
 
-    @Implementation
-    public void show() {
-        wasShown = true;
+    public static int shownToastCount() {
+        return shownToastCount;
     }
 
-    public static Set<String> showedToasts() {
+    public static Set<String> shownToasts() {
         HashSet<String> strings = new HashSet<String>();
         for (CharSequence toastString : toasts.keySet()) {
             if (proxyFor(toasts.get(toastString.toString())).wasShown) {
