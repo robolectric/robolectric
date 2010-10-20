@@ -30,15 +30,12 @@ public class ContextWrapperTest {
 
     @Test
     public void registerReceiver_shouldRegisterForAllIntentFilterActions() throws Exception {
-        IntentFilter intentFilter = new IntentFilter("foo");
-        intentFilter.addAction("baz");
-
         BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override public void onReceive(Context context, Intent intent) {
                 transcript.add("notified of " + intent.getAction());
             }
         };
-        contextWrapper.registerReceiver(receiver, intentFilter);
+        contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
 
         contextWrapper.sendBroadcast(new Intent("foo"));
         transcript.assertEventsSoFar("notified of foo");
@@ -48,8 +45,47 @@ public class ContextWrapperTest {
 
         contextWrapper.sendBroadcast(new Intent("baz"));
         transcript.assertEventsSoFar("notified of baz");
+    }
 
+    @Test
+    public void sendBroadcast_shouldSendIntentToEveryInterestedReceiver() throws Exception {
+        BroadcastReceiver larryReceiver = new BroadcastReceiver() {
+            @Override public void onReceive(Context context, Intent intent) {
+                transcript.add("Larry notified of " + intent.getAction());
+            }
+        };
+        contextWrapper.registerReceiver(larryReceiver, intentFilter("foo", "baz"));
+
+        BroadcastReceiver bobReceiver = new BroadcastReceiver() {
+            @Override public void onReceive(Context context, Intent intent) {
+                transcript.add("Bob notified of " + intent.getAction());
+            }
+        };
+        contextWrapper.registerReceiver(bobReceiver, intentFilter("foo"));
+
+        contextWrapper.sendBroadcast(new Intent("foo"));
+        transcript.assertEventsSoFar("Larry notified of foo", "Bob notified of foo");
+
+        contextWrapper.sendBroadcast(new Intent("womp"));
+        transcript.assertNoEventsSoFar();
+
+        contextWrapper.sendBroadcast(new Intent("baz"));
+        transcript.assertEventsSoFar("Larry notified of baz");
+    }
+
+    @Test
+    public void unregisterReceiver_shouldUnregisterReceiver() throws Exception {
+        BroadcastReceiver receiver = new BroadcastReceiver() {
+            @Override public void onReceive(Context context, Intent intent) {
+                transcript.add("notified of " + intent.getAction());
+            }
+        };
+
+        contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
         contextWrapper.unregisterReceiver(receiver);
+
+        contextWrapper.sendBroadcast(new Intent("foo"));
+        transcript.assertNoEventsSoFar();
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -95,5 +131,13 @@ public class ContextWrapperTest {
         assertThat(activity.getSystemService(Context.WIFI_SERVICE), sameInstance(activity.getSystemService(Context.WIFI_SERVICE)));
 
         assertThat(activity.getSystemService(Context.WIFI_SERVICE), sameInstance(new Activity().getSystemService(Context.WIFI_SERVICE)));
+    }
+
+    private IntentFilter intentFilter(String... actions) {
+        IntentFilter larryIntentFilter = new IntentFilter();
+        for (String action : actions) {
+            larryIntentFilter.addAction(action);
+        }
+        return larryIntentFilter;
     }
 }

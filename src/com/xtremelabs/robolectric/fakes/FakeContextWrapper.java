@@ -13,9 +13,9 @@ import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.SheepWrangler;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.Map;
+import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
@@ -27,7 +27,7 @@ public class FakeContextWrapper extends FakeContext {
     private LocationManager locationManager;
     private MockPackageManager packageManager;
 
-    public Map<String, BroadcastReceiver> registeredReceivers = new HashMap<String, BroadcastReceiver>();
+    public List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
     private WifiManager wifiManager;
 
     public FakeContextWrapper(ContextWrapper realContextWrapper) {
@@ -61,35 +61,32 @@ public class FakeContextWrapper extends FakeContext {
 
     @Implementation
     public void sendBroadcast(Intent intent) {
-        BroadcastReceiver broadcastReceiver = registeredReceivers.get(intent.getAction());
-        if (broadcastReceiver != null) {
-            broadcastReceiver.onReceive(realContextWrapper, intent);
+        for (Wrapper wrapper : registeredReceivers) {
+            if (wrapper.intentFilter.matchAction(intent.getAction())) {
+                wrapper.broadcastReceiver.onReceive(realContextWrapper, intent);
+            }
         }
     }
 
     @Implementation
     public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-        Iterator<String> iterator = filter.actionsIterator();
-        while (iterator.hasNext()) {
-            String action = iterator.next();
-            registeredReceivers.put(action, receiver);
-        }
+        registeredReceivers.add(new Wrapper(receiver, filter));
         return null;
     }
 
     @Implementation
-    public void unregisterReceiver(BroadcastReceiver receiver) {
+    public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
         boolean found = false;
-        Iterator<Map.Entry<String, BroadcastReceiver>> entryIterator = registeredReceivers.entrySet().iterator();
-        while (entryIterator.hasNext()) {
-            Map.Entry<String, BroadcastReceiver> stringBroadcastReceiverEntry = entryIterator.next();
-            if (stringBroadcastReceiverEntry.getValue() == receiver) {
-                entryIterator.remove();
+        Iterator<Wrapper> iterator = registeredReceivers.iterator();
+        while (iterator.hasNext()) {
+            Wrapper wrapper = iterator.next();
+            if (wrapper.broadcastReceiver == broadcastReceiver) {
+                iterator.remove();
                 found = true;
             }
         }
         if (!found) {
-            throw new IllegalArgumentException("Receiver not registered: " + receiver);
+            throw new IllegalArgumentException("Receiver not registered: " + broadcastReceiver);
         }
     }
 
@@ -150,5 +147,15 @@ public class FakeContextWrapper extends FakeContext {
     @Implementation
     public SharedPreferences getSharedPreferences(String name, int mode) {
         return new TestSharedPreferences(name, mode);
+    }
+
+    private class Wrapper {
+        private BroadcastReceiver broadcastReceiver;
+        private IntentFilter intentFilter;
+
+        public Wrapper(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter) {
+            this.broadcastReceiver = broadcastReceiver;
+            this.intentFilter = intentFilter;
+        }
     }
 }
