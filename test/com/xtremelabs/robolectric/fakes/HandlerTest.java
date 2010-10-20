@@ -2,8 +2,8 @@ package com.xtremelabs.robolectric.fakes;
 
 import android.os.Handler;
 import android.os.Looper;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,14 +11,14 @@ import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class HandlerTest {
     private Transcript transcript;
 
     @Before
     public void setUp() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(Handler.class, FakeHandler.class);
-        RobolectricAndroidTestRunner.addProxy(Looper.class, FakeLooper.class);
+        DogfoodRobolectricTestRunner.addProxy(Handler.class, FakeHandler.class);
+        DogfoodRobolectricTestRunner.addProxy(Looper.class, FakeLooper.class);
 
         transcript = new Transcript();
     }
@@ -69,7 +69,7 @@ public class HandlerTest {
 
 
     private FakeLooper proxyFor(Looper view) {
-        return (FakeLooper) RobolectricAndroidTestRunner.proxyFor(view);
+        return (FakeLooper) DogfoodRobolectricTestRunner.proxyFor(view);
     }
 
     private class Say implements Runnable {

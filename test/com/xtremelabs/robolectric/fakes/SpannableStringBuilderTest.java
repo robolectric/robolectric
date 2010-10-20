@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.fakes;
 
 import android.text.SpannableStringBuilder;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,11 +9,11 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class SpannableStringBuilderTest {
     @Before
     public void setUp() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(SpannableStringBuilder.class, FakeSpannableStringBuilder.class);
+        DogfoodRobolectricTestRunner.addProxy(SpannableStringBuilder.class, FakeSpannableStringBuilder.class);
     }
 
     @Test

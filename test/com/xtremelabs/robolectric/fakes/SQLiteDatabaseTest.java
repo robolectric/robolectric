@@ -4,7 +4,7 @@ import android.content.ContentValues;
 import android.database.AbstractCursor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,15 +12,15 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class SQLiteDatabaseTest {
     private SQLiteDatabase database;
 
     @Before
     public void setUp() throws Exception {
-        RobolectricAndroidTestRunner.addProxy(SQLiteDatabase.class, FakeSQLiteDatabase.class);
-        RobolectricAndroidTestRunner.addProxy(ContentValues.class, FakeContentValues.class);
-        RobolectricAndroidTestRunner.addProxy(AbstractCursor.class, FakeAbstractCursor.class);
+        DogfoodRobolectricTestRunner.addProxy(SQLiteDatabase.class, FakeSQLiteDatabase.class);
+        DogfoodRobolectricTestRunner.addProxy(ContentValues.class, FakeContentValues.class);
+        DogfoodRobolectricTestRunner.addProxy(AbstractCursor.class, FakeAbstractCursor.class);
 
         database = SQLiteDatabase.openDatabase("path", null, 0);
     }

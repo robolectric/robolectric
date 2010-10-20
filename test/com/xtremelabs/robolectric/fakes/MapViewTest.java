@@ -7,7 +7,7 @@ import android.view.View;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.AndroidTranslatorTest;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +16,7 @@ import static com.xtremelabs.robolectric.fakes.FakeMapView.toE6;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class MapViewTest {
     private MapView mapView;
     private MyOverlay overlay1;
@@ -26,7 +26,7 @@ public class MapViewTest {
 
 
     @Before public void setUp() throws Exception {
-        RobolectricAndroidTestRunner.addGenericProxies();
+        DogfoodRobolectricTestRunner.addGenericProxies();
         
         mapView = new MapView(new Activity(), "foo");
 

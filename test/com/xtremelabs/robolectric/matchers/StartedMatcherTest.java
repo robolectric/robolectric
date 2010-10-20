@@ -6,8 +6,8 @@ import android.app.AliasActivity;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
@@ -19,14 +19,14 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.matchers.StartedMatcher.createIntent;
 import static org.junit.Assert.assertThat;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class StartedMatcherTest {
     private Activity activity;
     private Intent intentWithExtra;
 
     @Before
     public void setUp() throws Exception {
-        RobolectricAndroidTestRunner.addGenericProxies();
+        DogfoodRobolectricTestRunner.addGenericProxies();
         Robolectric.resetStaticState();
 
         activity = new Activity();

@@ -1,17 +1,17 @@
 package com.xtremelabs.robolectric.fakes;
 
 import android.widget.EditText;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertTrue;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class EditTextTest {
     @Before public void setUp() throws Exception {
-        RobolectricAndroidTestRunner.addGenericProxies();
+        DogfoodRobolectricTestRunner.addGenericProxies();
     }
 
     @Test

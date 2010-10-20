@@ -8,10 +8,10 @@ import android.content.ContextWrapper;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,14 +21,14 @@ import java.io.File;
 
 import static org.junit.Assert.*;
 
-@RunWith(RobolectricAndroidTestRunner.class)
+@RunWith(DogfoodRobolectricTestRunner.class)
 public class AppWidgetManagerTest {
     private AppWidgetManager appWidgetManager;
     private FakeAppWidgetManager fakeAppWidgetManager;
 
     @Before
     public void setUp() throws Exception {
-        RobolectricAndroidTestRunner.addGenericProxies();
+        DogfoodRobolectricTestRunner.addGenericProxies();
         Robolectric.application = FakeApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
         appWidgetManager = AppWidgetManager.getInstance(Robolectric.application);
         fakeAppWidgetManager = proxyFor(appWidgetManager);
