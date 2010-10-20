@@ -6,13 +6,17 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
+import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.SheepWrangler;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Activity.class)
 public class FakeActivity extends FakeContextWrapper {
+    @SheepWrangler ProxyDelegatingHandler proxyDelegatingHandler;
+
     private Intent intent;
     public View contentView;
 
@@ -33,7 +37,7 @@ public class FakeActivity extends FakeContextWrapper {
         return Robolectric.application;
     }
 
-    @Implementation
+    @Implementation @Override
     public final Application getApplicationContext() {
         return getApplication();
     }
@@ -99,5 +103,14 @@ public class FakeActivity extends FakeContextWrapper {
             window = new TestWindow(realActivity);
         }
         return window;
+    }
+
+    @Implementation
+    public void onDestroy() {
+        assertNoBroadcastListenersRegistered();
+    }
+
+    public void assertNoBroadcastListenersRegistered() {
+        ((FakeApplication) proxyDelegatingHandler.proxyFor(getApplicationContext())).assertNoBroadcastListenersRegistered(realActivity);
     }
 }

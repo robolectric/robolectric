@@ -14,22 +14,22 @@ public class FakeItemizedOverlay {
     public boolean lastFocusedIndexWasReset;
     
     @Implementation
-    protected final void populate() {
+    public final void populate() {
         populated = true;
     }
 
     @Implementation
-    protected boolean hitTest(OverlayItem item, android.graphics.drawable.Drawable drawable, int i, int i1) {
+    public boolean hitTest(OverlayItem item, android.graphics.drawable.Drawable drawable, int i, int i1) {
         return shouldHit;
     }
 
     @Implementation
-    protected void setLastFocusedIndex(int i) {
+    public void setLastFocusedIndex(int i) {
         lastFocusedIndexWasReset = (i == -1);
     }
 
     @Implementation
-    protected static Drawable boundCenterBottom(Drawable drawable) {
+    public static Drawable boundCenterBottom(Drawable drawable) {
         return drawable;
     }
 }

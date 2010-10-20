@@ -142,7 +142,11 @@ public class FakeApplication extends FakeContextWrapper {
 
     @Override @Implementation
     public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-        registeredReceivers.add(new Wrapper(receiver, filter));
+        return registerReceiverWithContext(receiver, filter, realApplication);
+    }
+
+    Intent registerReceiverWithContext(BroadcastReceiver receiver, IntentFilter filter, Context context) {
+        registeredReceivers.add(new Wrapper(receiver, filter, context));
         return null;
     }
 
@@ -162,13 +166,29 @@ public class FakeApplication extends FakeContextWrapper {
         }
     }
 
+    public void assertNoBroadcastListenersRegistered(Context context) {
+        for (Wrapper registeredReceiver : registeredReceivers) {
+            if (registeredReceiver.context == context) {
+                RuntimeException e = new IllegalStateException("Activity " + context + " leaked has leaked IntentReceiver "
+                        + registeredReceiver.broadcastReceiver + " that was originally registered here. " +
+                        "Are you missing a call to unregisterReceiver()?");
+                e.setStackTrace(registeredReceiver.exception.getStackTrace());
+                throw e;
+            }
+        }
+    }
+
     private class Wrapper {
         private BroadcastReceiver broadcastReceiver;
         private IntentFilter intentFilter;
+        private Context context;
+        public Throwable exception;
 
-        public Wrapper(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter) {
+        public Wrapper(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter, Context context) {
             this.broadcastReceiver = broadcastReceiver;
             this.intentFilter = intentFilter;
+            this.context = context;
+            exception = new Throwable();
         }
     }
 }

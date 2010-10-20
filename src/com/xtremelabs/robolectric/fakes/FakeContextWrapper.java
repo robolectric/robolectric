@@ -61,7 +61,7 @@ public class FakeContextWrapper extends FakeContext {
 
     @Implementation
     public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-        return getApplicationContext().registerReceiver(receiver, filter);
+        return ((FakeApplication) proxyDelegatingHandler.proxyFor(getApplicationContext())).registerReceiverWithContext(receiver, filter, realContextWrapper);
     }
 
     @Implementation
