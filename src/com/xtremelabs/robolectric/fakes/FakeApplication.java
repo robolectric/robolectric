@@ -166,10 +166,10 @@ public class FakeApplication extends FakeContextWrapper {
         }
     }
 
-    public void assertNoBroadcastListenersRegistered(Context context) {
+    public void assertNoBroadcastListenersRegistered(Context context, String type) {
         for (Wrapper registeredReceiver : registeredReceivers) {
             if (registeredReceiver.context == context) {
-                RuntimeException e = new IllegalStateException("Activity " + context + " leaked has leaked IntentReceiver "
+                RuntimeException e = new IllegalStateException(type + " " + context + " leaked has leaked IntentReceiver "
                         + registeredReceiver.broadcastReceiver + " that was originally registered here. " +
                         "Are you missing a call to unregisterReceiver()?");
                 e.setStackTrace(registeredReceiver.exception.getStackTrace());

@@ -1,0 +1,50 @@
+package com.xtremelabs.robolectric.fakes;
+
+import android.app.Application;
+import android.app.Service;
+import android.appwidget.AppWidgetProvider;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.IBinder;
+import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(DogfoodRobolectricTestRunner.class)
+public class ServiceTest {
+    @Before
+    public void setUp() throws Exception {
+        DogfoodRobolectricTestRunner.addGenericProxies();
+
+        Robolectric.application = new Application();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldComplainIfServiceIsDestroyedWithRegisteredBroadcastReceivers() throws Exception {
+        MyService service = new MyService();
+        service.registerReceiver(new AppWidgetProvider(), new IntentFilter());
+        service.onDestroy();
+    }
+
+    @Test
+    public void shouldNotComplainIfServiceIsDestroyedWhileAnotherServiceHasRegisteredBroadcastReceivers() throws Exception {
+        MyService service = new MyService();
+
+        MyService service2 = new MyService();
+        service2.registerReceiver(new AppWidgetProvider(), new IntentFilter());
+
+        service.onDestroy(); // should not throw exception
+    }
+
+    private static class MyService extends Service {
+        @Override public void onDestroy() {
+            super.onDestroy();
+        }
+
+        @Override public IBinder onBind(Intent intent) {
+            return null;
+        }
+    }
+}

@@ -111,6 +111,6 @@ public class FakeActivity extends FakeContextWrapper {
     }
 
     public void assertNoBroadcastListenersRegistered() {
-        ((FakeApplication) proxyDelegatingHandler.proxyFor(getApplicationContext())).assertNoBroadcastListenersRegistered(realActivity);
+        ((FakeApplication) proxyDelegatingHandler.proxyFor(getApplicationContext())).assertNoBroadcastListenersRegistered(realActivity, "Activity");
     }
 }
