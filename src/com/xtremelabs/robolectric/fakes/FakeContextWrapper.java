@@ -77,12 +77,17 @@ public class FakeContextWrapper extends FakeContext {
 
     @Implementation
     public void unregisterReceiver(BroadcastReceiver receiver) {
+        boolean found = false;
         Iterator<Map.Entry<String, BroadcastReceiver>> entryIterator = registeredReceivers.entrySet().iterator();
         while (entryIterator.hasNext()) {
             Map.Entry<String, BroadcastReceiver> stringBroadcastReceiverEntry = entryIterator.next();
             if (stringBroadcastReceiverEntry.getValue() == receiver) {
                 entryIterator.remove();
+                found = true;
             }
+        }
+        if (!found) {
+            throw new IllegalArgumentException("Receiver not registered: " + receiver);
         }
     }
 

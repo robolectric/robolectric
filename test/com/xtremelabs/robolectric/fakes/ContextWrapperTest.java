@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.fakes;
 
 import android.app.Activity;
 import android.app.Application;
+import android.appwidget.AppWidgetProvider;
 import android.content.*;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.RobolectricAndroidTestRunner;
@@ -16,6 +17,7 @@ import static org.junit.Assert.assertThat;
 @RunWith(RobolectricAndroidTestRunner.class)
 public class ContextWrapperTest {
     public Transcript transcript;
+    private ContextWrapper contextWrapper;
 
     @Before public void setUp() throws Exception {
         RobolectricAndroidTestRunner.addGenericProxies();
@@ -23,6 +25,7 @@ public class ContextWrapperTest {
         Robolectric.application = new Application();
 
         transcript = new Transcript();
+        contextWrapper = new ContextWrapper(new Activity());
     }
 
     @Test
@@ -30,12 +33,12 @@ public class ContextWrapperTest {
         IntentFilter intentFilter = new IntentFilter("foo");
         intentFilter.addAction("baz");
 
-        ContextWrapper contextWrapper = new ContextWrapper(new Activity());
-        contextWrapper.registerReceiver(new BroadcastReceiver() {
+        BroadcastReceiver receiver = new BroadcastReceiver() {
             @Override public void onReceive(Context context, Intent intent) {
                 transcript.add("notified of " + intent.getAction());
             }
-        }, intentFilter);
+        };
+        contextWrapper.registerReceiver(receiver, intentFilter);
 
         contextWrapper.sendBroadcast(new Intent("foo"));
         transcript.assertEventsSoFar("notified of foo");
@@ -45,6 +48,13 @@ public class ContextWrapperTest {
 
         contextWrapper.sendBroadcast(new Intent("baz"));
         transcript.assertEventsSoFar("notified of baz");
+
+        contextWrapper.unregisterReceiver(receiver);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void unregisterReceiver_shouldThrowExceptionWhenReceiverIsNotRegistered() throws Exception {
+        contextWrapper.unregisterReceiver(new AppWidgetProvider());
     }
 
     @Test
