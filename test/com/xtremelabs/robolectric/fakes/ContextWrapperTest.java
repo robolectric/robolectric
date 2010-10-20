@@ -30,37 +30,25 @@ public class ContextWrapperTest {
 
     @Test
     public void registerReceiver_shouldRegisterForAllIntentFilterActions() throws Exception {
-        BroadcastReceiver receiver = new BroadcastReceiver() {
-            @Override public void onReceive(Context context, Intent intent) {
-                transcript.add("notified of " + intent.getAction());
-            }
-        };
+        BroadcastReceiver receiver = broadcastReceiver("Larry");
         contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
 
         contextWrapper.sendBroadcast(new Intent("foo"));
-        transcript.assertEventsSoFar("notified of foo");
+        transcript.assertEventsSoFar("Larry notified of foo");
 
         contextWrapper.sendBroadcast(new Intent("womp"));
         transcript.assertNoEventsSoFar();
 
         contextWrapper.sendBroadcast(new Intent("baz"));
-        transcript.assertEventsSoFar("notified of baz");
+        transcript.assertEventsSoFar("Larry notified of baz");
     }
 
     @Test
     public void sendBroadcast_shouldSendIntentToEveryInterestedReceiver() throws Exception {
-        BroadcastReceiver larryReceiver = new BroadcastReceiver() {
-            @Override public void onReceive(Context context, Intent intent) {
-                transcript.add("Larry notified of " + intent.getAction());
-            }
-        };
+        BroadcastReceiver larryReceiver = broadcastReceiver("Larry");
         contextWrapper.registerReceiver(larryReceiver, intentFilter("foo", "baz"));
 
-        BroadcastReceiver bobReceiver = new BroadcastReceiver() {
-            @Override public void onReceive(Context context, Intent intent) {
-                transcript.add("Bob notified of " + intent.getAction());
-            }
-        };
+        BroadcastReceiver bobReceiver = broadcastReceiver("Bob");
         contextWrapper.registerReceiver(bobReceiver, intentFilter("foo"));
 
         contextWrapper.sendBroadcast(new Intent("foo"));
@@ -75,11 +63,7 @@ public class ContextWrapperTest {
 
     @Test
     public void unregisterReceiver_shouldUnregisterReceiver() throws Exception {
-        BroadcastReceiver receiver = new BroadcastReceiver() {
-            @Override public void onReceive(Context context, Intent intent) {
-                transcript.add("notified of " + intent.getAction());
-            }
-        };
+        BroadcastReceiver receiver = broadcastReceiver("Larry");
 
         contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"));
         contextWrapper.unregisterReceiver(receiver);
@@ -91,6 +75,18 @@ public class ContextWrapperTest {
     @Test(expected = IllegalArgumentException.class)
     public void unregisterReceiver_shouldThrowExceptionWhenReceiverIsNotRegistered() throws Exception {
         contextWrapper.unregisterReceiver(new AppWidgetProvider());
+    }
+
+    @Test
+    public void broadcastReceivers_shouldBeSharedAcrossContextsPerApplicationContext() throws Exception {
+        BroadcastReceiver receiver = broadcastReceiver("Larry");
+
+        new ContextWrapper(Robolectric.application).registerReceiver(receiver, intentFilter("foo", "baz"));
+        new ContextWrapper(Robolectric.application).sendBroadcast(new Intent("foo"));
+        Robolectric.application.sendBroadcast(new Intent("baz"));
+        transcript.assertEventsSoFar("Larry notified of foo", "Larry notified of baz");
+
+        new ContextWrapper(Robolectric.application).unregisterReceiver(receiver);
     }
 
     @Test
@@ -131,6 +127,14 @@ public class ContextWrapperTest {
         assertThat(activity.getSystemService(Context.WIFI_SERVICE), sameInstance(activity.getSystemService(Context.WIFI_SERVICE)));
 
         assertThat(activity.getSystemService(Context.WIFI_SERVICE), sameInstance(new Activity().getSystemService(Context.WIFI_SERVICE)));
+    }
+
+    private BroadcastReceiver broadcastReceiver(final String name) {
+        return new BroadcastReceiver() {
+            @Override public void onReceive(Context context, Intent intent) {
+                transcript.add(name + " notified of " + intent.getAction());
+            }
+        };
     }
 
     private IntentFilter intentFilter(String... actions) {

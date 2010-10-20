@@ -13,10 +13,6 @@ import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.SheepWrangler;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
 public class FakeContextWrapper extends FakeContext {
@@ -27,7 +23,6 @@ public class FakeContextWrapper extends FakeContext {
     private LocationManager locationManager;
     private MockPackageManager packageManager;
 
-    public List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
     private WifiManager wifiManager;
 
     public FakeContextWrapper(ContextWrapper realContextWrapper) {
@@ -61,33 +56,17 @@ public class FakeContextWrapper extends FakeContext {
 
     @Implementation
     public void sendBroadcast(Intent intent) {
-        for (Wrapper wrapper : registeredReceivers) {
-            if (wrapper.intentFilter.matchAction(intent.getAction())) {
-                wrapper.broadcastReceiver.onReceive(realContextWrapper, intent);
-            }
-        }
+        getApplicationContext().sendBroadcast(intent);
     }
 
     @Implementation
     public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-        registeredReceivers.add(new Wrapper(receiver, filter));
-        return null;
+        return getApplicationContext().registerReceiver(receiver, filter);
     }
 
     @Implementation
     public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
-        boolean found = false;
-        Iterator<Wrapper> iterator = registeredReceivers.iterator();
-        while (iterator.hasNext()) {
-            Wrapper wrapper = iterator.next();
-            if (wrapper.broadcastReceiver == broadcastReceiver) {
-                iterator.remove();
-                found = true;
-            }
-        }
-        if (!found) {
-            throw new IllegalArgumentException("Receiver not registered: " + broadcastReceiver);
-        }
+        getApplicationContext().unregisterReceiver(broadcastReceiver);
     }
 
     @Implementation
@@ -147,15 +126,5 @@ public class FakeContextWrapper extends FakeContext {
     @Implementation
     public SharedPreferences getSharedPreferences(String name, int mode) {
         return new TestSharedPreferences(name, mode);
-    }
-
-    private class Wrapper {
-        private BroadcastReceiver broadcastReceiver;
-        private IntentFilter intentFilter;
-
-        public Wrapper(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter) {
-            this.broadcastReceiver = broadcastReceiver;
-            this.intentFilter = intentFilter;
-        }
     }
 }
