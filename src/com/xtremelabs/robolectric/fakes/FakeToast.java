@@ -94,4 +94,8 @@ public class FakeToast {
     public static String getTextOfLatestToast() {
         return proxyFor(shownToasts.get(0)).text;
     }
+
+    public static Toast getLatestToast() {
+        return shownToasts.get(shownToasts.size() - 1);
+    }
 }
