@@ -1,24 +1,26 @@
 package com.xtremelabs.robolectric.fakes;
 
 import android.content.Context;
+import android.view.View;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.ArrayList;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Toast.class)
 public class FakeToast {
-    private static Map<CharSequence, Toast> toasts = new HashMap<CharSequence, Toast>();
-    private static int shownToastCount = 0;
+    private static ArrayList<Toast> shownToasts = new ArrayList<Toast>();
 
-    private boolean wasShown = false;
+    private String text;
     private int gravity;
+    private View view;
+
+    @RealObject Toast toast;
 
     @Implementation
     public static Toast makeText(Context context, int resId, int duration) {
@@ -28,14 +30,23 @@ public class FakeToast {
     @Implementation
     public static Toast makeText(Context context, CharSequence text, int duration) {
         Toast toast = new Toast(null);
-        toasts.put(text, toast);
+        proxyFor(toast).text = text.toString();
         return toast;
     }
 
     @Implementation
     public void show() {
-        wasShown = true;
-        shownToastCount++;
+        shownToasts.add(toast);
+    }
+
+    @Implementation
+    public void setView(View view) {
+        this.view = view;
+    }
+
+    @Implementation
+    public View getView() {
+        return view;
     }
 
     @Implementation
@@ -48,40 +59,39 @@ public class FakeToast {
         return gravity;
     }
 
-    public static boolean shownToast(CharSequence message) {
-        return toasts.containsKey(message) && proxyFor(toasts.get(message)).wasShown;
-    }
-
     private static FakeToast proxyFor(Toast toast) {
         return (FakeToast) ProxyDelegatingHandler.getInstance().proxyFor(toast);
     }
 
     public static void reset() {
-        toasts.clear();
-        shownToastCount = 0;
+        shownToasts.clear();
     }
 
     public static int shownToastCount() {
-        return shownToastCount;
+        return shownToasts.size();
     }
 
-    public static Set<String> shownToasts() {
-        HashSet<String> strings = new HashSet<String>();
-        for (CharSequence toastString : toasts.keySet()) {
-            if (proxyFor(toasts.get(toastString.toString())).wasShown) {
-                strings.add(toastString.toString());
+    public static boolean showedCustomToast(CharSequence message, int layoutResourceIdToCheckForMessage) {
+        for (Toast toast : shownToasts) {
+            String text = ((TextView) toast.getView().findViewById(layoutResourceIdToCheckForMessage)).getText().toString();
+            if (text.equals(message.toString())) {
+                return true;
             }
         }
-        return strings;
+        return false;
     }
 
-    public static Toast getShownToast() {
-        if(toasts.size() != 1) {
-            throw new RuntimeException("There were multiple toasts shown during your test. Use shownToasts() to access them");
+    public static boolean showedToast(CharSequence message) {
+        for (Toast toast : shownToasts) {
+            String text = proxyFor(toast).text;
+            if (text != null && text.equals(message.toString())) {
+                return true;
+            }
         }
-        for (Toast toast : toasts.values()) {
-            return toast;
-        }
-        return null;
+        return false;
+    }
+
+    public static String getTextOfLatestToast() {
+        return proxyFor(shownToasts.get(0)).text;
     }
 }
