@@ -47,6 +47,7 @@ public class FakeView {
     private View.OnFocusChangeListener onFocusChangeListener;
     public boolean wasInvalidated;
     private View.OnTouchListener onTouchListener;
+    private boolean focusableInTouchMode;
 
     public FakeView(View view) {
         this.realView = view;
@@ -73,6 +74,22 @@ public class FakeView {
     @Implementation
     public void setFocusable(boolean focusable) {
         this.focusable = focusable;
+        if(!focusable) {
+            setFocusableInTouchMode(false);
+        }
+    }
+
+    @Implementation
+    public final boolean isFocusableInTouchMode() {
+        return focusableInTouchMode;
+    }
+
+    @Implementation
+    public void setFocusableInTouchMode(boolean focusableInTouchMode) {
+        this.focusableInTouchMode = focusableInTouchMode;
+        if(focusableInTouchMode) {
+            setFocusable(true);
+        }
     }
 
     @Implementation
