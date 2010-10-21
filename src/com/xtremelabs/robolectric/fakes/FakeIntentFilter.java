@@ -28,7 +28,12 @@ public class FakeIntentFilter {
     }
 
     @Implementation
-    public final Iterator<String> actionsIterator() {
+    public Iterator<String> actionsIterator() {
         return actions.iterator();
+    }
+
+    @Implementation
+    public boolean matchAction(String action) {
+        return actions.contains(action);
     }
 }

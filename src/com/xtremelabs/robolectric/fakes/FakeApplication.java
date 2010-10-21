@@ -3,10 +3,7 @@ package com.xtremelabs.robolectric.fakes;
 import android.app.AlarmManager;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
+import android.content.*;
 import android.content.res.Resources;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
@@ -19,6 +16,7 @@ import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
@@ -40,6 +38,7 @@ public class FakeApplication extends FakeContextWrapper {
     private WifiManager wifiManager;
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
+    public List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     public LayoutInflater layoutInflater;
@@ -50,12 +49,12 @@ public class FakeApplication extends FakeContextWrapper {
         this.realApplication = realApplication;
     }
 
-    @Implementation
+    @Override @Implementation
     public Context getApplicationContext() {
         return realApplication;
     }
 
-    @Implementation
+    @Override @Implementation
     public Resources getResources() {
         return FakeResources.bind(new Resources(null, null, null), resourceLoader);
     }
@@ -104,7 +103,7 @@ public class FakeApplication extends FakeContextWrapper {
         }
     }
 
-    public Intent peekNextStartedActivity() {
+    @Override public Intent peekNextStartedActivity() {
         if (startedActivities.isEmpty()) {
             return null;
         } else {
@@ -120,7 +119,7 @@ public class FakeApplication extends FakeContextWrapper {
         }
     }
 
-    public Intent peekNextStartedService() {
+    @Override public Intent peekNextStartedService() {
         if (startedServices.isEmpty()) {
             return null;
         } else {
@@ -130,5 +129,66 @@ public class FakeApplication extends FakeContextWrapper {
 
     ResourceLoader getResourceLoader() {
         return resourceLoader;
+    }
+
+    @Override @Implementation
+    public void sendBroadcast(Intent intent) {
+        for (Wrapper wrapper : registeredReceivers) {
+            if (wrapper.intentFilter.matchAction(intent.getAction())) {
+                wrapper.broadcastReceiver.onReceive(realApplication, intent);
+            }
+        }
+    }
+
+    @Override @Implementation
+    public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
+        return registerReceiverWithContext(receiver, filter, realApplication);
+    }
+
+    Intent registerReceiverWithContext(BroadcastReceiver receiver, IntentFilter filter, Context context) {
+        registeredReceivers.add(new Wrapper(receiver, filter, context));
+        return null;
+    }
+
+    @Override @Implementation
+    public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
+        boolean found = false;
+        Iterator<Wrapper> iterator = registeredReceivers.iterator();
+        while (iterator.hasNext()) {
+            Wrapper wrapper = iterator.next();
+            if (wrapper.broadcastReceiver == broadcastReceiver) {
+                iterator.remove();
+                found = true;
+            }
+        }
+        if (!found) {
+            throw new IllegalArgumentException("Receiver not registered: " + broadcastReceiver);
+        }
+    }
+
+    public void assertNoBroadcastListenersRegistered(Context context, String type) {
+        for (Wrapper registeredReceiver : registeredReceivers) {
+            if (registeredReceiver.context == context) {
+                RuntimeException e = new IllegalStateException(type + " " + context + " leaked has leaked IntentReceiver "
+                        + registeredReceiver.broadcastReceiver + " that was originally registered here. " +
+                        "Are you missing a call to unregisterReceiver()?");
+                e.setStackTrace(registeredReceiver.exception.getStackTrace());
+                throw e;
+            }
+        }
+    }
+
+    private class Wrapper {
+        private BroadcastReceiver broadcastReceiver;
+        private IntentFilter intentFilter;
+        private Context context;
+        public Throwable exception;
+
+        public Wrapper(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter, Context context) {
+            this.broadcastReceiver = broadcastReceiver;
+            this.intentFilter = intentFilter;
+            this.context = context;
+            exception = new Throwable();
+        }
     }
 }

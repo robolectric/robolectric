@@ -60,6 +60,9 @@ public class RobolectricWiringTest {
             if (implementedMember == null || staticMismatch(lectricMethod, implementedMember)) {
                 mismatches.add(lectricMethod.toGenericString());
             }
+            if (!Modifier.isPublic(lectricMethod.getModifiers())) {
+                mismatches.add(lectricMethod.toGenericString() + " should be public");
+            }
         }
     }
 

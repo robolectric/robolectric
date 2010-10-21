@@ -13,10 +13,6 @@ import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.SheepWrangler;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
 public class FakeContextWrapper extends FakeContext {
@@ -27,7 +23,6 @@ public class FakeContextWrapper extends FakeContext {
     private LocationManager locationManager;
     private MockPackageManager packageManager;
 
-    public Map<String, BroadcastReceiver> registeredReceivers = new HashMap<String, BroadcastReceiver>();
     private WifiManager wifiManager;
 
     public FakeContextWrapper(ContextWrapper realContextWrapper) {
@@ -61,36 +56,17 @@ public class FakeContextWrapper extends FakeContext {
 
     @Implementation
     public void sendBroadcast(Intent intent) {
-        BroadcastReceiver broadcastReceiver = registeredReceivers.get(intent.getAction());
-        if (broadcastReceiver != null) {
-            broadcastReceiver.onReceive(realContextWrapper, intent);
-        }
+        getApplicationContext().sendBroadcast(intent);
     }
 
     @Implementation
     public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-        Iterator<String> iterator = filter.actionsIterator();
-        while (iterator.hasNext()) {
-            String action = iterator.next();
-            registeredReceivers.put(action, receiver);
-        }
-        return null;
+        return ((FakeApplication) proxyDelegatingHandler.proxyFor(getApplicationContext())).registerReceiverWithContext(receiver, filter, realContextWrapper);
     }
 
     @Implementation
-    public void unregisterReceiver(BroadcastReceiver receiver) {
-        boolean found = false;
-        Iterator<Map.Entry<String, BroadcastReceiver>> entryIterator = registeredReceivers.entrySet().iterator();
-        while (entryIterator.hasNext()) {
-            Map.Entry<String, BroadcastReceiver> stringBroadcastReceiverEntry = entryIterator.next();
-            if (stringBroadcastReceiverEntry.getValue() == receiver) {
-                entryIterator.remove();
-                found = true;
-            }
-        }
-        if (!found) {
-            throw new IllegalArgumentException("Receiver not registered: " + receiver);
-        }
+    public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
+        getApplicationContext().unregisterReceiver(broadcastReceiver);
     }
 
     @Implementation
