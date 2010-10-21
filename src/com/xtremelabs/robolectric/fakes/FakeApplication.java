@@ -127,7 +127,7 @@ public class FakeApplication extends FakeContextWrapper {
         }
     }
 
-    ResourceLoader getResourceLoader() {
+    public ResourceLoader getResourceLoader() {
         return resourceLoader;
     }
 

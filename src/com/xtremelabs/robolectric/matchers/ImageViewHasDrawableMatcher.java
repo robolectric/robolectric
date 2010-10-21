@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.matchers;
 import android.widget.ImageView;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.fakes.FakeImageView;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
@@ -22,9 +23,17 @@ public class ImageViewHasDrawableMatcher<T extends ImageView> extends TypeSafeMa
             return false;
         }
 
+        ResourceLoader resourceLoader = ResourceLoader.getFrom(actualImageView.getContext());
+
         int actualResourceId = ((FakeImageView) ProxyDelegatingHandler.getInstance().proxyFor(actualImageView)).resourceId;
-        message = "[" + actualResourceId + "] to equal [" + expectedResourceId + "]";
+        String actualName = nameOrUnset(resourceLoader, actualResourceId);
+        String expectedName = nameOrUnset(resourceLoader, expectedResourceId);
+        message = "[" + actualResourceId + " (" + actualName + ")] to equal [" + expectedResourceId + " (" + expectedName + ")]";
         return actualResourceId == expectedResourceId;
+    }
+
+    private String nameOrUnset(ResourceLoader resourceLoader, int resourceId) {
+        return resourceId == 0 ? "unset" : resourceLoader.getNameForId(resourceId);
     }
 
 

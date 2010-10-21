@@ -1,11 +1,16 @@
 package com.xtremelabs.robolectric.res;
 
+import android.content.Context;
+import com.xtremelabs.robolectric.ProxyDelegatingHandler;
+import com.xtremelabs.robolectric.fakes.FakeApplication;
+
 import java.io.File;
 import java.io.FileFilter;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ResourceLoader {
+    private final ResourceExtractor resourceExtractor;
     public final ViewLoader viewLoader;
     public final StringResourceLoader stringResourceLoader;
     public final StringArrayResourceLoader stringArrayResourceLoader;
@@ -16,7 +21,7 @@ public class ResourceLoader {
     public final Map<Integer, Integer> dimensions = new HashMap<Integer, Integer>();
 
     public ResourceLoader(Class rClass, File resourceDir) throws Exception {
-        ResourceExtractor resourceExtractor = new ResourceExtractor();
+        resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(rClass);
 
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
@@ -41,10 +46,19 @@ public class ResourceLoader {
      * For tests only...
      */
     protected ResourceLoader(StringResourceLoader stringResourceLoader, StringArrayResourceLoader stringArrayResourceLoader, ColorResourceLoader colorResourceLoader, AttrResourceLoader attrResourceLoader, ViewLoader viewLoader) {
+        resourceExtractor = new ResourceExtractor();
         this.stringResourceLoader = stringResourceLoader;
         this.stringArrayResourceLoader = stringArrayResourceLoader;
         this.colorResourceLoader = colorResourceLoader;
         this.attrResourceLoader = attrResourceLoader;
         this.viewLoader = viewLoader;
+    }
+
+    public static ResourceLoader getFrom(Context context) {
+        return ((FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(context.getApplicationContext())).getResourceLoader();
+    }
+
+    public String getNameForId(int viewId) {
+        return resourceExtractor.getResourceIdToString().get(viewId);
     }
 }

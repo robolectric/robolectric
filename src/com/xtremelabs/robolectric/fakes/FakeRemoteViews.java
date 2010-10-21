@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.TextView;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -92,7 +93,13 @@ public class FakeRemoteViews {
         }
 
         final void update(View parent) {
-            doUpdate(parent.findViewById(viewId));
+
+            View view = parent.findViewById(viewId);
+            if (view == null) {
+                throw new NullPointerException("couldn't find view " + viewId
+                        + " (" + ResourceLoader.getFrom(parent.getContext()).getNameForId(viewId) + ")");
+            }
+            doUpdate(view);
         }
 
         abstract void doUpdate(View view);
