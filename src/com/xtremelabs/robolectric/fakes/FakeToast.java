@@ -18,6 +18,7 @@ public class FakeToast {
     private static int shownToastCount = 0;
 
     private boolean wasShown = false;
+    private int gravity;
 
     @Implementation
     public static Toast makeText(Context context, int resId, int duration) {
@@ -35,6 +36,16 @@ public class FakeToast {
     public void show() {
         wasShown = true;
         shownToastCount++;
+    }
+
+    @Implementation
+    public void setGravity(int gravity, int xOffset, int yOffset) {
+        this.gravity = gravity;
+    }
+
+    @Implementation
+    public int getGravity() {
+        return gravity;
     }
 
     public static boolean shownToast(CharSequence message) {
@@ -62,5 +73,15 @@ public class FakeToast {
             }
         }
         return strings;
+    }
+
+    public static Toast getShownToast() {
+        if(toasts.size() != 1) {
+            throw new RuntimeException("There were multiple toasts shown during your test. Use shownToasts() to access them");
+        }
+        for (Toast toast : toasts.values()) {
+            return toast;
+        }
+        return null;
     }
 }
