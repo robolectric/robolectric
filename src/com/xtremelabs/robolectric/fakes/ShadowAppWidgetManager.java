@@ -33,7 +33,7 @@ public class ShadowAppWidgetManager {
         @Override
         protected AppWidgetManager createInstance(Application applicationContext) {
             AppWidgetManager appWidgetManager = super.createInstance(applicationContext);
-            proxyFor(appWidgetManager).context = applicationContext;
+            shadowFor(appWidgetManager).context = applicationContext;
             return appWidgetManager;
         }
     };
@@ -97,8 +97,8 @@ public class ShadowAppWidgetManager {
         return widgetViews.get(widgetId);
     }
 
-    private static ShadowAppWidgetManager proxyFor(AppWidgetManager appWidgetManager) {
-        return ((ShadowAppWidgetManager) ProxyDelegatingHandler.getInstance().proxyFor(appWidgetManager));
+    private static ShadowAppWidgetManager shadowFor(AppWidgetManager appWidgetManager) {
+        return ((ShadowAppWidgetManager) ProxyDelegatingHandler.getInstance().shadowFor(appWidgetManager));
     }
 
 }

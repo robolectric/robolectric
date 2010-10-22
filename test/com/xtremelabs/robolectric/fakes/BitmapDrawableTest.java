@@ -10,7 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.test.MoreAsserts.assertNotEqual;
-import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.proxyFor;
+import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.shadowFor;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(DogfoodRobolectricTestRunner.class)
@@ -52,6 +52,6 @@ public class BitmapDrawableTest {
     @Test
     public void shouldStillHaveProxy() throws Exception {
         Drawable drawable = resources.getDrawable(R.drawable.an_image);
-        assertEquals(R.drawable.an_image, ((ShadowBitmapDrawable) proxyFor(drawable)).loadedFromResourceId);
+        assertEquals(R.drawable.an_image, ((ShadowBitmapDrawable) shadowFor(drawable)).loadedFromResourceId);
     }
 }

@@ -33,7 +33,7 @@ public class ViewHasTextMatcher<T extends View> extends TypeSafeMatcher<T> {
             expected = actual.getContext().getResources().getString(expectedResourceId);
         }
 
-        final CharSequence charSequence = proxyFor(actual).innerText();
+        final CharSequence charSequence = shadowFor(actual).innerText();
         if (charSequence == null || charSequence.toString() == null) {
             return false;
         }
@@ -60,7 +60,7 @@ public class ViewHasTextMatcher<T extends View> extends TypeSafeMatcher<T> {
         return new ViewHasTextMatcher<T>(expectedTextViewResourceId);
     }
 
-    private ShadowView proxyFor(View actual) {
-        return ((ShadowView) ProxyDelegatingHandler.getInstance().proxyFor(actual));
+    private ShadowView shadowFor(View actual) {
+        return ((ShadowView) ProxyDelegatingHandler.getInstance().shadowFor(actual));
     }
 }

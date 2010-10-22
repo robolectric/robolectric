@@ -35,7 +35,7 @@ public class ShadowGeoPoint {
         if (this == o) return true;
         if (o == null) return false;
 
-        ShadowGeoPoint that = (ShadowGeoPoint) proxyDelegatingHandler.proxyFor(o);
+        ShadowGeoPoint that = (ShadowGeoPoint) proxyDelegatingHandler.shadowFor(o);
 
         if (lat != that.lat) return false;
         if (lng != that.lng) return false;

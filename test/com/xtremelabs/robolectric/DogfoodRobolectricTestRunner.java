@@ -18,8 +18,8 @@ public class DogfoodRobolectricTestRunner extends AbstractRobolectricTestRunner 
       PROXY_DELEGATING_HANDLER.addProxyClass(realClass, handlerClass);
   }
 
-  public static Object proxyFor(Object instance) {
-      return PROXY_DELEGATING_HANDLER.proxyFor(instance);
+  public static Object shadowFor(Object instance) {
+      return PROXY_DELEGATING_HANDLER.shadowFor(instance);
   }
 
     public static void addProxies(List<Class<?>> proxyClasses) {

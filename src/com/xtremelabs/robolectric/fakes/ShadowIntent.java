@@ -73,7 +73,7 @@ public class ShadowIntent {
 
     @Implementation
     public Intent putExtras(Intent src) {
-        ShadowIntent srcShadowIntent = (ShadowIntent) proxyDelegatingHandler.proxyFor(src);
+        ShadowIntent srcShadowIntent = (ShadowIntent) proxyDelegatingHandler.shadowFor(src);
         extras = new HashMap<String, Object>(srcShadowIntent.extras);
         return realIntent;
     }

@@ -67,7 +67,7 @@ public class ShadowMapView extends ShadowViewGroup {
         if (mapController == null) {
             try {
                 mapController = Robolectric.newInstanceOf(MapController.class);
-                fakeMapController = ((ShadowMapController) proxyDelegatingHandler.proxyFor(mapController));
+                fakeMapController = ((ShadowMapController) proxyDelegatingHandler.shadowFor(mapController));
                 fakeMapController.fakeMapView = this;
             } catch (Exception e) {
                 throw new RuntimeException(e);

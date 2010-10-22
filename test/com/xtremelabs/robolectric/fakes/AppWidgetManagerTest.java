@@ -31,7 +31,7 @@ public class AppWidgetManagerTest {
         DogfoodRobolectricTestRunner.addGenericProxies();
         Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
         appWidgetManager = AppWidgetManager.getInstance(Robolectric.application);
-        fakeAppWidgetManager = proxyFor(appWidgetManager);
+        fakeAppWidgetManager = shadowFor(appWidgetManager);
     }
 
     @Test
@@ -69,8 +69,8 @@ public class AppWidgetManagerTest {
                 fakeAppWidgetManager.getViewFor(fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main)));
     }
 
-    private ShadowAppWidgetManager proxyFor(AppWidgetManager instance) {
-        return (ShadowAppWidgetManager) ProxyDelegatingHandler.getInstance().proxyFor(instance);
+    private ShadowAppWidgetManager shadowFor(AppWidgetManager instance) {
+        return (ShadowAppWidgetManager) ProxyDelegatingHandler.getInstance().shadowFor(instance);
     }
 
     public static class SpanishTestAppWidgetProvider extends AppWidgetProvider {
