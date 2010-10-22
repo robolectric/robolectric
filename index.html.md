@@ -63,7 +63,7 @@ We welcome contributions. Please [fork](http://github.com/pivotal/robolectric) a
 ## Acknowledgments
 
 * Robolectric (previously known as "droid-sugar") was originally developed by [Christian Williams](http://github.com/Xian) at [XtremeLabs](http://www.xtremelabs.com/). Big thanks to XtremeLabs for their support.
-* Considerable contributions have been made by numerous Pivots, including [Ian Fisher](mailto:ifisher@pivotallabs.com), [Phil Goodwin](mailto:phil@pivotallabs.com), [Ryan Richard](mailto:rrichard@pivotallabs.com), and [Harry Ugol](mailto:harry@pivotallabs.com).
+* Considerable contributions have been made by numerous Pivots, including [Ian Fisher](mailto:ifisher@pivotallabs.com), [Phil Goodwin](mailto:phil@pivotallabs.com), [Ryan Richard](mailto:rrichard@pivotallabs.com), [Joe Moore](mailto:joe@pivotallabs.com) and [Harry Ugol](mailto:harry@pivotallabs.com).
 * Thanks to [Shane Francis](http://shanefrancis.com/) for the inspired name, and to Pivots [Ofri Afek](mailto:ofri@pivotallabs.com) and [Jessica Miller](mailto:jessica@pivotallabs.com) for our logo!
 
 ## Support
