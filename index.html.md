@@ -35,7 +35,7 @@ public class MyActivityTest {
 }
 </pre>
 
-[Robolectric](http://github.com/pivotal/robolectric) makes this possible by intercepting the loading of the Android classes and rewriting the method bodies. [Robolectric](http://github.com/pivotal/robolectric) re-defines Android methods so they return null (or 0, false, etc.), or if provided [Robolectric](http://github.com/pivotal/robolectric) will proxy to fake Android objects giving the Android SDK behavior. [Robolectric](http://github.com/pivotal/robolectric) provides a large number of fake objects covering much of what a typical application would need to test-drive the business logic and functionality of your application. Coverage of the SDK is improving every day.
+[Robolectric](http://github.com/pivotal/robolectric) makes this possible by intercepting the loading of the Android classes and rewriting the method bodies. [Robolectric](http://github.com/pivotal/robolectric) re-defines Android methods so they return null (or 0, false, etc.), or if provided [Robolectric](http://github.com/pivotal/robolectric) will proxy to shadow Android objects giving the Android SDK behavior. [Robolectric](http://github.com/pivotal/robolectric) provides a large number of shadow objects covering much of what a typical application would need to test-drive the business logic and functionality of your application. Coverage of the SDK is improving every day.
 
 #### View Support
 

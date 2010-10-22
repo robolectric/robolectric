@@ -15,7 +15,7 @@ Robolectric must have an opportunity to intercept the class loading process of t
 
 ## <code>Robolectric#proxyFor()</code>
 
-Sometimes Android classes don't provide methods to access the state of the Android objects under test. The <code>Robolectric#proxyFor()</code> methods provide reference to the fake instances representing Android objects, allowing tests to assert on state otherwise not available.
+Sometimes Android classes don't provide methods to access the state of the Android objects under test. The <code>Robolectric#proxyFor()</code> methods provide reference to the shadow instances representing Android objects, allowing tests to assert on state otherwise not available.
 
 Suppose the application assigns a drawable resource id on an <code>ImageView</code> in layout xml, like this:
 
@@ -29,24 +29,24 @@ Suppose the application assigns a drawable resource id on an <code>ImageView</co
     /&gt; 
 </pre>
 
-Android provides no way to access the drawable resource id that was applied to the <code>ImageView</code>. Robolectric's <code>FakeImageView</code> object records the drawable resource id so you can assert on it in test, like this:
+Android provides no way to access the drawable resource id that was applied to the <code>ImageView</code>. Robolectric's <code>ShadowImageView</code> object records the drawable resource id so you can assert on it in test, like this:
 
 <pre>
 @Test
 public void shouldHaveALogo() throws Exception {
     ImageView pivotalLogo = (ImageView) activity.findViewById(R.id.pivotal_logo);
-	FakeImageView fakePivotalLogo = Robolectric.proxyFor(pivotalLogo);
-    assertThat(fakePivotalLogo.resourceId, equalTo(R.drawable.pivotallabs_logo));
+	ShadowImageView shadowPivotalLogo = Robolectric.proxyFor(pivotalLogo);
+    assertThat(shadowPivotalLogo.resourceId, equalTo(R.drawable.pivotallabs_logo));
 }
 </pre>
 
-## Fake Objects
+## Shadow Objects
 
-Robolectric defines many fake objects that give behavior to the stripped classes in the SDK jar. When an Android class's constructor is invoked, a fake object is created if a fake class has been registered. (See <code>FakeHelper#getGenericProxies()</code> for the complete list of fakes Robolectric provides.)
+Robolectric defines many shadow objects that give behavior to the stripped classes in the SDK jar. When an Android class's constructor is invoked, a shadow object is created if a shadow class has been registered. (See <code>Robolectric#getGenericProxies()</code> for the complete list of shadows Robolectric provides.)
 
 #### Methods
 
-Fake objects implement methods that have the same signature as the Android class. Robolectric will invoke the method on a fake object when a method with the same signature on the Android class is invoked. 
+Shadow objects implement methods that have the same signature as the Android class. Robolectric will invoke the method on a shadow object when a method with the same signature on the Android class is invoked. 
 
 Suppose an application defined the following line of code:
 <pre>
@@ -55,25 +55,25 @@ Suppose an application defined the following line of code:
   ...
 </pre>
 
-Under test the <code>FakeImageView#setImageResource(int resId)</code> method on the fake instance would be invoked.
+Under test the <code>ShadowImageView#setImageResource(int resId)</code> method on the shadow instance would be invoked.
 
 #### Constructors
 
-Fake classes in Robolectric may declare constructors 2 ways: 
+Shadow classes in Robolectric may declare constructors 2 ways: 
 1. A by declaring a no args constructor  (or the the implicit no args constructor)
-2. A constructor that receives the real object that the fake is representing, like this:
+2. A constructor that receives the real object that the shadow is representing, like this:
 <pre>
 @Implements(Handler.class)
-public class FakeHandler {
+public class ShadowHandler {
   ...
-  public FakeHandler(Handler realHandler) {
+  public ShadowHandler(Handler realHandler) {
       this.realHandler = realHandler;
   }
   ...
 </pre>
-Robolectric will invoke this constructor passing along the 'real' <code>Handler</code> instance so it can be used in the fake implementation.
+Robolectric will invoke this constructor passing along the 'real' <code>Handler</code> instance so it can be used in the shadow implementation.
 
-Once a fake object is instantiated, Robolectric will look for a method named <code>__constructor__</code> that receives the same arguments that the real object's constructor received. 
+Once a shadow object is instantiated, Robolectric will look for a method named <code>__constructor__</code> that receives the same arguments that the real object's constructor received. 
 
 If the application code were to invoke the Handler constructor which receives a Looper:
 <pre>
@@ -82,7 +82,7 @@ new Handler(Looper.myLooper());
 Robolectric would invoke the following <code>__constructor__</code> method that receives a Looper:
 <pre>
 @Implements(Handler.class)
-public class FakeHandler {
+public class ShadowHandler {
   ...
   public void __constructor__(Looper looper) {
     this.looper = looper;
