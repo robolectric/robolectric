@@ -102,7 +102,7 @@
 
     <target name="test" depends="compile.tests" description="test all">
         <mkdir dir="${basedir}/out/reports/tests"/>
-        <junit showoutput="true">
+        <junit showoutput="true" failureproperty="junit.failure">
             <formatter type="plain"/>
             <formatter type="xml"/>
             <batchtest todir="${basedir}/out/reports/tests">
@@ -117,6 +117,7 @@
                 <path refid="android.target.classpath"/>
             </classpath>
         </junit>
+        <fail if="junit.failure" message="Unit test(s) failed.  See reports!"/>
     </target>
 
 </project>
