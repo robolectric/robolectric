@@ -322,6 +322,11 @@ public class ProxyDelegatingHandler implements ClassHandler {
                 }
             }
         }
+
+        @Override public String toString() {
+            return "delegating to " + handlingClass.getName() + "." + method.getName()
+                    + "(" + Arrays.toString(method.getParameterTypes()) + ")";
+        }
     }
 
     private class MetaSheep {

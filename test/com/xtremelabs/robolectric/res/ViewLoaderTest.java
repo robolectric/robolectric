@@ -115,7 +115,7 @@ public class ViewLoaderTest {
     @Test
     public void testTextViewTextIsSet() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/main");
-        assertThat(((TextView) mediaView.findViewById(R.id.title)).getText().toString(), equalTo("Hola!"));
+        assertThat(((TextView) mediaView.findViewById(R.id.title)).getText().toString(), equalTo("Main Layout"));
         assertThat(((TextView) mediaView.findViewById(R.id.subtitle)).getText().toString(), equalTo("Hello"));
     }
 

@@ -31,7 +31,7 @@
             android:maxHeight="46dip"
             android:singleLine="false"
             android:gravity="center_horizontal"
-            android:text="Hola!"
+            android:text="Main Layout"
             android:textSize="18dip"
             android:textStyle="bold"
             android:textColor="#fff"
