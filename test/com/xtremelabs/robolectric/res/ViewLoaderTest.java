@@ -123,7 +123,7 @@ public class ViewLoaderTest {
     @Test
     public void testTextViewCompoundDrawablesAreSet() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/main");
-        ShadowTextView shadowTextView = (ShadowTextView) proxyFor((TextView) mediaView.findViewById(R.id.title));
+        ShadowTextView shadowTextView = (ShadowTextView) shadowFor((TextView) mediaView.findViewById(R.id.title));
 
         assertThat(shadowTextView.compoundDrawables.top, equalTo(R.drawable.an_image));
         assertThat(shadowTextView.compoundDrawables.right, equalTo(R.drawable.an_other_image));
