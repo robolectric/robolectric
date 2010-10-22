@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             android:textSize="14dip"
             android:textColor="#fff"
-            android:text="14 minutes ago"
+            android:text="Media Layout"
             />
 
     <TextView

@@ -46,7 +46,7 @@ public class ShadowComponentName {
     public boolean equals(Object o) {
         if (this == o) return true;
 
-        ShadowComponentName that = (ShadowComponentName) proxyDelegatingHandler.proxyFor(o);
+        ShadowComponentName that = (ShadowComponentName) proxyDelegatingHandler.shadowFor(o);
 
         if (cls != null ? !cls.equals(that.cls) : that.cls != null) return false;
         if (pkg != null ? !pkg.equals(that.pkg) : that.pkg != null) return false;

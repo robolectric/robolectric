@@ -49,5 +49,6 @@ public final class R {
 
     public static final class layout {
         public static final int main = nextId++;
+        public static final int media = nextId++;
     }
 }

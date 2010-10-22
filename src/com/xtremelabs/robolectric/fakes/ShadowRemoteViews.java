@@ -17,7 +17,24 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(RemoteViews.class)
 public class ShadowRemoteViews {
+    private String packageName;
+    private int layoutId;
     private List<ViewUpdater> viewUpdaters = new ArrayList<ViewUpdater>();
+
+    public void __constructor__(String packageName, int layoutId) {
+        this.packageName = packageName;
+        this.layoutId = layoutId;
+    }
+
+    @Implementation
+    public String getPackage() {
+        return packageName;
+    }
+
+    @Implementation
+    public int getLayoutId() {
+        return layoutId;
+    }
 
     @Implementation
     public void setTextViewText(int viewId, final CharSequence text) {

@@ -23,7 +23,7 @@ public class HasCompoundDrawablesMatcher extends TypeSafeMatcher<TextView> {
             return false;
         }
 
-        ShadowTextView.CompoundDrawables actualCompoundDrawables = proxyFor(actual).compoundDrawables;
+        ShadowTextView.CompoundDrawables actualCompoundDrawables = shadowFor(actual).compoundDrawables;
         if (!expectedCompoundDrawables.equals(actualCompoundDrawables)) {
             message = "[" + actualCompoundDrawables + "] to equal [" + expectedCompoundDrawables + "]";
             return false;
@@ -42,7 +42,7 @@ public class HasCompoundDrawablesMatcher extends TypeSafeMatcher<TextView> {
         return new HasCompoundDrawablesMatcher(left, top, right, bottom);
     }
 
-    private ShadowTextView proxyFor(TextView actual) {
-        return (ShadowTextView) ProxyDelegatingHandler.getInstance().proxyFor(actual);
+    private ShadowTextView shadowFor(TextView actual) {
+        return (ShadowTextView) ProxyDelegatingHandler.getInstance().shadowFor(actual);
     }
 }

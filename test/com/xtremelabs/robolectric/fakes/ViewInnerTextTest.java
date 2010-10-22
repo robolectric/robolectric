@@ -10,7 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.proxyFor;
+import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.shadowFor;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(DogfoodRobolectricTestRunner.class)
@@ -42,7 +42,7 @@ public class ViewInnerTextTest {
 
         top.addView(textView("mnop"));
 
-        assertEquals("blah a b c d e f g h i jkl! mnop", ((ShadowView) proxyFor(top)).innerText());
+        assertEquals("blah a b c d e f g h i jkl! mnop", ((ShadowView) shadowFor(top)).innerText());
     }
 
     @Test
@@ -52,7 +52,7 @@ public class ViewInnerTextTest {
         top.addView(textView("blarg", View.GONE));
         top.addView(textView("arrg", View.INVISIBLE));
 
-        assertEquals("blah", ((ShadowView) proxyFor(top)).innerText());
+        assertEquals("blah", ((ShadowView) shadowFor(top)).innerText());
     }
 
     @Test
@@ -62,7 +62,7 @@ public class ViewInnerTextTest {
         top.addView(textView("arrg", View.INVISIBLE));
         top.addView(textView("blah", View.VISIBLE));
 
-        assertEquals("blah", ((ShadowView) proxyFor(top)).innerText());
+        assertEquals("blah", ((ShadowView) shadowFor(top)).innerText());
     }
 
     private TextView textView(String text) {

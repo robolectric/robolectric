@@ -46,16 +46,16 @@ public class StartedMatcher extends TypeSafeMatcher<Context> {
         String expected = expectedIntent.toString();
         message = "to start " + expected + ", but ";
 
-        Intent actualStartedIntent = proxyFor((ContextWrapper) actualContext).getNextStartedActivity();
+        Intent actualStartedIntent = shadowFor((ContextWrapper) actualContext).getNextStartedActivity();
 
         if (actualStartedIntent == null) {
             message += "didn't start anything";
             return false;
         }
 
-        ShadowIntent proxyIntent = proxyFor(actualStartedIntent);
+        ShadowIntent proxyIntent = shadowFor(actualStartedIntent);
 
-        boolean intentsMatch = proxyFor(expectedIntent).realIntentEquals(proxyIntent);
+        boolean intentsMatch = shadowFor(expectedIntent).realIntentEquals(proxyIntent);
         if (!intentsMatch) {
             message += "started " + actualStartedIntent;
         }
@@ -67,20 +67,20 @@ public class StartedMatcher extends TypeSafeMatcher<Context> {
         description.appendText(message);
     }
 
-    private ShadowActivity proxyFor(Activity real) {
-        return (ShadowActivity) ProxyDelegatingHandler.getInstance().proxyFor(real);
+    private ShadowActivity shadowFor(Activity real) {
+        return (ShadowActivity) ProxyDelegatingHandler.getInstance().shadowFor(real);
     }
 
-    private ShadowContextWrapper proxyFor(ContextWrapper real) {
-        return (ShadowContextWrapper) ProxyDelegatingHandler.getInstance().proxyFor(real);
+    private ShadowContextWrapper shadowFor(ContextWrapper real) {
+        return (ShadowContextWrapper) ProxyDelegatingHandler.getInstance().shadowFor(real);
     }
 
-    private ShadowApplication proxyFor(Application real) {
-        return (ShadowApplication) ProxyDelegatingHandler.getInstance().proxyFor(real);
+    private ShadowApplication shadowFor(Application real) {
+        return (ShadowApplication) ProxyDelegatingHandler.getInstance().shadowFor(real);
     }
 
-    private ShadowIntent proxyFor(Intent real) {
-        return (ShadowIntent) ProxyDelegatingHandler.getInstance().proxyFor(real);
+    private ShadowIntent shadowFor(Intent real) {
+        return (ShadowIntent) ProxyDelegatingHandler.getInstance().shadowFor(real);
     }
 
     public static Intent createIntent(Class<? extends Activity> activityClass, String extraKey, String extraValue) {

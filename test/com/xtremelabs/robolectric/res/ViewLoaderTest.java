@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import java.io.File;
 
 import static android.test.MoreAsserts.assertNotEqual;
-import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.proxyFor;
+import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.shadowFor;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
@@ -116,7 +116,7 @@ public class ViewLoaderTest {
     @Test
     public void testTextViewTextIsSet() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/main");
-        assertThat(((TextView) mediaView.findViewById(R.id.title)).getText().toString(), equalTo("Hola!"));
+        assertThat(((TextView) mediaView.findViewById(R.id.title)).getText().toString(), equalTo("Main Layout"));
         assertThat(((TextView) mediaView.findViewById(R.id.subtitle)).getText().toString(), equalTo("Hello"));
     }
 
@@ -142,7 +142,7 @@ public class ViewLoaderTest {
     @Test
     public void testImageViewSrcIsSet() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/main");
-        assertThat(((ShadowImageView) proxyFor(mediaView.findViewById(R.id.image))).resourceId, equalTo(R.drawable.an_image));
+        assertThat(((ShadowImageView) shadowFor(mediaView.findViewById(R.id.image))).resourceId, equalTo(R.drawable.an_image));
     }
 
     @Test

@@ -36,7 +36,7 @@ public final class ShadowContentValues {
     private static final String TAG = "ShadowContentValues";
 
     public void __constructor__(ContentValues from) {
-        values = new HashMap<String, Object>(proxyFor(from).values);
+        values = new HashMap<String, Object>(shadowFor(from).values);
     }
 
     private void __constructor__(HashMap<String, Object> values) {
@@ -50,7 +50,7 @@ public final class ShadowContentValues {
 
     @Implementation
     public void putAll(ContentValues other) {
-        values.putAll(proxyFor(other).values);
+        values.putAll(shadowFor(other).values);
     }
 
     @Implementation
@@ -302,7 +302,7 @@ public final class ShadowContentValues {
         if (!(object instanceof ContentValues)) {
             return false;
         }
-        return values.equals(proxyFor((ContentValues) object).values);
+        return values.equals(shadowFor((ContentValues) object).values);
     }
 
     @Override
@@ -321,7 +321,7 @@ public final class ShadowContentValues {
         return sb.toString();
     }
 
-    private ShadowContentValues proxyFor(ContentValues other) {
-        return ((ShadowContentValues) proxyDelegatingHandler.proxyFor(other));
+    private ShadowContentValues shadowFor(ContentValues other) {
+        return ((ShadowContentValues) proxyDelegatingHandler.shadowFor(other));
     }
 }

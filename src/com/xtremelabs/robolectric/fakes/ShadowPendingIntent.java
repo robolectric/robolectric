@@ -15,19 +15,29 @@ public class ShadowPendingIntent {
     private boolean isServiceIntent;
 
     @Implementation
+    public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags) {
+        return create(intent, false);
+    }
+
+    @Implementation
     public static PendingIntent getService(Context context, int requestCode, Intent intent, int flags) {
+        return create(intent, true);
+    }
+
+    private static PendingIntent create(Intent intent, boolean isService) {
         PendingIntent pendingIntent = Robolectric.newInstanceOf(PendingIntent.class);
-        ShadowPendingIntent fakePendingIntent = (ShadowPendingIntent) ProxyDelegatingHandler.getInstance().proxyFor(pendingIntent);
+        ShadowPendingIntent fakePendingIntent = (ShadowPendingIntent) ProxyDelegatingHandler.getInstance().shadowFor(pendingIntent);
         fakePendingIntent.savedIntent = intent;
-        fakePendingIntent.isServiceIntent = true;
+        fakePendingIntent.isServiceIntent = isService;
         return pendingIntent;
     }
 
     @Implementation
     public void send(Context context, int code, Intent intent) throws PendingIntent.CanceledException {
-        if(isServiceIntent) {
+        if (isServiceIntent) {
             context.startService(savedIntent);
+        } else {
+            context.startActivity(savedIntent);
         }
-        // else, will startActivity
     }
 }

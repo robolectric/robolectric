@@ -31,7 +31,7 @@ public class AppWidgetManagerTest {
         DogfoodRobolectricTestRunner.addGenericProxies();
         Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
         appWidgetManager = AppWidgetManager.getInstance(Robolectric.application);
-        fakeAppWidgetManager = proxyFor(appWidgetManager);
+        fakeAppWidgetManager = shadowFor(appWidgetManager);
     }
 
     @Test
@@ -69,8 +69,33 @@ public class AppWidgetManagerTest {
                 fakeAppWidgetManager.getViewFor(fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main)));
     }
 
-    private ShadowAppWidgetManager proxyFor(AppWidgetManager instance) {
-        return (ShadowAppWidgetManager) ProxyDelegatingHandler.getInstance().proxyFor(instance);
+    @Test
+    public void shouldReplaceLayoutIfAndOnlyIfLayoutIdIsDifferent() throws Exception {
+        int widgetId = fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+        View originalWidgetView = fakeAppWidgetManager.getViewFor(widgetId);
+        assertContains("Main Layout", originalWidgetView);
+
+        appWidgetManager.updateAppWidget(widgetId, new RemoteViews("whatevs", R.layout.main));
+        assertSame(originalWidgetView, fakeAppWidgetManager.getViewFor(widgetId));
+
+        appWidgetManager.updateAppWidget(widgetId, new RemoteViews("whatevs", R.layout.media));
+        assertNotSame(originalWidgetView, fakeAppWidgetManager.getViewFor(widgetId));
+
+        View mediaWidgetView = fakeAppWidgetManager.getViewFor(widgetId);
+        assertContains("Media Layout", mediaWidgetView);
+    }
+
+    private void assertContains(String expectedText, View view) {
+        String actualText = shadowFor(view).innerText();
+        assertTrue("Expected <" + actualText + "> to contain <" + expectedText + ">", actualText.contains(expectedText));
+    }
+
+    private ShadowView shadowFor(View instance) {
+        return (ShadowView) ProxyDelegatingHandler.getInstance().shadowFor(instance);
+    }
+
+    private ShadowAppWidgetManager shadowFor(AppWidgetManager instance) {
+        return (ShadowAppWidgetManager) ProxyDelegatingHandler.getInstance().shadowFor(instance);
     }
 
     public static class SpanishTestAppWidgetProvider extends AppWidgetProvider {

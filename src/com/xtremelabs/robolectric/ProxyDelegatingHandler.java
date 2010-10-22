@@ -201,7 +201,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
         return field;
     }
 
-    public Object proxyFor(Object instance) {
+    public Object shadowFor(Object instance) {
         if (instance == null) {
             throw new RuntimeException("no instance for which to get a proxy");
         }
@@ -321,6 +321,11 @@ public class ProxyDelegatingHandler implements ClassHandler {
                     return null;
                 }
             }
+        }
+
+        @Override public String toString() {
+            return "delegating to " + handlingClass.getName() + "." + method.getName()
+                    + "(" + Arrays.toString(method.getParameterTypes()) + ")";
         }
     }
 

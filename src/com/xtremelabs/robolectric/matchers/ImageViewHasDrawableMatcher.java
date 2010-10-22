@@ -25,7 +25,7 @@ public class ImageViewHasDrawableMatcher<T extends ImageView> extends TypeSafeMa
 
         ResourceLoader resourceLoader = ResourceLoader.getFrom(actualImageView.getContext());
 
-        int actualResourceId = ((ShadowImageView) ProxyDelegatingHandler.getInstance().proxyFor(actualImageView)).resourceId;
+        int actualResourceId = ((ShadowImageView) ProxyDelegatingHandler.getInstance().shadowFor(actualImageView)).resourceId;
         String actualName = nameOrUnset(resourceLoader, actualResourceId);
         String expectedName = nameOrUnset(resourceLoader, expectedResourceId);
         message = "[" + actualResourceId + " (" + actualName + ")] to equal [" + expectedResourceId + " (" + expectedName + ")]";

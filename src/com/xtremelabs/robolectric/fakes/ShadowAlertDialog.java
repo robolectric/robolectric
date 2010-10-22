@@ -190,7 +190,7 @@ public class ShadowAlertDialog extends ShadowDialog {
                 throw new RuntimeException(e);
             }
 
-            ShadowAlertDialog latestAlertDialog = proxyFor(realDialog);
+            ShadowAlertDialog latestAlertDialog = shadowFor(realDialog);
             latestAlertDialog.context = context;
             latestAlertDialog.realDialog = realDialog;
             latestAlertDialog.items = items;
@@ -231,7 +231,7 @@ public class ShadowAlertDialog extends ShadowDialog {
         }
     }
 
-    private static ShadowAlertDialog proxyFor(AlertDialog realDialog) {
-        return (ShadowAlertDialog) ProxyDelegatingHandler.getInstance().proxyFor(realDialog);
+    private static ShadowAlertDialog shadowFor(AlertDialog realDialog) {
+        return (ShadowAlertDialog) ProxyDelegatingHandler.getInstance().shadowFor(realDialog);
     }
 }

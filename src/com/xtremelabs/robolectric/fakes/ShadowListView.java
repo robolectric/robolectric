@@ -72,7 +72,7 @@ public class ShadowListView extends ShadowAdapterView {
     public int findIndexOfItemContainingText(String targetText) {
         for (int i = 0; i < realListView.getChildCount(); i++) {
             View childView = realListView.getChildAt(i);
-            String innerText = ((ShadowView) proxyDelegatingHandler.proxyFor(childView)).innerText();
+            String innerText = ((ShadowView) proxyDelegatingHandler.shadowFor(childView)).innerText();
             if (innerText.contains(targetText)) {
                 return i;
             }
