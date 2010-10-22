@@ -33,7 +33,7 @@ public class SchedulerTest {
     }
 
     @Test
-    public void testFakePostDelayed() throws Exception {
+    public void testShadowPostDelayed() throws Exception {
         scheduler.postDelayed(new AddToTranscript("one"), 1000);
         scheduler.postDelayed(new AddToTranscript("two"), 2000);
         scheduler.postDelayed(new AddToTranscript("three"), 3000);
@@ -52,7 +52,7 @@ public class SchedulerTest {
     }
 
     @Test
-    public void testFakePostDelayed_WhenMoreItemsAreAdded() throws Exception {
+    public void testShadowPostDelayed_WhenMoreItemsAreAdded() throws Exception {
         scheduler.postDelayed(new Runnable() {
             @Override
             public void run() {

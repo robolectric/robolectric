@@ -18,7 +18,7 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 2;
+    public static final int CACHE_VERSION = 3;
 
     private static final List<AndroidTranslator> INSTANCES = new ArrayList<AndroidTranslator>();
 

@@ -10,7 +10,7 @@ import android.widget.TextView;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.fakes.FakeImageView;
+import com.xtremelabs.robolectric.fakes.ShadowImageView;
 import com.xtremelabs.robolectric.util.CustomView;
 import com.xtremelabs.robolectric.util.TestUtil;
 import org.junit.Before;
@@ -130,7 +130,7 @@ public class ViewLoaderTest {
     @Test
     public void testImageViewSrcIsSet() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/main");
-        assertThat(((FakeImageView) proxyFor(mediaView.findViewById(R.id.image))).resourceId, equalTo(R.drawable.an_image));
+        assertThat(((ShadowImageView) proxyFor(mediaView.findViewById(R.id.image))).resourceId, equalTo(R.drawable.an_image));
     }
 
     @Test

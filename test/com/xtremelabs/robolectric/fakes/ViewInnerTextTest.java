@@ -42,7 +42,7 @@ public class ViewInnerTextTest {
 
         top.addView(textView("mnop"));
 
-        assertEquals("blah a b c d e f g h i jkl! mnop", ((FakeView) proxyFor(top)).innerText());
+        assertEquals("blah a b c d e f g h i jkl! mnop", ((ShadowView) proxyFor(top)).innerText());
     }
 
     @Test
@@ -52,7 +52,7 @@ public class ViewInnerTextTest {
         top.addView(textView("blarg", View.GONE));
         top.addView(textView("arrg", View.INVISIBLE));
 
-        assertEquals("blah", ((FakeView) proxyFor(top)).innerText());
+        assertEquals("blah", ((ShadowView) proxyFor(top)).innerText());
     }
 
     @Test
@@ -62,7 +62,7 @@ public class ViewInnerTextTest {
         top.addView(textView("arrg", View.INVISIBLE));
         top.addView(textView("blah", View.VISIBLE));
 
-        assertEquals("blah", ((FakeView) proxyFor(top)).innerText());
+        assertEquals("blah", ((ShadowView) proxyFor(top)).innerText());
     }
 
     private TextView textView(String text) {

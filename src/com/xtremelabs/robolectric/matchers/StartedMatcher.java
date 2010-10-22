@@ -6,10 +6,10 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.fakes.FakeActivity;
-import com.xtremelabs.robolectric.fakes.FakeApplication;
-import com.xtremelabs.robolectric.fakes.FakeContextWrapper;
-import com.xtremelabs.robolectric.fakes.FakeIntent;
+import com.xtremelabs.robolectric.fakes.ShadowActivity;
+import com.xtremelabs.robolectric.fakes.ShadowApplication;
+import com.xtremelabs.robolectric.fakes.ShadowContextWrapper;
+import com.xtremelabs.robolectric.fakes.ShadowIntent;
 import org.hamcrest.Description;
 import org.junit.internal.matchers.TypeSafeMatcher;
 
@@ -53,7 +53,7 @@ public class StartedMatcher extends TypeSafeMatcher<Context> {
             return false;
         }
 
-        FakeIntent proxyIntent = proxyFor(actualStartedIntent);
+        ShadowIntent proxyIntent = proxyFor(actualStartedIntent);
 
         boolean intentsMatch = proxyFor(expectedIntent).realIntentEquals(proxyIntent);
         if (!intentsMatch) {
@@ -67,20 +67,20 @@ public class StartedMatcher extends TypeSafeMatcher<Context> {
         description.appendText(message);
     }
 
-    private FakeActivity proxyFor(Activity real) {
-        return (FakeActivity) ProxyDelegatingHandler.getInstance().proxyFor(real);
+    private ShadowActivity proxyFor(Activity real) {
+        return (ShadowActivity) ProxyDelegatingHandler.getInstance().proxyFor(real);
     }
 
-    private FakeContextWrapper proxyFor(ContextWrapper real) {
-        return (FakeContextWrapper) ProxyDelegatingHandler.getInstance().proxyFor(real);
+    private ShadowContextWrapper proxyFor(ContextWrapper real) {
+        return (ShadowContextWrapper) ProxyDelegatingHandler.getInstance().proxyFor(real);
     }
 
-    private FakeApplication proxyFor(Application real) {
-        return (FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(real);
+    private ShadowApplication proxyFor(Application real) {
+        return (ShadowApplication) ProxyDelegatingHandler.getInstance().proxyFor(real);
     }
 
-    private FakeIntent proxyFor(Intent real) {
-        return (FakeIntent) ProxyDelegatingHandler.getInstance().proxyFor(real);
+    private ShadowIntent proxyFor(Intent real) {
+        return (ShadowIntent) ProxyDelegatingHandler.getInstance().proxyFor(real);
     }
 
     public static Intent createIntent(Class<? extends Activity> activityClass, String extraKey, String extraValue) {

@@ -18,9 +18,9 @@ public class SQLiteDatabaseTest {
 
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(SQLiteDatabase.class, FakeSQLiteDatabase.class);
-        DogfoodRobolectricTestRunner.addProxy(ContentValues.class, FakeContentValues.class);
-        DogfoodRobolectricTestRunner.addProxy(AbstractCursor.class, FakeAbstractCursor.class);
+        DogfoodRobolectricTestRunner.addProxy(SQLiteDatabase.class, ShadowSQLiteDatabase.class);
+        DogfoodRobolectricTestRunner.addProxy(ContentValues.class, ShadowContentValues.class);
+        DogfoodRobolectricTestRunner.addProxy(AbstractCursor.class, ShadowAbstractCursor.class);
 
         database = SQLiteDatabase.openDatabase("path", null, 0);
     }

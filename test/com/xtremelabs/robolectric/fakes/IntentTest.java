@@ -18,8 +18,8 @@ import static org.junit.Assert.*;
 public class IntentTest {
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(Intent.class, FakeIntent.class);
-        DogfoodRobolectricTestRunner.addProxy(ComponentName.class, FakeComponentName.class);
+        DogfoodRobolectricTestRunner.addProxy(Intent.class, ShadowIntent.class);
+        DogfoodRobolectricTestRunner.addProxy(ComponentName.class, ShadowComponentName.class);
     }
 
     @Test
@@ -27,7 +27,7 @@ public class IntentTest {
         Intent intent = new Intent();
         assertSame(intent, intent.putExtra("foo", "bar"));
 
-        FakeIntent fakeIntent = (FakeIntent) DogfoodRobolectricTestRunner.proxyFor(intent);
+        ShadowIntent fakeIntent = (ShadowIntent) DogfoodRobolectricTestRunner.proxyFor(intent);
         assertEquals("bar", fakeIntent.extras.get("foo"));
     }
 
@@ -35,7 +35,7 @@ public class IntentTest {
     public void testIntExtra() throws Exception {
         Intent intent = new Intent();
         assertSame(intent, intent.putExtra("foo", 2));
-        FakeIntent fakeIntent = (FakeIntent) DogfoodRobolectricTestRunner.proxyFor(intent);
+        ShadowIntent fakeIntent = (ShadowIntent) DogfoodRobolectricTestRunner.proxyFor(intent);
         assertEquals(2, fakeIntent.extras.get("foo"));
         assertEquals(2, fakeIntent.getIntExtra("foo", -1));
     }
@@ -45,7 +45,7 @@ public class IntentTest {
         Intent intent = new Intent();
         TestSerializable serializable = new TestSerializable("some string");
         assertSame(intent, intent.putExtra("foo", serializable));
-        FakeIntent fakeIntent = (FakeIntent) DogfoodRobolectricTestRunner.proxyFor(intent);
+        ShadowIntent fakeIntent = (ShadowIntent) DogfoodRobolectricTestRunner.proxyFor(intent);
         assertEquals(serializable, fakeIntent.extras.get("foo"));
         assertNotSame(serializable, fakeIntent.extras.get("foo"));
         assertEquals(serializable, fakeIntent.getSerializableExtra("foo"));
@@ -57,7 +57,7 @@ public class IntentTest {
         Intent intent = new Intent();
         Parcelable parcelable = new TestParcelable();
         assertSame(intent, intent.putExtra("foo", parcelable));
-        FakeIntent fakeIntent = (FakeIntent) DogfoodRobolectricTestRunner.proxyFor(intent);
+        ShadowIntent fakeIntent = (ShadowIntent) DogfoodRobolectricTestRunner.proxyFor(intent);
         assertSame(parcelable, fakeIntent.extras.get("foo"));
         assertSame(parcelable, fakeIntent.getParcelableExtra("foo"));
     }
@@ -66,7 +66,7 @@ public class IntentTest {
     public void testLongExtra() throws Exception {
         Intent intent = new Intent();
         assertSame(intent, intent.putExtra("foo", 2L));
-        assertEquals(2L, ((FakeIntent) DogfoodRobolectricTestRunner.proxyFor(intent)).extras.get("foo"));
+        assertEquals(2L, ((ShadowIntent) DogfoodRobolectricTestRunner.proxyFor(intent)).extras.get("foo"));
     }
 
     @Test
@@ -90,7 +90,7 @@ public class IntentTest {
         Uri uri = Uri.parse("content://this/and/that");
         Intent returnedIntent = intent.setData(uri);
 
-        FakeIntent fakeIntent = (FakeIntent) DogfoodRobolectricTestRunner.proxyFor(intent);
+        ShadowIntent fakeIntent = (ShadowIntent) DogfoodRobolectricTestRunner.proxyFor(intent);
         assertSame(uri, fakeIntent.data);
         assertSame(intent, returnedIntent);
     }

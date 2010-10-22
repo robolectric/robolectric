@@ -12,7 +12,7 @@ import static org.junit.Assert.assertSame;
 public class LooperTest {
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(Looper.class, FakeLooper.class);
+        DogfoodRobolectricTestRunner.addProxy(Looper.class, ShadowLooper.class);
     }
 
     @Test

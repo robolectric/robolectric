@@ -39,7 +39,7 @@ public class ListViewTest {
     @Test
     public void testSetSelection_ShouldFireOnItemSelectedListener() throws Exception {
         listView.setAdapter(new CountingAdapter(1));
-        FakeHandler.flush();
+        ShadowHandler.flush();
 
         listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -53,7 +53,7 @@ public class ListViewTest {
         });
 
         listView.setSelection(0);
-        FakeHandler.flush();
+        ShadowHandler.flush();
         transcript.assertEventsSoFar("item was selected: 0");
     }
 
@@ -74,8 +74,8 @@ public class ListViewTest {
         View view1 = new View(null);
         listView.addHeaderView(view0);
         listView.addHeaderView(view1);
-        assertThat(((FakeListView) proxyFor(listView)).headerViews.get(0), sameInstance(view0));
-        assertThat(((FakeListView) proxyFor(listView)).headerViews.get(1), sameInstance(view1));
+        assertThat(((ShadowListView) proxyFor(listView)).headerViews.get(0), sameInstance(view0));
+        assertThat(((ShadowListView) proxyFor(listView)).headerViews.get(1), sameInstance(view1));
     }
 
     @Test
@@ -96,8 +96,8 @@ public class ListViewTest {
         View view1 = new View(null);
         listView.addFooterView(view0);
         listView.addFooterView(view1);
-        assertThat(((FakeListView) proxyFor(listView)).footerViews.get(0), sameInstance(view0));
-        assertThat(((FakeListView) proxyFor(listView)).footerViews.get(1), sameInstance(view1));
+        assertThat(((ShadowListView) proxyFor(listView)).footerViews.get(0), sameInstance(view0));
+        assertThat(((ShadowListView) proxyFor(listView)).footerViews.get(1), sameInstance(view1));
     }
 
     @Test
@@ -125,20 +125,20 @@ public class ListViewTest {
 
     @Test
     public void findItemContainingText_shouldFindChildByString() throws Exception {
-        FakeListView fakeListView = prepareListWithThreeItems();
+        ShadowListView fakeListView = prepareListWithThreeItems();
         View item1 = fakeListView.findItemContainingText("Item 1");
         assertThat(item1, sameInstance(listView.getChildAt(1)));
     }
 
     @Test
     public void findItemContainingText_shouldReturnNullIfNotFound() throws Exception {
-        FakeListView fakeListView = prepareListWithThreeItems();
+        ShadowListView fakeListView = prepareListWithThreeItems();
         assertThat(fakeListView.findItemContainingText("Non-existant item"), nullValue());
     }
 
     @Test
     public void clickItemContainingText_shouldPerformItemClickOnList() throws Exception {
-        FakeListView fakeListView = prepareListWithThreeItems();
+        ShadowListView fakeListView = prepareListWithThreeItems();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -151,28 +151,28 @@ public class ListViewTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void clickItemContainingText_shouldThrowExceptionIfNotFound() throws Exception {
-        FakeListView fakeListView = prepareListWithThreeItems();
+        ShadowListView fakeListView = prepareListWithThreeItems();
         fakeListView.clickFirstItemContainingText("Non-existant item");
     }
 
     @Test
     public void revalidate_whenItemsHaveNotChanged_shouldWork() throws Exception {
         prepareWithListAdapter();
-        ((FakeAdapterView) proxyFor(listView)).checkValidity();
+        ((ShadowAdapterView) proxyFor(listView)).checkValidity();
     }
 
     @Test(expected = ArrayIndexOutOfBoundsException.class)
     public void revalidate_removingAnItemWithoutInvalidating_shouldExplode() throws Exception {
         ListAdapter adapter = prepareWithListAdapter();
         adapter.items.remove(0);
-        ((FakeAdapterView) proxyFor(listView)).checkValidity(); // should 'splode!
+        ((ShadowAdapterView) proxyFor(listView)).checkValidity(); // should 'splode!
     }
 
     @Test(expected = ArrayIndexOutOfBoundsException.class)
     public void revalidate_addingAnItemWithoutInvalidating_shouldExplode() throws Exception {
         ListAdapter adapter = prepareWithListAdapter();
         adapter.items.add("x");
-        ((FakeAdapterView) proxyFor(listView)).checkValidity(); // should 'splode!
+        ((ShadowAdapterView) proxyFor(listView)).checkValidity(); // should 'splode!
     }
 
     @Test(expected = RuntimeException.class)
@@ -180,21 +180,21 @@ public class ListViewTest {
         ListAdapter adapter = prepareWithListAdapter();
         adapter.items.remove(2);
         adapter.items.add("x");
-        ((FakeAdapterView) proxyFor(listView)).checkValidity(); // should 'splode!
+        ((ShadowAdapterView) proxyFor(listView)).checkValidity(); // should 'splode!
     }
 
     private ListAdapter prepareWithListAdapter() {
         ListAdapter adapter = new ListAdapter("a", "b", "c");
         listView.setAdapter(adapter);
-        FakeHandler.flush();
+        ShadowHandler.flush();
         return adapter;
     }
 
-    private FakeListView prepareListWithThreeItems() {
+    private ShadowListView prepareListWithThreeItems() {
         listView.setAdapter(new CountingAdapter(3));
-        FakeHandler.flush();
+        ShadowHandler.flush();
 
-        return (FakeListView) proxyFor(listView);
+        return (ShadowListView) proxyFor(listView);
     }
 
     private static class ListAdapter extends BaseAdapter {

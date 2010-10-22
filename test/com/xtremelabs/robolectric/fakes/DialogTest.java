@@ -14,7 +14,7 @@ import static org.junit.Assert.assertThat;
 public class DialogTest {
     @Test
     public void shouldCallOnDismissListener() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(Dialog.class, FakeDialog.class);
+        DogfoodRobolectricTestRunner.addProxy(Dialog.class, ShadowDialog.class);
 
         final Transcript transcript = new Transcript();
 

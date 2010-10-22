@@ -52,6 +52,6 @@ public class BitmapDrawableTest {
     @Test
     public void shouldStillHaveProxy() throws Exception {
         Drawable drawable = resources.getDrawable(R.drawable.an_image);
-        assertEquals(R.drawable.an_image, ((FakeBitmapDrawable) proxyFor(drawable)).loadedFromResourceId);
+        assertEquals(R.drawable.an_image, ((ShadowBitmapDrawable) proxyFor(drawable)).loadedFromResourceId);
     }
 }

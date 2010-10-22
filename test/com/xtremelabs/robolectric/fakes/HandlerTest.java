@@ -17,8 +17,8 @@ public class HandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(Handler.class, FakeHandler.class);
-        DogfoodRobolectricTestRunner.addProxy(Looper.class, FakeLooper.class);
+        DogfoodRobolectricTestRunner.addProxy(Handler.class, ShadowHandler.class);
+        DogfoodRobolectricTestRunner.addProxy(Looper.class, ShadowLooper.class);
 
         transcript = new Transcript();
     }
@@ -68,8 +68,8 @@ public class HandlerTest {
     }
 
 
-    private FakeLooper proxyFor(Looper view) {
-        return (FakeLooper) DogfoodRobolectricTestRunner.proxyFor(view);
+    private ShadowLooper proxyFor(Looper view) {
+        return (ShadowLooper) DogfoodRobolectricTestRunner.proxyFor(view);
     }
 
     private class Say implements Runnable {

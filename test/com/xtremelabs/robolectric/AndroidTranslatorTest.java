@@ -7,7 +7,7 @@ import android.test.ClassWithNoDefaultConstructor;
 import android.util.Log;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
-import com.xtremelabs.robolectric.fakes.FakeItemizedOverlay;
+import com.xtremelabs.robolectric.fakes.ShadowItemizedOverlay;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -24,22 +24,22 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testStaticMethodsAreDelegated() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(AccountManager.class, FakeAccountManagerForTests.class);
+        DogfoodRobolectricTestRunner.addProxy(AccountManager.class, ShadowAccountManagerForTests.class);
 
         Context context = mock(Context.class);
         AccountManager.get(context);
-        assertThat(FakeAccountManagerForTests.wasCalled, is(true));
-        assertThat(FakeAccountManagerForTests.context, sameInstance(context));
+        assertThat(ShadowAccountManagerForTests.wasCalled, is(true));
+        assertThat(ShadowAccountManagerForTests.context, sameInstance(context));
     }
 
     @Test
     public void testProtectedMethodsAreDelegated() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(ItemizedOverlay.class, FakeItemizedOverlay.class);
+        DogfoodRobolectricTestRunner.addProxy(ItemizedOverlay.class, ShadowItemizedOverlay.class);
 
-        FakeItemizedOverlayForTests overlay = new FakeItemizedOverlayForTests(null);
+        ShadowItemizedOverlayForTests overlay = new ShadowItemizedOverlayForTests(null);
         overlay.triggerProtectedCall();
         
-        assertThat(((FakeItemizedOverlay) proxyFor(overlay)).populated, is(true));
+        assertThat(((ShadowItemizedOverlay) proxyFor(overlay)).populated, is(true));
     }
 
     @Test
@@ -49,17 +49,17 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testGeneratedDefaultConstructorIsWired() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(ClassWithNoDefaultConstructor.class, FakeClassWithNoDefaultConstructors.class);
+        DogfoodRobolectricTestRunner.addProxy(ClassWithNoDefaultConstructor.class, ShadowClassWithNoDefaultConstructors.class);
 
         Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
         ctor.setAccessible(true);
         ClassWithNoDefaultConstructor instance = ctor.newInstance();
         assertThat(proxyFor(instance), not(nullValue()));
-        assertThat(proxyFor(instance), instanceOf(FakeClassWithNoDefaultConstructors.class));
+        assertThat(proxyFor(instance), instanceOf(ShadowClassWithNoDefaultConstructors.class));
     }
 
-    public static class FakeItemizedOverlayForTests extends ItemizedOverlay {
-        public FakeItemizedOverlayForTests(Drawable drawable) {
+    public static class ShadowItemizedOverlayForTests extends ItemizedOverlay {
+        public ShadowItemizedOverlayForTests(Drawable drawable) {
             super(drawable);
         }
 
@@ -78,17 +78,17 @@ public class AndroidTranslatorTest {
         }
     }
 
-    public static class FakeAccountManagerForTests {
+    public static class ShadowAccountManagerForTests {
         public static boolean wasCalled = false;
         public static Context context;
 
         public static AccountManager get(Context context) {
             wasCalled = true;
-            FakeAccountManagerForTests.context = context;
+            ShadowAccountManagerForTests.context = context;
             return mock(AccountManager.class);
         }
     }
 
-    public static class FakeClassWithNoDefaultConstructors {
+    public static class ShadowClassWithNoDefaultConstructors {
     }
 }

@@ -24,12 +24,12 @@ import static org.junit.Assert.*;
 @RunWith(DogfoodRobolectricTestRunner.class)
 public class AppWidgetManagerTest {
     private AppWidgetManager appWidgetManager;
-    private FakeAppWidgetManager fakeAppWidgetManager;
+    private ShadowAppWidgetManager fakeAppWidgetManager;
 
     @Before
     public void setUp() throws Exception {
         DogfoodRobolectricTestRunner.addGenericProxies();
-        Robolectric.application = FakeApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
+        Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
         appWidgetManager = AppWidgetManager.getInstance(Robolectric.application);
         fakeAppWidgetManager = proxyFor(appWidgetManager);
     }
@@ -69,8 +69,8 @@ public class AppWidgetManagerTest {
                 fakeAppWidgetManager.getViewFor(fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main)));
     }
 
-    private FakeAppWidgetManager proxyFor(AppWidgetManager instance) {
-        return (FakeAppWidgetManager) ProxyDelegatingHandler.getInstance().proxyFor(instance);
+    private ShadowAppWidgetManager proxyFor(AppWidgetManager instance) {
+        return (ShadowAppWidgetManager) ProxyDelegatingHandler.getInstance().proxyFor(instance);
     }
 
     public static class SpanishTestAppWidgetProvider extends AppWidgetProvider {

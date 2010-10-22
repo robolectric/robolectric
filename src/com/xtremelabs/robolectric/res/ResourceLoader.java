@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.res;
 
 import android.content.Context;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.fakes.FakeApplication;
+import com.xtremelabs.robolectric.fakes.ShadowApplication;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -55,7 +55,7 @@ public class ResourceLoader {
     }
 
     public static ResourceLoader getFrom(Context context) {
-        return ((FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(context.getApplicationContext())).getResourceLoader();
+        return ((ShadowApplication) ProxyDelegatingHandler.getInstance().proxyFor(context.getApplicationContext())).getResourceLoader();
     }
 
     public String getNameForId(int viewId) {

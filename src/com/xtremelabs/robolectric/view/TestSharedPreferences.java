@@ -73,7 +73,7 @@ public class TestSharedPreferences implements SharedPreferences {
 
     @Override
     public Editor edit() {
-        return new FakeSharedPreferencesEditor();
+        return new ShadowSharedPreferencesEditor();
     }
 
     @Override
@@ -84,7 +84,7 @@ public class TestSharedPreferences implements SharedPreferences {
     public void unregisterOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
     }
 
-    private class FakeSharedPreferencesEditor implements Editor {
+    private class ShadowSharedPreferencesEditor implements Editor {
 
         Hashtable<String, Object> editsThatNeedCommit = new Hashtable<String, Object>();
         private boolean shouldClearOnCommit = false;

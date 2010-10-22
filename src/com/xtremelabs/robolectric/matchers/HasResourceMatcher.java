@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.matchers;
 
 import android.widget.ImageView;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.fakes.FakeImageView;
+import com.xtremelabs.robolectric.fakes.ShadowImageView;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
@@ -43,7 +43,7 @@ public class HasResourceMatcher extends TypeSafeMatcher<ImageView> {
         return new HasResourceMatcher(expectedResourceId);
     }
 
-    private FakeImageView proxyFor(ImageView actual) {
-        return (FakeImageView) ProxyDelegatingHandler.getInstance().proxyFor(actual);
+    private ShadowImageView proxyFor(ImageView actual) {
+        return (ShadowImageView) ProxyDelegatingHandler.getInstance().proxyFor(actual);
     }
 }

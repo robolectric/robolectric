@@ -17,9 +17,9 @@ import static org.junit.Assert.assertThat;
 public class AlertDialogTest {
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(Dialog.class, FakeDialog.class);
-        DogfoodRobolectricTestRunner.addProxy(AlertDialog.class, FakeAlertDialog.class);
-        DogfoodRobolectricTestRunner.addProxy(AlertDialog.Builder.class, FakeAlertDialog.FakeBuilder.class);
+        DogfoodRobolectricTestRunner.addProxy(Dialog.class, ShadowDialog.class);
+        DogfoodRobolectricTestRunner.addProxy(AlertDialog.class, ShadowAlertDialog.class);
+        DogfoodRobolectricTestRunner.addProxy(AlertDialog.Builder.class, ShadowAlertDialog.ShadowBuilder.class);
     }
 
     @Test
@@ -32,9 +32,9 @@ public class AlertDialogTest {
 
         assertThat(alert.isShowing(), equalTo(true));
 
-        FakeAlertDialog fakeAlertDialog = (FakeAlertDialog) proxyFor(alert);
+        ShadowAlertDialog fakeAlertDialog = (ShadowAlertDialog) proxyFor(alert);
         assertThat(fakeAlertDialog.title, equalTo("title"));
         assertThat(fakeAlertDialog.message, equalTo("message"));
-        assertThat(FakeAlertDialog.latestAlertDialog, sameInstance(fakeAlertDialog));
+        assertThat(ShadowAlertDialog.latestAlertDialog, sameInstance(fakeAlertDialog));
     }
 }

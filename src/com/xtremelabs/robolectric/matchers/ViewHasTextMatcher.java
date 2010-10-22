@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.matchers;
 
 import android.view.View;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.fakes.FakeView;
+import com.xtremelabs.robolectric.fakes.ShadowView;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
@@ -60,7 +60,7 @@ public class ViewHasTextMatcher<T extends View> extends TypeSafeMatcher<T> {
         return new ViewHasTextMatcher<T>(expectedTextViewResourceId);
     }
 
-    private FakeView proxyFor(View actual) {
-        return ((FakeView) ProxyDelegatingHandler.getInstance().proxyFor(actual));
+    private ShadowView proxyFor(View actual) {
+        return ((ShadowView) ProxyDelegatingHandler.getInstance().proxyFor(actual));
     }
 }

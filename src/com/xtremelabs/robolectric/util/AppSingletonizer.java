@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.fakes.FakeApplication;
+import com.xtremelabs.robolectric.fakes.ShadowApplication;
 
 public abstract class AppSingletonizer<T> {
     private Class<T> clazz;
@@ -15,7 +15,7 @@ public abstract class AppSingletonizer<T> {
 
     synchronized public T getInstance(Context context) {
         Application applicationContext = (Application) context.getApplicationContext();
-        FakeApplication fakeApplication = (FakeApplication) ProxyDelegatingHandler.getInstance().proxyFor(applicationContext);
+        ShadowApplication fakeApplication = (ShadowApplication) ProxyDelegatingHandler.getInstance().proxyFor(applicationContext);
         T instance = get(fakeApplication);
         if (instance == null) {
             instance = createInstance(applicationContext);
@@ -24,9 +24,9 @@ public abstract class AppSingletonizer<T> {
         return instance;
     }
 
-    protected abstract T get(FakeApplication fakeApplication);
+    protected abstract T get(ShadowApplication fakeApplication);
 
-    protected abstract void set(FakeApplication fakeApplication, T instance);
+    protected abstract void set(ShadowApplication fakeApplication, T instance);
 
     protected T createInstance(Application applicationContext) {
         return Robolectric.newInstanceOf(clazz);

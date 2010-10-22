@@ -12,7 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.fakes.FakeMapView.toE6;
+import static com.xtremelabs.robolectric.fakes.ShadowMapView.toE6;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -163,7 +163,7 @@ public class MapViewTest {
         }
     }
 
-    private class MyOverlay extends AndroidTranslatorTest.FakeItemizedOverlayForTests {
+    private class MyOverlay extends AndroidTranslatorTest.ShadowItemizedOverlayForTests {
         private MotionEvent lastMotionEvent;
         private boolean shouldConsumeEvent = true;
 

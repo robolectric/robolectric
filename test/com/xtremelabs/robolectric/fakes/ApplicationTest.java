@@ -38,11 +38,11 @@ public class ApplicationTest {
     public void shouldBeBindableToAResourceLoader() throws Exception {
         ResourceLoader resourceLoader1 = new ResourceLoader(mock(StringResourceLoader.class), null, null, null, null) {};
         when(resourceLoader1.stringResourceLoader.getValue(R.id.title)).thenReturn("title from resourceLoader1");
-        Application app1 = FakeApplication.bind(new Application(), resourceLoader1);
+        Application app1 = ShadowApplication.bind(new Application(), resourceLoader1);
 
         ResourceLoader resourceLoader2 = new ResourceLoader(mock(StringResourceLoader.class), null, null, null, null) {};
         when(resourceLoader2.stringResourceLoader.getValue(R.id.title)).thenReturn("title from resourceLoader2");
-        Application app2 = FakeApplication.bind(new Application(), resourceLoader2);
+        Application app2 = ShadowApplication.bind(new Application(), resourceLoader2);
 
         assertEquals("title from resourceLoader1", new ContextWrapper(app1).getResources().getString(R.id.title));
         assertEquals("title from resourceLoader2", new ContextWrapper(app2).getResources().getString(R.id.title));

@@ -24,7 +24,7 @@ public class AdapterViewBehavior {
         assertThat(adapterView.getCount(), equalTo(2));
         assertThat(adapterView.getChildCount(), equalTo(0));
 
-        FakeHandler.flush();
+        ShadowHandler.flush();
         assertThat(adapterView.getChildCount(), equalTo(2));
         assertThat((TextView) adapterView.getChildAt(0), hasText("Item 0"));
         assertThat((TextView) adapterView.getChildAt(1), hasText("Item 1"));
@@ -48,7 +48,7 @@ public class AdapterViewBehavior {
         });
         adapterView.setAdapter(new CountingAdapter(2));
         transcript.assertNoEventsSoFar();
-        FakeHandler.flush();
+        ShadowHandler.flush();
         transcript.assertEventsSoFar("selected item 0");
     }
 
@@ -68,7 +68,7 @@ public class AdapterViewBehavior {
         adapter.notifyDataSetChanged();
         adapter.notifyDataSetChanged();
 
-        FakeHandler.flush();
+        ShadowHandler.flush();
 
         transcript.assertEventsSoFar("getView for 0", "getView for 1");
     }

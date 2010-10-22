@@ -17,8 +17,8 @@ import static org.junit.Assert.assertThat;
 public class TextViewTest {
     @Test
     public void testGetUrls() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(TextView.class, FakeTextView.class);
-        DogfoodRobolectricTestRunner.addProxy(URLSpan.class, FakeURLSpan.class);
+        DogfoodRobolectricTestRunner.addProxy(TextView.class, ShadowTextView.class);
+        DogfoodRobolectricTestRunner.addProxy(URLSpan.class, ShadowURLSpan.class);
 
         TextView textView = new TextView(null);
         textView.setText("here's some text http://google.com/\nblah\thttp://another.com/123?456 blah");

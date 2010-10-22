@@ -24,15 +24,15 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnProxyClass() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView_WithDefaultConstructorAndNoConstructorDelegate.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class);
 
         View view = new View(context);
-        assertEquals(TestFakeView_WithDefaultConstructorAndNoConstructorDelegate.class, DogfoodRobolectricTestRunner.proxyFor(view).getClass());
+        assertEquals(TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class, DogfoodRobolectricTestRunner.proxyFor(view).getClass());
     }
 
     @Test
     public void testConstructorInvocation() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
 
         View view = new View(context);
         assertSame(context, proxyFor(view).context);
@@ -41,7 +41,7 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testRealObjectAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
 
         View view = new View(context);
         assertSame(context, proxyFor(view).context);
@@ -53,7 +53,7 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testSheepWranglerAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
 
         View view = new View(context);
         ProxyDelegatingHandler proxyDelegatingHandler = ProxyDelegatingHandler.getInstance();
@@ -64,7 +64,7 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testMethodDelegation() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
 
         View view = new View(context);
         assertSame(context, view.getContext());
@@ -72,19 +72,19 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testProxySelectionSearchesSuperclasses() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
 
         TextView textView = new TextView(context);
-        assertEquals(TestFakeView.class, DogfoodRobolectricTestRunner.proxyFor(textView).getClass());
+        assertEquals(TestShadowView.class, DogfoodRobolectricTestRunner.proxyFor(textView).getClass());
     }
 
     @Test
     public void testWeirdness() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestFakeView.class);
-        DogfoodRobolectricTestRunner.addProxy(TextView.class, TestFakeTextView.class);
+        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
+        DogfoodRobolectricTestRunner.addProxy(TextView.class, TestShadowTextView.class);
 
         TextView textView = new TextView(context);
-        assertThat(proxyFor(textView), instanceOf(TestFakeTextView.class));
+        assertThat(proxyFor(textView), instanceOf(TestShadowTextView.class));
     }
 
     @Test
@@ -99,15 +99,15 @@ public class ProxyDelegatingHandlerTest {
     }
 
 
-    private TestFakeView proxyFor(View view) {
-        return (TestFakeView) DogfoodRobolectricTestRunner.proxyFor(view);
+    private TestShadowView proxyFor(View view) {
+        return (TestShadowView) DogfoodRobolectricTestRunner.proxyFor(view);
     }
 
-    private TestFakeTextView proxyFor(TextView view) {
-        return (TestFakeTextView) DogfoodRobolectricTestRunner.proxyFor(view);
+    private TestShadowTextView proxyFor(TextView view) {
+        return (TestShadowTextView) DogfoodRobolectricTestRunner.proxyFor(view);
     }
 
-    public static class TestFakeView extends TestFakeViewParent {
+    public static class TestShadowView extends TestShadowViewParent {
         @RealObject
         private View realViewField;
         private View realViewInConstructor;
@@ -120,7 +120,7 @@ public class ProxyDelegatingHandlerTest {
 
         private Context context;
 
-        public TestFakeView(View view) {
+        public TestShadowView(View view) {
             this.realViewCtor = view;
         }
 
@@ -139,7 +139,7 @@ public class ProxyDelegatingHandlerTest {
         }
     }
 
-    public static class TestFakeViewParent {
+    public static class TestShadowViewParent {
         @RealObject
         private View realView;
         View realViewInParentConstructor;
@@ -154,9 +154,9 @@ public class ProxyDelegatingHandlerTest {
         }
     }
     
-    public static class TestFakeView_WithDefaultConstructorAndNoConstructorDelegate {
+    public static class TestShadowView_WithDefaultConstructorAndNoConstructorDelegate {
     }
 
-    public static class TestFakeTextView {
+    public static class TestShadowTextView {
     }
 }

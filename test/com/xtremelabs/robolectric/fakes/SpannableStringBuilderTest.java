@@ -13,7 +13,7 @@ import static org.junit.Assert.assertThat;
 public class SpannableStringBuilderTest {
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(SpannableStringBuilder.class, FakeSpannableStringBuilder.class);
+        DogfoodRobolectricTestRunner.addProxy(SpannableStringBuilder.class, ShadowSpannableStringBuilder.class);
     }
 
     @Test

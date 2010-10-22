@@ -23,7 +23,7 @@ public class LayoutInflaterTest {
     @Before
     public void setUp() throws Exception {
         DogfoodRobolectricTestRunner.addGenericProxies();
-        Robolectric.application = FakeApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
+        Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
         layoutInflater = LayoutInflater.from(Robolectric.application);
     }
     

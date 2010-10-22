@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.matchers;
 
 import android.widget.TextView;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.fakes.FakeTextView;
+import com.xtremelabs.robolectric.fakes.ShadowTextView;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
@@ -10,10 +10,10 @@ import org.junit.internal.matchers.TypeSafeMatcher;
 
 public class HasCompoundDrawablesMatcher extends TypeSafeMatcher<TextView> {
     private String message;
-    private FakeTextView.CompoundDrawables expectedCompoundDrawables;
+    private ShadowTextView.CompoundDrawables expectedCompoundDrawables;
 
     public HasCompoundDrawablesMatcher(int left, int top, int right, int bottom) {
-        expectedCompoundDrawables = new FakeTextView.CompoundDrawables(left, top, right, bottom);
+        expectedCompoundDrawables = new ShadowTextView.CompoundDrawables(left, top, right, bottom);
     }
 
     @Override
@@ -23,7 +23,7 @@ public class HasCompoundDrawablesMatcher extends TypeSafeMatcher<TextView> {
             return false;
         }
 
-        FakeTextView.CompoundDrawables actualCompoundDrawables = proxyFor(actual).compoundDrawables;
+        ShadowTextView.CompoundDrawables actualCompoundDrawables = proxyFor(actual).compoundDrawables;
         if (!expectedCompoundDrawables.equals(actualCompoundDrawables)) {
             message = "[" + actualCompoundDrawables + "] to equal [" + expectedCompoundDrawables + "]";
             return false;
@@ -42,7 +42,7 @@ public class HasCompoundDrawablesMatcher extends TypeSafeMatcher<TextView> {
         return new HasCompoundDrawablesMatcher(left, top, right, bottom);
     }
 
-    private FakeTextView proxyFor(TextView actual) {
-        return (FakeTextView) ProxyDelegatingHandler.getInstance().proxyFor(actual);
+    private ShadowTextView proxyFor(TextView actual) {
+        return (ShadowTextView) ProxyDelegatingHandler.getInstance().proxyFor(actual);
     }
 }
