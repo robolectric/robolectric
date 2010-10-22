@@ -11,6 +11,7 @@ import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.fakes.ShadowImageView;
+import com.xtremelabs.robolectric.fakes.ShadowTextView;
 import com.xtremelabs.robolectric.util.CustomView;
 import com.xtremelabs.robolectric.util.TestUtil;
 import org.junit.Before;
@@ -117,6 +118,17 @@ public class ViewLoaderTest {
         View mediaView = viewLoader.inflateView(context, "layout/main");
         assertThat(((TextView) mediaView.findViewById(R.id.title)).getText().toString(), equalTo("Hola!"));
         assertThat(((TextView) mediaView.findViewById(R.id.subtitle)).getText().toString(), equalTo("Hello"));
+    }
+
+    @Test
+    public void testTextViewCompoundDrawablesAreSet() throws Exception {
+        View mediaView = viewLoader.inflateView(context, "layout/main");
+        ShadowTextView shadowTextView = (ShadowTextView) proxyFor((TextView) mediaView.findViewById(R.id.title));
+
+        assertThat(shadowTextView.compoundDrawables.top, equalTo(R.drawable.an_image));
+        assertThat(shadowTextView.compoundDrawables.right, equalTo(R.drawable.an_other_image));
+        assertThat(shadowTextView.compoundDrawables.bottom, equalTo(R.drawable.third_image));
+        assertThat(shadowTextView.compoundDrawables.left, equalTo(R.drawable.fourth_image));
     }
 
     @Test

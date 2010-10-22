@@ -151,6 +151,11 @@ public class ViewLoader extends XmlLoader {
 
 
             if (view instanceof TextView) {
+                int drawableTop = 0;
+                int drawableRight = 0;
+                int drawableBottom = 0;
+                int drawableLeft = 0;
+
                 String text = attributes.get("android:text");
                 if (text != null) {
                     if (text.startsWith("@string/")) {
@@ -159,6 +164,35 @@ public class ViewLoader extends XmlLoader {
 
                     ((TextView) view).setText(text);
                 }
+                text = attributes.get("android:drawableTop");
+                if (text != null) {
+                    Integer resId = resourceExtractor.getResourceStringToId().get(text.substring(1));
+                    if (resId != null) {
+                        drawableTop = resId;
+                    }
+                }
+                text = attributes.get("android:drawableRight");
+                if (text != null) {
+                    Integer resId = resourceExtractor.getResourceStringToId().get(text.substring(1));
+                    if (resId != null) {
+                        drawableRight = resId;
+                    }
+                }
+                text = attributes.get("android:drawableBottom");
+                if (text != null) {
+                    Integer resId = resourceExtractor.getResourceStringToId().get(text.substring(1));
+                    if (resId != null) {
+                        drawableBottom = resId;
+                    }
+                }
+                text = attributes.get("android:drawableLeft");
+                if (text != null) {
+                    Integer resId = resourceExtractor.getResourceStringToId().get(text.substring(1));
+                    if (resId != null) {
+                        drawableLeft = resId;
+                    }
+                }
+                ((TextView) view).setCompoundDrawablesWithIntrinsicBounds(drawableLeft, drawableTop, drawableRight, drawableBottom);
             }
 
             if (view instanceof CheckBox) {

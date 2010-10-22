@@ -43,6 +43,8 @@ public final class R {
     public static final class drawable {
         public static final int an_image = nextId++;
         public static final int an_other_image = nextId++;
+        public static final int third_image = nextId++;
+        public static final int fourth_image = nextId++;
     }
 
     public static final class layout {
