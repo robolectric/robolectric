@@ -43,6 +43,7 @@ public class ShadowAppWidgetManager {
     private Context context;
     private Map<Integer, WidgetInfo> widgetInfos = new HashMap<Integer, WidgetInfo>();
     private int nextWidgetId = 1;
+    public boolean alwaysRecreateViewsDuringUpdate = false;
 
     public ShadowAppWidgetManager(AppWidgetManager realAppWidgetManager) {
         this.realAppWidgetManager = realAppWidgetManager;
@@ -64,11 +65,19 @@ public class ShadowAppWidgetManager {
     public void updateAppWidget(int appWidgetId, RemoteViews views) {
         WidgetInfo widgetInfo = getWidgetInfo(appWidgetId);
         int layoutId = views.getLayoutId();
-        if (widgetInfo.layoutId != layoutId) {
+        if (widgetInfo.layoutId != layoutId || alwaysRecreateViewsDuringUpdate) {
             widgetInfo.view = createWidgetView(layoutId);
             widgetInfo.layoutId = layoutId;
         }
+        widgetInfo.lastRemoteViews = views;
         views.reapply(context, widgetInfo.view);
+    }
+
+    public void reconstructWidgetViewAsIfPhoneWasRotated(int appWidgetId) {
+        WidgetInfo widgetInfo = getWidgetInfo(appWidgetId);
+        widgetInfo.view = createWidgetView(widgetInfo.layoutId);
+        widgetInfo.lastRemoteViews.reapply(context, widgetInfo.view);
+
     }
 
     public int createWidget(Class<? extends AppWidgetProvider> appWidgetProviderClass, int widgetLayoutId) {
@@ -120,6 +129,7 @@ public class ShadowAppWidgetManager {
         private View view;
         private int layoutId;
         private AppWidgetProvider appWidgetProvider;
+        private RemoteViews lastRemoteViews;
 
         public WidgetInfo(View view, int layoutId, AppWidgetProvider appWidgetProvider) {
             this.view = view;
