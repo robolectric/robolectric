@@ -23,7 +23,7 @@ public abstract class AppSingletonizer<T> {
         }
         return instance;
     }
-Œ
+
     protected abstract T get(ShadowApplication shadowApplication);
 
     protected abstract void set(ShadowApplication shadowApplication, T instance);
