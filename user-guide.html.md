@@ -13,9 +13,9 @@ This sample app shows how to layout your project, includes example tests, and a 
 
 Robolectric must have an opportunity to intercept the class loading process of the Android classes to make this all work. This is done by adding the JUnit annotation to your tests. JUnit will defer processing of the Test file to the class defined in the <code>@RunWith(RobolectricTestRunner.class)</code> annotation. The <code>RobolectricTestRunner.class</code> sets up your test to run with Robolectric.
 
-## <code>Robolectric#proxyFor()</code>
+## <code>Robolectric#shadowFor()</code>
 
-Sometimes Android classes don't provide methods to access the state of the Android objects under test. The <code>Robolectric#proxyFor()</code> methods provide reference to the shadow instances representing Android objects, allowing tests to assert on state otherwise not available.
+Sometimes Android classes don't provide methods to access the state of the Android objects under test. The <code>Robolectric#shadowFor()</code> methods provide reference to the shadow instances representing Android objects, allowing tests to assert on state otherwise not available.
 
 Suppose the application assigns a drawable resource id on an <code>ImageView</code> in layout xml, like this:
 
@@ -35,7 +35,7 @@ Android provides no way to access the drawable resource id that was applied to t
 @Test
 public void shouldHaveALogo() throws Exception {
     ImageView pivotalLogo = (ImageView) activity.findViewById(R.id.pivotal_logo);
-	ShadowImageView shadowPivotalLogo = Robolectric.proxyFor(pivotalLogo);
+	ShadowImageView shadowPivotalLogo = Robolectric.shadowFor(pivotalLogo);
     assertThat(shadowPivotalLogo.resourceId, equalTo(R.drawable.pivotallabs_logo));
 }
 </pre>
