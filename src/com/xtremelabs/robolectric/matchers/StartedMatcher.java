@@ -53,9 +53,9 @@ public class StartedMatcher extends TypeSafeMatcher<Context> {
             return false;
         }
 
-        ShadowIntent proxyIntent = shadowFor(actualStartedIntent);
+        ShadowIntent shadowIntent = shadowFor(actualStartedIntent);
 
-        boolean intentsMatch = shadowFor(expectedIntent).realIntentEquals(proxyIntent);
+        boolean intentsMatch = shadowFor(expectedIntent).realIntentEquals(shadowIntent);
         if (!intentsMatch) {
             message += "started " + actualStartedIntent;
         }
