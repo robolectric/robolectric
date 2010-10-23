@@ -35,6 +35,10 @@
             android:textSize="18dip"
             android:textStyle="bold"
             android:textColor="#fff"
+            android:drawableTop="@drawable/an_image"
+            android:drawableRight="@drawable/an_other_image"
+            android:drawableBottom="@drawable/third_image"
+            android:drawableLeft="@drawable/fourth_image"
             />
 
     <TextView
