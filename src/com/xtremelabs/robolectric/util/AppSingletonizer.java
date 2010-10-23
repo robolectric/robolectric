@@ -15,18 +15,18 @@ public abstract class AppSingletonizer<T> {
 
     synchronized public T getInstance(Context context) {
         Application applicationContext = (Application) context.getApplicationContext();
-        ShadowApplication fakeApplication = (ShadowApplication) ProxyDelegatingHandler.getInstance().shadowFor(applicationContext);
-        T instance = get(fakeApplication);
+        ShadowApplication shadowApplication = (ShadowApplication) ProxyDelegatingHandler.getInstance().shadowFor(applicationContext);
+        T instance = get(shadowApplication);
         if (instance == null) {
             instance = createInstance(applicationContext);
-            set(fakeApplication, instance);
+            set(shadowApplication, instance);
         }
         return instance;
     }
+Œ
+    protected abstract T get(ShadowApplication shadowApplication);
 
-    protected abstract T get(ShadowApplication fakeApplication);
-
-    protected abstract void set(ShadowApplication fakeApplication, T instance);
+    protected abstract void set(ShadowApplication shadowApplication, T instance);
 
     protected T createInstance(Application applicationContext) {
         return Robolectric.newInstanceOf(clazz);

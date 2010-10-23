@@ -32,9 +32,9 @@ public class AlertDialogTest {
 
         assertThat(alert.isShowing(), equalTo(true));
 
-        ShadowAlertDialog fakeAlertDialog = (ShadowAlertDialog) shadowFor(alert);
-        assertThat(fakeAlertDialog.title, equalTo("title"));
-        assertThat(fakeAlertDialog.message, equalTo("message"));
-        assertThat(ShadowAlertDialog.latestAlertDialog, sameInstance(fakeAlertDialog));
+        ShadowAlertDialog shadowAlertDialog = (ShadowAlertDialog) shadowFor(alert);
+        assertThat(shadowAlertDialog.title, equalTo("title"));
+        assertThat(shadowAlertDialog.message, equalTo("message"));
+        assertThat(ShadowAlertDialog.latestAlertDialog, sameInstance(shadowAlertDialog));
     }
 }

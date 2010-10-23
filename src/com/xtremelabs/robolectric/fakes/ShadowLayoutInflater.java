@@ -43,8 +43,8 @@ public class ShadowLayoutInflater {
     }
 
     private static LayoutInflater bind(LayoutInflater layoutInflater, Context context) {
-        ShadowLayoutInflater fakeLayoutInflater = shadowFor(layoutInflater);
-        fakeLayoutInflater.context = context;
+        ShadowLayoutInflater shadowLayoutInflater = shadowFor(layoutInflater);
+        shadowLayoutInflater.context = context;
         return layoutInflater;
     }
 
@@ -57,12 +57,12 @@ public class ShadowLayoutInflater {
             super(LayoutInflater.class);
         }
 
-        @Override protected LayoutInflater get(ShadowApplication fakeApplication) {
-            return fakeApplication.layoutInflater;
+        @Override protected LayoutInflater get(ShadowApplication shadowApplication) {
+            return shadowApplication.layoutInflater;
         }
 
-        @Override protected void set(ShadowApplication fakeApplication, LayoutInflater instance) {
-            fakeApplication.layoutInflater = instance;
+        @Override protected void set(ShadowApplication shadowApplication, LayoutInflater instance) {
+            shadowApplication.layoutInflater = instance;
         }
 
         @Override protected LayoutInflater createInstance(Application applicationContext) {
