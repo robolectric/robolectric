@@ -16,9 +16,9 @@ import java.util.Locale;
 @Implements(Resources.class)
 public class ShadowResources {
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
-        ShadowResources fakeResources = (ShadowResources) ProxyDelegatingHandler.getInstance().shadowFor(resources);
-        if (fakeResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
-        fakeResources.resourceLoader = resourceLoader;
+        ShadowResources shadowResources = (ShadowResources) ProxyDelegatingHandler.getInstance().shadowFor(resources);
+        if (shadowResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
+        shadowResources.resourceLoader = resourceLoader;
         return resources;
     }
 
@@ -63,8 +63,8 @@ public class ShadowResources {
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
         RobolectricBitmapDrawable bitmapDrawable = new RobolectricBitmapDrawable(drawableResourceId);
-        ShadowBitmapDrawable fake = (ShadowBitmapDrawable) proxyDelegatingHandler.shadowFor(bitmapDrawable);
-        fake.loadedFromResourceId = drawableResourceId;
+        ShadowBitmapDrawable shadowBitmapDrawable = (ShadowBitmapDrawable) proxyDelegatingHandler.shadowFor(bitmapDrawable);
+        shadowBitmapDrawable.loadedFromResourceId = drawableResourceId;
         return bitmapDrawable;
     }
 

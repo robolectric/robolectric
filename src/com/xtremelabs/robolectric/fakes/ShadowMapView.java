@@ -25,7 +25,7 @@ public class ShadowMapView extends ShadowViewGroup {
     public int longitudeSpan = 20;
     public int latitudeSpan = 30;
     int zoomLevel = 1;
-    ShadowMapController fakeMapController;
+    ShadowMapController shadowMapController;
     private ZoomButtonsController zoomButtonsController;
     private MapView realMapView;
     private Projection projection;
@@ -67,8 +67,8 @@ public class ShadowMapView extends ShadowViewGroup {
         if (mapController == null) {
             try {
                 mapController = Robolectric.newInstanceOf(MapController.class);
-                fakeMapController = ((ShadowMapController) proxyDelegatingHandler.shadowFor(mapController));
-                fakeMapController.fakeMapView = this;
+                shadowMapController = ((ShadowMapController) proxyDelegatingHandler.shadowFor(mapController));
+                shadowMapController.shadowMapView = this;
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }

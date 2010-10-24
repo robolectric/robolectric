@@ -25,9 +25,9 @@ import static org.mockito.Mockito.mock;
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
     public static Application bind(Application application, ResourceLoader resourceLoader) {
-        ShadowApplication fakeApplication = (ShadowApplication) ProxyDelegatingHandler.getInstance().shadowFor(application);
-        if (fakeApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
-        fakeApplication.resourceLoader = resourceLoader;
+        ShadowApplication shadowApplication = (ShadowApplication) ProxyDelegatingHandler.getInstance().shadowFor(application);
+        if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
+        shadowApplication.resourceLoader = resourceLoader;
         return application;
     }
 

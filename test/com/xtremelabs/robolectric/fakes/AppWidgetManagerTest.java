@@ -24,14 +24,14 @@ import static org.junit.Assert.*;
 @RunWith(DogfoodRobolectricTestRunner.class)
 public class AppWidgetManagerTest {
     private AppWidgetManager appWidgetManager;
-    private ShadowAppWidgetManager fakeAppWidgetManager;
+    private ShadowAppWidgetManager shadowAppWidgetManager;
 
     @Before
     public void setUp() throws Exception {
         DogfoodRobolectricTestRunner.addGenericProxies();
         Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
         appWidgetManager = AppWidgetManager.getInstance(Robolectric.application);
-        fakeAppWidgetManager = shadowFor(appWidgetManager);
+        shadowAppWidgetManager = shadowFor(appWidgetManager);
     }
 
     @Test
@@ -43,45 +43,45 @@ public class AppWidgetManagerTest {
 
     @Test
     public void createWidget_shouldInflateViewAndAssignId() throws Exception {
-        int widgetId = fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
-        View widgetView = fakeAppWidgetManager.getViewFor(widgetId);
+        int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+        View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
         assertEquals("Hola", ((TextView) widgetView.findViewById(R.id.subtitle)).getText());
     }
 
     @Test
     public void getViewFor_shouldReturnSameViewEveryTimeForGivenWidgetId() throws Exception {
-        int widgetId = fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
-        View widgetView = fakeAppWidgetManager.getViewFor(widgetId);
+        int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+        View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
         assertNotNull(widgetView);
-        assertSame(widgetView, fakeAppWidgetManager.getViewFor(widgetId));
+        assertSame(widgetView, shadowAppWidgetManager.getViewFor(widgetId));
     }
 
     @Test
     public void createWidget_shouldAllowForMultipleInstancesOfWidgets() throws Exception {
-        int widgetId = fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
-        View widgetView = fakeAppWidgetManager.getViewFor(widgetId);
+        int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+        View widgetView = shadowAppWidgetManager.getViewFor(widgetId);
 
         assertNotSame(widgetId,
-                fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main));
+                shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main));
         assertNotSame(widgetView,
-                fakeAppWidgetManager.getViewFor(fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main)));
+                shadowAppWidgetManager.getViewFor(shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main)));
     }
 
     @Test
     public void shouldReplaceLayoutIfAndOnlyIfLayoutIdIsDifferent() throws Exception {
-        int widgetId = fakeAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
-        View originalWidgetView = fakeAppWidgetManager.getViewFor(widgetId);
+        int widgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+        View originalWidgetView = shadowAppWidgetManager.getViewFor(widgetId);
         assertContains("Main Layout", originalWidgetView);
 
         appWidgetManager.updateAppWidget(widgetId, new RemoteViews("whatevs", R.layout.main));
-        assertSame(originalWidgetView, fakeAppWidgetManager.getViewFor(widgetId));
+        assertSame(originalWidgetView, shadowAppWidgetManager.getViewFor(widgetId));
 
         appWidgetManager.updateAppWidget(widgetId, new RemoteViews("whatevs", R.layout.media));
-        assertNotSame(originalWidgetView, fakeAppWidgetManager.getViewFor(widgetId));
+        assertNotSame(originalWidgetView, shadowAppWidgetManager.getViewFor(widgetId));
 
-        View mediaWidgetView = fakeAppWidgetManager.getViewFor(widgetId);
+        View mediaWidgetView = shadowAppWidgetManager.getViewFor(widgetId);
         assertContains("Media Layout", mediaWidgetView);
     }
 

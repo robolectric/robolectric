@@ -125,34 +125,34 @@ public class ListViewTest {
 
     @Test
     public void findItemContainingText_shouldFindChildByString() throws Exception {
-        ShadowListView fakeListView = prepareListWithThreeItems();
-        View item1 = fakeListView.findItemContainingText("Item 1");
+        ShadowListView shadowListView = prepareListWithThreeItems();
+        View item1 = shadowListView.findItemContainingText("Item 1");
         assertThat(item1, sameInstance(listView.getChildAt(1)));
     }
 
     @Test
     public void findItemContainingText_shouldReturnNullIfNotFound() throws Exception {
-        ShadowListView fakeListView = prepareListWithThreeItems();
-        assertThat(fakeListView.findItemContainingText("Non-existant item"), nullValue());
+        ShadowListView shadowListView = prepareListWithThreeItems();
+        assertThat(shadowListView.findItemContainingText("Non-existant item"), nullValue());
     }
 
     @Test
     public void clickItemContainingText_shouldPerformItemClickOnList() throws Exception {
-        ShadowListView fakeListView = prepareListWithThreeItems();
+        ShadowListView shadowListView = prepareListWithThreeItems();
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 transcript.add("clicked on item " + position);
             }
         });
-        fakeListView.clickFirstItemContainingText("Item 1");
+        shadowListView.clickFirstItemContainingText("Item 1");
         transcript.assertEventsSoFar("clicked on item 1");
     }
 
     @Test(expected = IllegalArgumentException.class)
     public void clickItemContainingText_shouldThrowExceptionIfNotFound() throws Exception {
-        ShadowListView fakeListView = prepareListWithThreeItems();
-        fakeListView.clickFirstItemContainingText("Non-existant item");
+        ShadowListView shadowListView = prepareListWithThreeItems();
+        shadowListView.clickFirstItemContainingText("Non-existant item");
     }
 
     @Test

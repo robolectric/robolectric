@@ -20,10 +20,10 @@ public class ShadowMotionEvent {
             Constructor<MotionEvent> constructor = MotionEvent.class.getDeclaredConstructor();
             constructor.setAccessible(true);
             MotionEvent motionEvent = constructor.newInstance();
-            ShadowMotionEvent fakeEvent = (ShadowMotionEvent) ProxyDelegatingHandler.getInstance().shadowFor(motionEvent);
-            fakeEvent.x = x;
-            fakeEvent.y = y;
-            fakeEvent.action = action;
+            ShadowMotionEvent shadowMotionEvent = (ShadowMotionEvent) ProxyDelegatingHandler.getInstance().shadowFor(motionEvent);
+            shadowMotionEvent.x = x;
+            shadowMotionEvent.y = y;
+            shadowMotionEvent.action = action;
             return motionEvent;
         } catch (Exception e) {
             throw new RuntimeException(e);

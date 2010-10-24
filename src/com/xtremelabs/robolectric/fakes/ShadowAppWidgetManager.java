@@ -20,12 +20,12 @@ import java.util.Map;
 @Implements(AppWidgetManager.class)
 public class ShadowAppWidgetManager {
     private static AppSingletonizer<AppWidgetManager> instances = new AppSingletonizer<AppWidgetManager>(AppWidgetManager.class) {
-        @Override protected AppWidgetManager get(ShadowApplication fakeApplication) {
-            return fakeApplication.appWidgetManager;
+        @Override protected AppWidgetManager get(ShadowApplication shadowApplication) {
+            return shadowApplication.appWidgetManager;
         }
 
-        @Override protected void set(ShadowApplication fakeApplication, AppWidgetManager instance) {
-            fakeApplication.appWidgetManager = instance;
+        @Override protected void set(ShadowApplication shadowApplication, AppWidgetManager instance) {
+            shadowApplication.appWidgetManager = instance;
         }
 
         @Override
