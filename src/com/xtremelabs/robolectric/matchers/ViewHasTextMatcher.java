@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.matchers;
 
 import android.view.View;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.fakes.ShadowView;
+import com.xtremelabs.robolectric.shadows.ShadowView;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;

@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.res;
 
 import android.content.Context;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.fakes.ShadowApplication;
+import com.xtremelabs.robolectric.shadows.ShadowApplication;
 
 import java.io.File;
 import java.io.FileFilter;
