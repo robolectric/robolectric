@@ -10,13 +10,13 @@ import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.AppSingletonizer;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 @Implements(LayoutInflater.class)
 public class ShadowLayoutInflater {
     private static AppSingletonizer<LayoutInflater> instances = new LayoutInflaterAppSingletonizer();
 
-    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private Context context;
 
     @Implementation

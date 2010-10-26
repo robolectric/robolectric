@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import com.xtremelabs.robolectric.util.RealObject;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtField;
@@ -11,12 +11,12 @@ import java.lang.reflect.*;
 import java.util.*;
 
 public class ProxyDelegatingHandler implements ClassHandler {
-    public static final String SHEEP_FIELD_NAME = "__sheep__";
+    public static final String SHADOW_FIELD_NAME = "__shadow__";
     private static ProxyDelegatingHandler singleton;
 
-    private Map<String, String> sheepClassMap = new HashMap<String, String>();
-    private Map<Class, Field> sheepFieldMap = new HashMap<Class, Field>();
-    private final Map<Class, MetaSheep> metaSheepMap = new HashMap<Class, MetaSheep>();
+    private Map<String, String> shadowClassMap = new HashMap<String, String>();
+    private Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
+    private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
 
     public boolean debug = false;
 
@@ -36,9 +36,9 @@ public class ProxyDelegatingHandler implements ClassHandler {
         try {
             CtClass objectClass = ctClass.getClassPool().get(Object.class.getName());
             try {
-                ctClass.getField(SHEEP_FIELD_NAME);
+                ctClass.getField(SHADOW_FIELD_NAME);
             } catch (NotFoundException e) {
-                CtField field = new CtField(objectClass, SHEEP_FIELD_NAME, ctClass);
+                CtField field = new CtField(objectClass, SHADOW_FIELD_NAME, ctClass);
                 field.setModifiers(Modifier.PUBLIC);
                 ctClass.addField(field);
             }
@@ -51,7 +51,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
 
     @Override
     public void beforeTest() {
-        sheepClassMap.clear();
+        shadowClassMap.clear();
     }
 
     @Override
@@ -59,7 +59,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
     }
 
     public void addProxyClass(Class<?> realClass, Class<?> handlerClass) {
-        sheepClassMap.put(realClass.getName(), handlerClass.getName());
+        shadowClassMap.put(realClass.getName(), handlerClass.getName());
         if (debug) System.out.println("handle " + realClass + " with " + handlerClass);
     }
 
@@ -69,9 +69,9 @@ public class ProxyDelegatingHandler implements ClassHandler {
         if (!invocationPlan.prepare()) return null;
 
         try {
-            return invocationPlan.getMethod().invoke(invocationPlan.getSheep(), params);
+            return invocationPlan.getMethod().invoke(invocationPlan.getShadow(), params);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException(invocationPlan.getSheep().getClass().getName() + " is not assignable from " + invocationPlan.getHandlingClass().getName(), e);
+            throw new RuntimeException(invocationPlan.getShadow().getClass().getName() + " is not assignable from " + invocationPlan.getHandlingClass().getName(), e);
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
@@ -109,31 +109,31 @@ public class ProxyDelegatingHandler implements ClassHandler {
         return clazz;
     }
 
-    public Object sheepFor(Object instance) {
-        Field field = getSheepField(instance);
-        Object sheep = readField(instance, field);
+    public Object shadowFor(Object instance) {
+        Field field = getShadowField(instance);
+        Object shadow = readField(instance, field);
 
-        if (sheep != null) {
-            return sheep;
+        if (shadow != null) {
+            return shadow;
         }
 
-        String sheepClassName = getHandlingClassName(instance.getClass());
+        String shadowClassName = getHandlingClassName(instance.getClass());
 
         if (debug)
-            System.out.println("creating new " + sheepClassName + " as shadow for " + instance.getClass().getName());
+            System.out.println("creating new " + shadowClassName + " as shadow for " + instance.getClass().getName());
         try {
-            Class<?> sheepClass = loadClass(sheepClassName, instance.getClass().getClassLoader());
-            Constructor<?> constructor = findConstructor(instance, sheepClass);
+            Class<?> shadowClass = loadClass(shadowClassName, instance.getClass().getClassLoader());
+            Constructor<?> constructor = findConstructor(instance, shadowClass);
             if (constructor != null) {
-                sheep = constructor.newInstance(instance);
+                shadow = constructor.newInstance(instance);
             } else {
-                sheep = sheepClass.newInstance();
+                shadow = shadowClass.newInstance();
             }
-            field.set(instance, sheep);
+            field.set(instance, shadow);
 
-            injectRealObjectOn(sheep, sheepClass, instance);
+            injectRealObjectOn(shadow, shadowClass, instance);
 
-            return sheep;
+            return shadow;
         } catch (InstantiationException e) {
             throw new RuntimeException(e);
         } catch (IllegalAccessException e) {
@@ -143,43 +143,43 @@ public class ProxyDelegatingHandler implements ClassHandler {
         }
     }
 
-    private void injectRealObjectOn(Object sheep, Class<?> sheepClass, Object instance) {
-        MetaSheep metaSheep = getMetaSheep(sheepClass);
-        for (Field realObjectField : metaSheep.realObjectFields) {
-            writeField(sheep, instance, realObjectField);
+    private void injectRealObjectOn(Object shadow, Class<?> shadowClass, Object instance) {
+        MetaShadow metaShadow = getMetaShadow(shadowClass);
+        for (Field realObjectField : metaShadow.realObjectFields) {
+            writeField(shadow, instance, realObjectField);
         }
-        for (Field sheepWranglerField : metaSheep.sheepWranglerFields) {
-            writeField(sheep, this, sheepWranglerField);
+        for (Field shadowWranglerField : metaShadow.shadowWranglerFields) {
+            writeField(shadow, this, shadowWranglerField);
         }
     }
 
-    private MetaSheep getMetaSheep(Class<?> sheepClass) {
-        synchronized (metaSheepMap) {
-            MetaSheep metaSheep = metaSheepMap.get(sheepClass);
-            if (metaSheep == null) {
-                metaSheep = new MetaSheep(sheepClass);
-                metaSheepMap.put(sheepClass, metaSheep);
+    private MetaShadow getMetaShadow(Class<?> shadowClass) {
+        synchronized (metaShadowMap) {
+            MetaShadow metaShadow = metaShadowMap.get(shadowClass);
+            if (metaShadow == null) {
+                metaShadow = new MetaShadow(shadowClass);
+                metaShadowMap.put(shadowClass, metaShadow);
             }
-            return metaSheep;
+            return metaShadow;
         }
     }
 
     private String getHandlingClassName(Class clazz) {
-        String sheepClassName = null;
-        while (sheepClassName == null && clazz != null) {
-            sheepClassName = sheepClassMap.get(clazz.getName());
+        String shadowClassName = null;
+        while (shadowClassName == null && clazz != null) {
+            shadowClassName = shadowClassMap.get(clazz.getName());
             clazz = clazz.getSuperclass();
         }
-        return sheepClassName;
+        return shadowClassName;
     }
 
-    private Constructor<?> findConstructor(Object instance, Class<?> sheepClass) {
+    private Constructor<?> findConstructor(Object instance, Class<?> shadowClass) {
         Class clazz = instance.getClass();
 
         Constructor constructor;
         for (constructor = null; constructor == null && clazz != null; clazz = clazz.getSuperclass()) {
             try {
-                constructor = sheepClass.getConstructor(clazz);
+                constructor = shadowClass.getConstructor(clazz);
             } catch (NoSuchMethodException e) {
                 // expected
             }
@@ -187,16 +187,16 @@ public class ProxyDelegatingHandler implements ClassHandler {
         return constructor;
     }
 
-    private Field getSheepField(Object instance) {
+    private Field getShadowField(Object instance) {
         Class clazz = instance.getClass();
-        Field field = sheepFieldMap.get(clazz);
+        Field field = shadowFieldMap.get(clazz);
         if (field == null) {
             try {
-                field = clazz.getField(SHEEP_FIELD_NAME);
+                field = clazz.getField(SHADOW_FIELD_NAME);
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException(instance.getClass().getName() + " has no shadow field", e);
             }
-            sheepFieldMap.put(clazz, field);
+            shadowFieldMap.put(clazz, field);
         }
         return field;
     }
@@ -205,7 +205,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
         if (instance == null) {
             throw new RuntimeException("no instance for which to get a proxy");
         }
-        Field field = getSheepField(instance);
+        Field field = getShadowField(instance);
         return readField(instance, field);
     }
 
@@ -232,7 +232,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
         private String[] paramTypes;
         private Class<?> handlingClass;
         private Method method;
-        private Object sheep;
+        private Object shadow;
 
         public InvocationPlan(Class clazz, String methodName, Object instance, String... paramTypes) {
             this.clazz = clazz;
@@ -249,8 +249,8 @@ public class ProxyDelegatingHandler implements ClassHandler {
             return method;
         }
 
-        public Object getSheep() {
-            return sheep;
+        public Object getShadow() {
+            return shadow;
         }
 
         public boolean prepare() {
@@ -286,13 +286,13 @@ public class ProxyDelegatingHandler implements ClassHandler {
             }
 
             if (instance != null) {
-                sheep = sheepFor(instance);
-                method = getMethod(sheep.getClass(), methodName, paramClasses);
+                shadow = shadowFor(instance);
+                method = getMethod(shadow.getClass(), methodName, paramClasses);
             } else {
-                sheep = null;
-                String sheepClassName = getHandlingClassName(clazz);
-                Class<?> sheepClass = loadClass(sheepClassName, classLoader);
-                method = getMethod(sheepClass, methodName, paramClasses);
+                shadow = null;
+                String shadowClassName = getHandlingClassName(clazz);
+                Class<?> shadowClass = loadClass(shadowClassName, classLoader);
+                method = getMethod(shadowClass, methodName, paramClasses);
             }
 
             if (method == null) {
@@ -329,27 +329,27 @@ public class ProxyDelegatingHandler implements ClassHandler {
         }
     }
 
-    private class MetaSheep {
-        private Class<?> sheepClass;
+    private class MetaShadow {
+        private Class<?> shadowClass;
         List<Field> realObjectFields = new ArrayList<Field>();
-        List<Field> sheepWranglerFields = new ArrayList<Field>();
+        List<Field> shadowWranglerFields = new ArrayList<Field>();
 
-        public MetaSheep(Class<?> sheepClass) {
-            this.sheepClass = sheepClass;
+        public MetaShadow(Class<?> shadowClass) {
+            this.shadowClass = shadowClass;
 
-            while (sheepClass != null) {
-                for (Field field : sheepClass.getDeclaredFields()) {
+            while (shadowClass != null) {
+                for (Field field : shadowClass.getDeclaredFields()) {
                     if (field.isAnnotationPresent(RealObject.class)) {
                         field.setAccessible(true);
                         realObjectFields.add(field);
                     }
 
-                    if (field.isAnnotationPresent(SheepWrangler.class)) {
+                    if (field.isAnnotationPresent(ShadowWrangler.class)) {
                         field.setAccessible(true);
-                        sheepWranglerFields.add(field);
+                        shadowWranglerFields.add(field);
                     }
                 }
-                sheepClass = sheepClass.getSuperclass();
+                shadowClass = shadowClass.getSuperclass();
             }
 
         }

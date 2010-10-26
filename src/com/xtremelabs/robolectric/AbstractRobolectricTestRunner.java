@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import com.xtremelabs.robolectric.util.RealObject;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 import com.xtremelabs.robolectric.util.TestHelperInterface;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -22,7 +22,7 @@ public class AbstractRobolectricTestRunner extends BlockJUnit4ClassRunner {
 
         this.loader.delegateLoadingOf(TestHelperInterface.class.getName());
         this.loader.delegateLoadingOf(RealObject.class.getName());
-        this.loader.delegateLoadingOf(SheepWrangler.class.getName());
+        this.loader.delegateLoadingOf(ShadowWrangler.class.getName());
         this.loader.delegateLoadingOf(ProxyDelegatingHandler.class.getName());
     }
 

@@ -6,12 +6,12 @@ import android.widget.ListView;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListActivity.class)
 public class ShadowListActivity extends ShadowActivity {
-    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private ListView listView;
 
     public ShadowListActivity(ListActivity realActivity) {

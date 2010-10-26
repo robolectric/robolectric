@@ -5,7 +5,7 @@ import android.test.mock.MockContext;
 import android.view.View;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.util.RealObject;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -52,14 +52,14 @@ public class ProxyDelegatingHandlerTest {
     }
 
     @Test
-    public void testSheepWranglerAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
+    public void testShadowWranglerAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
         DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
 
         View view = new View(context);
         ProxyDelegatingHandler proxyDelegatingHandler = ProxyDelegatingHandler.getInstance();
 
-        assertSame(proxyDelegatingHandler, shadowOf(view).sheepWranglerInConstructor);
-        assertSame(proxyDelegatingHandler, shadowOf(view).sheepWranglerInParentConstructor);
+        assertSame(proxyDelegatingHandler, shadowOf(view).shadowWranglerInConstructor);
+        assertSame(proxyDelegatingHandler, shadowOf(view).shadowWranglerInParentConstructor);
     }
 
     @Test
@@ -112,9 +112,9 @@ public class ProxyDelegatingHandlerTest {
         private View realViewField;
         private View realViewInConstructor;
 
-        @SheepWrangler
-        ProxyDelegatingHandler sheepWranglerField;
-        ProxyDelegatingHandler sheepWranglerInConstructor;
+        @ShadowWrangler
+        ProxyDelegatingHandler shadowWranglerField;
+        ProxyDelegatingHandler shadowWranglerInConstructor;
 
         private View realViewCtor;
 
@@ -130,7 +130,7 @@ public class ProxyDelegatingHandlerTest {
             super.__constructor__(context);
             this.context = context;
             realViewInConstructor = realViewField;
-            sheepWranglerInConstructor = sheepWranglerField;
+            shadowWranglerInConstructor = shadowWranglerField;
         }
 
         @SuppressWarnings({"UnusedDeclaration"})
@@ -144,13 +144,13 @@ public class ProxyDelegatingHandlerTest {
         private View realView;
         View realViewInParentConstructor;
 
-        @SheepWrangler
-        ProxyDelegatingHandler sheepWranglerParentField;
-        ProxyDelegatingHandler sheepWranglerInParentConstructor;
+        @ShadowWrangler
+        ProxyDelegatingHandler shadowWranglerParentField;
+        ProxyDelegatingHandler shadowWranglerInParentConstructor;
 
         public void __constructor__(Context context) {
             realViewInParentConstructor = realView;
-            sheepWranglerInParentConstructor = sheepWranglerParentField;
+            shadowWranglerInParentConstructor = shadowWranglerParentField;
         }
     }
     

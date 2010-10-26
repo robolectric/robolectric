@@ -10,13 +10,13 @@ import android.test.mock.MockPackageManager;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper extends ShadowContext {
-    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private ContextWrapper realContextWrapper;
     private Context baseContext;
 

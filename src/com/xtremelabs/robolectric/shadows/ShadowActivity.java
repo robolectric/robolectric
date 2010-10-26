@@ -10,12 +10,12 @@ import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextWrapper {
-    @SheepWrangler ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler ProxyDelegatingHandler proxyDelegatingHandler;
 
     private Intent intent;
     public View contentView;

@@ -8,7 +8,7 @@ import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import java.util.Locale;
 
@@ -22,7 +22,7 @@ public class ShadowResources {
         return resources;
     }
 
-    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private ResourceLoader resourceLoader;
 
     @Implementation

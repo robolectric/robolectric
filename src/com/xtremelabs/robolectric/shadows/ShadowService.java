@@ -8,12 +8,12 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Service.class)
 public class ShadowService extends ShadowContextWrapper {
-    @SheepWrangler ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler ProxyDelegatingHandler proxyDelegatingHandler;
     @RealObject Service realService;
 
     public ShadowService(Service realService) {

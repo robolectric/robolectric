@@ -4,14 +4,14 @@ import com.google.android.maps.GeoPoint;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import static com.xtremelabs.robolectric.shadows.ShadowMapView.fromE6;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(GeoPoint.class)
 public class ShadowGeoPoint {
-    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     public int lat;
     public int lng;
 

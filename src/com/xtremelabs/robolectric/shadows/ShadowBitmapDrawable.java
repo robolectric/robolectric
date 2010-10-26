@@ -7,7 +7,7 @@ import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapDrawable.class)
@@ -15,7 +15,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     public int loadedFromResourceId;
 
     @RealObject private BitmapDrawable realBitmapDrawable;
-    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
 
     @Implementation
     public void draw(Canvas canvas) {

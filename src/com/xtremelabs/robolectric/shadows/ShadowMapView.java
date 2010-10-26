@@ -9,7 +9,7 @@ import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -17,7 +17,7 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MapView.class)
 public class ShadowMapView extends ShadowViewGroup {
-    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private boolean satelliteOn;
     public MapController mapController;
     private List<Overlay> overlays = new ArrayList<Overlay>();

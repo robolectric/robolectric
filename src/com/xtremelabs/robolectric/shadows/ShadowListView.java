@@ -7,7 +7,7 @@ import android.widget.ListView;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +15,7 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListView.class)
 public class ShadowListView extends ShadowAdapterView {
-    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     public boolean itemsCanFocus;
     public List<View> headerViews = new ArrayList<View>();
     public List<View> footerViews = new ArrayList<View>();

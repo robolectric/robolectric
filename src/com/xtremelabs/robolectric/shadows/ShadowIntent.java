@@ -10,7 +10,7 @@ import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.Join;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import java.io.*;
 import java.util.HashMap;
@@ -19,7 +19,7 @@ import java.util.Map;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)
 public class ShadowIntent {
-    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private Intent realIntent;
     public HashMap<String, Object> extras = new HashMap<String, Object>();
     public String action;

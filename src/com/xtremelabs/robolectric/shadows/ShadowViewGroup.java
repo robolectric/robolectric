@@ -5,7 +5,7 @@ import android.view.ViewGroup;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +13,7 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewGroup.class)
 public class ShadowViewGroup extends ShadowView {
-    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private List<View> children = new ArrayList<View>();
 
     public ShadowViewGroup(ViewGroup viewGroup) {

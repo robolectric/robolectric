@@ -21,7 +21,7 @@ import android.util.Log;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.SheepWrangler;
+import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +31,7 @@ import java.util.Set;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContentValues.class)
 public final class ShadowContentValues {
-    @SheepWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
+    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private HashMap<String, Object> values = new HashMap<String, Object>();
     private static final String TAG = "ShadowContentValues";
 
