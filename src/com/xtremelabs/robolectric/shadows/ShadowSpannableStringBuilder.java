@@ -6,7 +6,7 @@ import com.xtremelabs.robolectric.util.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(SpannableStringBuilder.class)
-public class ShadowSpannableStringBuilder {
+public class ShadowSpannableStringBuilder implements CharSequence {
     private final SpannableStringBuilder real;
 
     private StringBuilder builder;
@@ -33,10 +33,21 @@ public class ShadowSpannableStringBuilder {
     }
 
     @Implementation
-    public int length() {
+    @Override public int length() {
         return builder.length();
     }
 
+    @Implementation
+    @Override public char charAt(int index) {
+        return builder.charAt(index);
+    }
+
+    @Implementation
+    @Override public CharSequence subSequence(int start, int end) {
+        return builder.subSequence(start, end);
+    }
+
+    @Implementation
     public String toString() {
         return builder.toString();
     }
