@@ -9,7 +9,6 @@ import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
@@ -18,8 +17,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.mockito.Mockito.mock;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Application.class)
@@ -34,6 +33,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private Application realApplication;
     private ResourceLoader resourceLoader;
     private MockContentResolver contentResolver = new MockContentResolver();
+    private AlarmManager alarmManager;
     private LocationManager locationManager;
     private WifiManager wifiManager;
     private List<Intent> startedActivities = new ArrayList<Intent>();
@@ -69,17 +69,11 @@ public class ShadowApplication extends ShadowContextWrapper {
         if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
             return LayoutInflater.from(realApplication);
         } else if (name.equals(Context.ALARM_SERVICE)) {
-            return mock(AlarmManager.class);
+            return alarmManager == null ? alarmManager = newInstanceOf(AlarmManager.class) : alarmManager;
         } else if (name.equals(Context.LOCATION_SERVICE)) {
-            if (locationManager == null) {
-                locationManager = mock(LocationManager.class);
-            }
-            return locationManager;
+            return locationManager == null ? locationManager = newInstanceOf(LocationManager.class) : locationManager;
         } else if (name.equals(Context.WIFI_SERVICE)) {
-            if (wifiManager == null) {
-                wifiManager = Robolectric.newInstanceOf(WifiManager.class);
-            }
-            return wifiManager;
+            return wifiManager == null ? wifiManager = newInstanceOf(WifiManager.class) : wifiManager;
         }
         return null;
     }
