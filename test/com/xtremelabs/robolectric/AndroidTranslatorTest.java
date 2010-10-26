@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 
 import java.lang.reflect.Constructor;
 
-import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.shadowFor;
+import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.shadowOf;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
@@ -39,7 +39,7 @@ public class AndroidTranslatorTest {
         ShadowItemizedOverlayForTests overlay = new ShadowItemizedOverlayForTests(null);
         overlay.triggerProtectedCall();
         
-        assertThat(((ShadowItemizedOverlay) shadowFor(overlay)).populated, is(true));
+        assertThat(((ShadowItemizedOverlay) shadowOf(overlay)).populated, is(true));
     }
 
     @Test
@@ -54,8 +54,8 @@ public class AndroidTranslatorTest {
         Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
         ctor.setAccessible(true);
         ClassWithNoDefaultConstructor instance = ctor.newInstance();
-        assertThat(shadowFor(instance), not(nullValue()));
-        assertThat(shadowFor(instance), instanceOf(ShadowClassWithNoDefaultConstructors.class));
+        assertThat(shadowOf(instance), not(nullValue()));
+        assertThat(shadowOf(instance), instanceOf(ShadowClassWithNoDefaultConstructors.class));
     }
 
     public static class ShadowItemizedOverlayForTests extends ItemizedOverlay {

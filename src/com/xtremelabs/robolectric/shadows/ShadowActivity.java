@@ -111,6 +111,6 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
 
     public void assertNoBroadcastListenersRegistered() {
-        ((ShadowApplication) proxyDelegatingHandler.shadowFor(getApplicationContext())).assertNoBroadcastListenersRegistered(realActivity, "Activity");
+        ((ShadowApplication) proxyDelegatingHandler.shadowOf(getApplicationContext())).assertNoBroadcastListenersRegistered(realActivity, "Activity");
     }
 }

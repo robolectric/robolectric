@@ -32,7 +32,7 @@ public class ShadowListActivity extends ShadowActivity {
         if (parent instanceof ListView) {
             return (ListView) parent;
         }
-        ShadowViewGroup shadowViewGroup = (ShadowViewGroup) proxyDelegatingHandler.shadowFor(parent);
+        ShadowViewGroup shadowViewGroup = (ShadowViewGroup) proxyDelegatingHandler.shadowOf(parent);
         for (int i = 0; i < shadowViewGroup.getChildCount(); i++) {
             ListView listView = findListView(shadowViewGroup.getChildAt(i));
             if (listView != null) {

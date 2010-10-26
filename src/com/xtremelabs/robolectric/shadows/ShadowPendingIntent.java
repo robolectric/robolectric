@@ -26,7 +26,7 @@ public class ShadowPendingIntent {
 
     private static PendingIntent create(Intent intent, boolean isService) {
         PendingIntent pendingIntent = Robolectric.newInstanceOf(PendingIntent.class);
-        ShadowPendingIntent shadowPendingIntent = (ShadowPendingIntent) ProxyDelegatingHandler.getInstance().shadowFor(pendingIntent);
+        ShadowPendingIntent shadowPendingIntent = (ShadowPendingIntent) ProxyDelegatingHandler.getInstance().shadowOf(pendingIntent);
         shadowPendingIntent.savedIntent = intent;
         shadowPendingIntent.isServiceIntent = isService;
         return pendingIntent;

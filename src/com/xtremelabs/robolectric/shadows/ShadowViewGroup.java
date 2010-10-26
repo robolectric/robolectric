@@ -66,7 +66,7 @@ public class ShadowViewGroup extends ShadowView {
     }
 
     private ShadowView childProxy(View child) {
-        return (ShadowView) proxyDelegatingHandler.shadowFor(child);
+        return (ShadowView) proxyDelegatingHandler.shadowOf(child);
     }
 
     @Override

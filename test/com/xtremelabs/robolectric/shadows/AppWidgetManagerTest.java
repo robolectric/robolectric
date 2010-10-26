@@ -31,7 +31,7 @@ public class AppWidgetManagerTest {
         DogfoodRobolectricTestRunner.addGenericProxies();
         Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
         appWidgetManager = AppWidgetManager.getInstance(Robolectric.application);
-        shadowAppWidgetManager = shadowFor(appWidgetManager);
+        shadowAppWidgetManager = shadowOf(appWidgetManager);
     }
 
     @Test
@@ -86,16 +86,16 @@ public class AppWidgetManagerTest {
     }
 
     private void assertContains(String expectedText, View view) {
-        String actualText = shadowFor(view).innerText();
+        String actualText = shadowOf(view).innerText();
         assertTrue("Expected <" + actualText + "> to contain <" + expectedText + ">", actualText.contains(expectedText));
     }
 
-    private ShadowView shadowFor(View instance) {
-        return (ShadowView) ProxyDelegatingHandler.getInstance().shadowFor(instance);
+    private ShadowView shadowOf(View instance) {
+        return (ShadowView) ProxyDelegatingHandler.getInstance().shadowOf(instance);
     }
 
-    private ShadowAppWidgetManager shadowFor(AppWidgetManager instance) {
-        return (ShadowAppWidgetManager) ProxyDelegatingHandler.getInstance().shadowFor(instance);
+    private ShadowAppWidgetManager shadowOf(AppWidgetManager instance) {
+        return (ShadowAppWidgetManager) ProxyDelegatingHandler.getInstance().shadowOf(instance);
     }
 
     public static class SpanishTestAppWidgetProvider extends AppWidgetProvider {

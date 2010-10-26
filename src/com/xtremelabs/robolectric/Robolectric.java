@@ -118,129 +118,129 @@ public class Robolectric {
         ShadowLooper.resetAll();
     }
 
-    public static ShadowDrawable shadowFor(Drawable instance) {
-        return (ShadowDrawable) shadowFor_(instance);
+    public static ShadowDrawable shadowOf(Drawable instance) {
+        return (ShadowDrawable) shadowOf_(instance);
     }
 
-    public static ShadowToast shadowFor(Toast instance) {
-        return (ShadowToast) shadowFor_(instance);
+    public static ShadowToast shadowOf(Toast instance) {
+        return (ShadowToast) shadowOf_(instance);
     }
 
-    public static ShadowBitmapDrawable shadowFor(BitmapDrawable instance) {
-        return (ShadowBitmapDrawable) shadowFor_(instance);
+    public static ShadowBitmapDrawable shadowOf(BitmapDrawable instance) {
+        return (ShadowBitmapDrawable) shadowOf_(instance);
     }
 
-    public static ShadowZoomButtonsController shadowFor(ZoomButtonsController instance) {
-        return (ShadowZoomButtonsController) shadowFor_(instance);
+    public static ShadowZoomButtonsController shadowOf(ZoomButtonsController instance) {
+        return (ShadowZoomButtonsController) shadowOf_(instance);
     }
 
-    public static ShadowGeoPoint shadowFor(GeoPoint instance) {
-        return (ShadowGeoPoint) shadowFor_(instance);
+    public static ShadowGeoPoint shadowOf(GeoPoint instance) {
+        return (ShadowGeoPoint) shadowOf_(instance);
     }
 
-    public static ShadowMapView shadowFor(MapView instance) {
-        return (ShadowMapView) shadowFor_(instance);
+    public static ShadowMapView shadowOf(MapView instance) {
+        return (ShadowMapView) shadowOf_(instance);
     }
 
-    public static ShadowMapController shadowFor(MapController instance) {
-        return (ShadowMapController) shadowFor_(instance);
+    public static ShadowMapController shadowOf(MapController instance) {
+        return (ShadowMapController) shadowOf_(instance);
     }
 
-    public static ShadowItemizedOverlay shadowFor(ItemizedOverlay instance) {
-        return (ShadowItemizedOverlay) shadowFor_(instance);
+    public static ShadowItemizedOverlay shadowOf(ItemizedOverlay instance) {
+        return (ShadowItemizedOverlay) shadowOf_(instance);
     }
 
-    public static ShadowListView shadowFor(ListView instance) {
-        return (ShadowListView) shadowFor_(instance);
+    public static ShadowListView shadowOf(ListView instance) {
+        return (ShadowListView) shadowOf_(instance);
     }
 
-    public static ShadowActivity shadowFor(Activity instance) {
-        return (ShadowActivity) shadowFor_(instance);
+    public static ShadowActivity shadowOf(Activity instance) {
+        return (ShadowActivity) shadowOf_(instance);
     }
 
-    public static ShadowContextWrapper shadowFor(ContextWrapper instance) {
-        return (ShadowContextWrapper) shadowFor_(instance);
+    public static ShadowContextWrapper shadowOf(ContextWrapper instance) {
+        return (ShadowContextWrapper) shadowOf_(instance);
     }
 
-    public static ShadowContextWrapper shadowFor(Context instance) {
-        return (ShadowContextWrapper) shadowFor_(instance);
+    public static ShadowContextWrapper shadowOf(Context instance) {
+        return (ShadowContextWrapper) shadowOf_(instance);
     }
 
-    public static ShadowPaint shadowFor(Paint instance) {
-        return (ShadowPaint) shadowFor_(instance);
+    public static ShadowPaint shadowOf(Paint instance) {
+        return (ShadowPaint) shadowOf_(instance);
     }
 
-    public static ShadowPath shadowFor(Path instance) {
-        return (ShadowPath) shadowFor_(instance);
+    public static ShadowPath shadowOf(Path instance) {
+        return (ShadowPath) shadowOf_(instance);
     }
 
-    public static ShadowListActivity shadowFor(ListActivity instance) {
-        return (ShadowListActivity) shadowFor_(instance);
+    public static ShadowListActivity shadowOf(ListActivity instance) {
+        return (ShadowListActivity) shadowOf_(instance);
     }
 
-    public static ShadowHandler shadowFor(Handler instance) {
-        return (ShadowHandler) shadowFor_(instance);
+    public static ShadowHandler shadowOf(Handler instance) {
+        return (ShadowHandler) shadowOf_(instance);
     }
 
-    public static ShadowIntent shadowFor(Intent instance) {
-        return (ShadowIntent) shadowFor_(instance);
+    public static ShadowIntent shadowOf(Intent instance) {
+        return (ShadowIntent) shadowOf_(instance);
     }
 
-    public static ShadowView shadowFor(View instance) {
-        return (ShadowView) shadowFor_(instance);
+    public static ShadowView shadowOf(View instance) {
+        return (ShadowView) shadowOf_(instance);
     }
 
-    public static ShadowViewGroup shadowFor(ViewGroup instance) {
-        return (ShadowViewGroup) shadowFor_(instance);
+    public static ShadowViewGroup shadowOf(ViewGroup instance) {
+        return (ShadowViewGroup) shadowOf_(instance);
     }
 
-    public static ShadowAdapterView shadowFor(AdapterView instance) {
-        return (ShadowAdapterView) shadowFor_(instance);
+    public static ShadowAdapterView shadowOf(AdapterView instance) {
+        return (ShadowAdapterView) shadowOf_(instance);
     }
 
-    public static ShadowTextView shadowFor(TextView instance) {
-        return (ShadowTextView) shadowFor_(instance);
+    public static ShadowTextView shadowOf(TextView instance) {
+        return (ShadowTextView) shadowOf_(instance);
     }
 
-    public static ShadowImageView shadowFor(ImageView instance) {
-        return (ShadowImageView) shadowFor_(instance);
+    public static ShadowImageView shadowOf(ImageView instance) {
+        return (ShadowImageView) shadowOf_(instance);
     }
 
-    public static ShadowRemoteViews shadowFor(RemoteViews instance) {
-        return (ShadowRemoteViews) shadowFor_(instance);
+    public static ShadowRemoteViews shadowOf(RemoteViews instance) {
+        return (ShadowRemoteViews) shadowOf_(instance);
     }
 
-    public static ShadowDialog shadowFor(Dialog instance) {
-        return (ShadowDialog) shadowFor_(instance);
+    public static ShadowDialog shadowOf(Dialog instance) {
+        return (ShadowDialog) shadowOf_(instance);
     }
 
-    public static ShadowAlertDialog shadowFor(AlertDialog instance) {
-        return (ShadowAlertDialog) shadowFor_(instance);
+    public static ShadowAlertDialog shadowOf(AlertDialog instance) {
+        return (ShadowAlertDialog) shadowOf_(instance);
     }
 
-    public static ShadowLooper shadowFor(Looper instance) {
-        return (ShadowLooper) shadowFor_(instance);
+    public static ShadowLooper shadowOf(Looper instance) {
+        return (ShadowLooper) shadowOf_(instance);
     }
 
-    public static ShadowCanvas shadowFor(Canvas instance) {
-        return (ShadowCanvas) shadowFor_(instance);
+    public static ShadowCanvas shadowOf(Canvas instance) {
+        return (ShadowCanvas) shadowOf_(instance);
     }
 
-    public static ShadowLocationManager shadowFor(LocationManager instance) {
-        return (ShadowLocationManager) shadowFor_(instance);
+    public static ShadowLocationManager shadowOf(LocationManager instance) {
+        return (ShadowLocationManager) shadowOf_(instance);
     }
 
-    public static ShadowAppWidgetManager shadowFor(AppWidgetManager instance) {
-        return (ShadowAppWidgetManager) shadowFor_(instance);
+    public static ShadowAppWidgetManager shadowOf(AppWidgetManager instance) {
+        return (ShadowAppWidgetManager) shadowOf_(instance);
     }
 
-    public static ShadowResources shadowFor(Resources instance) {
-        return (ShadowResources) shadowFor_(instance);
+    public static ShadowResources shadowOf(Resources instance) {
+        return (ShadowResources) shadowOf_(instance);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <P, R> P shadowFor_(R instance) {
-        return (P) ProxyDelegatingHandler.getInstance().shadowFor(instance);
+    public static <P, R> P shadowOf_(R instance) {
+        return (P) ProxyDelegatingHandler.getInstance().shadowOf(instance);
     }
 
     public static void addProxy(Class<?> realClass, Class<?> handlerClass) {

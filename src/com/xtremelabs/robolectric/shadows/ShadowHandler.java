@@ -32,7 +32,7 @@ public class ShadowHandler {
 
     @Implementation
     public boolean postDelayed(Runnable r, long delayMillis) {
-        shadowFor(looper).post(r, delayMillis);
+        shadowOf(looper).post(r, delayMillis);
         return true;
     }
 
@@ -56,10 +56,10 @@ public class ShadowHandler {
     }
 
     public static void flush() {
-        shadowFor(Looper.myLooper()).idle();
+        shadowOf(Looper.myLooper()).idle();
     }
 
-    private static ShadowLooper shadowFor(Looper looper) {
-        return (ShadowLooper) ProxyDelegatingHandler.getInstance().shadowFor(looper);
+    private static ShadowLooper shadowOf(Looper looper) {
+        return (ShadowLooper) ProxyDelegatingHandler.getInstance().shadowOf(looper);
     }
 }

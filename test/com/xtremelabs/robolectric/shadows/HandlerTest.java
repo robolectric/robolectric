@@ -33,7 +33,7 @@ public class HandlerTest {
         Handler handler2 = new Handler(looper);
         handler2.post(new Say("second thing"));
 
-        shadowFor(looper).idle();
+        shadowOf(looper).idle();
 
         transcript.assertEventsSoFar("first thing", "second thing");
     }
@@ -46,7 +46,7 @@ public class HandlerTest {
         Handler handler2 = new Handler(Looper.myLooper());
         handler2.post(new Say("second thing"));
 
-        shadowFor(Looper.myLooper()).idle();
+        shadowOf(Looper.myLooper()).idle();
 
         transcript.assertEventsSoFar("first thing", "second thing");
     }
@@ -62,14 +62,14 @@ public class HandlerTest {
         Handler handler2 = new Handler(looper2);
         handler2.post(new Say("second thing"));
 
-        shadowFor(looper2).idle();
+        shadowOf(looper2).idle();
 
         transcript.assertEventsSoFar("second thing");
     }
 
 
-    private ShadowLooper shadowFor(Looper view) {
-        return (ShadowLooper) DogfoodRobolectricTestRunner.shadowFor(view);
+    private ShadowLooper shadowOf(Looper view) {
+        return (ShadowLooper) DogfoodRobolectricTestRunner.shadowOf(view);
     }
 
     private class Say implements Runnable {

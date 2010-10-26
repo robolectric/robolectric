@@ -30,7 +30,7 @@ public class ShadowToast {
     @Implementation
     public static Toast makeText(Context context, CharSequence text, int duration) {
         Toast toast = new Toast(null);
-        shadowFor(toast).text = text.toString();
+        shadowOf(toast).text = text.toString();
         return toast;
     }
 
@@ -59,8 +59,8 @@ public class ShadowToast {
         return gravity;
     }
 
-    private static ShadowToast shadowFor(Toast toast) {
-        return (ShadowToast) ProxyDelegatingHandler.getInstance().shadowFor(toast);
+    private static ShadowToast shadowOf(Toast toast) {
+        return (ShadowToast) ProxyDelegatingHandler.getInstance().shadowOf(toast);
     }
 
     public static void reset() {
@@ -83,7 +83,7 @@ public class ShadowToast {
 
     public static boolean showedToast(CharSequence message) {
         for (Toast toast : shownToasts) {
-            String text = shadowFor(toast).text;
+            String text = shadowOf(toast).text;
             if (text != null && text.equals(message.toString())) {
                 return true;
             }
@@ -92,7 +92,7 @@ public class ShadowToast {
     }
 
     public static String getTextOfLatestToast() {
-        return shadowFor(shownToasts.get(0)).text;
+        return shadowOf(shownToasts.get(0)).text;
     }
 
     public static Toast getLatestToast() {

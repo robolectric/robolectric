@@ -61,7 +61,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     @Implementation
     public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-        return ((ShadowApplication) proxyDelegatingHandler.shadowFor(getApplicationContext())).registerReceiverWithContext(receiver, filter, realContextWrapper);
+        return ((ShadowApplication) proxyDelegatingHandler.shadowOf(getApplicationContext())).registerReceiverWithContext(receiver, filter, realContextWrapper);
     }
 
     @Implementation
@@ -120,7 +120,7 @@ public class ShadowContextWrapper extends ShadowContext {
     }
 
     private ShadowApplication getShadowApplication() {
-        return ((ShadowApplication) proxyDelegatingHandler.shadowFor(getApplicationContext()));
+        return ((ShadowApplication) proxyDelegatingHandler.shadowOf(getApplicationContext()));
     }
 
     @Implementation

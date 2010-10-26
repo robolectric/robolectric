@@ -22,7 +22,7 @@ public class HasResourceMatcher extends TypeSafeMatcher<ImageView> {
             return false;
         }
 
-        actualResourceId = shadowFor(actual).resourceId;
+        actualResourceId = shadowOf(actual).resourceId;
 
         return actualResourceId == expectedResourceId;
     }
@@ -43,7 +43,7 @@ public class HasResourceMatcher extends TypeSafeMatcher<ImageView> {
         return new HasResourceMatcher(expectedResourceId);
     }
 
-    private ShadowImageView shadowFor(ImageView actual) {
-        return (ShadowImageView) ProxyDelegatingHandler.getInstance().shadowFor(actual);
+    private ShadowImageView shadowOf(ImageView actual) {
+        return (ShadowImageView) ProxyDelegatingHandler.getInstance().shadowOf(actual);
     }
 }

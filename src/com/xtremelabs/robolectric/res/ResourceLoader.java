@@ -55,7 +55,7 @@ public class ResourceLoader {
     }
 
     public static ResourceLoader getFrom(Context context) {
-        return ((ShadowApplication) ProxyDelegatingHandler.getInstance().shadowFor(context.getApplicationContext())).getResourceLoader();
+        return ((ShadowApplication) ProxyDelegatingHandler.getInstance().shadowOf(context.getApplicationContext())).getResourceLoader();
     }
 
     public String getNameForId(int viewId) {

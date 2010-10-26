@@ -201,7 +201,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
         return field;
     }
 
-    public Object shadowFor(Object instance) {
+    public Object shadowOf(Object instance) {
         if (instance == null) {
             throw new RuntimeException("no instance for which to get a proxy");
         }

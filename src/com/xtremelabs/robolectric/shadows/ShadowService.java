@@ -36,6 +36,6 @@ public class ShadowService extends ShadowContextWrapper {
     }
 
     public void assertNoBroadcastListenersRegistered() {
-        ((ShadowApplication) proxyDelegatingHandler.shadowFor(getApplicationContext())).assertNoBroadcastListenersRegistered(realService, "Service");
+        ((ShadowApplication) proxyDelegatingHandler.shadowOf(getApplicationContext())).assertNoBroadcastListenersRegistered(realService, "Service");
     }
 }

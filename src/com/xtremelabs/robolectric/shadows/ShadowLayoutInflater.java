@@ -34,7 +34,7 @@ public class ShadowLayoutInflater {
     }
 
     private ViewLoader getViewLoader() {
-        return ((ShadowApplication) proxyDelegatingHandler.shadowFor(context.getApplicationContext())).getResourceLoader().viewLoader;
+        return ((ShadowApplication) proxyDelegatingHandler.shadowOf(context.getApplicationContext())).getResourceLoader().viewLoader;
     }
 
     @Implementation
@@ -43,13 +43,13 @@ public class ShadowLayoutInflater {
     }
 
     private static LayoutInflater bind(LayoutInflater layoutInflater, Context context) {
-        ShadowLayoutInflater shadowLayoutInflater = shadowFor(layoutInflater);
+        ShadowLayoutInflater shadowLayoutInflater = shadowOf(layoutInflater);
         shadowLayoutInflater.context = context;
         return layoutInflater;
     }
 
-    private static ShadowLayoutInflater shadowFor(LayoutInflater instance) {
-        return ((ShadowLayoutInflater) ProxyDelegatingHandler.getInstance().shadowFor(instance));
+    private static ShadowLayoutInflater shadowOf(LayoutInflater instance) {
+        return ((ShadowLayoutInflater) ProxyDelegatingHandler.getInstance().shadowOf(instance));
     }
 
     private static class LayoutInflaterAppSingletonizer extends AppSingletonizer<LayoutInflater> {

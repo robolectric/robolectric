@@ -20,7 +20,7 @@ public class ShadowMotionEvent {
             Constructor<MotionEvent> constructor = MotionEvent.class.getDeclaredConstructor();
             constructor.setAccessible(true);
             MotionEvent motionEvent = constructor.newInstance();
-            ShadowMotionEvent shadowMotionEvent = (ShadowMotionEvent) ProxyDelegatingHandler.getInstance().shadowFor(motionEvent);
+            ShadowMotionEvent shadowMotionEvent = (ShadowMotionEvent) ProxyDelegatingHandler.getInstance().shadowOf(motionEvent);
             shadowMotionEvent.x = x;
             shadowMotionEvent.y = y;
             shadowMotionEvent.action = action;

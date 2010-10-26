@@ -27,7 +27,7 @@ public class ProxyDelegatingHandlerTest {
         DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class);
 
         View view = new View(context);
-        assertEquals(TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class, DogfoodRobolectricTestRunner.shadowFor(view).getClass());
+        assertEquals(TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class, DogfoodRobolectricTestRunner.shadowOf(view).getClass());
     }
 
     @Test
@@ -35,8 +35,8 @@ public class ProxyDelegatingHandlerTest {
         DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
 
         View view = new View(context);
-        assertSame(context, shadowFor(view).context);
-        assertSame(view, shadowFor(view).realViewCtor);
+        assertSame(context, shadowOf(view).context);
+        assertSame(view, shadowOf(view).realViewCtor);
     }
 
     @Test
@@ -44,11 +44,11 @@ public class ProxyDelegatingHandlerTest {
         DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
 
         View view = new View(context);
-        assertSame(context, shadowFor(view).context);
-        assertSame(view, shadowFor(view).realViewField);
+        assertSame(context, shadowOf(view).context);
+        assertSame(view, shadowOf(view).realViewField);
 
-        assertSame(view, shadowFor(view).realViewInConstructor);
-        assertSame(view, shadowFor(view).realViewInParentConstructor);
+        assertSame(view, shadowOf(view).realViewInConstructor);
+        assertSame(view, shadowOf(view).realViewInParentConstructor);
     }
 
     @Test
@@ -58,8 +58,8 @@ public class ProxyDelegatingHandlerTest {
         View view = new View(context);
         ProxyDelegatingHandler proxyDelegatingHandler = ProxyDelegatingHandler.getInstance();
 
-        assertSame(proxyDelegatingHandler, shadowFor(view).sheepWranglerInConstructor);
-        assertSame(proxyDelegatingHandler, shadowFor(view).sheepWranglerInParentConstructor);
+        assertSame(proxyDelegatingHandler, shadowOf(view).sheepWranglerInConstructor);
+        assertSame(proxyDelegatingHandler, shadowOf(view).sheepWranglerInParentConstructor);
     }
 
     @Test
@@ -75,7 +75,7 @@ public class ProxyDelegatingHandlerTest {
         DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
 
         TextView textView = new TextView(context);
-        assertEquals(TestShadowView.class, DogfoodRobolectricTestRunner.shadowFor(textView).getClass());
+        assertEquals(TestShadowView.class, DogfoodRobolectricTestRunner.shadowOf(textView).getClass());
     }
 
     @Test
@@ -84,7 +84,7 @@ public class ProxyDelegatingHandlerTest {
         DogfoodRobolectricTestRunner.addProxy(TextView.class, TestShadowTextView.class);
 
         TextView textView = new TextView(context);
-        assertThat(shadowFor(textView), instanceOf(TestShadowTextView.class));
+        assertThat(shadowOf(textView), instanceOf(TestShadowTextView.class));
     }
 
     @Test
@@ -99,12 +99,12 @@ public class ProxyDelegatingHandlerTest {
     }
 
 
-    private TestShadowView shadowFor(View view) {
-        return (TestShadowView) DogfoodRobolectricTestRunner.shadowFor(view);
+    private TestShadowView shadowOf(View view) {
+        return (TestShadowView) DogfoodRobolectricTestRunner.shadowOf(view);
     }
 
-    private TestShadowTextView shadowFor(TextView view) {
-        return (TestShadowTextView) DogfoodRobolectricTestRunner.shadowFor(view);
+    private TestShadowTextView shadowOf(TextView view) {
+        return (TestShadowTextView) DogfoodRobolectricTestRunner.shadowOf(view);
     }
 
     public static class TestShadowView extends TestShadowViewParent {
