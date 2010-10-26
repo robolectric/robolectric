@@ -2,18 +2,17 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.view.View;
 import android.view.ViewGroup;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewGroup.class)
 public class ShadowViewGroup extends ShadowView {
-    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private List<View> children = new ArrayList<View>();
 
     public ShadowViewGroup(ViewGroup viewGroup) {
@@ -39,7 +38,7 @@ public class ShadowViewGroup extends ShadowView {
     @Implementation
     public void addView(View child) {
         children.add(child);
-        childProxy(child).parent = this;
+        shadowOf(child).parent = this;
     }
 
     @Implementation
@@ -55,18 +54,14 @@ public class ShadowViewGroup extends ShadowView {
     @Implementation
     public void removeAllViews() {
         for (View child : children) {
-            childProxy(child).parent = null;
+            shadowOf(child).parent = null;
         }
         children.clear();
     }
 
     @Implementation
     public void removeViewAt(int position) {
-        childProxy(children.remove(position)).parent = null;
-    }
-
-    private ShadowView childProxy(View child) {
-        return (ShadowView) proxyDelegatingHandler.shadowOf(child);
+        shadowOf(children.remove(position)).parent = null;
     }
 
     @Override
@@ -76,7 +71,7 @@ public class ShadowViewGroup extends ShadowView {
 
         for (int i = 0; i < getChildCount(); i++) {
             View child = getChildAt(i);
-            String childText = childProxy(child).innerText();
+            String childText = shadowOf(child).innerText();
             if (childText.length() > 0) {
                 innerText += delimiter;
                 delimiter = " ";

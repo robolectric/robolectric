@@ -1,13 +1,13 @@
 package com.xtremelabs.robolectric.matchers;
 
 import android.widget.ImageView;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.shadows.ShadowImageView;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.junit.internal.matchers.TypeSafeMatcher;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ImageViewHasDrawableMatcher<T extends ImageView> extends TypeSafeMatcher<T> {
     private int expectedResourceId;
@@ -25,7 +25,7 @@ public class ImageViewHasDrawableMatcher<T extends ImageView> extends TypeSafeMa
 
         ResourceLoader resourceLoader = ResourceLoader.getFrom(actualImageView.getContext());
 
-        int actualResourceId = ((ShadowImageView) ProxyDelegatingHandler.getInstance().shadowOf(actualImageView)).resourceId;
+        int actualResourceId = shadowOf(actualImageView).resourceId;
         String actualName = nameOrUnset(resourceLoader, actualResourceId);
         String expectedName = nameOrUnset(resourceLoader, expectedResourceId);
         message = "[" + actualResourceId + " (" + actualName + ")] to equal [" + expectedResourceId + " (" + expectedName + ")]";

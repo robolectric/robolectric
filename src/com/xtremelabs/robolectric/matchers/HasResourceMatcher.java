@@ -1,12 +1,12 @@
 package com.xtremelabs.robolectric.matchers;
 
 import android.widget.ImageView;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.shadows.ShadowImageView;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.junit.internal.matchers.TypeSafeMatcher;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class HasResourceMatcher extends TypeSafeMatcher<ImageView> {
     private int expectedResourceId;
@@ -43,7 +43,4 @@ public class HasResourceMatcher extends TypeSafeMatcher<ImageView> {
         return new HasResourceMatcher(expectedResourceId);
     }
 
-    private ShadowImageView shadowOf(ImageView actual) {
-        return (ShadowImageView) ProxyDelegatingHandler.getInstance().shadowOf(actual);
-    }
 }

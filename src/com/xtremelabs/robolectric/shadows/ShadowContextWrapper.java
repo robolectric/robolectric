@@ -7,16 +7,15 @@ import android.content.res.Resources;
 import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockPackageManager;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.ShadowWrangler;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper extends ShadowContext {
-    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private ContextWrapper realContextWrapper;
     private Context baseContext;
 
@@ -61,7 +60,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     @Implementation
     public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
-        return ((ShadowApplication) proxyDelegatingHandler.shadowOf(getApplicationContext())).registerReceiverWithContext(receiver, filter, realContextWrapper);
+        return ((ShadowApplication) shadowOf(getApplicationContext())).registerReceiverWithContext(receiver, filter, realContextWrapper);
     }
 
     @Implementation
@@ -120,7 +119,7 @@ public class ShadowContextWrapper extends ShadowContext {
     }
 
     private ShadowApplication getShadowApplication() {
-        return ((ShadowApplication) proxyDelegatingHandler.shadowOf(getApplicationContext()));
+        return ((ShadowApplication) shadowOf(getApplicationContext()));
     }
 
     @Implementation

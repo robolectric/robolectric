@@ -3,15 +3,14 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.ListActivity;
 import android.view.View;
 import android.widget.ListView;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.ShadowWrangler;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListActivity.class)
 public class ShadowListActivity extends ShadowActivity {
-    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private ListView listView;
 
     public ShadowListActivity(ListActivity realActivity) {
@@ -32,7 +31,7 @@ public class ShadowListActivity extends ShadowActivity {
         if (parent instanceof ListView) {
             return (ListView) parent;
         }
-        ShadowViewGroup shadowViewGroup = (ShadowViewGroup) proxyDelegatingHandler.shadowOf(parent);
+        ShadowViewGroup shadowViewGroup = (ShadowViewGroup) shadowOf(parent);
         for (int i = 0; i < shadowViewGroup.getChildCount(); i++) {
             ListView listView = findListView(shadowViewGroup.getChildAt(i));
             if (listView != null) {

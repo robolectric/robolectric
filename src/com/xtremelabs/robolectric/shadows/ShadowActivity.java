@@ -6,17 +6,15 @@ import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.ShadowWrangler;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextWrapper {
-    @ShadowWrangler ProxyDelegatingHandler proxyDelegatingHandler;
-
     private Intent intent;
     public View contentView;
 
@@ -111,6 +109,6 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
 
     public void assertNoBroadcastListenersRegistered() {
-        ((ShadowApplication) proxyDelegatingHandler.shadowOf(getApplicationContext())).assertNoBroadcastListenersRegistered(realActivity, "Activity");
+        ((ShadowApplication) shadowOf(getApplicationContext())).assertNoBroadcastListenersRegistered(realActivity, "Activity");
     }
 }

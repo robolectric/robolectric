@@ -4,25 +4,24 @@ import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import java.util.Locale;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)
 public class ShadowResources {
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
-        ShadowResources shadowResources = (ShadowResources) ProxyDelegatingHandler.getInstance().shadowOf(resources);
+        ShadowResources shadowResources = shadowOf(resources);
         if (shadowResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
         shadowResources.resourceLoader = resourceLoader;
         return resources;
     }
 
-    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private ResourceLoader resourceLoader;
 
     @Implementation
@@ -63,7 +62,7 @@ public class ShadowResources {
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
         RobolectricBitmapDrawable bitmapDrawable = new RobolectricBitmapDrawable(drawableResourceId);
-        ShadowBitmapDrawable shadowBitmapDrawable = (ShadowBitmapDrawable) proxyDelegatingHandler.shadowOf(bitmapDrawable);
+        ShadowBitmapDrawable shadowBitmapDrawable = shadowOf(bitmapDrawable);
         shadowBitmapDrawable.loadedFromResourceId = drawableResourceId;
         return bitmapDrawable;
     }

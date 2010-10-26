@@ -3,7 +3,6 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
@@ -26,7 +25,7 @@ public class ShadowPendingIntent {
 
     private static PendingIntent create(Intent intent, boolean isService) {
         PendingIntent pendingIntent = Robolectric.newInstanceOf(PendingIntent.class);
-        ShadowPendingIntent shadowPendingIntent = (ShadowPendingIntent) ProxyDelegatingHandler.getInstance().shadowOf(pendingIntent);
+        ShadowPendingIntent shadowPendingIntent = (ShadowPendingIntent) Robolectric.shadowOf_(pendingIntent);
         shadowPendingIntent.savedIntent = intent;
         shadowPendingIntent.isServiceIntent = isService;
         return pendingIntent;

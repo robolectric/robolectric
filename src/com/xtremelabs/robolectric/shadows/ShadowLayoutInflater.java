@@ -5,18 +5,16 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.AppSingletonizer;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 @Implements(LayoutInflater.class)
 public class ShadowLayoutInflater {
     private static AppSingletonizer<LayoutInflater> instances = new LayoutInflaterAppSingletonizer();
 
-    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private Context context;
 
     @Implementation
@@ -34,7 +32,7 @@ public class ShadowLayoutInflater {
     }
 
     private ViewLoader getViewLoader() {
-        return ((ShadowApplication) proxyDelegatingHandler.shadowOf(context.getApplicationContext())).getResourceLoader().viewLoader;
+        return ((ShadowApplication) Robolectric.shadowOf(context.getApplicationContext())).getResourceLoader().viewLoader;
     }
 
     @Implementation
@@ -43,13 +41,12 @@ public class ShadowLayoutInflater {
     }
 
     private static LayoutInflater bind(LayoutInflater layoutInflater, Context context) {
-        ShadowLayoutInflater shadowLayoutInflater = shadowOf(layoutInflater);
-        shadowLayoutInflater.context = context;
+        shadowOf(layoutInflater).context = context;
         return layoutInflater;
     }
 
     private static ShadowLayoutInflater shadowOf(LayoutInflater instance) {
-        return ((ShadowLayoutInflater) ProxyDelegatingHandler.getInstance().shadowOf(instance));
+        return ((ShadowLayoutInflater) Robolectric.shadowOf_(instance));
     }
 
     private static class LayoutInflaterAppSingletonizer extends AppSingletonizer<LayoutInflater> {

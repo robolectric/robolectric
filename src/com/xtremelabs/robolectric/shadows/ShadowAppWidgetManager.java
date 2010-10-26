@@ -7,14 +7,15 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.view.View;
 import android.widget.RemoteViews;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.AppSingletonizer;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AppWidgetManager.class)
@@ -85,7 +86,7 @@ public class ShadowAppWidgetManager {
     }
 
     public int[] createWidgets(Class<? extends AppWidgetProvider> appWidgetProviderClass, int widgetLayoutId, int howManyToCreate) {
-        AppWidgetProvider appWidgetProvider = Robolectric.newInstanceOf(appWidgetProviderClass);
+        AppWidgetProvider appWidgetProvider = newInstanceOf(appWidgetProviderClass);
 
         int[] newWidgetIds = new int[howManyToCreate];
         for (int i = 0; i < howManyToCreate; i++) {
@@ -101,7 +102,7 @@ public class ShadowAppWidgetManager {
     }
 
     private void createWidgetProvider(Class<? extends AppWidgetProvider> appWidgetProviderClass, int... newWidgetIds) {
-        AppWidgetProvider appWidgetProvider = Robolectric.newInstanceOf(appWidgetProviderClass);
+        AppWidgetProvider appWidgetProvider = newInstanceOf(appWidgetProviderClass);
         appWidgetProvider.onUpdate(context, realAppWidgetManager, newWidgetIds);
     }
 
@@ -119,10 +120,6 @@ public class ShadowAppWidgetManager {
 
     private WidgetInfo getWidgetInfo(int widgetId) {
         return widgetInfos.get(widgetId);
-    }
-
-    private static ShadowAppWidgetManager shadowOf(AppWidgetManager appWidgetManager) {
-        return ((ShadowAppWidgetManager) ProxyDelegatingHandler.getInstance().shadowOf(appWidgetManager));
     }
 
     private class WidgetInfo {

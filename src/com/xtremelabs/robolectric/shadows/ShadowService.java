@@ -3,17 +3,16 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Application;
 import android.app.Service;
 import android.content.Context;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
-import com.xtremelabs.robolectric.util.ShadowWrangler;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Service.class)
 public class ShadowService extends ShadowContextWrapper {
-    @ShadowWrangler ProxyDelegatingHandler proxyDelegatingHandler;
     @RealObject Service realService;
 
     public ShadowService(Service realService) {
@@ -36,6 +35,6 @@ public class ShadowService extends ShadowContextWrapper {
     }
 
     public void assertNoBroadcastListenersRegistered() {
-        ((ShadowApplication) proxyDelegatingHandler.shadowOf(getApplicationContext())).assertNoBroadcastListenersRegistered(realService, "Service");
+        ((ShadowApplication) shadowOf(getApplicationContext())).assertNoBroadcastListenersRegistered(realService, "Service");
     }
 }

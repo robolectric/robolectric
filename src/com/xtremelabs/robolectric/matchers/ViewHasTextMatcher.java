@@ -1,12 +1,12 @@
 package com.xtremelabs.robolectric.matchers;
 
 import android.view.View;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.shadows.ShadowView;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.junit.internal.matchers.TypeSafeMatcher;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ViewHasTextMatcher<T extends View> extends TypeSafeMatcher<T> {
     private String expected;
@@ -58,9 +58,5 @@ public class ViewHasTextMatcher<T extends View> extends TypeSafeMatcher<T> {
     @Factory
     public static <T extends View> Matcher<T> hasText(int expectedTextViewResourceId) {
         return new ViewHasTextMatcher<T>(expectedTextViewResourceId);
-    }
-
-    private ShadowView shadowOf(View actual) {
-        return ((ShadowView) ProxyDelegatingHandler.getInstance().shadowOf(actual));
     }
 }

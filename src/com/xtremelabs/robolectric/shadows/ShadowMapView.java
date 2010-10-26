@@ -5,19 +5,18 @@ import android.graphics.Point;
 import android.view.MotionEvent;
 import android.widget.ZoomButtonsController;
 import com.google.android.maps.*;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MapView.class)
 public class ShadowMapView extends ShadowViewGroup {
-    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private boolean satelliteOn;
     public MapController mapController;
     private List<Overlay> overlays = new ArrayList<Overlay>();
@@ -67,7 +66,7 @@ public class ShadowMapView extends ShadowViewGroup {
         if (mapController == null) {
             try {
                 mapController = Robolectric.newInstanceOf(MapController.class);
-                shadowMapController = ((ShadowMapController) proxyDelegatingHandler.shadowOf(mapController));
+                shadowMapController = shadowOf(mapController);
                 shadowMapController.shadowMapView = this;
             } catch (Exception e) {
                 throw new RuntimeException(e);

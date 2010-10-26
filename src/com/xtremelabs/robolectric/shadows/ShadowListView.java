@@ -4,18 +4,17 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListView.class)
 public class ShadowListView extends ShadowAdapterView {
-    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     public boolean itemsCanFocus;
     public List<View> headerViews = new ArrayList<View>();
     public List<View> footerViews = new ArrayList<View>();
@@ -72,7 +71,7 @@ public class ShadowListView extends ShadowAdapterView {
     public int findIndexOfItemContainingText(String targetText) {
         for (int i = 0; i < realListView.getChildCount(); i++) {
             View childView = realListView.getChildAt(i);
-            String innerText = ((ShadowView) proxyDelegatingHandler.shadowOf(childView)).innerText();
+            String innerText = shadowOf(childView).innerText();
             if (innerText.contains(targetText)) {
                 return i;
             }

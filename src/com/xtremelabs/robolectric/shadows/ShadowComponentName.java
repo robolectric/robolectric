@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.ComponentName;
 import android.content.Context;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.ShadowWrangler;
@@ -46,7 +47,7 @@ public class ShadowComponentName {
     public boolean equals(Object o) {
         if (this == o) return true;
 
-        ShadowComponentName that = (ShadowComponentName) proxyDelegatingHandler.shadowOf(o);
+        ShadowComponentName that = (ShadowComponentName) Robolectric.shadowOf_(o);
 
         if (cls != null ? !cls.equals(that.cls) : that.cls != null) return false;
         if (pkg != null ? !pkg.equals(that.pkg) : that.pkg != null) return false;

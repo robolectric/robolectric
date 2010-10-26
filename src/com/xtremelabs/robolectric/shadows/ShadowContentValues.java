@@ -18,10 +18,9 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.ContentValues;
 import android.util.Log;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -31,7 +30,6 @@ import java.util.Set;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContentValues.class)
 public final class ShadowContentValues {
-    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private HashMap<String, Object> values = new HashMap<String, Object>();
     private static final String TAG = "ShadowContentValues";
 
@@ -322,6 +320,6 @@ public final class ShadowContentValues {
     }
 
     private ShadowContentValues shadowOf(ContentValues other) {
-        return ((ShadowContentValues) proxyDelegatingHandler.shadowOf(other));
+        return ((ShadowContentValues) Robolectric.shadowOf_(other));
     }
 }

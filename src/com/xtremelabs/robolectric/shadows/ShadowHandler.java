@@ -3,9 +3,10 @@ package com.xtremelabs.robolectric.shadows;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Handler.class)
@@ -57,9 +58,5 @@ public class ShadowHandler {
 
     public static void flush() {
         shadowOf(Looper.myLooper()).idle();
-    }
-
-    private static ShadowLooper shadowOf(Looper looper) {
-        return (ShadowLooper) ProxyDelegatingHandler.getInstance().shadowOf(looper);
     }
 }

@@ -1,17 +1,14 @@
 package com.xtremelabs.robolectric.matchers;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.shadows.ShadowActivity;
-import com.xtremelabs.robolectric.shadows.ShadowApplication;
-import com.xtremelabs.robolectric.shadows.ShadowContextWrapper;
 import com.xtremelabs.robolectric.shadows.ShadowIntent;
 import org.hamcrest.Description;
 import org.junit.internal.matchers.TypeSafeMatcher;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class StartedMatcher extends TypeSafeMatcher<Context> {
     private final Intent expectedIntent;
@@ -65,22 +62,6 @@ public class StartedMatcher extends TypeSafeMatcher<Context> {
     @Override
     public void describeTo(Description description) {
         description.appendText(message);
-    }
-
-    private ShadowActivity shadowOf(Activity real) {
-        return (ShadowActivity) ProxyDelegatingHandler.getInstance().shadowOf(real);
-    }
-
-    private ShadowContextWrapper shadowOf(ContextWrapper real) {
-        return (ShadowContextWrapper) ProxyDelegatingHandler.getInstance().shadowOf(real);
-    }
-
-    private ShadowApplication shadowOf(Application real) {
-        return (ShadowApplication) ProxyDelegatingHandler.getInstance().shadowOf(real);
-    }
-
-    private ShadowIntent shadowOf(Intent real) {
-        return (ShadowIntent) ProxyDelegatingHandler.getInstance().shadowOf(real);
     }
 
     public static Intent createIntent(Class<? extends Activity> activityClass, String extraKey, String extraValue) {

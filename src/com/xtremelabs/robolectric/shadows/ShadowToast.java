@@ -4,12 +4,13 @@ import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
 
 import java.util.ArrayList;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Toast.class)
@@ -57,10 +58,6 @@ public class ShadowToast {
     @Implementation
     public int getGravity() {
         return gravity;
-    }
-
-    private static ShadowToast shadowOf(Toast toast) {
-        return (ShadowToast) ProxyDelegatingHandler.getInstance().shadowOf(toast);
     }
 
     public static void reset() {

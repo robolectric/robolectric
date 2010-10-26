@@ -5,11 +5,12 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
 import android.widget.Button;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
 import java.lang.reflect.Constructor;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
@@ -229,9 +230,5 @@ public class ShadowAlertDialog extends ShadowDialog {
             });
             return button;
         }
-    }
-
-    private static ShadowAlertDialog shadowOf(AlertDialog realDialog) {
-        return (ShadowAlertDialog) ProxyDelegatingHandler.getInstance().shadowOf(realDialog);
     }
 }

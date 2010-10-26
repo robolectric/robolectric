@@ -9,7 +9,6 @@ import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
@@ -19,13 +18,14 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.mockito.Mockito.mock;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
     public static Application bind(Application application, ResourceLoader resourceLoader) {
-        ShadowApplication shadowApplication = (ShadowApplication) ProxyDelegatingHandler.getInstance().shadowOf(application);
+        ShadowApplication shadowApplication = (ShadowApplication) shadowOf(application);
         if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
         shadowApplication.resourceLoader = resourceLoader;
         return application;

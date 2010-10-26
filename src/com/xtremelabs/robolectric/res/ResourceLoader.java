@@ -1,13 +1,14 @@
 package com.xtremelabs.robolectric.res;
 
 import android.content.Context;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ResourceLoader {
     private final ResourceExtractor resourceExtractor;
@@ -55,7 +56,7 @@ public class ResourceLoader {
     }
 
     public static ResourceLoader getFrom(Context context) {
-        return ((ShadowApplication) ProxyDelegatingHandler.getInstance().shadowOf(context.getApplicationContext())).getResourceLoader();
+        return ((ShadowApplication) shadowOf(context.getApplicationContext())).getResourceLoader();
     }
 
     public String getNameForId(int viewId) {

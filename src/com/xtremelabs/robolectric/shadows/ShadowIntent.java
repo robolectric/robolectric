@@ -6,20 +6,19 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.Join;
-import com.xtremelabs.robolectric.util.ShadowWrangler;
 
 import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)
 public class ShadowIntent {
-    @ShadowWrangler private ProxyDelegatingHandler proxyDelegatingHandler;
     private Intent realIntent;
     public HashMap<String, Object> extras = new HashMap<String, Object>();
     public String action;
@@ -73,7 +72,7 @@ public class ShadowIntent {
 
     @Implementation
     public Intent putExtras(Intent src) {
-        ShadowIntent srcShadowIntent = (ShadowIntent) proxyDelegatingHandler.shadowOf(src);
+        ShadowIntent srcShadowIntent = shadowOf(src);
         extras = new HashMap<String, Object>(srcShadowIntent.extras);
         return realIntent;
     }

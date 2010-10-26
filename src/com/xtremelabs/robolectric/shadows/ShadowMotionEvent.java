@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.view.MotionEvent;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -20,7 +20,7 @@ public class ShadowMotionEvent {
             Constructor<MotionEvent> constructor = MotionEvent.class.getDeclaredConstructor();
             constructor.setAccessible(true);
             MotionEvent motionEvent = constructor.newInstance();
-            ShadowMotionEvent shadowMotionEvent = (ShadowMotionEvent) ProxyDelegatingHandler.getInstance().shadowOf(motionEvent);
+            ShadowMotionEvent shadowMotionEvent = (ShadowMotionEvent) Robolectric.shadowOf_(motionEvent);
             shadowMotionEvent.x = x;
             shadowMotionEvent.y = y;
             shadowMotionEvent.action = action;

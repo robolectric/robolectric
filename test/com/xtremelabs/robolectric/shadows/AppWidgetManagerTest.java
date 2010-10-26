@@ -9,7 +9,6 @@ import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
-import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.res.ResourceLoader;
@@ -19,6 +18,7 @@ import org.junit.runner.RunWith;
 
 import java.io.File;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.*;
 
 @RunWith(DogfoodRobolectricTestRunner.class)
@@ -88,14 +88,6 @@ public class AppWidgetManagerTest {
     private void assertContains(String expectedText, View view) {
         String actualText = shadowOf(view).innerText();
         assertTrue("Expected <" + actualText + "> to contain <" + expectedText + ">", actualText.contains(expectedText));
-    }
-
-    private ShadowView shadowOf(View instance) {
-        return (ShadowView) ProxyDelegatingHandler.getInstance().shadowOf(instance);
-    }
-
-    private ShadowAppWidgetManager shadowOf(AppWidgetManager instance) {
-        return (ShadowAppWidgetManager) ProxyDelegatingHandler.getInstance().shadowOf(instance);
     }
 
     public static class SpanishTestAppWidgetProvider extends AppWidgetProvider {
