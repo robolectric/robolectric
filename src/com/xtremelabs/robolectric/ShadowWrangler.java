@@ -147,9 +147,6 @@ public class ShadowWrangler implements ClassHandler {
         for (Field realObjectField : metaShadow.realObjectFields) {
             writeField(shadow, instance, realObjectField);
         }
-        for (Field shadowWranglerField : metaShadow.shadowWranglerFields) {
-            writeField(shadow, this, shadowWranglerField);
-        }
     }
 
     private MetaShadow getMetaShadow(Class<?> shadowClass) {
@@ -331,7 +328,6 @@ public class ShadowWrangler implements ClassHandler {
     private class MetaShadow {
         private Class<?> shadowClass;
         List<Field> realObjectFields = new ArrayList<Field>();
-        List<Field> shadowWranglerFields = new ArrayList<Field>();
 
         public MetaShadow(Class<?> shadowClass) {
             this.shadowClass = shadowClass;
@@ -341,11 +337,6 @@ public class ShadowWrangler implements ClassHandler {
                     if (field.isAnnotationPresent(RealObject.class)) {
                         field.setAccessible(true);
                         realObjectFields.add(field);
-                    }
-
-                    if (field.isAnnotationPresent(com.xtremelabs.robolectric.util.ShadowWrangler.class)) {
-                        field.setAccessible(true);
-                        shadowWranglerFields.add(field);
                     }
                 }
                 shadowClass = shadowClass.getSuperclass();
