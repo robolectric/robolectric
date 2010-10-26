@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.matchers;
 
 import android.widget.TextView;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.fakes.ShadowTextView;
+import com.xtremelabs.robolectric.shadows.ShadowTextView;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;

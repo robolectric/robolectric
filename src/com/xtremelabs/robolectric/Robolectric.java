@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import android.app.Application;
-import com.xtremelabs.robolectric.fakes.*;
+import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
 import java.lang.reflect.Constructor;

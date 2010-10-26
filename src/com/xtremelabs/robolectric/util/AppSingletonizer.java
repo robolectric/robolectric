@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.fakes.ShadowApplication;
+import com.xtremelabs.robolectric.shadows.ShadowApplication;
 
 public abstract class AppSingletonizer<T> {
     private Class<T> clazz;

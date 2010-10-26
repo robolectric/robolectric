@@ -2,7 +2,7 @@
   <configuration default="false" name="AllTests" type="JUnit" factoryName="JUnit">
     <extension name="coverage" enabled="false" merge="false" sample_coverage="true" runner="idea">
       <pattern>
-        <option name="PATTERN" value="com.xtremelabs.robolectric.fakes.*" />
+        <option name="PATTERN" value="com.xtremelabs.robolectric.shadows.*" />
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>

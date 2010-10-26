@@ -76,7 +76,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
             if (e.getCause() instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
             } else {
-                throw new RuntimeException("Did your fake implementation of a method throw an exception? Refer to the bottom of this stack trace.", e);
+                throw new RuntimeException("Did your shadow implementation of a method throw an exception? Refer to the bottom of this stack trace.", e);
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -120,7 +120,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
         String sheepClassName = getHandlingClassName(instance.getClass());
 
         if (debug)
-            System.out.println("creating new " + sheepClassName + " as fake for " + instance.getClass().getName());
+            System.out.println("creating new " + sheepClassName + " as shadow for " + instance.getClass().getName());
         try {
             Class<?> sheepClass = loadClass(sheepClassName, instance.getClass().getClassLoader());
             Constructor<?> constructor = findConstructor(instance, sheepClass);
@@ -194,7 +194,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
             try {
                 field = clazz.getField(SHEEP_FIELD_NAME);
             } catch (NoSuchFieldException e) {
-                throw new RuntimeException(instance.getClass().getName() + " has no fake field", e);
+                throw new RuntimeException(instance.getClass().getName() + " has no shadow field", e);
             }
             sheepFieldMap.put(clazz, field);
         }

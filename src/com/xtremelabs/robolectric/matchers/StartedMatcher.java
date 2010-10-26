@@ -6,10 +6,10 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import com.xtremelabs.robolectric.ProxyDelegatingHandler;
-import com.xtremelabs.robolectric.fakes.ShadowActivity;
-import com.xtremelabs.robolectric.fakes.ShadowApplication;
-import com.xtremelabs.robolectric.fakes.ShadowContextWrapper;
-import com.xtremelabs.robolectric.fakes.ShadowIntent;
+import com.xtremelabs.robolectric.shadows.ShadowActivity;
+import com.xtremelabs.robolectric.shadows.ShadowApplication;
+import com.xtremelabs.robolectric.shadows.ShadowContextWrapper;
+import com.xtremelabs.robolectric.shadows.ShadowIntent;
 import org.hamcrest.Description;
 import org.junit.internal.matchers.TypeSafeMatcher;
 
@@ -53,9 +53,9 @@ public class StartedMatcher extends TypeSafeMatcher<Context> {
             return false;
         }
 
-        ShadowIntent proxyIntent = shadowFor(actualStartedIntent);
+        ShadowIntent shadowIntent = shadowFor(actualStartedIntent);
 
-        boolean intentsMatch = shadowFor(expectedIntent).realIntentEquals(proxyIntent);
+        boolean intentsMatch = shadowFor(expectedIntent).realIntentEquals(shadowIntent);
         if (!intentsMatch) {
             message += "started " + actualStartedIntent;
         }

@@ -7,7 +7,7 @@ import android.test.ClassWithNoDefaultConstructor;
 import android.util.Log;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
-import com.xtremelabs.robolectric.fakes.ShadowItemizedOverlay;
+import com.xtremelabs.robolectric.shadows.ShadowItemizedOverlay;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
