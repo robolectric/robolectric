@@ -13,7 +13,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.*;
 
 @RunWith(DogfoodRobolectricTestRunner.class)
-public class ProxyDelegatingHandlerTest {
+public class ShadowWranglerTest {
     private Context context;
 
     @Before
@@ -22,7 +22,7 @@ public class ProxyDelegatingHandlerTest {
     }
 
     @Test
-    public void testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnProxyClass() throws Exception {
+    public void testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnShadowClass() throws Exception {
         Robolectric.bindShadowClass(View.class, TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class);
 
         View view = new View(context);
@@ -59,7 +59,7 @@ public class ProxyDelegatingHandlerTest {
     }
 
     @Test
-    public void testProxySelectionSearchesSuperclasses() throws Exception {
+    public void testShadowSelectionSearchesSuperclasses() throws Exception {
         Robolectric.bindShadowClass(View.class, TestShadowView.class);
 
         TextView textView = new TextView(context);
@@ -77,11 +77,11 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testPrimitiveArrays() throws Exception {
-        Class<?> objArrayClass = ProxyDelegatingHandler.loadClass("java.lang.Object[]", getClass().getClassLoader());
+        Class<?> objArrayClass = ShadowWrangler.loadClass("java.lang.Object[]", getClass().getClassLoader());
         assertTrue(objArrayClass.isArray());
         assertEquals(Object.class, objArrayClass.getComponentType());
 
-        Class<?> intArrayClass = ProxyDelegatingHandler.loadClass("int[]", getClass().getClassLoader());
+        Class<?> intArrayClass = ShadowWrangler.loadClass("int[]", getClass().getClassLoader());
         assertTrue(intArrayClass.isArray());
         assertEquals(Integer.TYPE, intArrayClass.getComponentType());
     }

@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric;
 
 import com.xtremelabs.robolectric.util.RealObject;
-import com.xtremelabs.robolectric.util.ShadowWrangler;
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtField;
@@ -10,9 +9,9 @@ import javassist.NotFoundException;
 import java.lang.reflect.*;
 import java.util.*;
 
-public class ProxyDelegatingHandler implements ClassHandler {
+public class ShadowWrangler implements ClassHandler {
     public static final String SHADOW_FIELD_NAME = "__shadow__";
-    private static ProxyDelegatingHandler singleton;
+    private static ShadowWrangler singleton;
 
     private Map<String, String> shadowClassMap = new HashMap<String, String>();
     private Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
@@ -21,14 +20,14 @@ public class ProxyDelegatingHandler implements ClassHandler {
     public boolean debug = false;
 
     // sorry! it really only makes sense to have one per ClassLoader anyway though [xw/hu]
-    public static ProxyDelegatingHandler getInstance() {
+    public static ShadowWrangler getInstance() {
         if (singleton == null) {
-            singleton = new ProxyDelegatingHandler();
+            singleton = new ShadowWrangler();
         }
         return singleton;
     }
 
-    private ProxyDelegatingHandler() {
+    private ShadowWrangler() {
     }
 
     @Override
@@ -58,9 +57,9 @@ public class ProxyDelegatingHandler implements ClassHandler {
     public void afterTest() {
     }
 
-    public void addProxyClass(Class<?> realClass, Class<?> handlerClass) {
-        shadowClassMap.put(realClass.getName(), handlerClass.getName());
-        if (debug) System.out.println("handle " + realClass + " with " + handlerClass);
+    public void bindShadowClass(Class<?> realClass, Class<?> shadowClass) {
+        shadowClassMap.put(realClass.getName(), shadowClass.getName());
+        if (debug) System.out.println("shadow " + realClass + " with " + shadowClass);
     }
 
     @Override
@@ -344,7 +343,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
                         realObjectFields.add(field);
                     }
 
-                    if (field.isAnnotationPresent(ShadowWrangler.class)) {
+                    if (field.isAnnotationPresent(com.xtremelabs.robolectric.util.ShadowWrangler.class)) {
                         field.setAccessible(true);
                         shadowWranglerFields.add(field);
                     }

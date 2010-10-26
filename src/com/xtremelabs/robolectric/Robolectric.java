@@ -51,7 +51,7 @@ public class Robolectric {
     }
 
     public static void bindShadowClass(Class<?> realClass, Class<?> shadowClass) {
-        ProxyDelegatingHandler.getInstance().addProxyClass(realClass, shadowClass);
+        ShadowWrangler.getInstance().bindShadowClass(realClass, shadowClass);
     }
 
     public static void bindShadowClass(Class<?> shadowClass) {
@@ -265,6 +265,6 @@ public class Robolectric {
 
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
-        return (P) ProxyDelegatingHandler.getInstance().shadowOf(instance);
+        return (P) ShadowWrangler.getInstance().shadowOf(instance);
     }
 }
