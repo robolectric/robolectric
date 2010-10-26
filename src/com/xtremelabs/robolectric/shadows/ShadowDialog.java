@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -27,6 +28,7 @@ public class ShadowDialog {
     public CharSequence title;
     private DialogInterface.OnCancelListener onCancelListener;
     private Window window;
+    private Activity ownerActivity;
 
     public static void reset() {
         latestDialog = null;
@@ -60,6 +62,16 @@ public class ShadowDialog {
     @Implementation
     public void setTitle(CharSequence title) {
         this.title = title;
+    }
+
+    @Implementation
+    public void setOwnerActivity(Activity activity) {
+        this.ownerActivity = activity;
+    }
+
+    @Implementation
+    public Activity getOwnerActivity() {
+        return this.ownerActivity;
     }
 
     @Implementation

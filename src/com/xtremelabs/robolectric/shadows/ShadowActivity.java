@@ -18,10 +18,10 @@ public class ShadowActivity extends ShadowContextWrapper {
     private Intent intent;
     public View contentView;
 
-    public boolean finishWasCalled;
     public int resultCode;
     public Intent resultIntent;
     public Activity parent;
+    private boolean finishWasCalled;
     private Activity realActivity;
     private TestWindow window;
 
@@ -95,6 +95,11 @@ public class ShadowActivity extends ShadowContextWrapper {
         finishWasCalled = true;
     }
 
+    @Implementation
+    public boolean isFinishing() {
+        return finishWasCalled;
+    }
+    
     @Implementation
     public Window getWindow() {
         if(window == null) {
