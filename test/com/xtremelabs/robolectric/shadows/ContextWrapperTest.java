@@ -115,18 +115,24 @@ public class ContextWrapperTest {
 
     @Test
     public void shouldReturnSameLocationManagerEveryTime() throws Exception {
-        Activity activity = new Activity();
-        assertThat(activity.getSystemService(Context.LOCATION_SERVICE), sameInstance(activity.getSystemService(Context.LOCATION_SERVICE)));
-
-        assertThat(activity.getSystemService(Context.LOCATION_SERVICE), sameInstance(new Activity().getSystemService(Context.LOCATION_SERVICE)));
+        assertSameInstanceEveryTime(Context.LOCATION_SERVICE);
     }
 
     @Test
     public void shouldReturnSameWifiManagerEveryTime() throws Exception {
-        Activity activity = new Activity();
-        assertThat(activity.getSystemService(Context.WIFI_SERVICE), sameInstance(activity.getSystemService(Context.WIFI_SERVICE)));
+        assertSameInstanceEveryTime(Context.WIFI_SERVICE);
+    }
 
-        assertThat(activity.getSystemService(Context.WIFI_SERVICE), sameInstance(new Activity().getSystemService(Context.WIFI_SERVICE)));
+    @Test
+    public void shouldReturnSameAlarmServiceEveryTime() throws Exception {
+        assertSameInstanceEveryTime(Context.ALARM_SERVICE);
+    }
+
+    private void assertSameInstanceEveryTime(String serviceName) {
+        Activity activity = new Activity();
+        assertThat(activity.getSystemService(serviceName), sameInstance(activity.getSystemService(serviceName)));
+
+        assertThat(activity.getSystemService(serviceName), sameInstance(new Activity().getSystemService(serviceName)));
     }
 
     private BroadcastReceiver broadcastReceiver(final String name) {
