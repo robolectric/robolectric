@@ -22,7 +22,7 @@ public class RobolectricWiringTest {
     @Test
     public void testAllImplementationMethodsHaveCorrentSignature() throws Exception {
 
-        for (Class<?> lectricClass : Robolectric.getGenericProxies()) {
+        for (Class<?> lectricClass : Robolectric.getDefaultShadowClasses()) {
             verifyClass(lectricClass);
         }
 

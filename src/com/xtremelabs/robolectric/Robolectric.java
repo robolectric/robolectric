@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
@@ -22,6 +23,7 @@ import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.shadows.*;
+import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
 import java.lang.reflect.Constructor;
@@ -48,7 +50,22 @@ public class Robolectric {
         }
     }
 
-    public static List<Class<?>> getGenericProxies() {
+    public static void bindShadowClass(Class<?> realClass, Class<?> shadowClass) {
+        ProxyDelegatingHandler.getInstance().addProxyClass(realClass, shadowClass);
+    }
+
+    public static void bindShadowClass(Class<?> shadowClass) {
+        Implements realClass = shadowClass.getAnnotation(Implements.class);
+        bindShadowClass(realClass.value(), shadowClass);
+    }
+
+    public static void bindDefaultShadowClasses() {
+        for (Class<?> genericProxy : getDefaultShadowClasses()) {
+            bindShadowClass(genericProxy);
+        }
+    }
+
+    public static List<Class<?>> getDefaultShadowClasses() {
         return Arrays.asList(
                 ShadowAbsSpinner.class,
                 ShadowActivity.class,
@@ -238,12 +255,12 @@ public class Robolectric {
         return (ShadowResources) shadowOf_(instance);
     }
 
+    public static ShadowLayoutInflater shadowOf(LayoutInflater instance) {
+        return ((ShadowLayoutInflater) shadowOf_(instance));
+    }
+
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ProxyDelegatingHandler.getInstance().shadowOf(instance);
-    }
-
-    public static void addProxy(Class<?> realClass, Class<?> handlerClass) {
-        ProxyDelegatingHandler.getInstance().addProxyClass(realClass, handlerClass);
     }
 }

@@ -8,7 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.shadowOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
@@ -32,7 +32,7 @@ public class AlertDialogTest {
 
         assertThat(alert.isShowing(), equalTo(true));
 
-        ShadowAlertDialog shadowAlertDialog = (ShadowAlertDialog) shadowOf(alert);
+        ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
         assertThat(shadowAlertDialog.title, equalTo("title"));
         assertThat(shadowAlertDialog.message, equalTo("message"));
         assertThat(ShadowAlertDialog.latestAlertDialog, sameInstance(shadowAlertDialog));

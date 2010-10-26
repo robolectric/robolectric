@@ -2,8 +2,10 @@ package com.xtremelabs.robolectric.util;
 
 import android.app.Application;
 import android.content.Context;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
+
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public abstract class AppSingletonizer<T> {
     private Class<T> clazz;
@@ -14,7 +16,7 @@ public abstract class AppSingletonizer<T> {
 
     synchronized public T getInstance(Context context) {
         Application applicationContext = (Application) context.getApplicationContext();
-        ShadowApplication shadowApplication = (ShadowApplication) Robolectric.shadowOf(applicationContext);
+        ShadowApplication shadowApplication = (ShadowApplication) shadowOf(applicationContext);
         T instance = get(shadowApplication);
         if (instance == null) {
             instance = createInstance(applicationContext);
@@ -28,6 +30,6 @@ public abstract class AppSingletonizer<T> {
     protected abstract void set(ShadowApplication shadowApplication, T instance);
 
     protected T createInstance(Application applicationContext) {
-        return Robolectric.newInstanceOf(clazz);
+        return newInstanceOf(clazz);
     }
 }

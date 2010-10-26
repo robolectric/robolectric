@@ -6,7 +6,7 @@ import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
-import com.xtremelabs.robolectric.util.TestUtil;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.shadowOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -30,7 +30,7 @@ public class ListViewTest {
 
     @Before
     public void setUp() throws Exception {
-        TestUtil.addAllProxies();
+        Robolectric.bindDefaultShadowClasses();
 
         transcript = new Transcript();
         listView = new ListView(null);
@@ -74,8 +74,8 @@ public class ListViewTest {
         View view1 = new View(null);
         listView.addHeaderView(view0);
         listView.addHeaderView(view1);
-        assertThat(((ShadowListView) shadowOf(listView)).headerViews.get(0), sameInstance(view0));
-        assertThat(((ShadowListView) shadowOf(listView)).headerViews.get(1), sameInstance(view1));
+        assertThat(shadowOf(listView).headerViews.get(0), sameInstance(view0));
+        assertThat(shadowOf(listView).headerViews.get(1), sameInstance(view1));
     }
 
     @Test
@@ -96,8 +96,8 @@ public class ListViewTest {
         View view1 = new View(null);
         listView.addFooterView(view0);
         listView.addFooterView(view1);
-        assertThat(((ShadowListView) shadowOf(listView)).footerViews.get(0), sameInstance(view0));
-        assertThat(((ShadowListView) shadowOf(listView)).footerViews.get(1), sameInstance(view1));
+        assertThat(shadowOf(listView).footerViews.get(0), sameInstance(view0));
+        assertThat(shadowOf(listView).footerViews.get(1), sameInstance(view1));
     }
 
     @Test
@@ -158,21 +158,21 @@ public class ListViewTest {
     @Test
     public void revalidate_whenItemsHaveNotChanged_shouldWork() throws Exception {
         prepareWithListAdapter();
-        ((ShadowAdapterView) shadowOf(listView)).checkValidity();
+        shadowOf(listView).checkValidity();
     }
 
     @Test(expected = ArrayIndexOutOfBoundsException.class)
     public void revalidate_removingAnItemWithoutInvalidating_shouldExplode() throws Exception {
         ListAdapter adapter = prepareWithListAdapter();
         adapter.items.remove(0);
-        ((ShadowAdapterView) shadowOf(listView)).checkValidity(); // should 'splode!
+        shadowOf(listView).checkValidity(); // should 'splode!
     }
 
     @Test(expected = ArrayIndexOutOfBoundsException.class)
     public void revalidate_addingAnItemWithoutInvalidating_shouldExplode() throws Exception {
         ListAdapter adapter = prepareWithListAdapter();
         adapter.items.add("x");
-        ((ShadowAdapterView) shadowOf(listView)).checkValidity(); // should 'splode!
+        shadowOf(listView).checkValidity(); // should 'splode!
     }
 
     @Test(expected = RuntimeException.class)
@@ -180,7 +180,7 @@ public class ListViewTest {
         ListAdapter adapter = prepareWithListAdapter();
         adapter.items.remove(2);
         adapter.items.add("x");
-        ((ShadowAdapterView) shadowOf(listView)).checkValidity(); // should 'splode!
+        shadowOf(listView).checkValidity(); // should 'splode!
     }
 
     private ListAdapter prepareWithListAdapter() {
@@ -194,7 +194,7 @@ public class ListViewTest {
         listView.setAdapter(new CountingAdapter(3));
         ShadowHandler.flush();
 
-        return (ShadowListView) shadowOf(listView);
+        return shadowOf(listView);
     }
 
     private static class ListAdapter extends BaseAdapter {

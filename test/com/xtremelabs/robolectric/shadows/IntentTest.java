@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 
 import java.io.Serializable;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.*;
 
 @RunWith(DogfoodRobolectricTestRunner.class)
@@ -27,7 +28,7 @@ public class IntentTest {
         Intent intent = new Intent();
         assertSame(intent, intent.putExtra("foo", "bar"));
 
-        ShadowIntent shadowIntent = (ShadowIntent) DogfoodRobolectricTestRunner.shadowOf(intent);
+        ShadowIntent shadowIntent = shadowOf(intent);
         assertEquals("bar", shadowIntent.extras.get("foo"));
     }
 
@@ -35,7 +36,7 @@ public class IntentTest {
     public void testIntExtra() throws Exception {
         Intent intent = new Intent();
         assertSame(intent, intent.putExtra("foo", 2));
-        ShadowIntent shadowIntent = (ShadowIntent) DogfoodRobolectricTestRunner.shadowOf(intent);
+        ShadowIntent shadowIntent = shadowOf(intent);
         assertEquals(2, shadowIntent.extras.get("foo"));
         assertEquals(2, shadowIntent.getIntExtra("foo", -1));
     }
@@ -45,7 +46,7 @@ public class IntentTest {
         Intent intent = new Intent();
         TestSerializable serializable = new TestSerializable("some string");
         assertSame(intent, intent.putExtra("foo", serializable));
-        ShadowIntent shadowIntent = (ShadowIntent) DogfoodRobolectricTestRunner.shadowOf(intent);
+        ShadowIntent shadowIntent = shadowOf(intent);
         assertEquals(serializable, shadowIntent.extras.get("foo"));
         assertNotSame(serializable, shadowIntent.extras.get("foo"));
         assertEquals(serializable, shadowIntent.getSerializableExtra("foo"));
@@ -57,7 +58,7 @@ public class IntentTest {
         Intent intent = new Intent();
         Parcelable parcelable = new TestParcelable();
         assertSame(intent, intent.putExtra("foo", parcelable));
-        ShadowIntent shadowIntent = (ShadowIntent) DogfoodRobolectricTestRunner.shadowOf(intent);
+        ShadowIntent shadowIntent = shadowOf(intent);
         assertSame(parcelable, shadowIntent.extras.get("foo"));
         assertSame(parcelable, shadowIntent.getParcelableExtra("foo"));
     }
@@ -66,7 +67,7 @@ public class IntentTest {
     public void testLongExtra() throws Exception {
         Intent intent = new Intent();
         assertSame(intent, intent.putExtra("foo", 2L));
-        assertEquals(2L, ((ShadowIntent) DogfoodRobolectricTestRunner.shadowOf(intent)).extras.get("foo"));
+        assertEquals(2L, shadowOf(intent).extras.get("foo"));
     }
 
     @Test
@@ -90,7 +91,7 @@ public class IntentTest {
         Uri uri = Uri.parse("content://this/and/that");
         Intent returnedIntent = intent.setData(uri);
 
-        ShadowIntent shadowIntent = (ShadowIntent) DogfoodRobolectricTestRunner.shadowOf(intent);
+        ShadowIntent shadowIntent = shadowOf(intent);
         assertSame(uri, shadowIntent.data);
         assertSame(intent, returnedIntent);
     }

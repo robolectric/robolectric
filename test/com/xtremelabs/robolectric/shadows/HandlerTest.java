@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @RunWith(DogfoodRobolectricTestRunner.class)
 public class HandlerTest {
@@ -65,11 +66,6 @@ public class HandlerTest {
         shadowOf(looper2).idle();
 
         transcript.assertEventsSoFar("second thing");
-    }
-
-
-    private ShadowLooper shadowOf(Looper view) {
-        return (ShadowLooper) DogfoodRobolectricTestRunner.shadowOf(view);
     }
 
     private class Say implements Runnable {

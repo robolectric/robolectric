@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import java.io.File;
 
 import static android.test.MoreAsserts.assertNotEqual;
-import static com.xtremelabs.robolectric.DogfoodRobolectricTestRunner.shadowOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
@@ -123,7 +123,7 @@ public class ViewLoaderTest {
     @Test
     public void testTextViewCompoundDrawablesAreSet() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/main");
-        ShadowTextView shadowTextView = (ShadowTextView) shadowOf((TextView) mediaView.findViewById(R.id.title));
+        ShadowTextView shadowTextView = shadowOf((TextView) mediaView.findViewById(R.id.title));
 
         assertThat(shadowTextView.compoundDrawables.top, equalTo(R.drawable.an_image));
         assertThat(shadowTextView.compoundDrawables.right, equalTo(R.drawable.an_other_image));

@@ -203,7 +203,7 @@ public class ProxyDelegatingHandler implements ClassHandler {
 
     public Object shadowOf(Object instance) {
         if (instance == null) {
-            throw new RuntimeException("no instance for which to get a proxy");
+            throw new RuntimeException("no instance for which to get a shadow");
         }
         Field field = getShadowField(instance);
         return readField(instance, field);
