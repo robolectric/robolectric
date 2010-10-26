@@ -55,6 +55,9 @@
     <property name="test.absolute.dir" location="${test.dir}"/>
     <property name="out.test.dir" value="${out.absolute.dir}/testClasses"/>
     <property name="out.test.absolute.dir" value="${out.test.dir}"/>
+    <property name="test.external.libs.dir" value="lib/test"/>
+    <property name="test.external.libs.absolute.dir" location="${test.external.libs.dir}"/>
+
     <property name="publish.dir" location="${out.absolute.dir}/publish"/>
 
     <property environment="env"/>
@@ -91,6 +94,7 @@
                 <pathelement path="${out.test.absolute.dir}"/>
                 <path refid="android.target.classpath"/>
                 <fileset dir="${main.external.libs.absolute.dir}" includes="*.jar"/>
+                <fileset dir="${test.external.libs.absolute.dir}" includes="*.jar"/>
             </classpath>
         </javac>
     </target>
@@ -114,6 +118,7 @@
                 <pathelement path="${out.main.absolute.dir}"/>
                 <pathelement path="${out.test.absolute.dir}"/>
                 <fileset dir="${main.external.libs.dir}" includes="*.jar"/>
+                <fileset dir="${test.external.libs.dir}" includes="*.jar"/>
                 <path refid="android.target.classpath"/>
             </classpath>
         </junit>
