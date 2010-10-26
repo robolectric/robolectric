@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,8 +20,8 @@ import static org.junit.Assert.*;
 public class IntentTest {
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(Intent.class, ShadowIntent.class);
-        DogfoodRobolectricTestRunner.addProxy(ComponentName.class, ShadowComponentName.class);
+        Robolectric.bindShadowClass(Intent.class, ShadowIntent.class);
+        Robolectric.bindShadowClass(ComponentName.class, ShadowComponentName.class);
     }
 
     @Test

@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 public class MapActivityTest {
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addGenericProxies();
+        Robolectric.bindDefaultShadowClasses();
 
         Robolectric.application = new Application();
     }

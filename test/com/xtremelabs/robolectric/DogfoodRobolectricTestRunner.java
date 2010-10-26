@@ -1,9 +1,6 @@
 package com.xtremelabs.robolectric;
 
-import com.xtremelabs.robolectric.util.Implements;
 import org.junit.runners.model.InitializationError;
-
-import java.util.List;
 
 public class DogfoodRobolectricTestRunner extends AbstractRobolectricTestRunner {
   private static final ProxyDelegatingHandler PROXY_DELEGATING_HANDLER = ProxyDelegatingHandler.getInstance();
@@ -13,19 +10,4 @@ public class DogfoodRobolectricTestRunner extends AbstractRobolectricTestRunner 
       super(testClass, LOADER);
       setClassHandler(PROXY_DELEGATING_HANDLER);
   }
-
-  public static void addProxy(Class<?> realClass, Class<?> handlerClass) {
-      PROXY_DELEGATING_HANDLER.addProxyClass(realClass, handlerClass);
-  }
-
-    public static void addProxies(List<Class<?>> proxyClasses) {
-        for (Class<?> proxyClass : proxyClasses) {
-            Implements implementsClass = proxyClass.getAnnotation(Implements.class);
-            addProxy(implementsClass.value(), proxyClass);
-        }
-    }
-
-    public static void addGenericProxies() {
-        addProxies(Robolectric.getDefaultShadowClasses());
-    }
 }

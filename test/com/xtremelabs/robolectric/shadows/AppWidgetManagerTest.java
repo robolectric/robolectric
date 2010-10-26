@@ -28,7 +28,7 @@ public class AppWidgetManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addGenericProxies();
+        Robolectric.bindDefaultShadowClasses();
         Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
         appWidgetManager = AppWidgetManager.getInstance(Robolectric.application);
         shadowAppWidgetManager = shadowOf(appWidgetManager);

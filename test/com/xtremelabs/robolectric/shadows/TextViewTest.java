@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.text.style.URLSpan;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -17,8 +18,8 @@ import static org.junit.Assert.assertThat;
 public class TextViewTest {
     @Test
     public void testGetUrls() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(TextView.class, ShadowTextView.class);
-        DogfoodRobolectricTestRunner.addProxy(URLSpan.class, ShadowURLSpan.class);
+        Robolectric.bindShadowClass(TextView.class, ShadowTextView.class);
+        Robolectric.bindShadowClass(URLSpan.class, ShadowURLSpan.class);
 
         TextView textView = new TextView(null);
         textView.setText("here's some text http://google.com/\nblah\thttp://another.com/123?456 blah");

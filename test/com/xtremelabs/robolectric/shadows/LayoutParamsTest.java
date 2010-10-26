@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.view.ViewGroup;
 import android.widget.Gallery;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -13,7 +14,7 @@ import static org.junit.Assert.assertThat;
 public class LayoutParamsTest {
     @Test
     public void testConstructor() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(ViewGroup.LayoutParams.class, ShadowLayoutParams.class);
+        Robolectric.bindShadowClass(ViewGroup.LayoutParams.class, ShadowLayoutParams.class);
 
         Gallery.LayoutParams layoutParams = new Gallery.LayoutParams(123, 456);
         assertThat(layoutParams.width, equalTo(123));

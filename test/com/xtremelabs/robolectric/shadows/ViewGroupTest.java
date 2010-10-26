@@ -4,6 +4,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,8 +19,8 @@ public class ViewGroupTest {
     public ViewGroup viewGroup;
 
     @Before public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addGenericProxies();
-        
+        Robolectric.bindDefaultShadowClasses();
+
         viewGroup = new FrameLayout(null);
     }
 

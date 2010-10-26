@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -13,7 +14,7 @@ import static org.junit.Assert.assertThat;
 public class CheckBoxTest {
     @Test
     public void testWorks() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(CompoundButton.class, ShadowCompoundButton.class);
+        Robolectric.bindShadowClass(CompoundButton.class, ShadowCompoundButton.class);
         CheckBox checkBox = new CheckBox(null);
         assertThat(checkBox.isChecked(), equalTo(false));
 

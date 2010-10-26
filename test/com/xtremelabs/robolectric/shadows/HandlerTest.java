@@ -18,8 +18,8 @@ public class HandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(Handler.class, ShadowHandler.class);
-        DogfoodRobolectricTestRunner.addProxy(Looper.class, ShadowLooper.class);
+        Robolectric.bindShadowClass(Handler.class, ShadowHandler.class);
+        Robolectric.bindShadowClass(Looper.class, ShadowLooper.class);
 
         transcript = new Transcript();
     }

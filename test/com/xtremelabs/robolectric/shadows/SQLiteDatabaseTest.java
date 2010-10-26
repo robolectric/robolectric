@@ -5,6 +5,7 @@ import android.database.AbstractCursor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,9 +19,9 @@ public class SQLiteDatabaseTest {
 
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(SQLiteDatabase.class, ShadowSQLiteDatabase.class);
-        DogfoodRobolectricTestRunner.addProxy(ContentValues.class, ShadowContentValues.class);
-        DogfoodRobolectricTestRunner.addProxy(AbstractCursor.class, ShadowAbstractCursor.class);
+        Robolectric.bindShadowClass(SQLiteDatabase.class, ShadowSQLiteDatabase.class);
+        Robolectric.bindShadowClass(ContentValues.class, ShadowContentValues.class);
+        Robolectric.bindShadowClass(AbstractCursor.class, ShadowAbstractCursor.class);
 
         database = SQLiteDatabase.openDatabase("path", null, 0);
     }

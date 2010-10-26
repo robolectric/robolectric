@@ -24,7 +24,7 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testStaticMethodsAreDelegated() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(AccountManager.class, ShadowAccountManagerForTests.class);
+        Robolectric.bindShadowClass(AccountManager.class, ShadowAccountManagerForTests.class);
 
         Context context = mock(Context.class);
         AccountManager.get(context);
@@ -34,7 +34,7 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testProtectedMethodsAreDelegated() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(ItemizedOverlay.class, ShadowItemizedOverlay.class);
+        Robolectric.bindShadowClass(ItemizedOverlay.class, ShadowItemizedOverlay.class);
 
         ShadowItemizedOverlayForTests overlay = new ShadowItemizedOverlayForTests(null);
         overlay.triggerProtectedCall();
@@ -49,7 +49,7 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testGeneratedDefaultConstructorIsWired() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(ClassWithNoDefaultConstructor.class, ShadowClassWithNoDefaultConstructors.class);
+        Robolectric.bindShadowClass(ClassWithNoDefaultConstructor.class, ShadowClassWithNoDefaultConstructors.class);
 
         Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
         ctor.setAccessible(true);

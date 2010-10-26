@@ -26,7 +26,7 @@ public class StartedMatcherTest {
 
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addGenericProxies();
+        Robolectric.bindDefaultShadowClasses();
         Robolectric.resetStaticState();
 
         activity = new Activity();

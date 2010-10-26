@@ -19,7 +19,7 @@ public class BitmapDrawableTest {
 
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addGenericProxies();
+        Robolectric.bindDefaultShadowClasses();
 
         Application application = new Application();
         resources = application.getResources();

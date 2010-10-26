@@ -20,7 +20,7 @@ public class SettingsTest {
 
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addGenericProxies();
+        Robolectric.bindDefaultShadowClasses();
         Robolectric.application = new Application();
         activity = new Activity();
         contentResolver = activity.getContentResolver();

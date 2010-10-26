@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.text.SpannableStringBuilder;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +14,7 @@ import static org.junit.Assert.assertThat;
 public class SpannableStringBuilderTest {
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(SpannableStringBuilder.class, ShadowSpannableStringBuilder.class);
+        Robolectric.bindShadowClass(SpannableStringBuilder.class, ShadowSpannableStringBuilder.class);
     }
 
     @Test

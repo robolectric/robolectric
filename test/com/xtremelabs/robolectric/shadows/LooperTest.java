@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.os.Looper;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,7 +13,7 @@ import static org.junit.Assert.assertSame;
 public class LooperTest {
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(Looper.class, ShadowLooper.class);
+        Robolectric.bindShadowClass(Looper.class, ShadowLooper.class);
     }
 
     @Test

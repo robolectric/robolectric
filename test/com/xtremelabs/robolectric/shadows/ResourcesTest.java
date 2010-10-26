@@ -16,7 +16,7 @@ import java.io.File;
 public class ResourcesTest {
     @Test(expected = Resources.NotFoundException.class)
     public void getStringArray_shouldThrowExceptionIfNotFound() throws Exception {
-        DogfoodRobolectricTestRunner.addGenericProxies();
+        Robolectric.bindDefaultShadowClasses();
         Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
 
         new Activity().getResources().getStringArray(-1);

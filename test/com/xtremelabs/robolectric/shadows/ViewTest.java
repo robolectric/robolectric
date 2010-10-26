@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.view.View;
 import android.view.ViewGroup;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,7 +18,7 @@ public class ViewTest {
     private View view;
 
     @Before public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addGenericProxies();
+        Robolectric.bindDefaultShadowClasses();
 
         view = new View(null);
     }

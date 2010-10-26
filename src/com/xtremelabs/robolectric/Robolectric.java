@@ -60,8 +60,12 @@ public class Robolectric {
     }
 
     public static void bindDefaultShadowClasses() {
-        for (Class<?> genericProxy : getDefaultShadowClasses()) {
-            bindShadowClass(genericProxy);
+        bindShadowClasses(getDefaultShadowClasses());
+    }
+
+    public static void bindShadowClasses(List<Class<?>> shadowClasses) {
+        for (Class<?> shadowClass : shadowClasses) {
+            bindShadowClass(shadowClass);
         }
     }
 

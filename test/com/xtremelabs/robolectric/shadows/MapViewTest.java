@@ -8,6 +8,7 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.AndroidTranslatorTest;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,8 +27,8 @@ public class MapViewTest {
 
 
     @Before public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addGenericProxies();
-        
+        Robolectric.bindDefaultShadowClasses();
+
         mapView = new MapView(new Activity(), "foo");
 
         overlay1 = new MyOverlay();

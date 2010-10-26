@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ContextWrapper;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,9 +18,9 @@ import static org.junit.Assert.assertThat;
 public class AlertDialogTest {
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(Dialog.class, ShadowDialog.class);
-        DogfoodRobolectricTestRunner.addProxy(AlertDialog.class, ShadowAlertDialog.class);
-        DogfoodRobolectricTestRunner.addProxy(AlertDialog.Builder.class, ShadowAlertDialog.ShadowBuilder.class);
+        Robolectric.bindShadowClass(Dialog.class, ShadowDialog.class);
+        Robolectric.bindShadowClass(AlertDialog.class, ShadowAlertDialog.class);
+        Robolectric.bindShadowClass(AlertDialog.Builder.class, ShadowAlertDialog.ShadowBuilder.class);
     }
 
     @Test

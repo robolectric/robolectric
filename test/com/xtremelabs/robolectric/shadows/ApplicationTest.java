@@ -23,7 +23,7 @@ import static org.mockito.Mockito.when;
 public class ApplicationTest {
     @Before
     public void setUp() throws Exception {
-        DogfoodRobolectricTestRunner.addGenericProxies();
+        Robolectric.bindDefaultShadowClasses();
 
         Robolectric.application = new Application();
     }

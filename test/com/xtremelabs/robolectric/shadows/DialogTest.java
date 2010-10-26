@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +15,7 @@ import static org.junit.Assert.assertThat;
 public class DialogTest {
     @Test
     public void shouldCallOnDismissListener() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(Dialog.class, ShadowDialog.class);
+        Robolectric.bindShadowClass(Dialog.class, ShadowDialog.class);
 
         final Transcript transcript = new Transcript();
 

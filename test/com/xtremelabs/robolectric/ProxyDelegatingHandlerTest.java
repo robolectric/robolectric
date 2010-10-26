@@ -23,7 +23,7 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnProxyClass() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class);
+        Robolectric.bindShadowClass(View.class, TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class);
 
         View view = new View(context);
         assertEquals(TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class, Robolectric.shadowOf_(view).getClass());
@@ -31,7 +31,7 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testConstructorInvocation() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
+        Robolectric.bindShadowClass(View.class, TestShadowView.class);
 
         View view = new View(context);
         assertSame(context, shadowOf(view).context);
@@ -40,7 +40,7 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testRealObjectAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
+        Robolectric.bindShadowClass(View.class, TestShadowView.class);
 
         View view = new View(context);
         assertSame(context, shadowOf(view).context);
@@ -52,7 +52,7 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testMethodDelegation() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
+        Robolectric.bindShadowClass(View.class, TestShadowView.class);
 
         View view = new View(context);
         assertSame(context, view.getContext());
@@ -60,7 +60,7 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testProxySelectionSearchesSuperclasses() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
+        Robolectric.bindShadowClass(View.class, TestShadowView.class);
 
         TextView textView = new TextView(context);
         assertEquals(TestShadowView.class, Robolectric.shadowOf_(textView).getClass());
@@ -68,8 +68,8 @@ public class ProxyDelegatingHandlerTest {
 
     @Test
     public void testWeirdness() throws Exception {
-        DogfoodRobolectricTestRunner.addProxy(View.class, TestShadowView.class);
-        DogfoodRobolectricTestRunner.addProxy(TextView.class, TestShadowTextView.class);
+        Robolectric.bindShadowClass(View.class, TestShadowView.class);
+        Robolectric.bindShadowClass(TextView.class, TestShadowTextView.class);
 
         TextView textView = new TextView(context);
         assertThat(shadowOf(textView), instanceOf(TestShadowTextView.class));
