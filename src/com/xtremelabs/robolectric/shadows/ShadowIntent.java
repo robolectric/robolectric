@@ -6,9 +6,11 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.Join;
+import com.xtremelabs.robolectric.util.RealObject;
 
 import java.io.*;
 import java.util.HashMap;
@@ -19,15 +21,13 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)
 public class ShadowIntent {
-    private Intent realIntent;
-    public HashMap<String, Object> extras = new HashMap<String, Object>();
-    public String action;
-    public ComponentName componentName;
-    public Uri data;
+    @RealObject private Intent realIntent;
 
-    public ShadowIntent(Intent realIntent) {
-        this.realIntent = realIntent;
-    }
+    private HashMap<String, Object> extras = new HashMap<String, Object>();
+    private String action;
+    private ComponentName componentName;
+    private Uri data;
+    private int flags;
 
     public void __constructor__(Context packageContext, Class cls) {
         componentName = new ComponentName(packageContext, cls);
@@ -71,6 +71,16 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public int getFlags() {
+        return flags;
+    }
+
+    @Implementation
+    public void setFlags(int flags) {
+        this.flags = flags;
+    }
+
+    @Implementation
     public Intent putExtras(Intent src) {
         ShadowIntent srcShadowIntent = shadowOf(src);
         extras = new HashMap<String, Object>(srcShadowIntent.extras);
@@ -83,7 +93,9 @@ public class ShadowIntent {
 
     @Implementation
     public Bundle getExtras() {
-        return new Bundle();
+        Bundle bundle = new Bundle();
+        ((ShadowBundle) Robolectric.shadowOf_(bundle)).map.putAll(extras);
+        return bundle;
     }
 
     @Implementation

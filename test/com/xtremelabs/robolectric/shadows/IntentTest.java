@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Parcel;
@@ -20,26 +19,22 @@ import static org.junit.Assert.*;
 public class IntentTest {
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindShadowClass(Intent.class, ShadowIntent.class);
-        Robolectric.bindShadowClass(ComponentName.class, ShadowComponentName.class);
+        Robolectric.bindDefaultShadowClasses();
     }
 
     @Test
     public void testStringExtra() throws Exception {
         Intent intent = new Intent();
         assertSame(intent, intent.putExtra("foo", "bar"));
-
-        ShadowIntent shadowIntent = shadowOf(intent);
-        assertEquals("bar", shadowIntent.extras.get("foo"));
+        assertEquals("bar", intent.getExtras().get("foo"));
     }
 
     @Test
     public void testIntExtra() throws Exception {
         Intent intent = new Intent();
         assertSame(intent, intent.putExtra("foo", 2));
-        ShadowIntent shadowIntent = shadowOf(intent);
-        assertEquals(2, shadowIntent.extras.get("foo"));
-        assertEquals(2, shadowIntent.getIntExtra("foo", -1));
+        assertEquals(2, intent.getExtras().get("foo"));
+        assertEquals(2, intent.getIntExtra("foo", -1));
     }
 
     @Test
@@ -47,11 +42,10 @@ public class IntentTest {
         Intent intent = new Intent();
         TestSerializable serializable = new TestSerializable("some string");
         assertSame(intent, intent.putExtra("foo", serializable));
-        ShadowIntent shadowIntent = shadowOf(intent);
-        assertEquals(serializable, shadowIntent.extras.get("foo"));
-        assertNotSame(serializable, shadowIntent.extras.get("foo"));
-        assertEquals(serializable, shadowIntent.getSerializableExtra("foo"));
-        assertNotSame(serializable, shadowIntent.getSerializableExtra("foo"));
+        assertEquals(serializable, intent.getExtras().get("foo"));
+        assertNotSame(serializable, intent.getExtras().get("foo"));
+        assertEquals(serializable, intent.getSerializableExtra("foo"));
+        assertNotSame(serializable, intent.getSerializableExtra("foo"));
     }
 
     @Test
@@ -59,16 +53,15 @@ public class IntentTest {
         Intent intent = new Intent();
         Parcelable parcelable = new TestParcelable();
         assertSame(intent, intent.putExtra("foo", parcelable));
-        ShadowIntent shadowIntent = shadowOf(intent);
-        assertSame(parcelable, shadowIntent.extras.get("foo"));
-        assertSame(parcelable, shadowIntent.getParcelableExtra("foo"));
+        assertSame(parcelable, intent.getExtras().get("foo"));
+        assertSame(parcelable, intent.getParcelableExtra("foo"));
     }
 
     @Test
     public void testLongExtra() throws Exception {
         Intent intent = new Intent();
         assertSame(intent, intent.putExtra("foo", 2L));
-        assertEquals(2L, shadowOf(intent).extras.get("foo"));
+        assertEquals(2L, shadowOf(intent).getExtras().get("foo"));
     }
 
     @Test
@@ -90,11 +83,8 @@ public class IntentTest {
     public void testSetData() throws Exception {
         Intent intent = new Intent();
         Uri uri = Uri.parse("content://this/and/that");
-        Intent returnedIntent = intent.setData(uri);
-
-        ShadowIntent shadowIntent = shadowOf(intent);
-        assertSame(uri, shadowIntent.data);
-        assertSame(intent, returnedIntent);
+        assertSame(intent, intent.setData(uri));
+        assertSame(uri, intent.getData());
     }
 
     @Test
@@ -104,6 +94,13 @@ public class IntentTest {
         intent.setClassName("package.name", thisClass.getName());
         assertSame(thisClass.getName(), intent.getComponent().getClassName());
         assertEquals("package.name", intent.getComponent().getPackageName());
+    }
+
+    @Test
+    public void shouldSetFlags() throws Exception {
+        Intent intent = new Intent();
+        intent.setFlags(1234);
+        assertEquals(1234, intent.getFlags());
     }
 
     private static class TestSerializable implements Serializable {

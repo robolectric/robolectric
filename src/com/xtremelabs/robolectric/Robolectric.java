@@ -81,6 +81,7 @@ public class Robolectric {
                 ShadowAppWidgetManager.class,
                 ShadowBaseAdapter.class,
                 ShadowBitmapDrawable.class,
+                ShadowBundle.class,
                 ShadowCanvas.class,
                 ShadowCompoundButton.class,
                 ShadowComponentName.class,

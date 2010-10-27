@@ -19,6 +19,11 @@ public class ShadowBundle {
     }
 
     @Implementation
+    public Object get(String key) {
+        return map.get(key);
+    }
+
+    @Implementation
     public void putString(String key, String value) {
         map.put(key, value);
     }
