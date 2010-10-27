@@ -102,6 +102,7 @@
     <target name="clean" description="cleanup module">
         <delete dir="${out.absolute.dir}"/>
         <delete dir="${out.test.absolute.dir}"/>
+        <delete dir="${tmp.dir}"/>
     </target>
 
     <target name="test" depends="compile.tests" description="test all">
