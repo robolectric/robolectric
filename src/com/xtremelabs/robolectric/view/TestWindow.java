@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package com.xtremelabs.robolectric.view;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -14,7 +14,7 @@ public class TestWindow extends Window {
     public int featureDrawableResourceResId;
     public int softInputMode;
 
-    TestWindow(Context context) {
+    public TestWindow(Context context) {
         super(context);
     }
 

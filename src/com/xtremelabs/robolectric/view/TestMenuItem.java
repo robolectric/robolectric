@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package com.xtremelabs.robolectric.view;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
@@ -136,7 +136,7 @@ public class TestMenuItem implements MenuItem {
         return null;
     }
 
-    public void simulateClick() {
+    public void click() {
         if (enabled && menuItemClickListener != null) {
             menuItemClickListener.onMenuItemClick(this);
         }

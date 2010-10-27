@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package com.xtremelabs.robolectric.view;
 
 import android.content.ComponentName;
 import android.content.Intent;
@@ -81,7 +81,7 @@ public class TestMenu implements Menu {
     }
 
     @Override public int size() {
-        return 0;
+        return menuItems.size();
     }
 
     @Override public MenuItem getItem(int index) {
@@ -104,5 +104,15 @@ public class TestMenu implements Menu {
     }
 
     @Override public void setQwertyMode(boolean isQwerty) {
+    }
+
+    public TestMenuItem findMenuItem(CharSequence title) {
+        for (int i = 0; i < size(); i++) {
+            TestMenuItem menuItem = (TestMenuItem) getItem(i);
+            if (menuItem.getTitle().equals(title)) {
+                return menuItem;
+            }
+        }
+        return null;
     }
 }

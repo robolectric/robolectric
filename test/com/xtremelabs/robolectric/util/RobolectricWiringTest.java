@@ -22,52 +22,52 @@ public class RobolectricWiringTest {
     @Test
     public void testAllImplementationMethodsHaveCorrentSignature() throws Exception {
 
-        for (Class<?> lectricClass : Robolectric.getDefaultShadowClasses()) {
-            verifyClass(lectricClass);
+        for (Class<?> shadowClass : Robolectric.getDefaultShadowClasses()) {
+            verifyClass(shadowClass);
         }
 
         assertEquals("@Implementation method mismatch: " + mismatches, 0, mismatches.size());
     }
 
-    private void verifyClass(final Class<?> lectricClass) {
-        Implements annotation = lectricClass.getAnnotation(Implements.class);
+    private void verifyClass(final Class<?> shadowClass) {
+        Implements annotation = shadowClass.getAnnotation(Implements.class);
         Class implementedClass = annotation.value();
 
         try {
-            lectricClass.getConstructor(implementedClass);
+            shadowClass.getConstructor(implementedClass);
         } catch (NoSuchMethodException e) {
             try {
-                lectricClass.getConstructor();
+                shadowClass.getConstructor();
             } catch (NoSuchMethodException e1) {
-                mismatches.add("Missing constructor for " + lectricClass.getSimpleName());
+                mismatches.add("Missing constructor for " + shadowClass.getSimpleName());
             }
         }
 
-        for (Method lectricMethod : lectricClass.getDeclaredMethods()) {
-            verifyMethod(implementedClass, lectricMethod);
+        for (Method shadowMethod : shadowClass.getDeclaredMethods()) {
+            verifyMethod(implementedClass, shadowMethod);
         }
     }
 
-    private void verifyMethod(Class implementedClass, Method lectricMethod) {
-        boolean isConstructor = lectricMethod.getName().equals("__constructor__");
-        if (lectricMethod.isAnnotationPresent(Implementation.class) || isConstructor) {
+    private void verifyMethod(Class implementedClass, Method shadowMethod) {
+        boolean isConstructor = shadowMethod.getName().equals("__constructor__");
+        if (shadowMethod.isAnnotationPresent(Implementation.class) || isConstructor) {
             Member implementedMember;
             if (isConstructor) {
-                implementedMember = findConstructor(implementedClass, lectricMethod);
+                implementedMember = findConstructor(implementedClass, shadowMethod);
             } else {
-                implementedMember = findMethod(implementedClass, lectricMethod);
+                implementedMember = findMethod(implementedClass, shadowMethod);
             }
-            if (implementedMember == null || staticMismatch(lectricMethod, implementedMember)) {
-                mismatches.add(lectricMethod.toGenericString());
+            if (implementedMember == null || staticMismatch(shadowMethod, implementedMember)) {
+                mismatches.add(shadowMethod.toGenericString());
             }
-            if (!Modifier.isPublic(lectricMethod.getModifiers())) {
-                mismatches.add(lectricMethod.toGenericString() + " should be public");
+            if (!Modifier.isPublic(shadowMethod.getModifiers())) {
+                mismatches.add(shadowMethod.toGenericString() + " should be public");
             }
         }
     }
 
-    private Member findConstructor(Class implementedClass, Method lectricMethod) {
-        Class<?>[] parameterTypes = lectricMethod.getParameterTypes();
+    private Member findConstructor(Class implementedClass, Method shadowMethod) {
+        Class<?>[] parameterTypes = shadowMethod.getParameterTypes();
         try {
             return implementedClass.getConstructor(parameterTypes);
         } catch (NoSuchMethodException e1) {
@@ -79,9 +79,9 @@ public class RobolectricWiringTest {
         }
     }
 
-    private Member findMethod(Class implementedClass, Method lectricMethod) {
-        Class<?>[] parameterTypes = lectricMethod.getParameterTypes();
-        String methodName = lectricMethod.getName();
+    private Member findMethod(Class implementedClass, Method shadowMethod) {
+        Class<?>[] parameterTypes = shadowMethod.getParameterTypes();
+        String methodName = shadowMethod.getName();
         try {
             return implementedClass.getMethod(methodName, parameterTypes);
         } catch (NoSuchMethodException e1) {
@@ -93,7 +93,7 @@ public class RobolectricWiringTest {
         }
     }
 
-    private boolean staticMismatch(Member lectricMethod, Member implementedMethod) {
-        return Modifier.isStatic(implementedMethod.getModifiers()) != Modifier.isStatic(lectricMethod.getModifiers());
+    private boolean staticMismatch(Member shadowMethod, Member implementedMethod) {
+        return Modifier.isStatic(implementedMethod.getModifiers()) != Modifier.isStatic(shadowMethod.getModifiers());
     }
 }

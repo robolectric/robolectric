@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.Window;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.view.TestWindow;
 
 import java.lang.reflect.Method;
 
