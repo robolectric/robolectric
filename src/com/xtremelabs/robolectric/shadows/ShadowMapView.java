@@ -32,6 +32,7 @@ public class ShadowMapView extends ShadowViewGroup {
     private boolean mouseDownOnMe = false;
     private Point lastTouchEventPoint;
     private GeoPoint mouseDownCenter;
+    public boolean preLoadWasCalled;
 
     public ShadowMapView(MapView mapView) {
         super(mapView);
@@ -195,6 +196,11 @@ public class ShadowMapView extends ShadowViewGroup {
         lastTouchEventPoint = new Point((int) event.getX(), (int) event.getY());
 
         return super.dispatchTouchEvent(event);
+    }
+
+    @Implementation
+    public void preLoad() {
+        preLoadWasCalled = true;
     }
 
     private void moveByPixels(int x, int y) {
