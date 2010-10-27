@@ -69,4 +69,4 @@ We welcome contributions. Please [fork](http://github.com/pivotal/robolectric) a
 ## Support
 
 __Group email:__ [robolectric@googlegroups.com](mailto:robolectric@googlegroups.com)  
-__Samples:__ [http://github.com/pivotal/RobolectricSample](http://github.com/pivota/RobolectricSample)
+__Samples:__ [http://github.com/pivotal/RobolectricSample](http://github.com/pivotal/RobolectricSample)
