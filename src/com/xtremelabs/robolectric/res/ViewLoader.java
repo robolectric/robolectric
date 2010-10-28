@@ -22,6 +22,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static java.lang.Boolean.TRUE;
+
 public class ViewLoader extends XmlLoader {
     private Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
     private StringResourceLoader stringResourceLoader;
@@ -61,7 +63,10 @@ public class ViewLoader extends XmlLoader {
             }
         }
 
-        if (!name.startsWith("#") && !name.equals("requestFocus")) {
+        if (name.equals("requestFocus")) {
+            parent.attributes.put("android:focus", "true");
+            parent.requestFocusOverride = true;
+        } else if (!name.startsWith("#")) {
             ViewNode viewNode = new ViewNode(name, attrMap);
             if (parent != null) parent.addChild(viewNode);
 
@@ -86,7 +91,7 @@ public class ViewLoader extends XmlLoader {
             throw new RuntimeException("no such layout " + key);
         }
         try {
-            return viewNode.inflate(context);
+            return viewNode.inflate(context, null);
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + key, e);
         }
@@ -100,8 +105,10 @@ public class ViewLoader extends XmlLoader {
         private String name;
         private final Map<String, String> attributes;
 
+        private ViewNode parent;
         private List<ViewNode> children = new ArrayList<ViewNode>();
         private Integer id;
+        boolean requestFocusOverride = false;
 
         public ViewNode(String name, Map<String, String> attributes) {
             this.name = name;
@@ -113,17 +120,18 @@ public class ViewLoader extends XmlLoader {
         }
 
         public void addChild(ViewNode viewNode) {
+            viewNode.parent = this;
             children.add(viewNode);
         }
 
-        public View inflate(Context context) throws Exception {
-            View view = create(context);
+        public View inflate(Context context, View parent) throws Exception {
+            View view = create(context, (ViewGroup) parent);
 
             if (id != null && view.getId() == 0) {
                 view.setId(id);
             }
             for (ViewNode child : children) {
-                ((ViewGroup) view).addView(child.inflate(context));
+                child.inflate(context, view);
             }
             return view;
         }
@@ -140,15 +148,18 @@ public class ViewLoader extends XmlLoader {
                 }
             }
 
-            String enabled = attributes.get("android:enabled");
+            Boolean enabled = getAttributeAsBool("android:enabled");
             if (enabled != null) {
-                if (enabled.equals("true")) {
-                    view.setEnabled(true);
-                } else if (enabled.equals("false")) {
-                    view.setEnabled(false);
-                }
+                view.setEnabled(enabled);
             }
 
+            checkFocusOverride(view);
+            if (!anyParentHasFocus(view)) {
+                Boolean focusRequested = getAttributeAsBool("android:focus");
+                if (TRUE.equals(focusRequested) || view.isFocusableInTouchMode()) {
+                    view.requestFocus();
+                }
+            }
 
             if (view instanceof TextView) {
                 int drawableTop = 0;
@@ -198,7 +209,7 @@ public class ViewLoader extends XmlLoader {
             if (view instanceof CheckBox) {
                 String text = attributes.get("android:checked");
                 if (text != null) {
-                    ((CheckBox)view).setChecked(Boolean.valueOf(text));
+                    ((CheckBox) view).setChecked(Boolean.valueOf(text));
                 }
             }
 
@@ -213,16 +224,59 @@ public class ViewLoader extends XmlLoader {
             }
         }
 
-        private View create(Context context) throws Exception {
+        private void checkFocusOverride(View view) {
+            if (requestFocusOverride) {
+                View root = view;
+                View parent = (View) root.getParent();
+                while (parent != null) {
+                    root = parent;
+                    parent = (View) root.getParent();
+                }
+                root.clearFocus();
+            }
+        }
+
+        private boolean anyParentHasFocus(View view) {
+            while (view != null) {
+                if (view.hasFocus()) return true;
+                view = (View) view.getParent();
+            }
+            return false;
+        }
+
+        private Boolean getAttributeAsBool(String key) {
+            String stringValue = attributes.get(key);
+            if ("true".equals(stringValue)) {
+                return true;
+            }
+            if ("false".equals(stringValue)) {
+                return false;
+            }
+            return null;
+        }
+
+        private View create(Context context, ViewGroup parent) throws Exception {
+            // todo: clean this up [pg/xw 20101028] should applyAttributes always be called?
             if (name.equals("include")) {
                 String layout = attributes.get("layout");
-                return inflateView(context, layout.substring(1));
+                View view = inflateView(context, layout.substring(1));
+                addToParent(parent, view);
+                return view;
             } else if (name.equals("merge")) {
-                return new LinearLayout(context);
+                LinearLayout view = new LinearLayout(context);
+                addToParent(parent, view);
+                return view;
             } else {
                 View view = constructView(context);
+                addToParent(parent, view);
                 applyAttributes(view);
                 return view;
+            }
+        }
+
+        private void addToParent(ViewGroup parent, View view) {
+            if (parent != null) {
+                parent.addView(view);
             }
         }
 

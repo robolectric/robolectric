@@ -22,6 +22,8 @@ public final class R {
         public static final int false_checkbox = nextId++;
         public static final int default_checkbox = nextId++;
         public static final int image = nextId++;
+        public static final int edit_text = nextId++;
+        public static final int edit_text2 = nextId++;
     }
 
     public static final class string {

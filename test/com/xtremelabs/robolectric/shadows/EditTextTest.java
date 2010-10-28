@@ -16,7 +16,8 @@ public class EditTextTest {
     }
 
     @Test
-    public void shouldNotBeFocusableByDefault() throws Exception {
+    public void shouldBeFocusableByDefault() throws Exception {
         assertTrue(new EditText(null).isFocusable());
+        assertTrue(new EditText(null).isFocusableInTouchMode());
     }
 }

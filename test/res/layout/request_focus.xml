@@ -5,6 +5,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         >
-    <requestFocus/>
+    <EditText
+            android:id="@+id/edit_text"
+            android:layout_width="fill_parent"
+            android:layout_height="10dip"
+            />
+    <FrameLayout>
+        <requestFocus/>
+        <!-- focus should be given to the FrameLayout, *not* the EditText -->
+    </FrameLayout>
     <View/>
 </LinearLayout>

@@ -19,6 +19,7 @@ public class ShadowEditText extends ShadowTextView {
         super(view);
 
         focusable = true;
+        focusableInTouchMode = true;
     }
 
     @Implementation

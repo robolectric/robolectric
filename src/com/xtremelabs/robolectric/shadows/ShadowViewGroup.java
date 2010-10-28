@@ -64,6 +64,29 @@ public class ShadowViewGroup extends ShadowView {
         shadowOf(children.remove(position)).parent = null;
     }
 
+    @Override @Implementation
+    public boolean hasFocus() {
+        if (super.hasFocus()) return true;
+
+        for (View child : children) {
+            if (child.hasFocus()) return true;
+        }
+
+        return false;
+    }
+
+    @Implementation
+    @Override
+    public void clearFocus() {
+        if (hasFocus()) {
+            super.clearFocus();
+
+            for (View child : children) {
+                child.clearFocus();
+            }
+        }
+    }
+
     @Override
     public String innerText() {
         String innerText = "";

@@ -41,13 +41,13 @@ public class ShadowView {
     private Map<Integer, Object> tags = new HashMap<Integer, Object>();
     public boolean clickable;
     protected boolean focusable;
+    boolean focusableInTouchMode;
     public int backgroundResourceId = -1;
     protected View.OnKeyListener onKeyListener;
-    public boolean hasFocus;
+    public boolean isFocused;
     private View.OnFocusChangeListener onFocusChangeListener;
     public boolean wasInvalidated;
     private View.OnTouchListener onTouchListener;
-    private boolean focusableInTouchMode;
 
     public ShadowView(View view) {
         this.realView = view;
@@ -294,7 +294,7 @@ public class ShadowView {
     }
 
     public void setViewFocus(boolean hasFocus) {
-        this.hasFocus = hasFocus;
+        this.isFocused = hasFocus;
         if (onFocusChangeListener != null) {
             onFocusChangeListener.onFocusChange(realView, hasFocus);
         }
@@ -302,12 +302,12 @@ public class ShadowView {
 
     @Implementation
     public boolean isFocused() {
-        return hasFocus;
+        return isFocused;
     }
 
     @Implementation
     public boolean hasFocus() {
-        return hasFocus;
+        return isFocused;
     }
 
     @Implementation

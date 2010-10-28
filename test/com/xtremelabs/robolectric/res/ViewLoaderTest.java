@@ -3,10 +3,7 @@ package com.xtremelabs.robolectric.res;
 import android.test.mock.MockContext;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.widget.*;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.R;
@@ -84,9 +81,24 @@ public class ViewLoaderTest {
     }
 
     @Test
-    public void shouldIgnoreRequestFocus() throws Exception {
+    public void shouldNotCountRequestFocusElementAsChild() throws Exception {
         ViewGroup viewGroup = (ViewGroup) viewLoader.inflateView(context, "layout/request_focus");
-        assertEquals(1, viewGroup.getChildCount());
+        ViewGroup frameLayout = (ViewGroup) viewGroup.getChildAt(1);
+        assertEquals(0, frameLayout.getChildCount());
+    }
+
+    @Test
+    public void shouldGiveFocusToElementContainingRequestFocusElement() throws Exception {
+        ViewGroup viewGroup = (ViewGroup) viewLoader.inflateView(context, "layout/request_focus");
+        EditText editText = (EditText) viewGroup.findViewById(R.id.edit_text);
+        assertFalse(editText.isFocused());
+    }
+
+    @Test
+    public void shouldGiveFocusToFirstFocusableElement_butThisMightBeTheWrongBehavior() throws Exception {
+        ViewGroup viewGroup = (ViewGroup) viewLoader.inflateView(context, "layout/request_focus_with_two_edit_texts");
+        assertTrue(viewGroup.findViewById(R.id.edit_text).isFocused());
+        assertFalse(viewGroup.findViewById(R.id.edit_text2).isFocused());
     }
 
     @Test
