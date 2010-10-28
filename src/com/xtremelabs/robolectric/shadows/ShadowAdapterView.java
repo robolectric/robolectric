@@ -7,6 +7,7 @@ import android.widget.Adapter;
 import android.widget.AdapterView;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +15,7 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
 public class ShadowAdapterView extends ShadowViewGroup {
-    private AdapterView realAdapterView;
+    @RealObject private AdapterView realAdapterView;
 
     Adapter adapter;
     private AdapterView.OnItemSelectedListener onItemSelectedListener;
@@ -23,11 +24,6 @@ public class ShadowAdapterView extends ShadowViewGroup {
     private int selectedPosition;
 
     private List<Object> previousItems = new ArrayList<Object>();
-
-    public ShadowAdapterView(AdapterView adapterView) {
-        super(adapterView);
-        this.realAdapterView = adapterView;
-    }
 
     @Implementation
     public void setAdapter(Adapter adapter) {

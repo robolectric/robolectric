@@ -34,7 +34,6 @@ public class ShadowMapView extends ShadowViewGroup {
     private GeoPoint mouseDownCenter;
 
     public ShadowMapView(MapView mapView) {
-        super(mapView);
         realMapView = mapView;
         zoomButtonsController = new ZoomButtonsController(mapView);
     }

@@ -15,9 +15,7 @@ import java.util.List;
 public class ShadowEditText extends ShadowTextView {
     public List<TextWatcher> watchers = new ArrayList<TextWatcher>();
 
-    public ShadowEditText(EditText view) {
-        super(view);
-
+    public ShadowEditText() {
         focusable = true;
     }
 

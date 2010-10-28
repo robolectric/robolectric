@@ -25,10 +25,6 @@ public class ShadowTextView extends ShadowView {
     private CharSequence hintText;
     private int compoundDrawablePadding;
 
-    public ShadowTextView(TextView view) {
-        super(view);
-    }
-
     @Implementation
     public void setText(CharSequence text) {
         if (text == null) {

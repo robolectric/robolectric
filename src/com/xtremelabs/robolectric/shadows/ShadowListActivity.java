@@ -13,10 +13,6 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowListActivity extends ShadowActivity {
     private ListView listView;
 
-    public ShadowListActivity(ListActivity realActivity) {
-        super(realActivity);
-    }
-
     @Implementation
     public ListView getListView() {
         if (listView == null) {

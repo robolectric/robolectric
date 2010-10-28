@@ -10,6 +10,7 @@ import android.widget.RemoteViews;
 import com.xtremelabs.robolectric.util.AppSingletonizer;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,15 +41,12 @@ public class ShadowAppWidgetManager {
     private static void bind(AppWidgetManager appWidgetManager, Context context) {
     }
 
-    private AppWidgetManager realAppWidgetManager;
+    @RealObject private AppWidgetManager realAppWidgetManager;
+
     private Context context;
     private Map<Integer, WidgetInfo> widgetInfos = new HashMap<Integer, WidgetInfo>();
     private int nextWidgetId = 1;
     public boolean alwaysRecreateViewsDuringUpdate = false;
-
-    public ShadowAppWidgetManager(AppWidgetManager realAppWidgetManager) {
-        this.realAppWidgetManager = realAppWidgetManager;
-    }
 
     @Implementation
     public static AppWidgetManager getInstance(Context context) {

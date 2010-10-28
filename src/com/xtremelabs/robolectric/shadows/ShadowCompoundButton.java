@@ -11,10 +11,6 @@ public class ShadowCompoundButton extends ShadowTextView implements Checkable {
     private boolean mChecked;
     private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
 
-    public ShadowCompoundButton(CompoundButton view) {
-        super(view);
-    }
-
     @Implementation
     @Override public void toggle() {
         setChecked(!mChecked);

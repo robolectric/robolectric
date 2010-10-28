@@ -3,19 +3,15 @@ package com.xtremelabs.robolectric.shadows;
 import android.text.SpannableStringBuilder;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(SpannableStringBuilder.class)
 public class ShadowSpannableStringBuilder implements CharSequence {
-    private final SpannableStringBuilder real;
+    @RealObject private SpannableStringBuilder realSpannableStringBuilder;
 
-    private StringBuilder builder;
+    private StringBuilder builder = new StringBuilder();
 
-    public ShadowSpannableStringBuilder(SpannableStringBuilder real) {
-        this.real = real;
-        builder = new StringBuilder();
-    }
-    
     public void __constructor__(CharSequence text) {
         builder.append(text);
     }
@@ -23,13 +19,13 @@ public class ShadowSpannableStringBuilder implements CharSequence {
     @Implementation
     public SpannableStringBuilder append(char text) {
         builder.append(text);
-        return real;
+        return realSpannableStringBuilder;
     }
 
     @Implementation
     public SpannableStringBuilder append(CharSequence text) {
         builder.append(text);
-        return real;
+        return realSpannableStringBuilder;
     }
 
     @Implementation

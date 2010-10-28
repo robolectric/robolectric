@@ -9,6 +9,7 @@ import android.net.wifi.WifiManager;
 import android.test.mock.MockPackageManager;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -16,18 +17,13 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper extends ShadowContext {
-    private ContextWrapper realContextWrapper;
+    @RealObject private ContextWrapper realContextWrapper;
     private Context baseContext;
 
     private LocationManager locationManager;
     private MockPackageManager packageManager;
 
     private WifiManager wifiManager;
-
-    public ShadowContextWrapper(ContextWrapper realContextWrapper) {
-        super(realContextWrapper);
-        this.realContextWrapper = realContextWrapper;
-    }
 
     public void __constructor__(Context baseContext) {
         this.baseContext = baseContext;

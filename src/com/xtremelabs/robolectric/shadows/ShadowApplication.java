@@ -12,6 +12,7 @@ import android.view.LayoutInflater;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -30,7 +31,8 @@ public class ShadowApplication extends ShadowContextWrapper {
         return application;
     }
 
-    private Application realApplication;
+    @RealObject private Application realApplication;
+
     private ResourceLoader resourceLoader;
     private MockContentResolver contentResolver = new MockContentResolver();
     private AlarmManager alarmManager;
@@ -43,11 +45,6 @@ public class ShadowApplication extends ShadowContextWrapper {
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     public LayoutInflater layoutInflater;
     public AppWidgetManager appWidgetManager;
-
-    public ShadowApplication(Application realApplication) {
-        super(realApplication);
-        this.realApplication = realApplication;
-    }
 
     @Override @Implementation
     public Context getApplicationContext() {

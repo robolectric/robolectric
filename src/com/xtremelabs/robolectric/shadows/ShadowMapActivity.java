@@ -13,10 +13,6 @@ import com.xtremelabs.robolectric.util.Implements;
 public class ShadowMapActivity extends ShadowActivity {
     private ConnectivityBroadcastReceiver connectivityBroadcastReceiver = new ConnectivityBroadcastReceiver();
 
-    public ShadowMapActivity(MapActivity realActivity) {
-        super(realActivity);
-    }
-
     @Implementation
     public void onResume() {
         registerReceiver(connectivityBroadcastReceiver, new IntentFilter());

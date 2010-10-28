@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -19,7 +20,7 @@ public class ShadowView {
     @Deprecated
     public static final int UNINITIALIZED_ATTRIBUTE = -1000;
 
-    protected View realView;
+    @RealObject protected View realView;
 
     private int id;
     ShadowView parent;
@@ -48,10 +49,6 @@ public class ShadowView {
     public boolean wasInvalidated;
     private View.OnTouchListener onTouchListener;
     private boolean focusableInTouchMode;
-
-    public ShadowView(View view) {
-        this.realView = view;
-    }
 
     public void __constructor__(Context context) {
         this.context = context;

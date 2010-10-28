@@ -15,10 +15,6 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowService extends ShadowContextWrapper {
     @RealObject Service realService;
 
-    public ShadowService(Service realService) {
-        super(realService);
-    }
-
     @Implementation
     public final Application getApplication() {
         return Robolectric.application;

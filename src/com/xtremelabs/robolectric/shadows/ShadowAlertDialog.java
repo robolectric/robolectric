@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 import java.lang.reflect.Constructor;
 
@@ -31,10 +32,6 @@ public class ShadowAlertDialog extends ShadowDialog {
     private Button negativeButton;
     private Button neutralButton;
     private boolean isCancelable;
-
-    public ShadowAlertDialog(AlertDialog dialog) {
-        super(dialog);
-    }
 
     @Override @Implementation
     public View findViewById(int viewId) {
@@ -72,11 +69,12 @@ public class ShadowAlertDialog extends ShadowDialog {
 
     @Implements(AlertDialog.Builder.class)
     public static class ShadowBuilder {
+        @RealObject private AlertDialog.Builder realBuilder;
+
         private CharSequence[] items;
         private DialogInterface.OnClickListener clickListener;
         private String title;
         private String message;
-        private AlertDialog.Builder realBuilder;
         private Context context;
         private boolean isMultiItem;
         private DialogInterface.OnMultiChoiceClickListener multiChoiceClickListener;
@@ -90,10 +88,6 @@ public class ShadowAlertDialog extends ShadowDialog {
         private boolean isCancelable;
         private boolean isSingleItem;
         private int checkedItem;
-
-        public ShadowBuilder(AlertDialog.Builder realBuilder) {
-            this.realBuilder = realBuilder;
-        }
 
         public void __constructor__(Context context) {
             this.context = context;

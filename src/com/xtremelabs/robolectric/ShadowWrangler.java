@@ -326,12 +326,9 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     private class MetaShadow {
-        private Class<?> shadowClass;
         List<Field> realObjectFields = new ArrayList<Field>();
 
         public MetaShadow(Class<?> shadowClass) {
-            this.shadowClass = shadowClass;
-
             while (shadowClass != null) {
                 for (Field field : shadowClass.getDeclaredFields()) {
                     if (field.isAnnotationPresent(RealObject.class)) {

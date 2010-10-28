@@ -2,15 +2,12 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.view.ViewGroup;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewGroup.LayoutParams.class)
 public class ShadowLayoutParams {
-    private final ViewGroup.LayoutParams realLayoutParams;
-
-    public ShadowLayoutParams(ViewGroup.LayoutParams realLayoutParams) {
-        this.realLayoutParams = realLayoutParams;
-    }
+    @RealObject private ViewGroup.LayoutParams realLayoutParams;
 
     public void __constructor__(int w, int h) {
         realLayoutParams.width = w;
