@@ -3,14 +3,11 @@ package com.xtremelabs.robolectric.shadows;
 import android.graphics.Point;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 @Implements(Point.class)
 public class ShadowPoint {
-    private Point realPoint;
-
-    public ShadowPoint(Point realPoint) {
-        this.realPoint = realPoint;
-    }
+    @RealObject private Point realPoint;
 
     public void __constructor__(int x, int y) {
         realPoint.x = x;

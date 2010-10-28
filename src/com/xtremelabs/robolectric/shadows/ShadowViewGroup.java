@@ -15,10 +15,6 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowViewGroup extends ShadowView {
     private List<View> children = new ArrayList<View>();
 
-    public ShadowViewGroup(ViewGroup viewGroup) {
-        super(viewGroup);
-    }
-
     @Implementation
     @Override
     public View findViewById(int id) {

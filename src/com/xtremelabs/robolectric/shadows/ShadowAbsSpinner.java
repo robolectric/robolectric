@@ -8,10 +8,6 @@ import com.xtremelabs.robolectric.util.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AbsSpinner.class)
 public class ShadowAbsSpinner extends ShadowAdapterView {
-    public ShadowAbsSpinner(AbsSpinner absSpinner) {
-        super(absSpinner);
-    }
-
     @Implementation
     public void setAdapter(SpinnerAdapter adapter) {
         super.setAdapter(adapter);

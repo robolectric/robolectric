@@ -5,18 +5,16 @@ import android.os.Looper;
 import android.os.Message;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Handler.class)
 public class ShadowHandler {
-    private Handler realHandler;
-    private Looper looper;
+    @RealObject private Handler realHandler;
 
-    public ShadowHandler(Handler realHandler) {
-        this.realHandler = realHandler;
-    }
+    private Looper looper;
 
     public void __constructor__() {
         this.looper = Looper.myLooper();

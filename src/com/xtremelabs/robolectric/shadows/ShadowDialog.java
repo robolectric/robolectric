@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.Window;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 import com.xtremelabs.robolectric.view.TestWindow;
 
 import java.lang.reflect.Method;
@@ -18,7 +19,8 @@ import java.lang.reflect.Method;
 public class ShadowDialog {
     public static ShadowDialog latestDialog;
 
-    private Dialog realDialog;
+    @RealObject private Dialog realDialog;
+
     private boolean isShowing;
     public Context context;
     public int layoutId;
@@ -33,10 +35,6 @@ public class ShadowDialog {
 
     public static void reset() {
         latestDialog = null;
-    }
-
-    public ShadowDialog(Dialog dialog) {
-        realDialog = dialog;
     }
 
     public void __constructor__(Context context) {

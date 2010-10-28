@@ -3,18 +3,15 @@ package com.xtremelabs.robolectric.shadows;
 import android.database.AbstractCursor;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AbstractCursor.class)
 public class ShadowAbstractCursor {
-    private AbstractCursor real;
-
-    public ShadowAbstractCursor(AbstractCursor real) {
-        this.real = real;
-    }
+    @RealObject private AbstractCursor realAbstractCursor;
 
     @Implementation
     public final boolean moveToFirst() {
-        return real.getCount() > 0;
+        return realAbstractCursor.getCount() > 0;
     }
 }

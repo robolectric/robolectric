@@ -15,10 +15,6 @@ public class ShadowImageView extends ShadowView {
     private Bitmap imageBitmap;
     private ImageView.ScaleType scaleType;
 
-    public ShadowImageView(ImageView view) {
-        super(view);
-    }
-
     @Implementation
     public void setImageBitmap(Bitmap imageBitmap) {
         this.imageBitmap = imageBitmap;

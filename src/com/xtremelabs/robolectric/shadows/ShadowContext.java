@@ -3,15 +3,12 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.Context;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Context.class)
 public class ShadowContext {
-    private Context realContext;
-
-    public ShadowContext(Context realContext) {
-        this.realContext = realContext;
-    }
+    @RealObject private Context realContext;
 
     @Implementation
     public String getString(int resId) {

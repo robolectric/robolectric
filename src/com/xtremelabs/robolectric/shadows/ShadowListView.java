@@ -6,6 +6,7 @@ import android.widget.ListAdapter;
 import android.widget.ListView;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,15 +16,11 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListView.class)
 public class ShadowListView extends ShadowAdapterView {
+    @RealObject private ListView realListView;
+
     public boolean itemsCanFocus;
     public List<View> headerViews = new ArrayList<View>();
     public List<View> footerViews = new ArrayList<View>();
-    private ListView realListView;
-
-    public ShadowListView(ListView listView) {
-        super(listView);
-        this.realListView = listView;
-    }
 
     @Implementation
     public void setItemsCanFocus(boolean itemsCanFocus) {

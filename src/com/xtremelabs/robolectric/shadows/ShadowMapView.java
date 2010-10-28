@@ -35,7 +35,6 @@ public class ShadowMapView extends ShadowViewGroup {
     public boolean preLoadWasCalled;
 
     public ShadowMapView(MapView mapView) {
-        super(mapView);
         realMapView = mapView;
         zoomButtonsController = new ZoomButtonsController(mapView);
     }
