@@ -2,3 +2,6 @@ bin/
 out/
 .idea/workspace.xml
 tmp/
+target/
+*~
+\#*\#
