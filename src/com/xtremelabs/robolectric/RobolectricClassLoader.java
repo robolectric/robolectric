@@ -14,19 +14,19 @@ import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.jar.Manifest;
 
-public class Loader extends javassist.Loader {
+public class RobolectricClassLoader extends javassist.Loader {
     private static final Attributes.Name VERSION_ATTRIBUTE = new Attributes.Name("version");
     private AndroidTranslator androidTranslator;
     private JarFile cacheFile;
 
-    public Loader(ClassHandler classHandler) {
-        super(Loader.class.getClassLoader(), null);
+    public RobolectricClassLoader(ClassHandler classHandler) {
+        super(RobolectricClassLoader.class.getClassLoader(), null);
 
         delegateLoadingOf(AndroidTranslator.class.getName());
 
         try {
             ClassPool classPool = new ClassPool();
-            classPool.appendClassPath(new LoaderClassPath(Loader.class.getClassLoader()));
+            classPool.appendClassPath(new LoaderClassPath(RobolectricClassLoader.class.getClassLoader()));
 
             androidTranslator = new AndroidTranslator(classHandler);
             addTranslator(classPool, androidTranslator);

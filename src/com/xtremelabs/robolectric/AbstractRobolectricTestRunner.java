@@ -10,13 +10,32 @@ import org.junit.runners.model.Statement;
 import java.lang.reflect.Method;
 
 public class AbstractRobolectricTestRunner extends BlockJUnit4ClassRunner {
-    private Loader loader;
+    private static RobolectricClassLoader defaultLoader;
+
+    private RobolectricClassLoader loader;
     private ClassHandler classHandler;
     private Class<? extends TestHelperInterface> testHelperClass;
     private TestHelperInterface testHelper;
 
-    public AbstractRobolectricTestRunner(Class<?> testClass, Loader loader) throws InitializationError {
+    private static RobolectricClassLoader getDefaultLoader() {
+        if (defaultLoader == null) {
+            defaultLoader = new RobolectricClassLoader(ShadowWrangler.getInstance());
+        }
+        return defaultLoader;
+    }
+
+    public AbstractRobolectricTestRunner(Class<?> testClass) throws InitializationError {
+        this(testClass, ShadowWrangler.getInstance(), getDefaultLoader());
+    }
+
+    public AbstractRobolectricTestRunner(Class<?> testClass, Class<? extends TestHelperInterface> testHelperClass) throws InitializationError {
+        this(testClass);
+        setTestHelperClass(testHelperClass);
+    }
+
+    public AbstractRobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader loader) throws InitializationError {
         super(loader.bootstrap(testClass));
+        this.classHandler = classHandler;
         this.loader = loader;
 
         this.loader.delegateLoadingOf(TestHelperInterface.class.getName());
@@ -24,9 +43,8 @@ public class AbstractRobolectricTestRunner extends BlockJUnit4ClassRunner {
         this.loader.delegateLoadingOf(ShadowWrangler.class.getName());
     }
 
-    public void setClassHandler(ClassHandler classHandler) {
-        this.classHandler = classHandler;
-        loader.delegateLoadingOf(getClass().getName());
+    public void delegateLoadingOf(String className) {
+        loader.delegateLoadingOf(className);
     }
 
     public void setTestHelperClass(Class<? extends TestHelperInterface> testHelperClass) {
