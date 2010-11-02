@@ -81,6 +81,11 @@
         </javac>
     </target>
 
+    <target name="jar" description="create the robolectric jar">
+        <mkdir dir="${target.dir}"/>
+        <jar destfile="${target.dir}/robolectric.jar" basedir="${out.main.absolute.dir}"/>
+    </target>
+
     <target name="compile.tests" depends="compile"
             description="compile module source; test classes" unless="skip.tests">
         <mkdir dir="${out.test.absolute.dir}"/>
