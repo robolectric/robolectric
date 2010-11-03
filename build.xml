@@ -42,8 +42,8 @@
     </path>
 
     <path id="android.target.classpath">
-        <pathelement path="${sdk.dir}/platforms/android-7/android.jar"/>
-        <pathelement path="${sdk.dir}/add-ons/addon_google_apis_google_inc_7/libs/maps.jar"/>
+        <pathelement path="${sdk.dir}/platforms/android-8/android.jar"/>
+        <pathelement path="${sdk.dir}/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"/>
     </path>
 
     <property name="main.absolute.dir" location="${main.dir}"/>
@@ -81,9 +81,27 @@
         </javac>
     </target>
 
-    <target name="jar" description="create the robolectric jar">
+    <target name="jar" description="create the robolectric jar" depends="compile">
         <mkdir dir="${target.dir}"/>
-        <jar destfile="${target.dir}/robolectric.jar" basedir="${out.main.absolute.dir}"/>
+        <jar destfile="${target.dir}/robolectric.jar">
+            <fileset dir="${out.main.absolute.dir}" includes="**/*.class"/>
+        </jar>
+    </target>
+
+    <target name="jar-all" description="create the robolectric jar including all dependencies" depends="jar">
+        <mkdir dir="${target.dir}/staging"/>
+        <unjar dest="${target.dir}/staging" src="${main.external.libs.absolute.dir}/com.springsource.org.objenesis-1.0.0.jar"/>
+        <unjar dest="${target.dir}/staging" src="${main.external.libs.absolute.dir}/javassist-3.12.GA.jar"/>
+        <unjar dest="${target.dir}/staging" src="${target.dir}/robolectric.jar"/>
+        <jar destfile="${target.dir}/robolectric-all.jar" basedir="${target.dir}/staging"/>
+        <delete dir="${target.dir}/staging"/>
+    </target>
+
+    <target name="snapshot" description="release a version of robolectric as jars" depends="jar-all">
+        <copy todir="pages/downloads">
+            <fileset dir="${target.dir}" includes="robolectric*.jar"/>
+        </copy>
+        <exec command="./update-downloads.rb"/>
     </target>
 
     <target name="compile.tests" depends="compile"
