@@ -11,7 +11,8 @@ Wouldn't it be nice to run your Android tests directly from inside your IDE? Per
 
 [Robolectric](http://github.com/pivotal/robolectric) is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app.  Tests run inside the JVM on your workstation in seconds. With [Robolectric](http://github.com/pivotal/robolectric) you can write tests like this:
 
-<pre>
+{% highlight java %}
+// Test class for MyActivity
 @RunWith(RobolectricTestRunner.class)
 public class MyActivityTest {
     private Activity activity;
@@ -33,7 +34,7 @@ public class MyActivityTest {
         assertThat(resultsText, equalTo("Testing Android Rocks!"));
     }
 }
-</pre>
+{% endhighlight %}
 
 [Robolectric](http://github.com/pivotal/robolectric) makes this possible by intercepting the loading of the Android classes and rewriting the method bodies. [Robolectric](http://github.com/pivotal/robolectric) re-defines Android methods so they return null (or 0, false, etc.), or if provided [Robolectric](http://github.com/pivotal/robolectric) will forward method calls to shadow Android objects giving the Android SDK behavior. [Robolectric](http://github.com/pivotal/robolectric) provides a large number of shadow objects covering much of what a typical application would need to test-drive the business logic and functionality of your application. Coverage of the SDK is improving every day.
 

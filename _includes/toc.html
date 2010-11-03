@@ -2,5 +2,36 @@
   <ul>
  	<li><a href="index.html">Welcome</a></li>
  	<li><a href="user-guide.html">User Guide</a></li>
+ 	<li><a href="download.html">Download</a></li>
   </ul>
 </nav>
+<script>
+  new TWTR.Widget({
+    version: 2,
+    type: 'profile',
+    rpp: 10,
+    interval: 6000,
+    width: 160,
+    height: 400,
+    theme: {
+      shell: {
+        background: '#333333',
+        color: '#ffffff'
+      },
+      tweets: {
+        background: '#e4e4e2',
+        color: '#444444',
+        links: '#216604'
+      }
+    },
+    features: {
+      scrollbar: false,
+      loop: false,
+      live: true,
+      hashtags: true,
+      timestamp: true,
+      avatars: true,
+      behavior: 'all'
+    }
+  }).render().setUser('robolectric').start();
+</script>
