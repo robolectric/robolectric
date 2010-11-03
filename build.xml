@@ -42,8 +42,8 @@
     </path>
 
     <path id="android.target.classpath">
-        <pathelement path="${sdk.dir}/platforms/android-7/android.jar"/>
-        <pathelement path="${sdk.dir}/add-ons/addon_google_apis_google_inc_7/libs/maps.jar"/>
+        <pathelement path="${sdk.dir}/platforms/android-8/android.jar"/>
+        <pathelement path="${sdk.dir}/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"/>
     </path>
 
     <property name="main.absolute.dir" location="${main.dir}"/>
