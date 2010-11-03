@@ -110,7 +110,6 @@ public class AndroidTranslator implements Translator {
                 new CtMethod(CtClass.voidType, "<init>", parameterTypes, ctClass),
                 CtClass.voidType,
                 Type.VOID,
-                true,
                 false);
     }
 
@@ -155,14 +154,13 @@ public class AndroidTranslator implements Translator {
 //                }
 //            }
 
-        boolean returnsVoid = returnType.isVoid();
         boolean isStatic = Modifier.isStatic(modifiers);
 
         String methodBody;
         if (!isAbstract) {
-            methodBody = generateMethodBody(ctClass, ctMethod, returnCtClass, returnType, returnsVoid, isStatic);
+            methodBody = generateMethodBody(ctClass, ctMethod, returnCtClass, returnType, isStatic);
         } else {
-            methodBody = returnsVoid ? "" : "return " + returnType.defaultReturnString() + ";";
+            methodBody = returnType.isVoid() ? "" : "return " + returnType.defaultReturnString() + ";";
         }
 
         CtMethod newMethod = CtNewMethod.make(
@@ -176,7 +174,9 @@ public class AndroidTranslator implements Translator {
         ctMethod.setBody(newMethod, null);
     }
 
-    private String generateMethodBody(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean returnsVoid, boolean aStatic) throws NotFoundException {
+    public String generateMethodBody(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean aStatic) throws NotFoundException {
+        boolean returnsVoid = returnType.isVoid();
+
         String methodBody;
         StringBuilder buf = new StringBuilder();
         if (!returnsVoid) {
@@ -184,8 +184,8 @@ public class AndroidTranslator implements Translator {
         }
         buf.append(AndroidTranslator.class.getName());
         buf.append(".get(");
-        buf.append(index);
-        buf.append(").methodInvoked(");
+        buf.append(getIndex());
+        buf.append(").methodInvoked(\n  ");
         buf.append(ctClass.getName());
         buf.append(".class, \"");
         buf.append(ctMethod.getName());
@@ -212,11 +212,15 @@ public class AndroidTranslator implements Translator {
             buf.append(";\n");
             buf.append("return ");
             buf.append(returnType.defaultReturnString());
-            buf.append(";");
+            buf.append(";\n");
         }
 
         methodBody = buf.toString();
         return methodBody;
+    }
+
+    protected int getIndex() {
+        return index;
     }
 
     private void appendParamTypeArray(StringBuilder buf, CtMethod ctMethod) throws NotFoundException {
