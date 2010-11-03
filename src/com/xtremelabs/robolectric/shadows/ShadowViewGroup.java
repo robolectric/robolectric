@@ -5,6 +5,7 @@ import android.view.ViewGroup;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -98,5 +99,21 @@ public class ShadowViewGroup extends ShadowView {
             innerText += childText;
         }
         return innerText;
+    }
+
+    @Override public void dump(PrintStream out, int indent) {
+        dumpFirstPart(out, indent);
+        if (children.size() > 0) {
+            out.println(">");
+
+            for (View child : children) {
+                shadowOf(child).dump(out, indent + 2);
+            }
+
+            dumpIndent(out, indent);
+            out.println("</" + realView.getClass().getSimpleName() + ">");
+        } else {
+            out.println("/>");
+        }
     }
 }

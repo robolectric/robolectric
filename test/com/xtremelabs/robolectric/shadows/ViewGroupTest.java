@@ -1,20 +1,26 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Application;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(DogfoodRobolectricTestRunner.class)
 public class ViewGroupTest {
@@ -28,13 +34,16 @@ public class ViewGroupTest {
     @Before public void setUp() throws Exception {
         Robolectric.bindDefaultShadowClasses();
 
-        root = new FrameLayout(null);
+        Application context = new Application();
+        ShadowApplication.bind(context, new ResourceLoader(R.class, null));
 
-        child1 = new View(null);
-        child2 = new View(null);
-        child3 = new FrameLayout(null);
-        child3a = new View(null);
-        child3b = new View(null);
+        root = new FrameLayout(context);
+
+        child1 = new View(context);
+        child2 = new View(context);
+        child3 = new FrameLayout(context);
+        child3a = new View(context);
+        child3b = new View(context);
 
         root.addView(child1);
         root.addView(child2);
@@ -88,5 +97,21 @@ public class ViewGroupTest {
         root.requestFocus();
         root.clearFocus();
         assertFalse(root.hasFocus());
+    }
+
+    @Test
+    public void dump_shouldDumpStructure() throws Exception {
+        child3.setId(R.id.snippet_text);
+        
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        shadowOf(root).dump(new PrintStream(out), 0);
+        assertEquals("<FrameLayout>\n" +
+                "  <View/>\n" +
+                "  <View/>\n" +
+                "  <FrameLayout id=\"id/snippet_text\">\n" +
+                "    <View/>\n" +
+                "    <View/>\n" +
+                "  </FrameLayout>\n" +
+                "</FrameLayout>\n", out.toString());
     }
 }

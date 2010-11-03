@@ -11,8 +11,11 @@ import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
 
+import java.io.PrintStream;
 import java.util.HashMap;
 import java.util.Map;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(View.class)
@@ -337,5 +340,27 @@ public class ShadowView {
 
     public String innerText() {
         return "";
+    }
+
+    public void dump() {
+        dump(System.out, 0);
+    }
+
+    public void dump(PrintStream out, int indent) {
+        dumpFirstPart(out, indent);
+        out.println("/>");
+    }
+
+    protected void dumpFirstPart(PrintStream out, int indent) {
+        dumpIndent(out, indent);
+
+        out.print("<" + realView.getClass().getSimpleName());
+        if (id > 0) {
+            out.print(" id=\"" + shadowOf(context).getResourceLoader().getNameForId(id) + "\"");
+        }
+    }
+
+    protected void dumpIndent(PrintStream out, int indent) {
+        for (int i = 0; i < indent; i++) out.print(" ");
     }
 }
