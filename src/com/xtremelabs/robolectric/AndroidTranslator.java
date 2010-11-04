@@ -351,11 +351,7 @@ public class AndroidTranslator implements Translator {
                     cacheJarDir.mkdirs();
                 }
 
-                if (file.exists()) {
-                    jarOutputStream = new JarOutputStream(new FileOutputStream(file, true));
-                } else {
-                    jarOutputStream = new JarOutputStream(new FileOutputStream(file), manifest);
-                }
+                jarOutputStream = new JarOutputStream(new FileOutputStream(file), manifest);
                 for (Map.Entry<String, byte[]> entry : modifiedClasses.entrySet()) {
                     String key = entry.getKey();
                     jarOutputStream.putNextEntry(new JarEntry(key.replace('.', '/') + ".class"));
