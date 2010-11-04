@@ -13,7 +13,7 @@ public class AndroidTranslatorUnitTest {
 
     @Before public void setUp() throws Exception {
         classPool = new ClassPool(true);
-        androidTranslator = new AndroidTranslator(null) {
+        androidTranslator = new AndroidTranslator(null, null) {
             @Override protected int getIndex() {
                 return 0;
             }
