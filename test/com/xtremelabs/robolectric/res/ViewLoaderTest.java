@@ -81,6 +81,12 @@ public class ViewLoaderTest {
     }
 
     @Test
+    public void testIncludeShouldOverrideAttributesOfIncludedRootNode() throws Exception {
+        ViewGroup overrideIncludeView = (ViewGroup) viewLoader.inflateView(context, "layout/override_include");
+        assertThat(overrideIncludeView.findViewById(R.id.snippet_text).getVisibility(), is(View.INVISIBLE));
+    }
+
+    @Test
     public void shouldNotCountRequestFocusElementAsChild() throws Exception {
         ViewGroup viewGroup = (ViewGroup) viewLoader.inflateView(context, "layout/request_focus");
         ViewGroup frameLayout = (ViewGroup) viewGroup.getChildAt(1);
