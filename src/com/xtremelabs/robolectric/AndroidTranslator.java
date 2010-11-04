@@ -11,7 +11,7 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 5;
+    public static final int CACHE_VERSION = 6;
 
     private static final List<AndroidTranslator> INSTANCES = new ArrayList<AndroidTranslator>();
 
@@ -60,7 +60,7 @@ public class AndroidTranslator implements Translator {
         if (classCache.isWriting()) {
             throw new IllegalStateException("shouldn't be modifying bytecode after we've started writing cache! class=" + className);
         }
-        
+
         boolean needsStripping =
                 className.startsWith("android.")
                         || className.startsWith("org.apache.http")
@@ -139,40 +139,52 @@ public class AndroidTranslator implements Translator {
 
     private void fixMethods(CtClass ctClass) throws NotFoundException, CannotCompileException {
         for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
-            String describeBefore = describe(ctMethod);
-            try {
-                fixMethod(ctClass, ctMethod);
-            } catch (Exception e) {
-                throw new RuntimeException("problem instrumenting " + describeBefore, e);
-            }
+            fixMethod(ctClass, ctMethod);
         }
+        CtMethod equalsMethod = ctClass.getMethod("equals", "(Ljava/lang/Object;)Z");
+        CtMethod hashCodeMethod = ctClass.getMethod("hashCode", "()I");
+        CtMethod toStringMethod = ctClass.getMethod("toString", "()Ljava/lang/String;");
+
+        fixMethod(ctClass, equalsMethod);
+        fixMethod(ctClass, hashCodeMethod);
+        fixMethod(ctClass, toStringMethod);
     }
 
     private String describe(CtMethod ctMethod) throws NotFoundException {
         return Modifier.toString(ctMethod.getModifiers()) + " " + ctMethod.getReturnType().getSimpleName() + " " + ctMethod.getLongName();
     }
 
-    private void fixMethod(CtClass ctClass, CtMethod ctMethod) throws NotFoundException, CannotCompileException {
-        int originalModifiers = ctMethod.getModifiers();
-        int newModifiers = originalModifiers;
+    private void fixMethod(CtClass ctClass, CtMethod ctMethod) throws NotFoundException {
+        String describeBefore = describe(ctMethod);
+        try {
+            CtClass declaringClass = ctMethod.getDeclaringClass();
+            int originalModifiers = ctMethod.getModifiers();
 
-        boolean wasNative = Modifier.isNative(originalModifiers);
-        boolean wasFinal = Modifier.isFinal(originalModifiers);
-        boolean wasAbstract = Modifier.isAbstract(originalModifiers);
+            boolean wasNative = Modifier.isNative(originalModifiers);
+            boolean wasFinal = Modifier.isFinal(originalModifiers);
+            boolean wasAbstract = Modifier.isAbstract(originalModifiers);
+            boolean wasDeclaredInClass = declaringClass.equals(ctClass);
 
-        if (wasNative) {
-            newModifiers = Modifier.clear(newModifiers, Modifier.NATIVE);
-        }
-        if (wasFinal) {
-            newModifiers = Modifier.clear(newModifiers, Modifier.FINAL);
-        }
-        ctMethod.setModifiers(newModifiers);
+            if (wasFinal && ctClass.isEnum()) {
+                return;
+            }
 
-        CtClass returnCtClass = ctMethod.getReturnType();
-        Type returnType = Type.find(returnCtClass);
+            int newModifiers = originalModifiers;
+            if (wasNative) {
+                newModifiers = Modifier.clear(newModifiers, Modifier.NATIVE);
+            }
+            if (wasFinal) {
+                newModifiers = Modifier.clear(newModifiers, Modifier.FINAL);
+            }
+            if (wasDeclaredInClass) {
+                ctMethod.setModifiers(newModifiers);
+            }
 
-        String methodName = ctMethod.getName();
-        CtClass[] paramTypes = ctMethod.getParameterTypes();
+            CtClass returnCtClass = ctMethod.getReturnType();
+            Type returnType = Type.find(returnCtClass);
+
+            String methodName = ctMethod.getName();
+            CtClass[] paramTypes = ctMethod.getParameterTypes();
 
 //            if (!isAbstract) {
 //                if (methodName.startsWith("set") && paramTypes.length == 1) {
@@ -188,24 +200,49 @@ public class AndroidTranslator implements Translator {
 //                }
 //            }
 
-        boolean isStatic = Modifier.isStatic(originalModifiers);
+            boolean isStatic = Modifier.isStatic(originalModifiers);
+            String methodBody = generateMethodBody(ctClass, ctMethod, wasNative, wasAbstract, returnCtClass, returnType, isStatic);
 
-        String methodBody = generateMethodBody(ctClass, ctMethod, wasNative, wasAbstract, returnCtClass, returnType, isStatic);
-
-        if (wasAbstract || wasNative) {
-            CtMethod newMethod = CtNewMethod.make(
-                    ctMethod.getModifiers(),
-                    returnCtClass,
-                    methodName,
-                    paramTypes,
-                    ctMethod.getExceptionTypes(),
-                    "{\n" + methodBody + "\n}",
-                    ctClass);
-
-            ctMethod.setBody(newMethod, null);
-        } else {
-            ctMethod.insertBefore("{\n" + methodBody + "}\n");
+            if (!wasDeclaredInClass) {
+                CtMethod newMethod = makeNewMethod(ctClass, ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + generateCallToSuper(methodName, paramTypes) + "\n}");
+                newMethod.setModifiers(newModifiers);
+                ctClass.addMethod(newMethod);
+            } else if (wasAbstract || wasNative) {
+                CtMethod newMethod = makeNewMethod(ctClass, ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + "\n}");
+                ctMethod.setBody(newMethod, null);
+            } else {
+                ctMethod.insertBefore("{\n" + methodBody + "}\n");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("problem instrumenting " + describeBefore, e);
         }
+    }
+
+    private CtMethod makeNewMethod(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, String methodName, CtClass[] paramTypes, String methodBody) throws CannotCompileException, NotFoundException {
+        return CtNewMethod.make(
+                ctMethod.getModifiers(),
+                returnCtClass,
+                methodName,
+                paramTypes,
+                ctMethod.getExceptionTypes(),
+                methodBody,
+                ctClass);
+    }
+
+    public String generateCallToSuper(String methodName, CtClass[] paramTypes) {
+        return "return super." + methodName + "(" + makeParameterReplacementList(paramTypes.length) + ");";
+    }
+
+    public String makeParameterReplacementList(int length) {
+        if (length == 0) {
+            return "";
+        }
+
+        String parameterReplacementList = "$1";
+        for (int i = 2; i <= length; ++i) {
+            parameterReplacementList += ", $" + i;
+        }
+        return parameterReplacementList;
     }
 
     private String generateMethodBody(CtClass ctClass, CtMethod ctMethod, boolean wasNative, boolean wasAbstract, CtClass returnCtClass, Type returnType, boolean aStatic) throws NotFoundException {

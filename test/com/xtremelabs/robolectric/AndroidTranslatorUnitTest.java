@@ -74,4 +74,11 @@ public class AndroidTranslatorUnitTest {
                 "return null;\n" +
                 "}\n", methodBody);
     }
+
+    @Test
+    public void shouldGenerateParameterList() throws Exception {
+        assertEquals(androidTranslator.makeParameterReplacementList(0), "");
+        assertEquals(androidTranslator.makeParameterReplacementList(1), "$1");
+        assertEquals(androidTranslator.makeParameterReplacementList(2), "$1, $2");        
+    }
 }

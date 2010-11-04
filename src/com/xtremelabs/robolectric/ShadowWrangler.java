@@ -70,7 +70,7 @@ public class ShadowWrangler implements ClassHandler {
         try {
             return invocationPlan.getMethod().invoke(invocationPlan.getShadow(), params);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException(invocationPlan.getShadow().getClass().getName() + " is not assignable from " + invocationPlan.getHandlingClass().getName(), e);
+            throw new RuntimeException(invocationPlan.getShadow().getClass().getName() + " is not assignable from " + invocationPlan.getDeclaredShadowClass().getName(), e);
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
@@ -116,7 +116,7 @@ public class ShadowWrangler implements ClassHandler {
             return shadow;
         }
 
-        String shadowClassName = getHandlingClassName(instance.getClass());
+        String shadowClassName = getShadowClassName(instance.getClass());
 
         if (debug)
             System.out.println("creating new " + shadowClassName + " as shadow for " + instance.getClass().getName());
@@ -160,7 +160,7 @@ public class ShadowWrangler implements ClassHandler {
         }
     }
 
-    private String getHandlingClassName(Class clazz) {
+    private String getShadowClassName(Class clazz) {
         String shadowClassName = null;
         while (shadowClassName == null && clazz != null) {
             shadowClassName = shadowClassMap.get(clazz.getName());
@@ -223,22 +223,24 @@ public class ShadowWrangler implements ClassHandler {
 
     private class InvocationPlan {
         private Class clazz;
+        private ClassLoader classLoader;
         private String methodName;
         private Object instance;
         private String[] paramTypes;
-        private Class<?> handlingClass;
+        private Class<?> declaredShadowClass;
         private Method method;
         private Object shadow;
 
         public InvocationPlan(Class clazz, String methodName, Object instance, String... paramTypes) {
             this.clazz = clazz;
+            this.classLoader = clazz.getClassLoader();
             this.methodName = methodName;
             this.instance = instance;
             this.paramTypes = paramTypes;
         }
 
-        public Class<?> getHandlingClass() {
-            return handlingClass;
+        public Class<?> getDeclaredShadowClass() {
+            return declaredShadowClass;
         }
 
         public Method getMethod() {
@@ -250,32 +252,14 @@ public class ShadowWrangler implements ClassHandler {
         }
 
         public boolean prepare() {
-            Class<?>[] paramClasses = new Class<?>[paramTypes.length];
-
-            ClassLoader classLoader = clazz.getClassLoader();
-            for (int i = 0; i < paramTypes.length; i++) {
-                paramClasses[i] = loadClass(paramTypes[i], classLoader);
-            }
+            Class<?>[] paramClasses = getParamClasses();
 
             Class<?> originalClass = loadClass(clazz.getName(), classLoader);
 
-            Class<?> declaringClass;
-            if (methodName.equals("<init>")) {
-                declaringClass = originalClass;
-            } else {
-                Method originalMethod;
-                try {
-                    originalMethod = originalClass.getDeclaredMethod(methodName, paramClasses);
-                } catch (NoSuchMethodException e) {
-                    throw new RuntimeException(e);
-                }
-                declaringClass = originalMethod.getDeclaringClass();
-            }
-            String handlingClassName = getHandlingClassName(declaringClass);
-            if (handlingClassName == null) {
+            declaredShadowClass = findDeclaredShadowClassForMethod(originalClass, methodName, paramClasses);
+            if (declaredShadowClass == null) {
                 return false;
             }
-            handlingClass = loadClass(handlingClassName, classLoader);
 
             if (methodName.equals("<init>")) {
                 methodName = "__constructor__";
@@ -286,25 +270,61 @@ public class ShadowWrangler implements ClassHandler {
                 method = getMethod(shadow.getClass(), methodName, paramClasses);
             } else {
                 shadow = null;
-                String shadowClassName = getHandlingClassName(clazz);
-                Class<?> shadowClass = loadClass(shadowClassName, classLoader);
-                method = getMethod(shadowClass, methodName, paramClasses);
+                method = getMethod(findShadowClass(clazz), methodName, paramClasses);
             }
 
             if (method == null) {
                 if (debug) {
-                    System.out.println("No method found for " + clazz + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + handlingClass.getName());
+                    System.out.println("No method found for " + clazz + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + declaredShadowClass.getName());
                 }
                 return false;
             }
 
             if ((instance == null) != Modifier.isStatic(method.getModifiers())) {
-                throw new RuntimeException("method staticness of " + clazz.getName() + "." + methodName + " and " + handlingClassName + "." + method.getName() + " don't match");
+                throw new RuntimeException("method staticness of " + clazz.getName() + "." + methodName + " and " + declaredShadowClass.getName() + "." + method.getName() + " don't match");
             }
 
             method.setAccessible(true);
 
             return true;
+        }
+
+        private Class<?> findDeclaredShadowClassForMethod(Class<?> originalClass, String methodName, Class<?>[] paramClasses) {
+            Class<?> declaringClass = findDeclaringClassForMethod(methodName, paramClasses, originalClass);
+            return findShadowClass(declaringClass);
+        }
+
+        private Class<?> findShadowClass(Class<?> originalClass) {
+                String declaredShadowClassName = getShadowClassName(originalClass);
+            if (declaredShadowClassName == null) {
+                return null;
+            }
+            return loadClass(declaredShadowClassName, classLoader);
+        }
+
+        private Class<?> findDeclaringClassForMethod(String methodName, Class<?>[] paramClasses, Class<?> originalClass) {
+            Class<?> declaringClass;
+            if (this.methodName.equals("<init>")) {
+                declaringClass = originalClass;
+            } else {
+                Method originalMethod;
+                try {
+                    originalMethod = originalClass.getDeclaredMethod(methodName, paramClasses);
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+                declaringClass = originalMethod.getDeclaringClass();
+            }
+            return declaringClass;
+        }
+
+        private Class<?>[] getParamClasses() {
+            Class<?>[] paramClasses = new Class<?>[paramTypes.length];
+
+            for (int i = 0; i < paramTypes.length; i++) {
+                paramClasses[i] = loadClass(paramTypes[i], classLoader);
+            }
+            return paramClasses;
         }
 
         private Method getMethod(Class<?> clazz, String methodName, Class<?>[] paramClasses) {
@@ -319,8 +339,9 @@ public class ShadowWrangler implements ClassHandler {
             }
         }
 
-        @Override public String toString() {
-            return "delegating to " + handlingClass.getName() + "." + method.getName()
+        @Override
+        public String toString() {
+            return "delegating to " + declaredShadowClass.getName() + "." + method.getName()
                     + "(" + Arrays.toString(method.getParameterTypes()) + ")";
         }
     }
