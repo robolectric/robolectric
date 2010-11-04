@@ -6,20 +6,20 @@ import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 
 public class RobolectricClassLoader extends javassist.Loader {
-    private AndroidTranslator androidTranslator;
     private ClassCache classCache;
 
     public RobolectricClassLoader(ClassHandler classHandler) {
         super(RobolectricClassLoader.class.getClassLoader(), null);
 
         delegateLoadingOf(AndroidTranslator.class.getName());
+        delegateLoadingOf(ClassHandler.class.getName());
 
         classCache = new ClassCache("tmp/cached-robolectric-classes.jar", AndroidTranslator.CACHE_VERSION);
         try {
             ClassPool classPool = new ClassPool();
             classPool.appendClassPath(new LoaderClassPath(RobolectricClassLoader.class.getClassLoader()));
 
-            androidTranslator = new AndroidTranslator(classHandler, classCache);
+            AndroidTranslator androidTranslator = new AndroidTranslator(classHandler, classCache);
             addTranslator(classPool, androidTranslator);
         } catch (NotFoundException e) {
             throw new RuntimeException(e);
@@ -52,7 +52,7 @@ public class RobolectricClassLoader extends javassist.Loader {
         }
     }
 
-    protected Class findClass(String name) throws ClassNotFoundException {
+    @Override protected Class findClass(String name) throws ClassNotFoundException {
         byte[] classBytes = classCache.getClassBytesFor(name);
         if (classBytes != null) {
             return defineClass(name, classBytes, 0, classBytes.length);

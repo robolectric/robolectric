@@ -6,36 +6,25 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings({"UnusedDeclaration"})
 public class AndroidTranslator implements Translator {
     /**
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 5;
+    public static final int CACHE_VERSION = 6;
 
-    private static final List<AndroidTranslator> INSTANCES = new ArrayList<AndroidTranslator>();
+    private static final List<ClassHandler> CLASS_HANDLERS = new ArrayList<ClassHandler>();
 
     private static boolean callDirectly = false; // todo: move this and make it MT-safe
 
-    private int index;
     private ClassHandler classHandler;
     private ClassCache classCache;
 
     public AndroidTranslator(ClassHandler classHandler, ClassCache classCache) {
         this.classHandler = classHandler;
         this.classCache = classCache;
-        index = addInstance(this);
     }
-
-    synchronized static private int addInstance(AndroidTranslator androidTranslator) {
-        INSTANCES.add(androidTranslator);
-        return INSTANCES.size() - 1;
-    }
-
-    synchronized static public AndroidTranslator get(int index) {
-        return INSTANCES.get(index);
-    }
-
 
     public static <T> T directlyOn(T shadowedObject) {
         callDirectly = true;
@@ -51,8 +40,22 @@ public class AndroidTranslator implements Translator {
         }
     }
 
+    public static ClassHandler getClassHandler(int index) {
+        return CLASS_HANDLERS.get(index);
+    }
+
     @Override
     public void start(ClassPool classPool) throws NotFoundException, CannotCompileException {
+        int index;
+        synchronized (CLASS_HANDLERS) {
+            CLASS_HANDLERS.add(classHandler);
+            index = CLASS_HANDLERS.size() - 1;
+        }
+
+        CtClass robolectricInternalsCtClass = classPool.get(RobolectricInternals.class.getName());
+        robolectricInternalsCtClass.makeClassInitializer().setBody("{\n" +
+                "classHandler = " + AndroidTranslator.class.getName() + ".getClassHandler(" + index + ");\n" +
+                "}");
     }
 
     @Override
@@ -233,10 +236,8 @@ public class AndroidTranslator implements Translator {
         if (!returnsVoid) {
             buf.append("Object x = ");
         }
-        buf.append(AndroidTranslator.class.getName());
-        buf.append(".get(");
-        buf.append(getIndex());
-        buf.append(").methodInvoked(\n  ");
+        buf.append(RobolectricInternals.class.getName());
+        buf.append(".methodInvoked(\n  ");
         buf.append(className);
         buf.append(".class, \"");
         buf.append(ctMethod.getName());
@@ -274,10 +275,6 @@ public class AndroidTranslator implements Translator {
         return methodBody;
     }
 
-    protected int getIndex() {
-        return index;
-    }
-
     private void appendParamTypeArray(StringBuilder buf, CtMethod ctMethod) throws NotFoundException {
         CtClass[] parameterTypes = ctMethod.getParameterTypes();
         if (parameterTypes.length == 0) {
@@ -303,63 +300,13 @@ public class AndroidTranslator implements Translator {
             buf.append("new Object[] {");
             for (int i = 0; i < parameterCount; i++) {
                 if (i > 0) buf.append(", ");
-                buf.append(AndroidTranslator.class.getName());
+                buf.append(RobolectricInternals.class.getName());
                 buf.append(".autobox(");
                 buf.append("$").append(i + 1);
                 buf.append(")");
             }
             buf.append("}");
         }
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) {
-        return classHandler.methodInvoked(clazz, methodName, instance, paramTypes, params);
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(Object o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(boolean o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(byte o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(char o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(short o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(int o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(long o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(float o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(double o) {
-        return o;
     }
 
     private boolean declareField(CtClass ctClass, String fieldName, CtClass fieldType) throws CannotCompileException, NotFoundException {

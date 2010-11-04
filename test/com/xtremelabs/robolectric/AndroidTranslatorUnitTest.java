@@ -13,11 +13,7 @@ public class AndroidTranslatorUnitTest {
 
     @Before public void setUp() throws Exception {
         classPool = new ClassPool(true);
-        androidTranslator = new AndroidTranslator(null, null) {
-            @Override protected int getIndex() {
-                return 0;
-            }
-        };
+        androidTranslator = new AndroidTranslator(null, null);
     }
 
     @Test
@@ -27,8 +23,8 @@ public class AndroidTranslatorUnitTest {
                 ctClass, ctClass.getDeclaredMethod("substring", new CtClass[]{CtClass.intType}),
                 ctClass, Type.OBJECT, false);
         assertEquals("if (!com.xtremelabs.robolectric.AndroidTranslator.shouldCallDirectly()) {\n" +
-                "Object x = com.xtremelabs.robolectric.AndroidTranslator.get(0).methodInvoked(\n" +
-                "  java.lang.String.class, \"substring\", this, new String[] {\"int\"}, new Object[] {com.xtremelabs.robolectric.AndroidTranslator.autobox($1)});\n" +
+                "Object x = com.xtremelabs.robolectric.RobolectricInternals.methodInvoked(\n" +
+                "  java.lang.String.class, \"substring\", this, new String[] {\"int\"}, new Object[] {com.xtremelabs.robolectric.RobolectricInternals.autobox($1)});\n" +
                 "if (x != null) return ((java.lang.String) x);\n" +
                 "return null;\n" +
                 "}\n", methodBody);
@@ -41,7 +37,7 @@ public class AndroidTranslatorUnitTest {
                 ctClass, ctClass.getDeclaredMethod("length"),
                 ctClass, Type.OBJECT, false);
         assertEquals("if (!com.xtremelabs.robolectric.AndroidTranslator.shouldCallDirectly()) {\n" +
-                "Object x = com.xtremelabs.robolectric.AndroidTranslator.get(0).methodInvoked(\n" +
+                "Object x = com.xtremelabs.robolectric.RobolectricInternals.methodInvoked(\n" +
                 "  java.lang.String.class, \"length\", this, new String[0], new Object[0]);\n" +
                 "if (x != null) return ((java.lang.String) x);\n" +
                 "return null;\n" +
@@ -55,8 +51,8 @@ public class AndroidTranslatorUnitTest {
                 ctClass, ctClass.getDeclaredMethod("wait"),
                 ctClass, Type.VOID, false);
         assertEquals("if (!com.xtremelabs.robolectric.AndroidTranslator.shouldCallDirectly()) {\n" +
-                "com.xtremelabs.robolectric.AndroidTranslator.get(0).methodInvoked(\n" +
-                "  java.lang.Object.class, \"wait\", this, new String[] {\"long\"}, new Object[] {com.xtremelabs.robolectric.AndroidTranslator.autobox($1)});\n" +
+                "com.xtremelabs.robolectric.RobolectricInternals.methodInvoked(\n" +
+                "  java.lang.Object.class, \"wait\", this, new String[] {\"long\"}, new Object[] {com.xtremelabs.robolectric.RobolectricInternals.autobox($1)});\n" +
                 "return;\n" +
                 "}\n", methodBody);
     }
@@ -68,8 +64,8 @@ public class AndroidTranslatorUnitTest {
                 ctClass, ctClass.getDeclaredMethod("valueOf", new CtClass[]{CtClass.intType}),
                 ctClass, Type.OBJECT, false);
         assertEquals("if (!com.xtremelabs.robolectric.AndroidTranslator.shouldCallDirectly()) {\n" +
-                "Object x = com.xtremelabs.robolectric.AndroidTranslator.get(0).methodInvoked(\n" +
-                "  java.lang.String.class, \"valueOf\", this, new String[] {\"int\"}, new Object[] {com.xtremelabs.robolectric.AndroidTranslator.autobox($1)});\n" +
+                "Object x = com.xtremelabs.robolectric.RobolectricInternals.methodInvoked(\n" +
+                "  java.lang.String.class, \"valueOf\", this, new String[] {\"int\"}, new Object[] {com.xtremelabs.robolectric.RobolectricInternals.autobox($1)});\n" +
                 "if (x != null) return ((java.lang.String) x);\n" +
                 "return null;\n" +
                 "}\n", methodBody);
