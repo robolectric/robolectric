@@ -2,16 +2,9 @@ package com.xtremelabs.robolectric;
 
 import javassist.*;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 
 public class AndroidTranslator implements Translator {
     /**
@@ -24,11 +17,11 @@ public class AndroidTranslator implements Translator {
 
     private int index;
     private ClassHandler classHandler;
-    private Map<String, byte[]> modifiedClasses = new HashMap<String, byte[]>();
-    boolean startedWriting = false;
+    private ClassCache classCache;
 
-    public AndroidTranslator(ClassHandler classHandler) {
+    public AndroidTranslator(ClassHandler classHandler, ClassCache classCache) {
         this.classHandler = classHandler;
+        this.classCache = classCache;
         index = addInstance(this);
     }
 
@@ -48,7 +41,7 @@ public class AndroidTranslator implements Translator {
 
     @Override
     public void onLoad(ClassPool classPool, String className) throws NotFoundException, CannotCompileException {
-        if (startedWriting) {
+        if (classCache.isWriting()) {
             throw new IllegalStateException("shouldn't be modifying bytecode after we've started writing cache! class=" + className);
         }
         
@@ -71,7 +64,7 @@ public class AndroidTranslator implements Translator {
             fixMethods(ctClass);
 
             try {
-                modifiedClasses.put(className, ctClass.toBytecode());
+                classCache.addClass(className, ctClass.toBytecode());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -336,38 +329,6 @@ public class AndroidTranslator implements Translator {
             return ctClass.getMethod(methodName, desc);
         } catch (NotFoundException e) {
             return null;
-        }
-    }
-
-    public void saveAllClassesToCache(File file, Manifest manifest) {
-        startedWriting = true;
-
-        if (modifiedClasses.size() > 0) {
-            JarOutputStream jarOutputStream = null;
-            try {
-                File cacheJarDir = file.getParentFile();
-                if (!cacheJarDir.exists()) {
-                    //noinspection ResultOfMethodCallIgnored
-                    cacheJarDir.mkdirs();
-                }
-
-                jarOutputStream = new JarOutputStream(new FileOutputStream(file), manifest);
-                for (Map.Entry<String, byte[]> entry : modifiedClasses.entrySet()) {
-                    String key = entry.getKey();
-                    jarOutputStream.putNextEntry(new JarEntry(key.replace('.', '/') + ".class"));
-                    jarOutputStream.write(entry.getValue());
-                    jarOutputStream.closeEntry();
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } finally {
-                if (jarOutputStream != null) {
-                    try {
-                        jarOutputStream.close();
-                    } catch (IOException ignore) {
-                    }
-                }
-            }
         }
     }
 }
