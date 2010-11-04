@@ -28,7 +28,9 @@
           <root url="jar://$MODULE_DIR$/lib/main/javassist-3.12.GA.jar!/" />
         </CLASSES>
         <JAVADOC />
-        <SOURCES />
+        <SOURCES>
+          <root url="jar://$MODULE_DIR$/lib/main/javassist-3.12.GA-src.jar!/src/main" />
+        </SOURCES>
       </library>
     </orderEntry>
     <orderEntry type="module-library" scope="TEST">
