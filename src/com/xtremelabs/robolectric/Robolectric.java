@@ -141,6 +141,10 @@ public class Robolectric {
         ShadowLooper.resetAll();
     }
 
+    public static <T> T directlyOn(T shadowedObject) {
+        return RobolectricInternals.directlyOn(shadowedObject);
+    }
+
     public static ShadowDrawable shadowOf(Drawable instance) {
         return (ShadowDrawable) shadowOf_(instance);
     }

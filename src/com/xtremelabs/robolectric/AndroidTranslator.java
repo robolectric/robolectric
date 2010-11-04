@@ -16,8 +16,6 @@ public class AndroidTranslator implements Translator {
 
     private static final List<ClassHandler> CLASS_HANDLERS = new ArrayList<ClassHandler>();
 
-    private static boolean callDirectly = false; // todo: move this and make it MT-safe
-
     private ClassHandler classHandler;
     private ClassCache classCache;
 
@@ -26,26 +24,16 @@ public class AndroidTranslator implements Translator {
         this.classCache = classCache;
     }
 
-    public static <T> T directlyOn(T shadowedObject) {
-        callDirectly = true;
-        return shadowedObject;
-    }
-
-    public static boolean shouldCallDirectly() {
-        if (callDirectly) {
-            callDirectly = false;
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     public static ClassHandler getClassHandler(int index) {
         return CLASS_HANDLERS.get(index);
     }
 
     @Override
     public void start(ClassPool classPool) throws NotFoundException, CannotCompileException {
+        injectClassHandlerToInstrumentedClasses(classPool);
+    }
+
+    private void injectClassHandlerToInstrumentedClasses(ClassPool classPool) throws NotFoundException, CannotCompileException {
         int index;
         synchronized (CLASS_HANDLERS) {
             CLASS_HANDLERS.add(classHandler);
@@ -53,7 +41,9 @@ public class AndroidTranslator implements Translator {
         }
 
         CtClass robolectricInternalsCtClass = classPool.get(RobolectricInternals.class.getName());
-        robolectricInternalsCtClass.makeClassInitializer().setBody("{\n" +
+        robolectricInternalsCtClass.setModifiers(Modifier.PUBLIC);
+
+        robolectricInternalsCtClass.getClassInitializer().insertBefore("{\n" +
                 "classHandler = " + AndroidTranslator.class.getName() + ".getClassHandler(" + index + ");\n" +
                 "}");
     }
@@ -225,13 +215,17 @@ public class AndroidTranslator implements Translator {
         return methodBody;
     }
 
-    public String generateMethodBody(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean aStatic) throws NotFoundException {
+    public String generateMethodBody(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean isStatic) throws NotFoundException {
         boolean returnsVoid = returnType.isVoid();
         String className = ctClass.getName();
 
         String methodBody;
         StringBuilder buf = new StringBuilder();
-        buf.append("if (!").append(AndroidTranslator.class.getName()).append(".shouldCallDirectly()) {\n");
+        buf.append("if (!");
+        buf.append(RobolectricInternals.class.getName());
+        buf.append(".shouldCallDirectly(");
+        buf.append(isStatic ? className + ".class" : "this");
+        buf.append(")) {\n");
 
         if (!returnsVoid) {
             buf.append("Object x = ");
@@ -242,7 +236,7 @@ public class AndroidTranslator implements Translator {
         buf.append(".class, \"");
         buf.append(ctMethod.getName());
         buf.append("\", ");
-        if (!aStatic) {
+        if (!isStatic) {
             buf.append("this");
         } else {
             buf.append("null");
