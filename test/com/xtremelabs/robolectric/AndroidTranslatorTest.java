@@ -2,12 +2,14 @@ package com.xtremelabs.robolectric;
 
 import android.accounts.AccountManager;
 import android.content.Context;
+import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
 import android.test.ClassWithNoDefaultConstructor;
 import android.util.Log;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 import com.xtremelabs.robolectric.shadows.ShadowItemizedOverlay;
+import com.xtremelabs.robolectric.util.Implementation;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -36,10 +38,20 @@ public class AndroidTranslatorTest {
     public void testProtectedMethodsAreDelegated() throws Exception {
         Robolectric.bindShadowClass(ItemizedOverlay.class, ShadowItemizedOverlay.class);
 
-        ShadowItemizedOverlayForTests overlay = new ShadowItemizedOverlayForTests(null);
+        ItemizedOverlayForTests overlay = new ItemizedOverlayForTests(null);
         overlay.triggerProtectedCall();
 
         assertThat(shadowOf(overlay).populated, is(true));
+    }
+
+    @Test
+    public void testNativeMethodsAreDelegated() throws Exception {
+        Robolectric.bindShadowClass(Paint.class, ShadowPaintForTests.class);
+
+        Paint paint = new Paint();
+        paint.setColor(1234);
+
+        assertThat(paint.getColor(), is(1234));
     }
 
     @Test
@@ -58,8 +70,8 @@ public class AndroidTranslatorTest {
         assertThat(Robolectric.shadowOf_(instance), instanceOf(ShadowClassWithNoDefaultConstructors.class));
     }
 
-    public static class ShadowItemizedOverlayForTests extends ItemizedOverlay {
-        public ShadowItemizedOverlayForTests(Drawable drawable) {
+    public static class ItemizedOverlayForTests extends ItemizedOverlay {
+        public ItemizedOverlayForTests(Drawable drawable) {
             super(drawable);
         }
 
@@ -75,6 +87,20 @@ public class AndroidTranslatorTest {
         @Override
         public int size() {
             return 0;
+        }
+    }
+
+    public static class ShadowPaintForTests {
+        private int color;
+
+        @Implementation
+        public void setColor(int color) {
+            this.color = color;
+        }
+
+        @Implementation
+        public int getColor() {
+            return color;
         }
     }
 
