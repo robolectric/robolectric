@@ -18,9 +18,10 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 4;
+    public static final int CACHE_VERSION = 5;
 
     private static final List<AndroidTranslator> INSTANCES = new ArrayList<AndroidTranslator>();
+    public static final String BYPASS_SHADOW_FIELD_NAME = "___bypassShadow___";
 
     private int index;
     private ClassHandler classHandler;
@@ -67,6 +68,9 @@ public class AndroidTranslator implements Translator {
             if (ctClass.isInterface()) return;
 
             classHandler.instrument(ctClass);
+
+            addBypassShadowField(ctClass, BYPASS_SHADOW_FIELD_NAME);
+
             fixConstructors(ctClass);
             fixMethods(ctClass);
 
@@ -75,6 +79,20 @@ public class AndroidTranslator implements Translator {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    private void addBypassShadowField(CtClass ctClass, String fieldName) {
+        try {
+            try {
+                ctClass.getField(fieldName);
+            } catch (NotFoundException e) {
+                CtField field = new CtField(CtClass.booleanType, fieldName, ctClass);
+                field.setModifiers(java.lang.reflect.Modifier.PUBLIC | java.lang.reflect.Modifier.STATIC);
+                ctClass.addField(field);
+            }
+        } catch (CannotCompileException e) {
+            throw new RuntimeException(e);
         }
     }
 
@@ -91,14 +109,14 @@ public class AndroidTranslator implements Translator {
 
         if (needsDefault) {
             String methodBody = generateConstructorBody(ctClass, new CtClass[0]);
-            ctClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], methodBody, ctClass));
+            ctClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], "{\n" + methodBody + "}\n", ctClass));
         }
     }
 
     private boolean fixConstructor(CtClass ctClass, boolean needsDefault, CtConstructor ctConstructor) throws NotFoundException, CannotCompileException {
         String methodBody = generateConstructorBody(ctClass, ctConstructor.getParameterTypes());
 
-        ctConstructor.setBody("{\n" + methodBody + "\n}");
+        ctConstructor.setBody("{\n" + methodBody + "}\n");
         if (ctConstructor.getParameterTypes().length == 0) {
             needsDefault = false;
         }
@@ -115,23 +133,34 @@ public class AndroidTranslator implements Translator {
 
     private void fixMethods(CtClass ctClass) throws NotFoundException, CannotCompileException {
         for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
+            String describeBefore = describe(ctMethod);
             try {
                 fixMethod(ctClass, ctMethod);
             } catch (Exception e) {
-                throw new RuntimeException("problem instrumenting " + ctMethod, e);
+                throw new RuntimeException("problem instrumenting " + describeBefore, e);
             }
         }
     }
 
+    private String describe(CtMethod ctMethod) throws NotFoundException {
+        return Modifier.toString(ctMethod.getModifiers()) + " " + ctMethod.getReturnType().getSimpleName() + " " + ctMethod.getLongName();
+    }
+
     private void fixMethod(CtClass ctClass, CtMethod ctMethod) throws NotFoundException, CannotCompileException {
-        int modifiers = ctMethod.getModifiers();
-        if (Modifier.isNative(modifiers)) {
-            modifiers = modifiers & ~Modifier.NATIVE;
+        int originalModifiers = ctMethod.getModifiers();
+        int newModifiers = originalModifiers;
+
+        boolean wasNative = Modifier.isNative(originalModifiers);
+        boolean wasFinal = Modifier.isFinal(originalModifiers);
+        boolean wasAbstract = Modifier.isAbstract(originalModifiers);
+
+        if (wasNative) {
+            newModifiers = Modifier.clear(newModifiers, Modifier.NATIVE);
         }
-        if (Modifier.isFinal(modifiers)) {
-            modifiers = modifiers & ~Modifier.FINAL;
+        if (wasFinal) {
+            newModifiers = Modifier.clear(newModifiers, Modifier.FINAL);
         }
-        ctMethod.setModifiers(modifiers);
+        ctMethod.setModifiers(newModifiers);
 
         CtClass returnCtClass = ctMethod.getReturnType();
         Type returnType = Type.find(returnCtClass);
@@ -139,7 +168,6 @@ public class AndroidTranslator implements Translator {
         String methodName = ctMethod.getName();
         CtClass[] paramTypes = ctMethod.getParameterTypes();
 
-        boolean isAbstract = (ctMethod.getModifiers() & Modifier.ABSTRACT) != 0;
 //            if (!isAbstract) {
 //                if (methodName.startsWith("set") && paramTypes.length == 1) {
 //                    String fieldName = "__" + methodName.substring(3);
@@ -154,31 +182,39 @@ public class AndroidTranslator implements Translator {
 //                }
 //            }
 
-        boolean isStatic = Modifier.isStatic(modifiers);
+        boolean isStatic = Modifier.isStatic(originalModifiers);
 
         String methodBody;
-        if (!isAbstract) {
-            methodBody = generateMethodBody(ctClass, ctMethod, returnCtClass, returnType, isStatic);
-        } else {
+        if (wasAbstract || wasNative) {
             methodBody = returnType.isVoid() ? "" : "return " + returnType.defaultReturnString() + ";";
-        }
 
-        CtMethod newMethod = CtNewMethod.make(
-                ctMethod.getModifiers(),
-                returnCtClass,
-                methodName,
-                paramTypes,
-                ctMethod.getExceptionTypes(),
-                "{\n" + methodBody + "\n}",
-                ctClass);
-        ctMethod.setBody(newMethod, null);
+            CtMethod newMethod = CtNewMethod.make(
+                    ctMethod.getModifiers(),
+                    returnCtClass,
+                    methodName,
+                    paramTypes,
+                    ctMethod.getExceptionTypes(),
+                    "{\n" + methodBody + "\n}",
+                    ctClass);
+
+            ctMethod.setBody(newMethod, null);
+        } else {
+            methodBody = generateMethodBody(ctClass, ctMethod, returnCtClass, returnType, isStatic);
+
+            ctMethod.insertBefore("{\n" + methodBody + "}\n");
+        }
     }
 
     public String generateMethodBody(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean aStatic) throws NotFoundException {
         boolean returnsVoid = returnType.isVoid();
+        String className = ctClass.getName();
 
         String methodBody;
         StringBuilder buf = new StringBuilder();
+        buf.append("if (!");
+        buf.append(className);
+        buf.append("." + BYPASS_SHADOW_FIELD_NAME + ") {\n");
+
         if (!returnsVoid) {
             buf.append("Object x = ");
         }
@@ -186,7 +222,7 @@ public class AndroidTranslator implements Translator {
         buf.append(".get(");
         buf.append(getIndex());
         buf.append(").methodInvoked(\n  ");
-        buf.append(ctClass.getName());
+        buf.append(className);
         buf.append(".class, \"");
         buf.append(ctMethod.getName());
         buf.append("\", ");
@@ -213,7 +249,13 @@ public class AndroidTranslator implements Translator {
             buf.append("return ");
             buf.append(returnType.defaultReturnString());
             buf.append(";\n");
+        } else {
+            buf.append("return;\n");
         }
+
+        buf.append("}\n");
+        buf.append(className);
+        buf.append("." + BYPASS_SHADOW_FIELD_NAME + " = false;\n");
 
         methodBody = buf.toString();
         return methodBody;
