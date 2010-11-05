@@ -33,6 +33,7 @@ public class ShadowMapView extends ShadowViewGroup {
     private Point lastTouchEventPoint;
     private GeoPoint mouseDownCenter;
     public boolean preLoadWasCalled;
+    public boolean canCoverCenter = true;
 
     public ShadowMapView(MapView mapView) {
         realMapView = mapView;
@@ -59,6 +60,11 @@ public class ShadowMapView extends ShadowViewGroup {
     @Implementation
     public boolean isSatellite() {
         return satelliteOn;
+    }
+
+    @Implementation
+    public boolean canCoverCenter() {
+        return canCoverCenter;
     }
 
     @Implementation
