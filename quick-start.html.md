@@ -12,16 +12,16 @@ place to get started even if you want to do more complicated work later.
 
 ### In Eclipse:
 
-* Create a test project alongside your app's project. For example, if your app is named MyApp, create a MyAppRobolectricTest project, and create a test source tree there.
+* Create a test project in parallel with your app's project. For example, if your app is named MyApp, create a MyAppRobolectricTest project, and create a test source tree there.
 
 * Add the appropriate Android SDK jars to the test project's build path (e.g. <code>{android sdk root}/platforms/android-8/android.jar</code> and <code>{android sdk root}/add-ons/addon_google_apis_google_inc_8/libs/maps.jar</code>)
 
-* Download robolectric-all.jar place it in your test project and add it to the build path.
+* Download robolectric-all.jar, place it in your test project, and add it to the build path.
 
 * Add a new JUnit run/debug launch configuration to run the tests in the test folder.
 
 ### In IntelliJ:
-* Download robolectric-all.jar and add it as a test library dependency (like junit.jar).
+* Download robolectric-all.jar and add it to your other test library dependencies (such as junit.jar).
 
 IntelliJ currently has a [bug](http://youtrack.jetbrains.net/issue/IDEA-60449) (please vote for it!) which causes JUnit
 tests within Android projects to run very slowly. To get around this, we place our production and test code into a
@@ -33,8 +33,9 @@ _more details to come..._
 
 ## Setting up for Robolectric development
 
-If you find that you need to extend or modify Robolectric's Android simulation, or you'd like to contribute to the
-project, these instructions will help get you started.
+If you find that you need to extend or modify Robolectric's simulation of Android or you'd like to contribute to the
+project, these instructions will help get you started. You can also track the progress of Robolectric as it evolves from
+it's [Tracker page](http://www.pivotaltracker.com/projects/105008)
 
 ### In Eclipse:
 
