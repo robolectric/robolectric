@@ -134,7 +134,6 @@ public class ShadowWranglerTest {
 
         @Override
         public int hashCode() {
-            System.out.println("hashCode got called");
             return 42;
         }
 
