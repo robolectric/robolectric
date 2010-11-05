@@ -153,6 +153,22 @@ public class AndroidTranslatorTest {
         assertThat(e.getMessage(), equalTo("already expecting a direct call on <class android.view.View> but here's a new request for <class android.view.View>"));
     }
 
+    @Test
+    public void shouldDelegateToObjectToStringIfShadowHasNone() throws Exception {
+        assertTrue(new View(null).toString().startsWith("android.view.View@"));
+    }
+
+    @Test
+    public void shouldDelegateToObjectHashCodeIfShadowHasNone() throws Exception {
+        assertFalse(new View(null).hashCode() == 0);
+    }
+
+    @Test
+    public void shouldDelegateToObjectEqualsIfShadowHasNone() throws Exception {
+        View view = new View(null);
+        assertEquals(view, view);
+    }
+
     public static class ItemizedOverlayForTests extends ItemizedOverlay {
         public ItemizedOverlayForTests(Drawable drawable) {
             super(drawable);
