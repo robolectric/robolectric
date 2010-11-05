@@ -1,0 +1,14 @@
+# .pairs - configuration for 'git pair'
+# place in project or home directory
+pairs:
+  hu: Harry Ugol
+  ts: Tyler Schultz
+  xw: Christian Williams; xian
+  jm: Joe Moore
+  if: Ian Fisher; ifisher
+  pg: Phil Goodwin; phil
+  rr: Ryan Richard; rrichard
+email:
+  prefix: pair
+  domain: pivotallabs.com
+
