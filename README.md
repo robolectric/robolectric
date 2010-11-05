@@ -1,4 +1,4 @@
-<a name="README">[Robolectric](http://pivotal.github.com/jasmine/)</a>
+<a name="README">[Robolectric](http://pivotal.github.com/robolectric/)</a>
 =======
 
 **An Android Testing Framework**
