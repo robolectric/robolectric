@@ -4,7 +4,7 @@ DOWNLOADS_FILE = 'pages/download.html.md'
 
 def need_pages_submodule
     unless File.exists?(DOWNLOADS_FILE)
-        raise "Jasmine pages submodule isn't present.  Run git submodule update --init"
+        raise "Robolectric pages submodule isn't present.  Run git submodule update --init"
     end
 end
 
