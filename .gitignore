@@ -3,5 +3,6 @@ out/
 .idea/workspace.xml
 tmp/
 target/
+pages
 *~
 \#*\#

@@ -2,56 +2,58 @@ package com.xtremelabs.robolectric;
 
 import javassist.*;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.jar.Manifest;
 
+@SuppressWarnings({"UnusedDeclaration"})
 public class AndroidTranslator implements Translator {
     /**
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 4;
+    public static final int CACHE_VERSION = 9;
 
-    private static final List<AndroidTranslator> INSTANCES = new ArrayList<AndroidTranslator>();
+    private static final List<ClassHandler> CLASS_HANDLERS = new ArrayList<ClassHandler>();
 
-    private int index;
     private ClassHandler classHandler;
-    private Map<String, byte[]> modifiedClasses = new HashMap<String, byte[]>();
-    boolean startedWriting = false;
+    private ClassCache classCache;
 
-    public AndroidTranslator(ClassHandler classHandler) {
+    public AndroidTranslator(ClassHandler classHandler, ClassCache classCache) {
         this.classHandler = classHandler;
-        index = addInstance(this);
+        this.classCache = classCache;
     }
 
-    synchronized static private int addInstance(AndroidTranslator androidTranslator) {
-        INSTANCES.add(androidTranslator);
-        return INSTANCES.size() - 1;
+    public static ClassHandler getClassHandler(int index) {
+        return CLASS_HANDLERS.get(index);
     }
-
-    synchronized static public AndroidTranslator get(int index) {
-        return INSTANCES.get(index);
-    }
-
 
     @Override
     public void start(ClassPool classPool) throws NotFoundException, CannotCompileException {
+        injectClassHandlerToInstrumentedClasses(classPool);
+    }
+
+    private void injectClassHandlerToInstrumentedClasses(ClassPool classPool) throws NotFoundException, CannotCompileException {
+        int index;
+        synchronized (CLASS_HANDLERS) {
+            CLASS_HANDLERS.add(classHandler);
+            index = CLASS_HANDLERS.size() - 1;
+        }
+
+        CtClass robolectricInternalsCtClass = classPool.get(RobolectricInternals.class.getName());
+        robolectricInternalsCtClass.setModifiers(Modifier.PUBLIC);
+
+        robolectricInternalsCtClass.getClassInitializer().insertBefore("{\n" +
+                "classHandler = " + AndroidTranslator.class.getName() + ".getClassHandler(" + index + ");\n" +
+                "}");
     }
 
     @Override
     public void onLoad(ClassPool classPool, String className) throws NotFoundException, CannotCompileException {
-        if (startedWriting) {
+        if (classCache.isWriting()) {
             throw new IllegalStateException("shouldn't be modifying bytecode after we've started writing cache! class=" + className);
         }
-        
+
         boolean needsStripping =
                 className.startsWith("android.")
                         || className.startsWith("org.apache.http")
@@ -67,41 +69,56 @@ public class AndroidTranslator implements Translator {
             if (ctClass.isInterface()) return;
 
             classHandler.instrument(ctClass);
+
             fixConstructors(ctClass);
             fixMethods(ctClass);
 
             try {
-                modifiedClasses.put(className, ctClass.toBytecode());
+                classCache.addClass(className, ctClass.toBytecode());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
     }
 
+    private void addBypassShadowField(CtClass ctClass, String fieldName) {
+        try {
+            try {
+                ctClass.getField(fieldName);
+            } catch (NotFoundException e) {
+                CtField field = new CtField(CtClass.booleanType, fieldName, ctClass);
+                field.setModifiers(java.lang.reflect.Modifier.PUBLIC | java.lang.reflect.Modifier.STATIC);
+                ctClass.addField(field);
+            }
+        } catch (CannotCompileException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     private void fixConstructors(CtClass ctClass) throws CannotCompileException, NotFoundException {
-        boolean needsDefault = true;
+        boolean hasDefault = false;
 
         for (CtConstructor ctConstructor : ctClass.getConstructors()) {
             try {
-                needsDefault = fixConstructor(ctClass, needsDefault, ctConstructor);
+                fixConstructor(ctClass, hasDefault, ctConstructor);
+
+                if (ctConstructor.getParameterTypes().length == 0) {
+                    hasDefault = true;
+                }
             } catch (Exception e) {
                 throw new RuntimeException("problem instrumenting " + ctConstructor, e);
             }
         }
 
-        if (needsDefault) {
+        if (!hasDefault) {
             String methodBody = generateConstructorBody(ctClass, new CtClass[0]);
-            ctClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], methodBody, ctClass));
+            ctClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], "{\n" + methodBody + "}\n", ctClass));
         }
     }
 
     private boolean fixConstructor(CtClass ctClass, boolean needsDefault, CtConstructor ctConstructor) throws NotFoundException, CannotCompileException {
         String methodBody = generateConstructorBody(ctClass, ctConstructor.getParameterTypes());
-
-        ctConstructor.setBody("{\n" + methodBody + "\n}");
-        if (ctConstructor.getParameterTypes().length == 0) {
-            needsDefault = false;
-        }
+        ctConstructor.setBody("{\n" + methodBody + "}\n");
         return needsDefault;
     }
 
@@ -110,37 +127,58 @@ public class AndroidTranslator implements Translator {
                 new CtMethod(CtClass.voidType, "<init>", parameterTypes, ctClass),
                 CtClass.voidType,
                 Type.VOID,
-                true,
                 false);
     }
 
     private void fixMethods(CtClass ctClass) throws NotFoundException, CannotCompileException {
         for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
-            try {
-                fixMethod(ctClass, ctMethod);
-            } catch (Exception e) {
-                throw new RuntimeException("problem instrumenting " + ctMethod, e);
-            }
+            fixMethod(ctClass, ctMethod);
         }
+        CtMethod equalsMethod = ctClass.getMethod("equals", "(Ljava/lang/Object;)Z");
+        CtMethod hashCodeMethod = ctClass.getMethod("hashCode", "()I");
+        CtMethod toStringMethod = ctClass.getMethod("toString", "()Ljava/lang/String;");
+
+        fixMethod(ctClass, equalsMethod);
+        fixMethod(ctClass, hashCodeMethod);
+        fixMethod(ctClass, toStringMethod);
     }
 
-    private void fixMethod(CtClass ctClass, CtMethod ctMethod) throws NotFoundException, CannotCompileException {
-        int modifiers = ctMethod.getModifiers();
-        if (Modifier.isNative(modifiers)) {
-            modifiers = modifiers & ~Modifier.NATIVE;
-        }
-        if (Modifier.isFinal(modifiers)) {
-            modifiers = modifiers & ~Modifier.FINAL;
-        }
-        ctMethod.setModifiers(modifiers);
+    private String describe(CtMethod ctMethod) throws NotFoundException {
+        return Modifier.toString(ctMethod.getModifiers()) + " " + ctMethod.getReturnType().getSimpleName() + " " + ctMethod.getLongName();
+    }
 
-        CtClass returnCtClass = ctMethod.getReturnType();
-        Type returnType = Type.find(returnCtClass);
+    private void fixMethod(CtClass ctClass, CtMethod ctMethod) throws NotFoundException {
+        String describeBefore = describe(ctMethod);
+        try {
+            CtClass declaringClass = ctMethod.getDeclaringClass();
+            int originalModifiers = ctMethod.getModifiers();
 
-        String methodName = ctMethod.getName();
-        CtClass[] paramTypes = ctMethod.getParameterTypes();
+            boolean wasNative = Modifier.isNative(originalModifiers);
+            boolean wasFinal = Modifier.isFinal(originalModifiers);
+            boolean wasAbstract = Modifier.isAbstract(originalModifiers);
+            boolean wasDeclaredInClass = declaringClass.equals(ctClass);
 
-        boolean isAbstract = (ctMethod.getModifiers() & Modifier.ABSTRACT) != 0;
+            if (wasFinal && ctClass.isEnum()) {
+                return;
+            }
+
+            int newModifiers = originalModifiers;
+            if (wasNative) {
+                newModifiers = Modifier.clear(newModifiers, Modifier.NATIVE);
+            }
+            if (wasFinal) {
+                newModifiers = Modifier.clear(newModifiers, Modifier.FINAL);
+            }
+            if (wasDeclaredInClass) {
+                ctMethod.setModifiers(newModifiers);
+            }
+
+            CtClass returnCtClass = ctMethod.getReturnType();
+            Type returnType = Type.find(returnCtClass);
+
+            String methodName = ctMethod.getName();
+            CtClass[] paramTypes = ctMethod.getParameterTypes();
+
 //            if (!isAbstract) {
 //                if (methodName.startsWith("set") && paramTypes.length == 1) {
 //                    String fieldName = "__" + methodName.substring(3);
@@ -155,42 +193,87 @@ public class AndroidTranslator implements Translator {
 //                }
 //            }
 
-        boolean returnsVoid = returnType.isVoid();
-        boolean isStatic = Modifier.isStatic(modifiers);
+            boolean isStatic = Modifier.isStatic(originalModifiers);
+            String methodBody = generateMethodBody(ctClass, ctMethod, wasNative, wasAbstract, returnCtClass, returnType, isStatic);
 
-        String methodBody;
-        if (!isAbstract) {
-            methodBody = generateMethodBody(ctClass, ctMethod, returnCtClass, returnType, returnsVoid, isStatic);
-        } else {
-            methodBody = returnsVoid ? "" : "return " + returnType.defaultReturnString() + ";";
+            if (!wasDeclaredInClass) {
+                CtMethod newMethod = makeNewMethod(ctClass, ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + generateCallToSuper(methodName, paramTypes) + "\n}");
+                newMethod.setModifiers(newModifiers);
+                ctClass.addMethod(newMethod);
+            } else if (wasAbstract || wasNative) {
+                CtMethod newMethod = makeNewMethod(ctClass, ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + "\n}");
+                ctMethod.setBody(newMethod, null);
+            } else {
+                ctMethod.insertBefore("{\n" + methodBody + "}\n");
+            }
+        } catch (Exception e) {
+            throw new RuntimeException("problem instrumenting " + describeBefore, e);
         }
+    }
 
-        CtMethod newMethod = CtNewMethod.make(
+    private CtMethod makeNewMethod(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, String methodName, CtClass[] paramTypes, String methodBody) throws CannotCompileException, NotFoundException {
+        return CtNewMethod.make(
                 ctMethod.getModifiers(),
                 returnCtClass,
                 methodName,
                 paramTypes,
                 ctMethod.getExceptionTypes(),
-                "{\n" + methodBody + "\n}",
+                methodBody,
                 ctClass);
-        ctMethod.setBody(newMethod, null);
     }
 
-    private String generateMethodBody(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean returnsVoid, boolean aStatic) throws NotFoundException {
+    public String generateCallToSuper(String methodName, CtClass[] paramTypes) {
+        return "return super." + methodName + "(" + makeParameterReplacementList(paramTypes.length) + ");";
+    }
+
+    public String makeParameterReplacementList(int length) {
+        if (length == 0) {
+            return "";
+        }
+
+        String parameterReplacementList = "$1";
+        for (int i = 2; i <= length; ++i) {
+            parameterReplacementList += ", $" + i;
+        }
+        return parameterReplacementList;
+    }
+
+    private String generateMethodBody(CtClass ctClass, CtMethod ctMethod, boolean wasNative, boolean wasAbstract, CtClass returnCtClass, Type returnType, boolean aStatic) throws NotFoundException {
+        String methodBody;
+        if (wasAbstract) {
+            methodBody = returnType.isVoid() ? "" : "return " + returnType.defaultReturnString() + ";";
+        } else {
+            methodBody = generateMethodBody(ctClass, ctMethod, returnCtClass, returnType, aStatic);
+        }
+
+        if (wasNative) {
+            methodBody += returnType.isVoid() ? "" : "return " + returnType.defaultReturnString() + ";";
+        }
+        return methodBody;
+    }
+
+    public String generateMethodBody(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean isStatic) throws NotFoundException {
+        boolean returnsVoid = returnType.isVoid();
+        String className = ctClass.getName();
+
         String methodBody;
         StringBuilder buf = new StringBuilder();
+        buf.append("if (!");
+        buf.append(RobolectricInternals.class.getName());
+        buf.append(".shouldCallDirectly(");
+        buf.append(isStatic ? className + ".class" : "this");
+        buf.append(")) {\n");
+
         if (!returnsVoid) {
             buf.append("Object x = ");
         }
-        buf.append(AndroidTranslator.class.getName());
-        buf.append(".get(");
-        buf.append(index);
-        buf.append(").methodInvoked(");
-        buf.append(ctClass.getName());
+        buf.append(RobolectricInternals.class.getName());
+        buf.append(".methodInvoked(\n  ");
+        buf.append(className);
         buf.append(".class, \"");
         buf.append(ctMethod.getName());
         buf.append("\", ");
-        if (!aStatic) {
+        if (!isStatic) {
             buf.append("this");
         } else {
             buf.append("null");
@@ -210,10 +293,18 @@ public class AndroidTranslator implements Translator {
             buf.append(") x)");
             buf.append(returnType.unboxString());
             buf.append(";\n");
-            buf.append("return ");
-            buf.append(returnType.defaultReturnString());
-            buf.append(";");
+            if (ctMethod.getDeclaringClass().getName().equals("java.lang.Object")) {
+                buf.append(generateCallToSuper(ctMethod.getName(), ctMethod.getParameterTypes()));
+            } else {
+                buf.append("return ");
+                buf.append(returnType.defaultReturnString());
+            }
+            buf.append(";\n");
+        } else {
+            buf.append("return;\n");
         }
+
+        buf.append("}\n");
 
         methodBody = buf.toString();
         return methodBody;
@@ -244,63 +335,13 @@ public class AndroidTranslator implements Translator {
             buf.append("new Object[] {");
             for (int i = 0; i < parameterCount; i++) {
                 if (i > 0) buf.append(", ");
-                buf.append(AndroidTranslator.class.getName());
+                buf.append(RobolectricInternals.class.getName());
                 buf.append(".autobox(");
                 buf.append("$").append(i + 1);
                 buf.append(")");
             }
             buf.append("}");
         }
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) {
-        return classHandler.methodInvoked(clazz, methodName, instance, paramTypes, params);
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(Object o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(boolean o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(byte o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(char o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(short o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(int o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(long o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(float o) {
-        return o;
-    }
-
-    @SuppressWarnings({"UnusedDeclaration"})
-    public static Object autobox(double o) {
-        return o;
     }
 
     private boolean declareField(CtClass ctClass, String fieldName, CtClass fieldType) throws CannotCompileException, NotFoundException {
@@ -336,42 +377,6 @@ public class AndroidTranslator implements Translator {
             return ctClass.getMethod(methodName, desc);
         } catch (NotFoundException e) {
             return null;
-        }
-    }
-
-    public void saveAllClassesToCache(File file, Manifest manifest) {
-        startedWriting = true;
-
-        if (modifiedClasses.size() > 0) {
-            JarOutputStream jarOutputStream = null;
-            try {
-                File cacheJarDir = file.getParentFile();
-                if (!cacheJarDir.exists()) {
-                    //noinspection ResultOfMethodCallIgnored
-                    cacheJarDir.mkdirs();
-                }
-
-                if (file.exists()) {
-                    jarOutputStream = new JarOutputStream(new FileOutputStream(file, true));
-                } else {
-                    jarOutputStream = new JarOutputStream(new FileOutputStream(file), manifest);
-                }
-                for (Map.Entry<String, byte[]> entry : modifiedClasses.entrySet()) {
-                    String key = entry.getKey();
-                    jarOutputStream.putNextEntry(new JarEntry(key.replace('.', '/') + ".class"));
-                    jarOutputStream.write(entry.getValue());
-                    jarOutputStream.closeEntry();
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } finally {
-                if (jarOutputStream != null) {
-                    try {
-                        jarOutputStream.close();
-                    } catch (IOException ignore) {
-                    }
-                }
-            }
         }
     }
 }

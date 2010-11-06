@@ -164,7 +164,7 @@ public class MapViewTest {
         }
     }
 
-    private class MyOverlay extends AndroidTranslatorTest.ShadowItemizedOverlayForTests {
+    private class MyOverlay extends AndroidTranslatorTest.ItemizedOverlayForTests {
         private MotionEvent lastMotionEvent;
         private boolean shouldConsumeEvent = true;
 

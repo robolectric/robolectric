@@ -29,18 +29,24 @@ public class ResourceLoader {
         stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor);
         colorResourceLoader = new ColorResourceLoader(resourceExtractor);
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
-        DocumentLoader resourcesDocumentLoader = new DocumentLoader(stringResourceLoader, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader);
-        resourcesDocumentLoader.loadResourceXmlDir(new File(resourceDir, "values"));
 
-        viewLoader = new ViewLoader(resourceExtractor, stringResourceLoader, attrResourceLoader);
-        DocumentLoader viewDocumentLoader = new DocumentLoader(viewLoader);
-        File[] layoutDirs = resourceDir.listFiles(new FileFilter() {
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.getPath().contains("/layout");
-            }
-        });
-        viewDocumentLoader.loadResourceXmlDirs(layoutDirs);
+
+        if (resourceDir != null) {
+            DocumentLoader resourcesDocumentLoader = new DocumentLoader(stringResourceLoader, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader);
+            resourcesDocumentLoader.loadResourceXmlDir(new File(resourceDir, "values"));
+
+            viewLoader = new ViewLoader(resourceExtractor, stringResourceLoader, attrResourceLoader);
+            DocumentLoader viewDocumentLoader = new DocumentLoader(viewLoader);
+            File[] layoutDirs = resourceDir.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File pathname) {
+                    return pathname.getPath().contains("/layout");
+                }
+            });
+            viewDocumentLoader.loadResourceXmlDirs(layoutDirs);
+        } else {
+            viewLoader = null;
+        }
     }
 
     /**

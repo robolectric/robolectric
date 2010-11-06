@@ -86,11 +86,22 @@ public class ViewLoader extends XmlLoader {
     }
 
     public View inflateView(Context context, String key) {
+        return inflateView(context, key, null);
+    }
+
+    private View inflateView(Context context, String key, Map<String,String> attributes) {
         ViewNode viewNode = viewNodesByLayoutName.get(key);
         if (viewNode == null) {
             throw new RuntimeException("no such layout " + key);
         }
         try {
+            if (attributes != null) {
+                for (Map.Entry<String,  String> entry : attributes.entrySet()) {
+                    if (!entry.getKey().equals("layout")) {
+                        viewNode.attributes.put(entry.getKey(), entry.getValue());
+                    }
+                }
+            }
             return viewNode.inflate(context, null);
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + key, e);
@@ -259,7 +270,7 @@ public class ViewLoader extends XmlLoader {
             // todo: clean this up [pg/xw 20101028] should applyAttributes always be called?
             if (name.equals("include")) {
                 String layout = attributes.get("layout");
-                View view = inflateView(context, layout.substring(1));
+                View view = inflateView(context, layout.substring(1), attributes);
                 addToParent(parent, view);
                 return view;
             } else if (name.equals("merge")) {
