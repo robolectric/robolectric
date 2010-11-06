@@ -10,7 +10,7 @@ title: Robolectric Release Notes
 -----
 
 #### Features
-- <include> tags apply their attributes to the imported element
+- &lt;include&gt; tags apply their attributes to the imported element
 - equals(), hashcode(), and toString() can be overridden on all Shadow classes
 - Put a link to the Tracker project in the Robolectric User Guide
 - Added support for Eclipse
