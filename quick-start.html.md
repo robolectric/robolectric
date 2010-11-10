@@ -11,17 +11,32 @@ configuration, you won't be able to make larger changes or contribute to the Rob
 place to get started even if you want to do more complicated work later.
 
 ### In Eclipse:
+Eclipse will try to use the Android JUnit test runner by default for Android projects, so you will need a separate test
+project to run the test with Robolectric, and set up a run configuration to run the tests with the Eclipse JUnit
+Launcher.
 
-* Create a test project in parallel with your app's project. For example, if your app is named MyApp, create a MyAppRobolectricTest project, and create a test source tree there.
+* Create a new Java project in parallel with your app's project, as your test project. For example, if your app is named
+MyApp, you might create a MyAppRobolectricTest project.
 
-* Add the appropriate Android SDK jars to the test project's build path (e.g. <code>{android sdk root}/platforms/android-8/android.jar</code> and <code>{android sdk root}/add-ons/addon_google_apis_google_inc_8/libs/maps.jar</code>)
+* In many cases it will be advantageous to keep the source code for the tests under the same root folder as the source
+for the rest of the project. To make this work, use the "Link Source..." button in the Build Path dialog to create a
+link from this test project to the source root for the tests under the main project.
 
-* Download robolectric-all.jar, place it in your test project, and add it to the build path.
+* Add the appropriate Android SDK jars to the test project's build path (e.g.
+<code>{android sdk root}/platforms/android-8/android.jar</code> and
+<code>{android sdk root}/add-ons/addon_google_apis_google_inc_8/libs/maps.jar</code>)
 
-* Add a new JUnit run/debug launch configuration to run the tests in the test folder.
+* [Download](http://pivotal.github.com/robolectric/download.html) robolectric-all.jar place it in your test project and
+add it to the build path, along with the JUnit library.
+
+* Add your app's project as a project dependency to the build path of your test project.
+
+* Add a new JUnit run/debug launch configuration to run the tests in the test folder. There may be a warning that
+multiple launchers are available, make sure to select the Eclipse JUnit Launcher instead of the Android JUnit Launcher.
 
 ### In IntelliJ:
-* Download robolectric-all.jar and add it to your other test library dependencies (such as junit.jar).
+* [Download](http://pivotal.github.com/robolectric/download.html) robolectric-all.jar and add it to your other test
+library dependencies (such as junit.jar).
 
 IntelliJ currently has a [bug](http://youtrack.jetbrains.net/issue/IDEA-60449) (please vote for it!) which causes JUnit
 tests within Android projects to run very slowly. To get around this, we place our production and test code into a
@@ -39,7 +54,8 @@ it's [Tracker page](http://www.pivotaltracker.com/projects/105008)
 
 ### In Eclipse:
 
-* Follow the instructions for Eclipse quick start above, but don't download the robolectric-all.jar. Instead, use git to clone the Robolectric repository:
+* Follow the instructions for Eclipse quick start above, but don't download the robolectric-all.jar. Instead, use git to
+clone the Robolectric repository:
 
   <code>git clone git@github.com:pivotal/robolectric.git</code>
 
