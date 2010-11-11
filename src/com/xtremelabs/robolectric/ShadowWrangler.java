@@ -328,15 +328,27 @@ public class ShadowWrangler implements ClassHandler {
         }
 
         private Method getMethod(Class<?> clazz, String methodName, Class<?>[] paramClasses) {
+            Method method = null;
             try {
-                return clazz.getMethod(methodName, paramClasses);
+                method = clazz.getMethod(methodName, paramClasses);
             } catch (NoSuchMethodException e) {
                 try {
-                    return clazz.getDeclaredMethod(methodName, paramClasses);
+                    method = clazz.getDeclaredMethod(methodName, paramClasses);
                 } catch (NoSuchMethodException e1) {
-                    return null;
+                    method = null;
                 }
             }
+
+            if (method != null && !isOnShadowClass(method)) {
+                method = null;
+            }
+            
+            return method;
+        }
+
+        private boolean isOnShadowClass(Method method) {
+            // todo do a better job of this pg 20101111
+            return !method.getDeclaringClass().equals(Object.class);
         }
 
         @Override

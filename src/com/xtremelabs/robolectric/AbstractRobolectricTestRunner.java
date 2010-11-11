@@ -11,11 +11,13 @@ import java.lang.reflect.Method;
 
 public class AbstractRobolectricTestRunner extends BlockJUnit4ClassRunner {
     private static RobolectricClassLoader defaultLoader;
-
     private RobolectricClassLoader loader;
+
     private ClassHandler classHandler;
     private Class<? extends TestHelperInterface> testHelperClass;
     private TestHelperInterface testHelper;
+    private String resourceDirectory;
+    private String projectRoot;
 
     private static RobolectricClassLoader getDefaultLoader() {
         if (defaultLoader == null) {
@@ -25,19 +27,27 @@ public class AbstractRobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
 
     public AbstractRobolectricTestRunner(Class<?> testClass) throws InitializationError {
-        this(testClass, ShadowWrangler.getInstance(), getDefaultLoader());
+        this(testClass, ".", "res");
     }
 
+    public AbstractRobolectricTestRunner(Class<?> testClass, String projectRoot, String resourceDirectory) throws InitializationError {
+        this(testClass, ShadowWrangler.getInstance(), getDefaultLoader(), projectRoot, resourceDirectory);
+    }
+
+    @Deprecated
     public AbstractRobolectricTestRunner(Class<?> testClass, Class<? extends TestHelperInterface> testHelperClass) throws InitializationError {
         this(testClass);
         setTestHelperClass(testHelperClass);
     }
 
-    public AbstractRobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader loader) throws InitializationError {
+    public AbstractRobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader loader, String projectRoot, String resourceDirectory) throws InitializationError {
         super(loader.bootstrap(testClass));
         this.classHandler = classHandler;
         this.loader = loader;
+        this.projectRoot = projectRoot;
+        this.resourceDirectory = resourceDirectory;
 
+        this.loader.delegateLoadingOf(LoadableHelper.class.getName());
         this.loader.delegateLoadingOf(TestHelperInterface.class.getName());
         this.loader.delegateLoadingOf(RealObject.class.getName());
         this.loader.delegateLoadingOf(ShadowWrangler.class.getName());
@@ -69,39 +79,54 @@ public class AbstractRobolectricTestRunner extends BlockJUnit4ClassRunner {
         };
     }
 
-     protected void beforeTest(Method method) {
-         if (testHelperClass != null) {
-             testHelper = createTestHelper(method);
-             testHelper.before(method);
-         }
-     }
+    protected void beforeTest(Method method) {
+        if (testHelperClass != null) {
+            testHelper = createTestHelper(method);
+            testHelper.before(method);
+        } else {
+            createLoadableHelper(method).setupApplicationState(projectRoot, resourceDirectory);
+        }
+    }
 
-     protected void afterTest(Method method) {
-         if (testHelperClass != null) {
-             testHelper.after(method);
-         }
-     }
+    protected void afterTest(Method method) {
+        if (testHelper != null) {
+            testHelper.after(method);
+        }
+    }
 
-     @Override
-     protected Object createTest() throws Exception {
-         Object test = super.createTest();
-         if (testHelperClass != null) {
-             testHelper.prepareTest(test);
-         }
-         return test;
-     }
+    @Override
+    protected Object createTest() throws Exception {
+        Object test = super.createTest();
+        if (testHelper != null) {
+            testHelper.prepareTest(test);
+        }
+        return test;
+    }
 
-     private TestHelperInterface createTestHelper(Method method) {
-         Class<?> testClass = method.getDeclaringClass();
-         try {
-             return (TestHelperInterface) testClass.getClassLoader().loadClass(testHelperClass.getName()).newInstance();
-         } catch (ClassNotFoundException e) {
-             throw new RuntimeException(e);
-         } catch (InstantiationException e) {
-             throw new RuntimeException(e);
-         } catch (IllegalAccessException e) {
-             throw new RuntimeException(e);
-         }
-     }
+    private TestHelperInterface createTestHelper(Method method) {
+        Class<?> testClass = method.getDeclaringClass();
+        try {
+            return (TestHelperInterface) testClass.getClassLoader().loadClass(testHelperClass.getName()).newInstance();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private LoadableHelper createLoadableHelper(Method method) {
+        Class<?> testClass = method.getDeclaringClass();
+        try {
+            return (LoadableHelper) testClass.getClassLoader().loadClass(LoadableHelperImpl.class.getName()).newInstance();
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 }

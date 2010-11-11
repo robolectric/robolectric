@@ -6,13 +6,13 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@RunWith(DogfoodRobolectricTestRunner.class)
+@RunWith(WithTestDefaultsRunner.class)
 public class ServiceTest {
     @Before
     public void setUp() throws Exception {
