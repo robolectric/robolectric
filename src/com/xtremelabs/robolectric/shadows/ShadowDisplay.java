@@ -17,8 +17,8 @@ public class ShadowDisplay {
 	private int height = 480;
 	private float density = 1.5f;
 	private int densityDpi = DisplayMetrics.DENSITY_HIGH;
-	private int xdpi = 240;
-	private int ydpi = 240;
+	private float xdpi = 240.0f;
+	private float ydpi = 240.0f;
 	private float scaledDensity = 1.0f;
 	private float refreshRate = 60.0f;
 	private int rotation = Surface.ROTATION_0;
@@ -81,19 +81,19 @@ public class ShadowDisplay {
 		this.densityDpi = densityDpi;
 	}
 
-	public int getXdpi() {
+	public float getXdpi() {
 		return xdpi;
 	}
 
-	public void setXdpi(int xdpi) {
+	public void setXdpi(float xdpi) {
 		this.xdpi = xdpi;
 	}
 
-	public int getYdpi() {
+	public float getYdpi() {
 		return ydpi;
 	}
 
-	public void setYdpi(int ydpi) {
+	public void setYdpi(float ydpi) {
 		this.ydpi = ydpi;
 	}
 
