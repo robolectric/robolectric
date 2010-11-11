@@ -19,6 +19,7 @@ import android.appwidget.AppWidgetManager;
 import android.content.*;
 import android.content.res.Resources;
 import android.location.LocationManager;
+import android.media.AudioManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
@@ -42,6 +43,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private LocationManager locationManager;
     private WifiManager wifiManager;
     private WindowManager windowManager;
+    private AudioManager audioManager;
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
     public List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
@@ -77,6 +79,8 @@ public class ShadowApplication extends ShadowContextWrapper {
             return wifiManager == null ? wifiManager = newInstanceOf(WifiManager.class) : wifiManager;
         } else if (name.equals(Context.WINDOW_SERVICE)) {
         	return windowManager == null ? windowManager = new TestWindowManager() : windowManager;
+        } else if (name.equals(Context.AUDIO_SERVICE)) {
+        	return audioManager == null ? audioManager = newInstanceOf(AudioManager.class) : audioManager;
         }
         return null;
     }
