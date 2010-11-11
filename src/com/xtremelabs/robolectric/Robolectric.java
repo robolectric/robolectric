@@ -88,6 +88,7 @@ public class Robolectric {
                 ShadowContext.class,
                 ShadowContextWrapper.class,
                 ShadowContextThemeWrapper.class,
+                ShadowDisplay.class,
                 ShadowDrawable.class,
                 ShadowDialog.class,
                 ShadowEditText.class,
