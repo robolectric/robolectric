@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Parcel;
@@ -85,6 +86,17 @@ public class IntentTest {
         Uri uri = Uri.parse("content://this/and/that");
         assertSame(intent, intent.setData(uri));
         assertSame(uri, intent.getData());
+    }
+    
+    @Test
+    public void testSetClass() throws Exception {
+        Intent intent = new Intent();
+        Class<? extends IntentTest> thisClass = getClass();
+        Intent output = intent.setClass( new Activity(), thisClass );
+        
+        assertSame( output, intent );
+        ShadowIntent si = shadowOf( intent );
+        assertSame( si.getIntentClass(), thisClass );
     }
 
     @Test
