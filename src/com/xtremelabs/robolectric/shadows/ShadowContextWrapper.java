@@ -13,8 +13,6 @@ import com.xtremelabs.robolectric.view.TestSharedPreferences;
 import android.content.*;
 import android.content.pm.*;
 import android.content.res.Resources;
-import android.location.LocationManager;
-import android.net.wifi.WifiManager;
 import android.test.mock.MockPackageManager;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -23,11 +21,8 @@ public class ShadowContextWrapper extends ShadowContext {
     @RealObject private ContextWrapper realContextWrapper;
     private Context baseContext;
 
-    private LocationManager locationManager;
     private MockPackageManager packageManager;
 
-    private WifiManager wifiManager;
-    
     private static final String SHADOW_PACKAGE_NAME = "some.package.name";
 
     public void __constructor__(Context baseContext) {
