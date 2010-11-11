@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.util;
 import java.lang.reflect.Method;
 
 /**
- * @deprecated The defaults used by {@link com.xtremelabs.robolectric.AbstractRobolectricTestRunner} will now work in
+ * @deprecated The defaults used by {@link com.xtremelabs.robolectric.RobolectricTestRunner} will now work in
  * almost all cases. See that class for more information about how to customize its behavior.
  */
 @Deprecated
