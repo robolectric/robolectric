@@ -4,7 +4,7 @@ title: "Robolectric: Unit Test your Android Application"
 ---
 
 ## Sample Application
-	
+
 A sample app that uses Robolectric can be found at [http://github.com/pivotal/RobolectricSample](http://github.com/pivotal/RobolectricSample).
 
 This sample app shows how to layout your project, includes example tests, and a build.xml file for compiling and running tests. For now, the best way to get started is to download this app, and use it to build your app. 
@@ -35,7 +35,7 @@ Android provides no way to access the drawable resource id that was applied to t
 @Test
 public void shouldHaveALogo() throws Exception {
     ImageView pivotalLogo = (ImageView) activity.findViewById(R.id.pivotal_logo);
-	ShadowImageView shadowPivotalLogo = Robolectric.shadowOf(pivotalLogo);
+    ShadowImageView shadowPivotalLogo = Robolectric.shadowOf(pivotalLogo);
     assertThat(shadowPivotalLogo.resourceId, equalTo(R.drawable.pivotallabs_logo));
 }
 {% endhighlight %}
