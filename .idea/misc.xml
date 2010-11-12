@@ -3,6 +3,15 @@
   <component name="DependencyValidationManager">
     <option name="SKIP_IMPORT_STATEMENTS" value="false" />
   </component>
+  <component name="FacetAutodetectingManager">
+    <autodetection-disabled>
+      <facet-type id="android">
+        <modules>
+          <module name="robolectric" />
+        </modules>
+      </facet-type>
+    </autodetection-disabled>
+  </component>
   <component name="IdProvider" IDEtalkID="E3CEF9CB8037AEFF57D7356A0309656F" />
   <component name="JavadocGenerationManager">
     <option name="OUTPUT_DIRECTORY" />
