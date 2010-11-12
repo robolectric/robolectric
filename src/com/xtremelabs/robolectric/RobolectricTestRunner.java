@@ -109,7 +109,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
         if (classHandler != null) classHandler.beforeTest();
-        beforeTest(method.getMethod());
+        internalBeforeTest(method.getMethod());
 
         final Statement statement = super.methodBlock(method);
         return new Statement() {
@@ -118,25 +118,41 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                 try {
                     statement.evaluate();
                 } finally {
-                    afterTest(method.getMethod());
+                    internalAfterTest(method.getMethod());
                     if (classHandler != null) classHandler.afterTest();
                 }
             }
         };
     }
 
-    /**
+    /*
      * Called before each test method is run. Sets up the simulation of the Android runtime environment.
-     *
-     * @param method the test method about to be run
      */
-    protected void beforeTest(Method method) {
+    void internalBeforeTest(Method method) {
         if (testHelperClass != null) {
             testHelper = createTestHelper(method);
             testHelper.before(method);
         } else {
             createLoadableHelper(method).setupApplicationState(projectRoot, resourceDirectory);
         }
+
+        beforeTest(method);
+    }
+
+    /**
+     * Called before each test method is run.
+     *
+     * @param method the test method about to be run
+     */
+    protected void beforeTest(Method method) {
+    }
+
+    void internalAfterTest(Method method) {
+        if (testHelper != null) {
+            testHelper.after(method);
+        }
+
+        afterTest(method);
     }
 
     /**
@@ -145,9 +161,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
      * @param method the test method that just ran.
      */
     protected void afterTest(Method method) {
-        if (testHelper != null) {
-            testHelper.after(method);
-        }
     }
 
     /**

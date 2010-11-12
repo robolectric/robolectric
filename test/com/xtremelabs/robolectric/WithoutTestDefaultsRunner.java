@@ -9,7 +9,7 @@ public class WithoutTestDefaultsRunner extends RobolectricTestRunner {
         super(testClass);
     }
 
-    @Override protected void beforeTest(Method method) {
+    @Override void internalBeforeTest(Method method) {
         // Don't do any resource loading or shadow class binding, because that's what we're trying to test here.
     }
 }
