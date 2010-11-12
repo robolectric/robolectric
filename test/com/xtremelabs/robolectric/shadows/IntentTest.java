@@ -87,16 +87,16 @@ public class IntentTest {
         assertSame(intent, intent.setData(uri));
         assertSame(uri, intent.getData());
     }
-    
+
     @Test
     public void testSetClass() throws Exception {
         Intent intent = new Intent();
         Class<? extends IntentTest> thisClass = getClass();
-        Intent output = intent.setClass( new Activity(), thisClass );
-        
-        assertSame( output, intent );
-        ShadowIntent si = shadowOf( intent );
-        assertSame( si.getIntentClass(), thisClass );
+        Intent output = intent.setClass(new Activity(), thisClass);
+
+        assertSame(output, intent);
+        ShadowIntent si = shadowOf(intent);
+        assertSame(si.getIntentClass(), thisClass);
     }
 
     @Test

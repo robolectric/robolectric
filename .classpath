@@ -8,7 +8,5 @@
 	<classpathentry kind="lib" path="lib/main/junit-dep-4.8.2.jar"/>
 	<classpathentry kind="lib" path="lib/test/mockito-core-1.8.5.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/main/android.jar"/>
-	<classpathentry kind="lib" path="lib/main/maps.jar"/>
 	<classpathentry kind="output" path="bin/classesMain"/>
 </classpath>

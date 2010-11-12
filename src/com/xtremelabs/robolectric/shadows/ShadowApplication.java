@@ -1,18 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.RealObject;
-import com.xtremelabs.robolectric.view.TestWindowManager;
-
 import android.app.AlarmManager;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
@@ -23,6 +10,18 @@ import android.net.wifi.WifiManager;
 import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
+import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.util.Implementation;
+import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.view.TestWindowManager;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Application.class)
@@ -76,7 +75,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         } else if (name.equals(Context.WIFI_SERVICE)) {
             return wifiManager == null ? wifiManager = newInstanceOf(WifiManager.class) : wifiManager;
         } else if (name.equals(Context.WINDOW_SERVICE)) {
-        	return windowManager == null ? windowManager = new TestWindowManager() : windowManager;
+            return windowManager == null ? windowManager = new TestWindowManager() : windowManager;
         }
         return null;
     }

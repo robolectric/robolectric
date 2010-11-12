@@ -10,10 +10,10 @@ import android.preference.PreferenceManager;
 
 @Implements(PreferenceManager.class)
 public class ShadowPreferenceManager {
-	
-	@Implementation
-	public static SharedPreferences getDefaultSharedPreferences(Context context) {
-		return new TestSharedPreferences("__default__", Context.MODE_PRIVATE); 
-	}
+
+    @Implementation
+    public static SharedPreferences getDefaultSharedPreferences(Context context) {
+        return new TestSharedPreferences("__default__", Context.MODE_PRIVATE);
+    }
 
 }
