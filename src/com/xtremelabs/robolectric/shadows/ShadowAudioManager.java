@@ -12,24 +12,20 @@ public class ShadowAudioManager {
 	private int streamMaxVolume = 15;
 	private int streamVolume = 7;
 
-	private int streamType;
 	private int flags;
 	
 	@Implementation
 	public int getStreamMaxVolume(int streamType) {
-		this.streamType = streamType;
 		return streamMaxVolume;
 	}
 	
 	@Implementation
 	int getStreamVolume(int streamType) {
-		this.streamType = streamType;
 		return streamVolume;
 	}
 	
 	@Implementation
 	void setStreamVolume(int streamType, int index, int flags) {
-		this.streamType = streamType;
 		this.streamVolume = index;
 		this.flags = flags;
 	}
@@ -48,14 +44,6 @@ public class ShadowAudioManager {
 
 	public void setStreamVolume(int streamVolume) {
 		this.streamVolume = streamVolume;
-	}
-
-	public int getStreamType() {
-		return streamType;
-	}
-
-	public void setStreamType(int streamType) {
-		this.streamType = streamType;
 	}
 
 	public int getFlags() {
