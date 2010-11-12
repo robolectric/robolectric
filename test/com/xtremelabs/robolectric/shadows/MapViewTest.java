@@ -7,8 +7,8 @@ import android.view.View;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.AndroidTranslatorTest;
-import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +17,7 @@ import static com.xtremelabs.robolectric.shadows.ShadowMapView.toE6;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
-@RunWith(DogfoodRobolectricTestRunner.class)
+@RunWith(WithTestDefaultsRunner.class)
 public class MapViewTest {
     private MapView mapView;
     private MyOverlay overlay1;

@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.*;
 
-@RunWith(DogfoodRobolectricTestRunner.class)
+@RunWith(WithoutTestDefaultsRunner.class)
 public class ShadowWranglerTest {
     private Context context;
 
@@ -98,7 +98,7 @@ public class ShadowWranglerTest {
     }
 
     @Test
-    public void testWeirdness() throws Exception {
+    public void shouldUseMostSpecificShadow() throws Exception {
         Robolectric.bindShadowClass(View.class, TestShadowView.class);
         Robolectric.bindShadowClass(TextView.class, TestShadowTextView.class);
 

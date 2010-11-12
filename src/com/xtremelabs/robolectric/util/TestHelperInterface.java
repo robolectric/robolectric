@@ -2,6 +2,11 @@ package com.xtremelabs.robolectric.util;
 
 import java.lang.reflect.Method;
 
+/**
+ * @deprecated The defaults used by {@link com.xtremelabs.robolectric.RobolectricTestRunner} will now work in
+ * almost all cases. See that class for more information about how to customize its behavior.
+ */
+@Deprecated
 public interface TestHelperInterface {
     /**
      * This method is run before each test.  This is intended to be used as a global before each.

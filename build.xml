@@ -107,7 +107,7 @@
         <echo message="do you need a 'pages' symlink?"/>
     </target>
 
-    <target name="snapshot" description="update most recent version of robolectric as jars" depends="jar-all, check-for-pages-dir" if="pages.dir.exists">
+    <target name="snapshot" description="update most recent version of robolectric as jars" depends="clean, test, jar-all, check-for-pages-dir" if="pages.dir.exists">
         <copy todir="pages/downloads">
             <fileset dir="${target.dir}" includes="robolectric*.jar"/>
         </copy>
