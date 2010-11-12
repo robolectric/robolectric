@@ -1,11 +1,12 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
-import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +16,7 @@ import java.io.Serializable;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.*;
 
-@RunWith(DogfoodRobolectricTestRunner.class)
+@RunWith(WithTestDefaultsRunner.class)
 public class IntentTest {
     @Before
     public void setUp() throws Exception {
@@ -85,6 +86,17 @@ public class IntentTest {
         Uri uri = Uri.parse("content://this/and/that");
         assertSame(intent, intent.setData(uri));
         assertSame(uri, intent.getData());
+    }
+
+    @Test
+    public void testSetClass() throws Exception {
+        Intent intent = new Intent();
+        Class<? extends IntentTest> thisClass = getClass();
+        Intent output = intent.setClass(new Activity(), thisClass);
+
+        assertSame(output, intent);
+        ShadowIntent si = shadowOf(intent);
+        assertSame(si.getIntentClass(), thisClass);
     }
 
     @Test

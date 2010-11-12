@@ -8,9 +8,9 @@ import android.content.ContextWrapper;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
-import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +21,7 @@ import java.io.File;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.*;
 
-@RunWith(DogfoodRobolectricTestRunner.class)
+@RunWith(WithTestDefaultsRunner.class)
 public class AppWidgetManagerTest {
     private AppWidgetManager appWidgetManager;
     private ShadowAppWidgetManager shadowAppWidgetManager;

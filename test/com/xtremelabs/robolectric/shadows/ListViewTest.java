@@ -5,8 +5,8 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.ListView;
-import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,7 +23,7 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
-@RunWith(DogfoodRobolectricTestRunner.class)
+@RunWith(WithTestDefaultsRunner.class)
 public class ListViewTest {
     private Transcript transcript;
     private ListView listView;

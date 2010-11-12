@@ -3,6 +3,16 @@
   <component name="DependencyValidationManager">
     <option name="SKIP_IMPORT_STATEMENTS" value="false" />
   </component>
+  <component name="FacetAutodetectingManager">
+    <autodetection-disabled>
+      <facet-type id="android">
+        <modules>
+          <module name="robolectric" />
+        </modules>
+      </facet-type>
+    </autodetection-disabled>
+  </component>
+  <component name="IdProvider" IDEtalkID="E3CEF9CB8037AEFF57D7356A0309656F" />
   <component name="JavadocGenerationManager">
     <option name="OUTPUT_DIRECTORY" />
     <option name="OPTION_SCOPE" value="protected" />
@@ -29,5 +39,6 @@
   <component name="SvnBranchConfigurationManager">
     <option name="mySupportsUserInfoFilter" value="true" />
   </component>
+  <component name="WebServicesPlugin" addRequiredLibraries="true" />
 </project>
 

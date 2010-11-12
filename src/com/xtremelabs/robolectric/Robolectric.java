@@ -14,6 +14,7 @@ import android.graphics.drawable.Drawable;
 import android.location.LocationManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -88,6 +89,7 @@ public class Robolectric {
                 ShadowContext.class,
                 ShadowContextWrapper.class,
                 ShadowContextThemeWrapper.class,
+                ShadowDisplay.class,
                 ShadowDrawable.class,
                 ShadowDialog.class,
                 ShadowEditText.class,
@@ -113,6 +115,7 @@ public class Robolectric {
                 ShadowPath.class,
                 ShadowPendingIntent.class,
                 ShadowPoint.class,
+                ShadowPreferenceManager.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
                 ShadowResources.class,
@@ -268,9 +271,14 @@ public class Robolectric {
     public static ShadowLayoutInflater shadowOf(LayoutInflater instance) {
         return ((ShadowLayoutInflater) shadowOf_(instance));
     }
+    
+	public static ShadowDisplay shadowOf(Display instance) {
+		return ((ShadowDisplay) shadowOf_(instance));
+	}
 
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
     }
+
 }

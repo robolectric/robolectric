@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import android.content.Context;
+import android.graphics.Rect;
 import android.test.mock.MockContext;
 import android.view.View;
 import android.widget.TextView;
@@ -12,7 +13,7 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.*;
 
-@RunWith(DogfoodRobolectricTestRunner.class)
+@RunWith(WithoutTestDefaultsRunner.class)
 public class ShadowWranglerTest {
     private Context context;
 
@@ -59,6 +60,36 @@ public class ShadowWranglerTest {
     }
 
     @Test
+    public void testEqualsMethodDelegation() throws Exception {
+        Robolectric.bindShadowClass(View.class, withEquals.class);
+
+        View view1 = new View(context);
+        View view2 = new View(context);
+        assertEquals(view1, view2);
+
+        Robolectric.bindShadowClass(Rect.class, withEquals.class);
+        Rect rect1 = new Rect();
+        Rect rect2 = new Rect();
+        assertEquals(rect1, rect2);
+    }
+
+    @Test
+    public void testHashCodeMethodDelegation() throws Exception {
+        Robolectric.bindShadowClass(View.class, withEquals.class);
+
+        View view = new View(context);
+        assertEquals(42, view.hashCode());
+    }
+
+    @Test
+    public void testToStringMethodDelegation() throws Exception {
+        Robolectric.bindShadowClass(View.class, withToString.class);
+
+        View view = new View(context);
+        assertEquals("the expected string", view.toString());
+    }
+
+    @Test
     public void testShadowSelectionSearchesSuperclasses() throws Exception {
         Robolectric.bindShadowClass(View.class, TestShadowView.class);
 
@@ -67,7 +98,7 @@ public class ShadowWranglerTest {
     }
 
     @Test
-    public void testWeirdness() throws Exception {
+    public void shouldUseMostSpecificShadow() throws Exception {
         Robolectric.bindShadowClass(View.class, TestShadowView.class);
         Robolectric.bindShadowClass(TextView.class, TestShadowTextView.class);
 
@@ -93,6 +124,26 @@ public class ShadowWranglerTest {
 
     private TestShadowTextView shadowOf(TextView view) {
         return (TestShadowTextView) Robolectric.shadowOf_(view);
+    }
+
+    public static class withEquals {
+        @Override
+        public boolean equals(Object o) {
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return 42;
+        }
+
+    }
+
+    public static class withToString {
+        @Override
+        public String toString() {
+            return "the expected string";
+        }
     }
 
     public static class TestShadowView extends TestShadowViewParent {

@@ -9,10 +9,12 @@ import android.location.LocationManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
+import android.view.WindowManager;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.view.TestWindowManager;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -38,6 +40,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private AlarmManager alarmManager;
     private LocationManager locationManager;
     private WifiManager wifiManager;
+    private WindowManager windowManager;
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
     public List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
@@ -71,6 +74,8 @@ public class ShadowApplication extends ShadowContextWrapper {
             return locationManager == null ? locationManager = newInstanceOf(LocationManager.class) : locationManager;
         } else if (name.equals(Context.WIFI_SERVICE)) {
             return wifiManager == null ? wifiManager = newInstanceOf(WifiManager.class) : wifiManager;
+        } else if (name.equals(Context.WINDOW_SERVICE)) {
+            return windowManager == null ? windowManager = new TestWindowManager() : windowManager;
         }
         return null;
     }
