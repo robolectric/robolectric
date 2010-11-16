@@ -5,7 +5,6 @@ import android.net.Uri;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
 import com.xtremelabs.robolectric.util.RealObject;
-import com.xtremelabs.robolectric.util.TestHelperInterface;
 import org.junit.Test;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -35,9 +34,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     // fields in the RobolectricTestRunner in the original ClassLoader
     private RobolectricClassLoader classLoader;
     private ClassHandler classHandler;
-    private Class<? extends TestHelperInterface> testHelperClass;
     private RobolectricTestRunnerInterface delegate;
-    private TestHelperInterface testHelper;
 
     // fields in the RobolectricTestRunner in the instrumented ClassLoader
     private String resourceDirectory;
@@ -81,17 +78,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     /**
-     * @deprecated {@link TestHelperInterface} is no longer necessary for setting up default resource loading behavior.
-     *             Use {@link #RobolectricTestRunner(Class, String, String)} to override the default project root and resource
-     *             directory.
-     */
-    @Deprecated
-    protected RobolectricTestRunner(Class<?> testClass, Class<? extends TestHelperInterface> testHelperClass) throws InitializationError {
-        this(testClass);
-        setTestHelperClass(testHelperClass);
-    }
-
-    /**
      * This is not the constructor you are looking for... probably. Providing your own class handler and class loader is
      * risky. If you need to customize the project root and resource directory, use
      * {@link #RobolectricTestRunner(Class, String, String)}
@@ -114,7 +100,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
             delegateLoadingOf(Uri.class.getName());
             delegateLoadingOf(RobolectricTestRunnerInterface.class.getName());
-            delegateLoadingOf(TestHelperInterface.class.getName());
             delegateLoadingOf(RealObject.class.getName());
             delegateLoadingOf(ShadowWrangler.class.getName());
 
@@ -149,16 +134,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         classLoader.delegateLoadingOf(className);
     }
 
-    /**
-     * @deprecated {@link TestHelperInterface} is no longer necessary for setting up default resource loading behavior.
-     *             Use {@link #RobolectricTestRunner(Class, String, String)} to override the default project root and resource
-     *             directory.
-     */
-    @Deprecated
-    protected void setTestHelperClass(Class<? extends TestHelperInterface> testHelperClass) {
-        this.testHelperClass = testHelperClass;
-    }
-
     @Override protected Statement methodBlock(final FrameworkMethod method) {
         if (classHandler != null) classHandler.beforeTest();
         delegate.internalBeforeTest(method.getMethod());
@@ -181,24 +156,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * Called before each test method is run. Sets up the simulation of the Android runtime environment.
      */
     @Override public void internalBeforeTest(Method method) {
-        if (testHelperClass != null) {
-            testHelper = createTestHelper(method);
-            testHelper.before(method);
-        }
         setupApplicationState(projectRoot, resourceDirectory);
 
         beforeTest(method);
     }
 
-    public ResourceLoader getResourceLoader() {
-        return resourceLoader;
-    }
-
     @Override public void internalAfterTest(Method method) {
-        if (testHelper != null) {
-            testHelper.after(method);
-        }
-
         afterTest(method);
     }
 
@@ -236,10 +199,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             return delegate.createTest();
         } else {
             Object test = super.createTest();
-            if (testHelper != null) {
-                testHelper.prepareTest(test);
-            }
-
             prepareTest(test);
             return test;
         }
@@ -247,18 +206,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     public void prepareTest(Object test) {
     }
-
-    private TestHelperInterface createTestHelper(Method method) {
-        Class<?> testClass = method.getDeclaringClass();
-        try {
-            return (TestHelperInterface) testClass.getClassLoader().loadClass(testHelperClass.getName()).newInstance();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
 
     public void setupApplicationState(String projectRoot, String resourceDir) {
         resourceLoader = createResourceLoader(projectRoot, resourceDir);
