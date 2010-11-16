@@ -6,6 +6,7 @@ import javassist.CtClass;
 import javassist.CtField;
 import javassist.NotFoundException;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 
@@ -295,7 +296,7 @@ public class ShadowWrangler implements ClassHandler {
         }
 
         private Class<?> findShadowClass(Class<?> originalClass) {
-                String declaredShadowClassName = getShadowClassName(originalClass);
+            String declaredShadowClassName = getShadowClassName(originalClass);
             if (declaredShadowClassName == null) {
                 return null;
             }
@@ -342,13 +343,19 @@ public class ShadowWrangler implements ClassHandler {
             if (method != null && !isOnShadowClass(method)) {
                 method = null;
             }
-            
+
             return method;
         }
 
         private boolean isOnShadowClass(Method method) {
-            // todo do a better job of this pg 20101111
-            return !method.getDeclaringClass().equals(Object.class);
+            Class<?> declaringClass = method.getDeclaringClass();
+            // why doesn't getAnnotation(com.xtremelabs.robolectric.util.Implements) work here? It always returns null. pg 20101115
+            for (Annotation annotation : declaringClass.getAnnotations()) {
+                if (annotation.annotationType().toString().equals("interface com.xtremelabs.robolectric.util.Implements")) {
+                    return true;
+                }
+            }
+            return false;
         }
 
         @Override

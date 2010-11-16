@@ -12,7 +12,7 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 9;
+    public static final int CACHE_VERSION = 13;
 
     private static final List<ClassHandler> CLASS_HANDLERS = new ArrayList<ClassHandler>();
 
@@ -127,27 +127,28 @@ public class AndroidTranslator implements Translator {
                 new CtMethod(CtClass.voidType, "<init>", parameterTypes, ctClass),
                 CtClass.voidType,
                 Type.VOID,
+                false,
                 false);
     }
 
     private void fixMethods(CtClass ctClass) throws NotFoundException, CannotCompileException {
         for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
-            fixMethod(ctClass, ctMethod);
+            fixMethod(ctClass, ctMethod, true);
         }
         CtMethod equalsMethod = ctClass.getMethod("equals", "(Ljava/lang/Object;)Z");
         CtMethod hashCodeMethod = ctClass.getMethod("hashCode", "()I");
         CtMethod toStringMethod = ctClass.getMethod("toString", "()Ljava/lang/String;");
 
-        fixMethod(ctClass, equalsMethod);
-        fixMethod(ctClass, hashCodeMethod);
-        fixMethod(ctClass, toStringMethod);
+        fixMethod(ctClass, equalsMethod, false);
+        fixMethod(ctClass, hashCodeMethod, false);
+        fixMethod(ctClass, toStringMethod, false);
     }
 
     private String describe(CtMethod ctMethod) throws NotFoundException {
         return Modifier.toString(ctMethod.getModifiers()) + " " + ctMethod.getReturnType().getSimpleName() + " " + ctMethod.getLongName();
     }
 
-    private void fixMethod(CtClass ctClass, CtMethod ctMethod) throws NotFoundException {
+    private void fixMethod(CtClass ctClass, CtMethod ctMethod, boolean wasFoundInClass) throws NotFoundException {
         String describeBefore = describe(ctMethod);
         try {
             CtClass declaringClass = ctMethod.getDeclaringClass();
@@ -156,7 +157,7 @@ public class AndroidTranslator implements Translator {
             boolean wasNative = Modifier.isNative(originalModifiers);
             boolean wasFinal = Modifier.isFinal(originalModifiers);
             boolean wasAbstract = Modifier.isAbstract(originalModifiers);
-            boolean wasDeclaredInClass = declaringClass.equals(ctClass);
+            boolean wasDeclaredInClass = ctClass == declaringClass;
 
             if (wasFinal && ctClass.isEnum()) {
                 return;
@@ -169,7 +170,7 @@ public class AndroidTranslator implements Translator {
             if (wasFinal) {
                 newModifiers = Modifier.clear(newModifiers, Modifier.FINAL);
             }
-            if (wasDeclaredInClass) {
+            if (wasFoundInClass) {
                 ctMethod.setModifiers(newModifiers);
             }
 
@@ -194,12 +195,16 @@ public class AndroidTranslator implements Translator {
 //            }
 
             boolean isStatic = Modifier.isStatic(originalModifiers);
-            String methodBody = generateMethodBody(ctClass, ctMethod, wasNative, wasAbstract, returnCtClass, returnType, isStatic);
+            String methodBody = generateMethodBody(ctClass, ctMethod, wasNative, wasAbstract, returnCtClass, returnType, isStatic, !wasFoundInClass);
 
-            if (!wasDeclaredInClass) {
+            if (!wasFoundInClass) {
                 CtMethod newMethod = makeNewMethod(ctClass, ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + generateCallToSuper(methodName, paramTypes) + "\n}");
                 newMethod.setModifiers(newModifiers);
-                ctClass.addMethod(newMethod);
+                if (wasDeclaredInClass) {
+                    ctMethod.insertBefore("{\n" + methodBody + "}\n");
+                } else {
+                    ctClass.addMethod(newMethod);
+                }
             } else if (wasAbstract || wasNative) {
                 CtMethod newMethod = makeNewMethod(ctClass, ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + "\n}");
                 ctMethod.setBody(newMethod, null);
@@ -238,12 +243,12 @@ public class AndroidTranslator implements Translator {
         return parameterReplacementList;
     }
 
-    private String generateMethodBody(CtClass ctClass, CtMethod ctMethod, boolean wasNative, boolean wasAbstract, CtClass returnCtClass, Type returnType, boolean aStatic) throws NotFoundException {
+    private String generateMethodBody(CtClass ctClass, CtMethod ctMethod, boolean wasNative, boolean wasAbstract, CtClass returnCtClass, Type returnType, boolean aStatic, boolean shouldGenerateCallToSuper) throws NotFoundException {
         String methodBody;
         if (wasAbstract) {
             methodBody = returnType.isVoid() ? "" : "return " + returnType.defaultReturnString() + ";";
         } else {
-            methodBody = generateMethodBody(ctClass, ctMethod, returnCtClass, returnType, aStatic);
+            methodBody = generateMethodBody(ctClass, ctMethod, returnCtClass, returnType, aStatic, shouldGenerateCallToSuper);
         }
 
         if (wasNative) {
@@ -252,7 +257,7 @@ public class AndroidTranslator implements Translator {
         return methodBody;
     }
 
-    public String generateMethodBody(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean isStatic) throws NotFoundException {
+    public String generateMethodBody(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean isStatic, boolean shouldGenerateCallToSuper) throws NotFoundException {
         boolean returnsVoid = returnType.isVoid();
         String className = ctClass.getName();
 
@@ -293,13 +298,13 @@ public class AndroidTranslator implements Translator {
             buf.append(") x)");
             buf.append(returnType.unboxString());
             buf.append(";\n");
-            if (ctMethod.getDeclaringClass().getName().equals("java.lang.Object")) {
+            if (shouldGenerateCallToSuper) {
                 buf.append(generateCallToSuper(ctMethod.getName(), ctMethod.getParameterTypes()));
             } else {
                 buf.append("return ");
                 buf.append(returnType.defaultReturnString());
+                buf.append(";\n");
             }
-            buf.append(";\n");
         } else {
             buf.append("return;\n");
         }

@@ -13,6 +13,7 @@ import java.util.WeakHashMap;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Settings.class)
 public class ShadowSettings {
+    @Implements(Settings.class)
     private static class SettingsImpl {
         private static final WeakHashMap<ContentResolver, Map<String, Integer>> dataMap = new WeakHashMap<ContentResolver, Map<String, Integer>>();
 

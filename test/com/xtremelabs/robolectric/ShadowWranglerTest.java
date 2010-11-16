@@ -5,6 +5,7 @@ import android.graphics.Rect;
 import android.test.mock.MockContext;
 import android.view.View;
 import android.widget.TextView;
+import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -61,13 +62,13 @@ public class ShadowWranglerTest {
 
     @Test
     public void testEqualsMethodDelegation() throws Exception {
-        Robolectric.bindShadowClass(View.class, withEquals.class);
+        Robolectric.bindShadowClass(View.class, WithEquals.class);
 
         View view1 = new View(context);
         View view2 = new View(context);
         assertEquals(view1, view2);
 
-        Robolectric.bindShadowClass(Rect.class, withEquals.class);
+        Robolectric.bindShadowClass(Rect.class, WithEquals.class);
         Rect rect1 = new Rect();
         Rect rect2 = new Rect();
         assertEquals(rect1, rect2);
@@ -75,7 +76,7 @@ public class ShadowWranglerTest {
 
     @Test
     public void testHashCodeMethodDelegation() throws Exception {
-        Robolectric.bindShadowClass(View.class, withEquals.class);
+        Robolectric.bindShadowClass(View.class, WithEquals.class);
 
         View view = new View(context);
         assertEquals(42, view.hashCode());
@@ -83,7 +84,7 @@ public class ShadowWranglerTest {
 
     @Test
     public void testToStringMethodDelegation() throws Exception {
-        Robolectric.bindShadowClass(View.class, withToString.class);
+        Robolectric.bindShadowClass(View.class, WithToString.class);
 
         View view = new View(context);
         assertEquals("the expected string", view.toString());
@@ -126,7 +127,8 @@ public class ShadowWranglerTest {
         return (TestShadowTextView) Robolectric.shadowOf_(view);
     }
 
-    public static class withEquals {
+    @Implements(View.class)
+    public static class WithEquals {
         @Override
         public boolean equals(Object o) {
             return true;
@@ -139,13 +141,15 @@ public class ShadowWranglerTest {
 
     }
 
-    public static class withToString {
+    @Implements(View.class)
+    public static class WithToString {
         @Override
         public String toString() {
             return "the expected string";
         }
     }
 
+    @Implements(View.class)
     public static class TestShadowView extends TestShadowViewParent {
         @RealObject
         private View realViewField;
@@ -173,6 +177,7 @@ public class ShadowWranglerTest {
         }
     }
 
+    @Implements(View.class)
     public static class TestShadowViewParent {
         @RealObject
         private View realView;
@@ -183,9 +188,11 @@ public class ShadowWranglerTest {
         }
     }
     
+    @Implements(View.class)
     public static class TestShadowView_WithDefaultConstructorAndNoConstructorDelegate {
     }
 
+    @Implements(TextView.class)
     public static class TestShadowTextView {
     }
 }

@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.view.View.VISIBLE;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextView.class)
@@ -138,6 +139,15 @@ public class ShadowTextView extends ShadowView {
     @Override
     public String innerText() {
         return (text == null || visibility != VISIBLE) ? "" : text.toString();
+    }
+
+    @Override public boolean equals(Object o) {
+        return super.equals(shadowOf_(o));
+    }
+
+    @Override
+    public int hashCode() {
+        return super.hashCode();
     }
 
     public static class CompoundDrawables {

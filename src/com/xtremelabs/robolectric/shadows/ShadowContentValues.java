@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContentValues.class)
 public final class ShadowContentValues {
@@ -297,10 +299,16 @@ public final class ShadowContentValues {
 
     @Override
     public boolean equals(Object object) {
-        if (!(object instanceof ContentValues)) {
+        if (object == null) return false;
+        Object o = shadowOf_(object);
+        if (o == null) return false;
+        if (this == o) return true;
+        if (getClass() != o.getClass()) return false;
+
+        if (!(o instanceof ContentValues)) {
             return false;
         }
-        return values.equals(shadowOf((ContentValues) object).values);
+        return values.equals(shadowOf((ContentValues) o).values);
     }
 
     @Override

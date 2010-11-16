@@ -9,6 +9,8 @@ import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bundle.class)
 public class ShadowBundle {
@@ -66,8 +68,11 @@ public class ShadowBundle {
 
     @Override
     public boolean equals(Object o) {
+        if (o == null) return false;
+        o = shadowOf_(o);
+        if (o == null) return false;
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
+        if (getClass() != o.getClass()) return false;
 
         ShadowBundle that = (ShadowBundle) o;
 

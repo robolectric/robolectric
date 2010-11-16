@@ -4,5 +4,6 @@ out/
 tmp/
 target/
 pages
+.DS_Store
 *~
 \#*\#

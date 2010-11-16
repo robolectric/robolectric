@@ -5,6 +5,8 @@ import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Rect.class)
 public class ShadowRect {
@@ -29,6 +31,12 @@ public class ShadowRect {
 
     @Implementation
     public boolean equals(Object obj) {
+        if (obj == null) return false;
+        Object o = shadowOf_(obj);
+        if (o == null) return false;
+        if (getClass() != o.getClass()) return false;
+        if (this == o) return true;
+
         Rect r = (Rect) obj;
         if (r != null) {
             return realRect.left == r.left && realRect.top == r.top && realRect.right == r.right

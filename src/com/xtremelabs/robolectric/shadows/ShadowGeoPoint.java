@@ -1,10 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
 import com.google.android.maps.GeoPoint;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 import static com.xtremelabs.robolectric.shadows.ShadowMapView.fromE6;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -30,10 +30,13 @@ public class ShadowGeoPoint {
 
     @Override
     public boolean equals(Object o) {
-        if (this == o) return true;
         if (o == null) return false;
+        o = shadowOf_(o);
+        if (o == null) return false;
+        if (this == o) return true;
+        if (getClass() != o.getClass()) return false;
 
-        ShadowGeoPoint that = (ShadowGeoPoint) Robolectric.shadowOf_(o);
+        ShadowGeoPoint that = (ShadowGeoPoint) o;
 
         if (lat != that.lat) return false;
         if (lng != that.lng) return false;

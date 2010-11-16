@@ -12,6 +12,7 @@ import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 import com.xtremelabs.robolectric.shadows.ShadowItemizedOverlay;
 import com.xtremelabs.robolectric.util.Implementation;
+import com.xtremelabs.robolectric.util.Implements;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -169,6 +170,7 @@ public class AndroidTranslatorTest {
         assertEquals(view, view);
     }
 
+    @Implements(ItemizedOverlay.class)
     public static class ItemizedOverlayForTests extends ItemizedOverlay {
         public ItemizedOverlayForTests(Drawable drawable) {
             super(drawable);
@@ -189,6 +191,7 @@ public class AndroidTranslatorTest {
         }
     }
 
+    @Implements(Paint.class)
     public static class ShadowPaintForTests {
         private int color;
 
@@ -203,6 +206,7 @@ public class AndroidTranslatorTest {
         }
     }
 
+    @Implements(AccountManager.class)
     public static class ShadowAccountManagerForTests {
         public static boolean wasCalled = false;
         public static Context context;
