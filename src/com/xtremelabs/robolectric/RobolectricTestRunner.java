@@ -1,28 +1,47 @@
 package com.xtremelabs.robolectric;
 
+import android.app.Application;
 import android.net.Uri;
+import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.shadows.ShadowApplication;
 import com.xtremelabs.robolectric.util.RealObject;
 import com.xtremelabs.robolectric.util.TestHelperInterface;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
+import java.io.IOException;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Installs a {@link RobolectricClassLoader} and {@link com.xtremelabs.robolectric.res.ResourceLoader} in order to
  * provide a simulation of the Android runtime environment.
  */
-public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
+public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
     private static RobolectricClassLoader defaultLoader;
-    private RobolectricClassLoader loader;
+    private static Map<RootAndDirectory, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RootAndDirectory, ResourceLoader>();
 
+    // fields in the RobolectricTestRunner in the original ClassLoader
+    private RobolectricClassLoader classLoader;
     private ClassHandler classHandler;
     private Class<? extends TestHelperInterface> testHelperClass;
+    private RobolectricTestRunnerInterface delegate;
     private TestHelperInterface testHelper;
+
+    // fields in the RobolectricTestRunner in the instrumented ClassLoader
     private String resourceDirectory;
     private String projectRoot;
+    private ResourceLoader resourceLoader;
 
     private static RobolectricClassLoader getDefaultLoader() {
         if (defaultLoader == null) {
@@ -74,27 +93,46 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
      *
      * @param testClass
      * @param classHandler
-     * @param loader
+     * @param classLoader
      * @param projectRoot
      * @param resourceDirectory
      * @throws InitializationError
      */
-    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader loader, String projectRoot, String resourceDirectory) throws InitializationError {
-        super(loader.bootstrap(testClass));
+    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader classLoader, String projectRoot, String resourceDirectory) throws InitializationError {
+        super(classLoader.bootstrap(testClass));
         this.classHandler = classHandler;
-        this.loader = loader;
+        this.classLoader = classLoader;
         this.projectRoot = projectRoot;
         this.resourceDirectory = resourceDirectory;
 
-        this.loader.delegateLoadingOf(Uri.class.getName());
-        this.loader.delegateLoadingOf(LoadableHelper.class.getName());
-        this.loader.delegateLoadingOf(TestHelperInterface.class.getName());
-        this.loader.delegateLoadingOf(RealObject.class.getName());
-        this.loader.delegateLoadingOf(ShadowWrangler.class.getName());
+        delegateLoadingOf(Uri.class.getName());
+        delegateLoadingOf(RobolectricTestRunnerInterface.class.getName());
+        delegateLoadingOf(TestHelperInterface.class.getName());
+        delegateLoadingOf(RealObject.class.getName());
+        delegateLoadingOf(ShadowWrangler.class.getName());
+
+        Class<?> delegateClass = classLoader.bootstrap(this.getClass());
+        try {
+            Constructor constructorForDelegate = delegateClass.getConstructor(Class.class, ClassHandler.class, String.class, String.class);
+            this.delegate = (RobolectricTestRunnerInterface) constructorForDelegate.newInstance(classLoader.bootstrap(testClass), classHandler, projectRoot, resourceDirectory);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /**
+     * Only used when creating the delegate instance within the instrumented ClassLoader.
+     */
+    @SuppressWarnings({"UnusedDeclaration"})
+    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, String projectRoot, String resourceDirectory) throws InitializationError {
+        super(testClass);
+        this.classHandler = classHandler;
+        this.projectRoot = projectRoot;
+        this.resourceDirectory = resourceDirectory;
     }
 
     protected void delegateLoadingOf(String className) {
-        loader.delegateLoadingOf(className);
+        classLoader.delegateLoadingOf(className);
     }
 
     /**
@@ -109,7 +147,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
         if (classHandler != null) classHandler.beforeTest();
-        internalBeforeTest(method.getMethod());
+        delegate.internalBeforeTest(method.getMethod());
 
         final Statement statement = super.methodBlock(method);
         return new Statement() {
@@ -118,7 +156,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                 try {
                     statement.evaluate();
                 } finally {
-                    internalAfterTest(method.getMethod());
+                    delegate.internalAfterTest(method.getMethod());
                     if (classHandler != null) classHandler.afterTest();
                 }
             }
@@ -128,26 +166,21 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     /*
      * Called before each test method is run. Sets up the simulation of the Android runtime environment.
      */
-    void internalBeforeTest(Method method) {
+    @Override public void internalBeforeTest(Method method) {
         if (testHelperClass != null) {
             testHelper = createTestHelper(method);
             testHelper.before(method);
-        } else {
-            createLoadableHelper(method).setupApplicationState(projectRoot, resourceDirectory);
         }
+        setupApplicationState(projectRoot, resourceDirectory);
 
         beforeTest(method);
     }
 
-    /**
-     * Called before each test method is run.
-     *
-     * @param method the test method about to be run
-     */
-    protected void beforeTest(Method method) {
+    public ResourceLoader getResourceLoader() {
+        return resourceLoader;
     }
 
-    void internalAfterTest(Method method) {
+    @Override public void internalAfterTest(Method method) {
         if (testHelper != null) {
             testHelper.after(method);
         }
@@ -156,23 +189,40 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
 
     /**
+     * Called before each test method is run.
+     *
+     * @param method the test method about to be run
+     */
+    public void beforeTest(Method method) {
+    }
+
+    /**
      * Called after each test method is run.
      *
      * @param method the test method that just ran.
      */
-    protected void afterTest(Method method) {
+    public void afterTest(Method method) {
     }
 
     /**
      * {@see BlockJUnit4TestRunner#createTest()}
      */
     @Override
-    protected Object createTest() throws Exception {
-        Object test = super.createTest();
-        if (testHelper != null) {
-            testHelper.prepareTest(test);
+    public Object createTest() throws Exception {
+        if (delegate != null) {
+            return delegate.createTest();
+        } else {
+            Object test = super.createTest();
+            if (testHelper != null) {
+                testHelper.prepareTest(test);
+            }
+
+            prepareTest(test);
+            return test;
         }
-        return test;
+    }
+
+    public void prepareTest(Object test) {
     }
 
     private TestHelperInterface createTestHelper(Method method) {
@@ -186,14 +236,70 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         }
     }
 
-    private LoadableHelper createLoadableHelper(Method method) {
-        Class<?> testClass = method.getDeclaringClass();
-        try {
-            return (LoadableHelper) testClass.getClassLoader().loadClass(LoadableHelperImpl.class.getName()).newInstance();
-        } catch (RuntimeException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+
+    public void setupApplicationState(String projectRoot, String resourceDir) {
+        resourceLoader = createResourceLoader(projectRoot, resourceDir);
+
+        Robolectric.bindDefaultShadowClasses();
+        Robolectric.resetStaticState();
+        Robolectric.application = ShadowApplication.bind(new Application(), resourceLoader);
+    }
+
+    private ResourceLoader createResourceLoader(String projectRoot, String resourceDirectory) {
+        RootAndDirectory rootAndDirectory = new RootAndDirectory(projectRoot, resourceDirectory);
+        ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(rootAndDirectory);
+        if (resourceLoader == null) {
+            try {
+                String rClassName = findResourcePackageName(projectRoot);
+                Class rClass = Class.forName(rClassName);
+                resourceLoader = new ResourceLoader(rClass, new File(resourceDirectory));
+                resourceLoaderForRootAndDirectory.put(rootAndDirectory, resourceLoader);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return resourceLoader;
+    }
+
+    private String findResourcePackageName(String projectRoot) throws ParserConfigurationException, IOException, SAXException {
+        File projectManifestFile = new File(projectRoot, "AndroidManifest.xml");
+        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        DocumentBuilder db = dbf.newDocumentBuilder();
+        Document doc = db.parse(projectManifestFile);
+
+        String projectPackage = doc.getElementsByTagName("manifest").item(0).getAttributes().getNamedItem("package").getTextContent();
+
+        return projectPackage + ".R";
+    }
+
+    private static class RootAndDirectory {
+        public String projectRoot;
+        public String resourceDirectory;
+
+        private RootAndDirectory(String projectRoot, String resourceDirectory) {
+            this.projectRoot = projectRoot;
+            this.resourceDirectory = resourceDirectory;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            RootAndDirectory that = (RootAndDirectory) o;
+
+            if (projectRoot != null ? !projectRoot.equals(that.projectRoot) : that.projectRoot != null) return false;
+            if (resourceDirectory != null ? !resourceDirectory.equals(that.resourceDirectory) : that.resourceDirectory != null)
+                return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = projectRoot != null ? projectRoot.hashCode() : 0;
+            result = 31 * result + (resourceDirectory != null ? resourceDirectory.hashCode() : 0);
+            return result;
         }
     }
 
