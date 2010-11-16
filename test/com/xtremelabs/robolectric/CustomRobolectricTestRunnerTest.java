@@ -26,7 +26,7 @@ public class CustomRobolectricTestRunnerTest {
     @Test
     public void shouldInitializeApplication() throws Exception {
         assertNotNull(Robolectric.application);
-        assertEquals(Application.class, Robolectric.application.getClass());
+        assertEquals(CustomApplication.class, Robolectric.application.getClass());
     }
 
     @Test
@@ -62,5 +62,12 @@ public class CustomRobolectricTestRunnerTest {
         @Override public void afterTest(Method method) {
             afterTestCallCount++;
         }
+
+        @Override protected Application createApplication() {
+            return new CustomApplication();
+        }
+    }
+
+    public static class CustomApplication extends Application {
     }
 }

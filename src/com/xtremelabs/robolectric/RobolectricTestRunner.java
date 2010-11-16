@@ -265,7 +265,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
         Robolectric.bindDefaultShadowClasses();
         Robolectric.resetStaticState();
-        Robolectric.application = ShadowApplication.bind(new Application(), resourceLoader);
+        Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
+    }
+
+    /**
+     * Override this method if you want to provide your own implementation of Application.
+     */
+    protected Application createApplication() {
+        return new Application();
     }
 
     private ResourceLoader createResourceLoader(String projectRoot, String resourceDirectory) {
