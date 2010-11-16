@@ -8,4 +8,8 @@ public interface RobolectricTestRunnerInterface {
     void internalBeforeTest(Method method);
 
     void internalAfterTest(Method method);
+
+    void setProjectRoot(String projectRoot);
+
+    void setResourceDirectory(String resourceDirectory);
 }

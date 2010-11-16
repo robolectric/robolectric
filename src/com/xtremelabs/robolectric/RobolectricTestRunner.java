@@ -6,6 +6,7 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
 import com.xtremelabs.robolectric.util.RealObject;
 import com.xtremelabs.robolectric.util.TestHelperInterface;
+import org.junit.Test;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -72,7 +73,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @throws InitializationError
      */
     protected RobolectricTestRunner(Class<?> testClass, String projectRoot, String resourceDirectory) throws InitializationError {
-        this(testClass, ShadowWrangler.getInstance(), getDefaultLoader(), projectRoot, resourceDirectory);
+        this(testClass,
+                isInstrumented() ? null : ShadowWrangler.getInstance(),
+                isInstrumented() ? null : getDefaultLoader(),
+                projectRoot,
+                resourceDirectory);
     }
 
     /**
@@ -99,25 +104,34 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @throws InitializationError
      */
     protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader classLoader, String projectRoot, String resourceDirectory) throws InitializationError {
-        super(classLoader.bootstrap(testClass));
-        this.classHandler = classHandler;
-        this.classLoader = classLoader;
-        this.projectRoot = projectRoot;
-        this.resourceDirectory = resourceDirectory;
+        super(isInstrumented() ? testClass : classLoader.bootstrap(testClass));
 
-        delegateLoadingOf(Uri.class.getName());
-        delegateLoadingOf(RobolectricTestRunnerInterface.class.getName());
-        delegateLoadingOf(TestHelperInterface.class.getName());
-        delegateLoadingOf(RealObject.class.getName());
-        delegateLoadingOf(ShadowWrangler.class.getName());
+        if (!isInstrumented()) {
+            this.classHandler = classHandler;
+            this.classLoader = classLoader;
+            this.projectRoot = projectRoot;
+            this.resourceDirectory = resourceDirectory;
 
-        Class<?> delegateClass = classLoader.bootstrap(this.getClass());
-        try {
-            Constructor constructorForDelegate = delegateClass.getConstructor(Class.class, ClassHandler.class, String.class, String.class);
-            this.delegate = (RobolectricTestRunnerInterface) constructorForDelegate.newInstance(classLoader.bootstrap(testClass), classHandler, projectRoot, resourceDirectory);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+            delegateLoadingOf(Uri.class.getName());
+            delegateLoadingOf(RobolectricTestRunnerInterface.class.getName());
+            delegateLoadingOf(TestHelperInterface.class.getName());
+            delegateLoadingOf(RealObject.class.getName());
+            delegateLoadingOf(ShadowWrangler.class.getName());
+
+            Class<?> delegateClass = classLoader.bootstrap(this.getClass());
+            try {
+                Constructor constructorForDelegate = delegateClass.getConstructor(Class.class);
+                this.delegate = (RobolectricTestRunnerInterface) constructorForDelegate.newInstance(classLoader.bootstrap(testClass));
+                this.delegate.setProjectRoot(projectRoot);
+                this.delegate.setResourceDirectory(resourceDirectory);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
+    }
+
+    private static boolean isInstrumented() {
+        return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(RobolectricClassLoader.class.getName());
     }
 
     /**
@@ -188,6 +202,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         afterTest(method);
     }
 
+    @Override public void setProjectRoot(String projectRoot) {
+        this.projectRoot = projectRoot;
+    }
+
+    @Override public void setResourceDirectory(String resourceDirectory) {
+        this.resourceDirectory = resourceDirectory;
+    }
+
     /**
      * Called before each test method is run.
      *
@@ -205,6 +227,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     /**
+     * You probably don't want to override this method. Override #prepareTest(Object) instead.
      * {@see BlockJUnit4TestRunner#createTest()}
      */
     @Override
@@ -303,4 +326,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         }
     }
 
+    public static class FooTest {
+        @Test public void nothing() {
+        }
+    }
 }

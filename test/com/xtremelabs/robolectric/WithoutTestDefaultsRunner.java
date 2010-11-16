@@ -9,10 +9,6 @@ public class WithoutTestDefaultsRunner extends RobolectricTestRunner {
         super(testClass);
     }
 
-    public WithoutTestDefaultsRunner(Class<?> testClass, ClassHandler classHandler, String projectRoot, String resourceDirectory) throws InitializationError {
-        super(testClass, classHandler, projectRoot, resourceDirectory);
-    }
-
     @Override public void internalBeforeTest(Method method) {
         // Don't do any resource loading or shadow class binding, because that's what we're trying to test here.
     }
