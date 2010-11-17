@@ -9,7 +9,7 @@ public interface RobolectricTestRunnerInterface {
 
     void internalAfterTest(Method method);
 
-    void setProjectRoot(String projectRoot);
+    void setAndroidManifestPath(String projectRoot);
 
     void setResourceDirectory(String resourceDirectory);
 }
