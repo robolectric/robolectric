@@ -17,16 +17,16 @@
 <tr>
   <td class="link"><a href="downloads/robolectric.jar">robolectric.jar</a></td>
   <td class="version">SNAPSHOT</td>
-  <td class="size">199k</td>
-  <td class="date">2010/11/17 09:21:38 PST</td>
-  <td class="sha">834bb0aed7629cfd0ddd1aaf6b96d6e6e0f0e6b8</td>
+  <td class="size">201k</td>
+  <td class="date">2010/11/17 14:04:39 PST</td>
+  <td class="sha">6c151678a00db5ce4461a23e678d99bf97213ad1</td>
 </tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-all.jar">robolectric-all.jar</a></td>
   <td class="version">SNAPSHOT</td>
-  <td class="size">862k</td>
-  <td class="date">2010/11/17 09:21:38 PST</td>
-  <td class="sha">f8f5258639a05921e321dcc9a6a056d321d53726</td>
+  <td class="size">864k</td>
+  <td class="date">2010/11/17 14:04:39 PST</td>
+  <td class="sha">96ea3353722c8418bba348e698883eb0d4d15e2c</td>
 </tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-all-0.8.jar">robolectric-all-0.8.jar</a></td>
