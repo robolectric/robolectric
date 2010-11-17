@@ -12,6 +12,28 @@ public class ShadowAddress {
     private String postalCode;
     private String adminArea;
     private String countryCode;
+    private double longitude;
+    private double latitude;
+
+    @Implementation
+    public double getLatitude() {
+        return latitude;
+    }
+
+    @Implementation
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    @Implementation
+    public double getLongitude() {
+        return longitude;
+    }
+
+    @Implementation
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
 
     @Implementation
     public void setAddressLine(int index, String line) {
