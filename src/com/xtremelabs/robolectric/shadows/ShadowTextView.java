@@ -138,7 +138,7 @@ public class ShadowTextView extends ShadowView {
 
     @Override
     public String innerText() {
-        return (text == null || visibility != VISIBLE) ? "" : text.toString();
+        return (text == null || getVisibility() != VISIBLE) ? "" : text.toString();
     }
 
     @Override public boolean equals(Object o) {

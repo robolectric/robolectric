@@ -28,29 +28,29 @@ public class ShadowView {
     private int id;
     ShadowView parent;
     private Context context;
-    public boolean selected;
+    private boolean selected;
     private View.OnClickListener onClickListener;
     private Object tag;
     private boolean enabled = true;
-    public int visibility = View.VISIBLE;
-    public int left;
-    public int top;
-    public int right;
-    public int bottom;
-    public int paddingLeft;
-    public int paddingTop;
-    public int paddingRight;
-    public int paddingBottom;
-    public ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(0, 0);
+    private int visibility = View.VISIBLE;
+    int left;
+    int top;
+    int right;
+    int bottom;
+    private int paddingLeft;
+    private int paddingTop;
+    private int paddingRight;
+    private int paddingBottom;
+    private ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(0, 0);
     private Map<Integer, Object> tags = new HashMap<Integer, Object>();
-    public boolean clickable;
+    private boolean clickable;
     protected boolean focusable;
     boolean focusableInTouchMode;
-    public int backgroundResourceId = -1;
+    private int backgroundResourceId = -1;
     protected View.OnKeyListener onKeyListener;
-    public boolean isFocused;
+    private boolean isFocused;
     private View.OnFocusChangeListener onFocusChangeListener;
-    public boolean wasInvalidated;
+    private boolean wasInvalidated;
     private View.OnTouchListener onTouchListener;
 
     public void __constructor__(Context context) {
@@ -362,5 +362,73 @@ public class ShadowView {
 
     protected void dumpIndent(PrintStream out, int indent) {
         for (int i = 0; i < indent; i++) out.print(" ");
+    }
+
+    public int getLeft() {
+        return left;
+    }
+
+    public int getTop() {
+        return top;
+    }
+
+    public int getRight() {
+        return right;
+    }
+
+    public int getBottom() {
+        return bottom;
+    }
+
+    public boolean isClickable() {
+        return clickable;
+    }
+
+    public int getBackgroundResourceId() {
+        return backgroundResourceId;
+    }
+
+    public boolean wasInvalidated() {
+        return wasInvalidated;
+    }
+
+    public void clearWasInvalidated() {
+        wasInvalidated = false;
+    }
+
+    public void setLeft(int left) {
+        this.left = left;
+    }
+
+    public void setTop(int top) {
+        this.top = top;
+    }
+
+    public void setRight(int right) {
+        this.right = right;
+    }
+
+    public void setBottom(int bottom) {
+        this.bottom = bottom;
+    }
+
+    public void setPaddingLeft(int paddingLeft) {
+        this.paddingLeft = paddingLeft;
+    }
+
+    public void setPaddingTop(int paddingTop) {
+        this.paddingTop = paddingTop;
+    }
+
+    public void setPaddingRight(int paddingRight) {
+        this.paddingRight = paddingRight;
+    }
+
+    public void setPaddingBottom(int paddingBottom) {
+        this.paddingBottom = paddingBottom;
+    }
+
+    public void setFocused(boolean focused) {
+        isFocused = focused;
     }
 }

@@ -11,7 +11,7 @@ import java.util.List;
 @Implements(Path.class)
 public class ShadowPath {
     private List<Point> points = new ArrayList<Point>();
-    public Point wasMovedTo;
+    private Point wasMovedTo;
 
     @Implementation
     public void moveTo(float x, float y) {
@@ -27,6 +27,10 @@ public class ShadowPath {
 
     public List<Point> getPoints() {
         return points;
+    }
+
+    public Point getWasMovedTo() {
+        return wasMovedTo;
     }
 
     public static class Point {
