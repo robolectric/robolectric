@@ -8,8 +8,8 @@ import com.xtremelabs.robolectric.util.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MapController.class)
 public class ShadowMapController {
-    public ShadowMapView shadowMapView;
-    public GeoPoint geoPointAnimatedTo;
+    private ShadowMapView shadowMapView;
+    private GeoPoint geoPointAnimatedTo;
 
     @Implementation
     public void animateTo(com.google.android.maps.GeoPoint geoPoint) {
@@ -50,5 +50,17 @@ public class ShadowMapController {
     public int setZoom(int i) {
         shadowMapView.zoomLevel = i;
         return i;
+    }
+
+    public ShadowMapView getShadowMapView() {
+        return shadowMapView;
+    }
+
+    public GeoPoint getGeoPointAnimatedTo() {
+        return geoPointAnimatedTo;
+    }
+
+    void setShadowMapView(ShadowMapView shadowMapView) {
+        this.shadowMapView = shadowMapView;
     }
 }
