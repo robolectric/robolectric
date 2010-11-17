@@ -50,7 +50,7 @@ _more details to come..._
 
 If you find that you need to extend or modify Robolectric's simulation of Android or you'd like to contribute to the
 project, these instructions will help get you started. You can also track the progress of Robolectric as it evolves from
-it's [Tracker page](http://www.pivotaltracker.com/projects/105008)
+its [Tracker page](http://www.pivotaltracker.com/projects/105008)
 
 ### In Eclipse:
 
