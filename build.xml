@@ -97,11 +97,21 @@
         <delete dir="${target.dir}/staging"/>
     </target>
 
-    <target name="snapshot" description="release a version of robolectric as jars" depends="jar-all">
+    <target name="check-for-pages-dir-setup">
+        <condition property="pages.dir.exists">
+            <available file="pages" type="dir"/>
+        </condition>
+    </target>
+
+    <target name="check-for-pages-dir" depends="check-for-pages-dir-setup" unless="pages.dir.exists">
+        <echo message="do you need a 'pages' symlink?"/>
+    </target>
+
+    <target name="snapshot" description="update most recent version of robolectric as jars" depends="clean, test, jar-all, check-for-pages-dir" if="pages.dir.exists">
         <copy todir="pages/downloads">
             <fileset dir="${target.dir}" includes="robolectric*.jar"/>
         </copy>
-        <exec command="./update-downloads.rb"/>
+        <exec executable="./update-downloads.rb"/>
     </target>
 
     <target name="compile.tests" depends="compile"

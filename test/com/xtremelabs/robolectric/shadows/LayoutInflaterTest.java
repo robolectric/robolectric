@@ -3,9 +3,9 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Application;
 import android.content.ContextWrapper;
 import android.view.LayoutInflater;
-import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +16,7 @@ import java.io.File;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;
 
-@RunWith(DogfoodRobolectricTestRunner.class)
+@RunWith(WithTestDefaultsRunner.class)
 public class LayoutInflaterTest {
     private LayoutInflater layoutInflater;
 

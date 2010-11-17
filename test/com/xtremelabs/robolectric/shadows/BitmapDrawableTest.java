@@ -3,9 +3,9 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Application;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import com.xtremelabs.robolectric.DogfoodRobolectricTestRunner;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import static android.test.MoreAsserts.assertNotEqual;
 import static org.junit.Assert.assertEquals;
 
-@RunWith(DogfoodRobolectricTestRunner.class)
+@RunWith(WithTestDefaultsRunner.class)
 public class BitmapDrawableTest {
     private Resources resources;
 

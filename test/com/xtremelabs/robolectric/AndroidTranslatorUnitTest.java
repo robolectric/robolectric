@@ -21,7 +21,7 @@ public class AndroidTranslatorUnitTest {
         CtClass ctClass = classPool.get("java.lang.String");
         String methodBody = androidTranslator.generateMethodBody(
                 ctClass, ctClass.getDeclaredMethod("substring", new CtClass[]{CtClass.intType}),
-                ctClass, Type.OBJECT, false);
+                ctClass, Type.OBJECT, false, false);
         assertEquals("if (!com.xtremelabs.robolectric.RobolectricInternals.shouldCallDirectly(this)) {\n" +
                 "Object x = com.xtremelabs.robolectric.RobolectricInternals.methodInvoked(\n" +
                 "  java.lang.String.class, \"substring\", this, new String[] {\"int\"}, new Object[] {com.xtremelabs.robolectric.RobolectricInternals.autobox($1)});\n" +
@@ -35,7 +35,7 @@ public class AndroidTranslatorUnitTest {
         CtClass ctClass = classPool.get("java.lang.String");
         String methodBody = androidTranslator.generateMethodBody(
                 ctClass, ctClass.getDeclaredMethod("length"),
-                ctClass, Type.OBJECT, false);
+                ctClass, Type.OBJECT, false, false);
         assertEquals("if (!com.xtremelabs.robolectric.RobolectricInternals.shouldCallDirectly(this)) {\n" +
                 "Object x = com.xtremelabs.robolectric.RobolectricInternals.methodInvoked(\n" +
                 "  java.lang.String.class, \"length\", this, new String[0], new Object[0]);\n" +
@@ -49,7 +49,7 @@ public class AndroidTranslatorUnitTest {
         CtClass ctClass = classPool.get("java.lang.Object");
         String methodBody = androidTranslator.generateMethodBody(
                 ctClass, ctClass.getDeclaredMethod("wait"),
-                ctClass, Type.VOID, false);
+                ctClass, Type.VOID, false, false);
         assertEquals("if (!com.xtremelabs.robolectric.RobolectricInternals.shouldCallDirectly(this)) {\n" +
                 "com.xtremelabs.robolectric.RobolectricInternals.methodInvoked(\n" +
                 "  java.lang.Object.class, \"wait\", this, new String[] {\"long\"}, new Object[] {com.xtremelabs.robolectric.RobolectricInternals.autobox($1)});\n" +
@@ -62,12 +62,32 @@ public class AndroidTranslatorUnitTest {
         CtClass ctClass = classPool.get("java.lang.String");
         String methodBody = androidTranslator.generateMethodBody(
                 ctClass, ctClass.getDeclaredMethod("valueOf", new CtClass[]{CtClass.intType}),
-                ctClass, Type.OBJECT, true);
+                ctClass, Type.OBJECT, true, false);
         assertEquals("if (!com.xtremelabs.robolectric.RobolectricInternals.shouldCallDirectly(java.lang.String.class)) {\n" +
                 "Object x = com.xtremelabs.robolectric.RobolectricInternals.methodInvoked(\n" +
                 "  java.lang.String.class, \"valueOf\", null, new String[] {\"int\"}, new Object[] {com.xtremelabs.robolectric.RobolectricInternals.autobox($1)});\n" +
                 "if (x != null) return ((java.lang.String) x);\n" +
                 "return null;\n" +
                 "}\n", methodBody);
+    }
+
+    @Test
+    public void shouldGenerateParameterList() throws Exception {
+        assertEquals(androidTranslator.makeParameterReplacementList(0), "");
+        assertEquals(androidTranslator.makeParameterReplacementList(1), "$1");
+        assertEquals(androidTranslator.makeParameterReplacementList(2), "$1, $2");        
+    }
+
+    @Test
+    public void shouldGenerateMethodBodyForEquals() throws Exception {
+        CtClass ctClass = classPool.get("java.lang.Object");
+        String methodBody = androidTranslator.generateMethodBody(
+                ctClass, ctClass.getDeclaredMethod("equals", new CtClass[]{ctClass}),
+                ctClass, Type.BOOLEAN, false, true);
+        assertEquals("if (!com.xtremelabs.robolectric.RobolectricInternals.shouldCallDirectly(this)) {\n" +
+                "Object x = com.xtremelabs.robolectric.RobolectricInternals.methodInvoked(\n" +
+                "  java.lang.Object.class, \"equals\", this, new String[] {\"java.lang.Object\"}, new Object[] {com.xtremelabs.robolectric.RobolectricInternals.autobox($1)});\n" +
+                "if (x != null) return ((java.lang.Boolean) x).booleanValue();\n" +
+                "return super.equals($1);}\n", methodBody);
     }
 }

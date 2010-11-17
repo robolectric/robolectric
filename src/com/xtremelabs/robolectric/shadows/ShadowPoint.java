@@ -5,6 +5,8 @@ import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
+
 @Implements(Point.class)
 public class ShadowPoint {
     @RealObject private Point realPoint;
@@ -41,11 +43,16 @@ public class ShadowPoint {
         return realPoint.x == x && realPoint.y == y;
     }
 
-    @Override public boolean equals(Object o) {
-        if (o instanceof Point) {
-            Point p = (Point) o;
-            return realPoint.x == p.x && realPoint.y == p.y;
-        }
+    @Override public boolean equals(Object object) {
+        if (object == null) return false;
+        Object o = shadowOf_(object);
+        if (o == null) return false;
+        if (this == o) return true;
+        if (getClass() != o.getClass()) return false;
+
+        ShadowPoint that = (ShadowPoint) o;
+        if (this.realPoint.x == that.realPoint.x && this.realPoint.y == that.realPoint.y) return true;
+        
         return false;
     }
 

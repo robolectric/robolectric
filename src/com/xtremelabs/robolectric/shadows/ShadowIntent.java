@@ -28,6 +28,7 @@ public class ShadowIntent {
     private ComponentName componentName;
     private Uri data;
     private int flags;
+    private Class<?> intentClass;
 
     public void __constructor__(Context packageContext, Class cls) {
         componentName = new ComponentName(packageContext, cls);
@@ -56,6 +57,12 @@ public class ShadowIntent {
     @Implementation
     public Uri getData() {
         return data;
+    }
+
+    @Implementation
+    public Intent setClass(Context packageContext, Class<?> cls) {
+        this.intentClass = cls;
+        return realIntent;
     }
 
     @Implementation
@@ -207,9 +214,13 @@ public class ShadowIntent {
                 '}';
     }
 
+    public Class<?> getIntentClass() {
+        return intentClass;
+    }
+
     private String ifWeHave(Object o, String name) {
         if (o == null) return null;
-        if (o instanceof Map && ((Map)o).isEmpty()) return null;
+        if (o instanceof Map && ((Map) o).isEmpty()) return null;
         return name + "=" + o;
     }
 }

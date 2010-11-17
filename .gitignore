@@ -3,5 +3,7 @@ out/
 .idea/workspace.xml
 tmp/
 target/
+pages
+.DS_Store
 *~
 \#*\#

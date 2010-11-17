@@ -4,6 +4,8 @@ import android.location.Location;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Location.class)
 public class ShadowLocation {
@@ -54,8 +56,11 @@ public class ShadowLocation {
 
     @Override
     public boolean equals(Object o) {
+        if (o == null) return false;
+        o = shadowOf_(o);
+        if (o == null) return false;
+        if (getClass() != o.getClass()) return false;
         if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
 
         ShadowLocation that = (ShadowLocation) o;
 
