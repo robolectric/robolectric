@@ -43,11 +43,11 @@ public class ShadowApplication extends ShadowContextWrapper {
     private WindowManager windowManager;
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
-    public List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
+    private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
-    public LayoutInflater layoutInflater;
-    public AppWidgetManager appWidgetManager;
+    LayoutInflater layoutInflater;
+    AppWidgetManager appWidgetManager;
 
     @Override @Implementation
     public Context getApplicationContext() {
@@ -172,6 +172,18 @@ public class ShadowApplication extends ShadowContextWrapper {
                 throw e;
             }
         }
+    }
+
+    public List<Wrapper> getRegisteredReceivers() {
+        return registeredReceivers;
+    }
+
+    public LayoutInflater getLayoutInflater() {
+        return layoutInflater;
+    }
+
+    public AppWidgetManager getAppWidgetManager() {
+        return appWidgetManager;
     }
 
     private class Wrapper {

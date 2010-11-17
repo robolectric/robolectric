@@ -11,9 +11,9 @@ import java.io.InputStream;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)
 public class ShadowDrawable {
-    public Rect bounds = new Rect(0, 0, 0, 0);
-    public int intrinsicWidth = -1;
-    public int intrinsicHeight = -1;
+    private Rect bounds = new Rect(0, 0, 0, 0);
+    private int intrinsicWidth = -1;
+    private int intrinsicHeight = -1;
 
     @Implementation
     public static Drawable createFromStream(InputStream is, String srcName) {
@@ -23,6 +23,10 @@ public class ShadowDrawable {
     @Implementation
     public final Rect getBounds() {
         return bounds;
+    }
+
+    public void setBounds(Rect rect) {
+        this.bounds = rect;
     }
 
     @Implementation
@@ -38,5 +42,13 @@ public class ShadowDrawable {
     @Implementation
     public int getIntrinsicHeight() {
         return intrinsicHeight;
+    }
+
+    public void setIntrinsicWidth(int intrinsicWidth) {
+        this.intrinsicWidth = intrinsicWidth;
+    }
+
+    public void setIntrinsicHeight(int intrinsicHeight) {
+        this.intrinsicHeight = intrinsicHeight;
     }
 }

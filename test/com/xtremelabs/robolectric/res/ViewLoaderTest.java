@@ -161,7 +161,7 @@ public class ViewLoaderTest {
     @Test
     public void testImageViewSrcIsSet() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/main");
-        assertThat(((ShadowImageView) shadowOf(mediaView.findViewById(R.id.image))).resourceId, equalTo(R.drawable.an_image));
+        assertThat(((ShadowImageView) shadowOf(mediaView.findViewById(R.id.image))).getResourceId(), equalTo(R.drawable.an_image));
     }
 
     @Test

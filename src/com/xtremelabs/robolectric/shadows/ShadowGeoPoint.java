@@ -10,8 +10,8 @@ import static com.xtremelabs.robolectric.shadows.ShadowMapView.fromE6;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(GeoPoint.class)
 public class ShadowGeoPoint {
-    public int lat;
-    public int lng;
+    private int lat;
+    private int lng;
 
     public void __constructor__(int lat, int lng) {
         this.lat = lat;
@@ -56,5 +56,13 @@ public class ShadowGeoPoint {
                 "lat=" + fromE6(lat) +
                 ", lng=" + fromE6(lng) +
                 '}';
+    }
+
+    public int getLat() {
+        return lat;
+    }
+
+    public int getLng() {
+        return lng;
     }
 }

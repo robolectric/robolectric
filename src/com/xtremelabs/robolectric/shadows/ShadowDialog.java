@@ -17,24 +17,28 @@ import java.lang.reflect.Method;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Dialog.class)
 public class ShadowDialog {
-    public static ShadowDialog latestDialog;
+    private static ShadowDialog latestDialog;
 
     @RealObject private Dialog realDialog;
 
     private boolean isShowing;
-    public Context context;
-    public int layoutId;
-    public int themeId;
+    Context context;
+    private int layoutId;
+    private int themeId;
     private View inflatedView;
-    public boolean hasBeenDismissed;
+    private boolean hasBeenDismissed;
     private DialogInterface.OnDismissListener onDismissListener;
-    public CharSequence title;
+    private CharSequence title;
     private DialogInterface.OnCancelListener onCancelListener;
     private Window window;
     private Activity ownerActivity;
 
     public static void reset() {
         latestDialog = null;
+    }
+
+    public static ShadowDialog getLatestDialog() {
+        return latestDialog;
     }
 
     public void __constructor__(Context context) {
@@ -149,5 +153,21 @@ public class ShadowDialog {
             window = new TestWindow(realDialog.getContext());
         }
         return window;
+    }
+
+    public int getLayoutId() {
+        return layoutId;
+    }
+
+    public int getThemeId() {
+        return themeId;
+    }
+
+    public boolean hasBeenDismissed() {
+        return hasBeenDismissed;
+    }
+
+    public CharSequence getTitle() {
+        return title;
     }
 }

@@ -14,8 +14,8 @@ import java.util.List;
 public class ShadowCanvas {
     private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<PathPaintHistoryEvent>();
     private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<CirclePaintHistoryEvent>();
-    public Paint drawnPaint;
-    public boolean drewSomethingAfterCircle;
+    private Paint drawnPaint;
+    private boolean drewSomethingAfterCircle;
 
     @Implementation
     public void drawPaint(Paint paint) {
@@ -67,6 +67,14 @@ public class ShadowCanvas {
     public void resetCanvasHistory() {
         pathPaintEvents.clear();
         circlePaintEvents.clear();
+    }
+
+    public Paint getDrawnPaint() {
+        return drawnPaint;
+    }
+
+    public boolean isDrewSomethingAfterCircle() {
+        return drewSomethingAfterCircle;
     }
 
     private static class PathPaintHistoryEvent {

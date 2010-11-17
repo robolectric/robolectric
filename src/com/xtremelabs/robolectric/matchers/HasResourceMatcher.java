@@ -22,7 +22,7 @@ public class HasResourceMatcher extends TypeSafeMatcher<ImageView> {
             return false;
         }
 
-        actualResourceId = shadowOf(actual).resourceId;
+        actualResourceId = shadowOf(actual).getResourceId();
 
         return actualResourceId == expectedResourceId;
     }

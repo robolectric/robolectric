@@ -10,12 +10,16 @@ import com.xtremelabs.robolectric.util.RealObject;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapDrawable.class)
 public class ShadowBitmapDrawable extends ShadowDrawable {
-    public int loadedFromResourceId;
+    int loadedFromResourceId;
 
     @RealObject private BitmapDrawable realBitmapDrawable;
 
     @Implementation
     public void draw(Canvas canvas) {
         canvas.drawBitmap(realBitmapDrawable.getBitmap(), 0, 0, new Paint());
+    }
+
+    public int getLoadedFromResourceId() {
+        return loadedFromResourceId;
     }
 }

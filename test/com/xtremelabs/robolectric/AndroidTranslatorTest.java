@@ -45,7 +45,7 @@ public class AndroidTranslatorTest {
         ItemizedOverlayForTests overlay = new ItemizedOverlayForTests(null);
         overlay.triggerProtectedCall();
 
-        assertThat(shadowOf(overlay).populated, is(true));
+        assertThat(shadowOf(overlay).isPopulated(), is(true));
     }
 
     @Test

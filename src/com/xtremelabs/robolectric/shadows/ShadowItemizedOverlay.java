@@ -9,13 +9,13 @@ import com.xtremelabs.robolectric.util.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ItemizedOverlay.class)
 public class ShadowItemizedOverlay {
-    public boolean populated;
-    public boolean shouldHit;
-    public boolean lastFocusedIndexWasReset;
+    private boolean isPopulated;
+    private boolean shouldHit;
+    private boolean lastFocusedIndexWasReset;
     
     @Implementation
     public final void populate() {
-        populated = true;
+        isPopulated = true;
     }
 
     @Implementation
@@ -31,5 +31,25 @@ public class ShadowItemizedOverlay {
     @Implementation
     public static Drawable boundCenterBottom(Drawable drawable) {
         return drawable;
+    }
+
+    public boolean isPopulated() {
+        return isPopulated;
+    }
+
+    public void setIsPopulated(boolean isPopulated) {
+        this.isPopulated = isPopulated;
+    }
+
+    public boolean shouldHit() {
+        return shouldHit;
+    }
+
+    public void setShouldHit(boolean shouldHit) {
+        this.shouldHit = shouldHit;
+    }
+
+    public boolean lastFocusedIndexWasReset() {
+        return lastFocusedIndexWasReset;
     }
 }
