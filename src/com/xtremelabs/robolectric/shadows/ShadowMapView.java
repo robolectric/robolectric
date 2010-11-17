@@ -18,22 +18,22 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(MapView.class)
 public class ShadowMapView extends ShadowViewGroup {
     private boolean satelliteOn;
-    public MapController mapController;
+    private MapController mapController;
     private List<Overlay> overlays = new ArrayList<Overlay>();
-    public GeoPoint mapCenter = new GeoPoint(10, 10);
-    public int longitudeSpan = 20;
-    public int latitudeSpan = 30;
+    GeoPoint mapCenter = new GeoPoint(10, 10);
+    int longitudeSpan = 20;
+    int latitudeSpan = 30;
     int zoomLevel = 1;
-    ShadowMapController shadowMapController;
+    private ShadowMapController shadowMapController;
     private ZoomButtonsController zoomButtonsController;
     private MapView realMapView;
     private Projection projection;
-    public boolean useBuiltInZoomMapControls;
+    private boolean useBuiltInZoomMapControls;
     private boolean mouseDownOnMe = false;
     private Point lastTouchEventPoint;
     private GeoPoint mouseDownCenter;
-    public boolean preLoadWasCalled;
-    public boolean canCoverCenter = true;
+    private boolean preLoadWasCalled;
+    private boolean canCoverCenter = true;
 
     public ShadowMapView(MapView mapView) {
         realMapView = mapView;
@@ -212,5 +212,37 @@ public class ShadowMapView extends ShadowViewGroup {
         Point center = getProjection().toPixels(mapCenter, null);
         center.offset(x, y);
         mapCenter = getProjection().fromPixels(center.x, center.y);
+    }
+
+    public MapController getMapController() {
+        return mapController;
+    }
+
+    public ShadowMapController getShadowMapController() {
+        return shadowMapController;
+    }
+
+    public boolean getUseBuiltInZoomMapControls() {
+        return useBuiltInZoomMapControls;
+    }
+
+    public boolean isPreLoadWasCalled() {
+        return preLoadWasCalled;
+    }
+
+    public boolean isCanCoverCenter() {
+        return canCoverCenter;
+    }
+
+    public void setLatitudeSpan(int latitudeSpan) {
+        this.latitudeSpan = latitudeSpan;
+    }
+
+    public void setLongitudeSpan(int longitudeSpan) {
+        this.longitudeSpan = longitudeSpan;
+    }
+
+    public void setCanCoverCenter(boolean canCoverCenter) {
+        this.canCoverCenter = canCoverCenter;
     }
 }

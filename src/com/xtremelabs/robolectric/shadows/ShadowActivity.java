@@ -20,11 +20,11 @@ public class ShadowActivity extends ShadowContextWrapper {
     @RealObject private Activity realActivity;
 
     private Intent intent;
-    public View contentView;
+    View contentView;
 
-    public int resultCode;
-    public Intent resultIntent;
-    public Activity parent;
+    private int resultCode;
+    private Intent resultIntent;
+    private Activity parent;
     private boolean finishWasCalled;
     private TestWindow window;
 
@@ -113,5 +113,17 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     public void assertNoBroadcastListenersRegistered() {
         ((ShadowApplication) shadowOf(getApplicationContext())).assertNoBroadcastListenersRegistered(realActivity, "Activity");
+    }
+
+    public View getContentView() {
+        return contentView;
+    }
+
+    public int getResultCode() {
+        return resultCode;
+    }
+
+    public Intent getResultIntent() {
+        return resultIntent;
     }
 }

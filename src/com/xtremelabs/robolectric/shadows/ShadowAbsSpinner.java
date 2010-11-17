@@ -15,6 +15,6 @@ public class ShadowAbsSpinner extends ShadowAdapterView {
 
     @Override @Implementation
     public SpinnerAdapter getAdapter() {
-        return (SpinnerAdapter) adapter;
+        return (SpinnerAdapter) super.getAdapter();
     }
 }
