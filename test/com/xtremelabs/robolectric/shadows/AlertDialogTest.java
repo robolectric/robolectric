@@ -34,8 +34,8 @@ public class AlertDialogTest {
         assertThat(alert.isShowing(), equalTo(true));
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-        assertThat(shadowAlertDialog.title, equalTo("title"));
-        assertThat(shadowAlertDialog.message, equalTo("message"));
-        assertThat(ShadowAlertDialog.latestAlertDialog, sameInstance(shadowAlertDialog));
+        assertThat(shadowAlertDialog.getTitle(), equalTo("title"));
+        assertThat(shadowAlertDialog.getMessage(), equalTo("message"));
+        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
     }
 }

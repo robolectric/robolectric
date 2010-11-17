@@ -52,6 +52,6 @@ public class BitmapDrawableTest {
     @Test
     public void shouldStillHaveShadow() throws Exception {
         Drawable drawable = resources.getDrawable(R.drawable.an_image);
-        assertEquals(R.drawable.an_image, ((ShadowBitmapDrawable) Robolectric.shadowOf(drawable)).loadedFromResourceId);
+        assertEquals(R.drawable.an_image, ((ShadowBitmapDrawable) Robolectric.shadowOf(drawable)).getLoadedFromResourceId());
     }
 }

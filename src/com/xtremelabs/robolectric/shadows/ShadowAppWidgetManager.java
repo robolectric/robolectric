@@ -46,7 +46,7 @@ public class ShadowAppWidgetManager {
     private Context context;
     private Map<Integer, WidgetInfo> widgetInfos = new HashMap<Integer, WidgetInfo>();
     private int nextWidgetId = 1;
-    public boolean alwaysRecreateViewsDuringUpdate = false;
+    private boolean alwaysRecreateViewsDuringUpdate = false;
 
     @Implementation
     public static AppWidgetManager getInstance(Context context) {
@@ -118,6 +118,10 @@ public class ShadowAppWidgetManager {
 
     private WidgetInfo getWidgetInfo(int widgetId) {
         return widgetInfos.get(widgetId);
+    }
+
+    public boolean getAlwaysRecreateViewsDuringUpdate() {
+        return alwaysRecreateViewsDuringUpdate;
     }
 
     private class WidgetInfo {

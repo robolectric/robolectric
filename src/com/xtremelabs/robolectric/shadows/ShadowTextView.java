@@ -18,10 +18,10 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 @Implements(TextView.class)
 public class ShadowTextView extends ShadowView {
     private CharSequence text = "";
-    public CompoundDrawables compoundDrawables;
-    public int textColorHexValue = UNINITIALIZED_ATTRIBUTE;
-    public int textSize = UNINITIALIZED_ATTRIBUTE;
-    public boolean autoLinkPhoneNumbers;
+    private CompoundDrawables compoundDrawablesImpl;
+    private int textColorHexValue = UNINITIALIZED_ATTRIBUTE;
+    private int textSize = UNINITIALIZED_ATTRIBUTE;
+    private boolean autoLinkPhoneNumbers;
     private int autoLinkMask;
     private CharSequence hintText;
     private int compoundDrawablePadding;
@@ -90,30 +90,30 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
-        compoundDrawables = new CompoundDrawables(left, top , right, bottom);
+        compoundDrawablesImpl = new CompoundDrawables(left, top , right, bottom);
     }
 
     @Implementation
     public void setCompoundDrawablesWithIntrinsicBounds(Drawable left, Drawable top,
                                                         Drawable right, Drawable bottom) {
-        compoundDrawables = new CompoundDrawables(left, top , right, bottom);
+        compoundDrawablesImpl = new CompoundDrawables(left, top , right, bottom);
     }
 
     @Implementation
     public void setCompoundDrawables(Drawable left, Drawable top, Drawable right, Drawable bottom) {
-        compoundDrawables = new CompoundDrawables(left, top , right, bottom);
+        compoundDrawablesImpl = new CompoundDrawables(left, top , right, bottom);
     }
 
     @Implementation
     public Drawable[] getCompoundDrawables() {
-        if (compoundDrawables == null) {
+        if (compoundDrawablesImpl == null) {
             return new Drawable[]{null, null, null, null};
         }
         return new Drawable[]{
-                compoundDrawables.leftDrawable,
-                compoundDrawables.topDrawable,
-                compoundDrawables.rightDrawable,
-                compoundDrawables.bottomDrawable
+                compoundDrawablesImpl.leftDrawable,
+                compoundDrawablesImpl.topDrawable,
+                compoundDrawablesImpl.rightDrawable,
+                compoundDrawablesImpl.bottomDrawable
         };
     }
 
@@ -138,7 +138,7 @@ public class ShadowTextView extends ShadowView {
 
     @Override
     public String innerText() {
-        return (text == null || visibility != VISIBLE) ? "" : text.toString();
+        return (text == null || getVisibility() != VISIBLE) ? "" : text.toString();
     }
 
     @Override public boolean equals(Object o) {
@@ -148,6 +148,26 @@ public class ShadowTextView extends ShadowView {
     @Override
     public int hashCode() {
         return super.hashCode();
+    }
+
+    public CompoundDrawables getCompoundDrawablesImpl() {
+        return compoundDrawablesImpl;
+    }
+
+    void setCompoundDrawablesImpl(CompoundDrawables compoundDrawablesImpl) {
+        this.compoundDrawablesImpl = compoundDrawablesImpl;
+    }
+
+    public int getTextColorHexValue() {
+        return textColorHexValue;
+    }
+
+    public int getTextSize() {
+        return textSize;
+    }
+
+    public boolean isAutoLinkPhoneNumbers() {
+        return autoLinkPhoneNumbers;
     }
 
     public static class CompoundDrawables {

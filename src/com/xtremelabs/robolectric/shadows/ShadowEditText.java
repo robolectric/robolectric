@@ -13,7 +13,7 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(EditText.class)
 public class ShadowEditText extends ShadowTextView {
-    public List<TextWatcher> watchers = new ArrayList<TextWatcher>();
+    private List<TextWatcher> watchers = new ArrayList<TextWatcher>();
 
     public ShadowEditText() {
         focusable = true;
@@ -51,5 +51,9 @@ public class ShadowEditText extends ShadowTextView {
     @Implementation
     public void addTextChangedListener(TextWatcher watcher) {
         this.watchers.add(watcher);
+    }
+
+    public List<TextWatcher> getWatchers() {
+        return watchers;
     }
 }

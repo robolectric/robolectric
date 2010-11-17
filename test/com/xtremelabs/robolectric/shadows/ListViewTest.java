@@ -74,8 +74,8 @@ public class ListViewTest {
         View view1 = new View(null);
         listView.addHeaderView(view0);
         listView.addHeaderView(view1);
-        assertThat(shadowOf(listView).headerViews.get(0), sameInstance(view0));
-        assertThat(shadowOf(listView).headerViews.get(1), sameInstance(view1));
+        assertThat(shadowOf(listView).getHeaderViews().get(0), sameInstance(view0));
+        assertThat(shadowOf(listView).getHeaderViews().get(1), sameInstance(view1));
     }
 
     @Test
@@ -96,8 +96,8 @@ public class ListViewTest {
         View view1 = new View(null);
         listView.addFooterView(view0);
         listView.addFooterView(view1);
-        assertThat(shadowOf(listView).footerViews.get(0), sameInstance(view0));
-        assertThat(shadowOf(listView).footerViews.get(1), sameInstance(view1));
+        assertThat(shadowOf(listView).getFooterViews().get(0), sameInstance(view0));
+        assertThat(shadowOf(listView).getFooterViews().get(1), sameInstance(view1));
     }
 
     @Test

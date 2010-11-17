@@ -24,7 +24,7 @@ public class HasCompoundDrawablesMatcher extends TypeSafeMatcher<TextView> {
             return false;
         }
 
-        ShadowTextView.CompoundDrawables actualCompoundDrawables = shadowOf(actual).compoundDrawables;
+        ShadowTextView.CompoundDrawables actualCompoundDrawables = shadowOf(actual).getCompoundDrawablesImpl();
         if (!expectedCompoundDrawables.equals(actualCompoundDrawables)) {
             message = "[" + actualCompoundDrawables + "] to equal [" + expectedCompoundDrawables + "]";
             return false;

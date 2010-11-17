@@ -9,16 +9,16 @@ import com.xtremelabs.robolectric.util.Implements;
 @Implements(Paint.class)
 public class ShadowPaint {
 
-    public int color;
-    public Paint.Style style;
-    public Paint.Cap cap;
-    public Paint.Join join;
-    public float width;
-    public float shadowRadius;
-    public float shadowDx;
-    public float shadowDy;
-    public int shadowColor;
-    public Shader shader;
+    private int color;
+    private Paint.Style style;
+    private Paint.Cap cap;
+    private Paint.Join join;
+    private float width;
+    private float shadowRadius;
+    private float shadowDx;
+    private float shadowDy;
+    private int shadowColor;
+    private Shader shader;
     private int alpha;
 
     @Implementation
@@ -115,5 +115,17 @@ public class ShadowPaint {
 
     public int getShadowColor() {
         return shadowColor;
+    }
+
+    public Paint.Cap getCap() {
+        return cap;
+    }
+
+    public Paint.Join getJoin() {
+        return join;
+    }
+
+    public float getWidth() {
+        return width;
     }
 }

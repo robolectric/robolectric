@@ -18,9 +18,9 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowListView extends ShadowAdapterView {
     @RealObject private ListView realListView;
 
-    public boolean itemsCanFocus;
-    public List<View> headerViews = new ArrayList<View>();
-    public List<View> footerViews = new ArrayList<View>();
+    private boolean itemsCanFocus;
+    private List<View> headerViews = new ArrayList<View>();
+    private List<View> footerViews = new ArrayList<View>();
 
     @Implementation
     public void setItemsCanFocus(boolean itemsCanFocus) {
@@ -96,5 +96,25 @@ public class ShadowListView extends ShadowAdapterView {
         if (adapter != null) {
             throw new IllegalStateException("Cannot add " + view + " view to list -- setAdapter has already been called");
         }
+    }
+
+    public boolean isItemsCanFocus() {
+        return itemsCanFocus;
+    }
+
+    public List<View> getHeaderViews() {
+        return headerViews;
+    }
+
+    public void setHeaderViews(List<View> headerViews) {
+        this.headerViews = headerViews;
+    }
+
+    public List<View> getFooterViews() {
+        return footerViews;
+    }
+
+    public void setFooterViews(List<View> footerViews) {
+        this.footerViews = footerViews;
     }
 }

@@ -9,9 +9,9 @@ import com.xtremelabs.robolectric.util.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ImageView.class)
 public class ShadowImageView extends ShadowView {
-    public Drawable imageDrawable;
-    public int alpha;
-    public int resourceId;
+    private Drawable imageDrawable;
+    private int alpha;
+    private int resourceId;
     private Bitmap imageBitmap;
     private ImageView.ScaleType scaleType;
 
@@ -46,5 +46,17 @@ public class ShadowImageView extends ShadowView {
     @Implementation
     public void setScaleType(ImageView.ScaleType scaleType) {
         this.scaleType = scaleType;
+    }
+
+    public Drawable getImageDrawable() {
+        return imageDrawable;
+    }
+
+    public int getAlpha() {
+        return alpha;
+    }
+
+    public int getResourceId() {
+        return resourceId;
     }
 }

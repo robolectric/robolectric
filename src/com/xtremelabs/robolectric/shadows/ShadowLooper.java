@@ -13,6 +13,9 @@ public class ShadowLooper {
     private static ThreadLocal<Looper> sThreadLocal;
     private static Looper MAIN_LOOPER;
 
+    private Scheduler scheduler = new Scheduler();
+
+
     static {
         resetAll();
     }
@@ -38,8 +41,6 @@ public class ShadowLooper {
         return sThreadLocal.get();
     }
 
-    public Scheduler scheduler = new Scheduler();
-
     public void idle() {
         scheduler.tick(0);
     }
@@ -50,5 +51,9 @@ public class ShadowLooper {
 
     public void reset() {
         scheduler.reset();
+    }
+
+    public Scheduler getScheduler() {
+        return scheduler;
     }
 }

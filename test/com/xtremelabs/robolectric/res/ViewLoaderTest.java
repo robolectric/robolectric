@@ -144,10 +144,10 @@ public class ViewLoaderTest {
         View mediaView = viewLoader.inflateView(context, "layout/main");
         ShadowTextView shadowTextView = shadowOf((TextView) mediaView.findViewById(R.id.title));
 
-        assertThat(shadowTextView.compoundDrawables.top, equalTo(R.drawable.an_image));
-        assertThat(shadowTextView.compoundDrawables.right, equalTo(R.drawable.an_other_image));
-        assertThat(shadowTextView.compoundDrawables.bottom, equalTo(R.drawable.third_image));
-        assertThat(shadowTextView.compoundDrawables.left, equalTo(R.drawable.fourth_image));
+        assertThat(shadowTextView.getCompoundDrawablesImpl().top, equalTo(R.drawable.an_image));
+        assertThat(shadowTextView.getCompoundDrawablesImpl().right, equalTo(R.drawable.an_other_image));
+        assertThat(shadowTextView.getCompoundDrawablesImpl().bottom, equalTo(R.drawable.third_image));
+        assertThat(shadowTextView.getCompoundDrawablesImpl().left, equalTo(R.drawable.fourth_image));
     }
 
     @Test
@@ -161,7 +161,7 @@ public class ViewLoaderTest {
     @Test
     public void testImageViewSrcIsSet() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/main");
-        assertThat(((ShadowImageView) shadowOf(mediaView.findViewById(R.id.image))).resourceId, equalTo(R.drawable.an_image));
+        assertThat(((ShadowImageView) shadowOf(mediaView.findViewById(R.id.image))).getResourceId(), equalTo(R.drawable.an_image));
     }
 
     @Test

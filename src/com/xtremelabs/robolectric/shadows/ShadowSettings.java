@@ -55,4 +55,8 @@ public class ShadowSettings {
     public static void setWifiOn(boolean isOn) {
         Settings.Secure.putInt(Robolectric.application.getContentResolver(), Settings.Secure.WIFI_ON, isOn ? 1 : 0);
     }
+
+    public static void set24HourTimeFormat(boolean use24HourTimeFormat) {
+        Settings.System.putInt(Robolectric.application.getContentResolver(), Settings.System.TIME_12_24, use24HourTimeFormat ? 24 : 12);
+    }
 }

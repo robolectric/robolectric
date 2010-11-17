@@ -16,22 +16,26 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
 public class ShadowAlertDialog extends ShadowDialog {
-    public static ShadowAlertDialog latestAlertDialog;
+    private static ShadowAlertDialog latestAlertDialog;
 
-    public CharSequence[] items;
-    public String title;
-    public String message;
+    private CharSequence[] items;
+    private String title;
+    private String message;
     private DialogInterface.OnClickListener clickListener;
     private AlertDialog realDialog;
     private boolean isMultiItem;
     private boolean isSingleItem;
     private DialogInterface.OnMultiChoiceClickListener multiChoiceClickListener;
-    public boolean[] checkedItems;
+    private boolean[] checkedItems;
     private int checkedItemIndex;
     private Button positiveButton;
     private Button negativeButton;
     private Button neutralButton;
     private boolean isCancelable;
+
+    public static ShadowAlertDialog getLatestAlertDialog() {
+        return latestAlertDialog;
+    }
 
     @Override @Implementation
     public View findViewById(int viewId) {
@@ -65,6 +69,22 @@ public class ShadowAlertDialog extends ShadowDialog {
                 return neutralButton;
         }
         throw new RuntimeException("huh?");
+    }
+
+    public CharSequence[] getItems() {
+        return items;
+    }
+
+    public String getTitle() {
+        return title;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public boolean[] getCheckedItems() {
+        return checkedItems;
     }
 
     @Implements(AlertDialog.Builder.class)

@@ -52,7 +52,7 @@ public class ShadowLayoutInflater {
         }
 
         @Override protected LayoutInflater get(ShadowApplication shadowApplication) {
-            return shadowApplication.layoutInflater;
+            return shadowApplication.getLayoutInflater();
         }
 
         @Override protected void set(ShadowApplication shadowApplication, LayoutInflater instance) {
