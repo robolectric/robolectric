@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
 import com.xtremelabs.robolectric.Robolectric;
@@ -79,13 +80,13 @@ public class IntentTest {
         assertEquals("foo", intent.getAction());
     }
 
-//    @Test
-//    public void testSetData() throws Exception {
-//        Intent intent = new Intent();
-//        Uri uri = Uri.parse("content://this/and/that");
-//        assertSame(intent, intent.setData(uri));
-//        assertSame(uri, intent.getData());
-//    }
+    @Test
+    public void testSetData() throws Exception {
+        Intent intent = new Intent();
+        Uri uri = Uri.parse("content://this/and/that");
+        assertSame(intent, intent.setData(uri));
+        assertSame(uri, intent.getData());
+    }
 
     @Test
     public void testSetClass() throws Exception {
