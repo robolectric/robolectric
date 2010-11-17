@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric;
 
+import android.net.Uri;
 import javassist.*;
 
 import java.io.IOException;
@@ -54,6 +55,11 @@ public class AndroidTranslator implements Translator {
             throw new IllegalStateException("shouldn't be modifying bytecode after we've started writing cache! class=" + className);
         }
 
+        if (classHasFromAndroidEquivalent(className)) {
+            replaceClassWithFromAndroidEquivalent(classPool, className);
+            return;
+        }
+
         boolean needsStripping =
                 className.startsWith("android.")
                         || className.startsWith("org.apache.http")
@@ -78,6 +84,60 @@ public class AndroidTranslator implements Translator {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    private boolean classHasFromAndroidEquivalent(String className) {
+        return className.startsWith(Uri.class.getName());
+    }
+
+    private void replaceClassWithFromAndroidEquivalent(ClassPool classPool, String className) throws NotFoundException {
+        FromAndroidClassNameParts classNameParts = new FromAndroidClassNameParts(className);
+        if (classNameParts.isFromAndroid()) return;
+
+        String from = classNameParts.getNameWithFromAndroid();
+        CtClass ctClass = classPool.getAndRename(from, className);
+
+        ClassMap map = new ClassMap() {
+            @Override
+            public Object get(Object jvmClassName) {
+                FromAndroidClassNameParts classNameParts = new FromAndroidClassNameParts(jvmClassName.toString());
+                if (classNameParts.isFromAndroid()) {
+                    return classNameParts.getNameWithoutFromAndroid();
+                } else {
+                    return jvmClassName;
+                }
+            }
+        };
+        ctClass.replaceClassName(map);
+    }
+
+    class FromAndroidClassNameParts {
+        private static final String TOKEN = "__FromAndroid";
+
+        private String prefix;
+        private String suffix;
+
+        FromAndroidClassNameParts(String name) {
+            int dollarIndex = name.indexOf("$");
+            prefix = name;
+            suffix = "";
+            if (dollarIndex > -1) {
+                prefix = name.substring(0, dollarIndex);
+                suffix = name.substring(dollarIndex);
+            }
+        }
+
+        public boolean isFromAndroid() {
+            return prefix.endsWith(TOKEN);
+        }
+
+        public String getNameWithFromAndroid() {
+            return prefix + TOKEN + suffix;
+        }
+
+        public String getNameWithoutFromAndroid() {
+            return prefix.replace(TOKEN, "") + suffix;
         }
     }
 

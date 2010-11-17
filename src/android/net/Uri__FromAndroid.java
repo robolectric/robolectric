@@ -20,16 +20,12 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
-import java.io.ByteArrayOutputStream;
 import java.net.URLEncoder;
-import java.util.AbstractList;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.RandomAccess;
+import java.util.*;
 
 /**
  * Immutable URI reference. A URI reference includes a URI and a fragment, the
@@ -42,7 +38,7 @@ import java.util.RandomAccess;
  * forgiving--in the face of invalid input, it will return garbage
  * rather than throw an exception unless otherwise specified.
  */
-public abstract class Uri implements Parcelable, Comparable<Uri> {
+public abstract class Uri__FromAndroid implements Parcelable, Comparable<Uri__FromAndroid> {
 
     /*
 
@@ -102,7 +98,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
     */
 
     /** Log tag. */
-    private static final String LOG = Uri.class.getSimpleName();
+    private static final String LOG = Uri__FromAndroid.class.getSimpleName();
 
     /**
      * NOTE: EMPTY accesses this field during its own initialization, so this
@@ -119,13 +115,13 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
     /**
      * The empty URI, equivalent to "".
      */
-    public static final Uri EMPTY = new HierarchicalUri(null, Part.NULL,
+    public static final Uri__FromAndroid EMPTY = new HierarchicalUri(null, Part.NULL,
             PathPart.EMPTY, Part.NULL, Part.NULL);
 
     /**
      * Prevents external subclassing.
      */
-    private Uri() {}
+    private Uri__FromAndroid() {}
 
     /**
      * Returns true if this URI is hierarchical like "http://google.com".
@@ -319,11 +315,11 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
      * be considered equal.
      */
     public boolean equals(Object o) {
-        if (!(o instanceof Uri)) {
+        if (!(o instanceof Uri__FromAndroid)) {
             return false;
         }
 
-        Uri other = (Uri) o;
+        Uri__FromAndroid other = (Uri__FromAndroid) o;
 
         return toString().equals(other.toString());
     }
@@ -340,7 +336,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
      * Compares the string representation of this Uri with that of
      * another.
      */
-    public int compareTo(Uri other) {
+    public int compareTo(Uri__FromAndroid other) {
         return toString().compareTo(other.toString());
     }
 
@@ -378,7 +374,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
      * @throws NullPointerException if uriString is null
      * @return Uri for this given uri string
      */
-    public static Uri parse(String uriString) {
+    public static Uri__FromAndroid parse(String uriString) {
         return new StringUri(uriString);
     }
 
@@ -392,7 +388,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
      * @throws NullPointerException if file is null
      * @return a Uri for the given file
      */
-    public static Uri fromFile(File file) {
+    public static Uri__FromAndroid fromFile(File file) {
         if (file == null) {
             throw new NullPointerException("file");
         }
@@ -423,7 +419,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
             this.uriString = uriString;
         }
 
-        static Uri readFrom(Parcel parcel) {
+        static Uri__FromAndroid readFrom(Parcel parcel) {
             return new StringUri(parcel.readString());
         }
 
@@ -758,7 +754,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
      *
      * @see Builder if you don't want the ssp and fragment to be encoded
      */
-    public static Uri fromParts(String scheme, String ssp,
+    public static Uri__FromAndroid fromParts(String scheme, String ssp,
             String fragment) {
         if (scheme == null) {
             throw new NullPointerException("scheme");
@@ -774,7 +770,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
     /**
      * Opaque URI.
      */
-    private static class OpaqueUri extends Uri {
+    private static class OpaqueUri extends Uri__FromAndroid {
 
         /** Used in parcelling. */
         static final int TYPE_ID = 2;
@@ -789,7 +785,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
             this.fragment = fragment == null ? Part.NULL : fragment;
         }
 
-        static Uri readFrom(Parcel parcel) {
+        static Uri__FromAndroid readFrom(Parcel parcel) {
             return new OpaqueUri(
                 parcel.readString(),
                 Part.readFrom(parcel),
@@ -979,7 +975,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
     /**
      * Support for hierarchical URIs.
      */
-    private abstract static class AbstractHierarchicalUri extends Uri {
+    private abstract static class AbstractHierarchicalUri extends Uri__FromAndroid {
 
         public String getLastPathSegment() {
             // TODO: If we haven't parsed all of the segments already, just
@@ -1100,7 +1096,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
             this.fragment = Part.nonNull(fragment);
         }
 
-        static Uri readFrom(Parcel parcel) {
+        static Uri__FromAndroid readFrom(Parcel parcel) {
             return new HierarchicalUri(
                 parcel.readString(),
                 Part.readFrom(parcel),
@@ -1452,7 +1448,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
          * @throws UnsupportedOperationException if the URI is opaque and the
          *  scheme is null
          */
-        public Uri build() {
+        public Uri__FromAndroid build() {
             if (opaquePart != null) {
                 if (this.scheme == null) {
                     throw new UnsupportedOperationException(
@@ -1620,9 +1616,9 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
     /**
      * Reads Uris from Parcels.
      */
-    public static final Parcelable.Creator<Uri> CREATOR
-            = new Parcelable.Creator<Uri>() {
-        public Uri createFromParcel(Parcel in) {
+    public static final Parcelable.Creator<Uri__FromAndroid> CREATOR
+            = new Parcelable.Creator<Uri__FromAndroid>() {
+        public Uri__FromAndroid createFromParcel(Parcel in) {
             int type = in.readInt();
             switch (type) {
                 case NULL_TYPE_ID: return null;
@@ -1635,8 +1631,8 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
             throw new AssertionError("Unknown URI type: " + type);
         }
 
-        public Uri[] newArray(int size) {
-            return new Uri[size];
+        public Uri__FromAndroid[] newArray(int size) {
+            return new Uri__FromAndroid[size];
         }
     };
 
@@ -1646,7 +1642,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
      * @param out parcel to write to
      * @param uri to write, can be null
      */
-    public static void writeToParcel(Parcel out, Uri uri) {
+    public static void writeToParcel(Parcel out, Uri__FromAndroid uri) {
         if (uri == null) {
             out.writeInt(NULL_TYPE_ID);
         } else {
@@ -2246,7 +2242,7 @@ public abstract class Uri implements Parcelable, Comparable<Uri> {
      *  the path
      * @throws NullPointerException if baseUri is null
      */
-    public static Uri withAppendedPath(Uri baseUri, String pathSegment) {
+    public static Uri__FromAndroid withAppendedPath(Uri__FromAndroid baseUri, String pathSegment) {
         Builder builder = baseUri.buildUpon();
         builder = builder.appendEncodedPath(pathSegment);
         return builder.build();

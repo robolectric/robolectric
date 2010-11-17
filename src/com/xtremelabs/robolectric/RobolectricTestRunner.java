@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import android.app.Application;
-import android.net.Uri;
+import android.net.Uri__FromAndroid;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
 import com.xtremelabs.robolectric.util.RealObject;
@@ -102,7 +102,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             this.androidManifestPath = androidManifestPath;
             this.resourceDirectory = resourceDirectory;
 
-            delegateLoadingOf(Uri.class.getName());
+//            delegateLoadingOf(Uri.class.getName());
+            delegateLoadingOf(Uri__FromAndroid.class.getName());
             delegateLoadingOf(RobolectricTestRunnerInterface.class.getName());
             delegateLoadingOf(RealObject.class.getName());
             delegateLoadingOf(ShadowWrangler.class.getName());
