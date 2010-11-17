@@ -15,18 +15,18 @@
 </tr>
 <!-- START_DOWNLOADS -->
 <tr>
-  <td class="link"><a href="downloads/robolectric.jar">robolectric.jar</a></td>
-  <td class="version">SNAPSHOT</td>
-  <td class="size">201k</td>
-  <td class="date">2010/11/17 14:04:39 PST</td>
-  <td class="sha">6c151678a00db5ce4461a23e678d99bf97213ad1</td>
+  <td class="link"><a href="downloads/robolectric-all-0.9.jar">robolectric-all-0.9.jar</a></td>
+  <td class="version">0.9</td>
+  <td class="size">891k</td>
+  <td class="date">2010/11/17 15:33:54 PST</td>
+  <td class="sha">0675da6995068e3d065f76155a864628cc70b3be</td>
 </tr>
 <tr>
-  <td class="link"><a href="downloads/robolectric-all.jar">robolectric-all.jar</a></td>
-  <td class="version">SNAPSHOT</td>
-  <td class="size">864k</td>
-  <td class="date">2010/11/17 14:04:39 PST</td>
-  <td class="sha">96ea3353722c8418bba348e698883eb0d4d15e2c</td>
+  <td class="link"><a href="downloads/robolectric-0.9.jar">robolectric-0.9.jar</a></td>
+  <td class="version">0.9</td>
+  <td class="size">228k</td>
+  <td class="date">2010/11/17 15:33:54 PST</td>
+  <td class="sha">6cb44fe6e9bd0a62e0b2038e8b3cd088736795ba</td>
 </tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-all-0.8.jar">robolectric-all-0.8.jar</a></td>
