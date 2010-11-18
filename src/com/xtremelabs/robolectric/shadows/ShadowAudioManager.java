@@ -20,12 +20,12 @@ public class ShadowAudioManager {
 	}
 	
 	@Implementation
-	int getStreamVolume(int streamType) {
+	public int getStreamVolume(int streamType) {
 		return streamVolume;
 	}
 	
 	@Implementation
-	void setStreamVolume(int streamType, int index, int flags) {
+	public void setStreamVolume(int streamType, int index, int flags) {
 		this.streamVolume = index;
 		this.flags = flags;
 	}
