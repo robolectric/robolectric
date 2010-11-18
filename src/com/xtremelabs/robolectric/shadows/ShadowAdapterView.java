@@ -12,6 +12,9 @@ import com.xtremelabs.robolectric.util.RealObject;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Shadows the {@code android.widget.Adapter} class
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
 public class ShadowAdapterView extends ShadowViewGroup {
@@ -48,17 +51,20 @@ public class ShadowAdapterView extends ShadowViewGroup {
     }
 
     /**
-     * Check if our adapter's items have changed without onChanged() or onInvalidated having been called.
-     *
-     * If the items have changed without notification, an exception will be thrown.
+     * Check if our adapter's items have changed without {@code onChanged()} or {@code onInvalidated()} having been called.
      *
      * @return true if the object is valid, false if not
+     * @throws RuntimeException if the items have been changed without notification
      */
     public boolean checkValidity() {
         update();
         return valid;
     }
 
+    /**
+     * Non-Android accessor
+     * @return the index of the selected item
+     */
     public int getSelectedItemPosition() {
       return selectedPosition;
     }
@@ -143,6 +149,9 @@ public class ShadowAdapterView extends ShadowViewGroup {
         }
     }
 
+    /**
+     * Simple default implementation of {@code android.database.DataSetObserver}
+     */
     protected class AdapterViewDataSetObserver extends DataSetObserver {
         @Override
         public void onChanged() {

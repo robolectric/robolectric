@@ -18,6 +18,9 @@ import java.util.Map;
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadows the {@code android.appwidget.AppWidgetManager} class
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AppWidgetManager.class)
 public class ShadowAppWidgetManager {
@@ -38,9 +41,6 @@ public class ShadowAppWidgetManager {
         }
     };
 
-    private static void bind(AppWidgetManager appWidgetManager, Context context) {
-    }
-
     @RealObject private AppWidgetManager realAppWidgetManager;
 
     private Context context;
@@ -48,6 +48,16 @@ public class ShadowAppWidgetManager {
     private int nextWidgetId = 1;
     private boolean alwaysRecreateViewsDuringUpdate = false;
 
+    private static void bind(AppWidgetManager appWidgetManager, Context context) {
+        // todo: implement
+    }
+
+
+    /**
+     * Finds or creates an {@code AppWidgetManager} for the given {@code context}
+     * @param context the {@code context} for which to produce an assoicated {@code AppWidgetManager}
+     * @return the {@code AppWidgetManager} associated with the given {@code context}
+     */
     @Implementation
     public static AppWidgetManager getInstance(Context context) {
         return instances.getInstance(context);
@@ -60,6 +70,11 @@ public class ShadowAppWidgetManager {
         }
     }
 
+    /**
+     * Simulates updating an {@code AppWidget} with a new set of views
+     * @param appWidgetId
+     * @param views
+     */
     @Implementation
     public void updateAppWidget(int appWidgetId, RemoteViews views) {
         WidgetInfo widgetInfo = getWidgetInfo(appWidgetId);
@@ -72,17 +87,34 @@ public class ShadowAppWidgetManager {
         views.reapply(context, widgetInfo.view);
     }
 
+    /**
+     * Triggers a reapplication of the most recent set of actions against the widget, which is what happens when the
+     * phone is rotated. Does not attempt to simulate a change in screen geometry.
+     * @param appWidgetId the ID of the widget to be affected
+     */
     public void reconstructWidgetViewAsIfPhoneWasRotated(int appWidgetId) {
         WidgetInfo widgetInfo = getWidgetInfo(appWidgetId);
         widgetInfo.view = createWidgetView(widgetInfo.layoutId);
         widgetInfo.lastRemoteViews.reapply(context, widgetInfo.view);
-
     }
 
+    /**
+     * Creates a widget by inflating its layout.
+     * @param appWidgetProviderClass
+     * @param widgetLayoutId
+     * @return the ID of the new widget
+     */
     public int createWidget(Class<? extends AppWidgetProvider> appWidgetProviderClass, int widgetLayoutId) {
         return createWidgets(appWidgetProviderClass, widgetLayoutId, 1)[0];
     }
 
+    /**
+     * Creates a bunch of widgets by inflating the same layout multiple times.
+     * @param appWidgetProviderClass
+     * @param widgetLayoutId
+     * @param howManyToCreate
+     * @return the IDs of the new widgets
+     */
     public int[] createWidgets(Class<? extends AppWidgetProvider> appWidgetProviderClass, int widgetLayoutId, int howManyToCreate) {
         AppWidgetProvider appWidgetProvider = newInstanceOf(appWidgetProviderClass);
 
@@ -108,20 +140,43 @@ public class ShadowAppWidgetManager {
         return new Activity().getLayoutInflater().inflate(widgetLayoutId, null);
     }
 
+    /**
+     * Non-Android accessor
+     * @param widgetId
+     * @return the widget associated with {@code widgetId}
+     */
     public View getViewFor(int widgetId) {
         return getWidgetInfo(widgetId).view;
     }
 
+    /**
+     * Non-Android accessor
+     * @param widgetId
+     * @return the {@code AppWidgetProvider} associated with {@code widgetId}
+     */
     public AppWidgetProvider getAppWidgetProviderFor(int widgetId) {
         return getWidgetInfo(widgetId).appWidgetProvider;
     }
 
-    private WidgetInfo getWidgetInfo(int widgetId) {
-        return widgetInfos.get(widgetId);
+    /**
+     * Non-Android mechanism that enables testing of widget behavior when all of the views are recreated on every
+     * update. This is useful for ensuring that your widget will behave correctly even if it is restarted by the OS
+     * between events.
+     */
+    public void setAlwaysRecreateViewsDuringUpdate(boolean b) {
+        alwaysRecreateViewsDuringUpdate = b;
     }
 
+    /**
+     * Non-Android accessor
+     * @return the state of the{@code alwaysRecreateViewsDuringUpdate} flag
+     */
     public boolean getAlwaysRecreateViewsDuringUpdate() {
         return alwaysRecreateViewsDuringUpdate;
+    }
+
+    private WidgetInfo getWidgetInfo(int widgetId) {
+        return widgetInfos.get(widgetId);
     }
 
     private class WidgetInfo {
