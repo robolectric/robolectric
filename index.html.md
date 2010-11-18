@@ -56,6 +56,11 @@ Robolectric allows a test style that is closer to black box testing, making the 
 
 We welcome contributions. Please [fork](http://github.com/pivotal/robolectric) and submit pull requests. Don't forget to include tests!
 
+## Sample Project
+
+Look at the sample project at: https://github.com/pivotal/robolectricsample to see how fast and easy it can be to test
+drive the development of Android applications.0
+
 #### Robolectric's current maintainers are:
 
 * [Christian Williams](http://github.com/Xian), Pivotal Labs
