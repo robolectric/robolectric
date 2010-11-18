@@ -10,7 +10,7 @@ title: Robolectric Release Notes
 -----
 
 #### Features
-- Integrated support for several new Shadow classes from Michael Portuesi
+- Integrated support for several new Shadow classes from pull requests - Thank you contributors!
 - Made the default RobolectricTestRunner robust enough to work without modification for most projects
 - Improved the extensibility of RobolectricTestRunner for those projects that do need to add more functionality
 - Encapsulated most of the fields on the Shadow classes
