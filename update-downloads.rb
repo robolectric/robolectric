@@ -16,9 +16,9 @@ def fill_index_downloads
         sha1 = Digest::SHA1.hexdigest File.read(f)
 
         fn = f.sub(/^pages\//, '')
-        match = /robolectric(-all)?-([0-9].*)?.jar/.match(f)
+        match = /robolectric-?([0-9]\.[0-9]*)?(-all)?(-src)?.*\.jar/.match(f)
         version = "SNAPSHOT"
-        version = match[2] if match
+        version = match[1] if match
         prerelease = /\.rc/.match(f)
         download_html += prerelease ? "<tr class=\"rc\">\n" : "<tr>\n"
         download_html += "  <td class=\"link\"><a href=\"#{fn}\">#{fn.sub(/downloads\//, '')}</a></td>\n"
@@ -34,7 +34,7 @@ def fill_index_downloads
     matcher = /<!-- START_DOWNLOADS -->.*<!-- END_DOWNLOADS -->/m
     downloads_page = downloads_page.sub(matcher, download_html)
     File.open(DOWNLOADS_FILE, 'w') {|f| f.write(downloads_page)}
-    puts "rewrote that file"
+    puts "rewrote " + DOWNLOADS_FILE
 end
 
 fill_index_downloads
