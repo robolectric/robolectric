@@ -97,6 +97,11 @@
         <delete dir="${target.dir}/staging"/>
     </target>
 
+    <target name="source-jar" description="create a jar file that includes all of the source code">
+        <mkdir dir="${target.dir}"/>
+        <jar destfile="${target.dir}/robolectric-src.jar" basedir="${main.absolute.dir}"/>
+    </target>
+
     <target name="check-for-pages-dir-setup">
         <condition property="pages.dir.exists">
             <available file="pages" type="dir"/>
@@ -107,7 +112,7 @@
         <echo message="do you need a 'pages' symlink?"/>
     </target>
 
-    <target name="snapshot" description="update most recent version of robolectric as jars" depends="clean, test, jar-all, check-for-pages-dir" if="pages.dir.exists">
+    <target name="snapshot" description="update most recent version of robolectric as jars" depends="clean, test, jar-all, source-jar, check-for-pages-dir" if="pages.dir.exists">
         <copy todir="pages/downloads">
             <fileset dir="${target.dir}" includes="robolectric*.jar"/>
         </copy>
