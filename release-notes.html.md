@@ -6,6 +6,16 @@ title: Robolectric Release Notes
 # Release Notes
 
 -----
+## Release 0.9.1 - November 19, 2010
+-----
+
+#### Features
+- Integrated support for several new Shadow classes from pull requests -- thank you mportuesi!
+
+#### Bug Fixes
+- Fixed JSON "stub!" exceptions.
+
+-----
 ## Release 0.9 - November 17, 2010
 -----
 
