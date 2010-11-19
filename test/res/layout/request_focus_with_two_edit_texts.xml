@@ -6,14 +6,14 @@
         android:layout_height="wrap_content"
         >
     <EditText
-        android:id="@+id/edit_text"
-        android:layout_width="fill_parent"
-        android:layout_height="10dip"
-        />
+            android:id="@+id/edit_text"
+            android:layout_width="fill_parent"
+            android:layout_height="10dip"
+            />
     <EditText
-        android:id="@+id/edit_text2"
-        android:layout_width="fill_parent"
-        android:layout_height="10dip"
-        />
+            android:id="@+id/edit_text2"
+            android:layout_width="fill_parent"
+            android:layout_height="10dip"
+            />
     <View/>
 </LinearLayout>

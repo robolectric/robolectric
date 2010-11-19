@@ -62,11 +62,12 @@ public class ShadowAdapterView extends ShadowViewGroup {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @return the index of the selected item
      */
     public int getSelectedItemPosition() {
-      return selectedPosition;
+        return selectedPosition;
     }
 
     @Implementation
@@ -141,7 +142,7 @@ public class ShadowAdapterView extends ShadowViewGroup {
                 newItems.add(adapter.getItem(i));
                 addView(adapter.getView(i, null, realAdapterView));
             }
-            
+
             if (valid && !newItems.equals(previousItems)) {
                 throw new RuntimeException("view is valid but current items <" + newItems + "> don't match previous items <" + previousItems + ">");
             }

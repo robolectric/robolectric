@@ -90,18 +90,18 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public void setCompoundDrawablesWithIntrinsicBounds(int left, int top, int right, int bottom) {
-        compoundDrawablesImpl = new CompoundDrawables(left, top , right, bottom);
+        compoundDrawablesImpl = new CompoundDrawables(left, top, right, bottom);
     }
 
     @Implementation
     public void setCompoundDrawablesWithIntrinsicBounds(Drawable left, Drawable top,
                                                         Drawable right, Drawable bottom) {
-        compoundDrawablesImpl = new CompoundDrawables(left, top , right, bottom);
+        compoundDrawablesImpl = new CompoundDrawables(left, top, right, bottom);
     }
 
     @Implementation
     public void setCompoundDrawables(Drawable left, Drawable top, Drawable right, Drawable bottom) {
-        compoundDrawablesImpl = new CompoundDrawables(left, top , right, bottom);
+        compoundDrawablesImpl = new CompoundDrawables(left, top, right, bottom);
     }
 
     @Implementation
@@ -175,7 +175,7 @@ public class ShadowTextView extends ShadowView {
         public int top;
         public int right;
         public int bottom;
-        
+
         public Drawable leftDrawable;
         public Drawable topDrawable;
         public Drawable rightDrawable;

@@ -74,7 +74,7 @@ public class ShadowView {
     @Implementation
     public void setFocusable(boolean focusable) {
         this.focusable = focusable;
-        if(!focusable) {
+        if (!focusable) {
             setFocusableInTouchMode(false);
         }
     }
@@ -87,7 +87,7 @@ public class ShadowView {
     @Implementation
     public void setFocusableInTouchMode(boolean focusableInTouchMode) {
         this.focusableInTouchMode = focusableInTouchMode;
-        if(focusableInTouchMode) {
+        if (focusableInTouchMode) {
             setFocusable(true);
         }
     }
@@ -123,7 +123,7 @@ public class ShadowView {
     @Implementation
     public View getRootView() {
         ShadowView root = this;
-        while(root.parent != null) {
+        while (root.parent != null) {
             root = root.parent;
         }
         return root.realView;
@@ -183,7 +183,7 @@ public class ShadowView {
     public boolean isEnabled() {
         return this.enabled;
     }
-    
+
     @Implementation
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
@@ -243,7 +243,7 @@ public class ShadowView {
 
 // todo:       realView.onLayout();
     }
-    
+
     @Implementation
     public void setPadding(int left, int top, int right, int bottom) {
         paddingLeft = left;

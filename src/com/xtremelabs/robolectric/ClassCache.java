@@ -78,7 +78,7 @@ public class ClassCache {
                     className = className.substring(0, className.indexOf(".class")).replace('/', '.');
                     addClass(className, baos.toByteArray());
                 }
-                
+
             }
         } catch (IOException e) {
             // no problem, we didn't want those bytes that much anyway

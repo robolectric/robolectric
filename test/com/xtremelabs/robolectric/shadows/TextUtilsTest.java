@@ -16,7 +16,7 @@ public class TextUtilsTest {
         Robolectric.bindShadowClass(TextUtils.class, ShadowTextUtils.class);
 
         assertThat(
-                (String)TextUtils.expandTemplate("a^1b^2c^3d", "A", "B", "C", "D"),
+                (String) TextUtils.expandTemplate("a^1b^2c^3d", "A", "B", "C", "D"),
                 equalTo("aAbBcCd"));
     }
 }

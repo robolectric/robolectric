@@ -49,8 +49,7 @@ public class ShadowRemoteViews {
     @Implementation
     public void setOnClickPendingIntent(int viewId, final PendingIntent pendingIntent) {
         viewUpdaters.add(new ViewUpdater(viewId) {
-            @Override
-            void doUpdate(final View view) {
+            @Override void doUpdate(final View view) {
                 view.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

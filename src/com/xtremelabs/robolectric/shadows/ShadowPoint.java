@@ -52,7 +52,7 @@ public class ShadowPoint {
 
         ShadowPoint that = (ShadowPoint) o;
         if (this.realPoint.x == that.realPoint.x && this.realPoint.y == that.realPoint.y) return true;
-        
+
         return false;
     }
 

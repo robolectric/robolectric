@@ -7,7 +7,7 @@ import com.xtremelabs.robolectric.util.Implements;
 
 /**
  * Shadows the {@code android.widget.CompoundButton} class.
- *
+ * <p/>
  * Keeps track of whether or not its "checked" state is set and deals with listeners in an appropriate way.
  */
 @SuppressWarnings({"UnusedDeclaration"})

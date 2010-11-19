@@ -53,12 +53,12 @@ public class ShadowHandler {
         });
         return true;
     }
-    
+
     @Implementation
     public final boolean sendEmptyMessage(int what) {
-    	final Message msg = new Message();
-    	msg.what = what;
-    	return sendMessage(msg);
+        final Message msg = new Message();
+        msg.what = what;
+        return sendMessage(msg);
     }
 
     public static void flush() {

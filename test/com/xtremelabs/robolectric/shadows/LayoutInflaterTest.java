@@ -26,7 +26,7 @@ public class LayoutInflaterTest {
         Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
         layoutInflater = LayoutInflater.from(Robolectric.application);
     }
-    
+
     @Test
     public void getInstance_shouldReturnSameInstance() throws Exception {
         assertNotNull(layoutInflater);

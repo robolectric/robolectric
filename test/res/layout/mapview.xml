@@ -8,10 +8,10 @@
         >
 
     <com.google.android.maps.MapView
-        android:id="@+id/map_view"
-        android:layout_width="fill_parent"
-        android:layout_height="fill_parent"
-        android:clickable="true"
-        android:apiKey="Your Maps API Key goes here"
-        />
+            android:id="@+id/map_view"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:clickable="true"
+            android:apiKey="Your Maps API Key goes here"
+            />
 </RelativeLayout>

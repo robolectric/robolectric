@@ -102,7 +102,7 @@ public class ViewGroupTest {
     @Test
     public void dump_shouldDumpStructure() throws Exception {
         child3.setId(R.id.snippet_text);
-        
+
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         shadowOf(root).dump(new PrintStream(out), 0);
         assertEquals("<FrameLayout>\n" +

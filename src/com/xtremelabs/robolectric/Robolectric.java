@@ -134,7 +134,7 @@ public class Robolectric {
                 ShadowViewGroup.class,
                 ShadowWifiManager.class,
                 ShadowZoomButtonsController.class
-                );
+        );
     }
 
     public static void resetStaticState() {
@@ -273,14 +273,14 @@ public class Robolectric {
     public static ShadowLayoutInflater shadowOf(LayoutInflater instance) {
         return ((ShadowLayoutInflater) shadowOf_(instance));
     }
-    
-	public static ShadowDisplay shadowOf(Display instance) {
-		return ((ShadowDisplay) shadowOf_(instance));
-	}
-	
-	public static ShadowAudioManager shadowOf(AudioManager instance) {
-		return ((ShadowAudioManager) shadowOf_(instance));
-	}
+
+    public static ShadowDisplay shadowOf(Display instance) {
+        return ((ShadowDisplay) shadowOf_(instance));
+    }
+
+    public static ShadowAudioManager shadowOf(AudioManager instance) {
+        return ((ShadowAudioManager) shadowOf_(instance));
+    }
 
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
