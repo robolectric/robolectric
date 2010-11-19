@@ -23,16 +23,12 @@ import java.util.List;
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadows the {@code android.app.Application} class.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
-    public static Application bind(Application application, ResourceLoader resourceLoader) {
-        ShadowApplication shadowApplication = (ShadowApplication) shadowOf(application);
-        if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
-        shadowApplication.resourceLoader = resourceLoader;
-        return application;
-    }
-
     @RealObject private Application realApplication;
 
     private ResourceLoader resourceLoader;
@@ -48,6 +44,20 @@ public class ShadowApplication extends ShadowContextWrapper {
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
     AppWidgetManager appWidgetManager;
+
+    /**
+     * Associates a {@code ResourceLoader} with an {@code Application} instance
+     * @param application
+     * @param resourceLoader
+     * @return the application
+     * todo: make this non-static?
+     */
+    public static Application bind(Application application, ResourceLoader resourceLoader) {
+        ShadowApplication shadowApplication = (ShadowApplication) shadowOf(application);
+        if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
+        shadowApplication.resourceLoader = resourceLoader;
+        return application;
+    }
 
     @Override @Implementation
     public Context getApplicationContext() {
@@ -91,6 +101,10 @@ public class ShadowApplication extends ShadowContextWrapper {
         return new ComponentName("some.service.package", "SomeServiceName-FIXME");
     }
 
+    /**
+     * Consumes the most recent {@code Intent} started by {@link #startActivity(android.content.Intent)} and returns it.
+     * @return the most recently started {@code Intent}
+     */
     @Override public Intent getNextStartedActivity() {
         if (startedActivities.isEmpty()) {
             return null;
@@ -99,6 +113,11 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    /**
+     * Returns the most recent {@code Intent} started by {@link #startActivity(android.content.Intent)} without
+     * consuming it.
+     * @return the most recently started {@code Intent}
+     */
     @Override public Intent peekNextStartedActivity() {
         if (startedActivities.isEmpty()) {
             return null;
@@ -107,6 +126,10 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    /**
+     * Consumes the most recent {@code Intent} started by {@link #startService(android.content.Intent)} and returns it.
+     * @return the most recently started {@code Intent}
+     */
     @Override public Intent getNextStartedService() {
         if (startedServices.isEmpty()) {
             return null;
@@ -115,6 +138,11 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    /**
+     * Returns the most recent {@code Intent} started by {@link #startService(android.content.Intent)} without
+     * consuming it.
+     * @return the most recently started {@code Intent}
+     */
     @Override public Intent peekNextStartedService() {
         if (startedServices.isEmpty()) {
             return null;
@@ -123,10 +151,20 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    /**
+     * Non-Android accessor (and a handy way to get a working {@code ResourceLoader}
+     * @return the {@code ResourceLoader} associated with this Application
+     */
     public ResourceLoader getResourceLoader() {
         return resourceLoader;
     }
 
+    /**
+     * Broadcasts the {@code Intent} by iterating through the registered receivers, invoking their filters, and calling
+     * {@code onRecieve(Application, Intent)} as appropriate. Does not enqueue the {@code Intent} for later inspection.
+     * @param intent the {@code Intent} to broadcast
+     * todo: enqueue the Intent for later inspection
+     */
     @Override @Implementation
     public void sendBroadcast(Intent intent) {
         for (Wrapper wrapper : registeredReceivers) {
@@ -136,6 +174,10 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    /**
+     * Always returns {@code null}
+     * @return {@code null}
+     */
     @Override @Implementation
     public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
         return registerReceiverWithContext(receiver, filter, realApplication);
@@ -162,6 +204,13 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    /**
+     * Iterates through all of the registered receivers on this {@code Application} and if any of them match the given
+     * {@code Context} object throws a {@code RuntimeException}
+     * @param context the {@code Context} to check for on each of the remaining registered receivers
+     * @param type the type to report for the context if an exception is thrown
+     * @throws RuntimeException if there are any recievers registered with the given {@code Context}
+     */
     public void assertNoBroadcastListenersRegistered(Context context, String type) {
         for (Wrapper registeredReceiver : registeredReceivers) {
             if (registeredReceiver.context == context) {
@@ -174,14 +223,23 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    /**
+     * Non-Android accessor
+     */
     public List<Wrapper> getRegisteredReceivers() {
         return registeredReceivers;
     }
 
+    /**
+     * Non-Android accessor
+     */
     public LayoutInflater getLayoutInflater() {
         return layoutInflater;
     }
 
+    /**
+     * Non-Android accessor
+     */
     public AppWidgetManager getAppWidgetManager() {
         return appWidgetManager;
     }

@@ -13,6 +13,10 @@ import java.lang.reflect.Constructor;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadows the {@code android.app.AlertDialog} class.
+ */
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
 public class ShadowAlertDialog extends ShadowDialog {
@@ -33,6 +37,10 @@ public class ShadowAlertDialog extends ShadowDialog {
     private Button neutralButton;
     private boolean isCancelable;
 
+    /**
+     * Non-Android accessor
+     * @return the most recently created {@code AlertDialog}, or null if none has been created during this test run
+     */
     public static ShadowAlertDialog getLatestAlertDialog() {
         return latestAlertDialog;
     }
@@ -42,10 +50,18 @@ public class ShadowAlertDialog extends ShadowDialog {
         return null;
     }
 
+    /**
+     * Resets the tracking of the most recently created {@code AlertDialog}
+     */
     public static void reset() {
         latestAlertDialog = null;
     }
 
+    /**
+     * Simulates a click on the {@code Dialog} item indicated by {@code index}. Handles both multi- and single-choice
+     * dialogs, tracks which items are currently checked and calls listeners appropriately.
+     * @param index the index of the item to click on
+     */
     public void clickOnItem(int index) {
         if (isMultiItem) {
             checkedItems[index] = !checkedItems[index];
@@ -68,25 +84,45 @@ public class ShadowAlertDialog extends ShadowDialog {
             case AlertDialog.BUTTON_NEUTRAL:
                 return neutralButton;
         }
-        throw new RuntimeException("huh?");
+        throw new RuntimeException("Only positive, negative, or neutral button choices are recognized");
     }
 
+    /**
+     * Non-Android accessor
+     * @return the items that are available to be clicked on
+     */
     public CharSequence[] getItems() {
         return items;
     }
 
+    /**
+     * Non-Android accessor
+     * @return the title of the dialog
+     */
     public String getTitle() {
         return title;
     }
 
+    /**
+     * Non-Android accessor
+     * @return the message displayed in the dialog
+     */
     public String getMessage() {
         return message;
     }
 
+    /**
+     * Non-Android accessor
+     * @return an array indicating which items are and are not clicked on a multi-choice dialog
+     * todo: support single choice dialogs
+     */
     public boolean[] getCheckedItems() {
         return checkedItems;
     }
 
+    /**
+     * Shadows the {@code android.app.AlertDialog.Builder} class.
+     */
     @Implements(AlertDialog.Builder.class)
     public static class ShadowBuilder {
         @RealObject private AlertDialog.Builder realBuilder;
@@ -109,6 +145,10 @@ public class ShadowAlertDialog extends ShadowDialog {
         private boolean isSingleItem;
         private int checkedItem;
 
+        /**
+         * just stashes the context for later use
+         * @param context the context
+         */
         public void __constructor__(Context context) {
             this.context = context;
         }
@@ -142,7 +182,7 @@ public class ShadowAlertDialog extends ShadowDialog {
             if (checkedItems == null) {
                 checkedItems = new boolean[items.length];
             } else if (checkedItems.length != items.length) {
-                throw new IllegalArgumentException("checkedItems must be the same length as items, or pass null to specify checked items");
+                throw new IllegalArgumentException("checkedItems must be the same length as items, or pass null to specify no checked items");
             }
             this.checkedItems = checkedItems;
 

@@ -60,6 +60,12 @@
 
     <property name="publish.dir" location="${out.absolute.dir}/publish"/>
 
+    <property name="pages.dir" value="pages"/>
+    <property name="downloads.dir" value="${pages.dir}/downloads"/>
+    <property name="javadoc.out.dir" value="${pages.dir}/javadoc"/>
+
+    <property name="base.package" value="com.xtremelabs.robolectric"/>
+
     <property environment="env"/>
     <condition property="build.number" value="${env.BUILD_NUMBER}" else="unknown">
         <isset property="env.BUILD_NUMBER"/>
@@ -97,30 +103,18 @@
         <delete dir="${target.dir}/staging"/>
     </target>
 
-    <target name="check-for-pages-dir-setup">
-        <condition property="pages.dir.exists">
-            <available file="pages" type="dir"/>
-        </condition>
-    </target>
-
-    <target name="check-for-pages-dir" depends="check-for-pages-dir-setup" unless="pages.dir.exists">
-        <echo message="do you need a 'pages' symlink?"/>
-    </target>
-
-    <target name="snapshot" description="update most recent version of robolectric as jars" depends="clean, test, jar-all, check-for-pages-dir" if="pages.dir.exists">
-        <copy todir="pages/downloads">
-            <fileset dir="${target.dir}" includes="robolectric*.jar"/>
-        </copy>
-        <exec executable="./update-downloads.rb"/>
+    <target name="source-jar" description="create a jar file that includes all of the source code">
+        <mkdir dir="${target.dir}"/>
+        <jar destfile="${target.dir}/robolectric-src.jar" basedir="${main.absolute.dir}"/>
     </target>
 
     <target name="compile.tests" depends="compile"
-            description="compile module source; test classes" unless="skip.tests">
+    description="compile module source; test classes" unless="skip.tests">
         <mkdir dir="${out.test.absolute.dir}"/>
 
         <javac encoding="ascii" source="1.6" target="1.6" debug="true" extdirs=""
-               destdir="${out.test.absolute.dir}"
-               verbose="${verbose}" classpath="${extensible.classpath}">
+        destdir="${out.test.absolute.dir}"
+        verbose="${verbose}" classpath="${extensible.classpath}">
             <src path="${test.absolute.dir}"/>
             <classpath>
                 <pathelement path="${out.main.absolute.dir}"/>
@@ -159,4 +153,38 @@
         <fail if="junit.failure" message="Unit test(s) failed.  See reports!"/>
     </target>
 
+    <target name="check-for-pages-dir-setup">
+        <condition property="pages.dir.exists">
+            <available file="${pages.dir}" type="dir"/>
+        </condition>
+    </target>
+
+    <target name="check-for-pages-dir" depends="check-for-pages-dir-setup" unless="pages.dir.exists">
+        <echo message="do you need a 'pages' symlink?"/>
+    </target>
+
+    <target name="snapshot" description="update most recent version of robolectric as jars" depends="clean, test, jar-all, check-for-pages-dir" if="pages.dir.exists">
+        <copy todir="${downloads.dir}">
+            <fileset dir="${target.dir}" includes="robolectric*.jar"/>
+        </copy>
+        <exec executable="./update-downloads.rb"/>
+    </target>
+
+    <target name="gen-javadoc" description="generate javadoc for the public API" depends="check-for-pages-dir" if="pages.dir.exists">
+        <mkdir dir="${javadoc.out.dir}" />
+        <javadoc
+                packagenames="${base.package}/shadows, ${base.package}/view, ${base.package}/util"
+                defaultexcludes="yes"
+                windowtitle="Robolectric API"
+                sourcepath="${main.absolute.dir}"
+                overview="${main.absolute.dir}/overview.html"
+                destdir="${javadoc.out.dir}">
+            <classpath>
+                <pathelement path="${out.main.absolute.dir}"/>
+                <path refid="android.target.classpath"/>
+                <fileset dir="${main.external.libs.absolute.dir}" includes="*.jar"/>
+            </classpath>
+            <doctitle><![CDATA[<h1>Robolectric<br/>API Documentation</h1>]]></doctitle>
+        </javadoc>
+    </target>
 </project>

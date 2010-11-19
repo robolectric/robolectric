@@ -4,6 +4,10 @@ import android.location.Address;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+/**
+ * Shadows the {@code android.location.Address} class.
+ */
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Address.class)
 public class ShadowAddress {

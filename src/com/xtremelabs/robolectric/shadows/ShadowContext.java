@@ -9,6 +9,10 @@ import com.xtremelabs.robolectric.util.RealObject;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadows the {@code android.content.Context} class.
+ * Calls through to the {@code resourceLoader} to actually load resources.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Context.class)
 public class ShadowContext {
@@ -29,6 +33,10 @@ public class ShadowContext {
         return realContext.getResources().getString(resId, formatArgs);
     }
 
+    /**
+     * Non-Android accessor
+     * @return the {@code ResourceLoader} associated with this {@code Context}
+     */
     public ResourceLoader getResourceLoader() {
         return shadowOf((Application) realContext.getApplicationContext()).getResourceLoader();
     }

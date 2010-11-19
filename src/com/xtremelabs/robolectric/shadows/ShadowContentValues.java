@@ -29,11 +29,16 @@ import java.util.Set;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
+/**
+ * Shadows the {@code android.content.ContentValues} class.
+ *
+ * This is a fancy map from String to... something. Works just like the Android class it shadows.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContentValues.class)
 public final class ShadowContentValues {
-    private HashMap<String, Object> values = new HashMap<String, Object>();
     private static final String TAG = "ShadowContentValues";
+    private HashMap<String, Object> values = new HashMap<String, Object>();
 
     public void __constructor__(ContentValues from) {
         values = new HashMap<String, Object>(shadowOf(from).values);
