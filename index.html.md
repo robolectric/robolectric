@@ -38,9 +38,9 @@ public class MyActivityTest {
 
 Robolectric makes this possible by intercepting the loading of the Android classes and rewriting the method bodies. Robolectric re-defines Android methods so they return null (or 0, false, etc.), or if provided Robolectric will forward method calls to shadow Android objects giving the Android SDK behavior. Robolectric provides a large number of shadow objects covering much of what a typical application would need to test-drive the business logic and functionality of your application. Coverage of the SDK is improving every day.
 
-#### View Support
+#### Resource Support
 
-Robolectric handles inflation of views, string resource lookups, etc. Some view attributes (id, visibility enabled, text, checked, and src) are parsed and applied to inflated views. Activity and View <code>#findViewById()</code> methods return Android view objects. Support exists for <code>include</code> and <code>merge</code> tags. These features allow tests to assert on view state.
+Robolectric handles inflation of views, string resource lookups, etc. Some view attributes (id, visibility enabled, text, checked, and src) are parsed and applied to inflated views. Activity and View <code>#findViewById()</code> methods return Android view objects. Support exists for <code>include</code> and <code>merge</code> tags. These features allow tests access resources and to assert on view state.
 
 #### Run Tests Outside of the Emulator
 
@@ -74,5 +74,6 @@ drive the development of Android applications.0
 
 ## Support
 
-__Group email:__ [robolectric@googlegroups.com](mailto:robolectric@googlegroups.com)  
+__Google Group:__ [http://groups.google.com/group/robolectric](http://groups.google.com/group/robolectric)<br/>
+__Group Email:__ [robolectric@googlegroups.com](mailto:robolectric@googlegroups.com)<br/>
 __Samples:__ [http://github.com/pivotal/RobolectricSample](http://github.com/pivotal/RobolectricSample)
