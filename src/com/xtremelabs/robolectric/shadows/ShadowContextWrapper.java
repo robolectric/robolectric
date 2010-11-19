@@ -1,19 +1,19 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import android.content.*;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.res.Resources;
+import android.test.mock.MockPackageManager;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
-import android.content.*;
-import android.content.pm.*;
-import android.content.res.Resources;
-import android.test.mock.MockPackageManager;
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)
@@ -82,24 +82,24 @@ public class ShadowContextWrapper extends ShadowContext {
                     return packageInfo;
                 }
 
-				@Override
-				public List<PackageInfo> getInstalledPackages(int flags) {
-					ensurePackageInfo();
-					if (packageList == null ) {
-						packageList = new ArrayList<PackageInfo>();
-						packageList.add(packageInfo);
-					}
-					return packageList;
-				}
-				
-				private void ensurePackageInfo() {
-					if (packageInfo == null) {
+                @Override
+                public List<PackageInfo> getInstalledPackages(int flags) {
+                    ensurePackageInfo();
+                    if (packageList == null) {
+                        packageList = new ArrayList<PackageInfo>();
+                        packageList.add(packageInfo);
+                    }
+                    return packageList;
+                }
+
+                private void ensurePackageInfo() {
+                    if (packageInfo == null) {
                         packageInfo = new PackageInfo();
                         packageInfo.packageName = SHADOW_PACKAGE_NAME;
                         packageInfo.versionName = "1.0";
                     }
-				}
-                
+                }
+
             };
         }
         return packageManager;

@@ -24,6 +24,9 @@ import java.util.List;
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadows the {@code android.app.Application} class.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
@@ -46,6 +49,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
+     * 
      * @param application application
      * @param resourceLoader resource loader
      * @return the application
@@ -84,9 +88,9 @@ public class ShadowApplication extends ShadowContextWrapper {
         } else if (name.equals(Context.WIFI_SERVICE)) {
             return wifiManager == null ? wifiManager = newInstanceOf(WifiManager.class) : wifiManager;
         } else if (name.equals(Context.WINDOW_SERVICE)) {
-        	return windowManager == null ? windowManager = new TestWindowManager() : windowManager;
+            return windowManager == null ? windowManager = new TestWindowManager() : windowManager;
         } else if (name.equals(Context.AUDIO_SERVICE)) {
-        	return audioManager == null ? audioManager = newInstanceOf(AudioManager.class) : audioManager;
+            return audioManager == null ? audioManager = newInstanceOf(AudioManager.class) : audioManager;
         }
         return null;
     }
@@ -104,6 +108,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Consumes the most recent {@code Intent} started by {@link #startActivity(android.content.Intent)} and returns it.
+     *
      * @return the most recently started {@code Intent}
      */
     @Override public Intent getNextStartedActivity() {
@@ -117,6 +122,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     /**
      * Returns the most recent {@code Intent} started by {@link #startActivity(android.content.Intent)} without
      * consuming it.
+     *
      * @return the most recently started {@code Intent}
      */
     @Override public Intent peekNextStartedActivity() {
@@ -129,6 +135,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Consumes the most recent {@code Intent} started by {@link #startService(android.content.Intent)} and returns it.
+     *
      * @return the most recently started {@code Intent}
      */
     @Override public Intent getNextStartedService() {
@@ -142,6 +149,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     /**
      * Returns the most recent {@code Intent} started by {@link #startService(android.content.Intent)} without
      * consuming it.
+     *
      * @return the most recently started {@code Intent}
      */
     @Override public Intent peekNextStartedService() {
@@ -154,6 +162,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Non-Android accessor (and a handy way to get a working {@code ResourceLoader}
+     *
      * @return the {@code ResourceLoader} associated with this Application
      */
     public ResourceLoader getResourceLoader() {
@@ -163,8 +172,9 @@ public class ShadowApplication extends ShadowContextWrapper {
     /**
      * Broadcasts the {@code Intent} by iterating through the registered receivers, invoking their filters, and calling
      * {@code onRecieve(Application, Intent)} as appropriate. Does not enqueue the {@code Intent} for later inspection.
+     *
      * @param intent the {@code Intent} to broadcast
-     * todo: enqueue the Intent for later inspection
+     *               todo: enqueue the Intent for later inspection
      */
     @Override @Implementation
     public void sendBroadcast(Intent intent) {
@@ -177,6 +187,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Always returns {@code null}
+     *
      * @return {@code null}
      */
     @Override @Implementation
@@ -208,8 +219,9 @@ public class ShadowApplication extends ShadowContextWrapper {
     /**
      * Iterates through all of the registered receivers on this {@code Application} and if any of them match the given
      * {@code Context} object throws a {@code RuntimeException}
+     *
      * @param context the {@code Context} to check for on each of the remaining registered receivers
-     * @param type the type to report for the context if an exception is thrown
+     * @param type    the type to report for the context if an exception is thrown
      * @throws RuntimeException if there are any recievers registered with the given {@code Context}
      */
     public void assertNoBroadcastListenersRegistered(Context context, String type) {
@@ -225,7 +237,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
      * @return list of {@link Wrapper}s for registered receivers
      */
     public List<Wrapper> getRegisteredReceivers() {
@@ -233,7 +245,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
      * @return the layout inflater used by this {@code Application}
      */
     public LayoutInflater getLayoutInflater() {
@@ -241,7 +253,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
      * @return the app widget manager used by this {@code Application}
      */
     public AppWidgetManager getAppWidgetManager() {

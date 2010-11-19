@@ -35,7 +35,8 @@ public class ShadowAlertDialog extends ShadowDialog {
     private boolean isCancelable;
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @return the most recently created {@code AlertDialog}, or null if none has been created during this test run
      */
     public static ShadowAlertDialog getLatestAlertDialog() {
@@ -57,6 +58,7 @@ public class ShadowAlertDialog extends ShadowDialog {
     /**
      * Simulates a click on the {@code Dialog} item indicated by {@code index}. Handles both multi- and single-choice
      * dialogs, tracks which items are currently checked and calls listeners appropriately.
+     *
      * @param index the index of the item to click on
      */
     public void clickOnItem(int index) {
@@ -85,7 +87,8 @@ public class ShadowAlertDialog extends ShadowDialog {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @return the items that are available to be clicked on
      */
     public CharSequence[] getItems() {
@@ -93,7 +96,8 @@ public class ShadowAlertDialog extends ShadowDialog {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @return the title of the dialog
      */
     public String getTitle() {
@@ -101,7 +105,8 @@ public class ShadowAlertDialog extends ShadowDialog {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @return the message displayed in the dialog
      */
     public String getMessage() {
@@ -109,9 +114,10 @@ public class ShadowAlertDialog extends ShadowDialog {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @return an array indicating which items are and are not clicked on a multi-choice dialog
-     * todo: support single choice dialogs
+     *         todo: support single choice dialogs
      */
     public boolean[] getCheckedItems() {
         return checkedItems;
@@ -144,6 +150,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         /**
          * just stashes the context for later use
+         *
          * @param context the context
          */
         public void __constructor__(Context context) {

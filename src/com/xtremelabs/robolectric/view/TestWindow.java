@@ -24,7 +24,7 @@ public class TestWindow extends Window {
     }
 
     @Override public void setFlags(int flags, int mask) {
-        this.flags = (flags&~mask) | (flags&mask);
+        this.flags = (flags & ~mask) | (flags & mask);
     }
 
     @Override public void addFlags(int flags) {

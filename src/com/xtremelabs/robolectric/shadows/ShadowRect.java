@@ -48,9 +48,15 @@ public class ShadowRect {
     @Implementation
     public String toString() {
         StringBuilder sb = new StringBuilder(32);
-        sb.append("Rect("); sb.append(realRect.left); sb.append(", ");
-        sb.append(realRect.top); sb.append(" - "); sb.append(realRect.right);
-        sb.append(", "); sb.append(realRect.bottom); sb.append(")");
+        sb.append("Rect(");
+        sb.append(realRect.left);
+        sb.append(", ");
+        sb.append(realRect.top);
+        sb.append(" - ");
+        sb.append(realRect.right);
+        sb.append(", ");
+        sb.append(realRect.bottom);
+        sb.append(")");
         return sb.toString();
     }
 }

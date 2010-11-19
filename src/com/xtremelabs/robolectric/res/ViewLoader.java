@@ -89,14 +89,14 @@ public class ViewLoader extends XmlLoader {
         return inflateView(context, key, null);
     }
 
-    private View inflateView(Context context, String key, Map<String,String> attributes) {
+    private View inflateView(Context context, String key, Map<String, String> attributes) {
         ViewNode viewNode = viewNodesByLayoutName.get(key);
         if (viewNode == null) {
             throw new RuntimeException("no such layout " + key);
         }
         try {
             if (attributes != null) {
-                for (Map.Entry<String,  String> entry : attributes.entrySet()) {
+                for (Map.Entry<String, String> entry : attributes.entrySet()) {
                     if (!entry.getKey().equals("layout")) {
                         viewNode.attributes.put(entry.getKey(), entry.getValue());
                     }

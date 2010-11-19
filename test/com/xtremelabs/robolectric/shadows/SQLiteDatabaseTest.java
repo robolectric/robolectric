@@ -30,7 +30,7 @@ public class SQLiteDatabaseTest {
     public void testInsertAndQuery() throws Exception {
 
         String stringColumnValue = "column_value";
-        byte[] byteColumnValue = new byte[] {1,2,3};
+        byte[] byteColumnValue = new byte[]{1, 2, 3};
 
         ContentValues values = new ContentValues();
 
@@ -39,7 +39,7 @@ public class SQLiteDatabaseTest {
 
         database.insert("table_name", null, values);
 
-        Cursor cursor = database.query("table_name", new String[] {"second_column", "first_column"}, null, null, null, null, null);
+        Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);
 
         assertThat(cursor.moveToFirst(), equalTo(true));
 
@@ -52,7 +52,7 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testEmptyTable() throws Exception {
-        Cursor cursor = database.query("table_name", new String[] {"second_column", "first_column"}, null, null, null, null, null);
+        Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);
 
         assertThat(cursor.moveToFirst(), equalTo(false));
     }

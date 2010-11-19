@@ -31,7 +31,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
 /**
  * Shadows the {@code android.content.ContentValues} class.
- *
+ * <p/>
  * This is a fancy map from String to... something. Works just like the Android class it shadows.
  */
 @SuppressWarnings({"UnusedDeclaration"})

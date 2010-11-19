@@ -52,6 +52,7 @@ public class ShadowAppWidgetManager {
 
     /**
      * Finds or creates an {@code AppWidgetManager} for the given {@code context}
+     *
      * @param context the {@code context} for which to produce an assoicated {@code AppWidgetManager}
      * @return the {@code AppWidgetManager} associated with the given {@code context}
      */
@@ -69,6 +70,7 @@ public class ShadowAppWidgetManager {
 
     /**
      * Simulates updating an {@code AppWidget} with a new set of views
+     * 
      * @param appWidgetId id of widget
      * @param views views to update
      */
@@ -87,6 +89,7 @@ public class ShadowAppWidgetManager {
     /**
      * Triggers a reapplication of the most recent set of actions against the widget, which is what happens when the
      * phone is rotated. Does not attempt to simulate a change in screen geometry.
+     *
      * @param appWidgetId the ID of the widget to be affected
      */
     public void reconstructWidgetViewAsIfPhoneWasRotated(int appWidgetId) {
@@ -97,6 +100,7 @@ public class ShadowAppWidgetManager {
 
     /**
      * Creates a widget by inflating its layout.
+     * 
      * @param appWidgetProviderClass the app widget provider class
      * @param widgetLayoutId id of the layout to inflate
      * @return the ID of the new widget
@@ -107,6 +111,7 @@ public class ShadowAppWidgetManager {
 
     /**
      * Creates a bunch of widgets by inflating the same layout multiple times.
+     * 
      * @param appWidgetProviderClass the app widget provider class
      * @param widgetLayoutId id of the layout to inflate
      * @param howManyToCreate number of new widgets to create
@@ -138,7 +143,8 @@ public class ShadowAppWidgetManager {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @param widgetId
      * @return the widget associated with {@code widgetId}
      */
@@ -147,7 +153,8 @@ public class ShadowAppWidgetManager {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @param widgetId
      * @return the {@code AppWidgetProvider} associated with {@code widgetId}
      */
@@ -165,7 +172,8 @@ public class ShadowAppWidgetManager {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @return the state of the{@code alwaysRecreateViewsDuringUpdate} flag
      */
     public boolean getAlwaysRecreateViewsDuringUpdate() {

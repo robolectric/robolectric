@@ -34,7 +34,8 @@ public class ShadowContext {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @return the {@code ResourceLoader} associated with this {@code Context}
      */
     public ResourceLoader getResourceLoader() {

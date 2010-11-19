@@ -136,7 +136,7 @@ public class ShadowDialog {
 
     @Implementation
     public void cancel() {
-        if(onCancelListener != null) {
+        if (onCancelListener != null) {
             onCancelListener.onCancel(realDialog);
         }
         dismiss();
@@ -149,7 +149,7 @@ public class ShadowDialog {
 
     @Implementation
     public Window getWindow() {
-        if(window == null) {
+        if (window == null) {
             window = new TestWindow(realDialog.getContext());
         }
         return window;

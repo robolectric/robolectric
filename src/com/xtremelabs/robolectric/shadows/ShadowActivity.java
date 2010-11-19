@@ -119,11 +119,12 @@ public class ShadowActivity extends ShadowContextWrapper {
     /**
      * Constructs a new Window (a {@link com.xtremelabs.robolectric.view.TestWindow}) if no window has previously been
      * set.
+     *
      * @return the window associated with this Activity
      */
     @Implementation
     public Window getWindow() {
-        if(window == null) {
+        if (window == null) {
             window = new TestWindow(realActivity);
         }
         return window;
@@ -131,8 +132,9 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     /**
      * Checks to see if {@code BroadcastListener}s are still registered.
-     * @see #assertNoBroadcastListenersRegistered()
+     *
      * @throws RuntimeException if any listeners are still registered
+     * @see #assertNoBroadcastListenersRegistered()
      */
     @Implementation
     public void onDestroy() {
@@ -141,15 +143,17 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     /**
      * Checks the {@code ApplicationContext} to see if {@code BroadcastListener}s are still registered.
-     * @see ShadowApplication#assertNoBroadcastListenersRegistered(android.content.Context, String)
+     *
      * @throws RuntimeException if any listeners are still registered
+     * @see ShadowApplication#assertNoBroadcastListenersRegistered(android.content.Context, String)
      */
     public void assertNoBroadcastListenersRegistered() {
         ((ShadowApplication) shadowOf(getApplicationContext())).assertNoBroadcastListenersRegistered(realActivity, "Activity");
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @return the {@code contentView} set by one of the {@code setContentView()} methods
      */
     public View getContentView() {
@@ -157,7 +161,8 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @return the {@code resultCode} set by one of the {@code setResult()} methods
      */
     public int getResultCode() {
@@ -165,7 +170,8 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
 
     /**
-     * Non-Android accessor
+     * Non-Android accessor.
+     *
      * @return the {@code Intent} set by {@link #setResult(int, android.content.Intent)}
      */
     public Intent getResultIntent() {

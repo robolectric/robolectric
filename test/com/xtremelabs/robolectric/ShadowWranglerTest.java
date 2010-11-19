@@ -187,7 +187,7 @@ public class ShadowWranglerTest {
             realViewInParentConstructor = realView;
         }
     }
-    
+
     @Implements(View.class)
     public static class TestShadowView_WithDefaultConstructorAndNoConstructorDelegate {
     }

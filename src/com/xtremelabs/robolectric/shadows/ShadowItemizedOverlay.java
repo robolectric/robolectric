@@ -12,7 +12,7 @@ public class ShadowItemizedOverlay {
     private boolean isPopulated;
     private boolean shouldHit;
     private boolean lastFocusedIndexWasReset;
-    
+
     @Implementation
     public final void populate() {
         isPopulated = true;

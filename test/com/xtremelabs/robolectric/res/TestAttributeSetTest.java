@@ -42,7 +42,7 @@ public class TestAttributeSetTest {
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
         assertThat(testAttributeSet.getAttributeResourceValue("some namespace", "message", 0), equalTo(R.string.howdy));
     }
-    
+
     @Test
     public void getAttributeResourceValue_shouldReturnDefaultValueWhenNotInAttributeSet() throws Exception {
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);

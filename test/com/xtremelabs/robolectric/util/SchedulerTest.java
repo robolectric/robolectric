@@ -24,7 +24,7 @@ public class SchedulerTest {
 
         assertThat(scheduler.tick(0), equalTo(true));
         transcript.assertEventsSoFar("one", "two");
-        
+
         assertThat(scheduler.tick(0), equalTo(false));
         transcript.assertNoEventsSoFar();
 

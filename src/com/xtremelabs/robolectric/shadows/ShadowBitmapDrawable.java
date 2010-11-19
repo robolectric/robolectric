@@ -16,6 +16,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
 
     /**
      * Draws the contained bitmap onto the canvas at 0,0 with a default {@code Paint}
+     *
      * @param canvas the canvas to draw on
      */
     @Implementation
@@ -26,7 +27,8 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     /**
      * Non-Android accessor that tells you the resource id that this {@code BitmapDrawable} was loaded from. This lets
      * your tests assert that the bitmap is correct without having to actually load the bitmap.
-     * @return resource id
+     * 
+     * @return resource id from which this {@code BitmapDrawable} was loaded
      */
     public int getLoadedFromResourceId() {
         return loadedFromResourceId;
