@@ -145,7 +145,7 @@ public class ShadowAppWidgetManager {
     /**
      * Non-Android accessor.
      *
-     * @param widgetId
+     * @param widgetId id of the desired widget
      * @return the widget associated with {@code widgetId}
      */
     public View getViewFor(int widgetId) {
@@ -155,7 +155,7 @@ public class ShadowAppWidgetManager {
     /**
      * Non-Android accessor.
      *
-     * @param widgetId
+     * @param widgetId id of the widget whose provider is to be returned
      * @return the {@code AppWidgetProvider} associated with {@code widgetId}
      */
     public AppWidgetProvider getAppWidgetProviderFor(int widgetId) {
@@ -166,9 +166,10 @@ public class ShadowAppWidgetManager {
      * Non-Android mechanism that enables testing of widget behavior when all of the views are recreated on every
      * update. This is useful for ensuring that your widget will behave correctly even if it is restarted by the OS
      * between events.
+     * @param alwaysRecreate whether or not to always recreate the views
      */
-    public void setAlwaysRecreateViewsDuringUpdate(boolean b) {
-        alwaysRecreateViewsDuringUpdate = b;
+    public void setAlwaysRecreateViewsDuringUpdate(boolean alwaysRecreate) {
+        alwaysRecreateViewsDuringUpdate = alwaysRecreate;
     }
 
     /**
