@@ -8,6 +8,9 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Shadow of {@code IntentFilter} implemented with a {@link java.util.List}
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(IntentFilter.class)
 public class ShadowIntentFilter {
