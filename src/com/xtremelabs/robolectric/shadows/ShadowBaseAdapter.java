@@ -9,7 +9,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shadows the {@code android.widget.BaseAdapter} class
+ * Shadows the {@code android.widget.BaseAdapter} class.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BaseAdapter.class)

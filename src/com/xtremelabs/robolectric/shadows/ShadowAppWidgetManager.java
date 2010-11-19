@@ -19,7 +19,7 @@ import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
- * Shadows the {@code android.appwidget.AppWidgetManager} class
+ * Shadows the {@code android.appwidget.AppWidgetManager} class.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AppWidgetManager.class)

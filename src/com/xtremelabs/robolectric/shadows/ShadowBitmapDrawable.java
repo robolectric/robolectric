@@ -8,7 +8,7 @@ import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
 
 /**
- * Shadows the {@code android.android.graphics.drawable.BitmapDrawable} class
+ * Shadows the {@code android.android.graphics.drawable.BitmapDrawable} class.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapDrawable.class)

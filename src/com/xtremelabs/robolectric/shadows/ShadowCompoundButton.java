@@ -6,7 +6,7 @@ import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
 /**
- * Shadows the {@code android.widget.CompoundButton} class
+ * Shadows the {@code android.widget.CompoundButton} class.
  *
  * Keeps track of whether or not its "checked" state is set and deals with listeners in an appropriate way.
  */

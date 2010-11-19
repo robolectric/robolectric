@@ -6,7 +6,7 @@ import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
 /**
- * Shadows the {@code android.widget.AbsSpinner} class
+ * Shadows the {@code android.widget.AbsSpinner} class.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AbsSpinner.class)

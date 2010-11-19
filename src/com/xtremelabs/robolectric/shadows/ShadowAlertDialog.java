@@ -14,7 +14,7 @@ import java.lang.reflect.Constructor;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
- * Shadows the {@code android.app.AlertDialog} class
+ * Shadows the {@code android.app.AlertDialog} class.
  */
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -121,7 +121,7 @@ public class ShadowAlertDialog extends ShadowDialog {
     }
 
     /**
-     * Shadows the {@code android.app.AlertDialog.Builder} class
+     * Shadows the {@code android.app.AlertDialog.Builder} class.
      */
     @Implements(AlertDialog.Builder.class)
     public static class ShadowBuilder {

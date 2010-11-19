@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shadows the {@code android.widget.Adapter} class
+ * Shadows the {@code android.widget.Adapter} class.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)

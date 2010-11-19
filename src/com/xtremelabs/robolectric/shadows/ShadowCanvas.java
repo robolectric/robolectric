@@ -10,7 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Shadows the {@code android.graphics.Canvas} class
+ * Shadows the {@code android.graphics.Canvas} class.
  *
  * Broken.
  * This implementation is very specific to the application for which it was developed.

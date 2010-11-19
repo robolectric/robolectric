@@ -6,7 +6,7 @@ import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
 
 /**
- * Shadows the {@code android.database.AbstractCursor} class
+ * Shadows the {@code android.database.AbstractCursor} class.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AbstractCursor.class)

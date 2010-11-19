@@ -11,7 +11,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadows the {@code android.content.Context} class.
- * Calls through to the {@code resourceLoader} to actually load resources
+ * Calls through to the {@code resourceLoader} to actually load resources.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Context.class)

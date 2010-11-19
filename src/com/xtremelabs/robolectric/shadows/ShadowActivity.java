@@ -15,7 +15,7 @@ import com.xtremelabs.robolectric.view.TestWindow;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
- * Shadows the {@code android.app.Activity} class
+ * Shadows the {@code android.app.Activity} class.
  */
 
 @SuppressWarnings({"UnusedDeclaration"})

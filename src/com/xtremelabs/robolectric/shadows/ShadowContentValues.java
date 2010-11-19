@@ -30,7 +30,7 @@ import java.util.Set;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
 /**
- * Shadows the {@code android.content.ContentValues} class
+ * Shadows the {@code android.content.ContentValues} class.
  *
  * This is a fancy map from String to... something. Works just like the Android class it shadows.
  */
