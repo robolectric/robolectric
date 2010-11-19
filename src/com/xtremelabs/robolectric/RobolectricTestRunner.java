@@ -16,6 +16,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -38,7 +39,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     // fields in the RobolectricTestRunner in the instrumented ClassLoader
     private String resourceDirectory;
     private String androidManifestPath;
-    private ResourceLoader resourceLoader;
 
     private static RobolectricClassLoader getDefaultLoader() {
         if (defaultLoader == null) {
@@ -102,7 +102,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             this.androidManifestPath = androidManifestPath;
             this.resourceDirectory = resourceDirectory;
 
-//            delegateLoadingOf(Uri.class.getName());
             delegateLoadingOf(Uri__FromAndroid.class.getName());
             delegateLoadingOf(RobolectricTestRunnerInterface.class.getName());
             delegateLoadingOf(RealObject.class.getName());
@@ -213,7 +212,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     public void setupApplicationState(String projectRoot, String resourceDir) {
-        resourceLoader = createResourceLoader(projectRoot, resourceDir);
+        ResourceLoader resourceLoader = createResourceLoader(projectRoot, resourceDir);
 
         Robolectric.bindDefaultShadowClasses();
         Robolectric.resetStaticState();
@@ -222,6 +221,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     /**
      * Override this method if you want to provide your own implementation of Application.
+     *
+     * @return The Application instance.
      */
     protected Application createApplication() {
         return new Application();
@@ -234,7 +235,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             try {
                 String rClassName = findResourcePackageName(projectRoot);
                 Class rClass = Class.forName(rClassName);
-                resourceLoader = new ResourceLoader(rClass, new File(resourceDirectory));
+                File resourceDir = new File(resourceDirectory);
+                if (!resourceDir.exists() || !resourceDir.isDirectory()) {
+                    throw new FileNotFoundException(resourceDir + " not found or not a directory");
+                }
+                resourceLoader = new ResourceLoader(rClass, resourceDir);
                 resourceLoaderForRootAndDirectory.put(rootAndDirectory, resourceLoader);
             } catch (Exception e) {
                 throw new RuntimeException(e);
