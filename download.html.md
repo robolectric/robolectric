@@ -5,6 +5,11 @@
 
 ## Downloads
 
+Most people will want to grab the latest robolectric-all.jar below. It includes the libraries which Robolectric
+depends on (javassist, junit, json, hamcrest, and objenesis).
+
+If you prefer to provide your own versions of those dependencies, grab just robolectric.jar.
+
 <table id="standalone-downloads">
 <tr>
   <th></th>
