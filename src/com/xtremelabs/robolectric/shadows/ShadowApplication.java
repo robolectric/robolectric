@@ -24,9 +24,6 @@ import java.util.List;
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
-/**
- * Shadows the {@code android.app.Application} class.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
@@ -49,8 +46,8 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
-     * @param application
-     * @param resourceLoader
+     * @param application application
+     * @param resourceLoader resource loader
      * @return the application
      * todo: make this non-static?
      */
@@ -229,6 +226,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Non-Android accessor
+     * @return list of {@link Wrapper}s for registered receivers
      */
     public List<Wrapper> getRegisteredReceivers() {
         return registeredReceivers;
@@ -236,6 +234,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Non-Android accessor
+     * @return the layout inflater used by this {@code Application}
      */
     public LayoutInflater getLayoutInflater() {
         return layoutInflater;
@@ -243,12 +242,13 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Non-Android accessor
+     * @return the app widget manager used by this {@code Application}
      */
     public AppWidgetManager getAppWidgetManager() {
         return appWidgetManager;
     }
 
-    private class Wrapper {
+    public class Wrapper {
         private BroadcastReceiver broadcastReceiver;
         private IntentFilter intentFilter;
         private Context context;

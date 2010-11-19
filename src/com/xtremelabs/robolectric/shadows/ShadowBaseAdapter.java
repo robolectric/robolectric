@@ -8,9 +8,6 @@ import com.xtremelabs.robolectric.util.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Shadows the {@code android.widget.BaseAdapter} class.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BaseAdapter.class)
 public class ShadowBaseAdapter {
@@ -27,7 +24,7 @@ public class ShadowBaseAdapter {
 
     /**
      * Registers the observer
-     * @param observer
+     * @param observer observer
      */
     @Implementation
     public void registerDataSetObserver(DataSetObserver observer) {
@@ -36,7 +33,7 @@ public class ShadowBaseAdapter {
 
     /**
      * Unregisters the observer if it can be found. Nothing otherwise.
-     * @param observer
+     * @param observer observer
      */
     @Implementation
     public void unregisterDataSetObserver(DataSetObserver observer) {

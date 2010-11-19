@@ -13,9 +13,6 @@ import java.lang.reflect.Constructor;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
-/**
- * Shadows the {@code android.app.AlertDialog} class.
- */
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)

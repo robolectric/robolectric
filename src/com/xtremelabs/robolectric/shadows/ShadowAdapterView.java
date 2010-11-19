@@ -12,9 +12,6 @@ import com.xtremelabs.robolectric.util.RealObject;
 import java.util.ArrayList;
 import java.util.List;
 
-/**
- * Shadows the {@code android.widget.Adapter} class.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
 public class ShadowAdapterView extends ShadowViewGroup {
