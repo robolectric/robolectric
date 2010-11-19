@@ -11,14 +11,13 @@ import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
+/**
+ * Shadows the {@code android.os.Bundle} class
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bundle.class)
 public class ShadowBundle {
     Map<String, Object> map = new HashMap<String, Object>();
-
-    @Implementation
-    public void clear() {
-    }
 
     @Implementation
     public Object get(String key) {

@@ -7,6 +7,11 @@ import com.xtremelabs.robolectric.util.Implements;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
+/**
+ * Shadows the {@code android.content.ComponentName} class
+ *
+ * Just keeps track of the package and class names, and then gives them back when you ask for them.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ComponentName.class)
 public class ShadowComponentName {

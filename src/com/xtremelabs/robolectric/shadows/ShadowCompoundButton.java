@@ -5,6 +5,11 @@ import android.widget.CompoundButton;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+/**
+ * Shadows the {@code android.widget.CompoundButton} class
+ *
+ * Keeps track of whether or not its "checked" state is set and deals with listeners in an appropriate way.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(CompoundButton.class)
 public class ShadowCompoundButton extends ShadowTextView implements Checkable {
@@ -42,4 +47,4 @@ public class ShadowCompoundButton extends ShadowTextView implements Checkable {
     public void setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener listener) {
         mOnCheckedChangeListener = listener;
     }
-    }
+}
