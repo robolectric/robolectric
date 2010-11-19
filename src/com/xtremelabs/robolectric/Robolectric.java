@@ -11,6 +11,7 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.location.Geocoder;
 import android.location.LocationManager;
 import android.media.AudioManager;
 import android.os.Handler;
@@ -95,6 +96,7 @@ public class Robolectric {
                 ShadowDrawable.class,
                 ShadowDialog.class,
                 ShadowEditText.class,
+                ShadowGeocoder.class,
                 ShadowGeoPoint.class,
                 ShadowHandler.class,
                 ShadowImageView.class,
@@ -271,15 +273,19 @@ public class Robolectric {
     }
 
     public static ShadowLayoutInflater shadowOf(LayoutInflater instance) {
-        return ((ShadowLayoutInflater) shadowOf_(instance));
+        return (ShadowLayoutInflater) shadowOf_(instance);
     }
 
     public static ShadowDisplay shadowOf(Display instance) {
-        return ((ShadowDisplay) shadowOf_(instance));
+        return (ShadowDisplay) shadowOf_(instance);
     }
 
     public static ShadowAudioManager shadowOf(AudioManager instance) {
-        return ((ShadowAudioManager) shadowOf_(instance));
+        return (ShadowAudioManager) shadowOf_(instance);
+    }
+
+    public static ShadowGeocoder shadowOf(Geocoder instance) {
+        return (ShadowGeocoder) shadowOf_(instance);
     }
 
     @SuppressWarnings({"unchecked"})
