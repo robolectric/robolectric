@@ -92,7 +92,14 @@ public class ShadowPoint {
     }
 }
 {% endhighlight %}
-Robolectric will set realPoint to the actual instance of <code>Point</code> before invoking any other methods.
+Robolectric will set realPoint to the actual instance of <code>Point</code> before invoking any other methods.<p>
+
+It is important to note that methods called on the real object will still be intercepted and redirected by Robolectric.
+This does not often matter in test code, but it has important implications for Shadow class implementors. Since the
+Shadow class inheritance hierarchy does not always mirror that of their associated Android classes, it is sometimes
+necessary to make calls through these real objects so that the Robolectric runtime will have the opportunity to route
+them to the correct Shadow class based on the actual class of the object. Otherwise methods on Shadows of base classes
+would be unable to access methods on the shadows of their subclasses.
 
 
 
