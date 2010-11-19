@@ -167,7 +167,8 @@ public class ShadowIntent {
         return (Serializable) extras.get(name);
     }
 
-    public ComponentName getComponentName() {
+    @Implementation
+    public ComponentName getComponent() {
         return componentName;
     }
 
