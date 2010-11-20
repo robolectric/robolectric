@@ -16,7 +16,7 @@ def fill_index_downloads
         sha1 = Digest::SHA1.hexdigest File.read(f)
 
         fn = f.sub(/^pages\//, '')
-        match = /robolectric-?([0-9]\.[0-9]*)?(-all)?(-src)?.*\.jar/.match(f)
+        match = /robolectric-?([0-9]\.[0-9](\.[0-9])?)?(-all)?(-src)?\.jar/.match(f)
         version = "SNAPSHOT"
         version = match[1] if match
         prerelease = /\.rc/.match(f)

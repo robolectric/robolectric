@@ -5,6 +5,9 @@ import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
 
+/**
+ * Shadow of {@code SpannableStringBuilder} implemented using a regular {@code StringBuilder}
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(SpannableStringBuilder.class)
 public class ShadowSpannableStringBuilder implements CharSequence {

@@ -12,6 +12,9 @@ import java.util.ArrayList;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadow of {@code Toast} that tracks {@code Toast} requests. Hear hear! (*clink*)
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Toast.class)
 public class ShadowToast {
@@ -60,14 +63,31 @@ public class ShadowToast {
         return gravity;
     }
 
+    /**
+     * Non-Android accessor that discards the recorded {@code Toast}s
+     */
     public static void reset() {
         shownToasts.clear();
     }
 
+    /**
+     * Non-Android accessor that returns the number of {@code Toast} requests that have been made during this test run
+     * or since {@link #reset()} has been called.
+     *
+     * @return the number of {@code Toast} requests that have been made during this test run
+     * or since {@link #reset()} has been called.
+     */
     public static int shownToastCount() {
         return shownToasts.size();
     }
 
+    /**
+     * Non-Android query method that returns whether or not a particular custom {@code Toast} has been shown.
+     *
+     * @param message the message to search for
+     * @param layoutResourceIdToCheckForMessage the id of the resource that contains the toast messages
+     * @return whether the {@code Toast} was requested
+     */
     public static boolean showedCustomToast(CharSequence message, int layoutResourceIdToCheckForMessage) {
         for (Toast toast : shownToasts) {
             String text = ((TextView) toast.getView().findViewById(layoutResourceIdToCheckForMessage)).getText().toString();
@@ -78,6 +98,12 @@ public class ShadowToast {
         return false;
     }
 
+    /**
+     * query method that returns whether or not a particular {@code Toast} has been shown.
+     *
+     * @param message the message to search for
+     * @return whether the {@code Toast} was requested
+     */
     public static boolean showedToast(CharSequence message) {
         for (Toast toast : shownToasts) {
             String text = shadowOf(toast).text;
@@ -88,10 +114,20 @@ public class ShadowToast {
         return false;
     }
 
+    /**
+     * Non-Android accessor that returns the text of the most recently shown {@code Toast}
+     *
+     * @return the text of the most recently shown {@code Toast}
+     */
     public static String getTextOfLatestToast() {
         return shadowOf(shownToasts.get(0)).text;
     }
 
+    /**
+     * Non-Android accessor that returns the most recently shown {@code Toast}
+     *
+     * @return the most recently shown {@code Toast}
+     */
     public static Toast getLatestToast() {
         return shownToasts.get(shownToasts.size() - 1);
     }

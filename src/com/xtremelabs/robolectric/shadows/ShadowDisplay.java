@@ -7,6 +7,9 @@ import android.view.Surface;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+/**
+ * A shadow for Display with some reasonable defaults
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Display.class)
 public class ShadowDisplay {

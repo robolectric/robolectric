@@ -7,6 +7,10 @@ import com.xtremelabs.robolectric.util.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Shadow of {@code Path} that contains a simplified implementation of the original class that only supports
+ * straight-line {@code Path}s.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Path.class)
 public class ShadowPath {
@@ -25,10 +29,20 @@ public class ShadowPath {
         points.add(new Point(x, y));
     }
 
+    /**
+     * Non-Android accessor.
+     *
+     * @return all the points that have been added to the {@code Path}
+     */
     public List<Point> getPoints() {
         return points;
     }
 
+    /**
+     * Non-Android accessor.
+     *
+     * @return whether the {@link #moveTo(float, float)} method was called
+     */
     public Point getWasMovedTo() {
         return wasMovedTo;
     }

@@ -11,9 +11,6 @@ import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
-/**
- * Shadows the {@code android.os.Bundle} class.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bundle.class)
 public class ShadowBundle {

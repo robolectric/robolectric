@@ -4,6 +4,10 @@ import android.text.TextUtils;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+/**
+ * Shadow for the {@code TextUtils} class that implements the {@link #expandTemplate(CharSequence, CharSequence...)}
+ * method.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextUtils.class)
 public class ShadowTextUtils {

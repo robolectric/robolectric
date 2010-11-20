@@ -12,6 +12,11 @@ import java.util.Locale;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadow of {@code Resources} that simulates the loading of resources
+ *
+ * @see com.xtremelabs.robolectric.RobolectricTestRunner#RobolectricTestRunner(Class, String, String)
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)
 public class ShadowResources {
@@ -90,6 +95,12 @@ public class ShadowResources {
         return (int) getDimension(id);
     }
 
+    /**
+     * Non-Android accessor that sets the value to be returned by {@link #getDimension(int)}
+     *
+     * @param id ID to set the dimension for
+     * @param value value to be returned
+     */
     public void setDimension(int id, int value) {
         resourceLoader.dimensions.put(id, value);
     }

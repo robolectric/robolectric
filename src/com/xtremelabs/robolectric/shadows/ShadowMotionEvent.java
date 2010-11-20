@@ -7,6 +7,10 @@ import com.xtremelabs.robolectric.util.Implements;
 
 import java.lang.reflect.Constructor;
 
+/**
+ * Shadow for {@code MotionEvent} that uses reflection to create {@code MotionEvent} objects, which cannot otherwise
+ * be constructed.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MotionEvent.class)
 public class ShadowMotionEvent {

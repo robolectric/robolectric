@@ -11,6 +11,9 @@ import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadow for {@code ViewGroup} that simulates its implementation
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewGroup.class)
 public class ShadowViewGroup extends ShadowView {
@@ -84,6 +87,10 @@ public class ShadowViewGroup extends ShadowView {
         }
     }
 
+    /**
+     * Non-Android accessor that concatenates all of the strings contained in all of the descendants of this
+     * {@code ViewGroup}.
+     */
     @Override
     public String innerText() {
         String innerText = "";
@@ -101,6 +108,9 @@ public class ShadowViewGroup extends ShadowView {
         return innerText;
     }
 
+    /**
+     * Non-Android method that dumps the state of this {@code ViewGroup} to {@code System.out}
+     */
     @Override public void dump(PrintStream out, int indent) {
         dumpFirstPart(out, indent);
         if (children.size() > 0) {

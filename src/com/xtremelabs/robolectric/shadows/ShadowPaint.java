@@ -5,6 +5,10 @@ import android.graphics.Shader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+/**
+ * Shadow of {@code Paint} that has some extra accessors so that tests can tell whether a {@code Paint} object was
+ * created with the expected parameters.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Paint.class)
 public class ShadowPaint {
@@ -101,30 +105,65 @@ public class ShadowPaint {
         shadowColor = color;
     }
 
+    /**
+     * Non-Android accessor.
+     *
+     * @return shadow radius (Paint related shadow, not Robolectric Shadow)
+     */
     public float getShadowRadius() {
         return shadowRadius;
     }
 
+    /**
+     * Non-Android accessor.
+     *
+     * @return shadow Dx (Paint related shadow, not Robolectric Shadow)
+     */
     public float getShadowDx() {
         return shadowDx;
     }
 
+    /**
+     * Non-Android accessor.
+     *
+     * @return shadow Dx (Paint related shadow, not Robolectric Shadow)
+     */
     public float getShadowDy() {
         return shadowDy;
     }
 
+    /**
+     * Non-Android accessor.
+     *
+     * @return shadow color (Paint related shadow, not Robolectric Shadow)
+     */
     public int getShadowColor() {
         return shadowColor;
     }
 
+    /**
+     * Non-Android accessor.
+     *
+     * @return cap
+     */
     public Paint.Cap getCap() {
         return cap;
     }
 
+    /**
+     * Non-Android accessor.
+     *
+     * @return join
+     */
     public Paint.Join getJoin() {
         return join;
     }
 
+    /**
+     * Non-Android accessor.
+     *
+     * @return width
+     */
     public float getWidth() {
         return width;
     }

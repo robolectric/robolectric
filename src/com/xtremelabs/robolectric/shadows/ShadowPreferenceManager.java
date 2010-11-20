@@ -7,6 +7,9 @@ import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
+/**
+ * Shadow for {@code PreferenceManager} that returns instances of the {@link TestSharedPreferences} utility class
+ */
 @Implements(PreferenceManager.class)
 public class ShadowPreferenceManager {
 

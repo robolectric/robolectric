@@ -9,6 +9,12 @@ import com.xtremelabs.robolectric.util.RealObject;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadow for Handler that puts posted {@link Runnable}s into a queue instead of sending them to be handled on a
+ * separate thread.{@link Runnable}s that are scheduled to be executed immediately can be triggered by calling
+ * {@link #flush()}.
+ * todo: add utility method to advance time and trigger execution of Runnables scheduled for a time in the future
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Handler.class)
 public class ShadowHandler {
@@ -61,6 +67,11 @@ public class ShadowHandler {
         return sendMessage(msg);
     }
 
+    /**
+     * Causes any posted {@link Runnable}s that are scheduled to run immediately to actually be run. This gives
+     * visibility into the order in which things will happen. An event can be triggered and its immediate effects
+     * examined, and then {@code flush()} can be called and the side-effects of the original event can be examined.
+     */
     public static void flush() {
         shadowOf(Looper.myLooper()).idle();
     }

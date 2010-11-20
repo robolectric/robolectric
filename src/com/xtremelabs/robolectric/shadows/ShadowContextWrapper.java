@@ -69,6 +69,10 @@ public class ShadowContextWrapper extends ShadowContext {
         return SHADOW_PACKAGE_NAME;
     }
 
+    /**
+     * Implements Android's {@code MockPackageManager} with an anonymous inner class.
+     * @return a {@code MockPackageManager}
+     */
     @Implementation
     public PackageManager getPackageManager() {
         if (packageManager == null) {
@@ -115,28 +119,52 @@ public class ShadowContextWrapper extends ShadowContext {
         getApplicationContext().startActivity(intent);
     }
 
+    @Implementation
+    public SharedPreferences getSharedPreferences(String name, int mode) {
+        return new TestSharedPreferences(name, mode);
+    }
+
+    /**
+     * Non-Android accessor that delegates to the application to consume and return the next {@code Intent} on the
+     * started activities stack.
+     *
+     * @return the next started {@code Intent} for an activity
+     */
     public Intent getNextStartedActivity() {
         return getShadowApplication().getNextStartedActivity();
     }
 
+    /**
+     * Non-Androic accessor that delegates to the application to return (without consuming) the next {@code Intent} on
+     * the started activities stack.
+     *
+     * @return the next started {@code Intent} for an activity
+     */
     public Intent peekNextStartedActivity() {
         return getShadowApplication().peekNextStartedActivity();
     }
 
+    /**
+     * Non-Android accessor that delegates to the application to consume and return the next {@code Intent} on the
+     * started services stack.
+     *
+     * @return the next started {@code Intent} for a service
+     */
     public Intent getNextStartedService() {
         return getShadowApplication().getNextStartedService();
     }
 
+    /**
+     * Non-Android accessor that delegates to the application to return (without consuming) the next {@code Intent} on
+     * the started services stack.
+     *
+     * @return the next started {@code Intent} for a service
+     */
     public Intent peekNextStartedService() {
         return getShadowApplication().peekNextStartedService();
     }
 
     private ShadowApplication getShadowApplication() {
         return ((ShadowApplication) shadowOf(getApplicationContext()));
-    }
-
-    @Implementation
-    public SharedPreferences getSharedPreferences(String name, int mode) {
-        return new TestSharedPreferences(name, mode);
     }
 }

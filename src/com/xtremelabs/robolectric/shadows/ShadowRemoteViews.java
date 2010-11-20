@@ -14,6 +14,10 @@ import com.xtremelabs.robolectric.util.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Shadow for {@code RemoteViews} that simulates its implementation. Supports pending intents for events, changing
+ * visibility, setting text, updating etc...
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(RemoteViews.class)
 public class ShadowRemoteViews {
