@@ -7,6 +7,7 @@ import com.xtremelabs.robolectric.util.RealObject;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Point.class)
 public class ShadowPoint {
     @RealObject private Point realPoint;
@@ -39,11 +40,13 @@ public class ShadowPoint {
         realPoint.y += dy;
     }
 
+    @Implementation
     public final boolean equals(int x, int y) {
         return realPoint.x == x && realPoint.y == y;
     }
 
-    @Override public boolean equals(Object object) {
+    @Override @Implementation
+    public boolean equals(Object object) {
         if (object == null) return false;
         Object o = shadowOf_(object);
         if (o == null) return false;
@@ -56,11 +59,13 @@ public class ShadowPoint {
         return false;
     }
 
-    @Override public int hashCode() {
+    @Override @Implementation
+    public int hashCode() {
         return realPoint.x * 32713 + realPoint.y;
     }
 
-    @Override public String toString() {
+    @Override @Implementation
+    public String toString() {
         return "Point(" + realPoint.x + ", " + realPoint.y + ")";
     }
 }

@@ -364,22 +364,27 @@ public class ShadowView {
         for (int i = 0; i < indent; i++) out.print(" ");
     }
 
+    @Implementation
     public int getLeft() {
         return left;
     }
 
+    @Implementation
     public int getTop() {
         return top;
     }
 
+    @Implementation
     public int getRight() {
         return right;
     }
 
+    @Implementation
     public int getBottom() {
         return bottom;
     }
 
+    @Implementation
     public boolean isClickable() {
         return clickable;
     }

@@ -39,6 +39,7 @@ public class ShadowImageView extends ShadowView {
         this.alpha = alpha;
     }
 
+    @Implementation
     public ImageView.ScaleType getScaleType() {
         return scaleType;
     }

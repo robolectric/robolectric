@@ -20,8 +20,7 @@ public class ShadowEditText extends ShadowTextView {
         focusableInTouchMode = true;
     }
 
-    @Implementation
-    @Override
+    @Override @Implementation
     public void setText(CharSequence text) {
         super.setText(text);
         for (TextWatcher watcher : watchers) {
@@ -29,8 +28,7 @@ public class ShadowEditText extends ShadowTextView {
         }
     }
 
-    @Implementation
-    @Override
+    @Override @Implementation
     public void setText(int textResourceId) {
         super.setText(textResourceId);
         for (TextWatcher watcher : watchers) {
@@ -38,8 +36,7 @@ public class ShadowEditText extends ShadowTextView {
         }
     }
 
-    @Implementation
-    @Override
+    @Override @Implementation
     public Editable getText() {
         CharSequence text = super.getText();
         if (!(text instanceof Editable)) {

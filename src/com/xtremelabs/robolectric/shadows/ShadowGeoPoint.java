@@ -28,7 +28,7 @@ public class ShadowGeoPoint {
         return lng;
     }
 
-    @Override
+    @Override @Implementation
     public boolean equals(Object o) {
         if (o == null) return false;
         o = shadowOf_(o);
@@ -44,14 +44,15 @@ public class ShadowGeoPoint {
         return true;
     }
 
-    @Override
+    @Override @Implementation
     public int hashCode() {
         int result = lat;
         result = 31 * result + lng;
         return result;
     }
 
-    @Override public String toString() {
+    @Override @Implementation
+    public String toString() {
         return "ShadowGeoPoint{" +
                 "lat=" + fromE6(lat) +
                 ", lng=" + fromE6(lng) +

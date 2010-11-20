@@ -20,13 +20,12 @@ public class RobolectricWiringTest {
     }
 
     @Test
-    public void testAllImplementationMethodsHaveCorrentSignature() throws Exception {
-
+    public void testAllImplementationMethodsHaveCorrectSignature() throws Exception {
         for (Class<?> shadowClass : Robolectric.getDefaultShadowClasses()) {
             verifyClass(shadowClass);
         }
 
-        assertEquals("@Implementation method mismatch: " + mismatches, 0, mismatches.size());
+        assertEquals("@Implementation method mismatch: " + Join.join("\n", mismatches), 0, mismatches.size());
     }
 
     private void verifyClass(final Class<?> shadowClass) {
@@ -49,9 +48,10 @@ public class RobolectricWiringTest {
     }
 
     private void verifyMethod(Class implementedClass, Method shadowMethod) {
+        Member implementedMember;
+
         boolean isConstructor = shadowMethod.getName().equals("__constructor__");
-        if (shadowMethod.isAnnotationPresent(Implementation.class) || isConstructor) {
-            Member implementedMember;
+        if (isAnnotatedImplementation(shadowMethod) || isConstructor) {
             if (isConstructor) {
                 implementedMember = findConstructor(implementedClass, shadowMethod);
             } else {
@@ -63,6 +63,20 @@ public class RobolectricWiringTest {
             if (!Modifier.isPublic(shadowMethod.getModifiers())) {
                 mismatches.add(shadowMethod.toGenericString() + " should be public");
             }
+        } else {
+            implementedMember = findMethod(implementedClass, shadowMethod);
+            if (implementedMember != null) {
+                mismatches.add(shadowMethod.toGenericString() + " should be annotated @Implementation");
+            }
+        }
+    }
+
+    private boolean isAnnotatedImplementation(Method shadowMethod) {
+        // works around a weird bug causing overridden methods to show no annotations
+        try {
+            return shadowMethod.getDeclaringClass().getDeclaredMethod(shadowMethod.getName(), shadowMethod.getParameterTypes()).isAnnotationPresent(Implementation.class);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
     }
 

@@ -54,7 +54,7 @@ public class ShadowLocation {
         this.longitude = longitude;
     }
 
-    @Override
+    @Override @Implementation
     public boolean equals(Object o) {
         if (o == null) return false;
         o = shadowOf_(o);
@@ -72,7 +72,7 @@ public class ShadowLocation {
         return true;
     }
 
-    @Override
+    @Override @Implementation
     public int hashCode() {
         int result;
         long temp;
@@ -85,7 +85,8 @@ public class ShadowLocation {
         return result;
     }
 
-    @Override public String toString() {
+    @Override @Implementation
+    public String toString() {
         return "Location{" +
                 "time=" + time +
                 ", provider='" + provider + '\'' +

@@ -37,7 +37,7 @@ public class ShadowActivity extends ShadowContextWrapper {
         return Robolectric.application;
     }
 
-    @Implementation @Override
+    @Override @Implementation
     public final Application getApplicationContext() {
         return getApplication();
     }

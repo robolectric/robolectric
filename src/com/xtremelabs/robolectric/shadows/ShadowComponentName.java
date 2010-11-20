@@ -46,7 +46,7 @@ public class ShadowComponentName {
         return cls;
     }
 
-    @Override
+    @Override @Implementation
     public boolean equals(Object o) {
         if (o == null) return false;
         o = shadowOf_(o);
@@ -62,14 +62,15 @@ public class ShadowComponentName {
         return true;
     }
 
-    @Override
+    @Override @Implementation
     public int hashCode() {
         int result = pkg != null ? pkg.hashCode() : 0;
         result = 31 * result + (cls != null ? cls.hashCode() : 0);
         return result;
     }
 
-    @Override public String toString() {
+    @Override @Implementation
+    public String toString() {
         return "ComponentName{" +
                 "pkg='" + pkg + '\'' +
                 ", cls='" + cls + '\'' +

@@ -94,6 +94,7 @@ public class ShadowIntent {
         return realIntent;
     }
 
+    @Implementation
     public ComponentName getComponent() {
         return componentName;
     }
@@ -201,7 +202,7 @@ public class ShadowIntent {
         }
     }
 
-    @Override
+    @Override @Implementation
     public String toString() {
         return "Intent{" +
                 Join.join(
