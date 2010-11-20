@@ -7,6 +7,9 @@ import com.xtremelabs.robolectric.util.RealObject;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
+/**
+ * Shadow implementation of {@code Point}
+ */
 @Implements(Point.class)
 public class ShadowPoint {
     @RealObject private Point realPoint;
@@ -39,10 +42,6 @@ public class ShadowPoint {
         realPoint.y += dy;
     }
 
-    public final boolean equals(int x, int y) {
-        return realPoint.x == x && realPoint.y == y;
-    }
-
     @Override public boolean equals(Object object) {
         if (object == null) return false;
         Object o = shadowOf_(object);
@@ -62,5 +61,16 @@ public class ShadowPoint {
 
     @Override public String toString() {
         return "Point(" + realPoint.x + ", " + realPoint.y + ")";
+    }
+
+    /**
+     * Non-Android utility method for comparing a point to a well-known value
+     *
+     * @param x x
+     * @param y y
+     * @return this.x == x && this.y == y
+     */
+    public final boolean equals(int x, int y) {
+        return realPoint.x == x && realPoint.y == y;
     }
 }

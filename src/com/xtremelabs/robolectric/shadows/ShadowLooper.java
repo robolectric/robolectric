@@ -7,6 +7,12 @@ import com.xtremelabs.robolectric.util.Scheduler;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 
+/**
+ * Shadow for {@code Looper} that enqueues posted {@link Runnable}s to be run (on this thread) later. {@code Runnable}s
+ * that are scheduled to run immediately can be triggered by calling {@link #idle()}
+ * todo: provide better support for advancing the clock and running queued tasks
+ */
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Looper.class)
 public class ShadowLooper {
@@ -41,18 +47,35 @@ public class ShadowLooper {
         return sThreadLocal.get();
     }
 
+    /**
+     * Causes {@link Runnable}s that have been scheduled to run immediately to actually run.
+     */
     public void idle() {
         scheduler.tick(0);
     }
 
-    public void post(Runnable r, long delayMillis) {
-        scheduler.postDelayed(r, delayMillis);
+    /**
+     * Enqueue a task to be run later.
+     *
+     * @param runnable the task to be run
+     * @param delayMillis how many milliseconds into the (virtual) future to run it
+     */
+    public void post(Runnable runnable, long delayMillis) {
+        scheduler.postDelayed(runnable, delayMillis);
     }
 
+    /**
+     * Causes all enqueued tasks to be discarded
+     */
     public void reset() {
         scheduler.reset();
     }
 
+    /**
+     * Returns the {@link com.xtremelabs.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
+     *
+     * @return the {@link com.xtremelabs.robolectric.util.Scheduler} that is being used to manage the enqueued tasks.
+     */
     public Scheduler getScheduler() {
         return scheduler;
     }

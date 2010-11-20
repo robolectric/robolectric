@@ -6,6 +6,11 @@ import com.xtremelabs.robolectric.util.Implements;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
+/**
+ * Shadow of {@code Location} that treats it primarily as a data-holder
+ * todo: support Location's static utility methods
+ */
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Location.class)
 public class ShadowLocation {

@@ -14,6 +14,10 @@ import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadow of {@code MapView} that simulates the internal state of a {@code MapView}. Supports {@code Projection}s,
+ * {@code Overlay}s, and {@code TouchEvent}s
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MapView.class)
 public class ShadowMapView extends ShadowViewGroup {
@@ -214,34 +218,49 @@ public class ShadowMapView extends ShadowViewGroup {
         mapCenter = getProjection().fromPixels(center.x, center.y);
     }
 
-    public MapController getMapController() {
-        return mapController;
-    }
-
-    public ShadowMapController getShadowMapController() {
-        return shadowMapController;
-    }
-
+    /**
+     * Non-Android accessor
+     *
+     * @return whether to use built in zoom map controls
+     */
     public boolean getUseBuiltInZoomMapControls() {
         return useBuiltInZoomMapControls;
     }
 
-    public boolean isPreLoadWasCalled() {
+    /**
+     * Non-Android accessor
+     *
+     * @return whether {@link #preLoad()} has been called on this {@code MapView}
+     */
+    public boolean preLoadWasCalled() {
         return preLoadWasCalled;
     }
 
-    public boolean isCanCoverCenter() {
-        return canCoverCenter;
-    }
-
+    /**
+     * Non-Android accessor to set the latitude span (the absolute value of the difference between the Northernmost and
+     * Southernmost latitudes visible on the map) of this {@code MapView}
+     *
+     * @param latitudeSpan the new latitude span for this {@code MapView}
+     */
     public void setLatitudeSpan(int latitudeSpan) {
         this.latitudeSpan = latitudeSpan;
     }
 
+    /**
+     * Non-Android accessor to set the longitude span (the absolute value of the difference between the Easternmost and
+     * Westernmost longitude visible on the map) of this {@code MapView}
+     *
+     * @param longitudeSpan the new latitude span for this {@code MapView}
+     */
     public void setLongitudeSpan(int longitudeSpan) {
         this.longitudeSpan = longitudeSpan;
     }
 
+    /**
+     * Non-Android accessor that controls the value to be returned by {@link #canCoverCenter()}
+     *
+     * @param canCoverCenter the value to be returned by {@link #canCoverCenter()}
+     */
     public void setCanCoverCenter(boolean canCoverCenter) {
         this.canCoverCenter = canCoverCenter;
     }

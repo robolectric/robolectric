@@ -5,6 +5,10 @@ import com.google.android.maps.MapController;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+/**
+ * A Shadow of {@code MapController} that tracks its own state and keeps the state of the {@code MapView} it controlls
+ * up to date.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MapController.class)
 public class ShadowMapController {
@@ -52,14 +56,30 @@ public class ShadowMapController {
         return i;
     }
 
+    /**
+     * Non-Android accessor that returns the {@code MapView} that is being controlled
+     *
+     * @return the {@code MapView} that is being controlled
+     */
     public ShadowMapView getShadowMapView() {
         return shadowMapView;
     }
 
+    /**
+     * Non-Android accessor that returns the most recent value set by a call to either version of {@code animateTo()}
+     *
+     * @return  the most recent value set by a call to either version of {@code animateTo()}
+     */
     public GeoPoint getGeoPointAnimatedTo() {
         return geoPointAnimatedTo;
     }
 
+    /**
+     * Non-Android accessor that allows the {@code MapView} being controlled to be set explicitly.
+     *
+     * @param shadowMapView the {@link ShadowMapView} to be controlled (either created explicitly or obtained via a call
+     * to {@link com.xtremelabs.robolectric.Robolectric.shadowOf(com.google.android.maps.MapView)})
+     */
     void setShadowMapView(ShadowMapView shadowMapView) {
         this.shadowMapView = shadowMapView;
     }
