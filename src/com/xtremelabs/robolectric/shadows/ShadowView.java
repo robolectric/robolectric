@@ -17,6 +17,10 @@ import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadow implementation of {@code View} that simulates the behavior of this class. Supports listeners, focusability
+ * (but not focus order), resource loading, visibility, tags, and tracks the size and shape of the view.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(View.class)
 public class ShadowView {
@@ -71,6 +75,11 @@ public class ShadowView {
         this.clickable = clickable;
     }
 
+    /**
+     * Also sets focusable in touch mode to false if {@code focusable} is false, which is the Android behavior.
+     *
+     * @param focusable the new status of the {@code View}'s focusability
+     */
     @Implementation
     public void setFocusable(boolean focusable) {
         this.focusable = focusable;
@@ -84,6 +93,11 @@ public class ShadowView {
         return focusableInTouchMode;
     }
 
+    /**
+     * Also sets focusable to true if {@code focusableInTouchMode} is true, which is the Android behavior.
+     *
+     * @param focusableInTouchMode the new status of the {@code View}'s touch mode focusability
+     */
     @Implementation
     public void setFocusableInTouchMode(boolean focusableInTouchMode) {
         this.focusableInTouchMode = focusableInTouchMode;
@@ -102,6 +116,14 @@ public class ShadowView {
         return id;
     }
 
+    /**
+     * Simulates the inflating of the requested resource.
+     *
+     * @param context the context from which to obtain a layout inflater
+     * @param resource the ID of the resource to inflate
+     * @param root the {@code ViewGroup} to add the inflated {@code View} to
+     * @return the inflated View
+     */
     @Implementation
     public static View inflate(Context context, int resource, ViewGroup root) {
         View view = ShadowLayoutInflater.from(context).inflate(resource, root);
@@ -111,6 +133,12 @@ public class ShadowView {
         return view;
     }
 
+    /**
+     * Finds this {@code View} if it's ID is passed in, returns {@code null} otherwise
+     *
+     * @param id the id of the {@code View} to find
+     * @return the {@code View}, if found, {@code null} otherwise
+     */
     @Implementation
     public View findViewById(int id) {
         if (id == this.id) {
@@ -338,14 +366,25 @@ public class ShadowView {
         return false;
     }
 
+    /**
+     * Support method for {@code ViewGroup.innerText()} implementation don't call directly.
+     *
+     * @return always returns an empty string
+     */
     public String innerText() {
         return "";
     }
 
+    /**
+     * Dumps the status of this {@code View} to {@code System.out}
+     */
     public void dump() {
         dump(System.out, 0);
     }
 
+    /**
+     * Dumps the status of this {@code View} to {@code System.out} at the given indentation level
+     */
     public void dump(PrintStream out, int indent) {
         dumpFirstPart(out, indent);
         out.println("/>");
@@ -364,70 +403,135 @@ public class ShadowView {
         for (int i = 0; i < indent; i++) out.print(" ");
     }
 
+    /**
+     * Non-Android accessor
+     *
+     * @return left side of the view
+     */
     public int getLeft() {
         return left;
     }
 
+    /**
+     * Non-Android accessor
+     *
+     * @return top coordinate of the view
+     */
     public int getTop() {
         return top;
     }
 
+    /**
+     * Non-Android accessor
+     *
+     * @return right side of the view
+     */
     public int getRight() {
         return right;
     }
 
+    /**
+     * Non-Android accessor
+     *
+     * @return bottom coordinate of the view
+     */
     public int getBottom() {
         return bottom;
     }
 
+    /**
+     * Non-Android accessor
+     *
+     * @return whether the view is clickable
+     */
     public boolean isClickable() {
         return clickable;
     }
 
+    /**
+     * Non-Android accessor
+     *
+     * @return the resource ID of this views background
+     */
     public int getBackgroundResourceId() {
         return backgroundResourceId;
     }
 
+    /**
+     * Non-Android accessor
+     *
+     * @return whether or not {@link #invalidate()} has been called
+     */
     public boolean wasInvalidated() {
         return wasInvalidated;
     }
 
+    /**
+     * Clears the wasInvalidated flag
+     */
     public void clearWasInvalidated() {
         wasInvalidated = false;
     }
 
+    /**
+     * Non-Android accessor
+     */
     public void setLeft(int left) {
         this.left = left;
     }
 
+    /**
+     * Non-Android accessor
+     */
     public void setTop(int top) {
         this.top = top;
     }
 
+    /**
+     * Non-Android accessor
+     */
     public void setRight(int right) {
         this.right = right;
     }
 
+    /**
+     * Non-Android accessor
+     */
     public void setBottom(int bottom) {
         this.bottom = bottom;
     }
 
+    /**
+     * Non-Android accessor
+     */
     public void setPaddingLeft(int paddingLeft) {
         this.paddingLeft = paddingLeft;
     }
 
+    /**
+     * Non-Android accessor
+     */
     public void setPaddingTop(int paddingTop) {
         this.paddingTop = paddingTop;
     }
 
+    /**
+     * Non-Android accessor
+     */
     public void setPaddingRight(int paddingRight) {
         this.paddingRight = paddingRight;
     }
 
+    /**
+     * Non-Android accessor
+     */
     public void setPaddingBottom(int paddingBottom) {
         this.paddingBottom = paddingBottom;
     }
 
+    /**
+     * Non-Android accessor
+     */
     public void setFocused(boolean focused) {
         isFocused = focused;
     }
