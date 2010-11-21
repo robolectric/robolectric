@@ -233,12 +233,18 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(rootAndDirectory);
         if (resourceLoader == null) {
             try {
-                String rClassName = findResourcePackageName(projectRoot);
+                File projectManifestFile = new File(projectRoot);
+                if (!projectManifestFile.exists() || !projectManifestFile.isFile()) {
+                    throw new FileNotFoundException(projectManifestFile.getAbsolutePath() + " not found or not a file; it should point to your project's AndroidManifest.xml");
+                }
+
+                String rClassName = findResourcePackageName(projectManifestFile);
                 Class rClass = Class.forName(rClassName);
                 File resourceDir = new File(resourceDirectory);
                 if (!resourceDir.exists() || !resourceDir.isDirectory()) {
-                    throw new FileNotFoundException(resourceDir + " not found or not a directory");
+                    throw new FileNotFoundException(resourceDir.getAbsolutePath() + " not found or not a directory; it should point to your project's res directory");
                 }
+
                 resourceLoader = new ResourceLoader(rClass, resourceDir);
                 resourceLoaderForRootAndDirectory.put(rootAndDirectory, resourceLoader);
             } catch (Exception e) {
@@ -248,8 +254,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return resourceLoader;
     }
 
-    private String findResourcePackageName(String androidManifestPath) throws ParserConfigurationException, IOException, SAXException {
-        File projectManifestFile = new File(androidManifestPath);
+    private String findResourcePackageName(File projectManifestFile) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(projectManifestFile);
