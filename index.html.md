@@ -5,11 +5,15 @@ title: "Robolectric: Unit Test your Android Application"
 
 # Robolectric: Test-Drive Your Android Code
 
-Running tests on an Android emulator or device is slow! Building, deploying, and launching the app often takes a minute or more. That's no way to do TDD. There must be a better way.
+Running tests on an Android emulator or device is slow! Building, deploying, and launching the app often takes a minute
+or more. That's no way to do TDD. There must be a better way.
 
-Wouldn't it be nice to run your Android tests directly from inside your IDE? Perhaps you've tried, and been thwarted by the dreaded <code>'java.lang.RuntimeException: Stub!'</code>?
+Wouldn't it be nice to run your Android tests directly from inside your IDE? Perhaps you've tried, and been thwarted by
+the dreaded <code>'java.lang.RuntimeException: Stub!'</code>?
 
-[Robolectric](http://github.com/pivotal/robolectric) is a unit test framework that de-fangs the Android SDK jar so you can test-drive the development of your Android app.  Tests run inside the JVM on your workstation in seconds. With Robolectric you can write tests like this:
+[Robolectric](http://github.com/pivotal/robolectric) is a unit test framework that de-fangs the Android SDK jar so you
+can test-drive the development of your Android app.  Tests run inside the JVM on your workstation in seconds. With
+Robolectric you can write tests like this:
 
 {% highlight java %}
 // Test class for MyActivity
@@ -36,25 +40,40 @@ public class MyActivityTest {
 }
 {% endhighlight %}
 
-Robolectric makes this possible by intercepting the loading of the Android classes and rewriting the method bodies. Robolectric re-defines Android methods so they return null (or 0, false, etc.), or if provided Robolectric will forward method calls to shadow Android objects giving the Android SDK behavior. Robolectric provides a large number of shadow objects covering much of what a typical application would need to test-drive the business logic and functionality of your application. Coverage of the SDK is improving every day.
+Robolectric makes this possible by intercepting the loading of the Android classes and rewriting the method bodies.
+Robolectric re-defines Android methods so they return null (or 0, false, etc.), or if provided Robolectric will forward
+method calls to shadow Android objects giving the Android SDK behavior. Robolectric provides a large number of shadow
+objects covering much of what a typical application would need to test-drive the business logic and functionality of
+your application. Coverage of the SDK is improving every day.
 
 #### Resource Support
 
-Robolectric handles inflation of views, string resource lookups, etc. Some view attributes (id, visibility enabled, text, checked, and src) are parsed and applied to inflated views. Activity and View <code>#findViewById()</code> methods return Android view objects. Support exists for <code>include</code> and <code>merge</code> tags. These features allow tests access resources and to assert on view state.
+Robolectric handles inflation of views, string resource lookups, etc. Some view attributes (id, visibility enabled,
+text, checked, and src) are parsed and applied to inflated views. Activity and View <code>#findViewById()</code> methods
+return Android view objects. Support exists for <code>include</code> and <code>merge</code> tags. These features allow
+tests access resources and to assert on view state.
 
 #### Run Tests Outside of the Emulator
 
-Run your tests on your workstation, or on your Continuous Integration environment. Because tests run on your workstation in a JVM and not in the emulator Android runtime, the dexing, packaging, and installation on the emulator steps are not necessary, allowing you to iterate quickly and refactor your code with confidence.
+Run your tests on your workstation, or on your Continuous Integration environment. Because tests run on your workstation
+in a JVM and not in the emulator Android runtime, the dexing, packaging, and installation on the emulator steps are not
+necessary, allowing you to iterate quickly and refactor your code with confidence.
 
 ## No Mocking Frameworks Required
 
-An alternate approach to Robolectric is to use mock frameworks such as [Mockito](http://code.google.com/p/mockito/) to mock out the Android SDK. While this is a valid approach, we find it less useful. The use of mock frameworks can make tests hard to read and understand. Mocking causes tests to become reverse implementations of the production code. 
+An alternate approach to Robolectric is to use mock frameworks such as [Mockito](http://code.google.com/p/mockito/) or
+[Android Mock](http://code.google.com/p/android-mock/) to mock out the Android SDK. While this is a valid approach, we
+have found that without Robolectric, the level of mocking needed to test an Android app quickly yields tests that are
+essentially reverse implementations of the application code.
 
-Robolectric allows a test style that is closer to black box testing, making the tests more effective for refactoring and allowing the tests to focus on the behavior of the application instead of the implementation of Android. You can still use a mocking framework along with Robolectric if you like.
+Robolectric allows a test style that is closer to black box testing, making the tests more effective for refactoring and
+allowing the tests to focus on the behavior of the application instead of the implementation of Android. You can still
+use a mocking framework along with Robolectric if you like.
 
 ## Contributing
 
-We welcome contributions. Please [fork](http://github.com/pivotal/robolectric) and submit pull requests. Don't forget to include tests!
+We welcome contributions. Please [fork](http://github.com/pivotal/robolectric) and submit pull requests. Don't forget to
+include tests!
 
 ## Sample Project
 

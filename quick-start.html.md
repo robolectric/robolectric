@@ -33,6 +33,7 @@ add it to the build path, along with the JUnit library.
 
 * Add a new JUnit run/debug launch configuration to run the tests in the test folder. There may be a warning that
 multiple launchers are available, make sure to select the Eclipse JUnit Launcher instead of the Android JUnit Launcher.
+<b>Set the working directory to be the root of your main project, not that of your test project.</b>
 
 ### In IntelliJ:
 * [Download](http://pivotal.github.com/robolectric/download.html) robolectric-all.jar and add it to your other test
