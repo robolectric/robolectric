@@ -25,7 +25,7 @@ public class ShadowAbstractCursor {
     
     @Implementation
     public final boolean moveToNext() {
-    	if (currentRowNumber == realAbstractCursor.getCount() - 1) {
+    	if (currentRowNumber >= realAbstractCursor.getCount() - 1) {
     		return false;
     	}
     	currentRowNumber++;
