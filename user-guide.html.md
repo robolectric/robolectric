@@ -92,7 +92,7 @@ public class ShadowPoint {
     }
 }
 {% endhighlight %}
-Robolectric will set realPoint to the actual instance of <code>Point</code> before invoking any other methods.<p>
+Robolectric will set realPoint to the actual instance of <code>Point</code> before invoking any other methods.
 
 It is important to note that methods called on the real object will still be intercepted and redirected by Robolectric.
 This does not often matter in test code, but it has important implications for Shadow class implementors. Since the
