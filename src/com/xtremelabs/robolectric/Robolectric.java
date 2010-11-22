@@ -59,6 +59,9 @@ public class Robolectric {
 
     public static void bindShadowClass(Class<?> shadowClass) {
         Implements realClass = shadowClass.getAnnotation(Implements.class);
+        if (realClass == null) {
+            throw new IllegalArgumentException(shadowClass + " is not annotated with @Implements");
+        }
         bindShadowClass(realClass.value(), shadowClass);
     }
 
