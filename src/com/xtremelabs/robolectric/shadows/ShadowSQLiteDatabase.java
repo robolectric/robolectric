@@ -153,11 +153,11 @@ public class ShadowSQLiteDatabase {
         	return whereClause.substring(whereClause.indexOf("=") + 1, whereClause.length());
         }
         
-        public boolean isEmptyOrWhitespace(String s) {
+        private boolean isEmptyOrWhitespace(String s) {
             return (s == null) || (s.trim().isEmpty());
         }
         
-        public boolean isSpecialCaseOrUnknown(String s) {
+        private boolean isSpecialCaseOrUnknown(String s) {
         	return "1".equals(s) || !s.contains("=");
         }
     }
