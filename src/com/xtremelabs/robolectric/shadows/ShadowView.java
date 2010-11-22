@@ -367,9 +367,9 @@ public class ShadowView {
     }
 
     /**
-     * Support method for {@code ViewGroup.innerText()} implementation don't call directly.
+     * Returns a string representation of this {@code View}. Unless overridden, it will be an empty string.
      *
-     * @return always returns an empty string
+     * Robolectric extension.
      */
     public String innerText() {
         return "";

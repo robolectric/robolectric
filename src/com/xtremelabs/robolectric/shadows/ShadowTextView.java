@@ -136,6 +136,11 @@ public class ShadowTextView extends ShadowView {
         }
     }
 
+    /**
+     * Returns the text string of this {@code TextView}.
+     * 
+     * Robolectric extension.
+     */
     @Override
     public String innerText() {
         return (text == null || getVisibility() != VISIBLE) ? "" : text.toString();

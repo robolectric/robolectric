@@ -88,8 +88,10 @@ public class ShadowViewGroup extends ShadowView {
     }
 
     /**
-     * Non-Android accessor that concatenates all of the strings contained in all of the descendants of this
-     * {@code ViewGroup}.
+     * Returns a string representation of this {@code ViewGroup} by concatenating all of the strings contained in all
+     * of the descendants of this {@code ViewGroup}.
+     *
+     * Robolectric extension.
      */
     @Override
     public String innerText() {
