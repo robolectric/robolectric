@@ -20,6 +20,27 @@ If you prefer to provide your own versions of those dependencies, grab just robo
 </tr>
 <!-- START_DOWNLOADS -->
 <tr>
+  <td class="link"><a href="downloads/robolectric-0.9.1.jar">robolectric-0.9.1.jar</a></td>
+  <td class="version">0.9.1</td>
+  <td class="size">231k</td>
+  <td class="date">2010/11/19 14:03:53 PST</td>
+  <td class="sha">3c419f6014a382e48de89da5fac6c61cdda832cd</td>
+</tr>
+<tr>
+  <td class="link"><a href="downloads/robolectric-0.9.1-src.jar">robolectric-0.9.1-src.jar</a></td>
+  <td class="version">0.9.1</td>
+  <td class="size">105k</td>
+  <td class="date">2010/11/17 17:06:29 PST</td>
+  <td class="sha">2ae961ae06f97fee0980f46fc0e99e33eb8fe9ab</td>
+</tr>
+<tr>
+  <td class="link"><a href="downloads/robolectric-0.9.1-all.jar">robolectric-0.9.1-all.jar</a></td>
+  <td class="version">0.9.1</td>
+  <td class="size">894k</td>
+  <td class="date">2010/11/19 14:03:53 PST</td>
+  <td class="sha">fe772e16820896d860459059e6a440e54e17d834</td>
+</tr>
+<tr>
   <td class="link"><a href="downloads/robolectric-0.9.jar">robolectric-0.9.jar</a></td>
   <td class="version">0.9</td>
   <td class="size">228k</td>
