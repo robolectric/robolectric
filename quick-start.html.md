@@ -31,7 +31,7 @@ add it to the build path, along with the JUnit library.
 
 * Add your app's project as a project dependency to the build path of your test project.
 
-* Add a new JUnit run/debug launch configuration to run the tests in the test folder. There may be a warning that
+* _Important!_ Add a new JUnit run/debug launch configuration to run the tests in the test folder. There may be a warning that
 multiple launchers are available, make sure to select the Eclipse JUnit Launcher instead of the Android JUnit Launcher.
 <b>Set the working directory to be the root of your main project, not that of your test project.</b>
 
@@ -44,7 +44,7 @@ tests within Android projects to run very slowly. To get around this, we place o
 non-Android module, which allows the tests to build and run at maximum speed, and declare a dependency to this code from
 the main Android module, so we can build the final apk.
 
-_more details to come..._
+_Detailed IntelliJ instructions [here](intellij-quick-start.html)._
 
 ### In any configuration:
 * Use the <code>@RunWith</code> annotation available in JUnit 4 to run your tests under Robolectric:
