@@ -1,6 +1,6 @@
 ---
   layout: default
-  title: Robolectric Quick Start
+  title: Robolectric IntelliJ Quick Start
 ---
 
 ##Quick Start for IntelliJ
