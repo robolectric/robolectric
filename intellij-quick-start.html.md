@@ -140,8 +140,6 @@ Add the "code" module
 - In the source tree out on the far right, select the "bin" folder and click the 'Excluded' button above, adding it as an excluded folder
 - Click "OK"
 
-
-
 ### Verify your setup
 --------------------------------------------------------------------------------------------
 In Project View, right click on MyProject>code>test -> New -> Java class ->  MyActivityTest
@@ -162,12 +160,11 @@ public class MyActivityTest {
 
     @Test
     public void shouldHaveHappySmiles() throws Exception {
-        MyActivity activity = new MyActivity();
-        assertThat(activity.getResources().getString(R.string.app_name), equalTo("MyActivity"));
+        String appName = new MyActivity().getResources().getString(R.string.app_name);
+        assertThat(appName, equalTo("MyActivity"));
     }
 }
 
 {% endhighlight %}
-
 
 - Cntl-Shift-f10 will run the test

@@ -13,16 +13,15 @@ Create a project
 
 New Android Project dialog
 - Project Name: MyProject
-- Build Target: Click "Google APIs" 2.2 v8
+- Build Target: Click Target Name: "Google APIs", Vendor: "Google Inc.", Platform "2.2", Api Level: "8"
 - Type 'com.example' in package name
 - Check Create Activity, enter "MyActivity"
 - Click "Finish" (Do NOT create an Android Test project)
 
 Add a source test directory to your project
-- Right click on 'MyProject' in the package explorer -> New.. -> Folder
-- Folder name: test
+- Right click on 'MyProject' in the package explorer -> New... -> Folder
+- Folder name: test (do not make this a source folder for this project - hang tight)
 - Click "Finish"
-
 
 ###Create a *JAVA* project for your tests
 ------------------------
@@ -41,9 +40,8 @@ Add dependency on the Android project
 - Select "Projects" tab at the top of the New Java Project dialog
 - Click "Add..."
 - Check "MyProject"
-- Click "OK" (keep the new Java project dialog open)
+- Click "OK"
 - Click "Finish" closing the new Java project dialog
-
 
 ###Add required directory structure and jars to test project
 At the command line:
@@ -99,7 +97,7 @@ Your tests will *not* run without this step. Your resources will not be found.
 - Click the "Arguments" tab
 - Under "Working directory:" select the "Other:" radio button
 - Click "Workspace..."
-- Select "MyProject" (*not* "MyProjectTest")
+- Select "MyProject" (*not* "MyProjectTest", The value inside of 'Other' edit box should be '${workspace_loc:MyProject}')
 - Click "OK"
 - Click "Close"
 
@@ -128,9 +126,33 @@ public class MyActivityTest {
 
     @Test
     public void shouldHaveHappySmiles() throws Exception {
-        MyActivity activity = new MyActivity();
-        assertThat(activity.getResources().getString(R.string.hello), equalTo("Hello World, MyActivity!"));
+        String hello = new MyActivity().getResources().getString(R.string.hello);
+        assertThat(hello, equalTo("Hello World, MyActivity!"));
     }
 }
 {% endhighlight %}
 
+To run the tests
+- "Run" -> "Run Configurations..."
+- Select "JUnit" -> "MyProjectTestConfiguration"
+- Click "Run"
+
+###*If you get a RuntimeException saying: "no such layout layout/main"*
+--------------------------------------------------------------------
+It means that you have tried to run a test for which you do not have a Run Configuration set up. To remedy this:
+- Right click on the test
+- "Run As" -> "Run Configurations..."
+- Double click "JUnit" (this will magically make the test you're running appear under JUnit)
+- Select "MyActivityTest" (or the name of whichever test you are currently trying to run)
+- TestRunner: JUnit 4
+- Click on the link "Multiple launchers available Select one..." (or it also may appear as "Using XXX Launcher - Select
+other...") at the bottom of the dialog
+- Check the "Use configuration specific settings" box
+- Select "Eclipse JUnit Launcher"
+- Click "OK"
+- Click the "Arguments" tab
+- Under "Working directory:" select the "Other:" radio button
+- Click "Workspace..."
+- Select "MyProject" (*not* "MyProjectTest")
+- Click "OK"
+- Click "Close"
