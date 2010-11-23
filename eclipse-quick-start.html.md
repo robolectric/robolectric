@@ -156,3 +156,6 @@ other...") at the bottom of the dialog
 - Select "MyProject" (*not* "MyProjectTest")
 - Click "OK"
 - Click "Close"
+
+
+Are these instructions helpful? confusing? [Let us know](http://groups.google.com/group/robolectric)! any feedback is helpful. Thanks -Robolectric
