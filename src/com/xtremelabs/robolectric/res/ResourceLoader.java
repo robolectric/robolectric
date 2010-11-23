@@ -1,15 +1,14 @@
 package com.xtremelabs.robolectric.res;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import android.content.Context;
+import com.xtremelabs.robolectric.shadows.ShadowApplication;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.util.HashMap;
 import java.util.Map;
 
-import android.content.Context;
-
-import com.xtremelabs.robolectric.shadows.ShadowApplication;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ResourceLoader {
     private final ResourceExtractor resourceExtractor;
@@ -54,14 +53,14 @@ public class ResourceLoader {
     /**
      * For tests only...
      */
-    protected ResourceLoader(StringResourceLoader stringResourceLoader, StringArrayResourceLoader stringArrayResourceLoader, ColorResourceLoader colorResourceLoader, AttrResourceLoader attrResourceLoader, ViewLoader viewLoader, RawResourceLoader rawResourceLoader) {
+    protected ResourceLoader(StringResourceLoader stringResourceLoader) {
         resourceExtractor = new ResourceExtractor();
         this.stringResourceLoader = stringResourceLoader;
-        this.stringArrayResourceLoader = stringArrayResourceLoader;
-        this.colorResourceLoader = colorResourceLoader;
-        this.attrResourceLoader = attrResourceLoader;
-        this.viewLoader = viewLoader;
-        this.rawResourceLoader = rawResourceLoader;
+        viewLoader = null;
+        stringArrayResourceLoader = null;
+        attrResourceLoader = null;
+        colorResourceLoader = null;
+        rawResourceLoader = null;
     }
 
     public static ResourceLoader getFrom(Context context) {

@@ -16,12 +16,31 @@ public class RawResourceLoader {
 	}
 
     public InputStream getValue(int resourceId) {
-        String resourceName = resourceExtractor.getResourceName(resourceId);
+        String resourceFileName = resourceExtractor.getResourceName(resourceId);
+        String resourceName = resourceFileName.substring("/raw".length());
+
+        File rawResourceDir = new File(resourceDir, "raw");
+
         try {
-			return new FileInputStream(new File(this.resourceDir, resourceName));
+            File[] files = rawResourceDir.listFiles();
+            for (int i = 0; i < files.length; i++) {
+                File file = files[i];
+                String name = file.getName();
+                int dotIndex = name.indexOf(".");
+                String fileBaseName = null;
+                if (dotIndex >= 0) {
+                    fileBaseName = name.substring(0, dotIndex);
+                } else {
+                    fileBaseName = name;
+                }
+                if (fileBaseName.equals(resourceName)) {
+                    return new FileInputStream(file);
+                }
+            }
 		} catch (FileNotFoundException e) {
 			return null;
 		}
+        return null;
     }
 
 }
