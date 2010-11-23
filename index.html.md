@@ -22,7 +22,7 @@ public class MyActivityTest {
     private Activity activity;
     private Button pressMeButton;
     private TextView results;
-    
+
     @Before
     public void setUp() throws Exception {
         activity = new MyActivity();
@@ -78,7 +78,7 @@ include tests!
 ## Sample Project
 
 Look at the sample project at: https://github.com/pivotal/robolectricsample to see how fast and easy it can be to test
-drive the development of Android applications.0
+drive the development of Android applications.
 
 #### Robolectric's current maintainers are:
 
