@@ -23,6 +23,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import static java.io.File.separator;
+
 /**
  * Installs a {@link RobolectricClassLoader} and {@link com.xtremelabs.robolectric.res.ResourceLoader} in order to
  * provide a simulation of the Android runtime environment.
@@ -58,17 +60,29 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     /**
-     * Call this constructor in subclasses in order to specify the project root directory and the resource directory.
-     * The #androidManifestPath is used to locate the AndroidManifest.xml file which, in turn, contains package name for the
-     * {@code R} class which contains the identifiers for all of the resources. The resource directory is where the
-     * resource loader will look for resources to load.
+     * Call this constructor in subclasses in order to specify the project root directory. The location of the
+     * AndroidManifest.xml file and the resource directory are deduced from this value.
+     *
+     * @param testClass the test class to be run
+     * @throws InitializationError
+     */
+    public RobolectricTestRunner(Class<?> testClass, String androidProjectRoot) throws InitializationError {
+        this(testClass, androidProjectRoot + separator + "AndroidManifest.xml", androidProjectRoot + separator + "res");
+    }
+
+    /**
+     * Call this constructor in subclasses in order to specify the location of the AndroidManifest.xml file and the
+     * resource directory. The #androidManifestPath is used to locate the AndroidManifest.xml file which, in turn,
+     * contains package name for the {@code R} class which contains the identifiers for all of the resources. The
+     * resource directory is where the resource loader will look for resources to load.
      *
      * @param testClass           the test class to be run
      * @param androidManifestPath the relative path to the AndroidManifest.xml file
      * @param resourceDirectory   the relative path to the directory containing the project's resources
      * @throws InitializationError
      */
-    protected RobolectricTestRunner(Class<?> testClass, String androidManifestPath, String resourceDirectory) throws InitializationError {
+    protected RobolectricTestRunner(Class<?> testClass, String androidManifestPath, String resourceDirectory)
+            throws InitializationError {
         this(testClass,
                 isInstrumented() ? null : ShadowWrangler.getInstance(),
                 isInstrumented() ? null : getDefaultLoader(),
