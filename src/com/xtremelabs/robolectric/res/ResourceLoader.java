@@ -1,14 +1,15 @@
 package com.xtremelabs.robolectric.res;
 
-import android.content.Context;
-import com.xtremelabs.robolectric.shadows.ShadowApplication;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import android.content.Context;
+
+import com.xtremelabs.robolectric.shadows.ShadowApplication;
 
 public class ResourceLoader {
     private final ResourceExtractor resourceExtractor;
@@ -17,6 +18,7 @@ public class ResourceLoader {
     public final StringArrayResourceLoader stringArrayResourceLoader;
     public final AttrResourceLoader attrResourceLoader;
     public final ColorResourceLoader colorResourceLoader;
+    public final RawResourceLoader rawResourceLoader;
 
     // todo: get these value from the xml resources instead [xw 20101011]
     public final Map<Integer, Integer> dimensions = new HashMap<Integer, Integer>();
@@ -29,7 +31,7 @@ public class ResourceLoader {
         stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor);
         colorResourceLoader = new ColorResourceLoader(resourceExtractor);
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
-
+        rawResourceLoader = new RawResourceLoader(resourceExtractor, resourceDir);
 
         if (resourceDir != null) {
             DocumentLoader resourcesDocumentLoader = new DocumentLoader(stringResourceLoader, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader);
@@ -52,13 +54,14 @@ public class ResourceLoader {
     /**
      * For tests only...
      */
-    protected ResourceLoader(StringResourceLoader stringResourceLoader, StringArrayResourceLoader stringArrayResourceLoader, ColorResourceLoader colorResourceLoader, AttrResourceLoader attrResourceLoader, ViewLoader viewLoader) {
+    protected ResourceLoader(StringResourceLoader stringResourceLoader, StringArrayResourceLoader stringArrayResourceLoader, ColorResourceLoader colorResourceLoader, AttrResourceLoader attrResourceLoader, ViewLoader viewLoader, RawResourceLoader rawResourceLoader) {
         resourceExtractor = new ResourceExtractor();
         this.stringResourceLoader = stringResourceLoader;
         this.stringArrayResourceLoader = stringArrayResourceLoader;
         this.colorResourceLoader = colorResourceLoader;
         this.attrResourceLoader = attrResourceLoader;
         this.viewLoader = viewLoader;
+        this.rawResourceLoader = rawResourceLoader;
     }
 
     public static ResourceLoader getFrom(Context context) {

@@ -1,5 +1,16 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Application;
@@ -10,19 +21,12 @@ import android.media.AudioManager;
 import android.net.wifi.WifiManager;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
+
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.StringResourceLoader;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ApplicationTest {
@@ -41,12 +45,12 @@ public class ApplicationTest {
 
     @Test
     public void shouldBeBindableToAResourceLoader() throws Exception {
-        ResourceLoader resourceLoader1 = new ResourceLoader(mock(StringResourceLoader.class), null, null, null, null) {
+        ResourceLoader resourceLoader1 = new ResourceLoader(mock(StringResourceLoader.class), null, null, null, null, null) {
         };
         when(resourceLoader1.stringResourceLoader.getValue(R.id.title)).thenReturn("title from resourceLoader1");
         Application app1 = ShadowApplication.bind(new Application(), resourceLoader1);
 
-        ResourceLoader resourceLoader2 = new ResourceLoader(mock(StringResourceLoader.class), null, null, null, null) {
+        ResourceLoader resourceLoader2 = new ResourceLoader(mock(StringResourceLoader.class), null, null, null, null, null) {
         };
         when(resourceLoader2.stringResourceLoader.getValue(R.id.title)).thenReturn("title from resourceLoader2");
         Application app2 = ShadowApplication.bind(new Application(), resourceLoader2);
