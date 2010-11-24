@@ -6,6 +6,19 @@ title: Robolectric Release Notes
 # Release Notes
 
 -----
+## Release 0.9.2 - November 24, 2010
+-----
+
+#### Features
+- Shadow classes for SQLite database (Thanks mportuesi!)
+- Lint test for shadow methods that match Android methods but are not annotated with @Implementation
+- Shadow support for raw resources (Thanks macarse!)
+- Improved quick start documentation
+
+#### Bug Fixes
+- Ignore non xml files in layouts directory (Subversion .svn directories were causing cryptic errors, Thanks rlgomes!)
+
+-----
 ## Release 0.9.1 - November 19, 2010
 -----
 
