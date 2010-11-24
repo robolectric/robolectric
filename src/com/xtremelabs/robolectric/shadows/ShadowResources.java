@@ -1,16 +1,18 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.io.InputStream;
+import java.util.Locale;
+
 import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
+
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-
-import java.util.Locale;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
@@ -45,6 +47,11 @@ public class ShadowResources {
         return String.format(Locale.ENGLISH, raw, formatArgs);
     }
 
+    @Implementation
+    public InputStream openRawResource(int id) throws Resources.NotFoundException {
+    	return resourceLoader.rawResourceLoader.getValue(id);
+    }
+    
     @Implementation
     public String[] getStringArray(int id) throws Resources.NotFoundException {
         String[] arrayValue = resourceLoader.stringArrayResourceLoader.getArrayValue(id);
