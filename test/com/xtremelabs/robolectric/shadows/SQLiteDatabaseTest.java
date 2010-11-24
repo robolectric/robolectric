@@ -1,17 +1,15 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.ContentValues;
-import android.database.AbstractCursor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -20,10 +18,6 @@ public class SQLiteDatabaseTest {
 
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindShadowClass(SQLiteDatabase.class, ShadowSQLiteDatabase.class);
-        Robolectric.bindShadowClass(ContentValues.class, ShadowContentValues.class);
-        Robolectric.bindShadowClass(AbstractCursor.class, ShadowAbstractCursor.class);
-
         database = SQLiteDatabase.openDatabase("path", null, 0);
     }
 

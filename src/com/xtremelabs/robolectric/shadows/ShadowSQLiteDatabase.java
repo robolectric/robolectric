@@ -20,7 +20,7 @@ import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(SQLiteDatabase.class)
 public class ShadowSQLiteDatabase {
-
+    @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
         return newInstanceOf(SQLiteDatabase.class);
     }

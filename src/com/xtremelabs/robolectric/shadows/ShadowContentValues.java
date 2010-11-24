@@ -18,15 +18,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.ContentValues;
 import android.util.Log;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
 /**
@@ -42,10 +41,6 @@ public final class ShadowContentValues {
 
     public void __constructor__(ContentValues from) {
         values = new HashMap<String, Object>(shadowOf(from).values);
-    }
-
-    private void __constructor__(HashMap<String, Object> values) {
-        this.values = values;
     }
 
     @Implementation
@@ -289,20 +284,7 @@ public final class ShadowContentValues {
         return 0;
     }
 
-    @Implementation
-    @Deprecated
-    public void putStringArrayList(String key, ArrayList<String> value) {
-        values.put(key, value);
-    }
-
-    @Implementation
-    @SuppressWarnings("unchecked")
-    @Deprecated
-    public ArrayList<String> getStringArrayList(String key) {
-        return (ArrayList<String>) values.get(key);
-    }
-
-    @Override
+    @Override @Implementation
     public boolean equals(Object object) {
         if (object == null) return false;
         Object o = shadowOf_(object);
@@ -316,12 +298,12 @@ public final class ShadowContentValues {
         return values.equals(shadowOf((ContentValues) o).values);
     }
 
-    @Override
+    @Override @Implementation
     public int hashCode() {
         return values.hashCode();
     }
 
-    @Override
+    @Override @Implementation
     public String toString() {
         StringBuilder sb = new StringBuilder();
         for (String name : values.keySet()) {
@@ -330,9 +312,5 @@ public final class ShadowContentValues {
             sb.append(name + "=" + value);
         }
         return sb.toString();
-    }
-
-    private ShadowContentValues shadowOf(ContentValues other) {
-        return ((ShadowContentValues) Robolectric.shadowOf_(other));
     }
 }
