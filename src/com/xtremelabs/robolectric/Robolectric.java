@@ -2,10 +2,12 @@ package com.xtremelabs.robolectric;
 
 import android.app.*;
 import android.appwidget.AppWidgetManager;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -78,6 +80,7 @@ public class Robolectric {
     public static List<Class<?>> getDefaultShadowClasses() {
         return Arrays.asList(
                 ShadowAbsSpinner.class,
+                ShadowAbstractCursor.class,
                 ShadowActivity.class,
                 ShadowAdapterView.class,
                 ShadowAddress.class,
@@ -92,6 +95,7 @@ public class Robolectric {
                 ShadowCanvas.class,
                 ShadowCompoundButton.class,
                 ShadowComponentName.class,
+                ShadowContentValues.class,
                 ShadowContext.class,
                 ShadowContextWrapper.class,
                 ShadowContextThemeWrapper.class,
@@ -131,6 +135,7 @@ public class Robolectric {
                 ShadowSettings.ShadowSecure.class,
                 ShadowSettings.ShadowSystem.class,
                 ShadowSpannableStringBuilder.class,
+                ShadowSQLiteDatabase.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
@@ -289,6 +294,14 @@ public class Robolectric {
 
     public static ShadowGeocoder shadowOf(Geocoder instance) {
         return (ShadowGeocoder) shadowOf_(instance);
+    }
+
+    public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
+        return (ShadowSQLiteDatabase) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowContentValues shadowOf(ContentValues other) {
+        return (ShadowContentValues) Robolectric.shadowOf_(other);
     }
 
     @SuppressWarnings({"unchecked"})

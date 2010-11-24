@@ -200,7 +200,7 @@ public class ShadowWrangler implements ClassHandler {
 
     public Object shadowOf(Object instance) {
         if (instance == null) {
-            throw new RuntimeException("no instance for which to get a shadow");
+            throw new NullPointerException("can't get a shadow for null");
         }
         Field field = getShadowField(instance);
         return readField(instance, field);
