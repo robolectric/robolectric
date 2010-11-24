@@ -35,7 +35,7 @@ add it to the build path, along with the JUnit library.
 multiple launchers are available, make sure to select the Eclipse JUnit Launcher instead of the Android JUnit Launcher.
 <b>Set the working directory to be the root of your main project, not that of your test project.</b>
 
-_Detailed Eclipse instructions [here](eclipse-quick-start.html)._
+<a href="eclipse-quick-start.html"><b>Detailed step-by-step Eclipse instructions</b></a>
 
 ### In IntelliJ:
 * [Download](http://pivotal.github.com/robolectric/download.html) robolectric-all.jar and add it to your other test
@@ -46,7 +46,7 @@ tests within Android projects to run very slowly. To get around this, we place o
 non-Android module, which allows the tests to build and run at maximum speed, and declare a dependency to this code from
 the main Android module, so we can build the final apk.
 
-_Detailed IntelliJ instructions [here](intellij-quick-start.html)._
+<a href="intellij-quick-start.html"><b>Detailed step-by-step IntelliJ instructions</b></a>
 
 ### In any configuration:
 * Use the <code>@RunWith</code> annotation available in JUnit 4 to run your tests under Robolectric:
