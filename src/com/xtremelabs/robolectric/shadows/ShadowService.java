@@ -30,6 +30,9 @@ public class ShadowService extends ShadowContextWrapper {
         assertNoBroadcastListenersRegistered();
     }
 
+    /**
+     * Utility method that throws a {@code RuntimeException} if any {@code BroadcastListener}s are still registered.
+     */
     public void assertNoBroadcastListenersRegistered() {
         ((ShadowApplication) shadowOf(getApplicationContext())).assertNoBroadcastListenersRegistered(realService, "Service");
     }

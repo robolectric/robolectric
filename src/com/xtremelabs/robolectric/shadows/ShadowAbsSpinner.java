@@ -5,9 +5,6 @@ import android.widget.SpinnerAdapter;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
-/**
- * Shadows the {@code android.widget.AbsSpinner} class.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AbsSpinner.class)
 public class ShadowAbsSpinner extends ShadowAdapterView {

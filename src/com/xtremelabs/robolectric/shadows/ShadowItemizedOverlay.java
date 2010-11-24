@@ -6,6 +6,11 @@ import com.google.android.maps.OverlayItem;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+/**
+ * Shadow for {@code ItemizedOverlay} that just keeps track of what has been called and enables the return value for
+ * {@link #hitTest(com.google.android.maps.OverlayItem, android.graphics.drawable.Drawable, int, int)} to be set up by
+ * tests.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ItemizedOverlay.class)
 public class ShadowItemizedOverlay {
@@ -33,23 +38,33 @@ public class ShadowItemizedOverlay {
         return drawable;
     }
 
-    public boolean isPopulated() {
-        return isPopulated;
+    /**
+     * Non-Android accessor that indicates whether {@link #setLastFocusedIndex(int)} has been called with a value other
+     * than -1.
+     *
+     * @return whether {@link #setLastFocusedIndex(int)} has been called with a value other
+     * than -1
+     */
+    public boolean lastFocusedIndexWasReset() {
+        return lastFocusedIndexWasReset;
     }
 
     public void setIsPopulated(boolean isPopulated) {
         this.isPopulated = isPopulated;
     }
 
-    public boolean shouldHit() {
-        return shouldHit;
+    public boolean isPopulated() {
+        return isPopulated;
     }
 
+    /**
+     * Sets up the return value for
+     * {@link #hitTest(com.google.android.maps.OverlayItem, android.graphics.drawable.Drawable, int, int)}
+     *
+     * @param shouldHit the value that
+     * {@link #hitTest(com.google.android.maps.OverlayItem, android.graphics.drawable.Drawable, int, int)} shoule return
+     */
     public void setShouldHit(boolean shouldHit) {
         this.shouldHit = shouldHit;
-    }
-
-    public boolean lastFocusedIndexWasReset() {
-        return lastFocusedIndexWasReset;
     }
 }

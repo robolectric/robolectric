@@ -14,9 +14,6 @@ import com.xtremelabs.robolectric.view.TestWindow;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
-/**
- * Shadows the {@code android.app.Activity} class.
- */
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Activity.class)
@@ -37,7 +34,7 @@ public class ShadowActivity extends ShadowContextWrapper {
         return Robolectric.application;
     }
 
-    @Implementation @Override
+    @Override @Implementation
     public final Application getApplicationContext() {
         return getApplication();
     }

@@ -25,6 +25,7 @@ public class ShadowDrawable {
         return bounds;
     }
 
+    @Implementation
     public void setBounds(Rect rect) {
         this.bounds = rect;
     }

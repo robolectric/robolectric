@@ -94,10 +94,6 @@ public class ShadowIntent {
         return realIntent;
     }
 
-    public ComponentName getComponent() {
-        return componentName;
-    }
-
     @Implementation
     public Bundle getExtras() {
         Bundle bundle = new Bundle();
@@ -171,6 +167,20 @@ public class ShadowIntent {
         return (Serializable) extras.get(name);
     }
 
+    @Implementation
+    public ComponentName getComponent() {
+        return componentName;
+    }
+
+    /**
+     * Compares an {@code Intent} with a {@code ShadowIntent} (obtained via a call to
+     * {@link Robolectric#shadowOf(android.content.Intent)})
+     *
+     * @param o a {@code ShadowIntent}
+     * @return whether they are equivalent
+     * todo: replace with equals()
+     */
+    @Deprecated
     public boolean realIntentEquals(ShadowIntent o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -182,6 +192,30 @@ public class ShadowIntent {
         if (extras != null ? !extras.equals(o.extras) : o.extras != null) return false;
 
         return true;
+    }
+
+    /**
+     * Non-Android accessor that returns the {@code Class} object set by
+     * {@link #setClass(android.content.Context, Class)}
+     *
+     * @return the {@code Class} object set by
+     * {@link #setClass(android.content.Context, Class)}
+     */
+    public Class<?> getIntentClass() {
+        return intentClass;
+    }
+
+    @Override @Implementation
+    public String toString() {
+        return "Intent{" +
+                Join.join(
+                        ", ",
+                        ifWeHave(componentName, "componentName"),
+                        ifWeHave(action, "action"),
+                        ifWeHave(extras, "extras"),
+                        ifWeHave(data, "data")
+                ) +
+                '}';
     }
 
     private Serializable serializeCycle(Serializable serializable) {
@@ -199,23 +233,6 @@ public class ShadowIntent {
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    @Override
-    public String toString() {
-        return "Intent{" +
-                Join.join(
-                        ", ",
-                        ifWeHave(componentName, "componentName"),
-                        ifWeHave(action, "action"),
-                        ifWeHave(extras, "extras"),
-                        ifWeHave(data, "data")
-                ) +
-                '}';
-    }
-
-    public Class<?> getIntentClass() {
-        return intentClass;
     }
 
     private String ifWeHave(Object o, String name) {

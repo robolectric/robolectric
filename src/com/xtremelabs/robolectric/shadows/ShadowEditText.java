@@ -10,6 +10,9 @@ import com.xtremelabs.robolectric.util.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * A shadow for EditText that provides support for listeners
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(EditText.class)
 public class ShadowEditText extends ShadowTextView {
@@ -20,8 +23,7 @@ public class ShadowEditText extends ShadowTextView {
         focusableInTouchMode = true;
     }
 
-    @Implementation
-    @Override
+    @Override @Implementation
     public void setText(CharSequence text) {
         super.setText(text);
         for (TextWatcher watcher : watchers) {
@@ -29,8 +31,7 @@ public class ShadowEditText extends ShadowTextView {
         }
     }
 
-    @Implementation
-    @Override
+    @Override @Implementation
     public void setText(int textResourceId) {
         super.setText(textResourceId);
         for (TextWatcher watcher : watchers) {
@@ -38,8 +39,7 @@ public class ShadowEditText extends ShadowTextView {
         }
     }
 
-    @Implementation
-    @Override
+    @Override @Implementation
     public Editable getText() {
         CharSequence text = super.getText();
         if (!(text instanceof Editable)) {
@@ -53,6 +53,9 @@ public class ShadowEditText extends ShadowTextView {
         this.watchers.add(watcher);
     }
 
+    /**
+     * @return the list of currently registered watchers/listeners
+     */
     public List<TextWatcher> getWatchers() {
         return watchers;
     }

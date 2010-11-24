@@ -5,6 +5,10 @@ import android.widget.ZoomButtonsController;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+/**
+ * Shadow of {@code ZoomButtonsController} that allows simulated clicking of the zoom button controls to trigger
+ * events on the registered listener.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ZoomButtonsController.class)
 public class ShadowZoomButtonsController {

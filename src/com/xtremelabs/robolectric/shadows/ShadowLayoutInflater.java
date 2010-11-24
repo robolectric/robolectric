@@ -12,6 +12,11 @@ import com.xtremelabs.robolectric.util.Implements;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadow of {@code LayoutInflater} that actually inflates layouts into {@code View}s that are functional enough to
+ * support testing.
+ */
+
 @Implements(LayoutInflater.class)
 public class ShadowLayoutInflater {
     private static AppSingletonizer<LayoutInflater> instances = new LayoutInflaterAppSingletonizer();

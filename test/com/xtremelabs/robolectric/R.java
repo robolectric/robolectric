@@ -53,4 +53,9 @@ public final class R {
         public static final int main = nextId++;
         public static final int media = nextId++;
     }
+
+    public static final class raw {
+        public static final int raw_resource = nextId++;
+        public static final int raw_no_ext = nextId++;
+    }
 }

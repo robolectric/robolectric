@@ -7,6 +7,9 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+/**
+ * Shadow of {@code PendingIntent} that creates and sends {@code Intent}s appropriately.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {
@@ -23,14 +26,6 @@ public class ShadowPendingIntent {
         return create(intent, true);
     }
 
-    private static PendingIntent create(Intent intent, boolean isService) {
-        PendingIntent pendingIntent = Robolectric.newInstanceOf(PendingIntent.class);
-        ShadowPendingIntent shadowPendingIntent = (ShadowPendingIntent) Robolectric.shadowOf_(pendingIntent);
-        shadowPendingIntent.savedIntent = intent;
-        shadowPendingIntent.isServiceIntent = isService;
-        return pendingIntent;
-    }
-
     @Implementation
     public void send(Context context, int code, Intent intent) throws PendingIntent.CanceledException {
         if (isServiceIntent) {
@@ -38,5 +33,13 @@ public class ShadowPendingIntent {
         } else {
             context.startActivity(savedIntent);
         }
+    }
+
+    private static PendingIntent create(Intent intent, boolean isService) {
+        PendingIntent pendingIntent = Robolectric.newInstanceOf(PendingIntent.class);
+        ShadowPendingIntent shadowPendingIntent = (ShadowPendingIntent) Robolectric.shadowOf_(pendingIntent);
+        shadowPendingIntent.savedIntent = intent;
+        shadowPendingIntent.isServiceIntent = isService;
+        return pendingIntent;
     }
 }

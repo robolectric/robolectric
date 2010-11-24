@@ -11,9 +11,6 @@ import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
-/**
- * Shadows the {@code android.os.Bundle} class.
- */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bundle.class)
 public class ShadowBundle {
@@ -65,7 +62,7 @@ public class ShadowBundle {
         return (Parcelable) map.get(key);
     }
 
-    @Override
+    @Override @Implementation
     public boolean equals(Object o) {
         if (o == null) return false;
         o = shadowOf_(o);
@@ -80,7 +77,7 @@ public class ShadowBundle {
         return true;
     }
 
-    @Override
+    @Override @Implementation
     public int hashCode() {
         return map != null ? map.hashCode() : 0;
     }

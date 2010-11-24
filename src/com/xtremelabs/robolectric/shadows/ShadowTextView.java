@@ -136,16 +136,22 @@ public class ShadowTextView extends ShadowView {
         }
     }
 
+    /**
+     * Returns the text string of this {@code TextView}.
+     * 
+     * Robolectric extension.
+     */
     @Override
     public String innerText() {
         return (text == null || getVisibility() != VISIBLE) ? "" : text.toString();
     }
 
-    @Override public boolean equals(Object o) {
+    @Override @Implementation
+    public boolean equals(Object o) {
         return super.equals(shadowOf_(o));
     }
 
-    @Override
+    @Override @Implementation
     public int hashCode() {
         return super.hashCode();
     }
@@ -162,6 +168,7 @@ public class ShadowTextView extends ShadowView {
         return textColorHexValue;
     }
 
+    @Implementation
     public int getTextSize() {
         return textSize;
     }

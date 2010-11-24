@@ -8,6 +8,10 @@ import com.xtremelabs.robolectric.util.Implements;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+/**
+ * Shadow of {@code ListActivity} that supports the retrieval of {@code ListViews}
+ */
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListActivity.class)
 public class ShadowListActivity extends ShadowActivity {

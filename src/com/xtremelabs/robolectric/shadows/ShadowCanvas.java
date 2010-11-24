@@ -11,7 +11,7 @@ import java.util.List;
 
 /**
  * Shadows the {@code android.graphics.Canvas} class.
- * <p/>
+ *
  * Broken.
  * This implementation is very specific to the application for which it was developed.
  * Todo: Reimplement. Consider using the same strategy of collecting a history of draw events and providing methods for writing queries based on type, number, and order of events.

@@ -14,6 +14,9 @@ import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 
+/**
+ * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.
+ */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(SQLiteDatabase.class)
 public class ShadowSQLiteDatabase {

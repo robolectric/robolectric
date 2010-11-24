@@ -5,10 +5,16 @@ import org.w3c.dom.Document;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.io.FileFilter;
 
 public class DocumentLoader {
     private final XmlLoader[] xmlLoaders;
     private final DocumentBuilderFactory documentBuilderFactory;
+    private FileFilter xmlFileFilter = new FileFilter() {
+        @Override public boolean accept(File file) {
+            return file.getName().endsWith(".xml");
+        }
+    };
 
     public DocumentLoader(XmlLoader... xmlLoaders) {
         this.xmlLoaders = xmlLoaders;
@@ -29,7 +35,8 @@ public class DocumentLoader {
         if (!resourceXmlDir.exists()) {
             throw new RuntimeException("no such directory " + resourceXmlDir);
         }
-        for (File file : resourceXmlDir.listFiles()) {
+
+        for (File file : resourceXmlDir.listFiles(xmlFileFilter)) {
             loadResourceXmlFile(file);
         }
     }
