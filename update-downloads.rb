@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-DOWNLOADS_FILE = 'pages/download.html.md'
+DOWNLOADS_FILE = 'pages/download.md'
 
 def need_pages_submodule
     unless File.exists?(DOWNLOADS_FILE)
