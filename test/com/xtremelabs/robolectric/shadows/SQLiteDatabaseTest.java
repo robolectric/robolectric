@@ -128,16 +128,17 @@ public class SQLiteDatabaseTest {
     }
     
     private void addChuck() {
-    	ContentValues values = new ContentValues();
-    	values.put("id", 1234L);
-    	values.put("name", "Chuck");	
-    	database.insert("table_name", null, values);    	
+    	addPerson( 1234L, "Chuck" );
     }
     
     private void addJulie() {
+    	addPerson( 1235L, "Julie" );
+    }
+    
+    private void addPerson( long id, String name ) {
     	ContentValues values = new ContentValues();
-    	values.put("id", 1235L);
-    	values.put("name", "Julie");
+    	values.put("id", id);
+    	values.put("name", name);
     	database.insert("table_name", null, values);
     }
 
