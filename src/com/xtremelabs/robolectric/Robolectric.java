@@ -77,6 +77,16 @@ public class Robolectric {
         }
     }
 
+    /**
+     * Invoke this utility method in tests to reveal which Android api classes and methods are being invoked
+     * for which there are no shadows or shadow methods. This helps expose which methods are being invoked
+     * either by a third party library or application code which need new shadow methods to be written. Generates
+     * output for the current test only.
+     */
+    public static void logMissingInvokedShadowMethods() {
+        ShadowWrangler.getInstance().logMissingInvokedShadowMethods();
+    }
+
     public static List<Class<?>> getDefaultShadowClasses() {
         return Arrays.asList(
                 ShadowAbsSpinner.class,
