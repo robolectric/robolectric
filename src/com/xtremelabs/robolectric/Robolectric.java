@@ -29,6 +29,7 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.Scheduler;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
 import java.lang.reflect.Constructor;
@@ -38,6 +39,8 @@ import java.util.List;
 
 public class Robolectric {
     public static Application application;
+    public static Scheduler backgroundScheduler;
+    public static Scheduler uiThreadScheduler;
 
     public static <T> T newInstanceOf(Class<T> clazz) {
         try {
@@ -88,6 +91,7 @@ public class Robolectric {
                 ShadowAlertDialog.ShadowBuilder.class,
                 ShadowApplication.class,
                 ShadowAppWidgetManager.class,
+                ShadowAsyncTask.class,
                 ShadowAudioManager.class,
                 ShadowBaseAdapter.class,
                 ShadowBitmapDrawable.class,
@@ -150,6 +154,8 @@ public class Robolectric {
     public static void resetStaticState() {
         ShadowWrangler.getInstance().silence();
         Robolectric.application = new Application();
+        Robolectric.backgroundScheduler = new Scheduler();
+        Robolectric.uiThreadScheduler = new Scheduler();
         TestSharedPreferences.reset();
         ShadowToast.reset();
         ShadowAlertDialog.reset();
@@ -308,5 +314,13 @@ public class Robolectric {
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
+    }
+
+    public static void runBackgroundTasks() {
+        backgroundScheduler.tick(0);
+    }
+
+    public static void runUiThreadTasks() {
+        uiThreadScheduler.tick(0);
     }
 }
