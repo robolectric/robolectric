@@ -1,6 +1,6 @@
 ---
 layout: default
-title: "Robolectric: Unit Test your Android Application"
+title: User Guide
 ---
 
 ## Sample Application

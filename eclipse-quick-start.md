@@ -1,6 +1,6 @@
 ---
   layout: default
-  title: Robolectric Eclipse Quick Start
+  title: Eclipse Quick Start
 ---
 
 ##Quick Start for Eclipse

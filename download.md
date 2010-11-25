@@ -1,6 +1,6 @@
 ---
   layout: default
-  title: Robolectric Downloads
+  title: Downloads
 ---
 
 ## Downloads

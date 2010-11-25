@@ -1,6 +1,6 @@
 ---
-  layout: default
-  title: Robolectric Quick Start
+layout: default
+title: Quick Start
 ---
 
 ## Quick Start

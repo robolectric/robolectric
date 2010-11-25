@@ -1,9 +1,12 @@
 ---
-  layout: default
-  title: Robolectric Downloads
+layout: default
+title: Downloads
 ---
 
 # Events in the life of the Robolectric project
+
+## November 24, 2010
+* Release! Version 0.9.2 is now available (see the [Release Notes](release-notes.html) for details.)
 
 ## November 19, 2010
 * Release! Version 0.9.1 is now available (see the [Release Notes](release-notes.html) for details.)

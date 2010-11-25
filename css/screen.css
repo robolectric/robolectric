@@ -1,82 +1,77 @@
 @import url("960gs/960.css");
 
 /* http://www.levien.com/type/myfonts/inconsolata.html */
-@font-face
-{
+@font-face {
   font-family: "inconsolata";
   src: url("../fonts/inconsolata.otf");
 }
 
-@font-face
-{
+@font-face {
   font-family: "droid sans";
   src: url("../fonts/droidsans.ttf");
 }
-@font-face
-{
+
+@font-face {
   font-family: "droid sans bold";
   src: url("../fonts/droidsans-bold.ttf");
 }
-body
-{
+
+body {
   color:#333;
   font-family: helvetica, arial, sans-serif;
   font-size:87.5%;   /* 16px * 0.875 = 14px */
   line-height: 137.5%; /* 16px * 1.375  = 22px */
 }
-a
-{
+
+a {
 	color: #55862e;
   text-decoration: none;
   border-bottom: solid 1px #3030a2;
 }
-a:hover
-{
+
+a:hover {
   text-decoration: none;
   border-bottom: 0;
 }
 
-a:visited{
+a:visited {
   color: #777;
   border-bottom: solid 1px #ccc;
 }
 
-h1, h2, h3, h4, h5, h6
-{
+h1, h2, h3, h4, h5, h6 {
   color: #000;
 }
-h1, h2, h3
-{
+
+h1, h2, h3 {
   font-family: "droid sans", helvetica, arial, sans-serif;
 }
 
-h4, h5, h6
-{
+h4, h5, h6 {
   font-family: "droid sans bold", helvetica, arial, sans-serif;
 }
 
-h1
-{
+h1 {
   font-size: 150.0%;
 }
-h2
-{
+
+h2 {
   font-size:  137.5%;
 }
-h3
-{
+
+h3 {
   font-size: 125.0%;
 }
-h4
-{
+
+h4 {
   font-size: 112.5%;
 }
-h5, h6{
+
+h5, h6 {
   font-size: 100%;
 }
 
-pre,code
-{
+pre, code {
     font-family: "inconsolata", monospace;
     /* font-size: 1.142em; */
 }
@@ -86,8 +81,7 @@ pre {
   padding-left: 1em;
 }
 
-.noul
-{
+.noul {
   border-bottom: 0;
   text-decoration: none;
 }
@@ -101,25 +95,23 @@ img.screenshot {
   padding-right: 10px;
 }
 
-header, footer
-{
+header, footer {
   display: block;
   padding: .1em 0;
 }
 
 
-header h1{
+header h1 {
   font-size:1.142em;
 }
 
-header h1 a, header h1 a:visited
-{
+header h1 a, header h1 a:visited {
   color:#55862e;
   text-decoration: none;
   border-bottom: none;
 }
 
-footer{
+footer {
   margin-top:1em;
   border-top: solid 3px #ccc;
 }
@@ -135,8 +127,7 @@ footer a:visited {
   border-bottom: none;
 }
 
-ul.posts
-{
+ul.posts {
   list-style-type: none;
 }
 
@@ -150,3 +141,15 @@ table td { white-space:nowrap; }
 #standalone-downloads td { font-family: monospace; }
 #standalone-downloads td.sha { font-size: 0.8em; }
 #standalone-downloads .rc td { background-color: #ddd; }
+
+div.stacktrace {
+    font-family: "inconsolata", monospace;
+    letter-spacing: -0.05em;
+    line-height: 1.1em;
+    font-size: .8em;
+    color: #600;
+    background-color: #fee;
+    max-height: 12em;
+    overflow-y: scroll;
+    white-space: pre;
+}

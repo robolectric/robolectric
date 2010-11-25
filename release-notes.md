@@ -1,6 +1,6 @@
 ---
 layout: default
-title: Robolectric Release Notes
+title: Release Notes
 ---
 
 # Release Notes
