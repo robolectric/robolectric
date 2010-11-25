@@ -94,7 +94,7 @@ public class ShadowWrangler implements ClassHandler {
     private void reportNoShadowMethodFound(Class clazz, String methodName, String[] paramTypes) {
         if (logMissingShadowMethods) {
             System.out.println("No Shadow method found for " + clazz.getSimpleName() + "." + methodName + "(" +
-                    Join.join(", ", paramTypes) + ")");
+                    Join.join(", ", (Object[]) paramTypes) + ")");
         }
     }
 
