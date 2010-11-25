@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric;
 
+import com.xtremelabs.robolectric.util.Join;
 import com.xtremelabs.robolectric.util.RealObject;
 import javassist.CannotCompileException;
 import javassist.CtClass;
@@ -12,13 +13,15 @@ import java.util.*;
 
 public class ShadowWrangler implements ClassHandler {
     public static final String SHADOW_FIELD_NAME = "__shadow__";
+
     private static ShadowWrangler singleton;
 
+    public boolean debug = false;
+
+    private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
     private Map<String, String> shadowClassMap = new HashMap<String, String>();
     private Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
-    private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
-
-    public boolean debug = false;
+    private boolean logMissingShadowMethods = false;
 
     // sorry! it really only makes sense to have one per ClassLoader anyway though [xw/hu]
     public static ShadowWrangler getInstance() {
@@ -66,20 +69,32 @@ public class ShadowWrangler implements ClassHandler {
     @Override
     public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) {
         InvocationPlan invocationPlan = new InvocationPlan(clazz, methodName, instance, paramTypes);
-        if (!invocationPlan.prepare()) return null;
+        if (!invocationPlan.prepare()) {
+            reportNoShadowMethodFound(clazz, methodName, paramTypes);
+            return null;
+        }
 
         try {
             return invocationPlan.getMethod().invoke(invocationPlan.getShadow(), params);
         } catch (IllegalArgumentException e) {
-            throw new RuntimeException(invocationPlan.getShadow().getClass().getName() + " is not assignable from " + invocationPlan.getDeclaredShadowClass().getName(), e);
+            throw new RuntimeException(invocationPlan.getShadow().getClass().getName() + " is not assignable from " +
+                    invocationPlan.getDeclaredShadowClass().getName(), e);
         } catch (InvocationTargetException e) {
             if (e.getCause() instanceof RuntimeException) {
                 throw (RuntimeException) e.getCause();
             } else {
-                throw new RuntimeException("Did your shadow implementation of a method throw an exception? Refer to the bottom of this stack trace.", e);
+                throw new RuntimeException("Did your shadow implementation of a method throw an exception? Refer to " +
+                        "the bottom of this stack trace.", e);
             }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private void reportNoShadowMethodFound(Class clazz, String methodName, String[] paramTypes) {
+        if (logMissingShadowMethods) {
+            System.out.println("No Shadow method found for " + clazz.getSimpleName() + "." + methodName + "(" +
+                    Join.join(", ", paramTypes) + ")");
         }
     }
 
@@ -220,6 +235,14 @@ public class ShadowWrangler implements ClassHandler {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public void logMissingInvokedShadowMethods() {
+        logMissingShadowMethods = true;
+    }
+
+    public void silence() {
+        logMissingShadowMethods = false;
     }
 
     private class InvocationPlan {

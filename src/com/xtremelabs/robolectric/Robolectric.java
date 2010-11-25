@@ -148,6 +148,7 @@ public class Robolectric {
     }
 
     public static void resetStaticState() {
+        ShadowWrangler.getInstance().silence();
         Robolectric.application = new Application();
         TestSharedPreferences.reset();
         ShadowToast.reset();

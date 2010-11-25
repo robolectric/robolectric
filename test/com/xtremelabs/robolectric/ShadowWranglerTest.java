@@ -118,7 +118,6 @@ public class ShadowWranglerTest {
         assertEquals(Integer.TYPE, intArrayClass.getComponentType());
     }
 
-
     private TestShadowView shadowOf(View view) {
         return (TestShadowView) Robolectric.shadowOf_(view);
     }
