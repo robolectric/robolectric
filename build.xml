@@ -139,6 +139,7 @@
     <target name="test" depends="compile.tests" description="test all">
         <mkdir dir="${basedir}/out/reports/tests"/>
         <junit showoutput="true" failureproperty="junit.failure">
+            <formatter type="plain" usefile="false" if="junit.console.out"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
             <batchtest todir="${basedir}/out/reports/tests">
