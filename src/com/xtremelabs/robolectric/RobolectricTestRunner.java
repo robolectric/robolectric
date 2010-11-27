@@ -245,7 +245,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return new Application();
     }
 
-    protected ResourceLoader createResourceLoader(String projectRoot, String resourceDirectory) {
+    private ResourceLoader createResourceLoader(String projectRoot, String resourceDirectory) {
         RootAndDirectory rootAndDirectory = new RootAndDirectory(projectRoot, resourceDirectory);
         ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(rootAndDirectory);
         if (resourceLoader == null) {
