@@ -10,5 +10,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="var" path="ANDROID_JAR"/>
 	<classpathentry kind="var" path="MAPS_JAR"/>
+	<classpathentry kind="lib" path="lib/main/h2-1.2.147.jar"/>
+	<classpathentry kind="lib" path="lib/main/json-20090211.jar"/>
 	<classpathentry kind="output" path="bin/classesMain"/>
 </classpath>

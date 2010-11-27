@@ -99,6 +99,7 @@
     <target name="jar-all" description="create the robolectric jar including all dependencies" depends="jar">
         <mkdir dir="${target.dir}/staging"/>
         <unjar dest="${target.dir}/staging" src="${main.external.libs.absolute.dir}/com.springsource.org.objenesis-1.0.0.jar"/>
+        <unjar dest="${target.dir}/staging" src="${main.external.libs.absolute.dir}/h2-1.2.147.jar"/>
         <unjar dest="${target.dir}/staging" src="${main.external.libs.absolute.dir}/javassist-3.12.GA.jar"/>
         <unjar dest="${target.dir}/staging" src="${target.dir}/robolectric.jar"/>
         <jar destfile="${target.dir}/robolectric-all.jar" basedir="${target.dir}/staging"/>
