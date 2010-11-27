@@ -1,9 +1,17 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +27,11 @@ public class SQLiteDatabaseTest {
     @Before
     public void setUp() throws Exception {
         database = SQLiteDatabase.openDatabase("path", null, 0);
+    }
+    
+    @After
+    public void tearDown() throws Exception {
+    	database.close();
     }
 
     @Test
@@ -117,7 +130,7 @@ public class SQLiteDatabaseTest {
     }
     
     @Test
-    public void tesetDeleteAll() throws Exception {
+    public void testDeleteAll() throws Exception {
     	addChuck();
     	addJulie();
     	
@@ -125,6 +138,43 @@ public class SQLiteDatabaseTest {
     	assertThat( deleted, equalTo(2) );
     	
     	assertEmptyDatabase();
+    }
+    
+    @Test
+    public void testExecSQL() throws Exception {
+    	Statement statement;
+    	ResultSet resultSet;
+    	
+    	database.execSQL("CREATE TABLE table_name(id INT PRIMARY KEY, name VARCHAR(255));");
+    	database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
+    	
+    	Connection conn = ((ShadowSQLiteDatabase) Robolectric.shadowOf(database)).getConnection();
+
+    	statement = conn.createStatement();
+    	resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
+    	assertThat( resultSet.first(), equalTo(true) );
+    	assertThat( resultSet.getInt(1), equalTo(1));
+    	
+    	statement = conn.createStatement();
+    	resultSet = statement.executeQuery("SELECT * FROM table_name");
+    	assertThat( resultSet.first(), equalTo(true) );
+    	assertThat( resultSet.getInt(1), equalTo(1234));
+    	assertThat( resultSet.getString(2), equalTo("Chuck"));
+    }
+    
+    @Test(expected=IllegalStateException.class)
+    public void testClose() throws Exception {
+    	database.execSQL("CREATE TABLE table_name(id INT PRIMARY KEY, name VARCHAR(255));");
+    	database.close();
+    	
+    	database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
+    }
+    
+    @Test
+    public void testIsOpen() throws Exception {
+    	assertThat(database.isOpen(), equalTo(true));
+    	database.close();
+    	assertThat(database.isOpen(), equalTo(false));
     }
     
     private void addChuck() {
