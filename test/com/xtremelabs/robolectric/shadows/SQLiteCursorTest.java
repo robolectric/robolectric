@@ -196,10 +196,10 @@ public class SQLiteCursorTest {
 		
 		byte[] retrievedByteData = cursor.getBlob( 5 );
 		
-		assertThat( byteData.length, equalTo( retrievedByteData.length ));
+		assertThat( byteData.length, equalTo( retrievedByteData.length ) );
 		
 		for ( int i = 0; i < byteData.length; i++ ) {
-			assertThat( byteData[i], equalTo( retrievedByteData[i]));
+			assertThat( byteData[i], equalTo(retrievedByteData[i]) );
 		}
 	}
 	
