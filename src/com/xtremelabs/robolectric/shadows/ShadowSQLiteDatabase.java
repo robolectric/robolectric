@@ -11,6 +11,7 @@ import com.xtremelabs.robolectric.util.Implements;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -19,6 +20,7 @@ import java.util.List;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.
@@ -27,15 +29,13 @@ import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 @Implements(SQLiteDatabase.class)
 public class ShadowSQLiteDatabase {
     private static Connection conn;
-    Map<String, Table> tables = new HashMap<String, Table>();
 
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
     	try {
 			Class.forName("org.h2.Driver").newInstance();
-			String url = "jdbc:h2:mem:";
-			conn = DriverManager.getConnection(url);
-		} catch ( Exception ignore ) {
+			conn = DriverManager.getConnection("jdbc:h2:mem:");
+		} catch (Exception ignore) {
 			ignore.printStackTrace();
 		}
         return newInstanceOf(SQLiteDatabase.class);
@@ -43,58 +43,41 @@ public class ShadowSQLiteDatabase {
     
     @Implementation
     public long insert(String table, String nullColumnHack, ContentValues values) {
-        Table theTable = getTable(table);
-        theTable.insert(values);
-        return -1;
+    	// TODO
+    	return -1;
     }
 
     @Implementation
     public Cursor query(final String table, final String[] columns, String selection,
                         String[] selectionArgs, String groupBy, String having,
                         String orderBy) {
-        final Table theTable = getTable(table);
-        return new SQLiteCursor(null, null, null, null) {
-            @Override
-            public int getCount() {
-                return theTable.rows.size();
-            }
-
-            @Override
-            public byte[] getBlob(int columnIndex) {
-                return (byte[]) get(columnIndex);
-            }
-
-            @Override
-            public String getString(int columnIndex) {
-                return (String) get(columnIndex);
-            }
-            
-            @Override
-            public int getInt(int columnIndex) {
-                return (int) (Integer) get(columnIndex);
-            }
-            
-            @Override
-            public long getLong(int columnIndex) {
-            	return (long) (Long) get(columnIndex);
-            }
-            
-            private Object get(int columnIndex) {
-                return theTable.rows.get(getPosition()).get(columns[columnIndex]);
-            }
-        };
+    	ResultSet rs = null;
+    	
+    	// TODO build SQL
+    	String sql = "SELECT * from " + table;
+    	
+    	try {
+	    	Statement statement = conn.createStatement( ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY );
+	    	rs = statement.executeQuery(sql);
+    	} catch( SQLException e ) {
+    		e.printStackTrace();
+    	}
+    	
+    	SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
+    	shadowOf(cursor).setResultSet( rs );
+    	return cursor;
     }
     
     @Implementation
     public int update(String table, ContentValues values, String whereClause, String[] whereArgs) {
-    	 Table theTable = getTable(table);
-         return theTable.update(values, whereClause);
+    	// TODO
+    	return 0;
     }
     
     @Implementation
     public int delete(String table, String whereClause, String[] whereArgs) {
-    	 Table theTable = getTable(table);
-    	 return theTable.delete(whereClause);
+    	// TODO
+    	return 0;
     }
     
     @Implementation
@@ -125,86 +108,13 @@ public class ShadowSQLiteDatabase {
 		}
     }
     
+    /**
+     * Allows test cases access to the underlying JDBC connection, for use in
+     * setup or assertions.
+     * 
+     * @return
+     */
     public Connection getConnection() {
     	return conn;
-    }
-
-    private Table getTable(String tableName) {
-        Table table = tables.get(tableName);
-        if (table == null) {
-            table = new Table();
-            tables.put(tableName, table);
-        }
-        return table;
-    }
-
-    private class Table {
-        List<ContentValues> rows = new ArrayList<ContentValues>();
-
-        public void insert(ContentValues values) {
-            rows.add(values);
-        }
-        
-        public int update(ContentValues values, String whereClause) {
-        	String columnName = whereColumn(whereClause);
-        	String value = whereValue(whereClause);
-              	
-        	int affectedCount = 0;
-        	
-        	for (ContentValues v : rows) {
-        		if (columnName.isEmpty() || (value.equals(v.getAsString(columnName)))) {
-        			v.putAll(values);
-        			affectedCount++;
-        		}
-        	}
-        	
-        	return affectedCount;
-        }
-        
-        public int delete(String whereClause) {
-        	String columnName = whereColumn(whereClause);
-        	String value = whereValue(whereClause);
-        	
-        	List<ContentValues> deleted = new ArrayList<ContentValues>();
-        	for (ContentValues v : rows) {
-        		if ("1".equals(whereClause) || (value.equals(v.getAsString(columnName)))) {
-        			deleted.add( v );
-        		}
-        	}
-        	rows.removeAll(deleted);
-						
-			return deleted.size();
-        }
-        
-        // Parse whereClause of form "<column>=<value>".
-        // Handles special cases specified by Android APIs.
-
-        private String whereColumn(String whereClause) {
-        	if (isEmptyOrWhitespace(whereClause)) {
-        		return "";
-        	}
-        	if (isSpecialCaseOrUnknown(whereClause)) {
-        		return whereClause;
-        	}
-        	return whereClause.substring(0, whereClause.indexOf("="));
-        }
-        
-        private String whereValue(String whereClause) {
-        	if (isEmptyOrWhitespace(whereClause)) {
-        		return "";
-        	}
-        	if (isSpecialCaseOrUnknown(whereClause)) {
-        		return whereClause;
-        	}
-        	return whereClause.substring(whereClause.indexOf("=") + 1, whereClause.length());
-        }
-        
-        private boolean isEmptyOrWhitespace(String s) {
-            return (s == null) || (s.trim().isEmpty());
-        }
-        
-        private boolean isSpecialCaseOrUnknown(String s) {
-        	return "1".equals(s) || !s.contains("=");
-        }
     }
 }

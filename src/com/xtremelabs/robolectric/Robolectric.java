@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -146,6 +147,7 @@ public class Robolectric {
                 ShadowSettings.ShadowSystem.class,
                 ShadowSpannableStringBuilder.class,
                 ShadowSQLiteDatabase.class,
+                ShadowSQLiteCursor.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
@@ -309,6 +311,10 @@ public class Robolectric {
 
     public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
         return (ShadowSQLiteDatabase) Robolectric.shadowOf_(other);
+    }
+    
+    public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
+        return (ShadowSQLiteCursor) Robolectric.shadowOf_(other);
     }
 
     public static ShadowContentValues shadowOf(ContentValues other) {
