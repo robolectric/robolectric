@@ -12,11 +12,6 @@ import com.xtremelabs.robolectric.util.Implements;
 @Implements(SQLiteCursor.class)
 public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 	
-	// TODO figure out what to do with the SQLExceptions.  In a test environment,
-	// they ought to bubble up to the test case, so they can register as Errors.
-	// So we need to rethrow some sort of exception that is appropriate for a
-	// test scenario.  I'm sure JUnit has something appropriate.
-	
 	private ResultSet rs;
 	private int rowCount;
 
@@ -38,7 +33,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 				retVal[ colIndex - 1] = md.getColumnName( colIndex );
 			}
 		} catch (SQLException e) {
-			e.printStackTrace();
+			rethrowException( e, "SQL exception in getColumnNames" );
 		}
 		
 		return retVal;
@@ -75,7 +70,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     	try {
 			rs.first();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			rethrowException( e, "SQL exception in moveToFirst" );
 		}
     	return super.moveToFirst();
     }
@@ -86,7 +81,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     	try {
 			rs.next();
 		} catch (SQLException e) {
-			e.printStackTrace();
+			rethrowException( e, "SQL exception in moveToNext" );
 		}
     	return super.moveToNext();
     }
@@ -98,7 +93,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
         try {
 			retVal = rs.getBytes(columnIndex + 1);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			rethrowException( e, "SQL exception in getBlob" );
 		}
 		
 		return retVal;
@@ -111,7 +106,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 		try {
 			retVal = rs.getString(columnIndex + 1);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			rethrowException( e, "SQL exception in getString" );
 		}
         
         return retVal;
@@ -124,7 +119,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 		try {
 			retVal = rs.getInt(columnIndex + 1);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			rethrowException( e, "SQL exception in getInt" );
 		}
         
         return retVal;
@@ -137,7 +132,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 		try {
 			retVal = rs.getLong(columnIndex + 1);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			rethrowException( e, "SQL exception in getLong" );
 		}
     	
     	return retVal;
@@ -150,7 +145,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 		try {
 			retVal = rs.getFloat(columnIndex + 1);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			rethrowException( e, "SQL exception in getFloat" );
 		}
 		
 		return retVal;
@@ -163,7 +158,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 		try {
 			retVal = rs.getDouble(columnIndex + 1);
 		} catch (SQLException e) {
-			e.printStackTrace();
+			rethrowException( e, "SQL exception in getDouble" );
 		}
 		
 		return retVal;
@@ -179,7 +174,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 			rs.close();
 			rs = null;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			rethrowException( e, "SQL exception in close" );
 		}
 	}
 	
@@ -210,9 +205,14 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 				rs.last();  
 				rowCount = rs.getRow();
 			} catch (SQLException e) {
-				e.printStackTrace();
+				rethrowException( e, "SQL exception in setResultSet" );
 			}
 		}  
 	}
-
+	
+	private void rethrowException( Exception e, String msg ) {
+		AssertionError ae = new AssertionError( msg );
+		ae.initCause(e);
+		throw ae;
+	}
 }

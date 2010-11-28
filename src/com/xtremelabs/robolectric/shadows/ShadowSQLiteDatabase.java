@@ -1,31 +1,25 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabase.CursorFactory;
-
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteCursor;
+import android.database.sqlite.SQLiteDatabase;
+
+import com.xtremelabs.robolectric.util.Implementation;
+import com.xtremelabs.robolectric.util.Implements;
 
 /**
  * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.
  */
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(SQLiteDatabase.class)
 public class ShadowSQLiteDatabase {
     private static Connection conn;
@@ -35,8 +29,8 @@ public class ShadowSQLiteDatabase {
     	try {
 			Class.forName("org.h2.Driver").newInstance();
 			conn = DriverManager.getConnection("jdbc:h2:mem:");
-		} catch (Exception ignore) {
-			ignore.printStackTrace();
+		} catch (Exception e) {
+			rethrowException( e, "SQL exception in openDatabase" );
 		}
         return newInstanceOf(SQLiteDatabase.class);
     }
@@ -60,7 +54,7 @@ public class ShadowSQLiteDatabase {
 	    	Statement statement = conn.createStatement( ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY );
 	    	rs = statement.executeQuery(sql);
     	} catch( SQLException e ) {
-    		e.printStackTrace();
+			rethrowException( e, "SQL exception in query" );
     	}
     	
     	SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
@@ -104,7 +98,7 @@ public class ShadowSQLiteDatabase {
 			conn.close();
 			conn = null;
 		} catch (SQLException e) {
-			e.printStackTrace();
+			rethrowException( e, "SQL exception in close" );
 		}
     }
     
@@ -117,4 +111,11 @@ public class ShadowSQLiteDatabase {
     public Connection getConnection() {
     	return conn;
     }
+    
+    // DRY out with ShadowSQLiteCursor
+	private static void rethrowException( Exception e, String msg ) {
+		AssertionError ae = new AssertionError( msg );
+		ae.initCause(e);
+		throw ae;
+	}
 }
