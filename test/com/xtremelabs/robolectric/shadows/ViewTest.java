@@ -5,6 +5,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.TestOnClickListener;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
@@ -115,10 +116,4 @@ public class ViewTest {
         shadowOf(view).checkedPerformClick();
     }
 
-    private static class TestOnClickListener implements View.OnClickListener {
-        public boolean clicked = false;
-        @Override public void onClick(View v) {
-            clicked = true;
-        }
-    }
 }
