@@ -547,4 +547,20 @@ public class ShadowView {
         }
         return true;
     }
+
+    /**
+     * Utility method for clicking on views exposing testing scenarios that are not possible when using the actual app.
+     *
+     * @throws RuntimeException if the view is disabled or if the view or any of its parents are not visible.
+     */
+    public boolean checkedPerformClick() {
+        if (!derivedIsVisible()) {
+            throw new RuntimeException("View is not visible and cannot be clicked");
+        }
+        if (!realView.isEnabled()) {
+            throw new RuntimeException("View is not enabled and cannot be clicked");
+        }
+
+        return realView.performClick();
+    }
 }

@@ -76,7 +76,7 @@ public class ViewTest {
     }
 
     @Test
-    public void shouldKnowIfAncestorsAreVisible() throws Exception {
+    public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
         assertTrue(shadowOf(view).derivedIsVisible());
         
         ViewGroup grandParent = new LinearLayout(null);
@@ -87,5 +87,38 @@ public class ViewTest {
         grandParent.setVisibility(View.GONE);
 
         assertFalse(shadowOf(view).derivedIsVisible());
+    }
+
+    @Test
+    public void checkedClick_shouldClickOnView() throws Exception {
+        TestOnClickListener clickListener = new TestOnClickListener();
+        view.setOnClickListener(clickListener);
+        shadowOf(view).checkedPerformClick();
+
+        assertTrue(clickListener.clicked);
+    }
+
+    @Test(expected= RuntimeException.class)
+    public void checkedClick_shouldThrowIfViewIsNotVisible() throws Exception {
+        ViewGroup grandParent = new LinearLayout(null);
+        ViewGroup parent = new LinearLayout(null);
+        grandParent.addView(parent);
+        parent.addView(view);
+        grandParent.setVisibility(View.GONE);
+
+        shadowOf(view).checkedPerformClick();
+    }
+
+    @Test(expected= RuntimeException.class)
+    public void checkedClick_shouldThrowIfViewIsDisabled() throws Exception {
+        view.setEnabled(false);
+        shadowOf(view).checkedPerformClick();
+    }
+
+    private static class TestOnClickListener implements View.OnClickListener {
+        public boolean clicked = false;
+        @Override public void onClick(View v) {
+            clicked = true;
+        }
     }
 }
