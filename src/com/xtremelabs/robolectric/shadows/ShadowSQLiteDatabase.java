@@ -120,7 +120,6 @@ public class ShadowSQLiteDatabase {
 	    	}
 	    	
 	    	rowsAffectedCount = statement.executeUpdate();
-	    	// TODO fetch the generated key
     	} catch( SQLException e ) {
 			rethrowException( e, "SQL exception in update" );
     	}
@@ -130,8 +129,18 @@ public class ShadowSQLiteDatabase {
     
     @Implementation
     public int delete(String table, String whereClause, String[] whereArgs) {
-    	// TODO
-    	return 0;
+    	String sql = buildDeleteString( table, whereClause, whereArgs );
+    	
+    	int rowsAffectedCount = 0;
+
+    	try {
+	    	PreparedStatement statement = conn.prepareStatement( sql );
+	    	rowsAffectedCount = statement.executeUpdate();
+    	} catch( SQLException e ) {
+			rethrowException( e, "SQL exception in delete" );
+    	}
+    	
+    	return rowsAffectedCount;
     }
     
     @Implementation
@@ -237,8 +246,34 @@ public class ShadowSQLiteDatabase {
 	}
 	
 	/**
-	 * Build a WHERE clause used in SELECT and UPDATE statements.
-	 * And probably DELETE too.
+	 * Create a SQL DELETE string.
+	 * 
+	 * @param table
+	 * @param whereClause
+	 * @param whereArgs
+	 * @return
+	 */
+	private String buildDeleteString( String table, String whereClause, String[] whereArgs ) {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append( "DELETE FROM " );
+		sb.append( table );
+
+		if ( whereClause != null ) {
+			String where = whereClause;
+			if ( whereArgs != null ) {
+				where = buildWhereClause( whereClause, whereArgs );
+			}
+			sb.append( " WHERE " );
+			sb.append( where );
+		}
+		sb.append(";");
+		
+		return sb.toString();
+	}
+	
+	/**
+	 * Build a WHERE clause used in SELECT, UPDATE and DELETE statements.
 	 * 
 	 * @param selection
 	 * @param selectionArgs
