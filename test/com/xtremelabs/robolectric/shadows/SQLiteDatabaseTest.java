@@ -71,6 +71,16 @@ public class SQLiteDatabaseTest {
     }
     
     @Test
+    public void testInsertKeyGeneration() throws Exception {
+    	ContentValues values = new ContentValues();
+    	values.put( "name", "Chuck" );
+    	
+    	long key = database.insert("table_name", null, values);
+    	
+    	assertThat( key, greaterThan(0L) );
+    }
+    
+    @Test
     public void testUpdate() throws Exception {    	
     	addChuck();	
     	
@@ -162,6 +172,18 @@ public class SQLiteDatabaseTest {
     	assertThat( resultSet.first(), equalTo(true) );
     	assertThat( resultSet.getInt(1), equalTo(1234));
     	assertThat( resultSet.getString(4), equalTo("Chuck"));
+    }
+    
+    @Test
+    public void testExecSQLAutoIncrementSQLite() throws Exception {
+    	database.execSQL( "CREATE TABLE auto_table (id INT PRIMARY KEY AUTOINCREMENT, name VARCHAR(255));" );
+    	
+    	ContentValues values = new ContentValues();
+    	values.put( "name", "Chuck" );
+    	
+    	long key = database.insert("auto_table", null, values);
+    	
+    	assertThat( key, greaterThan(0L) );
     }
     
     @Test(expected=IllegalStateException.class)

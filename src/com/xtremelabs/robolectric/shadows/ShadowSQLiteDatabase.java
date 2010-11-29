@@ -46,10 +46,10 @@ public class ShadowSQLiteDatabase {
     public long insert(String table, String nullColumnHack, ContentValues values) {
     	
     	SQLStringAndBindings sqlInsertString = buildInsertString( table, values );
-    	int generatedKey = -1;
+    	long generatedKey = -1;
     	
     	try {
-	    	PreparedStatement statement = conn.prepareStatement( sqlInsertString.sql );
+	    	PreparedStatement statement = conn.prepareStatement(sqlInsertString.sql, Statement.RETURN_GENERATED_KEYS );
 	    	Iterator<Object> colIter = sqlInsertString.colValues.iterator();
 	    	int i = 1;
 	    	while ( colIter.hasNext() ) {
@@ -57,7 +57,11 @@ public class ShadowSQLiteDatabase {
 	    	}
 	    	
 	    	statement.executeUpdate();
-	    	// TODO fetch the generated key
+	    	
+	    	ResultSet rs = statement.getGeneratedKeys();
+	    	if ( rs.first() ) {
+	    		generatedKey = rs.getLong(1);
+	    	}
     	} catch( SQLException e ) {
 			rethrowException( e, "SQL exception in insert" );
     	}
@@ -149,10 +153,11 @@ public class ShadowSQLiteDatabase {
             throw new IllegalStateException("database not open");
         }
     	
-    	// TODO map 'autoincrement' (sqlite) to 'auto_increment' (h2) for compatibility.  use case-insensitive replace.
+    	// Map 'autoincrement' (sqlite) to 'auto_increment' (h2).
+    	String scrubbedSQL = sql.replaceAll("(?i:autoincrement)", "auto_increment");
 
     	Statement statement = conn.createStatement();
-    	statement.execute(sql);
+    	statement.execute(scrubbedSQL);
     }
     
     @Implementation
