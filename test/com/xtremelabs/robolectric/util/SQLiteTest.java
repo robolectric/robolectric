@@ -43,21 +43,14 @@ public class SQLiteTest {
 	@Test
 	public void testBuildInsertString() {
 		SQLStringAndBindings insertString = buildInsertString("table_name", values);
-		assertThat( insertString.sql, equalTo( "INSERT INTO table_name (float_value, byte_data, name, int_value ) VALUES (?, ?, ?, ?);" ) );		
+		assertThat( insertString.sql, equalTo( "INSERT INTO table_name (float_value, byte_data, name, int_value) VALUES (?, ?, ?, ?);" ) );		
 		verifyColumnValues( insertString.colValues );
-	}
-	
-	private void verifyColumnValues( List<Object> colValues ) {
-		assertThat( colValues.get(0), instanceOf(Float.class) );
-		assertThat( colValues.get(1), instanceOf(byte[].class) );
-		assertThat( colValues.get(2), instanceOf(String.class) );
-		assertThat( colValues.get(3), instanceOf(Integer.class) );
 	}
 	
 	@Test
 	public void testBuildUpdateString() {
 		SQLStringAndBindings insertString = buildUpdateString("table_name", values, "id=?", new String[] { "1234" } );
-		assertThat( insertString.sql, equalTo( "UPDATE table_name SET float_value=?, byte_data=?, name=?, int_value=?  WHERE id='1234';" ) );		
+		assertThat( insertString.sql, equalTo( "UPDATE table_name SET float_value=?, byte_data=?, name=?, int_value=? WHERE id='1234';" ) );		
 		verifyColumnValues( insertString.colValues );	
 	}
 
@@ -77,7 +70,7 @@ public class SQLiteTest {
 	public void testBuildColumnValuesClause() {
 		SQLStringAndBindings columnValuesClause = buildColumnValuesClause( values );
 		
-		assertThat( columnValuesClause.sql, equalTo("(float_value, byte_data, name, int_value ) VALUES (?, ?, ?, ?)") );
+		assertThat( columnValuesClause.sql, equalTo("(float_value, byte_data, name, int_value) VALUES (?, ?, ?, ?)") );
 		verifyColumnValues( columnValuesClause.colValues );
 	}
 	
@@ -85,7 +78,14 @@ public class SQLiteTest {
 	public void testBuildColumnAssignmentsClause() {
 		SQLStringAndBindings columnAssignmentsClause = buildColumnAssignmentsClause( values );
 		
-		assertThat( columnAssignmentsClause.sql, equalTo("float_value=?, byte_data=?, name=?, int_value=? ") );
+		assertThat( columnAssignmentsClause.sql, equalTo("float_value=?, byte_data=?, name=?, int_value=?") );
 		verifyColumnValues( columnAssignmentsClause.colValues );
+	}
+	
+	private void verifyColumnValues( List<Object> colValues ) {
+		assertThat( colValues.get(0), instanceOf(Float.class) );
+		assertThat( colValues.get(1), instanceOf(byte[].class) );
+		assertThat( colValues.get(2), instanceOf(String.class) );
+		assertThat( colValues.get(3), instanceOf(Integer.class) );
 	}
 }

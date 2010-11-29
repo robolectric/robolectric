@@ -143,9 +143,8 @@ public class SQLite {
 			Entry<String,Object> thisEntry = itemsIter.next();
 			sb.append( thisEntry.getKey() );
 			if ( itemsIter.hasNext() ) {
-				sb.append( "," );
+				sb.append( ", " );
 			}
-			sb.append( " " );
 			columnValues.add( thisEntry.getValue() );
 		}
 		sb.append( ") VALUES (" );
@@ -174,9 +173,8 @@ public class SQLite {
 			sb.append( thisEntry.getKey() );
 			sb.append( "=?" );
 			if ( itemsIter.hasNext() ) {
-				sb.append( "," );
+				sb.append( ", " );
 			}
-			sb.append( " " );
 			columnValues.add( thisEntry.getValue() );
 		}
 		
