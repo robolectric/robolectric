@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteCursor;
 
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import static com.xtremelabs.robolectric.util.SQLite.rethrowException;
 
 @Implements(SQLiteCursor.class)
 public class ShadowSQLiteCursor extends ShadowAbstractCursor {
@@ -208,11 +209,5 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 				rethrowException( e, "SQL exception in setResultSet" );
 			}
 		}  
-	}
-	
-	private void rethrowException( Exception e, String msg ) {
-		AssertionError ae = new AssertionError( msg );
-		ae.initCause(e);
-		throw ae;
 	}
 }
