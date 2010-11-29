@@ -40,14 +40,18 @@ public class ResourceLoader {
             DocumentLoader viewDocumentLoader = new DocumentLoader(viewLoader);
             File[] layoutDirs = resourceDir.listFiles(new FileFilter() {
                 @Override
-                public boolean accept(File pathname) {
-                    return pathname.getPath().contains("/layout");
+                public boolean accept(File file) {
+                    return isLayoutDirectory(file.getPath());
                 }
             });
             viewDocumentLoader.loadResourceXmlDirs(layoutDirs);
         } else {
             viewLoader = null;
         }
+    }
+
+    boolean isLayoutDirectory(String path) {
+        return path.contains(File.separator + "layout");
     }
 
     /**
