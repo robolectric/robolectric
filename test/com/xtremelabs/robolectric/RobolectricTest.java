@@ -50,7 +50,7 @@ public class RobolectricTest {
         aView.findViewById(27);
         // No shadow here... should be logged
         output = buff.toString();
-        assertEquals("No Shadow method found for View.findViewById(int)\n", output);
+        assertEquals("No Shadow method found for View.findViewById(int)" + System.getProperty("line.separator"), output);
     }
 
     @Test // This is nasty because it depends on the test above having run first in order to fail
