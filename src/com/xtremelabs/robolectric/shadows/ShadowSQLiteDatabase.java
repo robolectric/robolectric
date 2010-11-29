@@ -147,7 +147,7 @@ public class ShadowSQLiteDatabase {
     }
     
     @Implementation
-    public void execSQL(String sql) throws SQLException {  	
+    public void execSQL(String sql) throws android.database.SQLException {  	
     	if (!isOpen()) {
             throw new IllegalStateException("database not open");
         }
@@ -155,8 +155,14 @@ public class ShadowSQLiteDatabase {
     	// Map 'autoincrement' (sqlite) to 'auto_increment' (h2).
     	String scrubbedSQL = sql.replaceAll("(?i:autoincrement)", "auto_increment");
 
-    	Statement statement = conn.createStatement();
-    	statement.execute(scrubbedSQL);
+    	try {
+    		Statement statement = conn.createStatement();
+    		statement.execute(scrubbedSQL);
+    	} catch ( java.sql.SQLException e ) {
+    		android.database.SQLException ase = new android.database.SQLException();
+    		ase.initCause( e );
+    		throw ase;
+    	}
     }
     
     @Implementation

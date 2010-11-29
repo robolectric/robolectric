@@ -174,6 +174,12 @@ public class SQLiteDatabaseTest {
     	assertThat( resultSet.getString(4), equalTo("Chuck"));
     }
     
+    @Test(expected=android.database.SQLException.class)
+    public void testExecSQLException() throws Exception {
+    	
+    	database.execSQL("INSERT INTO table_name;" );	// invalid SQL
+    }
+    
     @Test
     public void testExecSQLAutoIncrementSQLite() throws Exception {
     	database.execSQL( "CREATE TABLE auto_table (id INT PRIMARY KEY AUTOINCREMENT, name VARCHAR(255));" );
