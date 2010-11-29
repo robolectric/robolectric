@@ -2,13 +2,16 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.TestOnClickListener;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
@@ -72,4 +75,45 @@ public class ViewTest {
         view.setFocusable(true);
         assertTrue(view.isFocusable());
     }
+
+    @Test
+    public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
+        assertTrue(shadowOf(view).derivedIsVisible());
+        
+        ViewGroup grandParent = new LinearLayout(null);
+        ViewGroup parent = new LinearLayout(null);
+        grandParent.addView(parent);
+        parent.addView(view);
+
+        grandParent.setVisibility(View.GONE);
+
+        assertFalse(shadowOf(view).derivedIsVisible());
+    }
+
+    @Test
+    public void checkedClick_shouldClickOnView() throws Exception {
+        TestOnClickListener clickListener = new TestOnClickListener();
+        view.setOnClickListener(clickListener);
+        shadowOf(view).checkedPerformClick();
+
+        assertTrue(clickListener.clicked);
+    }
+
+    @Test(expected= RuntimeException.class)
+    public void checkedClick_shouldThrowIfViewIsNotVisible() throws Exception {
+        ViewGroup grandParent = new LinearLayout(null);
+        ViewGroup parent = new LinearLayout(null);
+        grandParent.addView(parent);
+        parent.addView(view);
+        grandParent.setVisibility(View.GONE);
+
+        shadowOf(view).checkedPerformClick();
+    }
+
+    @Test(expected= RuntimeException.class)
+    public void checkedClick_shouldThrowIfViewIsDisabled() throws Exception {
+        view.setEnabled(false);
+        shadowOf(view).checkedPerformClick();
+    }
+
 }
