@@ -1,22 +1,33 @@
 package com.xtremelabs.robolectric.util;
 
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+
+import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsSpinner;
 import android.widget.AdapterView;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
-import java.util.*;
-
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
-
-public class TestUtil {
+public abstract class TestUtil {
     public static Map<String, String> mapOf() {
         return new HashMap<String, String>();
     }

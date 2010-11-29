@@ -77,7 +77,9 @@
 
         <javac encoding="ascii" source="1.6" target="1.6" debug="true" extdirs=""
                destdir="${out.main.absolute.dir}"
-               verbose="${verbose}" classpath="${extensible.classpath}">
+               verbose="${verbose}"
+               classpath="${extensible.classpath}"
+               includeantruntime="false">
             <src path="${main.absolute.dir}"/>
             <classpath>
                 <pathelement path="${out.main.absolute.dir}"/>
@@ -114,7 +116,9 @@
 
         <javac encoding="ascii" source="1.6" target="1.6" debug="true" extdirs=""
         destdir="${out.test.absolute.dir}"
-        verbose="${verbose}" classpath="${extensible.classpath}">
+        verbose="${verbose}"
+        classpath="${extensible.classpath}"
+        includeantruntime="false">
             <src path="${test.absolute.dir}"/>
             <classpath>
                 <pathelement path="${out.main.absolute.dir}"/>
@@ -135,6 +139,7 @@
     <target name="test" depends="compile.tests" description="test all">
         <mkdir dir="${basedir}/out/reports/tests"/>
         <junit showoutput="true" failureproperty="junit.failure">
+            <formatter type="plain" usefile="false" if="junit.console.out"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
             <batchtest todir="${basedir}/out/reports/tests">
