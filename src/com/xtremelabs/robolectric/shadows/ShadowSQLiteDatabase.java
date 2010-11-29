@@ -23,6 +23,8 @@ import com.xtremelabs.robolectric.util.Implements;
 
 /**
  * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.
+ * Implemented as a wrapper around an embedded SQL database, accessed via JDBC.  The JDBC connection is
+ * made available to test cases for use in fixture setup and assertions.
  */
 @Implements(SQLiteDatabase.class)
 public class ShadowSQLiteDatabase {

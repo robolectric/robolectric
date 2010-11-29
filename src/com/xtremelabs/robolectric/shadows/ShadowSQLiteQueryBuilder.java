@@ -5,6 +5,10 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+/**
+ * Shadow for {@code SQLiteQueryBuilder}.
+ *
+ */
 @Implements(SQLiteQueryBuilder.class)
 public class ShadowSQLiteQueryBuilder {
 	

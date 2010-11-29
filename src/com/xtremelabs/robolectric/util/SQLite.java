@@ -9,8 +9,8 @@ import java.util.Map.Entry;
 import android.content.ContentValues;
 
 /**
- * 
- * SQL utility methods to support the database-related shadows.
+ * SQL utility methods to support the database-related shadows, such as
+ * {@code ShadowSQLiteDatabase} and {@code ShadowSQLiteCursor}.
  *
  */
 public class SQLite {
@@ -18,6 +18,9 @@ public class SQLite {
 	/**
 	 * Rethrow JDBC exceptions in a form suitable for detection as
 	 * Errors in a JUnit test.
+	 *
+	 * @param e original exception to wrap
+	 * @param msg context message
 	 */
 	public static void rethrowException( Exception e, String msg ) {
 		AssertionError ae = new AssertionError( msg );
@@ -29,8 +32,8 @@ public class SQLite {
 	 * Create a SQL INSERT string.  Returned values are then bound via
 	 * JDBC to facilitate various data types.
 	 * 
-	 * @param table
-	 * @param values
+	 * @param table table name
+	 * @param values column name/value pairs
 	 * @return
 	 */
 	public static SQLStringAndBindings buildInsertString(String table, ContentValues values) {
@@ -51,10 +54,10 @@ public class SQLite {
 	 * Create a SQL UPDATE string.  Returned values are then bound via
 	 * JDBC to facilitate various data types.
 	 * 
-	 * @param table
-	 * @param values
-	 * @param whereClause
-	 * @param whereArgs
+	 * @param table table name
+	 * @param values column name/value pairs
+	 * @param whereClause SQL where clause fragment
+	 * @param whereArgs Array of substitutions for args in whereClause
 	 * @return
 	 */
 	public static SQLStringAndBindings buildUpdateString( String table, ContentValues values, String whereClause, String[] whereArgs ) {
@@ -83,9 +86,9 @@ public class SQLite {
 	/**
 	 * Create a SQL DELETE string.
 	 * 
-	 * @param table
-	 * @param whereClause
-	 * @param whereArgs
+	 * @param table table name
+	 * @param whereClause SQL where clause fragment
+	 * @param whereArgs Array of substitutions for args in whereClause
 	 * @return
 	 */
 	public static String buildDeleteString( String table, String whereClause, String[] whereArgs ) {
@@ -110,8 +113,8 @@ public class SQLite {
 	/**
 	 * Build a WHERE clause used in SELECT, UPDATE and DELETE statements.
 	 * 
-	 * @param selection
-	 * @param selectionArgs
+	 * @param selection SQL where clause fragment
+	 * @param selectionArgs Array of substitutions for args in selection
 	 * @return
 	 */
 	public static String buildWhereClause( String selection, String[] selectionArgs ) {
@@ -128,7 +131,7 @@ public class SQLite {
 	 * Build the '(columns...) VALUES (values...)' clause used in INSERT
 	 * statements.
 	 * 
-	 * @param values
+	 * @param values column name/value pairs
 	 * @return
 	 */
 	public static SQLStringAndBindings buildColumnValuesClause( ContentValues values ) {
@@ -159,6 +162,7 @@ public class SQLite {
 	/**
 	 * Build the '(col1=?, col2=? ... )' clause used in UPDATE statements.
 	 * 
+	 * @param values column name/value pairs
 	 * @return
 	 */
 	public static SQLStringAndBindings buildColumnAssignmentsClause( ContentValues values ) {

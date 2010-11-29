@@ -10,6 +10,9 @@ import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import static com.xtremelabs.robolectric.util.SQLite.rethrowException;
 
+/**
+ * Simulates an Android Cursor object, by wrapping a JDBC ResultSet.
+ */
 @Implements(SQLiteCursor.class)
 public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 	
