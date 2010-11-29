@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Transcript;
@@ -9,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.*;
@@ -71,5 +73,19 @@ public class ViewTest {
 
         view.setFocusable(true);
         assertTrue(view.isFocusable());
+    }
+
+    @Test
+    public void shouldKnowIfAncestorsAreVisible() throws Exception {
+        assertTrue(shadowOf(view).derivedIsVisible());
+        
+        ViewGroup grandParent = new LinearLayout(null);
+        ViewGroup parent = new LinearLayout(null);
+        grandParent.addView(parent);
+        parent.addView(view);
+
+        grandParent.setVisibility(View.GONE);
+
+        assertFalse(shadowOf(view).derivedIsVisible());
     }
 }

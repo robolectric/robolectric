@@ -119,9 +119,9 @@ public class ShadowView {
     /**
      * Simulates the inflating of the requested resource.
      *
-     * @param context the context from which to obtain a layout inflater
+     * @param context  the context from which to obtain a layout inflater
      * @param resource the ID of the resource to inflate
-     * @param root the {@code ViewGroup} to add the inflated {@code View} to
+     * @param root     the {@code ViewGroup} to add the inflated {@code View} to
      * @return the inflated View
      */
     @Implementation
@@ -529,5 +529,22 @@ public class ShadowView {
      */
     public void setFocused(boolean focused) {
         isFocused = focused;
+    }
+
+    /**
+     * Non-Android accessor.
+     *
+     * @return true if this object and all of its ancestors are {@code View.VISIBLE}, returns false if this or
+     *         any ancestor is not {@code View.VISIBLE}
+     */
+    public boolean derivedIsVisible() {
+        View parent = realView;
+        while (parent != null) {
+            if (parent.getVisibility() != View.VISIBLE) {
+                return false;
+            }
+            parent = (View) parent.getParent();
+        }
+        return true;
     }
 }
