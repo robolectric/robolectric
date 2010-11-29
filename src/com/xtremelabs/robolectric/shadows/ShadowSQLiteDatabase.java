@@ -45,13 +45,12 @@ public class ShadowSQLiteDatabase {
     @Implementation
     public long insert(String table, String nullColumnHack, ContentValues values) {
     	
-    	SQLStringResult sqlResult = buildInsertString( table, values );
+    	SQLStringAndBindings sqlInsertString = buildInsertString( table, values );
     	int generatedKey = -1;
     	
     	try {
-	    	PreparedStatement statement = conn.prepareStatement( sqlResult.sql,
-	    								ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY );
-	    	Iterator<Object> colIter = sqlResult.columnValues.iterator();
+	    	PreparedStatement statement = conn.prepareStatement( sqlInsertString.sql );
+	    	Iterator<Object> colIter = sqlInsertString.colValues.iterator();
 	    	int i = 1;
 	    	while ( colIter.hasNext() ) {
 	    		statement.setObject( i++, colIter.next() );
@@ -60,7 +59,7 @@ public class ShadowSQLiteDatabase {
 	    	statement.executeUpdate();
 	    	// TODO fetch the generated key
     	} catch( SQLException e ) {
-			rethrowException( e, "SQL exception in query" );
+			rethrowException( e, "SQL exception in insert" );
     	}
     	
     	return generatedKey;
@@ -77,7 +76,7 @@ public class ShadowSQLiteDatabase {
     		where = buildWhereClause( selection, selectionArgs );
     	}
     	
-    	String sql = SQLiteQueryBuilder.buildQueryString (distinct, table, 
+    	String sql = SQLiteQueryBuilder.buildQueryString(distinct, table, 
     			columns, where, groupBy, having, orderBy, limit);  
     	
     	try {
@@ -108,8 +107,25 @@ public class ShadowSQLiteDatabase {
     
     @Implementation
     public int update(String table, ContentValues values, String whereClause, String[] whereArgs) {
-    	// TODO
-    	return 0;
+    	SQLStringAndBindings sqlUpdateString = buildUpdateString( table, values, whereClause, whereArgs );
+    	
+    	int rowsAffectedCount = 0;
+
+    	try {
+	    	PreparedStatement statement = conn.prepareStatement( sqlUpdateString.sql );
+	    	Iterator<Object> colIter = sqlUpdateString.colValues.iterator();
+	    	int i = 1;
+	    	while ( colIter.hasNext() ) {
+	    		statement.setObject( i++, colIter.next() );
+	    	}
+	    	
+	    	rowsAffectedCount = statement.executeUpdate();
+	    	// TODO fetch the generated key
+    	} catch( SQLException e ) {
+			rethrowException( e, "SQL exception in update" );
+    	}
+    	
+    	return rowsAffectedCount;
     }
     
     @Implementation
@@ -158,13 +174,76 @@ public class ShadowSQLiteDatabase {
     	return conn;
     }
     
-    // DRY out with ShadowSQLiteCursor
+    // TODO DRY out with ShadowSQLiteCursor
 	private static void rethrowException( Exception e, String msg ) {
 		AssertionError ae = new AssertionError( msg );
 		ae.initCause(e);
 		throw ae;
 	}
 	
+	/**
+	 * Create a SQL INSERT string.  Values are bound via JDBC to facilitate
+	 * various data types.
+	 * 
+	 * @param table
+	 * @param values
+	 * @return
+	 */
+	private SQLStringAndBindings buildInsertString(String table, ContentValues values) {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append( "INSERT INTO " );
+		sb.append( table );
+		sb.append( " " );
+		
+		SQLStringAndBindings colValuesClause = buildColumnValuesClause( values );	
+		sb.append( colValuesClause.sql );
+		sb.append( ";" );
+	
+		return new SQLStringAndBindings( sb.toString(), colValuesClause.colValues );
+	}
+	
+	/**
+	 * Create a SQL UPDATE string.  Values are bound via JDBC to facilitate
+	 * various data types.
+	 * 
+	 * @param table
+	 * @param values
+	 * @param whereClause
+	 * @param whereArgs
+	 * @return
+	 */
+	private SQLStringAndBindings buildUpdateString(String table, ContentValues values, String whereClause, String[] whereArgs ) {
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append( "UPDATE " );
+		sb.append( table );
+		sb.append( " SET " );		
+		
+		SQLStringAndBindings colAssignmentsClause = buildColumnAssignmentsClause( values );	
+		sb.append( colAssignmentsClause.sql );
+		
+		if ( whereClause != null ) {
+			String where = whereClause;
+			if ( whereArgs != null ) {
+				where = buildWhereClause( whereClause, whereArgs );
+			}
+			sb.append( " WHERE " );
+			sb.append( where );
+		}
+		sb.append(";");
+		
+		return new SQLStringAndBindings( sb.toString(), colAssignmentsClause.colValues );
+	}
+	
+	/**
+	 * Build a WHERE clause used in SELECT and UPDATE statements.
+	 * And probably DELETE too.
+	 * 
+	 * @param selection
+	 * @param selectionArgs
+	 * @return
+	 */
 	private String buildWhereClause( String selection, String[] selectionArgs ) {
 		String retVal = selection;
 		
@@ -176,20 +255,16 @@ public class ShadowSQLiteDatabase {
 	}
 	
 	/**
-	 * Create a SQL INSERT string.  Values are bound via JDBC to facilitate
-	 * various data types.
+	 * Build the '(columns...) VALUES (values...)' clause used in INSERT
+	 * statements.
 	 * 
-	 * @param table
 	 * @param values
 	 * @return
 	 */
-	private SQLStringResult buildInsertString(String table, ContentValues values) {
-		StringBuilder sb = new StringBuilder();
-		sb.append( "INSERT INTO " );
-		sb.append( table );
-		sb.append( " (" );
+	private SQLStringAndBindings buildColumnValuesClause( ContentValues values ) {
+		StringBuilder sb = new StringBuilder();		
+		sb.append( "(" );
 		
-		// Crack open the 'values' list
 		List<Object> columnValues = new ArrayList<Object>(values.size());
 		
 		Set<Entry<String,Object>> items = values.valueSet();
@@ -209,16 +284,46 @@ public class ShadowSQLiteDatabase {
 		}
 		sb.append("?)");
 		
-		return new SQLStringResult( sb.toString(), columnValues );
+		return new SQLStringAndBindings( sb.toString(), columnValues );
 	}
 	
-	private class SQLStringResult {
+	/**
+	 * Build the '(col1=?, col2=? ... )' clause used in UPDATE statements.
+	 * 
+	 * @return
+	 */
+	private SQLStringAndBindings buildColumnAssignmentsClause( ContentValues values ) {
+		StringBuilder sb = new StringBuilder();		
+		
+		List<Object> columnValues = new ArrayList<Object>(values.size());
+		
+		Set<Entry<String,Object>> items = values.valueSet();
+		Iterator<Entry<String,Object>> itemsIter = items.iterator();
+		while( itemsIter.hasNext() ) {
+			Entry<String,Object> thisEntry = itemsIter.next();
+			sb.append( thisEntry.getKey() );
+			sb.append("=?");
+			if ( itemsIter.hasNext() ) {
+				sb.append( "," );
+			}
+			sb.append( " " );
+			columnValues.add( thisEntry.getValue() );
+		}
+		
+		return new SQLStringAndBindings( sb.toString(), columnValues );
+	}
+	
+	/**
+	 * Container for a SQL fragment and the objects which are to be
+	 * bound to the arguments in the fragment.
+	 */
+	private class SQLStringAndBindings {
 		public String sql;
-		public List<Object> columnValues;
+		public List<Object> colValues;
 
-		public SQLStringResult(String sql, List<Object> columnValues) {
+		public SQLStringAndBindings(String sql, List<Object> colValues) {
 			this.sql = sql;
-			this.columnValues = columnValues;
+			this.colValues = colValues;
 		}
 	}
 
