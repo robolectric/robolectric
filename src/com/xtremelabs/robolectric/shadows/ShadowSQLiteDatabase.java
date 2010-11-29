@@ -123,6 +123,8 @@ public class ShadowSQLiteDatabase {
     	if (!isOpen()) {
             throw new IllegalStateException("database not open");
         }
+    	
+    	// TODO map 'autoincrement' (sqlite) to 'auto_increment' (h2) for compatibility.  use case-insensitive replace.
 
     	Statement statement = conn.createStatement();
     	statement.execute(sql);
