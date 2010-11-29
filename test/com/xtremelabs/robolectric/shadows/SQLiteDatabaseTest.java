@@ -23,10 +23,15 @@ import static org.junit.Assert.assertThat;
 @RunWith(WithTestDefaultsRunner.class)
 public class SQLiteDatabaseTest {
     private SQLiteDatabase database;
+    private Connection conn;
 
     @Before
     public void setUp() throws Exception {
         database = SQLiteDatabase.openDatabase("path", null, 0);
+        conn = Robolectric.shadowOf(database).getConnection();
+        
+        Statement statement = conn.createStatement();
+        statement.execute( "CREATE TABLE table_name (id INT PRIMARY KEY AUTO_INCREMENT, first_column VARCHAR(255), second_column BINARY, name VARCHAR(255));");
     }
     
     @After
@@ -145,11 +150,8 @@ public class SQLiteDatabaseTest {
     	Statement statement;
     	ResultSet resultSet;
     	
-    	database.execSQL("CREATE TABLE table_name(id INT PRIMARY KEY, name VARCHAR(255));");
-    	database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
+     	database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
     	
-    	Connection conn = ((ShadowSQLiteDatabase) Robolectric.shadowOf(database)).getConnection();
-
     	statement = conn.createStatement();
     	resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
     	assertThat( resultSet.first(), equalTo(true) );
@@ -159,12 +161,11 @@ public class SQLiteDatabaseTest {
     	resultSet = statement.executeQuery("SELECT * FROM table_name");
     	assertThat( resultSet.first(), equalTo(true) );
     	assertThat( resultSet.getInt(1), equalTo(1234));
-    	assertThat( resultSet.getString(2), equalTo("Chuck"));
+    	assertThat( resultSet.getString(4), equalTo("Chuck"));
     }
     
     @Test(expected=IllegalStateException.class)
     public void testClose() throws Exception {
-    	database.execSQL("CREATE TABLE table_name(id INT PRIMARY KEY, name VARCHAR(255));");
     	database.close();
     	
     	database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
