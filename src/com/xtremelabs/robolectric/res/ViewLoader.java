@@ -21,6 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.lang.Boolean.TRUE;
 
 public class ViewLoader extends XmlLoader {
@@ -111,7 +112,7 @@ public class ViewLoader extends XmlLoader {
         return inflateView(context, resourceExtractor.getResourceName(resourceId));
     }
 
-    private class ViewNode {
+    public class ViewNode {
         private String name;
         private final Map<String, String> attributes;
 
@@ -145,31 +146,11 @@ public class ViewLoader extends XmlLoader {
         }
 
         private void applyAttributes(View view) {
-            applyVisibilityAttribute(view);
-            applyEnabledAttribute(view);
+            shadowOf(view).applyViewNode(this);
             applyFocus(view);
             applyTextViewAttributes(view);
             applyCheckboxAttributes(view);
             applyImageViewAttributes(view);
-        }
-
-        private void applyVisibilityAttribute(View view) {
-            view.setVisibility(View.VISIBLE);
-            String visibility = attributes.get("android:visibility");
-            if (visibility != null) {
-                if (visibility.equals("gone")) {
-                    view.setVisibility(View.GONE);
-                } else if (visibility.equals("invisible")) {
-                    view.setVisibility(View.INVISIBLE);
-                }
-            }
-        }
-
-        private void applyEnabledAttribute(View view) {
-            Boolean enabled = getAttributeAsBool("android:enabled");
-            if (enabled != null) {
-                view.setEnabled(enabled);
-            }
         }
 
         private void applyImageViewAttributes(View view) {
@@ -211,7 +192,7 @@ public class ViewLoader extends XmlLoader {
             }
         }
 
-        private int extractAttrResourceId(String attributeName) {
+        public int extractAttrResourceId(String attributeName) {
             return resourceExtractor.resourceIdOrZero(attributes.get(attributeName));
         }
 
@@ -245,7 +226,7 @@ public class ViewLoader extends XmlLoader {
             return false;
         }
 
-        private Boolean getAttributeAsBool(String key) {
+        public Boolean getAttributeAsBool(String key) {
             String stringValue = attributes.get(key);
             if ("true".equals(stringValue)) {
                 return true;
@@ -321,6 +302,14 @@ public class ViewLoader extends XmlLoader {
 
         public void setId(Integer id) {
             this.id = id;
+        }
+
+        public String getAttributeValue(String attributeName) {
+            return attributes.get(attributeName);
+        }
+
+        public String getStringResourceValue(String resourceName) {
+            return stringResourceLoader.getValue(resourceName);
         }
     }
 }

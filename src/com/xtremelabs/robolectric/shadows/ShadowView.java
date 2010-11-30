@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
@@ -562,5 +563,28 @@ public class ShadowView {
         }
 
         return realView.performClick();
+    }
+
+    public void applyViewNode(ViewLoader.ViewNode viewNode) {
+        applyVisibilityAttribute(viewNode);
+        applyEnabledAttribute(viewNode);
+    }
+
+    private void applyVisibilityAttribute(ViewLoader.ViewNode viewNode) {
+        String visibility = viewNode.getAttributeValue("android:visibility");
+        if (visibility != null) {
+            if (visibility.equals("gone")) {
+                setVisibility(View.GONE);
+            } else if (visibility.equals("invisible")) {
+                setVisibility(View.INVISIBLE);
+            }
+        }
+    }
+
+    private void applyEnabledAttribute(ViewLoader.ViewNode viewNode) {
+        Boolean enabled = viewNode.getAttributeAsBool("android:enabled");
+        if (enabled != null) {
+            setEnabled(enabled);
+        }
     }
 }
