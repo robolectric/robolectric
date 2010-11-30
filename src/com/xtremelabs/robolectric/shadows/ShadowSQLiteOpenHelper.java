@@ -41,9 +41,8 @@ public class ShadowSQLiteOpenHelper {
 	@Implementation
 	public synchronized SQLiteDatabase getReadableDatabase() {
 		if ( db == null ) {
-			SQLiteDatabase newDB = SQLiteDatabase.openDatabase("path", null, 0);
-			realHelper.onCreate( newDB );
-			db = newDB;
+			db = SQLiteDatabase.openDatabase("path", null, 0);
+			realHelper.onCreate( db );
 		}
 		
 		realHelper.onOpen( db );
@@ -53,9 +52,8 @@ public class ShadowSQLiteOpenHelper {
 	@Implementation
 	public synchronized SQLiteDatabase getWritableDatabase() {
 		if ( db == null ) {
-			SQLiteDatabase newDB = SQLiteDatabase.openDatabase("path", null, 0);
-			realHelper.onCreate( newDB );
-			db = newDB;
+			db = SQLiteDatabase.openDatabase("path", null, 0);
+			realHelper.onCreate( db );
 		}
 
 		realHelper.onOpen( db );
