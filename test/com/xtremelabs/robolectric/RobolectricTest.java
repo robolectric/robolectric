@@ -21,17 +21,22 @@ public class RobolectricTest {
 
     private PrintStream originalSystemOut;
     private ByteArrayOutputStream buff;
+	private String defaultLineSeparator;
 
     @Before
     public void setUp() {
         originalSystemOut = System.out;
+        defaultLineSeparator = System.getProperty("line.separator");
+
+        System.setProperty("line.separator", "\n");
         buff = new ByteArrayOutputStream();
         PrintStream testOut = new PrintStream(buff);
         System.setOut(testOut);
     }
-
+    
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
+    	System.setProperty("line.separator", defaultLineSeparator);
         System.setOut(originalSystemOut);
     }
 
@@ -50,7 +55,7 @@ public class RobolectricTest {
         aView.findViewById(27);
         // No shadow here... should be logged
         output = buff.toString();
-        assertEquals("No Shadow method found for View.findViewById(int)" + System.getProperty("line.separator"), output);
+        assertEquals("No Shadow method found for View.findViewById(int)\n", output);
     }
 
     @Test // This is nasty because it depends on the test above having run first in order to fail
