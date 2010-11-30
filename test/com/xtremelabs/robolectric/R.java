@@ -37,6 +37,9 @@ public final class R {
     }
 
     public static final class color {
+        public static final int background = nextId++;
+        public static final int foreground = nextId++;
+        public static final int grey42 = nextId++;
         public static final int black = nextId++;
         public static final int white = nextId++;
         public static final int clear = nextId++;
