@@ -1,9 +1,17 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,10 +23,20 @@ import static org.junit.Assert.assertThat;
 @RunWith(WithTestDefaultsRunner.class)
 public class SQLiteDatabaseTest {
     private SQLiteDatabase database;
+    private Connection conn;
 
     @Before
     public void setUp() throws Exception {
         database = SQLiteDatabase.openDatabase("path", null, 0);
+        conn = Robolectric.shadowOf(database).getConnection();
+        
+        Statement statement = conn.createStatement();
+        statement.execute( "CREATE TABLE table_name (id INT PRIMARY KEY AUTO_INCREMENT, first_column VARCHAR(255), second_column BINARY, name VARCHAR(255));");
+    }
+    
+    @After
+    public void tearDown() throws Exception {
+    	database.close();
     }
 
     @Test
@@ -50,6 +68,16 @@ public class SQLiteDatabaseTest {
         Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);
 
         assertThat(cursor.moveToFirst(), equalTo(false));
+    }
+    
+    @Test
+    public void testInsertKeyGeneration() throws Exception {
+    	ContentValues values = new ContentValues();
+    	values.put( "name", "Chuck" );
+    	
+    	long key = database.insert("table_name", null, values);
+    	
+    	assertThat( key, greaterThan(0L) );
     }
     
     @Test
@@ -117,7 +145,7 @@ public class SQLiteDatabaseTest {
     }
     
     @Test
-    public void tesetDeleteAll() throws Exception {
+    public void testDeleteAll() throws Exception {
     	addChuck();
     	addJulie();
     	
@@ -125,6 +153,57 @@ public class SQLiteDatabaseTest {
     	assertThat( deleted, equalTo(2) );
     	
     	assertEmptyDatabase();
+    }
+    
+    @Test
+    public void testExecSQL() throws Exception {
+    	Statement statement;
+    	ResultSet resultSet;
+    	
+     	database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
+    	
+    	statement = conn.createStatement();
+    	resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
+    	assertThat( resultSet.first(), equalTo(true) );
+    	assertThat( resultSet.getInt(1), equalTo(1));
+    	
+    	statement = conn.createStatement();
+    	resultSet = statement.executeQuery("SELECT * FROM table_name");
+    	assertThat( resultSet.first(), equalTo(true) );
+    	assertThat( resultSet.getInt(1), equalTo(1234));
+    	assertThat( resultSet.getString(4), equalTo("Chuck"));
+    }
+    
+    @Test(expected=android.database.SQLException.class)
+    public void testExecSQLException() throws Exception {
+    	
+    	database.execSQL("INSERT INTO table_name;" );	// invalid SQL
+    }
+    
+    @Test
+    public void testExecSQLAutoIncrementSQLite() throws Exception {
+    	database.execSQL( "CREATE TABLE auto_table (id INT PRIMARY KEY AUTOINCREMENT, name VARCHAR(255));" );
+    	
+    	ContentValues values = new ContentValues();
+    	values.put( "name", "Chuck" );
+    	
+    	long key = database.insert("auto_table", null, values);
+    	
+    	assertThat( key, greaterThan(0L) );
+    }
+    
+    @Test(expected=IllegalStateException.class)
+    public void testClose() throws Exception {
+    	database.close();
+    	
+    	database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
+    }
+    
+    @Test
+    public void testIsOpen() throws Exception {
+    	assertThat(database.isOpen(), equalTo(true));
+    	database.close();
+    	assertThat(database.isOpen(), equalTo(false));
     }
     
     private void addChuck() {

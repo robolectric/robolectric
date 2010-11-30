@@ -1,164 +1,196 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.util.SQLite.*;
+
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Iterator;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteQueryBuilder;
+
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-
 /**
  * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.
+ * Implemented as a wrapper around an embedded SQL database, accessed via JDBC.  The JDBC connection is
+ * made available to test cases for use in fixture setup and assertions.
  */
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(SQLiteDatabase.class)
 public class ShadowSQLiteDatabase {
+    private static Connection conn;
+
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
+    	try {
+			Class.forName("org.h2.Driver").newInstance();
+			conn = DriverManager.getConnection("jdbc:h2:mem:");
+		} catch (Exception e) {
+			rethrowException( e, "SQL exception in openDatabase" );
+		}
         return newInstanceOf(SQLiteDatabase.class);
     }
-
-    Map<String, Table> tables = new HashMap<String, Table>();
-
+    
     @Implementation
     public long insert(String table, String nullColumnHack, ContentValues values) {
-        Table theTable = getTable(table);
-        theTable.insert(values);
-        return -1;
+    	
+    	SQLStringAndBindings sqlInsertString = buildInsertString( table, values );
+    	long generatedKey = -1;
+    	
+    	try {
+	    	PreparedStatement statement = conn.prepareStatement(sqlInsertString.sql, Statement.RETURN_GENERATED_KEYS );
+	    	Iterator<Object> colIter = sqlInsertString.colValues.iterator();
+	    	int i = 1;
+	    	while ( colIter.hasNext() ) {
+	    		statement.setObject( i++, colIter.next() );
+	    	}
+	    	
+	    	statement.executeUpdate();
+	    	
+	    	ResultSet rs = statement.getGeneratedKeys();
+	    	if ( rs.first() ) {
+	    		generatedKey = rs.getLong(1);
+	    	}
+    	} catch( SQLException e ) {
+			rethrowException( e, "SQL exception in insert" );
+    	}
+    	
+    	return generatedKey;
+    }
+    
+    @Implementation
+    public Cursor query(boolean distinct, String table, String[] columns, 
+    		String selection, String[] selectionArgs, String groupBy, 
+    		String having, String orderBy, String limit) {
+    	ResultSet rs = null;
+    	
+    	String where = selection;
+    	if ( selection != null && selectionArgs != null ) {
+    		where = buildWhereClause( selection, selectionArgs );
+    	}
+    	
+    	String sql = SQLiteQueryBuilder.buildQueryString(distinct, table, 
+    			columns, where, groupBy, having, orderBy, limit);  
+    	
+    	try {
+	    	Statement statement = conn.createStatement( ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY );
+	    	rs = statement.executeQuery(sql);
+    	} catch( SQLException e ) {
+			rethrowException( e, "SQL exception in query" );
+    	}
+    	
+    	SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
+    	shadowOf(cursor).setResultSet( rs );
+    	return cursor;
     }
 
     @Implementation
-    public Cursor query(final String table, final String[] columns, String selection,
+    public Cursor query(String table, String[] columns, String selection,
                         String[] selectionArgs, String groupBy, String having,
                         String orderBy) {
-        final Table theTable = getTable(table);
-        return new SQLiteCursor(null, null, null, null) {
-            @Override
-            public int getCount() {
-                return theTable.rows.size();
-            }
-
-            @Override
-            public byte[] getBlob(int columnIndex) {
-                return (byte[]) get(columnIndex);
-            }
-
-            @Override
-            public String getString(int columnIndex) {
-                return (String) get(columnIndex);
-            }
-            
-            @Override
-            public int getInt(int columnIndex) {
-                return (int) (Integer) get(columnIndex);
-            }
-            
-            @Override
-            public long getLong(int columnIndex) {
-            	return (long) (Long) get(columnIndex);
-            }
-            
-            private Object get(int columnIndex) {
-                return theTable.rows.get(getPosition()).get(columns[columnIndex]);
-            }
-        };
+    	return query( false, table, columns, selection, selectionArgs, groupBy, having, orderBy, null );
+    }
+    
+    @Implementation
+    public Cursor query(String table, String[] columns, String selection,
+    		String[] selectionArgs, String groupBy, String having,
+    		String orderBy, String limit) {
+    	return query( false, table, columns, selection, selectionArgs, groupBy, having, orderBy, limit );
     }
     
     @Implementation
     public int update(String table, ContentValues values, String whereClause, String[] whereArgs) {
-    	 Table theTable = getTable(table);
-         return theTable.update(values, whereClause);
+    	SQLStringAndBindings sqlUpdateString = buildUpdateString( table, values, whereClause, whereArgs );
+    	
+    	int rowsAffectedCount = 0;
+
+    	try {
+	    	PreparedStatement statement = conn.prepareStatement( sqlUpdateString.sql );
+	    	Iterator<Object> colIter = sqlUpdateString.colValues.iterator();
+	    	int i = 1;
+	    	while ( colIter.hasNext() ) {
+	    		statement.setObject( i++, colIter.next() );
+	    	}
+	    	
+	    	rowsAffectedCount = statement.executeUpdate();
+    	} catch( SQLException e ) {
+			rethrowException( e, "SQL exception in update" );
+    	}
+    	
+    	return rowsAffectedCount;
     }
     
     @Implementation
     public int delete(String table, String whereClause, String[] whereArgs) {
-    	 Table theTable = getTable(table);
-    	 return theTable.delete(whereClause);
+    	String sql = buildDeleteString( table, whereClause, whereArgs );
+    	
+    	int rowsAffectedCount = 0;
+
+    	try {
+	    	PreparedStatement statement = conn.prepareStatement( sql );
+	    	rowsAffectedCount = statement.executeUpdate();
+    	} catch( SQLException e ) {
+			rethrowException( e, "SQL exception in delete" );
+    	}
+    	
+    	return rowsAffectedCount;
+    }
+    
+    @Implementation
+    public void execSQL(String sql) throws android.database.SQLException {  	
+    	if (!isOpen()) {
+            throw new IllegalStateException("database not open");
+        }
+    	
+    	// Map 'autoincrement' (sqlite) to 'auto_increment' (h2).
+    	String scrubbedSQL = sql.replaceAll("(?i:autoincrement)", "auto_increment");
+
+    	try {
+    		Statement statement = conn.createStatement();
+    		statement.execute(scrubbedSQL);
+    	} catch ( java.sql.SQLException e ) {
+    		android.database.SQLException ase = new android.database.SQLException();
+    		ase.initCause( e );
+    		throw ase;
+    	}
+    }
+    
+    @Implementation
+    public boolean isOpen() {
+    	return (conn != null);
+    }
+    
+    @Implementation
+    public void close() {
+    	if (!isOpen()) {
+    		return;
+    	}
+    	try {
+			conn.close();
+			conn = null;
+		} catch (SQLException e) {
+			rethrowException( e, "SQL exception in close" );
+		}
+    }
+    
+    /**
+     * Allows test cases access to the underlying JDBC connection, for use in
+     * setup or assertions.
+     * 
+     * @return
+     */
+    public Connection getConnection() {
+    	return conn;
     }
 
-    private Table getTable(String tableName) {
-        Table table = tables.get(tableName);
-        if (table == null) {
-            table = new Table();
-            tables.put(tableName, table);
-        }
-        return table;
-    }
-
-    private class Table {
-        List<ContentValues> rows = new ArrayList<ContentValues>();
-
-        public void insert(ContentValues values) {
-            rows.add(values);
-        }
-        
-        public int update(ContentValues values, String whereClause) {
-        	String columnName = whereColumn(whereClause);
-        	String value = whereValue(whereClause);
-              	
-        	int affectedCount = 0;
-        	
-        	for (ContentValues v : rows) {
-        		if (columnName.isEmpty() || (value.equals(v.getAsString(columnName)))) {
-        			v.putAll(values);
-        			affectedCount++;
-        		}
-        	}
-        	
-        	return affectedCount;
-        }
-        
-        public int delete(String whereClause) {
-        	String columnName = whereColumn(whereClause);
-        	String value = whereValue(whereClause);
-        	
-        	List<ContentValues> deleted = new ArrayList<ContentValues>();
-        	for (ContentValues v : rows) {
-        		if ("1".equals(whereClause) || (value.equals(v.getAsString(columnName)))) {
-        			deleted.add( v );
-        		}
-        	}
-        	rows.removeAll(deleted);
-						
-			return deleted.size();
-        }
-        
-        // Parse whereClause of form "<column>=<value>".
-        // Handles special cases specified by Android APIs.
-
-        private String whereColumn(String whereClause) {
-        	if (isEmptyOrWhitespace(whereClause)) {
-        		return "";
-        	}
-        	if (isSpecialCaseOrUnknown(whereClause)) {
-        		return whereClause;
-        	}
-        	return whereClause.substring(0, whereClause.indexOf("="));
-        }
-        
-        private String whereValue(String whereClause) {
-        	if (isEmptyOrWhitespace(whereClause)) {
-        		return "";
-        	}
-        	if (isSpecialCaseOrUnknown(whereClause)) {
-        		return whereClause;
-        	}
-        	return whereClause.substring(whereClause.indexOf("=") + 1, whereClause.length());
-        }
-        
-        private boolean isEmptyOrWhitespace(String s) {
-            return (s == null) || (s.trim().isEmpty());
-        }
-        
-        private boolean isSpecialCaseOrUnknown(String s) {
-        	return "1".equals(s) || !s.contains("=");
-        }
-    }
 }
