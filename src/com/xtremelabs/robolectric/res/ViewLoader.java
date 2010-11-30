@@ -4,8 +4,6 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.ImageView;
 import com.xtremelabs.robolectric.util.TestAttributeSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -72,7 +70,7 @@ public class ViewLoader extends XmlLoader {
             if (idAttr != null && idAttr.startsWith("@+id/")) {
                 idAttr = idAttr.substring(5);
 
-                Integer id = resourceExtractor.getResourceId("id/" + idAttr);
+                Integer id = viewNode.getResourceId("id/" + idAttr);
                 if (id == null) {
                     throw new RuntimeException("unknown id " + getIdAttr(node));
                 }
@@ -145,29 +143,6 @@ public class ViewLoader extends XmlLoader {
 
         private void applyAttributes(View view) {
             shadowOf(view).applyViewNode(this);
-            applyCheckboxAttributes(view);
-            applyImageViewAttributes(view);
-        }
-
-        private void applyImageViewAttributes(View view) {
-            if (view instanceof ImageView) {
-                String source = attributes.get("android:src");
-                if (source != null) {
-                    if (source.startsWith("@drawable/")) {
-                        Integer resId = resourceExtractor.getResourceId(source);
-                        ((ImageView) view).setImageResource(resId);
-                    }
-                }
-            }
-        }
-
-        private void applyCheckboxAttributes(View view) {
-            if (view instanceof CheckBox) {
-                String text = attributes.get("android:checked");
-                if (text != null) {
-                    ((CheckBox) view).setChecked(Boolean.valueOf(text));
-                }
-            }
         }
 
         public int extractAttrResourceId(String attributeName) {
@@ -262,6 +237,10 @@ public class ViewLoader extends XmlLoader {
 
         public boolean hasRequestFocusOverride() {
             return requestFocusOverride;
+        }
+
+        public Integer getResourceId(String resourceName) {
+            return resourceExtractor.getResourceId(resourceName);
         }
     }
 }
