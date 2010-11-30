@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.TextView;
 import com.xtremelabs.robolectric.util.TestAttributeSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -22,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static java.lang.Boolean.TRUE;
 
 public class ViewLoader extends XmlLoader {
     private Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
@@ -147,8 +145,6 @@ public class ViewLoader extends XmlLoader {
 
         private void applyAttributes(View view) {
             shadowOf(view).applyViewNode(this);
-            applyFocus(view);
-            applyTextViewAttributes(view);
             applyCheckboxAttributes(view);
             applyImageViewAttributes(view);
         }
@@ -174,56 +170,8 @@ public class ViewLoader extends XmlLoader {
             }
         }
 
-        private void applyTextViewAttributes(View view) {
-            if (view instanceof TextView) {
-                String text = attributes.get("android:text");
-                if (text != null) {
-                    if (text.startsWith("@string/")) {
-                        text = stringResourceLoader.getValue(text.substring(1));
-                    }
-                    ((TextView) view).setText(text);
-                }
-
-                ((TextView) view).setCompoundDrawablesWithIntrinsicBounds(
-                        extractAttrResourceId("android:drawableLeft"),
-                        extractAttrResourceId("android:drawableTop"),
-                        extractAttrResourceId("android:drawableRight"),
-                        extractAttrResourceId("android:drawableBottom"));
-            }
-        }
-
         public int extractAttrResourceId(String attributeName) {
             return resourceExtractor.resourceIdOrZero(attributes.get(attributeName));
-        }
-
-        private void applyFocus(View view) {
-            checkFocusOverride(view);
-            if (!anyParentHasFocus(view)) {
-                Boolean focusRequested = getAttributeAsBool("android:focus");
-                if (TRUE.equals(focusRequested) || view.isFocusableInTouchMode()) {
-                    view.requestFocus();
-                }
-            }
-        }
-
-        private void checkFocusOverride(View view) {
-            if (requestFocusOverride) {
-                View root = view;
-                View parent = (View) root.getParent();
-                while (parent != null) {
-                    root = parent;
-                    parent = (View) root.getParent();
-                }
-                root.clearFocus();
-            }
-        }
-
-        private boolean anyParentHasFocus(View view) {
-            while (view != null) {
-                if (view.hasFocus()) return true;
-                view = (View) view.getParent();
-            }
-            return false;
         }
 
         public Boolean getAttributeAsBool(String key) {
@@ -310,6 +258,10 @@ public class ViewLoader extends XmlLoader {
 
         public String getStringResourceValue(String resourceName) {
             return stringResourceLoader.getValue(resourceName);
+        }
+
+        public boolean hasRequestFocusOverride() {
+            return requestFocusOverride;
         }
     }
 }

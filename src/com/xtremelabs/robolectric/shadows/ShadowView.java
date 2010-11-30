@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static java.lang.Boolean.TRUE;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this class. Supports listeners, focusability
@@ -568,6 +569,7 @@ public class ShadowView {
     public void applyViewNode(ViewLoader.ViewNode viewNode) {
         applyVisibilityAttribute(viewNode);
         applyEnabledAttribute(viewNode);
+        applyFocus(viewNode);
     }
 
     private void applyVisibilityAttribute(ViewLoader.ViewNode viewNode) {
@@ -587,4 +589,37 @@ public class ShadowView {
             setEnabled(enabled);
         }
     }
+
+    private void applyFocus(ViewLoader.ViewNode viewNode) {
+        checkFocusOverride(viewNode);
+
+        if (!anyParentHasFocus(realView)) {
+            Boolean focusRequested = viewNode.getAttributeAsBool("android:focus");
+            if (TRUE.equals(focusRequested) || realView.isFocusableInTouchMode()) {
+                realView.requestFocus();
+            }
+        }
+    }
+
+    private void checkFocusOverride(ViewLoader.ViewNode viewNode) {
+        if (viewNode.hasRequestFocusOverride()) {
+            View root = realView;
+            View parent = (View) root.getParent();
+            while (parent != null) {
+                root = parent;
+                parent = (View) root.getParent();
+            }
+            root.clearFocus();
+        }
+    }
+
+    private boolean anyParentHasFocus(View view) {
+        while (view != null) {
+            if (view.hasFocus()) return true;
+            view = (View) view.getParent();
+        }
+        return false;
+    }
+
+
 }
