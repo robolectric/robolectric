@@ -114,6 +114,12 @@ public class ViewLoaderTest {
     }
 
     @Test
+    public void mergeIncludesShouldNotCreateAncestryLoops() throws Exception {
+        ViewGroup mediaView = (ViewGroup) viewLoader.inflateView(context, "layout/outer");
+        mediaView.hasFocus();
+    }
+
+    @Test
     public void testViewGroupsLooksAtItsOwnId() throws Exception {
         TextView mediaView = (TextView) viewLoader.inflateView(context, "layout/snippet");
         assertSame(mediaView, mediaView.findViewById(R.id.snippet_text));

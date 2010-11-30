@@ -13,17 +13,14 @@ public class StringResourceLoader extends XpathResourceXmlLoader {
     }
 
     public String getValue(int resourceId) {
-        String resourceName = resourceExtractor.getResourceName(resourceId);
-        return stringValues.get(resourceName);
+        return stringValues.get(resourceExtractor.getResourceName(resourceId));
     }
 
     public String getValue(String resourceIdAsString) {
-        int key = resourceExtractor.getResourceStringToId().get(resourceIdAsString);
-        return getValue(key);
+        return getValue(resourceExtractor.getResourceId(resourceIdAsString));
     }
 
     @Override protected void processNode(Node node, String name) {
-        String value = node.getTextContent();
-        stringValues.put("string/" + name, value);
+        stringValues.put("string/" + name, node.getTextContent());
     }
 }

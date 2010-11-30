@@ -38,7 +38,7 @@ public class ShadowLayoutInflater {
     }
 
     private ViewLoader getViewLoader() {
-        return ((ShadowApplication) shadowOf(context.getApplicationContext())).getResourceLoader().viewLoader;
+        return shadowOf(context.getApplicationContext()).getResourceLoader().viewLoader;
     }
 
     @Implementation

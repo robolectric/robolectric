@@ -6,11 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class ResourceExtractor {
-    Map<String, Integer> resourceStringToId = new HashMap<String, Integer>();
-    Map<Integer, String> resourceIdToString = new HashMap<Integer, String>();
-
-    public ResourceExtractor() {
-    }
+    private Map<String, Integer> resourceStringToId = new HashMap<String, Integer>();
+    private Map<Integer, String> resourceIdToString = new HashMap<Integer, String>();
 
     public void addRClass(Class rClass) throws Exception {
         for (Class innerClass : rClass.getClasses()) {
@@ -25,15 +22,22 @@ public class ResourceExtractor {
         }
     }
 
-    public Map<String, Integer> getResourceStringToId() {
-        return resourceStringToId;
+    public int resourceIdOrZero(String resourceName) {
+        Integer resId = getResourceId(resourceName);
+        return (resId == null) ? 0 : resId;
     }
 
-    public Map<Integer, String> getResourceIdToString() {
-        return resourceIdToString;
+    public Integer getResourceId(String resourceName) {
+        if (resourceName == null) {
+            return null;
+        }
+        if (resourceName.startsWith("@")) {
+            resourceName = resourceName.substring(1);
+        }
+        return resourceStringToId.get(resourceName);
     }
 
-    String getResourceName(int resourceId) {
-        return getResourceIdToString().get(resourceId);
+    public String getResourceName(int resourceId) {
+        return resourceIdToString.get(resourceId);
     }
 }

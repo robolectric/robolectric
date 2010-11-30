@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric.res;
 
 import android.content.Context;
-import com.xtremelabs.robolectric.shadows.ShadowApplication;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -68,10 +67,10 @@ public class ResourceLoader {
     }
 
     public static ResourceLoader getFrom(Context context) {
-        return ((ShadowApplication) shadowOf(context.getApplicationContext())).getResourceLoader();
+        return shadowOf(context.getApplicationContext()).getResourceLoader();
     }
 
     public String getNameForId(int viewId) {
-        return resourceExtractor.getResourceIdToString().get(viewId);
+        return resourceExtractor.getResourceName(viewId);
     }
 }
