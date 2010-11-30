@@ -94,13 +94,13 @@ public class SQLiteOpenHelperTest {
 		}
 
 		@Override
-		public void onCreate(SQLiteDatabase arg0) {
+		public void onCreate(SQLiteDatabase db) {
 			onCreateCalled = true;
 		}
 
 		@Override
-		public void onUpgrade(SQLiteDatabase arg0, int arg1, int arg2) {
-			onUpgradeCalled = true;;
+		public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+			onUpgradeCalled = true;
 		}
 
 		@Override

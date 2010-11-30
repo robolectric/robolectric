@@ -21,7 +21,7 @@ public class ShadowSQLiteOpenHelper {
 	@RealObject private SQLiteOpenHelper realHelper;
 	private static SQLiteDatabase db;
 	
-	void __constructor__(Context context, String name,
+	public void __constructor__(Context context, String name,
 				CursorFactory factory, int version) {
 		// clear out static data
 		if ( db != null ) {
@@ -31,7 +31,7 @@ public class ShadowSQLiteOpenHelper {
 	}
 	
 	@Implementation
-	synchronized void close() {
+	public synchronized void close() {
 		if ( db != null ) {
 			db.close();
 		}
@@ -39,7 +39,7 @@ public class ShadowSQLiteOpenHelper {
 	}
 	
 	@Implementation
-	synchronized SQLiteDatabase getReadableDatabase() {
+	public synchronized SQLiteDatabase getReadableDatabase() {
 		SQLiteDatabase thisDb = SQLiteDatabase.openDatabase("path", null, 0);
 		if ( db == null ) {
 			realHelper.onCreate( thisDb );
@@ -50,7 +50,7 @@ public class ShadowSQLiteOpenHelper {
 	}
 	
 	@Implementation
-	synchronized SQLiteDatabase getWritableDatabase() {
+	public synchronized SQLiteDatabase getWritableDatabase() {
 		SQLiteDatabase thisDb = SQLiteDatabase.openDatabase("path", null, 0);
 
 		if ( db == null ) {
