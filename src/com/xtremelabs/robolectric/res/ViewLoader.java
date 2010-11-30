@@ -6,7 +6,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.util.TestAttributeSet;
 import org.w3c.dom.Document;
@@ -74,7 +73,7 @@ public class ViewLoader extends XmlLoader {
             if (idAttr != null && idAttr.startsWith("@+id/")) {
                 idAttr = idAttr.substring(5);
 
-                Integer id = resourceExtractor.getResourceStringToId().get("id/" + idAttr);
+                Integer id = resourceExtractor.getResourceId("id/" + idAttr);
                 if (id == null) {
                     throw new RuntimeException("unknown id " + getIdAttr(node));
                 }
@@ -86,13 +85,13 @@ public class ViewLoader extends XmlLoader {
     }
 
     public View inflateView(Context context, String key) {
-        return inflateView(context, key, null);
+        return inflateView(context, key, null, null);
     }
 
-    private View inflateView(Context context, String key, Map<String, String> attributes) {
+    private View inflateView(Context context, String key, Map<String, String> attributes, View parent) {
         ViewNode viewNode = viewNodesByLayoutName.get(key);
         if (viewNode == null) {
-            throw new RuntimeException("no such layout " + key);
+            throw new RuntimeException("Could not find layout " + key);
         }
         try {
             if (attributes != null) {
@@ -102,7 +101,7 @@ public class ViewLoader extends XmlLoader {
                     }
                 }
             }
-            return viewNode.inflate(context, null);
+            return viewNode.inflate(context, parent);
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + key, e);
         }
@@ -116,7 +115,6 @@ public class ViewLoader extends XmlLoader {
         private String name;
         private final Map<String, String> attributes;
 
-        private ViewNode parent;
         private List<ViewNode> children = new ArrayList<ViewNode>();
         private Integer id;
         boolean requestFocusOverride = false;
@@ -131,7 +129,6 @@ public class ViewLoader extends XmlLoader {
         }
 
         public void addChild(ViewNode viewNode) {
-            viewNode.parent = this;
             children.add(viewNode);
         }
 
@@ -148,8 +145,16 @@ public class ViewLoader extends XmlLoader {
         }
 
         private void applyAttributes(View view) {
-            view.setVisibility(View.VISIBLE);
+            applyVisibilityAttribute(view);
+            applyEnabledAttribute(view);
+            applyFocus(view);
+            applyTextViewAttributes(view);
+            applyCheckboxAttributes(view);
+            applyImageViewAttributes(view);
+        }
 
+        private void applyVisibilityAttribute(View view) {
+            view.setVisibility(View.VISIBLE);
             String visibility = attributes.get("android:visibility");
             if (visibility != null) {
                 if (visibility.equals("gone")) {
@@ -158,79 +163,64 @@ public class ViewLoader extends XmlLoader {
                     view.setVisibility(View.INVISIBLE);
                 }
             }
+        }
 
+        private void applyEnabledAttribute(View view) {
             Boolean enabled = getAttributeAsBool("android:enabled");
             if (enabled != null) {
                 view.setEnabled(enabled);
             }
+        }
 
-            checkFocusOverride(view);
-            if (!anyParentHasFocus(view)) {
-                Boolean focusRequested = getAttributeAsBool("android:focus");
-                if (TRUE.equals(focusRequested) || view.isFocusableInTouchMode()) {
-                    view.requestFocus();
+        private void applyImageViewAttributes(View view) {
+            if (view instanceof ImageView) {
+                String source = attributes.get("android:src");
+                if (source != null) {
+                    if (source.startsWith("@drawable/")) {
+                        Integer resId = resourceExtractor.getResourceId(source);
+                        ((ImageView) view).setImageResource(resId);
+                    }
                 }
             }
+        }
 
-            if (view instanceof TextView) {
-                int drawableTop = 0;
-                int drawableRight = 0;
-                int drawableBottom = 0;
-                int drawableLeft = 0;
-
-                String text = attributes.get("android:text");
-                if (text != null) {
-                    if (text.startsWith("@string/")) {
-                        text = stringResourceLoader.getValue(text.substring(1));
-                    }
-
-                    ((TextView) view).setText(text);
-                }
-                text = attributes.get("android:drawableTop");
-                if (text != null) {
-                    Integer resId = resourceExtractor.getResourceStringToId().get(text.substring(1));
-                    if (resId != null) {
-                        drawableTop = resId;
-                    }
-                }
-                text = attributes.get("android:drawableRight");
-                if (text != null) {
-                    Integer resId = resourceExtractor.getResourceStringToId().get(text.substring(1));
-                    if (resId != null) {
-                        drawableRight = resId;
-                    }
-                }
-                text = attributes.get("android:drawableBottom");
-                if (text != null) {
-                    Integer resId = resourceExtractor.getResourceStringToId().get(text.substring(1));
-                    if (resId != null) {
-                        drawableBottom = resId;
-                    }
-                }
-                text = attributes.get("android:drawableLeft");
-                if (text != null) {
-                    Integer resId = resourceExtractor.getResourceStringToId().get(text.substring(1));
-                    if (resId != null) {
-                        drawableLeft = resId;
-                    }
-                }
-                ((TextView) view).setCompoundDrawablesWithIntrinsicBounds(drawableLeft, drawableTop, drawableRight, drawableBottom);
-            }
-
+        private void applyCheckboxAttributes(View view) {
             if (view instanceof CheckBox) {
                 String text = attributes.get("android:checked");
                 if (text != null) {
                     ((CheckBox) view).setChecked(Boolean.valueOf(text));
                 }
             }
+        }
 
-            if (view instanceof ImageView) {
-                String text = attributes.get("android:src");
+        private void applyTextViewAttributes(View view) {
+            if (view instanceof TextView) {
+                String text = attributes.get("android:text");
                 if (text != null) {
-                    if (text.startsWith("@drawable/")) {
-                        Integer resId = resourceExtractor.getResourceStringToId().get(text.substring(1));
-                        ((ImageView) view).setImageResource(resId);
+                    if (text.startsWith("@string/")) {
+                        text = stringResourceLoader.getValue(text.substring(1));
                     }
+                    ((TextView) view).setText(text);
+                }
+
+                ((TextView) view).setCompoundDrawablesWithIntrinsicBounds(
+                        extractAttrResourceId("android:drawableLeft"),
+                        extractAttrResourceId("android:drawableTop"),
+                        extractAttrResourceId("android:drawableRight"),
+                        extractAttrResourceId("android:drawableBottom"));
+            }
+        }
+
+        private int extractAttrResourceId(String attributeName) {
+            return resourceExtractor.resourceIdOrZero(attributes.get(attributeName));
+        }
+
+        private void applyFocus(View view) {
+            checkFocusOverride(view);
+            if (!anyParentHasFocus(view)) {
+                Boolean focusRequested = getAttributeAsBool("android:focus");
+                if (TRUE.equals(focusRequested) || view.isFocusableInTouchMode()) {
+                    view.requestFocus();
                 }
             }
         }
@@ -267,16 +257,13 @@ public class ViewLoader extends XmlLoader {
         }
 
         private View create(Context context, ViewGroup parent) throws Exception {
-            // todo: clean this up [pg/xw 20101028] should applyAttributes always be called?
             if (name.equals("include")) {
                 String layout = attributes.get("layout");
-                View view = inflateView(context, layout.substring(1), attributes);
+                View view = inflateView(context, layout.substring(1), attributes, parent);
                 addToParent(parent, view);
                 return view;
             } else if (name.equals("merge")) {
-                LinearLayout view = new LinearLayout(context);
-                addToParent(parent, view);
-                return view;
+                return parent;
             } else {
                 View view = constructView(context);
                 addToParent(parent, view);
@@ -286,7 +273,7 @@ public class ViewLoader extends XmlLoader {
         }
 
         private void addToParent(ViewGroup parent, View view) {
-            if (parent != null) {
+            if (parent != null && parent != view) {
                 parent.addView(view);
             }
         }
