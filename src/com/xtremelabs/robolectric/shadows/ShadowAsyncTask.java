@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.os.AsyncTask;
 import android.os.ShadowAsyncTaskBridge;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
 
@@ -20,6 +21,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 //        return false;
 //    }
 
+    @Implementation
     public boolean cancel(boolean mayInterruptIfRunning) {
         if (hasRun) return false;
         cancelled = true;
@@ -34,6 +36,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 //        return null;
 //    }
 
+    @Implementation
     public android.os.AsyncTask<Params, Progress, Result> execute(final Params... params) {
         final ShadowAsyncTaskBridge<Params, Progress, Result> bridge = new ShadowAsyncTaskBridge<Params, Progress, Result>(realAsyncTask);
         bridge.onPreExecute();
