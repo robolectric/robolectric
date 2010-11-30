@@ -20,7 +20,7 @@ public class AsyncTaskTest {
     @Before public void setUp() throws Exception {
         transcript = new Transcript();
 
-        RobolectricTestRunner.logMissingInvokedShadowMethods();
+        Robolectric.logMissingInvokedShadowMethods();
     }
 
     @Test
