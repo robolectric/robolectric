@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.os.AsyncTask;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.RobolectricTestRunner;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Join;
 import com.xtremelabs.robolectric.util.Transcript;
@@ -19,8 +18,6 @@ public class AsyncTaskTest {
 
     @Before public void setUp() throws Exception {
         transcript = new Transcript();
-
-        Robolectric.logMissingInvokedShadowMethods();
     }
 
     @Test
