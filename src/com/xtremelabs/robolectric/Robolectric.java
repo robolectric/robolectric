@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -161,6 +162,7 @@ public class Robolectric {
                 ShadowSpannableStringBuilder.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
+                ShadowSQLiteOpenHelper.class,
                 ShadowSQLiteQueryBuilder.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
@@ -331,6 +333,10 @@ public class Robolectric {
         return (ShadowSQLiteCursor) Robolectric.shadowOf_(other);
     }
 
+    public static ShadowSQLiteOpenHelper shadowOf(SQLiteOpenHelper other) {
+        return (ShadowSQLiteOpenHelper) Robolectric.shadowOf_(other);
+    }
+    
     public static ShadowSQLiteQueryBuilder shadowOf(SQLiteQueryBuilder other) {
         return (ShadowSQLiteQueryBuilder) Robolectric.shadowOf_(other);
     }
