@@ -14,6 +14,7 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -42,18 +43,34 @@ public class SQLiteOpenHelperTest {
 	}
 	
 	@Test
-	public void testInitialGetWriteableDatabase() throws Exception {
+	public void testSameDBInstanceSubsequentGetReadableDatabase() throws Exception {
+		SQLiteDatabase db1 = helper.getReadableDatabase();
+		SQLiteDatabase db2 = helper.getReadableDatabase();
+		
+		assertThat( db1, sameInstance(db2) );
+	}
+	
+	@Test
+	public void testInitialGetWritableDatabase() throws Exception {
 		SQLiteDatabase db = helper.getWritableDatabase();
 		assertInitialDB( db );		
 	}
 	
 	@Test
-	public void testSubsequentGetWriteableDatabase() throws Exception {
+	public void testSubsequentGetWritableDatabase() throws Exception {
 		SQLiteDatabase db = helper.getWritableDatabase();
 		helper.reset();
 		db = helper.getWritableDatabase();
 		
-		assertSubsequentDB( db );	
+		assertSubsequentDB( db );
+	}
+	
+	@Test
+	public void testSameDBInstanceSubsequentGetWritableDatabase() throws Exception {
+		SQLiteDatabase db1 = helper.getWritableDatabase();
+		SQLiteDatabase db2 = helper.getWritableDatabase();
+		
+		assertThat( db1, sameInstance(db2) );
 	}
 	
 	@Test
