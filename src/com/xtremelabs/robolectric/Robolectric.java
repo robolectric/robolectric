@@ -53,6 +53,7 @@ import com.xtremelabs.robolectric.shadows.ShadowAddress;
 import com.xtremelabs.robolectric.shadows.ShadowAlertDialog;
 import com.xtremelabs.robolectric.shadows.ShadowAppWidgetManager;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
+import com.xtremelabs.robolectric.shadows.ShadowAsyncTask;
 import com.xtremelabs.robolectric.shadows.ShadowAudioManager;
 import com.xtremelabs.robolectric.shadows.ShadowBaseAdapter;
 import com.xtremelabs.robolectric.shadows.ShadowBitmapDrawable;
