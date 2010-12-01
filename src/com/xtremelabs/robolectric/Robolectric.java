@@ -16,6 +16,8 @@ import android.graphics.drawable.Drawable;
 import android.location.Geocoder;
 import android.location.LocationManager;
 import android.media.AudioManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Display;
@@ -126,6 +128,7 @@ public class Robolectric {
                 ShadowCanvas.class,
                 ShadowCompoundButton.class,
                 ShadowComponentName.class,
+                ShadowConnectivityManager.class,
                 ShadowContentValues.class,
                 ShadowContext.class,
                 ShadowContextWrapper.class,
@@ -152,6 +155,7 @@ public class Robolectric {
                 ShadowMapActivity.class,
                 ShadowMapView.class,
                 ShadowMotionEvent.class,
+                ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
                 ShadowPaint.class,
                 ShadowPath.class,
@@ -200,6 +204,14 @@ public class Robolectric {
 
     public static ShadowToast shadowOf(Toast instance) {
         return (ShadowToast) shadowOf_(instance);
+    }
+
+    public static ShadowNetworkInfo shadowOf(NetworkInfo instance) {
+        return (ShadowNetworkInfo) shadowOf_(instance);
+    }
+
+    public static ShadowConnectivityManager shadowOf(ConnectivityManager instance) {
+        return (ShadowConnectivityManager) shadowOf_(instance);
     }
 
     public static ShadowBitmapDrawable shadowOf(BitmapDrawable instance) {
