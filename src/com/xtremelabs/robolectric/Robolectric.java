@@ -67,7 +67,12 @@ public class Robolectric {
         if (realClass == null) {
             throw new IllegalArgumentException(shadowClass + " is not annotated with @Implements");
         }
-        bindShadowClass(realClass.value(), shadowClass);
+
+        try {
+            bindShadowClass(realClass.value(), shadowClass);
+        } catch (TypeNotPresentException ignored) {
+            //this allows users of the robolectric.jar file to use the non-Google APIs version of the api
+        }
     }
 
     public static void bindDefaultShadowClasses() {
