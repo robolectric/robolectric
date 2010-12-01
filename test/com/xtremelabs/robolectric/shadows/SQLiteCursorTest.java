@@ -255,6 +255,34 @@ public class SQLiteCursorTest {
 		assertThat( cursor.isClosed(), equalTo(true) );
 	}
 
+	@Test
+	public void testIsNullWhenNull() throws Exception {
+		cursor.moveToFirst();
+		assertThat( cursor.moveToNext(), equalTo(true) );
+
+		assertThat( cursor.isNull( cursor.getColumnIndex("id") ), equalTo(false) );
+		assertThat( cursor.isNull( cursor.getColumnIndex("name") ), equalTo(false) );
+		assertThat( cursor.isNull( cursor.getColumnIndex("long_value") ), equalTo(true) );
+		assertThat( cursor.isNull( cursor.getColumnIndex("float_value") ), equalTo(true) );
+		assertThat( cursor.isNull( cursor.getColumnIndex("double_value") ), equalTo(true) );
+	}
+	
+	@Test
+	public void testIsNullWhenNotNull() throws Exception {
+		cursor.moveToFirst();
+
+		for ( int i = 0; i < 5; i++ ) {
+			assertThat( cursor.isNull(i), equalTo(false));
+		}
+	}
+	
+	@Test
+	public void testIsNullWhenIndexOutOfBounds() throws Exception {
+		cursor.moveToFirst();
+		
+		// column index 5 is out-of-bounds
+		assertThat( cursor.isNull(5), equalTo(true) );
+	}
 	
 	private void addPeople() throws Exception {
 		String[] statements = {

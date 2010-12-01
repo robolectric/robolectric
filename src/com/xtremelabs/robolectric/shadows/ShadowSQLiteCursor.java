@@ -187,6 +187,20 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 		return ( rs == null );
 	}
 	
+	@Implementation
+	public boolean isNull( int columnIndex ) {
+		boolean retVal = true;
+		
+		try {
+			rs.getObject( columnIndex + 1 );
+			retVal = rs.wasNull();
+		} catch (SQLException e) {
+			rethrowException( e, "SQL exception in isNull" );
+		}
+		
+		return retVal;
+	}
+	
 	/**
 	 * Allows test cases access to the underlying JDBC ResultSet, for use in
      * assertions.
