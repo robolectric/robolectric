@@ -7,6 +7,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
@@ -16,6 +17,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static java.lang.Boolean.TRUE;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this class. Supports listeners, focusability
@@ -119,9 +121,9 @@ public class ShadowView {
     /**
      * Simulates the inflating of the requested resource.
      *
-     * @param context the context from which to obtain a layout inflater
+     * @param context  the context from which to obtain a layout inflater
      * @param resource the ID of the resource to inflate
-     * @param root the {@code ViewGroup} to add the inflated {@code View} to
+     * @param root     the {@code ViewGroup} to add the inflated {@code View} to
      * @return the inflated View
      */
     @Implementation
@@ -529,5 +531,109 @@ public class ShadowView {
      */
     public void setFocused(boolean focused) {
         isFocused = focused;
+    }
+
+    /**
+     * Non-Android accessor.
+     *
+     * @return true if this object and all of its ancestors are {@code View.VISIBLE}, returns false if this or
+     *         any ancestor is not {@code View.VISIBLE}
+     */
+    public boolean derivedIsVisible() {
+        View parent = realView;
+        while (parent != null) {
+            if (parent.getVisibility() != View.VISIBLE) {
+                return false;
+            }
+            parent = (View) parent.getParent();
+        }
+        return true;
+    }
+
+    /**
+     * Utility method for clicking on views exposing testing scenarios that are not possible when using the actual app.
+     *
+     * @throws RuntimeException if the view is disabled or if the view or any of its parents are not visible.
+     */
+    public boolean checkedPerformClick() {
+        if (!derivedIsVisible()) {
+            throw new RuntimeException("View is not visible and cannot be clicked");
+        }
+        if (!realView.isEnabled()) {
+            throw new RuntimeException("View is not enabled and cannot be clicked");
+        }
+
+        return realView.performClick();
+    }
+
+    public void applyViewNode(ViewLoader.ViewNode viewNode) {
+        applyIdAttribute(viewNode);
+        applyVisibilityAttribute(viewNode);
+        applyEnabledAttribute(viewNode);
+        applyFocus(viewNode);
+    }
+
+    private void applyIdAttribute(ViewLoader.ViewNode viewNode) {
+        String idAttr = viewNode.getAttributeValue("android:id");
+        if (idAttr != null && idAttr.startsWith("@+id/")) {
+            idAttr = idAttr.substring("@+id/".length());
+
+            Integer id = viewNode.getResourceId("id/" + idAttr);
+            if (id == null) {
+                throw new RuntimeException("unknown id " + idAttr);
+            }
+            if (getId() == 0) {
+                setId(id);
+            }
+        }
+    }
+
+    private void applyVisibilityAttribute(ViewLoader.ViewNode viewNode) {
+        String visibility = viewNode.getAttributeValue("android:visibility");
+        if (visibility != null) {
+            if (visibility.equals("gone")) {
+                setVisibility(View.GONE);
+            } else if (visibility.equals("invisible")) {
+                setVisibility(View.INVISIBLE);
+            }
+        }
+    }
+
+    private void applyEnabledAttribute(ViewLoader.ViewNode viewNode) {
+        Boolean enabled = viewNode.getAttributeAsBool("android:enabled");
+        if (enabled != null) {
+            setEnabled(enabled);
+        }
+    }
+
+    private void applyFocus(ViewLoader.ViewNode viewNode) {
+        checkFocusOverride(viewNode);
+
+        if (!anyParentHasFocus(realView)) {
+            Boolean focusRequested = viewNode.getAttributeAsBool("android:focus");
+            if (TRUE.equals(focusRequested) || realView.isFocusableInTouchMode()) {
+                realView.requestFocus();
+            }
+        }
+    }
+
+    private void checkFocusOverride(ViewLoader.ViewNode viewNode) {
+        if (viewNode.hasRequestFocusOverride()) {
+            View root = realView;
+            View parent = (View) root.getParent();
+            while (parent != null) {
+                root = parent;
+                parent = (View) root.getParent();
+            }
+            root.clearFocus();
+        }
+    }
+
+    private boolean anyParentHasFocus(View view) {
+        while (view != null) {
+            if (view.hasFocus()) return true;
+            view = (View) view.getParent();
+        }
+        return false;
     }
 }

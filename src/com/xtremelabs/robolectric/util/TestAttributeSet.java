@@ -83,13 +83,13 @@ public class TestAttributeSet implements AttributeSet {
 
     @Override public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
         String value = getAttributeValueInMap(attribute);
-        return (value != null) ? resourceExtractor.getResourceStringToId().get(value.substring(1)) : defaultValue;
+        return (value != null) ? resourceExtractor.getResourceId(value) : defaultValue;
     }
 
     @Override public int getAttributeResourceValue(int index, int defaultValue) {
-        String attrName = resourceExtractor.getResourceIdToString().get(index);
+        String attrName = resourceExtractor.getResourceName(index);
         String value = getAttributeValueInMap(attrName);
-        return (value != null) ? resourceExtractor.getResourceStringToId().get(value.substring(1)) : defaultValue;
+        return (value == null) ? defaultValue : resourceExtractor.getResourceId(value);
     }
 
     @Override public int getAttributeIntValue(int index, int defaultValue) {

@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric.res;
 
 import android.content.Context;
-import com.xtremelabs.robolectric.shadows.ShadowApplication;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -40,14 +39,18 @@ public class ResourceLoader {
             DocumentLoader viewDocumentLoader = new DocumentLoader(viewLoader);
             File[] layoutDirs = resourceDir.listFiles(new FileFilter() {
                 @Override
-                public boolean accept(File pathname) {
-                    return pathname.getPath().contains("/layout");
+                public boolean accept(File file) {
+                    return isLayoutDirectory(file.getPath());
                 }
             });
             viewDocumentLoader.loadResourceXmlDirs(layoutDirs);
         } else {
             viewLoader = null;
         }
+    }
+
+    boolean isLayoutDirectory(String path) {
+        return path.contains(File.separator + "layout");
     }
 
     /**
@@ -64,10 +67,10 @@ public class ResourceLoader {
     }
 
     public static ResourceLoader getFrom(Context context) {
-        return ((ShadowApplication) shadowOf(context.getApplicationContext())).getResourceLoader();
+        return shadowOf(context.getApplicationContext()).getResourceLoader();
     }
 
     public String getNameForId(int viewId) {
-        return resourceExtractor.getResourceIdToString().get(viewId);
+        return resourceExtractor.getResourceName(viewId);
     }
 }

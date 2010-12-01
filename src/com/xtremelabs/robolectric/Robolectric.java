@@ -110,10 +110,13 @@ import com.xtremelabs.robolectric.shadows.ShadowViewGroup;
 import com.xtremelabs.robolectric.shadows.ShadowWifiManager;
 import com.xtremelabs.robolectric.shadows.ShadowZoomButtonsController;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.Scheduler;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
 public class Robolectric {
     public static Application application;
+    public static Scheduler backgroundScheduler;
+    public static Scheduler uiThreadScheduler;
 
     public static <T> T newInstanceOf(Class<T> clazz) {
         try {
@@ -163,6 +166,18 @@ public class Robolectric {
         ShadowWrangler.getInstance().logMissingInvokedShadowMethods();
     }
 
+    /**
+     * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
+     * is enabled.
+     *
+     * @param view the view to click on
+     * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
+     * @throws RuntimeException if the preconditions are not met.
+     */
+    public static boolean clickOn(View view) {
+        return shadowOf(view).checkedPerformClick();
+    }
+
     public static List<Class<?>> getDefaultShadowClasses() {
         return Arrays.asList(
                 ShadowAbsSpinner.class,
@@ -174,6 +189,7 @@ public class Robolectric {
                 ShadowAlertDialog.ShadowBuilder.class,
                 ShadowApplication.class,
                 ShadowAppWidgetManager.class,
+                ShadowAsyncTask.class,
                 ShadowAudioManager.class,
                 ShadowBaseAdapter.class,
                 ShadowBitmapDrawable.class,
@@ -238,6 +254,8 @@ public class Robolectric {
     public static void resetStaticState() {
         ShadowWrangler.getInstance().silence();
         Robolectric.application = new Application();
+        Robolectric.backgroundScheduler = new Scheduler();
+        Robolectric.uiThreadScheduler = new Scheduler();
         TestSharedPreferences.reset();
         ShadowToast.reset();
         ShadowAlertDialog.reset();
@@ -404,5 +422,13 @@ public class Robolectric {
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
+    }
+
+    public static void runBackgroundTasks() {
+        backgroundScheduler.tick(0);
+    }
+
+    public static void runUiThreadTasks() {
+        uiThreadScheduler.tick(0);
     }
 }

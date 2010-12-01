@@ -24,6 +24,7 @@ public final class R {
         public static final int image = nextId++;
         public static final int edit_text = nextId++;
         public static final int edit_text2 = nextId++;
+        public static final int outer_merge = nextId++;
     }
 
     public static final class string {
@@ -37,6 +38,9 @@ public final class R {
     }
 
     public static final class color {
+        public static final int background = nextId++;
+        public static final int foreground = nextId++;
+        public static final int grey42 = nextId++;
         public static final int black = nextId++;
         public static final int white = nextId++;
         public static final int clear = nextId++;

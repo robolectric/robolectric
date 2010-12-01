@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.View;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.TestOnClickListener;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -11,24 +12,31 @@ import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class RobolectricTest {
 
     private PrintStream originalSystemOut;
     private ByteArrayOutputStream buff;
+	private String defaultLineSeparator;
 
     @Before
     public void setUp() {
         originalSystemOut = System.out;
+        defaultLineSeparator = System.getProperty("line.separator");
+
+        System.setProperty("line.separator", "\n");
         buff = new ByteArrayOutputStream();
         PrintStream testOut = new PrintStream(buff);
         System.setOut(testOut);
     }
-
+    
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
+    	System.setProperty("line.separator", defaultLineSeparator);
         System.setOut(originalSystemOut);
     }
 
@@ -61,6 +69,21 @@ public class RobolectricTest {
         assertEquals("", output);
     }
 
+    @Test(expected= RuntimeException.class)
+    public void clickOn_shouldThrowIfViewIsDisabled() throws Exception {
+        View view = new View(null);
+        view.setEnabled(false);
+        Robolectric.clickOn(view);
+    }
+
+    public void clickOn_shouldCallClickListener() throws Exception {
+        View view = new View(null);
+        TestOnClickListener testOnClickListener = new TestOnClickListener();
+        view.setOnClickListener(testOnClickListener);
+        Robolectric.clickOn(view);
+        assertTrue(testOnClickListener.clicked);
+    }
+
     @Implements(View.class)
     public static class TestShadowView extends ShadowWranglerTest.TestShadowViewParent {
         @SuppressWarnings({"UnusedDeclaration"})
@@ -69,4 +92,7 @@ public class RobolectricTest {
             return null;
         }
     }
+
+
+
 }

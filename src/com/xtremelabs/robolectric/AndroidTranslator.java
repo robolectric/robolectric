@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import android.net.Uri;
+import com.xtremelabs.robolectric.util.DoNotStrip;
 import javassist.*;
 
 import java.io.IOException;
@@ -66,7 +67,7 @@ public class AndroidTranslator implements Translator {
                         || className.startsWith("com.google.android.");
 
         CtClass ctClass = classPool.get(className);
-        if (needsStripping) {
+        if (needsStripping && !ctClass.hasAnnotation(DoNotStrip.class)) {
             int modifiers = ctClass.getModifiers();
             if (Modifier.isFinal(modifiers)) {
                 ctClass.setModifiers(modifiers & ~Modifier.FINAL);

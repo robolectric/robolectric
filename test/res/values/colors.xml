@@ -1,5 +1,10 @@
 <resources>
+    <color name="foreground">@color/grey42</color>
+
     <color name="clear">#00000001</color>
     <color name="white">#FFFFFF</color>
     <color name="black">#000000</color>
+    <color name="grey42">#f5f5f5</color>
+
+    <color name="background">@color/grey42</color>
 </resources>

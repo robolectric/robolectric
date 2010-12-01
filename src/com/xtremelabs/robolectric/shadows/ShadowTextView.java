@@ -5,6 +5,7 @@ import android.text.style.URLSpan;
 import android.text.util.Linkify;
 import android.view.KeyEvent;
 import android.widget.TextView;
+import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -175,6 +176,27 @@ public class ShadowTextView extends ShadowView {
 
     public boolean isAutoLinkPhoneNumbers() {
         return autoLinkPhoneNumbers;
+    }
+
+    @Override public void applyViewNode(ViewLoader.ViewNode viewNode) {
+        super.applyViewNode(viewNode);
+        applyTextViewAttributes(viewNode);
+    }
+
+    private void applyTextViewAttributes(ViewLoader.ViewNode viewNode) {
+        String text = viewNode.getAttributeValue("android:text");
+        if (text != null) {
+            if (text.startsWith("@string/")) {
+                text = viewNode.getStringResourceValue(text.substring(1));
+            }
+            setText(text);
+        }
+
+        setCompoundDrawablesWithIntrinsicBounds(
+                viewNode.extractAttrResourceId("android:drawableLeft"),
+                viewNode.extractAttrResourceId("android:drawableTop"),
+                viewNode.extractAttrResourceId("android:drawableRight"),
+                viewNode.extractAttrResourceId("android:drawableBottom"));
     }
 
     public static class CompoundDrawables {
