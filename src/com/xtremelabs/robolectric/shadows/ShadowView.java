@@ -128,11 +128,7 @@ public class ShadowView {
      */
     @Implementation
     public static View inflate(Context context, int resource, ViewGroup root) {
-        View view = ShadowLayoutInflater.from(context).inflate(resource, root);
-        if (root != null) {
-            root.addView(view);
-        }
-        return view;
+       return ShadowLayoutInflater.from(context).inflate(resource, root);
     }
 
     /**

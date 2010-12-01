@@ -1,8 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestOnClickListener;
@@ -88,6 +90,16 @@ public class ViewTest {
         grandParent.setVisibility(View.GONE);
 
         assertFalse(shadowOf(view).derivedIsVisible());
+    }
+
+    @Test
+    public void shouldInflateMergeRootedLayoutAndNotCreateReferentialLoops() throws Exception {
+        LinearLayout root = new LinearLayout(null);
+        root.inflate(new Activity(), R.layout.inner_merge, root);
+        for (int i = 0; i < root.getChildCount(); i++) {
+            View child = root.getChildAt(i);
+            assertNotSame(root, child);
+        }
     }
 
     @Test
