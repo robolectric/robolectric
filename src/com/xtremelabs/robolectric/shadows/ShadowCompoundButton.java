@@ -49,8 +49,8 @@ public class ShadowCompoundButton extends ShadowTextView implements Checkable {
         mOnCheckedChangeListener = listener;
     }
 
-    @Override public void applyViewNode(ViewLoader.ViewNode viewNode) {
-        super.applyViewNode(viewNode);
+    @Override public void applyViewNodeAttributes(ViewLoader.ViewNode viewNode) {
+        super.applyViewNodeAttributes(viewNode);
         applyCheckedAttribute(viewNode);
     }
 

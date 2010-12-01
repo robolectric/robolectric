@@ -562,7 +562,7 @@ public class ShadowView {
         return realView.performClick();
     }
 
-    public void applyViewNode(ViewLoader.ViewNode viewNode) {
+    public void applyViewNodeAttributes(ViewLoader.ViewNode viewNode) {
         applyIdAttribute(viewNode);
         applyVisibilityAttribute(viewNode);
         applyEnabledAttribute(viewNode);

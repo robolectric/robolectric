@@ -131,7 +131,7 @@ public class ViewLoader extends XmlLoader {
         }
 
         private void applyAttributes(View view) {
-            shadowOf(view).applyViewNode(this);
+            shadowOf(view).applyViewNodeAttributes(this);
         }
 
         public int extractAttrResourceId(String attributeName) {
