@@ -1,28 +1,35 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.app.AlarmManager;
-import android.app.Application;
-import android.appwidget.AppWidgetManager;
-import android.content.*;
-import android.content.res.Resources;
-import android.location.LocationManager;
-import android.media.AudioManager;
-import android.net.wifi.WifiManager;
-import android.test.mock.MockContentResolver;
-import android.view.LayoutInflater;
-import android.view.WindowManager;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.RealObject;
-import com.xtremelabs.robolectric.view.TestWindowManager;
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import android.app.AlarmManager;
+import android.app.Application;
+import android.appwidget.AppWidgetManager;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.res.Resources;
+import android.location.LocationManager;
+import android.media.AudioManager;
+import android.net.ConnectivityManager;
+import android.net.wifi.WifiManager;
+import android.test.mock.MockContentResolver;
+import android.view.LayoutInflater;
+import android.view.WindowManager;
+
+import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.util.Implementation;
+import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.view.TestWindowManager;
 
 /**
  * Shadows the {@code android.app.Application} class.
@@ -36,6 +43,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private MockContentResolver contentResolver = new MockContentResolver();
     private AlarmManager alarmManager;
     private LocationManager locationManager;
+    private ConnectivityManager connectivityManager;
     private WifiManager wifiManager;
     private WindowManager windowManager;
     private AudioManager audioManager;
@@ -91,7 +99,10 @@ public class ShadowApplication extends ShadowContextWrapper {
             return windowManager == null ? windowManager = new TestWindowManager() : windowManager;
         } else if (name.equals(Context.AUDIO_SERVICE)) {
             return audioManager == null ? audioManager = newInstanceOf(AudioManager.class) : audioManager;
+        } else if (name.equals(Context.CONNECTIVITY_SERVICE)) {
+        	return connectivityManager == null ? connectivityManager = newInstanceOf(ConnectivityManager.class) : connectivityManager;
         }
+
         return null;
     }
 
