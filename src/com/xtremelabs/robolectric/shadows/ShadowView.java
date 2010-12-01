@@ -567,9 +567,25 @@ public class ShadowView {
     }
 
     public void applyViewNode(ViewLoader.ViewNode viewNode) {
+        applyIdAttribute(viewNode);
         applyVisibilityAttribute(viewNode);
         applyEnabledAttribute(viewNode);
         applyFocus(viewNode);
+    }
+
+    private void applyIdAttribute(ViewLoader.ViewNode viewNode) {
+        String idAttr = viewNode.getAttributeValue("android:id");
+        if (idAttr != null && idAttr.startsWith("@+id/")) {
+            idAttr = idAttr.substring("@+id/".length());
+
+            Integer id = viewNode.getResourceId("id/" + idAttr);
+            if (id == null) {
+                throw new RuntimeException("unknown id " + idAttr);
+            }
+            if (getId() == 0) {
+                setId(id);
+            }
+        }
     }
 
     private void applyVisibilityAttribute(ViewLoader.ViewNode viewNode) {
@@ -620,6 +636,4 @@ public class ShadowView {
         }
         return false;
     }
-
-
 }

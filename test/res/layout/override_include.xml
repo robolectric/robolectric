@@ -10,4 +10,8 @@
             layout="@layout/snippet"
             android:visibility="invisible"
             />
+
+    <include layout="@layout/inner_merge"/>
+
+
 </LinearLayout>
