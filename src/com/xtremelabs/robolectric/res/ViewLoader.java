@@ -66,17 +66,6 @@ public class ViewLoader extends XmlLoader {
             ViewNode viewNode = new ViewNode(name, attrMap);
             if (parent != null) parent.addChild(viewNode);
 
-            String idAttr = getIdAttr(node);
-            if (idAttr != null && idAttr.startsWith("@+id/")) {
-                idAttr = idAttr.substring(5);
-
-                Integer id = viewNode.getResourceId("id/" + idAttr);
-                if (id == null) {
-                    throw new RuntimeException("unknown id " + getIdAttr(node));
-                }
-                viewNode.setId(id);
-            }
-
             processChildren(node.getChildNodes(), viewNode);
         }
     }
@@ -113,7 +102,6 @@ public class ViewLoader extends XmlLoader {
         private final Map<String, String> attributes;
 
         private List<ViewNode> children = new ArrayList<ViewNode>();
-        private Integer id;
         boolean requestFocusOverride = false;
 
         public ViewNode(String name, Map<String, String> attributes) {
@@ -132,9 +120,6 @@ public class ViewLoader extends XmlLoader {
         public View inflate(Context context, View parent) throws Exception {
             View view = create(context, (ViewGroup) parent);
 
-            if (id != null && view.getId() == 0) {
-                view.setId(id);
-            }
             for (ViewNode child : children) {
                 child.inflate(context, view);
             }
@@ -221,10 +206,6 @@ public class ViewLoader extends XmlLoader {
             } catch (ClassNotFoundException e) {
                 return null;
             }
-        }
-
-        public void setId(Integer id) {
-            this.id = id;
         }
 
         public String getAttributeValue(String attributeName) {
