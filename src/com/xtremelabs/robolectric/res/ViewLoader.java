@@ -71,7 +71,15 @@ public class ViewLoader extends XmlLoader {
     }
 
     public View inflateView(Context context, String key) {
-        return inflateView(context, key, null, null);
+        return inflateView(context, key, null);
+    }
+
+    public View inflateView(Context context, String key, View parent) {
+        return inflateView(context, key, null, parent);
+    }
+
+    public View inflateView(Context context, int resourceId, View parent) {
+        return inflateView(context, resourceExtractor.getResourceName(resourceId), parent);
     }
 
     private View inflateView(Context context, String key, Map<String, String> attributes, View parent) {
@@ -91,10 +99,6 @@ public class ViewLoader extends XmlLoader {
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + key, e);
         }
-    }
-
-    public View inflateView(Context context, int resourceId) {
-        return inflateView(context, resourceExtractor.getResourceName(resourceId));
     }
 
     public class ViewNode {

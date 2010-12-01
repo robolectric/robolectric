@@ -198,6 +198,12 @@ public class ViewLoaderTest {
     }
 
     @Test
+    public void shouldInflateMergeLayoutIntoParent() throws Exception {
+        View innerMerge = viewLoader.inflateView(context, R.layout.inner_merge, new LinearLayout(null));
+        assertNotNull(innerMerge);
+    }
+
+    @Test
     public void testMapView() throws Exception {
         RelativeLayout mainView = (RelativeLayout) viewLoader.inflateView(context, "layout/mapview");
         TestUtil.assertInstanceOf(MapView.class, mainView.findViewById(R.id.map_view));
