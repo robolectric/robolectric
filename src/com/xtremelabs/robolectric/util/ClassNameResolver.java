@@ -10,13 +10,19 @@ public class ClassNameResolver<T> {
     }
 
     public Class<? extends T> resolve() {
+        Class<? extends T> aClass;
         if (looksFullyQualified(className)) {
-            return safeClassForName(className);
+            aClass = safeClassForName(className);
+        } else {
+            aClass = safeClassForName(packageName + "." + className);
+            if (aClass == null) {
+                aClass = safeClassForName(packageName + className);
+            }
         }
 
-        Class<? extends T> aClass = safeClassForName(packageName + "." + className);
         if (aClass == null) {
-            aClass = safeClassForName(packageName + className);
+            throw new RuntimeException("Could not find a class for package: "
+                    + packageName + " and class name: " + className);
         }
         return aClass;
     }

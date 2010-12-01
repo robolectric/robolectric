@@ -29,8 +29,8 @@ public class ClassNameResolverTest {
         assertEquals(TestApplication.class, new ClassNameResolver<Application>("com.xtremelabs", ".robolectric.TestApplication").resolve());
     }
 
-    @Test
+    @Test(expected = RuntimeException.class)
     public void shouldNotResolveClassesByUndottedPartiallyQualifiedNameBecauseAndroidDoesnt() throws Exception {
-        assertEquals(null, new ClassNameResolver<Application>("com.xtremelabs", "robolectric.TestApplication").resolve());
+        new ClassNameResolver<Application>("com.xtremelabs", "robolectric.TestApplication").resolve();
     }
 }
