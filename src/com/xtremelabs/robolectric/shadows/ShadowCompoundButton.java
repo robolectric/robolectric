@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.widget.Checkable;
 import android.widget.CompoundButton;
+import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -46,5 +47,17 @@ public class ShadowCompoundButton extends ShadowTextView implements Checkable {
     @Implementation
     public void setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener listener) {
         mOnCheckedChangeListener = listener;
+    }
+
+    @Override public void applyViewNode(ViewLoader.ViewNode viewNode) {
+        super.applyViewNode(viewNode);
+        applyCheckedAttribute(viewNode);
+    }
+
+    private void applyCheckedAttribute(ViewLoader.ViewNode viewNode) {
+        String text = viewNode.getAttributeValue("android:checked");
+        if (text != null) {
+            setChecked(Boolean.valueOf(text));
+        }
     }
 }

@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import android.widget.ImageView;
+import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -59,5 +60,20 @@ public class ShadowImageView extends ShadowView {
 
     public int getResourceId() {
         return resourceId;
+    }
+
+    @Override public void applyViewNode(ViewLoader.ViewNode viewNode) {
+        super.applyViewNode(viewNode);
+        applyImageAttribute(viewNode);
+    }
+
+    private void applyImageAttribute(ViewLoader.ViewNode viewNode) {
+        String source = viewNode.getAttributeValue("android:src");
+        if (source != null) {
+            if (source.startsWith("@drawable/")) {
+                Integer resId = viewNode.getResourceId(source);
+                setImageResource(resId);
+            }
+        }
     }
 }

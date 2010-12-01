@@ -1,7 +1,20 @@
 package com.xtremelabs.robolectric;
 
-import static java.io.File.separator;
+import android.app.Application;
+import android.net.Uri__FromAndroid;
+import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.shadows.ShadowApplication;
+import com.xtremelabs.robolectric.util.RealObject;
+import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.Statement;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -10,23 +23,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.runners.BlockJUnit4ClassRunner;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.Statement;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import android.app.Application;
-import android.net.Uri__FromAndroid;
-
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.shadows.ShadowApplication;
-import com.xtremelabs.robolectric.util.RealObject;
+import static java.io.File.separator;
 
 /**
  * Installs a {@link RobolectricClassLoader} and {@link com.xtremelabs.robolectric.res.ResourceLoader} in order to
@@ -239,10 +236,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     /**
      * Override this method if you want to provide your own implementation of Application.
      *
-     * @return The Application instance.
+     * This method attempts to instantiate an application instance as specified by the AndroidManifest.xml.
+     *
+     * @return An instance of the Application class specified by the ApplicationManifest.xml or an instance of
+     * Application if not specified.
      */
     protected Application createApplication() {
-        return new Application();
+        return new ApplicationResolver(androidManifestPath).resolveApplication();
     }
 
     private ResourceLoader createResourceLoader(String projectRoot, String resourceDirectory) {

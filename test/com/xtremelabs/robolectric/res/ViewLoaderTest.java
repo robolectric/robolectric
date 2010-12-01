@@ -20,6 +20,7 @@ import java.io.File;
 
 import static android.test.MoreAsserts.assertNotEqual;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.*;
@@ -65,19 +66,45 @@ public class ViewLoaderTest {
         TestUtil.assertInstanceOf(TextView.class, mediaView.findViewById(R.id.title));
 
         ViewGroup mainView = (ViewGroup) viewLoader.inflateView(context, "layout/main");
-        TestUtil.assertInstanceOf(View.class, mainView.findViewById(R.id.title));
+        assertInstanceOf(View.class, mainView.findViewById(R.id.title));
     }
 
     @Test
     public void testInclude() throws Exception {
         ViewGroup mediaView = (ViewGroup) viewLoader.inflateView(context, "layout/media");
-        TestUtil.assertInstanceOf(TextView.class, mediaView.findViewById(R.id.snippet_text));
+        assertInstanceOf(TextView.class, mediaView.findViewById(R.id.include_id));
     }
 
     @Test
     public void testIncludeShouldRetainAttributes() throws Exception {
         ViewGroup mediaView = (ViewGroup) viewLoader.inflateView(context, "layout/media");
-        assertThat(mediaView.findViewById(R.id.snippet_text).getVisibility(), is(View.GONE));
+        assertThat(mediaView.findViewById(R.id.include_id).getVisibility(), is(View.GONE));
+    }
+
+    @Test
+    public void shouldOverwriteIdOnIncludedNonMerge() throws Exception {
+        ViewGroup mediaView = (ViewGroup) viewLoader.inflateView(context, "layout/media");
+        assertNull(mediaView.findViewById(R.id.snippet_text));
+    }
+
+    @Test
+    public void shouldRetainIdOnIncludedMergeWhenIncludeSpecifiesNoId() throws Exception {
+        ViewGroup mediaView = (ViewGroup) viewLoader.inflateView(context, "layout/override_include");
+        assertInstanceOf(TextView.class, mediaView.findViewById(R.id.inner_text));
+    }
+
+    @Test
+    public void shouldRetainIdOnIncludedNonMergeWhenIncludeSpecifiesNoId() throws Exception {
+        ViewGroup mediaView = (ViewGroup) viewLoader.inflateView(context, "layout/override_include");
+        assertInstanceOf(TextView.class, mediaView.findViewById(R.id.snippet_text));
+    }
+
+    @Test
+    public void testIncludedIdShouldNotBeFoundWhenIncludedIsMerge() throws Exception {
+        ViewGroup overrideIncludeView = (ViewGroup) viewLoader.inflateView(context, "layout/outer");
+        assertInstanceOf(LinearLayout.class, overrideIncludeView.findViewById(R.id.outer_merge));
+        assertInstanceOf(TextView.class, overrideIncludeView.findViewById(R.id.inner_text));
+        assertNull(overrideIncludeView.findViewById(R.id.include_id));
     }
 
     @Test
