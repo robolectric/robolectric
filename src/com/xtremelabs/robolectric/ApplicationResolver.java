@@ -23,9 +23,9 @@ public class ApplicationResolver {
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document doc = db.parse(androidManifestPath);
 
-            projectPackage = doc.getElementsByTagName("manifest").item(0).getAttributes().getNamedItem("package").getTextContent();
+            projectPackage = getTagAttributeText(doc, "manifest", "package");
             //TODO: should use getNamedItemNS, but that's not working as expected
-            applicationName = doc.getElementsByTagName("application").item(0).getAttributes().getNamedItem("android:name").getTextContent();
+            applicationName = getTagAttributeText(doc, "application", "android:name");
         } catch (Exception ignored) {
         }
 
@@ -39,5 +39,9 @@ public class ApplicationResolver {
         }
 
         return new Application();
+    }
+
+    private String getTagAttributeText(Document doc, String tag, String attribute) {
+        return doc.getElementsByTagName(tag).item(0).getAttributes().getNamedItem(attribute).getTextContent();
     }
 }
