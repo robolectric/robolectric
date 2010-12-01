@@ -4,7 +4,6 @@ import android.app.Application;
 import android.net.Uri__FromAndroid;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
-import com.xtremelabs.robolectric.util.ClassNameResolver;
 import com.xtremelabs.robolectric.util.RealObject;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -243,23 +242,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * Application if not specified.
      */
     protected Application createApplication() {
-        try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(androidManifestPath);
-
-            String projectPackage = doc.getElementsByTagName("manifest").item(0).getAttributes().getNamedItem("package").getTextContent();
-            //TODO: should use getNamedItemNS, but that's not working as expected
-            String applicationName = doc.getElementsByTagName("application").item(0).getAttributes().getNamedItem("android:name").getTextContent();
-
-            Class<? extends Application> applicationClass = new ClassNameResolver<Application>(projectPackage, applicationName).resolve();
-
-            if (applicationClass != null) {
-                return applicationClass.newInstance();
-            }
-        } catch (Exception ignored) {
-        }
-        return new Application();
+        return new ApplicationResolver(androidManifestPath).resolveApplication();
     }
 
     private ResourceLoader createResourceLoader(String projectRoot, String resourceDirectory) {
