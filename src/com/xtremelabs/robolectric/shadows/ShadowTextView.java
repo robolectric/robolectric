@@ -7,7 +7,6 @@ import android.text.util.Linkify;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.widget.TextView;
-import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -31,7 +30,8 @@ public class ShadowTextView extends ShadowView {
 
     @Override public void __constructor__(Context context, AttributeSet attributeSet) {
         super.__constructor__(context, attributeSet);
-        applyTextViewAttributes();
+        applyTextAttribute();
+        applyCompoundDrawablesWithIntrinsicBoundsAttributes();
     }
 
     @Implementation
@@ -185,12 +185,7 @@ public class ShadowTextView extends ShadowView {
         return autoLinkPhoneNumbers;
     }
 
-    @Override public void applyViewNodeAttributes(ViewLoader.ViewNode viewNode) {
-        super.applyViewNodeAttributes(viewNode);
-        applyTextViewAttributes(viewNode);
-    }
-
-    private void applyTextViewAttributes() {
+    private void applyTextAttribute() {
         String text = attributeSet.getAttributeValue("android", "text");
         if (text != null) {
             if (text.startsWith("@string/")) {
@@ -201,12 +196,12 @@ public class ShadowTextView extends ShadowView {
         }
     }
 
-    private void applyTextViewAttributes(ViewLoader.ViewNode viewNode) {
+    private void applyCompoundDrawablesWithIntrinsicBoundsAttributes() {
         setCompoundDrawablesWithIntrinsicBounds(
-                viewNode.extractAttrResourceId("android:drawableLeft"),
-                viewNode.extractAttrResourceId("android:drawableTop"),
-                viewNode.extractAttrResourceId("android:drawableRight"),
-                viewNode.extractAttrResourceId("android:drawableBottom"));
+                attributeSet.getAttributeResourceValue("android", "drawableLeft", 0),
+                attributeSet.getAttributeResourceValue("android", "drawableTop", 0),
+                attributeSet.getAttributeResourceValue("android", "drawableRight", 0),
+                attributeSet.getAttributeResourceValue("android", "drawableBottom", 0));
     }
 
     public static class CompoundDrawables {
