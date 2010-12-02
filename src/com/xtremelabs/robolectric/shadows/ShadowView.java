@@ -26,9 +26,6 @@ import static java.lang.Boolean.TRUE;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(View.class)
 public class ShadowView {
-    @Deprecated
-    public static final int UNINITIALIZED_ATTRIBUTE = -1000;
-
     @RealObject protected View realView;
 
     private int id;
@@ -128,11 +125,7 @@ public class ShadowView {
      */
     @Implementation
     public static View inflate(Context context, int resource, ViewGroup root) {
-        View view = ShadowLayoutInflater.from(context).inflate(resource, root);
-        if (root != null) {
-            root.addView(view);
-        }
-        return view;
+       return ShadowLayoutInflater.from(context).inflate(resource, root);
     }
 
     /**
@@ -566,7 +559,7 @@ public class ShadowView {
         return realView.performClick();
     }
 
-    public void applyViewNode(ViewLoader.ViewNode viewNode) {
+    public void applyViewNodeAttributes(ViewLoader.ViewNode viewNode) {
         applyIdAttribute(viewNode);
         applyVisibilityAttribute(viewNode);
         applyEnabledAttribute(viewNode);

@@ -30,20 +30,16 @@ public class ShadowLayoutInflater {
 
     @Implementation
     public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
-        View view = getViewLoader().inflateView(context, resource);
-        if (root != null && attachToRoot) {
-            root.addView(view);
-        }
-        return view;
-    }
-
-    private ViewLoader getViewLoader() {
-        return shadowOf(context.getApplicationContext()).getResourceLoader().viewLoader;
+        return getViewLoader().inflateView(context, resource, attachToRoot ? root : null);
     }
 
     @Implementation
     public View inflate(int resource, ViewGroup root) {
-        return inflate(resource, root, true);
+        return inflate(resource, root, root != null);
+    }
+
+    private ViewLoader getViewLoader() {
+        return shadowOf(context.getApplicationContext()).getResourceLoader().viewLoader;
     }
 
     private static LayoutInflater bind(LayoutInflater layoutInflater, Context context) {

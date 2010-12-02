@@ -72,7 +72,7 @@ public class AsyncTaskTest {
         }
 
         @Override protected String doInBackground(String... strings) {
-            transcript.add("doInBackground " + Join.join(", ", strings));
+            transcript.add("doInBackground " + Join.join(", ", (Object[]) strings));
             return "c";
         }
 

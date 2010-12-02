@@ -20,8 +20,8 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 public class ShadowTextView extends ShadowView {
     private CharSequence text = "";
     private CompoundDrawables compoundDrawablesImpl;
-    private int textColorHexValue = UNINITIALIZED_ATTRIBUTE;
-    private int textSize = UNINITIALIZED_ATTRIBUTE;
+    private Integer textColorHexValue;
+    private float textSize = 14.0f;
     private boolean autoLinkPhoneNumbers;
     private int autoLinkMask;
     private CharSequence hintText;
@@ -57,7 +57,7 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public void setTextSize(float size) {
-        textSize = (int) size;
+        textSize = size;
     }
 
     @Implementation
@@ -165,12 +165,12 @@ public class ShadowTextView extends ShadowView {
         this.compoundDrawablesImpl = compoundDrawablesImpl;
     }
 
-    public int getTextColorHexValue() {
+    public Integer getTextColorHexValue() {
         return textColorHexValue;
     }
 
     @Implementation
-    public int getTextSize() {
+    public float getTextSize() {
         return textSize;
     }
 
@@ -178,8 +178,8 @@ public class ShadowTextView extends ShadowView {
         return autoLinkPhoneNumbers;
     }
 
-    @Override public void applyViewNode(ViewLoader.ViewNode viewNode) {
-        super.applyViewNode(viewNode);
+    @Override public void applyViewNodeAttributes(ViewLoader.ViewNode viewNode) {
+        super.applyViewNodeAttributes(viewNode);
         applyTextViewAttributes(viewNode);
     }
 

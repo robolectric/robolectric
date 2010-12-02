@@ -62,8 +62,8 @@ public class ShadowImageView extends ShadowView {
         return resourceId;
     }
 
-    @Override public void applyViewNode(ViewLoader.ViewNode viewNode) {
-        super.applyViewNode(viewNode);
+    @Override public void applyViewNodeAttributes(ViewLoader.ViewNode viewNode) {
+        super.applyViewNodeAttributes(viewNode);
         applyImageAttribute(viewNode);
     }
 
