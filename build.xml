@@ -29,7 +29,8 @@
          should be checked in in Version Control Systems. -->
     <property file="default.properties"/>
 
-    <exec executable="./find-android.sh" outputproperty="sdk.dir"/>
+    <exec executable="./find-android.bat" outputproperty="sdk.dir" failifexecutionfails="false"/>
+    <exec executable="./find-android.sh" outputproperty="sdk.dir" failifexecutionfails="false"/>
 
     <!-- Custom Android task to deal with the project target, and import the proper rules.
          This requires ant 1.6.0 or above. -->
