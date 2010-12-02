@@ -5,10 +5,20 @@
 
 ## Downloads
 
-Most people will want to grab the latest robolectric-all.jar below. It includes the libraries which Robolectric
-depends on (javassist, junit, json, hamcrest, and objenesis).
+These are the most recent releases of Robolectric. Newer releases appear first on the list. Snapshot jars contain
+relatively stable work in progress on the next release.
 
-If you prefer to provide your own versions of those dependencies, grab just robolectric.jar.
+The <b>robolectric-X.X.X.jar</b> contains the Robolectric code without its dependencies. If you use this jar in your project
+you will have to include the jars that satisfy these dependencies separately (javassist, junit, json, hamcrest,
+h2 and objenesis).
+
+The <b>robolectric-X.X.X-all.jar</b> contains the same Robolectric code and also bundles all of the dependencies as well. This
+is the easiest and most convenient way to use Robolectric.
+
+The <b>robolectric-X.X.X-src.jar</b> contains all of the Robolectric source code and is included for use in IDEs that support
+source level debugging and browsing.
+
+Most people will want to grab the latest robolectric-all.jar below.
 
 <table id="standalone-downloads">
 <tr>
@@ -19,6 +29,27 @@ If you prefer to provide your own versions of those dependencies, grab just robo
   <th>SHA1</th>
 </tr>
 <!-- START_DOWNLOADS -->
+<tr>
+  <td class="link"><a href="downloads/robolectric.jar">robolectric.jar</a></td>
+  <td class="version">SNAPSHOT</td>
+  <td class="size">251k</td>
+  <td class="date">2010/12/02 14:33:41 PST</td>
+  <td class="sha">4ea903dfb74b2c5a230bc5c147e8ce9e0b4490ba</td>
+</tr>
+<tr>
+  <td class="link"><a href="downloads/robolectric-src.jar">robolectric-src.jar</a></td>
+  <td class="version">SNAPSHOT</td>
+  <td class="size">105k</td>
+  <td class="date">2010/12/01 12:23:03 PST</td>
+  <td class="sha">2ae961ae06f97fee0980f46fc0e99e33eb8fe9ab</td>
+</tr>
+<tr>
+  <td class="link"><a href="downloads/robolectric-all.jar">robolectric-all.jar</a></td>
+  <td class="version">SNAPSHOT</td>
+  <td class="size">2099k</td>
+  <td class="date">2010/12/02 14:33:41 PST</td>
+  <td class="sha">ab12dc867619fd712836c9946803b10b200a626b</td>
+</tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-0.9.2.jar">robolectric-0.9.2.jar</a></td>
   <td class="version">0.9.2</td>
