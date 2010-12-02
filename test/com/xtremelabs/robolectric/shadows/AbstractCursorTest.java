@@ -1,24 +1,18 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import android.content.ContentValues;
+import android.database.AbstractCursor;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.content.ContentValues;
-import android.database.AbstractCursor;
-import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteCursorDriver;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQuery;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AbstractCursorTest {
@@ -31,7 +25,7 @@ public class AbstractCursorTest {
         Robolectric.bindShadowClass(ContentValues.class, ShadowContentValues.class);
         Robolectric.bindShadowClass(AbstractCursor.class, ShadowAbstractCursor.class);
         
-        cursor = new TestCursor( null, null, null, null );
+        cursor = new TestCursor();
 	}
 
 	@Test
@@ -114,12 +108,7 @@ public class AbstractCursorTest {
     	assertThat(cursor.getPosition(), equalTo(0));
 	}
 	
-	private class TestCursor extends SQLiteCursor {
-
-    	public TestCursor(SQLiteDatabase db, SQLiteCursorDriver driver,
-				String editTable, SQLiteQuery query) {
-			super(db, driver, editTable, query);
-		}
+	private class TestCursor extends AbstractCursor {
 
 		public List<Object> theTable = new ArrayList<Object>();
     	
@@ -128,6 +117,44 @@ public class AbstractCursorTest {
             return theTable.size();
         }
 
-    };
+		@Override
+		public String[] getColumnNames() {
+            throw new UnsupportedOperationException();
+		}
 
+		@Override
+		public double getDouble(int columnIndex) {
+            throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public float getFloat(int columnIndex) {
+            throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public int getInt(int columnIndex) {
+            throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public long getLong(int columnIndex) {
+            throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public short getShort(int columnIndex) {
+            throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public String getString(int columnIndex) {
+            throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean isNull(int columnIndex) {
+            throw new UnsupportedOperationException();
+		}
+    }
 }
