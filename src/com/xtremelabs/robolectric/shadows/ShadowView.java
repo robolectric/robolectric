@@ -65,6 +65,7 @@ public class ShadowView {
         this.attributeSet = attributeSet;
         __constructor__(context);
         applyIdAttribute();
+        applyVisibilityAttribute();
     }
 
     @Implementation
@@ -563,7 +564,6 @@ public class ShadowView {
     }
 
     public void applyViewNodeAttributes(ViewLoader.ViewNode viewNode) {
-        applyVisibilityAttribute(viewNode);
         applyEnabledAttribute(viewNode);
         applyFocus(viewNode);
     }
@@ -575,8 +575,8 @@ public class ShadowView {
         }
     }
 
-    private void applyVisibilityAttribute(ViewLoader.ViewNode viewNode) {
-        String visibility = viewNode.getAttributeValue("android:visibility");
+    private void applyVisibilityAttribute() {
+        String visibility = attributeSet.getAttributeValue("android", "visibility");
         if (visibility != null) {
             if (visibility.equals("gone")) {
                 setVisibility(View.GONE);
