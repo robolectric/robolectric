@@ -30,7 +30,7 @@ public class ShadowView {
 
     private int id;
     ShadowView parent;
-    private Context context;
+    protected Context context;
     private boolean selected;
     private View.OnClickListener onClickListener;
     private Object tag;

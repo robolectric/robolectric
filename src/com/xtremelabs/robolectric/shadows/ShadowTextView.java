@@ -1,8 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
+import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.res.ViewLoader;
@@ -26,6 +28,11 @@ public class ShadowTextView extends ShadowView {
     private int autoLinkMask;
     private CharSequence hintText;
     private int compoundDrawablePadding;
+
+    @Override public void __constructor__(Context context, AttributeSet attributeSet) {
+        super.__constructor__(context, attributeSet);
+        applyTextViewAttributes();
+    }
 
     @Implementation
     public void setText(CharSequence text) {
@@ -183,15 +190,18 @@ public class ShadowTextView extends ShadowView {
         applyTextViewAttributes(viewNode);
     }
 
-    private void applyTextViewAttributes(ViewLoader.ViewNode viewNode) {
-        String text = viewNode.getAttributeValue("android:text");
+    private void applyTextViewAttributes() {
+        String text = attributeSet.getAttributeValue("android", "text");
         if (text != null) {
             if (text.startsWith("@string/")) {
-                text = viewNode.getStringResourceValue(text.substring(1));
+                int textResId = attributeSet.getAttributeResourceValue("android", "text", 0);
+                text = context.getResources().getString(textResId);
             }
             setText(text);
         }
+    }
 
+    private void applyTextViewAttributes(ViewLoader.ViewNode viewNode) {
         setCompoundDrawablesWithIntrinsicBounds(
                 viewNode.extractAttrResourceId("android:drawableLeft"),
                 viewNode.extractAttrResourceId("android:drawableTop"),
