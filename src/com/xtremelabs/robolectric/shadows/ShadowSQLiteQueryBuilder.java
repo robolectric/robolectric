@@ -23,7 +23,7 @@ public class ShadowSQLiteQueryBuilder {
         }
 
         if (columns != null) {
-            sb.append(Join.join(", ", columns));
+            sb.append(Join.join(", ", (Object[]) columns));
         } else {
             sb.append("*");
         }
