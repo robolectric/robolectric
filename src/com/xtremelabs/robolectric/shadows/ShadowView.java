@@ -66,6 +66,7 @@ public class ShadowView {
         __constructor__(context);
         applyIdAttribute();
         applyVisibilityAttribute();
+        applyEnabledAttribute();
     }
 
     @Implementation
@@ -564,7 +565,6 @@ public class ShadowView {
     }
 
     public void applyViewNodeAttributes(ViewLoader.ViewNode viewNode) {
-        applyEnabledAttribute(viewNode);
         applyFocus(viewNode);
     }
 
@@ -586,11 +586,8 @@ public class ShadowView {
         }
     }
 
-    private void applyEnabledAttribute(ViewLoader.ViewNode viewNode) {
-        Boolean enabled = viewNode.getAttributeAsBool("android:enabled");
-        if (enabled != null) {
-            setEnabled(enabled);
-        }
+    private void applyEnabledAttribute() {
+        setEnabled(attributeSet.getAttributeBooleanValue("android", "enabled", true));
     }
 
     private void applyFocus(ViewLoader.ViewNode viewNode) {
