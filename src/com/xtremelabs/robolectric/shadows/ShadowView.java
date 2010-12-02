@@ -55,7 +55,7 @@ public class ShadowView {
     private View.OnFocusChangeListener onFocusChangeListener;
     private boolean wasInvalidated;
     private View.OnTouchListener onTouchListener;
-    private AttributeSet attributeSet;
+    protected AttributeSet attributeSet;
 
     public void __constructor__(Context context) {
         this.context = context;
