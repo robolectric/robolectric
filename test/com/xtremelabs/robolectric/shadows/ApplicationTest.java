@@ -1,16 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.Application;
@@ -21,12 +10,21 @@ import android.media.AudioManager;
 import android.net.wifi.WifiManager;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
-
+import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.StringResourceLoader;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static java.io.File.separator;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ApplicationTest {
@@ -75,5 +73,11 @@ public class ApplicationTest {
         assertTrue(service instanceof WindowManager);
         service = app.getSystemService(Context.AUDIO_SERVICE);
         assertTrue(service instanceof AudioManager);
+    }
+
+    @Test
+    public void packageManager_shouldKnowPackageName() throws Exception {
+        Application application = new ApplicationResolver("test" + separator + "TestAndroidManifestWithPackageName.xml").resolveApplication();
+        assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo(null, 0).packageName);
     }
 }
