@@ -1,23 +1,20 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
-import android.app.Application;
 import android.appwidget.AppWidgetProvider;
 import android.content.IntentFilter;
+import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+
+import static org.junit.Assert.assertEquals;
+
 @RunWith(WithTestDefaultsRunner.class)
 public class ActivityTest {
-    @Before
-    public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-
-        Robolectric.application = new Application();
-    }
 
     @Test(expected = IllegalStateException.class)
     public void shouldComplainIfActivityIsDestroyedWithRegisteredBroadcastReceivers() throws Exception {
@@ -34,6 +31,12 @@ public class ActivityTest {
         activity2.registerReceiver(new AppWidgetProvider(), new IntentFilter());
 
         activity.onDestroy(); // should not throw exception
+    }
+
+    @Test
+    public void shouldRetrievePackageNameFromTheManifest() throws Exception {
+        Robolectric.application = new ApplicationResolver("test" + File.separator + "TestAndroidManifestWithPackageName.xml").resolveApplication();
+        assertEquals("com.wacka.wa", new Activity().getPackageName());
     }
 
     private static class MyActivity extends Activity {

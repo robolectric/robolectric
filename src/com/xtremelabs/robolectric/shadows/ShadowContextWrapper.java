@@ -66,7 +66,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     @Implementation
     public String getPackageName() {
-        return packageName;
+        return realContextWrapper == getApplicationContext() ? packageName : getApplicationContext().getPackageName();
     }
 
     /**
