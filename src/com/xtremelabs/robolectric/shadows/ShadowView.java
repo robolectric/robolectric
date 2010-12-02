@@ -55,13 +55,16 @@ public class ShadowView {
     private View.OnFocusChangeListener onFocusChangeListener;
     private boolean wasInvalidated;
     private View.OnTouchListener onTouchListener;
+    private AttributeSet attributeSet;
 
     public void __constructor__(Context context) {
         this.context = context;
     }
 
-    public void __constructor__(Context context, AttributeSet attrs) {
+    public void __constructor__(Context context, AttributeSet attributeSet) {
+        this.attributeSet = attributeSet;
         __constructor__(context);
+        applyIdAttribute();
     }
 
     @Implementation
@@ -560,24 +563,15 @@ public class ShadowView {
     }
 
     public void applyViewNodeAttributes(ViewLoader.ViewNode viewNode) {
-        applyIdAttribute(viewNode);
         applyVisibilityAttribute(viewNode);
         applyEnabledAttribute(viewNode);
         applyFocus(viewNode);
     }
 
-    private void applyIdAttribute(ViewLoader.ViewNode viewNode) {
-        String idAttr = viewNode.getAttributeValue("android:id");
-        if (idAttr != null && idAttr.startsWith("@+id/")) {
-            idAttr = idAttr.substring("@+id/".length());
-
-            Integer id = viewNode.getResourceId("id/" + idAttr);
-            if (id == null) {
-                throw new RuntimeException("unknown id " + idAttr);
-            }
-            if (getId() == 0) {
-                setId(id);
-            }
+    private void applyIdAttribute() {
+        Integer id = attributeSet.getAttributeResourceValue("android", "id", 0);
+        if (getId() == 0) {
+            setId(id);
         }
     }
 
