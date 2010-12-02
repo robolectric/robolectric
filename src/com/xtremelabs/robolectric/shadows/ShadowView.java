@@ -7,7 +7,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
@@ -17,7 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static java.lang.Boolean.TRUE;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this class. Supports listeners, focusability
@@ -564,8 +562,13 @@ public class ShadowView {
         return realView.performClick();
     }
 
-    public void applyViewNodeAttributes(ViewLoader.ViewNode viewNode) {
-        applyFocus(viewNode);
+    public void applyFocus() {
+        if (noParentHasFocus(realView)) {
+            Boolean focusRequested = attributeSet.getAttributeBooleanValue("android", "focus", false);
+            if (focusRequested || realView.isFocusableInTouchMode()) {
+                realView.requestFocus();
+            }
+        }
     }
 
     private void applyIdAttribute() {
@@ -590,34 +593,11 @@ public class ShadowView {
         setEnabled(attributeSet.getAttributeBooleanValue("android", "enabled", true));
     }
 
-    private void applyFocus(ViewLoader.ViewNode viewNode) {
-        checkFocusOverride(viewNode);
-
-        if (!anyParentHasFocus(realView)) {
-            Boolean focusRequested = viewNode.getAttributeAsBool("android:focus");
-            if (TRUE.equals(focusRequested) || realView.isFocusableInTouchMode()) {
-                realView.requestFocus();
-            }
-        }
-    }
-
-    private void checkFocusOverride(ViewLoader.ViewNode viewNode) {
-        if (viewNode.hasRequestFocusOverride()) {
-            View root = realView;
-            View parent = (View) root.getParent();
-            while (parent != null) {
-                root = parent;
-                parent = (View) root.getParent();
-            }
-            root.clearFocus();
-        }
-    }
-
-    private boolean anyParentHasFocus(View view) {
+    private boolean noParentHasFocus(View view) {
         while (view != null) {
-            if (view.hasFocus()) return true;
+            if (view.hasFocus()) return false;
             view = (View) view.getParent();
         }
-        return false;
+        return true;
     }
 }

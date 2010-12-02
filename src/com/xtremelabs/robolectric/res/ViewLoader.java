@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import com.xtremelabs.robolectric.util.TestAttributeSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -130,25 +131,6 @@ public class ViewLoader extends XmlLoader {
             return view;
         }
 
-        private void applyAttributes(View view) {
-            shadowOf(view).applyViewNodeAttributes(this);
-        }
-
-        public int extractAttrResourceId(String attributeName) {
-            return resourceExtractor.resourceIdOrZero(attributes.get(attributeName));
-        }
-
-        public Boolean getAttributeAsBool(String key) {
-            String stringValue = attributes.get(key);
-            if ("true".equals(stringValue)) {
-                return true;
-            }
-            if ("false".equals(stringValue)) {
-                return false;
-            }
-            return null;
-        }
-
         private View create(Context context, ViewGroup parent) throws Exception {
             if (name.equals("include")) {
                 String layout = attributes.get("layout");
@@ -158,9 +140,10 @@ public class ViewLoader extends XmlLoader {
             } else if (name.equals("merge")) {
                 return parent;
             } else {
+                applyFocusOverride(parent);
                 View view = constructView(context);
                 addToParent(parent, view);
-                applyAttributes(view);
+                shadowOf(view).applyFocus();
                 return view;
             }
         }
@@ -212,20 +195,14 @@ public class ViewLoader extends XmlLoader {
             }
         }
 
-        public String getAttributeValue(String attributeName) {
-            return attributes.get(attributeName);
-        }
-
-        public String getStringResourceValue(String resourceName) {
-            return stringResourceLoader.getValue(resourceName);
-        }
-
-        public boolean hasRequestFocusOverride() {
-            return requestFocusOverride;
-        }
-
-        public Integer getResourceId(String resourceName) {
-            return resourceExtractor.getResourceId(resourceName);
+        public void applyFocusOverride(ViewParent parent) {
+            if (requestFocusOverride) {
+                View ancestor = (View) parent;
+                while (ancestor.getParent() != null) {
+                    ancestor = (View) ancestor.getParent();
+                }
+                ancestor.clearFocus();
+            }
         }
     }
 }
