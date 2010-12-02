@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.net.NetworkInfo;
-
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -12,7 +11,7 @@ import com.xtremelabs.robolectric.util.Implements;
 @Implements(NetworkInfo.class)
 public class ShadowNetworkInfo {
 
-	private boolean isConnected = false;
+	private boolean isConnected = true;
 
 	@Implementation
     public boolean isConnectedOrConnecting() {

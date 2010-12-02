@@ -26,9 +26,6 @@ import static java.lang.Boolean.TRUE;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(View.class)
 public class ShadowView {
-    @Deprecated
-    public static final int UNINITIALIZED_ATTRIBUTE = -1000;
-
     @RealObject protected View realView;
 
     private int id;
