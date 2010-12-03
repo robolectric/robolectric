@@ -2,11 +2,13 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
@@ -54,6 +56,7 @@ public class ShadowView {
     private boolean wasInvalidated;
     private View.OnTouchListener onTouchListener;
     protected AttributeSet attributeSet;
+    private boolean drawingCacheEnabled;
 
     public void __constructor__(Context context) {
         this.context = context;
@@ -599,5 +602,17 @@ public class ShadowView {
             view = (View) view.getParent();
         }
         return true;
+    }
+
+    public void setDrawingCacheEnabled(boolean drawingCacheEnabled) {
+        this.drawingCacheEnabled = drawingCacheEnabled;
+    }
+
+    public boolean isDrawingCacheEnabled() {
+        return drawingCacheEnabled;
+    }
+
+    public Bitmap getDrawingCache() {
+        return Robolectric.newInstanceOf(Bitmap.class);
     }
 }
