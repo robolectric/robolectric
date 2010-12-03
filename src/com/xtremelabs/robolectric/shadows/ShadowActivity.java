@@ -12,6 +12,11 @@ import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
 import com.xtremelabs.robolectric.view.TestWindow;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 
@@ -28,6 +33,8 @@ public class ShadowActivity extends ShadowContextWrapper {
     private Activity parent;
     private boolean finishWasCalled;
     private TestWindow window;
+
+    private Map<Intent, Integer> intentRequestCodeMap = new HashMap<Intent, Integer>();
 
     @Implementation
     public final Application getApplication() {
@@ -176,5 +183,25 @@ public class ShadowActivity extends ShadowContextWrapper {
      */
     public Intent getResultIntent() {
         return resultIntent;
+    }
+
+    @Implementation
+    public void startActivityForResult(Intent intent, int requestCode) {
+        intentRequestCodeMap.put(intent, requestCode);
+    }
+
+    public void receiveResult(Intent requestIntent, int resultCode, Intent resultIntent) {
+        Integer requestCode = intentRequestCodeMap.get(requestIntent);
+        try {
+            Method method = Activity.class.getDeclaredMethod("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class);
+            method.setAccessible(true);
+            method.invoke(realActivity, requestCode, resultCode, resultIntent);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
