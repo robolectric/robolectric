@@ -178,6 +178,7 @@ public class Robolectric {
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
                 ShadowSQLiteQueryBuilder.class,
+                ShadowSurfaceView.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
