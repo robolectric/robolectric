@@ -14,6 +14,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ActivityTest {
@@ -55,6 +58,26 @@ public class ActivityTest {
         shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
                 new Intent().setData(Uri.parse("content:foo")));
         transcript.assertEventsSoFar("onActivityResult called with requestCode 456, resultCode -1, intent data content:foo");
+    }
+
+    @Test
+    public void startActivityForResultAndReceiveResult_whenNoIntentMatches_shouldThrowException() throws Exception {
+        Activity activity = new Activity() {
+            @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                throw new IllegalStateException("should not be called");
+            }
+        };
+        activity.startActivityForResult(new Intent().setType("audio/*"), 123);
+        activity.startActivityForResult(new Intent().setType("image/*"), 456);
+
+        Intent requestIntent = new Intent().setType("video/*");
+        try {
+            shadowOf(activity).receiveResult(requestIntent, Activity.RESULT_OK,
+                    new Intent().setData(Uri.parse("content:foo")));
+            fail();
+        } catch (Exception e) {
+            assertThat(e.getMessage(), startsWith("No intent matches " + requestIntent));
+        }
     }
 
     private static class MyActivity extends Activity {

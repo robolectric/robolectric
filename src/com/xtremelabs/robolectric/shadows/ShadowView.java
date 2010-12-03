@@ -604,14 +604,17 @@ public class ShadowView {
         return true;
     }
 
+    @Implementation
     public void setDrawingCacheEnabled(boolean drawingCacheEnabled) {
         this.drawingCacheEnabled = drawingCacheEnabled;
     }
 
+    @Implementation
     public boolean isDrawingCacheEnabled() {
         return drawingCacheEnabled;
     }
 
+    @Implementation
     public Bitmap getDrawingCache() {
         return Robolectric.newInstanceOf(Bitmap.class);
     }
