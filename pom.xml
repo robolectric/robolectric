@@ -91,6 +91,21 @@
                     <target>1.5</target>
                 </configuration>
             </plugin>
+            <plugin>
+		<groupId>org.apache.maven.plugins</groupId>
+		<artifactId>maven-surefire-plugin</artifactId>
+		<version>2.6</version>
+		<configuration>
+		    <excludes>
+		        <exclude>**/TestApplication.java</exclude>
+			<exclude>**/TestOnClickListener.java</exclude>
+                        <exclude>**/TestUtil$Pair.java</exclude>
+                        <exclude>**/TestUtil$1.java</exclude>
+                        <exclude>**/TestUtil$2.java</exclude>
+                        <exclude>**/TestUtil$ArgumentRecordingAnswer.java</exclude>
+		    </excludes>
+		</configuration>
+	    </plugin>
         </plugins>
     </build>
 
