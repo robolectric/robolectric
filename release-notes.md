@@ -6,7 +6,7 @@ title: Release Notes
 # Release Notes
 
 -----
-## Release 0.9.3 - November 24, 2010
+## Release 0.9.3 - December 3, 2010
 -----
 
 #### Features
