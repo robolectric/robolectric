@@ -6,6 +6,33 @@ title: Release Notes
 # Release Notes
 
 -----
+## Release 0.9.3 - November 24, 2010
+-----
+
+#### Features
+- Shadow for <code>AsyncTask</code>
+- Integrated contributions for <code>ShadowConnectivityManager</code> and <code>ShadowNetworkInfo</code> - Thanks
+macarse!
+- A HUGE contribution from the team at [Zoodles](http://www.zoodles.com), the in test SQLite database
+(<code>ShadowSQLiteDababase</code>) is backed by h2, reducing the need for database mocking. Thank You Zoodles!
+- Robolectric now instantiates applications that are of the type specified in the AndroidManifest.xml - Thanks
+Mike Burton!
+- The Robolectric jars will now work for projects that use the standard Android SDK (and not the Android Google APIs
+version which contains optional APIs such as Google Maps).
+
+
+#### Bug Fixes
+- Windows fixes for path separators
+- Windows users can ant build the robolectric library and run the robolectric tests
+- Colors that reference other colors
+- Robolectric will now work on projects that do not use the Google Maps API and other optional packages.
+
+#### Other
+- We have added [Roboguice](http://code.google.com/p/roboguice/) integration to the
+[RobolectricSample](http://github.com/pivotal/RobolectricSample) project.
+- Support for maven and submission to central is WIP
+
+-----
 ## Release 0.9.2 - November 24, 2010
 -----
 

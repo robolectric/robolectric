@@ -30,25 +30,25 @@ Most people will want to grab the latest robolectric-all.jar below.
 </tr>
 <!-- START_DOWNLOADS -->
 <tr>
-  <td class="link"><a href="downloads/robolectric.jar">robolectric.jar</a></td>
-  <td class="version">SNAPSHOT</td>
-  <td class="size">251k</td>
-  <td class="date">2010/12/02 14:33:41 PST</td>
-  <td class="sha">4ea903dfb74b2c5a230bc5c147e8ce9e0b4490ba</td>
+  <td class="link"><a href="downloads/robolectric-0.9.3.jar">robolectric-0.9.3.jar</a></td>
+  <td class="version">0.9.3</td>
+  <td class="size">250k</td>
+  <td class="date">2010/12/03 12:28:22 PST</td>
+  <td class="sha">fe99f38da98215512c8a9e1ffed11277a126a20d</td>
 </tr>
 <tr>
-  <td class="link"><a href="downloads/robolectric-src.jar">robolectric-src.jar</a></td>
-  <td class="version">SNAPSHOT</td>
+  <td class="link"><a href="downloads/robolectric-0.9.3-src.jar">robolectric-0.9.3-src.jar</a></td>
+  <td class="version">0.9.3</td>
   <td class="size">105k</td>
-  <td class="date">2010/12/01 12:23:03 PST</td>
+  <td class="date">2010/12/02 14:56:37 PST</td>
   <td class="sha">2ae961ae06f97fee0980f46fc0e99e33eb8fe9ab</td>
 </tr>
 <tr>
-  <td class="link"><a href="downloads/robolectric-all.jar">robolectric-all.jar</a></td>
-  <td class="version">SNAPSHOT</td>
-  <td class="size">2099k</td>
-  <td class="date">2010/12/02 14:33:41 PST</td>
-  <td class="sha">ab12dc867619fd712836c9946803b10b200a626b</td>
+  <td class="link"><a href="downloads/robolectric-0.9.3-all.jar">robolectric-0.9.3-all.jar</a></td>
+  <td class="version">0.9.3</td>
+  <td class="size">2098k</td>
+  <td class="date">2010/12/03 12:28:22 PST</td>
+  <td class="sha">de36471575e6e8a091bc5dd53cb9ddf3957e5c64</td>
 </tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-0.9.2.jar">robolectric-0.9.2.jar</a></td>
