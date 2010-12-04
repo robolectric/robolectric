@@ -1,11 +1,12 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
+import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.widget.TextView;
-import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
@@ -20,12 +21,18 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 public class ShadowTextView extends ShadowView {
     private CharSequence text = "";
     private CompoundDrawables compoundDrawablesImpl;
-    private int textColorHexValue = UNINITIALIZED_ATTRIBUTE;
-    private int textSize = UNINITIALIZED_ATTRIBUTE;
+    private Integer textColorHexValue;
+    private float textSize = 14.0f;
     private boolean autoLinkPhoneNumbers;
     private int autoLinkMask;
     private CharSequence hintText;
     private int compoundDrawablePadding;
+
+    @Override public void __constructor__(Context context, AttributeSet attributeSet) {
+        super.__constructor__(context, attributeSet);
+        applyTextAttribute();
+        applyCompoundDrawablesWithIntrinsicBoundsAttributes();
+    }
 
     @Implementation
     public void setText(CharSequence text) {
@@ -57,7 +64,7 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public void setTextSize(float size) {
-        textSize = (int) size;
+        textSize = size;
     }
 
     @Implementation
@@ -165,12 +172,12 @@ public class ShadowTextView extends ShadowView {
         this.compoundDrawablesImpl = compoundDrawablesImpl;
     }
 
-    public int getTextColorHexValue() {
+    public Integer getTextColorHexValue() {
         return textColorHexValue;
     }
 
     @Implementation
-    public int getTextSize() {
+    public float getTextSize() {
         return textSize;
     }
 
@@ -178,25 +185,23 @@ public class ShadowTextView extends ShadowView {
         return autoLinkPhoneNumbers;
     }
 
-    @Override public void applyViewNode(ViewLoader.ViewNode viewNode) {
-        super.applyViewNode(viewNode);
-        applyTextViewAttributes(viewNode);
-    }
-
-    private void applyTextViewAttributes(ViewLoader.ViewNode viewNode) {
-        String text = viewNode.getAttributeValue("android:text");
+    private void applyTextAttribute() {
+        String text = attributeSet.getAttributeValue("android", "text");
         if (text != null) {
             if (text.startsWith("@string/")) {
-                text = viewNode.getStringResourceValue(text.substring(1));
+                int textResId = attributeSet.getAttributeResourceValue("android", "text", 0);
+                text = context.getResources().getString(textResId);
             }
             setText(text);
         }
+    }
 
+    private void applyCompoundDrawablesWithIntrinsicBoundsAttributes() {
         setCompoundDrawablesWithIntrinsicBounds(
-                viewNode.extractAttrResourceId("android:drawableLeft"),
-                viewNode.extractAttrResourceId("android:drawableTop"),
-                viewNode.extractAttrResourceId("android:drawableRight"),
-                viewNode.extractAttrResourceId("android:drawableBottom"));
+                attributeSet.getAttributeResourceValue("android", "drawableLeft", 0),
+                attributeSet.getAttributeResourceValue("android", "drawableTop", 0),
+                attributeSet.getAttributeResourceValue("android", "drawableRight", 0),
+                attributeSet.getAttributeResourceValue("android", "drawableBottom", 0));
     }
 
     public static class CompoundDrawables {

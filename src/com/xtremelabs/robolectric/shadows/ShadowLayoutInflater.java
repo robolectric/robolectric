@@ -33,13 +33,13 @@ public class ShadowLayoutInflater {
         return getViewLoader().inflateView(context, resource, attachToRoot ? root : null);
     }
 
-    private ViewLoader getViewLoader() {
-        return shadowOf(context.getApplicationContext()).getResourceLoader().viewLoader;
-    }
-
     @Implementation
     public View inflate(int resource, ViewGroup root) {
-        return inflate(resource, root, true);
+        return inflate(resource, root, root != null);
+    }
+
+    private ViewLoader getViewLoader() {
+        return shadowOf(context.getApplicationContext()).getResourceLoader().viewLoader;
     }
 
     private static LayoutInflater bind(LayoutInflater layoutInflater, Context context) {

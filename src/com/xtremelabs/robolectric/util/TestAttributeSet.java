@@ -77,7 +77,7 @@ public class TestAttributeSet implements AttributeSet {
         throw new UnsupportedOperationException();
     }
 
-    @Override public boolean getAttributeBooleanValue(int index, boolean defaultValue) {
+    @Override public boolean getAttributeBooleanValue(int resourceId, boolean defaultValue) {
         throw new UnsupportedOperationException();
     }
 
@@ -86,8 +86,8 @@ public class TestAttributeSet implements AttributeSet {
         return (value != null) ? resourceExtractor.getResourceId(value) : defaultValue;
     }
 
-    @Override public int getAttributeResourceValue(int index, int defaultValue) {
-        String attrName = resourceExtractor.getResourceName(index);
+    @Override public int getAttributeResourceValue(int resourceId, int defaultValue) {
+        String attrName = resourceExtractor.getResourceName(resourceId);
         String value = getAttributeValueInMap(attrName);
         return (value == null) ? defaultValue : resourceExtractor.getResourceId(value);
     }
@@ -129,6 +129,7 @@ public class TestAttributeSet implements AttributeSet {
             }
             if (mappedKey.equals(attribute)) {
                 value = attributes.get(key);
+                break;
             }
         }
         return value;

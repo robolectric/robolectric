@@ -14,7 +14,7 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 14;
+    public static final int CACHE_VERSION = 15;
 
     private static final List<ClassHandler> CLASS_HANDLERS = new ArrayList<ClassHandler>();
 
@@ -64,7 +64,7 @@ public class AndroidTranslator implements Translator {
         boolean needsStripping =
                 className.startsWith("android.")
                         || className.startsWith("org.apache.http")
-                        || className.startsWith("com.google.android.");
+                        || className.startsWith("com.google.android.maps");
 
         CtClass ctClass = classPool.get(className);
         if (needsStripping && !ctClass.hasAnnotation(DoNotStrip.class)) {

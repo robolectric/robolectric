@@ -4,8 +4,9 @@ import android.app.Application;
 import com.xtremelabs.robolectric.util.ClassNameResolver;
 import org.w3c.dom.Document;
 
-import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ApplicationResolver {
     private String androidManifestPath;
@@ -15,33 +16,45 @@ public class ApplicationResolver {
     }
 
     public Application resolveApplication() {
-        Class<? extends Application> applicationClass;
         String applicationName = null;
-        String projectPackage = null;
+        String packageName = null;
         try {
-            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-            DocumentBuilder db = dbf.newDocumentBuilder();
-            Document doc = db.parse(androidManifestPath);
+            Document manifestDoc =
+                DocumentBuilderFactory
+                    .newInstance()
+                    .newDocumentBuilder()
+                    .parse(androidManifestPath);
 
-            projectPackage = getTagAttributeText(doc, "manifest", "package");
+            packageName = getTagAttributeText(manifestDoc, "manifest", "package");
             //TODO: should use getNamedItemNS, but that's not working as expected
-            applicationName = getTagAttributeText(doc, "application", "android:name");
+            applicationName = getTagAttributeText(manifestDoc, "application", "android:name");
         } catch (Exception ignored) {
         }
 
-        try {
-            if (applicationName != null) {
-                applicationClass = new ClassNameResolver<Application>(projectPackage, applicationName).resolve();
-                return applicationClass.newInstance();
-            }
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        Application application;
+        if (applicationName != null) {
+            application = newApplicationInstance(packageName, applicationName);
+        } else {
+            application = new Application();
         }
 
-        return new Application();
+        shadowOf(application).setPackageName(packageName);
+        return application;
     }
 
     private String getTagAttributeText(Document doc, String tag, String attribute) {
         return doc.getElementsByTagName(tag).item(0).getAttributes().getNamedItem(attribute).getTextContent();
+    }
+
+    private Application newApplicationInstance(String packageName, String applicationName) {
+        Application application;
+        try {
+            Class<? extends Application> applicationClass =
+                    new ClassNameResolver<Application>(packageName, applicationName).resolve();
+            application = applicationClass.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return application;
     }
 }

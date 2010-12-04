@@ -31,7 +31,9 @@ public class ResourceExtractor {
         if (resourceName == null) {
             return null;
         }
-        if (resourceName.startsWith("@")) {
+        if (resourceName.startsWith("@+id")) {
+            resourceName = resourceName.substring(2);
+        } else if (resourceName.startsWith("@")) {
             resourceName = resourceName.substring(1);
         }
         return resourceStringToId.get(resourceName);

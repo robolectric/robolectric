@@ -7,6 +7,7 @@ import android.content.*;
 import android.content.res.Resources;
 import android.location.LocationManager;
 import android.media.AudioManager;
+import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
@@ -36,6 +37,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private MockContentResolver contentResolver = new MockContentResolver();
     private AlarmManager alarmManager;
     private LocationManager locationManager;
+    private ConnectivityManager connectivityManager;
     private WifiManager wifiManager;
     private WindowManager windowManager;
     private AudioManager audioManager;
@@ -91,6 +93,8 @@ public class ShadowApplication extends ShadowContextWrapper {
             return windowManager == null ? windowManager = new TestWindowManager() : windowManager;
         } else if (name.equals(Context.AUDIO_SERVICE)) {
             return audioManager == null ? audioManager = newInstanceOf(AudioManager.class) : audioManager;
+        } else if (name.equals(Context.CONNECTIVITY_SERVICE)) {
+        	return connectivityManager == null ? connectivityManager = newInstanceOf(ConnectivityManager.class) : connectivityManager;
         }
         return null;
     }

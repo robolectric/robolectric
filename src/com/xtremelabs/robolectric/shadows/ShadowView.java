@@ -7,7 +7,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import com.xtremelabs.robolectric.res.ViewLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
@@ -17,7 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static java.lang.Boolean.TRUE;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this class. Supports listeners, focusability
@@ -26,14 +24,11 @@ import static java.lang.Boolean.TRUE;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(View.class)
 public class ShadowView {
-    @Deprecated
-    public static final int UNINITIALIZED_ATTRIBUTE = -1000;
-
     @RealObject protected View realView;
 
     private int id;
     ShadowView parent;
-    private Context context;
+    protected Context context;
     private boolean selected;
     private View.OnClickListener onClickListener;
     private Object tag;
@@ -58,13 +53,18 @@ public class ShadowView {
     private View.OnFocusChangeListener onFocusChangeListener;
     private boolean wasInvalidated;
     private View.OnTouchListener onTouchListener;
+    protected AttributeSet attributeSet;
 
     public void __constructor__(Context context) {
         this.context = context;
     }
 
-    public void __constructor__(Context context, AttributeSet attrs) {
+    public void __constructor__(Context context, AttributeSet attributeSet) {
+        this.attributeSet = attributeSet;
         __constructor__(context);
+        applyIdAttribute();
+        applyVisibilityAttribute();
+        applyEnabledAttribute();
     }
 
     @Implementation
@@ -128,11 +128,7 @@ public class ShadowView {
      */
     @Implementation
     public static View inflate(Context context, int resource, ViewGroup root) {
-        View view = ShadowLayoutInflater.from(context).inflate(resource, root);
-        if (root != null) {
-            root.addView(view);
-        }
-        return view;
+       return ShadowLayoutInflater.from(context).inflate(resource, root);
     }
 
     /**
@@ -566,30 +562,24 @@ public class ShadowView {
         return realView.performClick();
     }
 
-    public void applyViewNode(ViewLoader.ViewNode viewNode) {
-        applyIdAttribute(viewNode);
-        applyVisibilityAttribute(viewNode);
-        applyEnabledAttribute(viewNode);
-        applyFocus(viewNode);
-    }
-
-    private void applyIdAttribute(ViewLoader.ViewNode viewNode) {
-        String idAttr = viewNode.getAttributeValue("android:id");
-        if (idAttr != null && idAttr.startsWith("@+id/")) {
-            idAttr = idAttr.substring("@+id/".length());
-
-            Integer id = viewNode.getResourceId("id/" + idAttr);
-            if (id == null) {
-                throw new RuntimeException("unknown id " + idAttr);
-            }
-            if (getId() == 0) {
-                setId(id);
+    public void applyFocus() {
+        if (noParentHasFocus(realView)) {
+            Boolean focusRequested = attributeSet.getAttributeBooleanValue("android", "focus", false);
+            if (focusRequested || realView.isFocusableInTouchMode()) {
+                realView.requestFocus();
             }
         }
     }
 
-    private void applyVisibilityAttribute(ViewLoader.ViewNode viewNode) {
-        String visibility = viewNode.getAttributeValue("android:visibility");
+    private void applyIdAttribute() {
+        Integer id = attributeSet.getAttributeResourceValue("android", "id", 0);
+        if (getId() == 0) {
+            setId(id);
+        }
+    }
+
+    private void applyVisibilityAttribute() {
+        String visibility = attributeSet.getAttributeValue("android", "visibility");
         if (visibility != null) {
             if (visibility.equals("gone")) {
                 setVisibility(View.GONE);
@@ -599,41 +589,15 @@ public class ShadowView {
         }
     }
 
-    private void applyEnabledAttribute(ViewLoader.ViewNode viewNode) {
-        Boolean enabled = viewNode.getAttributeAsBool("android:enabled");
-        if (enabled != null) {
-            setEnabled(enabled);
-        }
+    private void applyEnabledAttribute() {
+        setEnabled(attributeSet.getAttributeBooleanValue("android", "enabled", true));
     }
 
-    private void applyFocus(ViewLoader.ViewNode viewNode) {
-        checkFocusOverride(viewNode);
-
-        if (!anyParentHasFocus(realView)) {
-            Boolean focusRequested = viewNode.getAttributeAsBool("android:focus");
-            if (TRUE.equals(focusRequested) || realView.isFocusableInTouchMode()) {
-                realView.requestFocus();
-            }
-        }
-    }
-
-    private void checkFocusOverride(ViewLoader.ViewNode viewNode) {
-        if (viewNode.hasRequestFocusOverride()) {
-            View root = realView;
-            View parent = (View) root.getParent();
-            while (parent != null) {
-                root = parent;
-                parent = (View) root.getParent();
-            }
-            root.clearFocus();
-        }
-    }
-
-    private boolean anyParentHasFocus(View view) {
+    private boolean noParentHasFocus(View view) {
         while (view != null) {
-            if (view.hasFocus()) return true;
+            if (view.hasFocus()) return false;
             view = (View) view.getParent();
         }
-        return false;
+        return true;
     }
 }

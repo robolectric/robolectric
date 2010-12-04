@@ -7,7 +7,10 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteQueryBuilder;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -16,6 +19,8 @@ import android.graphics.drawable.Drawable;
 import android.location.Geocoder;
 import android.location.LocationManager;
 import android.media.AudioManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Display;
@@ -67,7 +72,12 @@ public class Robolectric {
         if (realClass == null) {
             throw new IllegalArgumentException(shadowClass + " is not annotated with @Implements");
         }
-        bindShadowClass(realClass.value(), shadowClass);
+
+        try {
+            bindShadowClass(realClass.value(), shadowClass);
+        } catch (TypeNotPresentException ignored) {
+            //this allows users of the robolectric.jar file to use the non-Google APIs version of the api
+        }
     }
 
     public static void bindDefaultShadowClasses() {
@@ -121,6 +131,7 @@ public class Robolectric {
                 ShadowCanvas.class,
                 ShadowCompoundButton.class,
                 ShadowComponentName.class,
+                ShadowConnectivityManager.class,
                 ShadowContentValues.class,
                 ShadowContext.class,
                 ShadowContextWrapper.class,
@@ -147,6 +158,7 @@ public class Robolectric {
                 ShadowMapActivity.class,
                 ShadowMapView.class,
                 ShadowMotionEvent.class,
+                ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
                 ShadowPaint.class,
                 ShadowPath.class,
@@ -162,6 +174,9 @@ public class Robolectric {
                 ShadowSettings.ShadowSystem.class,
                 ShadowSpannableStringBuilder.class,
                 ShadowSQLiteDatabase.class,
+                ShadowSQLiteCursor.class,
+                ShadowSQLiteOpenHelper.class,
+                ShadowSQLiteQueryBuilder.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
@@ -195,6 +210,14 @@ public class Robolectric {
 
     public static ShadowToast shadowOf(Toast instance) {
         return (ShadowToast) shadowOf_(instance);
+    }
+
+    public static ShadowNetworkInfo shadowOf(NetworkInfo instance) {
+        return (ShadowNetworkInfo) shadowOf_(instance);
+    }
+
+    public static ShadowConnectivityManager shadowOf(ConnectivityManager instance) {
+        return (ShadowConnectivityManager) shadowOf_(instance);
     }
 
     public static ShadowBitmapDrawable shadowOf(BitmapDrawable instance) {
@@ -328,7 +351,19 @@ public class Robolectric {
     public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
         return (ShadowSQLiteDatabase) Robolectric.shadowOf_(other);
     }
+    
+    public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
+        return (ShadowSQLiteCursor) Robolectric.shadowOf_(other);
+    }
 
+    public static ShadowSQLiteOpenHelper shadowOf(SQLiteOpenHelper other) {
+        return (ShadowSQLiteOpenHelper) Robolectric.shadowOf_(other);
+    }
+    
+    public static ShadowSQLiteQueryBuilder shadowOf(SQLiteQueryBuilder other) {
+        return (ShadowSQLiteQueryBuilder) Robolectric.shadowOf_(other);
+    }
+    
     public static ShadowContentValues shadowOf(ContentValues other) {
         return (ShadowContentValues) Robolectric.shadowOf_(other);
     }

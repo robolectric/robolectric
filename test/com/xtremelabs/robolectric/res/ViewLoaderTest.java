@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.res;
 
-import android.test.mock.MockContext;
+import android.app.Activity;
+import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
@@ -28,7 +29,7 @@ import static org.junit.Assert.*;
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewLoaderTest {
     private ViewLoader viewLoader;
-    private MockContext context;
+    private Context context;
 
     @Before
     public void setUp() throws Exception {
@@ -41,7 +42,7 @@ public class ViewLoaderTest {
         viewLoader = new ViewLoader(resourceExtractor, stringResourceLoader, new AttrResourceLoader(resourceExtractor));
         new DocumentLoader(viewLoader).loadResourceXmlDir(new File("test/res/layout"));
 
-        context = new MockContext();
+        context = new Activity();
     }
 
     @Test
