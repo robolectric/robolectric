@@ -183,6 +183,7 @@ public class Robolectric {
                 ShadowTypedValue.class,
                 ShadowView.class,
                 ShadowViewGroup.class,
+                ShadowWebView.class,
                 ShadowWifiManager.class,
                 ShadowZoomButtonsController.class
         );
