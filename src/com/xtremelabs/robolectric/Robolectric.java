@@ -27,6 +27,7 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.*;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
@@ -287,6 +288,10 @@ public class Robolectric {
 
     public static ShadowViewGroup shadowOf(ViewGroup instance) {
         return (ShadowViewGroup) shadowOf_(instance);
+    }
+
+    public static ShadowWebView shadowOf(WebView instance) {
+        return (ShadowWebView) shadowOf_(instance);
     }
 
     public static ShadowAdapterView shadowOf(AdapterView instance) {
