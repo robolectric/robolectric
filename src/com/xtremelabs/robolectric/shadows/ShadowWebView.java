@@ -21,6 +21,11 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
         lastUrl = url;
     }
 
+    /**
+     * Non-Android accessor.
+     *
+     * @return the last loaded url
+     */
     public String getLastLoadedUrl() {
         return lastUrl;
     }
