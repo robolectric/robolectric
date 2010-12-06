@@ -2,6 +2,8 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.ImageView;
@@ -24,9 +26,11 @@ public class ShadowImageView extends ShadowView {
 
     @Implementation
     public void setImageBitmap(Bitmap imageBitmap) {
+        setImageDrawable(new BitmapDrawable(imageBitmap));
         this.imageBitmap = imageBitmap;
     }
 
+    @Deprecated
     public Bitmap getImageBitmap() {
         return imageBitmap;
     }
@@ -39,6 +43,7 @@ public class ShadowImageView extends ShadowView {
     @Implementation
     public void setImageResource(int resId) {
         this.resourceId = resId;
+        setImageDrawable(new BitmapDrawable(BitmapFactory.decodeResource(getResources(), resId)));
     }
 
     @Implementation
@@ -73,6 +78,7 @@ public class ShadowImageView extends ShadowView {
         return alpha;
     }
 
+    @Deprecated
     public int getResourceId() {
         return resourceId;
     }
