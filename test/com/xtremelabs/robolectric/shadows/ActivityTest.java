@@ -1,31 +1,27 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
-import android.app.Application;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Transcript;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.Matchers.startsWith;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ActivityTest {
-    @Before
-    public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-
-        Robolectric.application = new Application();
-    }
 
     @Test(expected = IllegalStateException.class)
     public void shouldComplainIfActivityIsDestroyedWithRegisteredBroadcastReceivers() throws Exception {
@@ -78,6 +74,12 @@ public class ActivityTest {
         } catch (Exception e) {
             assertThat(e.getMessage(), startsWith("No intent matches " + requestIntent));
         }
+    }
+
+    @Test
+    public void shouldRetrievePackageNameFromTheManifest() throws Exception {
+        Robolectric.application = new ApplicationResolver("test" + File.separator + "TestAndroidManifestWithPackageName.xml").resolveApplication();
+        assertEquals("com.wacka.wa", new Activity().getPackageName());
     }
 
     private static class MyActivity extends Activity {

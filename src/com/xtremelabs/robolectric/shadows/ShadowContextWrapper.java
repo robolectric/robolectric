@@ -24,7 +24,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     private MockPackageManager packageManager;
 
-    private static final String SHADOW_PACKAGE_NAME = "some.package.name";
+    private String packageName;
 
     public void __constructor__(Context baseContext) {
         this.baseContext = baseContext;
@@ -67,7 +67,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     @Implementation
     public String getPackageName() {
-        return SHADOW_PACKAGE_NAME;
+        return realContextWrapper == getApplicationContext() ? packageName : getApplicationContext().getPackageName();
     }
 
     /**
@@ -100,7 +100,7 @@ public class ShadowContextWrapper extends ShadowContext {
                 private void ensurePackageInfo() {
                     if (packageInfo == null) {
                         packageInfo = new PackageInfo();
-                        packageInfo.packageName = SHADOW_PACKAGE_NAME;
+                        packageInfo.packageName = packageName;
                         packageInfo.versionName = "1.0";
                     }
                 }
@@ -163,6 +163,14 @@ public class ShadowContextWrapper extends ShadowContext {
      */
     public Intent peekNextStartedService() {
         return getShadowApplication().peekNextStartedService();
+    }
+    /**
+     * Non-Android accessor that is used at start-up to set the package name
+     *
+     * @return the next started {@code Intent} for a service
+     */
+    public void setPackageName(String packageName) {
+        this.packageName = packageName;
     }
 
     private ShadowApplication getShadowApplication() {
