@@ -14,8 +14,10 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowBitmapFactory {
     @Implementation
     public static Bitmap decodeResource(Resources res, int id) {
-        return create("Bitmap for resource " +
-                shadowOf(Robolectric.application).getResourceLoader().getNameForId(id));
+        String resourceName = shadowOf(Robolectric.application).getResourceLoader().getNameForId(id);
+        Bitmap bitmap = create("Bitmap for resource " + resourceName);
+        shadowOf(bitmap).setLoadedFromResourceId(id);
+        return bitmap;
     }
 
     @Implementation

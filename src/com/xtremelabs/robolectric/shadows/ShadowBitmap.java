@@ -19,6 +19,7 @@ public class ShadowBitmap {
     private int width;
     private int height;
     private String description = "";
+    private int loadedFromResourceId = -1;
 
     @Implementation
     public boolean compress(Bitmap.CompressFormat format, int quality, OutputStream stream) {
@@ -54,6 +55,17 @@ public class ShadowBitmap {
         Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
         shadowOf(bitmap).appendDescription(name);
         return bitmap;
+    }
+
+    public void setLoadedFromResourceId(int loadedFromResourceId) {
+        this.loadedFromResourceId = loadedFromResourceId;
+    }
+
+    public int getLoadedFromResourceId() {
+        if (loadedFromResourceId == -1) {
+            throw new IllegalStateException("not loaded from a resource");
+        }
+        return loadedFromResourceId;
     }
 
     public void setWidth(int width) {

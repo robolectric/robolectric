@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.res.Resources;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -76,11 +75,7 @@ public class ShadowResources {
 
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
-        Bitmap bitmap = BitmapFactory.decodeResource(realResources, drawableResourceId);
-        BitmapDrawable bitmapDrawable = new BitmapDrawable(bitmap);
-        ShadowBitmapDrawable shadowBitmapDrawable = shadowOf(bitmapDrawable);
-        shadowBitmapDrawable.loadedFromResourceId = drawableResourceId;
-        return bitmapDrawable;
+        return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
     }
 
     @Implementation

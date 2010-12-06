@@ -13,7 +13,6 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapDrawable.class)
 public class ShadowBitmapDrawable extends ShadowDrawable {
-    int loadedFromResourceId;
     private Bitmap bitmap;
 
     @RealObject private BitmapDrawable realBitmapDrawable;
@@ -42,9 +41,10 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
      * your tests assert that the bitmap is correct without having to actually load the bitmap.
      * 
      * @return resource id from which this {@code BitmapDrawable} was loaded
+     * @deprecated use com.xtremelabs.robolectric.shadows.ShadowBitmap#getLoadedFromResourceId() instead.
      */
     public int getLoadedFromResourceId() {
-        return loadedFromResourceId;
+        return shadowOf(bitmap).getLoadedFromResourceId();
     }
 
     @Override @Implementation
