@@ -25,7 +25,7 @@ public class ShadowBitmapFactory {
         return create("Bitmap for file " + pathName);
     }
 
-    private static Bitmap create(String description) {
+    static Bitmap create(String description) {
         Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(bitmap);
         shadowBitmap.appendDescription(description);

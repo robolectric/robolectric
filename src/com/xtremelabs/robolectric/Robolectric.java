@@ -166,6 +166,7 @@ public class Robolectric {
                 ShadowMapController.class,
                 ShadowMapActivity.class,
                 ShadowMapView.class,
+                ShadowMediaStore.ShadowImages.ShadowMedia.class,
                 ShadowMotionEvent.class,
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
