@@ -164,6 +164,16 @@ public class IntentTest {
         assertThat(new Intent(), not(equalTo(new Object())));
     }
 
+    @Test
+    public void createChooser_shouldWrapIntent() throws Exception {
+        Intent originalIntent = new Intent(Intent.ACTION_BATTERY_CHANGED, Uri.parse("foo://blah"));
+        Intent chooserIntent = Intent.createChooser(originalIntent, "The title");
+        Intent expectedIntent = new Intent(Intent.ACTION_CHOOSER);
+        expectedIntent.putExtra(Intent.EXTRA_INTENT, originalIntent);
+        expectedIntent.putExtra(Intent.EXTRA_TITLE, "The title");
+        assertEquals(expectedIntent, chooserIntent);
+    }
+
     private static class TestSerializable implements Serializable {
         private String someValue;
 

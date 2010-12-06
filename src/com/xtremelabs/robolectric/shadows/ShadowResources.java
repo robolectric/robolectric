@@ -1,18 +1,20 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.util.DisplayMetrics;
+import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.util.Implementation;
+import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 import java.io.InputStream;
 import java.util.Locale;
 
-import android.content.res.Resources;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.util.DisplayMetrics;
-
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
@@ -29,6 +31,7 @@ public class ShadowResources {
         return resources;
     }
 
+    @RealObject Resources realResources;
     private ResourceLoader resourceLoader;
 
     @Implementation
@@ -73,7 +76,8 @@ public class ShadowResources {
 
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
-        RobolectricBitmapDrawable bitmapDrawable = new RobolectricBitmapDrawable(drawableResourceId);
+        Bitmap bitmap = BitmapFactory.decodeResource(realResources, drawableResourceId);
+        BitmapDrawable bitmapDrawable = new BitmapDrawable(bitmap);
         ShadowBitmapDrawable shadowBitmapDrawable = shadowOf(bitmapDrawable);
         shadowBitmapDrawable.loadedFromResourceId = drawableResourceId;
         return bitmapDrawable;
@@ -111,31 +115,4 @@ public class ShadowResources {
     public void setDimension(int id, int value) {
         resourceLoader.dimensions.put(id, value);
     }
-
-    private static class RobolectricBitmapDrawable extends BitmapDrawable {
-        private int drawableResourceId;
-
-        public RobolectricBitmapDrawable(int drawableResourceId) {
-            this.drawableResourceId = drawableResourceId;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            RobolectricBitmapDrawable that = (RobolectricBitmapDrawable) o;
-
-            if (drawableResourceId != that.drawableResourceId) return false;
-            if (!getBounds().equals(that.getBounds())) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            return drawableResourceId;
-        }
-    }
-
 }

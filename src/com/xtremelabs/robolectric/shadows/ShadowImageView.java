@@ -56,6 +56,15 @@ public class ShadowImageView extends ShadowView {
         this.scaleType = scaleType;
     }
 
+    @Implementation
+    public Drawable getDrawable() {
+        return imageDrawable;
+    }
+
+    /**
+     * @deprecated Use android.widget.ImageView#getDrawable() instead.
+     * @return the image drawable */
+    @Deprecated
     public Drawable getImageDrawable() {
         return imageDrawable;
     }

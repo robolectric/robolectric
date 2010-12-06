@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;

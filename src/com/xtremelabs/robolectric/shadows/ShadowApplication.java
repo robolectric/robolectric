@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.AlarmManager;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.*;
 import android.content.res.Resources;
 import android.location.LocationManager;
@@ -12,6 +13,7 @@ import android.net.wifi.WifiManager;
 import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
@@ -44,6 +46,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
+    private BluetoothAdapter bluetoothAdapter = Robolectric.newInstanceOf(BluetoothAdapter.class);
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -262,6 +265,10 @@ public class ShadowApplication extends ShadowContextWrapper {
      */
     public AppWidgetManager getAppWidgetManager() {
         return appWidgetManager;
+    }
+
+    public BluetoothAdapter getBluetoothAdapter() {
+        return bluetoothAdapter;
     }
 
     public class Wrapper {

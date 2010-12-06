@@ -193,7 +193,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     public void receiveResult(Intent requestIntent, int resultCode, Intent resultIntent) {
         Integer requestCode = intentRequestCodeMap.get(requestIntent);
         if (requestCode == null) {
-            throw new RuntimeException("No intent matches " + requestIntent);
+            throw new RuntimeException("No intent matches " + requestIntent + " among " + intentRequestCodeMap.keySet());
         }
         try {
             Method method = Activity.class.getDeclaredMethod("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class);

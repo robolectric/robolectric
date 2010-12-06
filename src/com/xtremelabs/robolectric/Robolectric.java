@@ -2,6 +2,8 @@ package com.xtremelabs.robolectric;
 
 import android.app.*;
 import android.appwidget.AppWidgetManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -11,6 +13,7 @@ import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Paint;
 import android.graphics.Path;
@@ -128,6 +131,9 @@ public class Robolectric {
                 ShadowBaseAdapter.class,
                 ShadowBitmap.class,
                 ShadowBitmapDrawable.class,
+                ShadowBitmapFactory.class,
+                ShadowBluetoothAdapter.class,
+                ShadowBluetoothDevice.class,
                 ShadowBundle.class,
                 ShadowCanvas.class,
                 ShadowCompoundButton.class,
@@ -254,6 +260,10 @@ public class Robolectric {
         return (ShadowActivity) shadowOf_(instance);
     }
 
+    public static ShadowApplication shadowOf(Application instance) {
+        return (ShadowApplication) shadowOf_(instance);
+    }
+
     public static ShadowContextWrapper shadowOf(ContextWrapper instance) {
         return (ShadowContextWrapper) shadowOf_(instance);
     }
@@ -368,6 +378,20 @@ public class Robolectric {
     
     public static ShadowContentValues shadowOf(ContentValues other) {
         return (ShadowContentValues) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowBitmap shadowOf(Bitmap other) {
+        return (ShadowBitmap) Robolectric.shadowOf_(other);
+    }
+
+
+    public static ShadowBluetoothAdapter shadowOf(BluetoothAdapter other) {
+        return (ShadowBluetoothAdapter) Robolectric.shadowOf_(other);
+    }
+
+
+    public static ShadowBluetoothDevice shadowOf(BluetoothDevice other) {
+        return (ShadowBluetoothDevice) Robolectric.shadowOf_(other);
     }
 
     @SuppressWarnings({"unchecked"})

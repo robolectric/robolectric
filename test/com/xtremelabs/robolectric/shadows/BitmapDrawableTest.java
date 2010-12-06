@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
 import android.content.res.Resources;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -11,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.test.MoreAsserts.assertNotEqual;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -25,6 +27,12 @@ public class BitmapDrawableTest {
         resources = application.getResources();
     }
 
+    @Test
+    public void getBitmap_shouldReturnBitmapUsedToDraw() throws Exception {
+        BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
+        assertEquals("Bitmap for resource drawable/an_image", shadowOf(drawable.getBitmap()).getDescription());
+    }
+    
     @Test
     public void equals_shouldTestResourceId() throws Exception {
         Drawable drawable1a = resources.getDrawable(R.drawable.an_image);

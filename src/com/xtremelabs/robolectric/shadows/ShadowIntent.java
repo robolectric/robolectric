@@ -31,6 +31,16 @@ public class ShadowIntent {
     private int flags;
     private Class<?> intentClass;
 
+    @Implementation
+    public static Intent createChooser(Intent target, CharSequence title) {
+        Intent intent = new Intent(Intent.ACTION_CHOOSER);
+        intent.putExtra(Intent.EXTRA_INTENT, target);
+        if (title != null) {
+            intent.putExtra(Intent.EXTRA_TITLE, title);
+        }
+        return intent;
+    }
+
     public void __constructor__(Context packageContext, Class cls) {
         componentName = new ComponentName(packageContext, cls);
     }
@@ -139,6 +149,12 @@ public class ShadowIntent {
 
     @Implementation
     public Intent putExtra(String key, String value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
+    @Implementation
+    public Intent putExtra(String key, CharSequence value) {
         extras.put(key, value);
         return realIntent;
     }
