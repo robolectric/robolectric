@@ -21,9 +21,11 @@ import java.util.List;
 public class ShadowAbstractHttpClient {
 
     static List<HttpResponse> httpResponses = new ArrayList<HttpResponse>();
+    static List<HttpUriRequest> httpRequests = new ArrayList<HttpUriRequest>();
 
     public static void reset() {
         httpResponses.clear();
+        httpRequests.clear();
     }
 
     public static void addPendingResponse(int statusCode, String responseBody) {
@@ -34,10 +36,15 @@ public class ShadowAbstractHttpClient {
         ShadowAbstractHttpClient.httpResponses.add(httpResponse);
     }
 
+    public static HttpUriRequest getRequest(int index) {
+        return httpRequests.get(index);
+    }
+
     @Implementation public HttpResponse execute(HttpUriRequest httpUriRequest) throws IOException, ClientProtocolException {
         if (httpResponses.isEmpty()) {
             throw new RuntimeException("Unexpected call to execute, no pending responses are available.");
         }
+        httpRequests.add(httpUriRequest);
         return httpResponses.remove(0);
     }
 
@@ -55,32 +62,32 @@ public class ShadowAbstractHttpClient {
         return null;
     }
 
-    @Implementation 
+    @Implementation
     public HttpResponse execute(HttpHost httpHost, HttpRequest httpRequest) throws IOException, ClientProtocolException {
         return null;
     }
 
-    @Implementation 
+    @Implementation
     public HttpResponse execute(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext) throws IOException, ClientProtocolException {
         return null;
     }
 
-    @Implementation 
+    @Implementation
     public <T> T execute(HttpUriRequest httpUriRequest, ResponseHandler<? extends T> responseHandler) throws IOException, ClientProtocolException {
         return null;
     }
 
-    @Implementation 
+    @Implementation
     public <T> T execute(HttpUriRequest httpUriRequest, ResponseHandler<? extends T> responseHandler, HttpContext httpContext) throws IOException, ClientProtocolException {
         return null;
     }
 
-    @Implementation 
+    @Implementation
     public <T> T execute(HttpHost httpHost, HttpRequest httpRequest, ResponseHandler<? extends T> responseHandler) throws IOException, ClientProtocolException {
         return null;
     }
 
-    @Implementation 
+    @Implementation
     public <T> T execute(HttpHost httpHost, HttpRequest httpRequest, ResponseHandler<? extends T> responseHandler, HttpContext httpContext) throws IOException, ClientProtocolException {
         return null;
     }
