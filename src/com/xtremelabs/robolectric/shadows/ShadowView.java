@@ -1,5 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.io.PrintStream;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.util.AttributeSet;
@@ -7,15 +13,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
-
-import java.io.PrintStream;
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this class. Supports listeners, focusability
@@ -65,6 +66,7 @@ public class ShadowView {
         applyIdAttribute();
         applyVisibilityAttribute();
         applyEnabledAttribute();
+        applyBackgroundId();
     }
 
     @Implementation
@@ -591,6 +593,15 @@ public class ShadowView {
 
     private void applyEnabledAttribute() {
         setEnabled(attributeSet.getAttributeBooleanValue("android", "enabled", true));
+    }
+
+    private void applyBackgroundId() {
+    	String source = attributeSet.getAttributeValue("android", "background");
+    	if (source != null) {
+    		if (source.startsWith("@drawable/")) {
+    			setBackgroundResource(attributeSet.getAttributeResourceValue("android", "background", 0));    			
+    		}
+    	}
     }
 
     private boolean noParentHasFocus(View view) {
