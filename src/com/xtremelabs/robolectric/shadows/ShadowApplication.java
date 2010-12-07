@@ -10,7 +10,6 @@ import android.location.LocationManager;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
-import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
 import com.xtremelabs.robolectric.Robolectric;
@@ -36,7 +35,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     @RealObject private Application realApplication;
 
     private ResourceLoader resourceLoader;
-    private MockContentResolver contentResolver = new MockContentResolver();
+    private ContentResolver contentResolver;
     private AlarmManager alarmManager;
     private LocationManager locationManager;
     private ConnectivityManager connectivityManager;
@@ -61,7 +60,7 @@ public class ShadowApplication extends ShadowContextWrapper {
      * todo: make this non-static?
      */
     public static Application bind(Application application, ResourceLoader resourceLoader) {
-        ShadowApplication shadowApplication = (ShadowApplication) shadowOf(application);
+        ShadowApplication shadowApplication = shadowOf(application);
         if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
         shadowApplication.resourceLoader = resourceLoader;
         return application;
@@ -79,6 +78,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     @Implementation
     @Override public ContentResolver getContentResolver() {
+        if (contentResolver == null) {
+            contentResolver = new ContentResolver(realApplication) {
+            };
+        }
         return contentResolver;
     }
 

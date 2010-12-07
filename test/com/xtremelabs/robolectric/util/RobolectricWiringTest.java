@@ -57,8 +57,10 @@ public class RobolectricWiringTest {
             } else {
                 implementedMember = findMethod(implementedClass, shadowMethod);
             }
-            if (implementedMember == null || staticMismatch(shadowMethod, implementedMember)) {
-                mismatches.add(shadowMethod.toGenericString());
+            if (implementedMember == null) {
+                mismatches.add(shadowMethod.toGenericString() + " doesn't match a real method");
+            } else if (staticMismatch(shadowMethod, implementedMember)) {
+                mismatches.add(shadowMethod.toGenericString() + " doesn't match the staticness of the real method");
             }
             if (!Modifier.isPublic(shadowMethod.getModifiers())) {
                 mismatches.add(shadowMethod.toGenericString() + " should be public");

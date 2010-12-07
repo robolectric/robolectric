@@ -141,6 +141,7 @@ public class Robolectric {
                 ShadowCompoundButton.class,
                 ShadowComponentName.class,
                 ShadowConnectivityManager.class,
+                ShadowContentResolver.class,
                 ShadowContentValues.class,
                 ShadowContext.class,
                 ShadowContextWrapper.class,
