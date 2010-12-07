@@ -18,8 +18,13 @@ public class HttpGetTest {
     }
 
     @Test
-    public void shouldReturnUri() throws Exception {
+    public void shouldConstructWithURI() throws Exception {
         URI uri = URI.create("www.example.com");
         assertSame(uri, new HttpGet(uri).getURI());
+    }
+    
+    @Test
+    public void shouldConstructWithString() throws Exception {
+        assertEquals(URI.create("www.example.com"), new HttpGet("www.example.com").getURI());
     }
 }

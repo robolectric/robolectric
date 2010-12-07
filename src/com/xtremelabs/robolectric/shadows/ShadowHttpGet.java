@@ -16,6 +16,10 @@ public class ShadowHttpGet extends ShadowHttpRequestBase {
         realHttpGet.setURI(uri);
     }
 
+    public void __constructor__(String uri) {
+        this.__constructor__(URI.create(uri));
+    }
+
     @Implementation
     public String getMethod() {
         return HttpGet.METHOD_NAME;
