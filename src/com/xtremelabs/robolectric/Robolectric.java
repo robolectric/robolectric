@@ -37,6 +37,7 @@ import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.Scheduler;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
+import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -138,6 +139,7 @@ public class Robolectric {
                 ShadowContext.class,
                 ShadowContextWrapper.class,
                 ShadowContextThemeWrapper.class,
+                ShadowAbstractHttpClient.class,
                 ShadowDisplay.class,
                 ShadowDrawable.class,
                 ShadowDialog.class,
@@ -201,6 +203,7 @@ public class Robolectric {
         ShadowAlertDialog.reset();
         ShadowDialog.reset();
         ShadowLooper.resetAll();
+        ShadowAbstractHttpClient.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -313,6 +316,10 @@ public class Robolectric {
 
     public static ShadowDialog shadowOf(Dialog instance) {
         return (ShadowDialog) shadowOf_(instance);
+    }
+
+    public static ShadowAbstractHttpClient shadowOf(DefaultHttpClient instance) {
+        return (ShadowAbstractHttpClient) shadowOf_(instance);
     }
 
     public static ShadowAlertDialog shadowOf(AlertDialog instance) {

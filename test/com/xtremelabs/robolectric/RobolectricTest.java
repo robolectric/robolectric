@@ -92,7 +92,4 @@ public class RobolectricTest {
             return null;
         }
     }
-
-
-
 }
