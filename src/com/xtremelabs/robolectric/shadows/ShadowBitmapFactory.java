@@ -106,4 +106,8 @@ public class ShadowBitmapFactory {
 
         return Join.join(", ", opts);
     }
+
+    public static void reset() {
+        widthAndHeightMap.clear();
+    }
 }

@@ -211,6 +211,7 @@ public class Robolectric {
         ShadowAlertDialog.reset();
         ShadowDialog.reset();
         ShadowLooper.resetAll();
+        ShadowBitmapFactory.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
