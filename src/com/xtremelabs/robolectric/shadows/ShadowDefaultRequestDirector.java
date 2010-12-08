@@ -1,7 +1,9 @@
 package com.xtremelabs.robolectric.shadows;
 
+import com.xtremelabs.robolectric.util.HttpRequestData;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.*;
@@ -25,64 +27,66 @@ import java.util.List;
 @Implements(DefaultRequestDirector.class)
 public class ShadowDefaultRequestDirector {
     static List<HttpResponse> httpResponses = new ArrayList<HttpResponse>();
-    static List<HttpRequest> httpRequests = new ArrayList<HttpRequest>();
+    static List<HttpRequestData> httpRequestDatas = new ArrayList<HttpRequestData>();
+
+    @RealObject DefaultRequestDirector realObject;
 
     protected Log log;
-    protected ClientConnectionManager connManager;
-    protected HttpRoutePlanner routePlanner;
-    protected ConnectionReuseStrategy reuseStrategy;
-    protected ConnectionKeepAliveStrategy keepAliveStrategy;
-    protected HttpRequestExecutor requestExec;
+    protected ClientConnectionManager connectionManager;
+    protected HttpRoutePlanner httpRoutePlanner;
+    protected ConnectionReuseStrategy connectionReuseStrategy;
+    protected ConnectionKeepAliveStrategy connectionKeepAliveStrategy;
+    protected HttpRequestExecutor httpRequestExecutor;
     protected HttpProcessor httpProcessor;
-    protected HttpRequestRetryHandler retryHandler;
+    protected HttpRequestRetryHandler httpRequestRetryHandler;
     protected RedirectHandler redirectHandler;
-    protected AuthenticationHandler targetAuthHandler;
-    protected AuthenticationHandler proxyAuthHandler;
+    protected AuthenticationHandler targetAuthenticationHandler;
+    protected AuthenticationHandler proxyAuthenticationHandler;
     protected UserTokenHandler userTokenHandler;
-    protected HttpParams params;
+    protected HttpParams httpParams;
 
     public void __constructor__(
-            final Log log,
-            final HttpRequestExecutor requestExec,
-            final ClientConnectionManager conman,
-            final ConnectionReuseStrategy reustrat,
-            final ConnectionKeepAliveStrategy kastrat,
-            final HttpRoutePlanner rouplan,
-            final HttpProcessor httpProcessor,
-            final HttpRequestRetryHandler retryHandler,
-            final RedirectHandler redirectHandler,
-            final AuthenticationHandler targetAuthHandler,
-            final AuthenticationHandler proxyAuthHandler,
-            final UserTokenHandler userTokenHandler,
-            final HttpParams params) {
+            Log log,
+            HttpRequestExecutor requestExec,
+            ClientConnectionManager conman,
+            ConnectionReuseStrategy reustrat,
+            ConnectionKeepAliveStrategy kastrat,
+            HttpRoutePlanner rouplan,
+            HttpProcessor httpProcessor,
+            HttpRequestRetryHandler retryHandler,
+            RedirectHandler redirectHandler,
+            AuthenticationHandler targetAuthHandler,
+            AuthenticationHandler proxyAuthHandler,
+            UserTokenHandler userTokenHandler,
+            HttpParams params) {
         this.log               = log;
-        this.requestExec       = requestExec;
-        this.connManager       = conman;
-        this.reuseStrategy     = reustrat;
-        this.keepAliveStrategy = kastrat;
-        this.routePlanner      = rouplan;
+        this.httpRequestExecutor = requestExec;
+        this.connectionManager = conman;
+        this.connectionReuseStrategy = reustrat;
+        this.connectionKeepAliveStrategy = kastrat;
+        this.httpRoutePlanner = rouplan;
         this.httpProcessor     = httpProcessor;
-        this.retryHandler      = retryHandler;
-        this.redirectHandler   = redirectHandler;
-        this.targetAuthHandler = targetAuthHandler;
-        this.proxyAuthHandler  = proxyAuthHandler;
+        this.httpRequestRetryHandler = retryHandler;
+        this.redirectHandler = redirectHandler;
+        this.targetAuthenticationHandler = targetAuthHandler;
+        this.proxyAuthenticationHandler = proxyAuthHandler;
         this.userTokenHandler  = userTokenHandler;
-        this.params            = params;
+        this.httpParams = params;
     }
 
     public void __constructor__(
-            final HttpRequestExecutor requestExec,
-            final ClientConnectionManager conman,
-            final ConnectionReuseStrategy reustrat,
-            final ConnectionKeepAliveStrategy kastrat,
-            final HttpRoutePlanner rouplan,
-            final HttpProcessor httpProcessor,
-            final HttpRequestRetryHandler retryHandler,
-            final RedirectHandler redirectHandler,
-            final AuthenticationHandler targetAuthHandler,
-            final AuthenticationHandler proxyAuthHandler,
-            final UserTokenHandler userTokenHandler,
-            final HttpParams params) {
+            HttpRequestExecutor requestExec,
+            ClientConnectionManager conman,
+            ConnectionReuseStrategy reustrat,
+            ConnectionKeepAliveStrategy kastrat,
+            HttpRoutePlanner rouplan,
+            HttpProcessor httpProcessor,
+            HttpRequestRetryHandler retryHandler,
+            RedirectHandler redirectHandler,
+            AuthenticationHandler targetAuthHandler,
+            AuthenticationHandler proxyAuthHandler,
+            UserTokenHandler userTokenHandler,
+            HttpParams params) {
         __constructor__(
                 LogFactory.getLog(DefaultRequestDirector.class),
                 requestExec,
@@ -101,7 +105,7 @@ public class ShadowDefaultRequestDirector {
 
     public static void reset() {
         httpResponses.clear();
-        httpRequests.clear();
+        httpRequestDatas.clear();
     }
 
     public static void addPendingResponse(int statusCode, String responseBody) {
@@ -112,8 +116,12 @@ public class ShadowDefaultRequestDirector {
         httpResponses.add(httpResponse);
     }
 
-    public static HttpRequest getRequest(int index) {
-        return httpRequests.get(index);
+    public static HttpRequest getSentHttpRequest(int index) {
+        return getSentHttpRequestData(index).getHttpRequest();
+    }
+
+    public static HttpRequestData getSentHttpRequestData(int index) {
+        return httpRequestDatas.get(index);
     }
 
     @Implementation
@@ -121,8 +129,60 @@ public class ShadowDefaultRequestDirector {
         if (httpResponses.isEmpty()) {
             throw new RuntimeException("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse().");
         }
-        httpRequests.add(httpRequest);
+        httpRequestDatas.add(new HttpRequestData(httpRequest, httpHost, httpContext, this.realObject));
         return httpResponses.remove(0);
+    }
+
+    public Log getLog() {
+        return log;
+    }
+
+    public ClientConnectionManager getConnectionManager() {
+        return connectionManager;
+    }
+
+    public HttpRoutePlanner getHttpRoutePlanner() {
+        return httpRoutePlanner;
+    }
+
+    public ConnectionReuseStrategy getConnectionReuseStrategy() {
+        return connectionReuseStrategy;
+    }
+
+    public ConnectionKeepAliveStrategy getConnectionKeepAliveStrategy() {
+        return connectionKeepAliveStrategy;
+    }
+
+    public HttpRequestExecutor getHttpRequestExecutor() {
+        return httpRequestExecutor;
+    }
+
+    public HttpProcessor getHttpProcessor() {
+        return httpProcessor;
+    }
+
+    public HttpRequestRetryHandler getHttpRequestRetryHandler() {
+        return httpRequestRetryHandler;
+    }
+
+    public RedirectHandler getRedirectHandler() {
+        return redirectHandler;
+    }
+
+    public AuthenticationHandler getTargetAuthenticationHandler() {
+        return targetAuthenticationHandler;
+    }
+
+    public AuthenticationHandler getProxyAuthenticationHandler() {
+        return proxyAuthenticationHandler;
+    }
+
+    public UserTokenHandler getUserTokenHandler() {
+        return userTokenHandler;
+    }
+
+    public HttpParams getHttpParams() {
+        return httpParams;
     }
 }
 

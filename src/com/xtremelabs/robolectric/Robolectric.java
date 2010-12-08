@@ -34,12 +34,13 @@ import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.shadows.*;
+import com.xtremelabs.robolectric.util.HttpRequestData;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.Scheduler;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.client.DefaultRequestDirector;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -320,7 +321,7 @@ public class Robolectric {
         return (ShadowDialog) shadowOf_(instance);
     }
 
-    public static ShadowDefaultRequestDirector shadowOf(DefaultHttpClient instance) {
+    public static ShadowDefaultRequestDirector shadowOf(DefaultRequestDirector instance) {
         return (ShadowDefaultRequestDirector) shadowOf_(instance);
     }
 
@@ -403,7 +404,7 @@ public class Robolectric {
      * @param statusCode the status code of the response
      * @param responseBody the body of the response
      */
-    public static void addPendingResponse(int statusCode, String responseBody) {
+    public static void addPendingHttpResponse(int statusCode, String responseBody) {
         ShadowDefaultRequestDirector.addPendingResponse(statusCode, responseBody);
     }
 
@@ -412,7 +413,7 @@ public class Robolectric {
      *
      * @param httpResponse the response
      */
-    public static void addPendingResponse(HttpResponse httpResponse) {
+    public static void addPendingHttpResponse(HttpResponse httpResponse) {
         ShadowDefaultRequestDirector.addPendingResponse(httpResponse);
     }
 
@@ -422,8 +423,11 @@ public class Robolectric {
      * @param index index of the request to retrieve.
      * @return the requested request.
      */
-    public static HttpRequest getRequest(int index) {
-        return ShadowDefaultRequestDirector.getRequest(index);
+    public static HttpRequest getSentHttpRequest(int index) {
+        return ShadowDefaultRequestDirector.getSentHttpRequest(index);
     }
 
+    public static HttpRequestData getSentHttpRequestData(int index) {
+        return ShadowDefaultRequestDirector.getSentHttpRequestData(index);
+    }
 }
