@@ -37,7 +37,6 @@ import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.Scheduler;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.lang.reflect.Constructor;
@@ -148,8 +147,6 @@ public class Robolectric {
                 ShadowGeocoder.class,
                 ShadowGeoPoint.class,
                 ShadowHandler.class,
-                ShadowHttpGet.class,
-                ShadowHttpRequestBase.class,
                 ShadowImageView.class,
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
@@ -295,10 +292,6 @@ public class Robolectric {
 
     public static ShadowViewGroup shadowOf(ViewGroup instance) {
         return (ShadowViewGroup) shadowOf_(instance);
-    }
-
-    public static ShadowHttpGet shadowOf(HttpGet instance) {
-        return (ShadowHttpGet) shadowOf_(instance);
     }
 
     public static ShadowWebView shadowOf(WebView instance) {

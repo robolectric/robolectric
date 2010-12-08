@@ -63,8 +63,8 @@ public class AndroidTranslator implements Translator {
 
         boolean needsStripping =
                 className.startsWith("android.")
-                        || className.startsWith("org.apache.http")
-                        || className.startsWith("com.google.android.maps");
+                        || className.startsWith("com.google.android.maps")
+                        || className.equals("org.apache.http.impl.client.AbstractHttpClient");
 
         CtClass ctClass = classPool.get(className);
         if (needsStripping && !ctClass.hasAnnotation(DoNotStrip.class)) {

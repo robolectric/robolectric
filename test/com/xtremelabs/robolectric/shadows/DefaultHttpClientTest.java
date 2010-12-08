@@ -17,7 +17,7 @@ import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
-public class HttpClientTest {
+public class DefaultHttpClientTest {
     private DefaultHttpClient client;
 
     @Before
@@ -74,11 +74,11 @@ public class HttpClientTest {
         client.execute(new HttpGet("http://example.com"));
         client.execute(new HttpGet("www.example.com"));
 
-        HttpUriRequest request1 = ShadowAbstractHttpClient.getRequest(0);
+        HttpUriRequest request1 = (HttpUriRequest) ShadowAbstractHttpClient.getRequest(0);
         assertThat(request1.getMethod(), equalTo(HttpGet.METHOD_NAME));
         assertThat(request1.getURI(), equalTo(URI.create("http://example.com")));
 
-        HttpUriRequest request2 = ShadowAbstractHttpClient.getRequest(1);
+        HttpUriRequest request2 = (HttpUriRequest) ShadowAbstractHttpClient.getRequest(1);
         assertThat(request2.getMethod(), equalTo(HttpGet.METHOD_NAME));
         assertThat(request2.getURI(), equalTo(URI.create("www.example.com")));
     }
