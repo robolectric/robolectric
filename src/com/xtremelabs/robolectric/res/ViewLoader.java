@@ -177,6 +177,9 @@ public class ViewLoader extends XmlLoader {
                 clazz = loadClass("android.widget." + name);
             }
             if (clazz == null) {
+                clazz = loadClass("android.webkit." + name);
+            }
+            if (clazz == null) {
                 clazz = loadClass("com.google.android.maps." + name);
             }
 

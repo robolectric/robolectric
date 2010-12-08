@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.*;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.R;
@@ -51,6 +52,16 @@ public class ViewLoaderTest {
         TestUtil.assertInstanceOf(LinearLayout.class, view);
 
         assertSame(context, view.getContext());
+    }
+
+    @Test
+    public void testWebView() throws Exception {
+        ViewGroup view = (ViewGroup) viewLoader.inflateView(context, "layout/webview_holder");
+        WebView webView = (WebView) view.findViewById(R.id.web_view);
+
+        webView.loadUrl("www.example.com");
+        
+        assertThat(shadowOf(webView).getLastLoadedUrl(), equalTo("www.example.com"));
     }
 
     @Test
