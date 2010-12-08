@@ -1,25 +1,34 @@
 package com.xtremelabs.robolectric.res;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
+import javax.xml.xpath.XPathFactory;
+
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 public class StringArrayResourceLoader extends XpathResourceXmlLoader {
     Map<String, String[]> stringArrayValues = new HashMap<String, String[]>();
-
+    private StringResourceLoader stringResourceLoader;
+    
     public StringArrayResourceLoader(ResourceExtractor resourceExtractor) {
-        super(resourceExtractor, "/resources/string-array");
+    	super(resourceExtractor, "/resources/string-array");
     }
 
-    public String[] getArrayValue(int resourceId) {
+    public StringArrayResourceLoader(ResourceExtractor resourceExtractor,
+    		StringResourceLoader stringResourceLoader) {
+        super(resourceExtractor, "/resources/string-array");
+        this.stringResourceLoader = stringResourceLoader;
+    }
+
+
+	public String[] getArrayValue(int resourceId) {
         String resourceName = resourceExtractor.getResourceName(resourceId);
         return stringArrayValues.get(resourceName);
     }
@@ -32,6 +41,12 @@ public class StringArrayResourceLoader extends XpathResourceXmlLoader {
             Node childNode = childNodes.item(j);
 
             String value = childNode.getTextContent();
+
+            /* Convert @string/some_id to the real string */
+            if ( value.startsWith("@string") ) {
+            	value = stringResourceLoader.getValue(value);
+            }
+
             arrayValues.add(value);
         }
         stringArrayValues.put("array/" + name, arrayValues.toArray(new String[arrayValues.size()]));

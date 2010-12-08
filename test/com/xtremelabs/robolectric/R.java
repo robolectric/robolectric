@@ -35,6 +35,7 @@ public final class R {
 
     public static final class array {
         public static final int items = nextId++;
+        public static final int greetings = nextId++;
     }
 
     public static final class color {

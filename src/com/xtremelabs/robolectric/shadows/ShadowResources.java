@@ -51,6 +51,11 @@ public class ShadowResources {
     public InputStream openRawResource(int id) throws Resources.NotFoundException {
     	return resourceLoader.rawResourceLoader.getValue(id);
     }
+
+    @Implementation
+    public String[] getTextArray(int id) throws Resources.NotFoundException {
+    	return getStringArray(id);
+    }
     
     @Implementation
     public String[] getStringArray(int id) throws Resources.NotFoundException {
