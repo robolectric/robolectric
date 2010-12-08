@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.test.mock.MockPackageManager;
 import com.xtremelabs.robolectric.util.Implementation;
@@ -122,6 +123,11 @@ public class ShadowContextWrapper extends ShadowContext {
     @Implementation
     public SharedPreferences getSharedPreferences(String name, int mode) {
         return new TestSharedPreferences(name, mode);
+    }
+    
+    @Implementation
+    public AssetManager getAssets(){
+    	return new AssetManager();
     }
 
     /**

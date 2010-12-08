@@ -18,7 +18,7 @@ public class ResourceLoader {
     public final ColorResourceLoader colorResourceLoader;
     public final RawResourceLoader rawResourceLoader;
 
-    // todo: get these value from the xml resources instead [xw 20101011]
+    // TODO: get these value from the xml resources instead [xw 20101011]
     public final Map<Integer, Integer> dimensions = new HashMap<Integer, Integer>();
 
     public ResourceLoader(Class rClass, File resourceDir) throws Exception {
