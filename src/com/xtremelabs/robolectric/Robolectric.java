@@ -37,6 +37,8 @@ import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.Scheduler;
 import com.xtremelabs.robolectric.view.TestSharedPreferences;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.lang.reflect.Constructor;
@@ -139,7 +141,7 @@ public class Robolectric {
                 ShadowContext.class,
                 ShadowContextWrapper.class,
                 ShadowContextThemeWrapper.class,
-                ShadowAbstractHttpClient.class,
+                ShadowDefaultRequestDirector.class,
                 ShadowDisplay.class,
                 ShadowDrawable.class,
                 ShadowDialog.class,
@@ -203,7 +205,7 @@ public class Robolectric {
         ShadowAlertDialog.reset();
         ShadowDialog.reset();
         ShadowLooper.resetAll();
-        ShadowAbstractHttpClient.reset();
+        ShadowDefaultRequestDirector.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -318,8 +320,8 @@ public class Robolectric {
         return (ShadowDialog) shadowOf_(instance);
     }
 
-    public static ShadowAbstractHttpClient shadowOf(DefaultHttpClient instance) {
-        return (ShadowAbstractHttpClient) shadowOf_(instance);
+    public static ShadowDefaultRequestDirector shadowOf(DefaultHttpClient instance) {
+        return (ShadowDefaultRequestDirector) shadowOf_(instance);
     }
 
     public static ShadowAlertDialog shadowOf(AlertDialog instance) {
@@ -394,4 +396,34 @@ public class Robolectric {
     public static void runUiThreadTasks() {
         uiThreadScheduler.tick(0);
     }
+
+    /**
+     * Sets up an HTTP response to be returned by calls to Apache's {@code }HttpClient} implementers.
+     *
+     * @param statusCode the status code of the response
+     * @param responseBody the body of the response
+     */
+    public static void addPendingResponse(int statusCode, String responseBody) {
+        ShadowDefaultRequestDirector.addPendingResponse(statusCode, responseBody);
+    }
+
+    /**
+     * Sets up an HTTP response to be returned by calls to Apache's {@code }HttpClient} implementers.
+     *
+     * @param httpResponse the response
+     */
+    public static void addPendingResponse(HttpResponse httpResponse) {
+        ShadowDefaultRequestDirector.addPendingResponse(httpResponse);
+    }
+
+    /**
+     * Accessor to obtain requests made during the current test in the order in which they were made.
+     *
+     * @param index index of the request to retrieve.
+     * @return the requested request.
+     */
+    public static HttpRequest getRequest(int index) {
+        return ShadowDefaultRequestDirector.getRequest(index);
+    }
+
 }
