@@ -6,6 +6,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -16,6 +17,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowBluetoothAdapter {
 
     private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
+    private boolean isDiscovering;
 
     @Implementation
     public static BluetoothAdapter getDefaultAdapter() {
@@ -24,10 +26,28 @@ public class ShadowBluetoothAdapter {
 
     @Implementation
     public Set<BluetoothDevice> getBondedDevices() {
-        return bondedDevices;
+        return Collections.unmodifiableSet(bondedDevices);
     }
 
     public void setBondedDevices(Set<BluetoothDevice> bluetoothDevices) {
         bondedDevices = bluetoothDevices;
     }
+
+    @Implementation
+    public boolean startDiscovery() {
+        isDiscovering = true;
+        return true;
+    }
+
+    @Implementation
+    public boolean cancelDiscovery() {
+        isDiscovering = false;
+        return true;
+    }
+
+    @Implementation
+    public boolean isDiscovering() {
+        return isDiscovering;
+    }
+
 }
