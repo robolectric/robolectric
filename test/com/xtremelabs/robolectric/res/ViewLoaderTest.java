@@ -226,4 +226,13 @@ public class ViewLoaderTest {
         View mediaView = viewLoader.inflateView(context, "layout/main");
         assertThat(mediaView.findViewById(R.id.time).isEnabled(), equalTo(false));
     }
+
+    @Test
+    public void testViewBackgroundIdIsSet() throws Exception {
+        View mediaView = viewLoader.inflateView(context, "layout/main");
+        ImageView imageView = (ImageView) mediaView.findViewById(R.id.image);
+        ShadowImageView shadowImageView = Robolectric.shadowOf(imageView);
+
+        assertThat(shadowImageView.getBackgroundResourceId(), equalTo(R.drawable.image_background));
+    }
 }

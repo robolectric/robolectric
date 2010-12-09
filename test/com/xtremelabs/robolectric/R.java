@@ -54,6 +54,7 @@ public final class R {
         public static final int an_other_image = nextId++;
         public static final int third_image = nextId++;
         public static final int fourth_image = nextId++;
+        public static final int image_background = nextId++;
     }
 
     public static final class layout {

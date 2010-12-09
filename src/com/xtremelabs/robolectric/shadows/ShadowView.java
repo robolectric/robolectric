@@ -65,6 +65,7 @@ public class ShadowView {
         applyIdAttribute();
         applyVisibilityAttribute();
         applyEnabledAttribute();
+        applyBackgroundAttribute();
     }
 
     @Implementation
@@ -591,6 +592,15 @@ public class ShadowView {
 
     private void applyEnabledAttribute() {
         setEnabled(attributeSet.getAttributeBooleanValue("android", "enabled", true));
+    }
+
+    private void applyBackgroundAttribute() {
+    	String source = attributeSet.getAttributeValue("android", "background");
+    	if (source != null) {
+    		if (source.startsWith("@drawable/")) {
+    			setBackgroundResource(attributeSet.getAttributeResourceValue("android", "background", 0));    			
+    		}
+    	}
     }
 
     private boolean noParentHasFocus(View view) {
