@@ -3,9 +3,11 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.content.res.AssetManager;
 import android.test.mock.MockPackageManager;
+
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
@@ -127,7 +129,7 @@ public class ShadowContextWrapper extends ShadowContext {
     
     @Implementation
     public AssetManager getAssets(){
-    	return new AssetManager();
+    	return Robolectric.newInstanceOf(AssetManager.class);
     }
 
     /**

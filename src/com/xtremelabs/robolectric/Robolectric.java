@@ -6,8 +6,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.content.res.AssetManager;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.*;
+
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapController;
@@ -380,7 +381,7 @@ public class Robolectric {
 	public static ShadowAssetManager shadowOf(AssetManager instance) {
 		return (ShadowAssetManager) Robolectric.shadowOf_(instance);
 	}
-
+	
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
