@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="greeting">@string/howdy</string>
     <string name="howdy">Howdy</string>
     <string name="hello">Hello</string>
     <string name="some_html"><b>Hello, <i>world</i></b></string>

@@ -26,14 +26,18 @@ public class ResourceLoader {
         resourceExtractor.addRClass(rClass);
 
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor);
+        stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
         colorResourceLoader = new ColorResourceLoader(resourceExtractor);
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
         rawResourceLoader = new RawResourceLoader(resourceExtractor, resourceDir);
 
         if (resourceDir != null) {
-            DocumentLoader resourcesDocumentLoader = new DocumentLoader(stringResourceLoader, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader);
-            resourcesDocumentLoader.loadResourceXmlDir(new File(resourceDir, "values"));
+            DocumentLoader stringResourcesDocumentLoader = new DocumentLoader(stringResourceLoader);
+            File valuesResourceDir = new File(resourceDir, "values");
+            stringResourcesDocumentLoader.loadResourceXmlDir(valuesResourceDir);
+
+            DocumentLoader resourcesDocumentLoader = new DocumentLoader(stringArrayResourceLoader, colorResourceLoader, attrResourceLoader);
+            resourcesDocumentLoader.loadResourceXmlDir(valuesResourceDir);
 
             viewLoader = new ViewLoader(resourceExtractor, stringResourceLoader, attrResourceLoader);
             DocumentLoader viewDocumentLoader = new DocumentLoader(viewLoader);

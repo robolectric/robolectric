@@ -29,4 +29,9 @@ public class StringResourceLoaderTest {
     public void testHtmlTagsAreRemovedFromStrings() throws Exception {
         assertThat(stringResourceLoader.getValue(R.string.some_html), equalTo("Hello, world"));
     }
+
+    @Test
+    public void shouldResolveStringReferences() throws Exception {
+        assertThat(stringResourceLoader.getValue(R.string.greeting), equalTo("Howdy"));
+    }
 }

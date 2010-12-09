@@ -14,9 +14,11 @@ import java.util.Map;
 
 public class StringArrayResourceLoader extends XpathResourceXmlLoader {
     Map<String, String[]> stringArrayValues = new HashMap<String, String[]>();
+    private StringResourceLoader stringResourceLoader;
 
-    public StringArrayResourceLoader(ResourceExtractor resourceExtractor) {
+    public StringArrayResourceLoader(ResourceExtractor resourceExtractor, StringResourceLoader stringResourceLoader) {
         super(resourceExtractor, "/resources/string-array");
+        this.stringResourceLoader = stringResourceLoader;
     }
 
     public String[] getArrayValue(int resourceId) {
@@ -32,7 +34,11 @@ public class StringArrayResourceLoader extends XpathResourceXmlLoader {
             Node childNode = childNodes.item(j);
 
             String value = childNode.getTextContent();
-            arrayValues.add(value);
+            if (value.startsWith("@")) {
+                arrayValues.add(stringResourceLoader.getValue(value.substring(1)));
+            } else {
+                arrayValues.add(value);
+            }
         }
         stringArrayValues.put("array/" + name, arrayValues.toArray(new String[arrayValues.size()]));
     }

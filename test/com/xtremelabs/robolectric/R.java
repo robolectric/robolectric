@@ -32,10 +32,12 @@ public final class R {
         public static final int howdy = nextId++;
         public static final int hello = nextId++;
         public static final int some_html = nextId++;
+        public static final int greeting = nextId++;
     }
 
     public static final class array {
         public static final int items = nextId++;
+        public static final int greetings = nextId++;
     }
 
     public static final class color {
