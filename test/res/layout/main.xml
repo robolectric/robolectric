@@ -59,6 +59,7 @@
     <ImageView
             android:id="@+id/image"
             android:src="@drawable/an_image"
+            android:background="@drawable/image_background"
             />
 
 
