@@ -37,7 +37,6 @@ public class ShadowSQLiteQueryBuilder {
         conditionallyAppend(sb, " ORDER BY ", orderBy);
         conditionallyAppend(sb, " LIMIT ", limit);
 
-        sb.append(";");
         return sb.toString();
     }
 

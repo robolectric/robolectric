@@ -27,7 +27,7 @@ public class SQLiteQueryBuilderTest {
                 "table_name",
                 new String[]{"id", "name"},
                 null, null, null, null, null);
-        assertThat(sql, equalTo("SELECT DISTINCT id, name FROM table_name;"));
+        assertThat(sql, equalTo("SELECT DISTINCT id, name FROM table_name"));
 
     }
 
@@ -38,7 +38,7 @@ public class SQLiteQueryBuilderTest {
                 "table_name",
                 new String[]{"id"},
                 null, null, null, null, null);
-        assertThat(sql, equalTo("SELECT id FROM table_name;"));
+        assertThat(sql, equalTo("SELECT id FROM table_name"));
     }
 
     @Test
@@ -48,7 +48,7 @@ public class SQLiteQueryBuilderTest {
                 "table_name",
                 new String[]{"id", "name"},
                 null, null, null, null, null);
-        assertThat(sql, equalTo("SELECT id, name FROM table_name;"));
+        assertThat(sql, equalTo("SELECT id, name FROM table_name"));
     }
 
     @Test
@@ -57,7 +57,7 @@ public class SQLiteQueryBuilderTest {
                 false,
                 "table_name",
                 null, null, null, null, null, null);
-        assertThat(sql, equalTo("SELECT * FROM table_name;"));
+        assertThat(sql, equalTo("SELECT * FROM table_name"));
     }
 
     @Test
@@ -67,7 +67,7 @@ public class SQLiteQueryBuilderTest {
                 "table_name",
                 new String[]{"person", "department", "division"},
                 "(id = 2 AND name = 'Chuck')", null, null, null, null);
-        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck');"));
+        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck')"));
     }
 
     @Test
@@ -77,7 +77,7 @@ public class SQLiteQueryBuilderTest {
                 "table_name",
                 new String[]{"person", "department", "division"},
                 null, "person", null, null, null);
-        assertThat(sql, equalTo("SELECT person, department, division FROM table_name GROUP BY person;"));
+        assertThat(sql, equalTo("SELECT person, department, division FROM table_name GROUP BY person"));
     }
 
     @Test
@@ -87,7 +87,7 @@ public class SQLiteQueryBuilderTest {
                 "table_name",
                 new String[]{"person", "department", "division"},
                 "(id = 2 AND name = 'Chuck')", "person", null, null, null);
-        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person;"));
+        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person"));
     }
 
     @Test
@@ -97,7 +97,7 @@ public class SQLiteQueryBuilderTest {
                 "table_name",
                 new String[]{"person", "department", "division"},
                 "(id = 2 AND name = 'Chuck')", null, "SUM(hours) < 20", null, null);
-        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') HAVING SUM(hours) < 20;"));
+        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') HAVING SUM(hours) < 20"));
     }
 
     @Test
@@ -107,7 +107,7 @@ public class SQLiteQueryBuilderTest {
                 "table_name",
                 new String[]{"person", "department", "division"},
                 "(id = 2 AND name = 'Chuck')", "person", "SUM(hours) < 20", null, null);
-        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20;"));
+        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20"));
     }
 
     @Test
@@ -117,7 +117,7 @@ public class SQLiteQueryBuilderTest {
                 "table_name",
                 new String[]{"person", "department", "division"},
                 "(id = 2 AND name = 'Chuck')", "person", null, "id ASC", null);
-        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person ORDER BY id ASC;"));
+        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person ORDER BY id ASC"));
     }
 
     @Test
@@ -127,7 +127,7 @@ public class SQLiteQueryBuilderTest {
                 "table_name",
                 new String[]{"person", "department", "division"},
                 "(id = 2 AND name = 'Chuck')", "person", "SUM(hours) < 20", "id ASC", null);
-        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20 ORDER BY id ASC;"));
+        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20 ORDER BY id ASC"));
     }
 
     @Test
@@ -137,7 +137,7 @@ public class SQLiteQueryBuilderTest {
                 "table_name",
                 new String[]{"person", "department", "division"},
                 "(id = 2 AND name = 'Chuck')", "person", "SUM(hours) < 20", null, "10");
-        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20 LIMIT 10;"));
+        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20 LIMIT 10"));
     }
 
     @Test
@@ -147,6 +147,6 @@ public class SQLiteQueryBuilderTest {
                 "table_name",
                 new String[]{"person", "department", "division"},
                 "(id = 2 AND name = 'Chuck')", "person", "SUM(hours) < 20", "id ASC", "10");
-        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20 ORDER BY id ASC LIMIT 10;"));
+        assertThat(sql, equalTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20 ORDER BY id ASC LIMIT 10"));
     }
 }
