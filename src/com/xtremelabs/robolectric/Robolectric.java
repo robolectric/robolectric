@@ -16,9 +16,11 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.hardware.Camera;
 import android.location.Geocoder;
 import android.location.LocationManager;
 import android.media.AudioManager;
+import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
@@ -130,6 +132,8 @@ public class Robolectric {
                 ShadowBaseAdapter.class,
                 ShadowBitmapDrawable.class,
                 ShadowBundle.class,
+                ShadowCamera.class,
+                ShadowCameraParameters.class,
                 ShadowCanvas.class,
                 ShadowCompoundButton.class,
                 ShadowComponentName.class,
@@ -159,6 +163,7 @@ public class Robolectric {
                 ShadowMapController.class,
                 ShadowMapActivity.class,
                 ShadowMapView.class,
+                ShadowMediaRecorder.class,
                 ShadowMotionEvent.class,
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
@@ -374,7 +379,19 @@ public class Robolectric {
     public static ShadowContentValues shadowOf(ContentValues other) {
         return (ShadowContentValues) Robolectric.shadowOf_(other);
     }
+    
+    public static ShadowCamera shadowOf(Camera instance) {
+        return (ShadowCamera) shadowOf_(instance);
+    }
+    
+    public static ShadowCameraParameters shadowOf(Camera.Parameters instance) {
+        return (ShadowCameraParameters) shadowOf_(instance);
+    }
 
+    public static ShadowMediaRecorder shadowOf(MediaRecorder instance) {
+        return (ShadowMediaRecorder) shadowOf_(instance);
+    }
+    
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
