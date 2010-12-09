@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.test.mock.MockPackageManager;
 import com.xtremelabs.robolectric.util.Implementation;
@@ -71,6 +72,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     /**
      * Implements Android's {@code MockPackageManager} with an anonymous inner class.
+     *
      * @return a {@code MockPackageManager}
      */
     @Implementation
@@ -124,6 +126,11 @@ public class ShadowContextWrapper extends ShadowContext {
         return new TestSharedPreferences(name, mode);
     }
 
+    @Implementation
+    public AssetManager getAssets() {
+        return getResources().getAssets();
+    }
+
     /**
      * Non-Android accessor that delegates to the application to consume and return the next {@code Intent} on the
      * started activities stack.
@@ -163,6 +170,7 @@ public class ShadowContextWrapper extends ShadowContext {
     public Intent peekNextStartedService() {
         return getShadowApplication().peekNextStartedService();
     }
+
     /**
      * Non-Android accessor that is used at start-up to set the package name
      *

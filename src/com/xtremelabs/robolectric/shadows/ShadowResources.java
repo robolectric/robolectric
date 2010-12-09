@@ -1,18 +1,19 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
-import java.io.InputStream;
-import java.util.Locale;
-
+import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
-
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+
+import java.io.InputStream;
+import java.util.Locale;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
@@ -100,6 +101,11 @@ public class ShadowResources {
     @Implementation
     public int getDimensionPixelOffset(int id) throws Resources.NotFoundException {
         return (int) getDimension(id);
+    }
+
+    @Implementation
+    public AssetManager getAssets(){
+        return Robolectric.newInstanceOf(AssetManager.class);
     }
 
     /**
