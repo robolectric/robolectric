@@ -27,6 +27,8 @@ public class ShadowCanvas {
     private boolean drewSomethingAfterCircle;
     private float translateX;
     private float translateY;
+    private float scaleX = 1;
+    private float scaleY = 1;
 
     public void appendDescription(String s) {
         description += s;
@@ -40,6 +42,18 @@ public class ShadowCanvas {
     public void translate(float x, float y) {
         this.translateX = x;
         this.translateY = y;
+    }
+
+    @Implementation
+    public void scale(float sx, float sy) {
+        this.scaleX = sx;
+        this.scaleY = sy;
+    }
+
+    @Implementation
+    public void scale(float sx, float sy, float px, float py) {
+        this.scaleX = sx;
+        this.scaleY = sy;
     }
 
     @Implementation
@@ -74,6 +88,10 @@ public class ShadowCanvas {
         int y = (int) (top + translateY);
         if (x != 0 && y != 0) {
             appendDescription(" at (" + x + "," + y + ")");
+        }
+
+        if (scaleX != 1 && scaleY != 1) {
+            appendDescription(" scaled by (" + scaleX + "," + scaleY + ")");
         }
     }
 

@@ -4,6 +4,7 @@ import android.view.MotionEvent;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.RealObject;
 
 import java.lang.reflect.Constructor;
 
@@ -14,9 +15,11 @@ import java.lang.reflect.Constructor;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MotionEvent.class)
 public class ShadowMotionEvent {
+    @RealObject private MotionEvent realObject;
+
     private int action;
-    private float x;
-    private float y;
+    private float[] x = new float[2];
+    private float[] y = new float[2];
 
     @Implementation
     public static MotionEvent obtain(long downTime, long eventTime, int action, float x, float y, int metaState) {
@@ -25,8 +28,8 @@ public class ShadowMotionEvent {
             constructor.setAccessible(true);
             MotionEvent motionEvent = constructor.newInstance();
             ShadowMotionEvent shadowMotionEvent = (ShadowMotionEvent) Robolectric.shadowOf_(motionEvent);
-            shadowMotionEvent.x = x;
-            shadowMotionEvent.y = y;
+            shadowMotionEvent.x[0] = x;
+            shadowMotionEvent.y[0] = y;
             shadowMotionEvent.action = action;
             return motionEvent;
         } catch (Exception e) {
@@ -41,11 +44,27 @@ public class ShadowMotionEvent {
 
     @Implementation
     public final float getX() {
-        return x;
+        return getX(0);
     }
 
     @Implementation
     public final float getY() {
-        return y;
+        return getY(0);
+    }
+
+    @Implementation
+    public final float getX(int pointerIndex) {
+        return x[pointerIndex];
+    }
+
+    @Implementation
+    public final float getY(int pointerIndex) {
+        return y[pointerIndex];
+    }
+
+    public MotionEvent setPointer2(float x, float y) {
+        this.x[1] = x;
+        this.y[1] = y;
+        return realObject;
     }
 }

@@ -23,10 +23,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Display;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.webkit.WebView;
 import android.widget.*;
 import com.google.android.maps.GeoPoint;
@@ -137,6 +134,7 @@ public class Robolectric {
                 ShadowDrawable.class,
                 ShadowDialog.class,
                 ShadowEditText.class,
+                ShadowFloatMath.class,
                 ShadowGeocoder.class,
                 ShadowGeoPoint.class,
                 ShadowHandler.class,
@@ -163,6 +161,7 @@ public class Robolectric {
                 ShadowPath.class,
                 ShadowPendingIntent.class,
                 ShadowPoint.class,
+                ShadowPointF.class,
                 ShadowPreferenceManager.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
@@ -397,6 +396,10 @@ public class Robolectric {
 
     public static ShadowMatrix shadowOf(Matrix other) {
         return (ShadowMatrix) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowMotionEvent shadowOf(MotionEvent other) {
+        return (ShadowMotionEvent) Robolectric.shadowOf_(other);
     }
 
     @SuppressWarnings({"unchecked"})

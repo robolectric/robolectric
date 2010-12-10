@@ -96,7 +96,8 @@ public class ShadowImageView extends ShadowView {
     @Implementation
     public void draw(Canvas canvas) {
         if (matrix != null) {
-            canvas.translate(shadowOf(matrix).getX(), shadowOf(matrix).getY());
+            canvas.translate(shadowOf(matrix).getTransX(), shadowOf(matrix).getTransY());
+            canvas.scale(shadowOf(matrix).getScaleX(), shadowOf(matrix).getScaleY());
         }
         imageDrawable.draw(canvas);
     }
