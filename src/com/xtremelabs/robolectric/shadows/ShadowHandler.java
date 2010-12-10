@@ -12,7 +12,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 /**
  * Shadow for Handler that puts posted {@link Runnable}s into a queue instead of sending them to be handled on a
  * separate thread.{@link Runnable}s that are scheduled to be executed immediately can be triggered by calling
- * {@link #flush()}.
+ * {@link #idleMainLooper()}.
  * todo: add utility method to advance time and trigger execution of Runnables scheduled for a time in the future
  */
 @SuppressWarnings({"UnusedDeclaration"})
@@ -68,11 +68,38 @@ public class ShadowHandler {
     }
 
     /**
-     * Causes any posted {@link Runnable}s that are scheduled to run immediately to actually be run. This gives
-     * visibility into the order in which things will happen. An event can be triggered and its immediate effects
-     * examined, and then {@code flush()} can be called and the side-effects of the original event can be examined.
+     * @Deprecated use {@link #idleMainLooper()} instead
      */
     public static void flush() {
+        idleMainLooper();
+    }
+    
+    /**
+     * @see com.xtremelabs.robolectric.shadows.ShadowLooper#idle() 
+     */
+    public static void idleMainLooper() {
         shadowOf(Looper.myLooper()).idle();
+    }
+
+    /**
+     * @see ShadowLooper#runToEndOfTasks() ()
+     */
+    public static void runMainLooperToEndOfTasks() {
+        shadowOf(Looper.myLooper()).runToEndOfTasks();
+    }
+
+
+    /**
+     * @see ShadowLooper#runOneTask() ()
+     */
+    public static void runMainLooperOneTask() {
+        shadowOf(Looper.myLooper()).runOneTask();
+    }
+
+    /**
+     * @see ShadowLooper#runToNextTask() ()
+     */
+    public static void runMainLooperToNextTask() {
+        shadowOf(Looper.myLooper()).runToNextTask();
     }
 }

@@ -48,10 +48,44 @@ public class ShadowLooper {
     }
 
     /**
-     * Causes {@link Runnable}s that have been scheduled to run immediately to actually run.
+     * Causes {@link Runnable}s that have been scheduled to run immediately to actually run. Does not advance the
+     * scheduler's clock;
      */
     public void idle() {
-        scheduler.tick(0);
+        scheduler.advanceBy(0);
+    }
+
+    /**
+     * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis} milliseconds to
+     * run while advancing the scheduler's clock.
+     */
+    public void idle(long intervalMillis) {
+        scheduler.advanceBy(intervalMillis);
+    }
+
+    /**
+     * Causes all of the {@link Runnable}s that have been scheduled to run while advancing the scheduler's clock to the
+     * start time of the last scheduled {@link Runnable}.
+     */
+    public void runToEndOfTasks() {
+        scheduler.advanceToLastPostedRunnable();
+    }
+
+    /**
+     * Causes the next {@link Runnable}(s) that have been scheduled to run while advancing the scheduler's clock to its
+     * start time. If more than one {@link Runnable} is scheduled to run at this time then they will all be run.
+     */
+    public void runToNextTask() {
+        scheduler.advanceToNextPostedRunnable();
+    }
+
+    /**
+     * Causes only one of the next {@link Runnable}s that have been scheduled to run while advancing the scheduler's
+     * clock to its start time. Only one {@link Runnable} will run even if more than one has ben scheduled to run at the
+     * same time.
+     */
+    public void runOneTask() {
+        scheduler.runOneTask();
     }
 
     /**

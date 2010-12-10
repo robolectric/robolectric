@@ -39,7 +39,7 @@ public class ListViewTest {
     @Test
     public void testSetSelection_ShouldFireOnItemSelectedListener() throws Exception {
         listView.setAdapter(new CountingAdapter(1));
-        ShadowHandler.flush();
+        ShadowHandler.idleMainLooper();
 
         listView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -53,7 +53,7 @@ public class ListViewTest {
         });
 
         listView.setSelection(0);
-        ShadowHandler.flush();
+        ShadowHandler.idleMainLooper();
         transcript.assertEventsSoFar("item was selected: 0");
     }
 
@@ -186,13 +186,13 @@ public class ListViewTest {
     private ListAdapter prepareWithListAdapter() {
         ListAdapter adapter = new ListAdapter("a", "b", "c");
         listView.setAdapter(adapter);
-        ShadowHandler.flush();
+        ShadowHandler.idleMainLooper();
         return adapter;
     }
 
     private ShadowListView prepareListWithThreeItems() {
         listView.setAdapter(new CountingAdapter(3));
-        ShadowHandler.flush();
+        ShadowHandler.idleMainLooper();
 
         return shadowOf(listView);
     }

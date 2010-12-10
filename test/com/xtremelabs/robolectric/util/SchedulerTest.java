@@ -22,13 +22,13 @@ public class SchedulerTest {
         scheduler.postDelayed(new AddToTranscript("two"), 0);
         scheduler.postDelayed(new AddToTranscript("three"), 1000);
 
-        assertThat(scheduler.tick(0), equalTo(true));
+        assertThat(scheduler.advanceBy(0), equalTo(true));
         transcript.assertEventsSoFar("one", "two");
 
-        assertThat(scheduler.tick(0), equalTo(false));
+        assertThat(scheduler.advanceBy(0), equalTo(false));
         transcript.assertNoEventsSoFar();
 
-        assertThat(scheduler.tick(1000), equalTo(true));
+        assertThat(scheduler.advanceBy(1000), equalTo(true));
         transcript.assertEventsSoFar("three");
     }
 
@@ -38,16 +38,16 @@ public class SchedulerTest {
         scheduler.postDelayed(new AddToTranscript("two"), 2000);
         scheduler.postDelayed(new AddToTranscript("three"), 3000);
 
-        scheduler.tick(1000);
+        scheduler.advanceBy(1000);
         transcript.assertEventsSoFar("one");
 
-        scheduler.tick(500);
+        scheduler.advanceBy(500);
         transcript.assertNoEventsSoFar();
 
-        scheduler.tick(501);
+        scheduler.advanceBy(501);
         transcript.assertEventsSoFar("two");
 
-        scheduler.tick(999);
+        scheduler.advanceBy(999);
         transcript.assertEventsSoFar("three");
     }
 
@@ -67,16 +67,16 @@ public class SchedulerTest {
             }
         }, 1000);
 
-        scheduler.tick(1000);
+        scheduler.advanceBy(1000);
         transcript.assertEventsSoFar("one");
 
-        scheduler.tick(500);
+        scheduler.advanceBy(500);
         transcript.assertNoEventsSoFar();
 
-        scheduler.tick(501);
+        scheduler.advanceBy(501);
         transcript.assertEventsSoFar("two");
 
-        scheduler.tick(999);
+        scheduler.advanceBy(999);
         transcript.assertEventsSoFar("three");
     }
 

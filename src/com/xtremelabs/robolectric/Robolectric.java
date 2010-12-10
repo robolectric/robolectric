@@ -397,11 +397,11 @@ public class Robolectric {
     }
 
     public static void runBackgroundTasks() {
-        backgroundScheduler.tick(0);
+        backgroundScheduler.advanceBy(0);
     }
 
     public static void runUiThreadTasks() {
-        uiThreadScheduler.tick(0);
+        uiThreadScheduler.advanceBy(0);
     }
 
     /**

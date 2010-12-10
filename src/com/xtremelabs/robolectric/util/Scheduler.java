@@ -10,34 +10,58 @@ public class Scheduler {
 
     public void postDelayed(Runnable runnable, long delayMillis) {
         postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
+        Collections.sort(postedRunnables);
     }
 
     public void post(Runnable runnable) {
-        postedRunnables.add(new PostedRunnable(runnable, currentTime));
+        postDelayed(runnable, 0);
     }
 
-    public boolean tick(long intervalMs) {
-        boolean anyRan = false;
-
-        Collections.sort(postedRunnables);
-
-        long endingTime = currentTime + intervalMs;
-        while (postedRunnables.size() > 0 && postedRunnables.get(0).scheduledTime <= endingTime) {
-            long timeUntilNext = postedRunnables.get(0).scheduledTime - currentTime;
-
-            if (timeUntilNext <= intervalMs) {
-                currentTime += timeUntilNext;
-                intervalMs -= timeUntilNext;
-            }
-
-            PostedRunnable postedRunnable = postedRunnables.remove(0);
-            postedRunnable.run();
-            anyRan = true;
+    public boolean advanceToLastPostedRunnable() {
+        if (enqueuedTaskCount() < 1) {
+            return false;
         }
 
-        currentTime += intervalMs;
+        return advanceTo(postedRunnables.get(postedRunnables.size() - 1).scheduledTime);
+    }
 
-        return anyRan;
+    public boolean advanceToNextPostedRunnable() {
+        if (enqueuedTaskCount() < 1) {
+            return false;
+        }
+
+        return advanceTo(postedRunnables.get(0).scheduledTime);
+    }
+
+    public boolean advanceBy(long intervalMs) {
+        long endingTime = currentTime + intervalMs;
+        return advanceTo(endingTime);
+    }
+
+    public boolean advanceTo(long endingTime) {
+        if (endingTime - currentTime < 0 || enqueuedTaskCount() < 1) {
+            return false;
+        }
+
+        int runCount = 0;
+        while (nextTaskIsScheduledBefore(endingTime)) {
+            runOneTask();
+            ++runCount;
+        }
+        currentTime = endingTime;
+
+        return runCount > 0;
+    }
+
+    public boolean runOneTask() {
+        if (enqueuedTaskCount() < 1) {
+            return false;
+        }
+
+        PostedRunnable postedRunnable = postedRunnables.remove(0);
+        currentTime = postedRunnable.scheduledTime;
+        postedRunnable.run();
+        return true;
     }
 
     public int enqueuedTaskCount() {
@@ -65,5 +89,9 @@ public class Scheduler {
         public void run() {
             runnable.run();
         }
+    }
+
+    private boolean nextTaskIsScheduledBefore(long endingTime) {
+        return enqueuedTaskCount() > 0 && postedRunnables.get(0).scheduledTime <= endingTime;
     }
 }
