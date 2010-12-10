@@ -13,7 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.util.TestUtil.visualize;
+import static com.xtremelabs.robolectric.Robolectric.visualize;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ImageViewTest {

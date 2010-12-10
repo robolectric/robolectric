@@ -101,18 +101,6 @@ public class Robolectric {
         ShadowWrangler.getInstance().logMissingInvokedShadowMethods();
     }
 
-    /**
-     * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
-     * is enabled.
-     *
-     * @param view the view to click on
-     * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
-     * @throws RuntimeException if the preconditions are not met.
-     */
-    public static boolean clickOn(View view) {
-        return shadowOf(view).checkedPerformClick();
-    }
-
     public static List<Class<?>> getDefaultShadowClasses() {
         return Arrays.asList(
                 ShadowAbsoluteLayout.class,
@@ -422,5 +410,23 @@ public class Robolectric {
 
     public static void runUiThreadTasks() {
         uiThreadScheduler.tick(0);
+    }
+
+    /**
+     * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
+     * is enabled.
+     *
+     * @param view the view to click on
+     * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
+     * @throws RuntimeException if the preconditions are not met.
+     */
+    public static boolean clickOn(View view) {
+        return shadowOf(view).checkedPerformClick();
+    }
+
+    public static String visualize(View view) {
+        Canvas canvas = new Canvas();
+        view.draw(canvas);
+        return shadowOf(canvas).getDescription();
     }
 }
