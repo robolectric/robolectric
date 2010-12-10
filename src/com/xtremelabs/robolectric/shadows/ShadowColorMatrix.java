@@ -16,7 +16,6 @@ public class ShadowColorMatrix {
 
     private float[] src;
 
-    @Implementation
     public void __constructor__(float[] src) {
         this.src = src;
     }
