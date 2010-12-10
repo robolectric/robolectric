@@ -47,6 +47,7 @@ public final class R {
         public static final int black = nextId++;
         public static final int white = nextId++;
         public static final int clear = nextId++;
+        public static final int color_with_alpha = nextId++;
     }
 
     public static final class drawable {

@@ -19,6 +19,6 @@ public class ColorResourceLoader extends XpathResourceXmlLoader implements Resou
 
     @Override
     public Integer convertRawValue(String rawValue) {
-        return Integer.valueOf(rawValue.replaceAll("#", ""), 16);
+        return (Integer) (int) (long) Long.valueOf(rawValue.replaceAll("#", ""), 16);
     }
 }
