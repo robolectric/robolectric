@@ -25,6 +25,8 @@ public class ShadowCanvas {
     private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<CirclePaintHistoryEvent>();
     private Paint drawnPaint;
     private boolean drewSomethingAfterCircle;
+    private float translateX;
+    private float translateY;
 
     public void appendDescription(String s) {
         description += s;
@@ -32,6 +34,12 @@ public class ShadowCanvas {
 
     public String getDescription() {
         return description;
+    }
+
+    @Implementation
+    public void translate(float x, float y) {
+        this.translateX = x;
+        this.translateY = y;
     }
 
     @Implementation
@@ -60,6 +68,12 @@ public class ShadowCanvas {
         ColorFilter colorFilter = paint.getColorFilter();
         if (colorFilter != null) {
             appendDescription(" with " + colorFilter);
+        }
+
+        int x = (int) (left + translateX);
+        int y = (int) (top + translateY);
+        if (x != 0 && y != 0) {
+            appendDescription(" at (" + x + "," + y + ")");
         }
     }
 

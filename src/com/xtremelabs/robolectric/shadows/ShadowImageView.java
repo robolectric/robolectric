@@ -3,12 +3,16 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.ImageView;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ImageView.class)
@@ -18,6 +22,7 @@ public class ShadowImageView extends ShadowView {
     private int resourceId;
     private Bitmap imageBitmap;
     private ImageView.ScaleType scaleType;
+    private Matrix matrix;
 
     @Override public void __constructor__(Context context, AttributeSet attributeSet) {
         super.__constructor__(context, attributeSet);
@@ -81,6 +86,19 @@ public class ShadowImageView extends ShadowView {
     @Deprecated
     public int getResourceId() {
         return resourceId;
+    }
+
+    @Implementation
+    public void setImageMatrix(Matrix matrix) {
+        this.matrix = new Matrix(matrix);
+    }
+
+    @Implementation
+    public void draw(Canvas canvas) {
+        if (matrix != null) {
+            canvas.translate(shadowOf(matrix).getX(), shadowOf(matrix).getY());
+        }
+        imageDrawable.draw(canvas);
     }
 
     private void applyImageAttribute() {

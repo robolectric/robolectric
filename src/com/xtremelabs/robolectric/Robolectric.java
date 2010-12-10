@@ -166,6 +166,7 @@ public class Robolectric {
                 ShadowMapController.class,
                 ShadowMapActivity.class,
                 ShadowMapView.class,
+                ShadowMatrix.class,
                 ShadowMediaStore.ShadowImages.ShadowMedia.class,
                 ShadowMotionEvent.class,
                 ShadowNetworkInfo.class,
@@ -402,9 +403,12 @@ public class Robolectric {
         return (ShadowBluetoothAdapter) Robolectric.shadowOf_(other);
     }
 
-
     public static ShadowBluetoothDevice shadowOf(BluetoothDevice other) {
         return (ShadowBluetoothDevice) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowMatrix shadowOf(Matrix other) {
+        return (ShadowMatrix) Robolectric.shadowOf_(other);
     }
 
     @SuppressWarnings({"unchecked"})

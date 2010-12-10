@@ -1,31 +1,25 @@
 package com.xtremelabs.robolectric.util;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyInt;
-import static org.mockito.Matchers.anyLong;
-import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
+import android.app.Activity;
+import android.content.Intent;
+import android.graphics.Canvas;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AbsSpinner;
+import android.widget.AdapterView;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 
-import android.app.Activity;
-import android.content.Intent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AbsSpinner;
-import android.widget.AdapterView;
+import java.util.*;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyInt;
+import static org.mockito.Matchers.anyLong;
+import static org.mockito.Mockito.*;
 
 public abstract class TestUtil {
     public static Map<String, String> mapOf() {
@@ -48,6 +42,12 @@ public abstract class TestUtil {
             map.put(pair.key, pair.value);
         }
         return map;
+    }
+
+    public static String visualize(View view) {
+        Canvas canvas = new Canvas();
+        view.draw(canvas);
+        return shadowOf(canvas).getDescription();
     }
 
     public static class Pair<K, V> {
