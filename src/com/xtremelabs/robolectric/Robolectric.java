@@ -13,10 +13,7 @@ import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.location.Geocoder;
@@ -138,6 +135,8 @@ public class Robolectric {
                 ShadowBluetoothDevice.class,
                 ShadowBundle.class,
                 ShadowCanvas.class,
+                ShadowColorMatrix.class,
+                ShadowColorMatrixColorFilter.class,
                 ShadowCompoundButton.class,
                 ShadowComponentName.class,
                 ShadowConnectivityManager.class,
@@ -292,6 +291,10 @@ public class Robolectric {
 
     public static ShadowHandler shadowOf(Handler instance) {
         return (ShadowHandler) shadowOf_(instance);
+    }
+
+    public static ShadowColorMatrix shadowOf(ColorMatrix instance) {
+        return (ShadowColorMatrix) shadowOf_(instance);
     }
 
     public static ShadowIntent shadowOf(Intent instance) {

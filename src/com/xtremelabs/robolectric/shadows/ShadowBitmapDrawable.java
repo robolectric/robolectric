@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import com.xtremelabs.robolectric.util.Implementation;
@@ -14,6 +15,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(BitmapDrawable.class)
 public class ShadowBitmapDrawable extends ShadowDrawable {
     private Bitmap bitmap;
+    private ColorFilter colorFilter;
 
     @RealObject private BitmapDrawable realBitmapDrawable;
 
@@ -28,7 +30,14 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
      */
     @Implementation
     public void draw(Canvas canvas) {
-        canvas.drawBitmap(realBitmapDrawable.getBitmap(), 0, 0, new Paint());
+        Paint paint = new Paint();
+        paint.setColorFilter(colorFilter);
+        canvas.drawBitmap(realBitmapDrawable.getBitmap(), 0, 0, paint);
+    }
+
+    @Implementation
+    public void setColorFilter(android.graphics.ColorFilter colorFilter) {
+        this.colorFilter = colorFilter;
     }
 
     @Implementation
@@ -39,7 +48,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     /**
      * Non-Android accessor that tells you the resource id that this {@code BitmapDrawable} was loaded from. This lets
      * your tests assert that the bitmap is correct without having to actually load the bitmap.
-     * 
+     *
      * @return resource id from which this {@code BitmapDrawable} was loaded
      * @deprecated use com.xtremelabs.robolectric.shadows.ShadowBitmap#getLoadedFromResourceId() instead.
      */

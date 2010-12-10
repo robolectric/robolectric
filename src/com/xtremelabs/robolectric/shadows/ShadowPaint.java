@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.Shader;
 import com.xtremelabs.robolectric.util.Implementation;
@@ -24,6 +25,7 @@ public class ShadowPaint {
     private int shadowColor;
     private Shader shader;
     private int alpha;
+    private ColorFilter filter;
 
     @Implementation
     public Shader setShader(Shader shader) {
@@ -167,4 +169,16 @@ public class ShadowPaint {
     public float getWidth() {
         return width;
     }
+
+    @Implementation
+    public ColorFilter getColorFilter() {
+        return filter;
+    }
+
+    @Implementation
+    public ColorFilter setColorFilter(ColorFilter filter) {
+        this.filter = filter;
+        return filter;
+    }
+
 }

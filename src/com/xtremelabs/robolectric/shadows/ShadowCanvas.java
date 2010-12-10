@@ -1,13 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.*;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadows the {@code android.graphics.Canvas} class.
@@ -19,10 +19,20 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Canvas.class)
 public class ShadowCanvas {
+    private String description = "";
+
     private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<PathPaintHistoryEvent>();
     private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<CirclePaintHistoryEvent>();
     private Paint drawnPaint;
     private boolean drewSomethingAfterCircle;
+
+    public void appendDescription(String s) {
+        description += s;
+    }
+
+    public String getDescription() {
+        return description;
+    }
 
     @Implementation
     public void drawPaint(Paint paint) {
@@ -41,6 +51,16 @@ public class ShadowCanvas {
     public void drawCircle(float cx, float cy, float radius, Paint paint) {
         circlePaintEvents.add(new CirclePaintHistoryEvent(cx, cy, radius, paint));
         drewSomethingAfterCircle = false;
+    }
+
+    @Implementation
+    public void drawBitmap(Bitmap bitmap, float left, float top, Paint paint) {
+        appendDescription(shadowOf(bitmap).getDescription());
+
+        ColorFilter colorFilter = paint.getColorFilter();
+        if (colorFilter != null) {
+            appendDescription(" with " + colorFilter);
+        }
     }
 
     public int getPathPaintHistoryCount() {
