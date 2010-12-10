@@ -39,4 +39,9 @@ public class ColorResourceLoaderTest {
     public void shouldHandleColorBackwardReferences() throws Exception {
         assertThat(colorResourceLoader.getValue(R.color.background), equalTo(0xf5f5f5));
     }
+
+    @Test
+    public void shouldLoadColorsWithAlpha() throws Exception {
+        assertThat(colorResourceLoader.getValue(R.color.color_with_alpha), equalTo(0x802C76AD));
+    }
 }
