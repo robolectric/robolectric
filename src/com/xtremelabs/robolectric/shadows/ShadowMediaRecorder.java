@@ -176,7 +176,6 @@ public class ShadowMediaRecorder {
 		state = STATE_RELEASED;
 	}
 
-	
 	public Camera getCamera() {
 		return camera;
 	}
@@ -189,7 +188,7 @@ public class ShadowMediaRecorder {
 		return audioEncoder;
 	}
 
-	public int getAudioBitRate() {
+	public int getAudioEncodingBitRate() {
 		return audioBitRate;
 	}
 
@@ -221,7 +220,7 @@ public class ShadowMediaRecorder {
 		return videoEncoder;
 	}
 
-	public int getVideoBitRate() {
+	public int getVideoEncodingBitRate() {
 		return videoBitRate;
 	}
 
