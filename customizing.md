@@ -26,9 +26,9 @@ public class CustomTestRunner extends RobolectricTestRunner {
 {% endhighlight %}
 
 ### Application class
-By default, Robolectric will create a new instance of <code>android.app.Application</code> for each test.
+By default, Robolectric will create a new instance of the application class specified in AndroidManifest.xml for each test.
 
-You may specify your own application class in your custom test runner by overriding the <code>createApplication</code> method:
+You may override this behavior in your custom test runner by overriding the <code>createApplication</code> method:
 
 {% highlight java %}
 public class CustomTestRunner extends RobolectricTestRunner {
