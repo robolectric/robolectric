@@ -72,17 +72,11 @@
              <version>1.3</version>
         </dependency>
 
-        <dependency>
-             <groupId>commons-httpclient</groupId>
-             <artifactId>commons-httpclient</artifactId>
-             <version>4.0.3</version>
-        </dependency>
-
-        <dependency>
-            <groupId>org.apache.httpcomponents</groupId>
-            <artifactId>httpcore</artifactId>
-            <version>4.0.1</version>
-        </dependency>
+		<dependency>
+		    <groupId>org.apache.httpcomponents</groupId>
+		    <artifactId>httpclient</artifactId>
+		    <version>4.0.3</version>
+		</dependency>
 
         <dependency>
             <groupId>android</groupId>
