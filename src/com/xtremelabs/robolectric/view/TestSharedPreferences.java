@@ -142,5 +142,10 @@ public class TestSharedPreferences implements SharedPreferences {
             }
             return true;
         }
+
+		@Override
+		public void apply() {
+			// TODO added in Gingerbread (SDK 9), awaits implementation
+		}
     }
 }

@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.*;
+import android.view.SurfaceHolder.Callback2;
 
 public class TestWindow extends Window {
     public int flags;
@@ -161,4 +162,14 @@ public class TestWindow extends Window {
     @Override public void setSoftInputMode(int softInputMode) {
         this.softInputMode = softInputMode;
     }
+
+	@Override
+	public void takeInputQueue(android.view.InputQueue.Callback arg0) {
+		// TODO added in Gingerbread (SDK 9), awaits implementation
+	}
+
+	@Override
+	public void takeSurface(Callback2 arg0) {
+		// TODO added in Gingerbread (SDK 9), awaits implementation
+	}
 }
