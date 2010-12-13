@@ -183,30 +183,50 @@ public class MediaRecorderTest {
 	@Test
 	public void testVideoSource() throws Exception {
 		assertThat(shadowMediaRecorder.getVideoSource(), not(equalTo(MediaRecorder.VideoSource.CAMERA)));
-		assertThat(shadowMediaRecorder.getState(), not(equalTo( ShadowMediaRecorder.STATE_INITIALIZED)));
+		assertThat(shadowMediaRecorder.getState(), not(equalTo(ShadowMediaRecorder.STATE_INITIALIZED)));
 		mediaRecorder.setVideoSource(MediaRecorder.VideoSource.CAMERA);
 		assertThat(shadowMediaRecorder.getVideoSource(), equalTo(MediaRecorder.VideoSource.CAMERA));
-		assertThat(shadowMediaRecorder.getState(), equalTo( ShadowMediaRecorder.STATE_INITIALIZED));
+		assertThat(shadowMediaRecorder.getState(), equalTo(ShadowMediaRecorder.STATE_INITIALIZED));
 	}
 	
-	@Test @Ignore
+	@Test
 	public void testPrepare() throws Exception {
+		assertThat(shadowMediaRecorder.getState(), not(equalTo(ShadowMediaRecorder.STATE_PREPARED)));
+		mediaRecorder.prepare();
+		assertThat(shadowMediaRecorder.getState(), equalTo(ShadowMediaRecorder.STATE_PREPARED));
 	}
 	
-	@Test @Ignore
+	@Test
 	public void testStart() throws Exception {
+		mediaRecorder.prepare();
+		assertThat(shadowMediaRecorder.getState(), not(equalTo(ShadowMediaRecorder.STATE_RECORDING)));
+		mediaRecorder.start();
+		assertThat(shadowMediaRecorder.getState(), equalTo(ShadowMediaRecorder.STATE_RECORDING));
 	}
 	
-	@Test @Ignore
+	@Test
 	public void testStop() throws Exception {
+		mediaRecorder.start();
+		assertThat(shadowMediaRecorder.getState(), equalTo(ShadowMediaRecorder.STATE_RECORDING));
+		mediaRecorder.stop();
+		assertThat(shadowMediaRecorder.getState(), equalTo(ShadowMediaRecorder.STATE_INITIAL));
 	}
 	
-	@Test @Ignore
+	@Test
 	public void testReset() throws Exception {
+		mediaRecorder.start();
+		assertThat(shadowMediaRecorder.getState(), equalTo(ShadowMediaRecorder.STATE_RECORDING));
+		mediaRecorder.reset();
+		assertThat(shadowMediaRecorder.getState(), equalTo(ShadowMediaRecorder.STATE_INITIAL));
 	}
 	
-	@Test @Ignore
+	@Test
 	public void testRelease() throws Exception {
+		mediaRecorder.start();
+		mediaRecorder.reset();
+		assertThat(shadowMediaRecorder.getState(), equalTo(ShadowMediaRecorder.STATE_INITIAL));
+		mediaRecorder.release();
+		assertThat(shadowMediaRecorder.getState(), equalTo(ShadowMediaRecorder.STATE_RELEASED));
 	}
 	
 	private class TestErrorListener implements MediaRecorder.OnErrorListener {
