@@ -32,7 +32,7 @@
         <jarDirectory url="file://$MODULE_DIR$/lib/test" recursive="false" />
       </library>
     </orderEntry>
-    <orderEntry type="library" name="Android 2.2 Google APIs" level="application" />
+    <orderEntry type="library" name="Android 2.3 Google APIs" level="application" />
   </component>
 </module>
 
