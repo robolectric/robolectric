@@ -3,9 +3,9 @@ package com.xtremelabs.robolectric.shadows;
 import org.apache.http.HttpEntity;
 import org.apache.http.StatusLine;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringBufferInputStream;
 
 class TestHttpResponse extends HttpResponseStub {
 
@@ -34,7 +34,7 @@ class TestHttpResponse extends HttpResponseStub {
         }
 
         @Override public InputStream getContent() throws IOException, IllegalStateException {
-            return new StringBufferInputStream(responseBody);
+            return new ByteArrayInputStream(responseBody.getBytes());
         }
     }
 
