@@ -114,7 +114,6 @@ public class ShadowCanvas {
         if (drawnBitmap != null) {
             shadowOf(drawnBitmap).setDescription(getDescription());
         }
-
     }
 
     @Implementation
