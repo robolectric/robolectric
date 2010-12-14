@@ -1,6 +1,7 @@
-package com.xtremelabs.robolectric.view;
+package com.xtremelabs.robolectric.content;
 
 import android.content.SharedPreferences;
+import com.xtremelabs.robolectric.content.TestSharedPreferences;
 import org.junit.Before;
 import org.junit.Test;
 
