@@ -17,9 +17,11 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.hardware.Camera;
 import android.location.Geocoder;
 import android.location.LocationManager;
 import android.media.AudioManager;
+import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
@@ -136,6 +138,8 @@ public class Robolectric {
                 ShadowBaseAdapter.class,
                 ShadowBitmapDrawable.class,
                 ShadowBundle.class,
+                ShadowCamera.class,
+                ShadowCameraParameters.class,
                 ShadowCanvas.class,
                 ShadowCompoundButton.class,
                 ShadowComponentName.class,
@@ -166,6 +170,7 @@ public class Robolectric {
                 ShadowMapController.class,
                 ShadowMapActivity.class,
                 ShadowMapView.class,
+                ShadowMediaRecorder.class,
                 ShadowMotionEvent.class,
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
@@ -370,7 +375,7 @@ public class Robolectric {
     public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
         return (ShadowSQLiteDatabase) Robolectric.shadowOf_(other);
     }
-    
+
     public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
         return (ShadowSQLiteCursor) Robolectric.shadowOf_(other);
     }
@@ -378,13 +383,25 @@ public class Robolectric {
     public static ShadowSQLiteOpenHelper shadowOf(SQLiteOpenHelper other) {
         return (ShadowSQLiteOpenHelper) Robolectric.shadowOf_(other);
     }
-    
+
     public static ShadowSQLiteQueryBuilder shadowOf(SQLiteQueryBuilder other) {
         return (ShadowSQLiteQueryBuilder) Robolectric.shadowOf_(other);
     }
-    
+
     public static ShadowContentValues shadowOf(ContentValues other) {
         return (ShadowContentValues) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowCamera shadowOf(Camera instance) {
+        return (ShadowCamera) shadowOf_(instance);
+    }
+
+    public static ShadowCameraParameters shadowOf(Camera.Parameters instance) {
+        return (ShadowCameraParameters) shadowOf_(instance);
+    }
+
+    public static ShadowMediaRecorder shadowOf(MediaRecorder instance) {
+        return (ShadowMediaRecorder) shadowOf_(instance);
     }
 
     public static ShadowAssetManager shadowOf(AssetManager instance) {
