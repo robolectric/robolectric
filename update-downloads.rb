@@ -21,7 +21,7 @@ def fill_index_downloads
         version = "SNAPSHOT" unless version
         prerelease = /\.rc/.match(f)
         download_html += prerelease ? "<tr class=\"rc\">\n" : "<tr>\n"
-        download_html += "  <td class=\"link\"><a href=\"#{fn}\">#{fn.sub(/downloads\//, '')}</a></td>\n"
+        download_html += "  <td class=\"link\"><a href=\"#{fn}\" onClick=\"javascript:pageTracker._trackPageView('#{fn}'); \">#{fn.sub(/downloads\//, '')}</a></td>\n"
         download_html += "  <td class=\"version\">#{version}</td>\n"
         download_html += "  <td class=\"size\">#{File.size(f) / 1024}k</td>\n"
         download_html += "  <td class=\"date\">#{File.mtime(f).strftime("%Y/%m/%d %H:%M:%S %Z")}</td>\n"
