@@ -9,7 +9,6 @@ import java.util.Map;
 public class TestSharedPreferences implements SharedPreferences {
 
     public static Map<String, Hashtable<String, Object>> content = new HashMap<String, Hashtable<String, Object>>();
-    private static final Object lock = new Object();
     private String filename;
     public int mode;
 
@@ -73,7 +72,7 @@ public class TestSharedPreferences implements SharedPreferences {
 
     @Override
     public Editor edit() {
-        return new ShadowSharedPreferencesEditor();
+        return new TestSharedPreferencesEditor();
     }
 
     @Override
@@ -84,7 +83,7 @@ public class TestSharedPreferences implements SharedPreferences {
     public void unregisterOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
     }
 
-    private class ShadowSharedPreferencesEditor implements Editor {
+    private class TestSharedPreferencesEditor implements Editor {
 
         Hashtable<String, Object> editsThatNeedCommit = new Hashtable<String, Object>();
         private boolean shouldClearOnCommit = false;
@@ -144,7 +143,7 @@ public class TestSharedPreferences implements SharedPreferences {
         }
 
         @Override public void apply() {
-            throw new UnsupportedOperationException("");
+            commit();
         }
     }
 }
