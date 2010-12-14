@@ -6,10 +6,10 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.test.mock.MockPackageManager;
+import com.xtremelabs.robolectric.content.TestSharedPreferences;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
-import com.xtremelabs.robolectric.view.TestSharedPreferences;
 
 import java.util.ArrayList;
 import java.util.List;

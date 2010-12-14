@@ -5,10 +5,10 @@ import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.view.TestSharedPreferences;
+import com.xtremelabs.robolectric.content.TestSharedPreferences;
 
 /**
- * Shadow for {@code PreferenceManager} that returns instances of the {@link TestSharedPreferences} utility class
+ * Shadow for {@code PreferenceManager} that returns instances of the {@link com.xtremelabs.robolectric.content.TestSharedPreferences} utility class
  */
 @Implements(PreferenceManager.class)
 public class ShadowPreferenceManager {

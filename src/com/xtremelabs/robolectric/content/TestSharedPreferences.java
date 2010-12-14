@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.view;
+package com.xtremelabs.robolectric.content;
 
 import android.content.SharedPreferences;
 
