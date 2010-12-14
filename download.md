@@ -30,25 +30,46 @@ Most people will want to grab the latest robolectric-all.jar below.
 </tr>
 <!-- START_DOWNLOADS -->
 <tr>
+  <td class="link"><a href="downloads/robolectric-0.9.4.jar">robolectric-0.9.4.jar</a></td>
+  <td class="version">0.9.4</td>
+  <td class="size">264k</td>
+  <td class="date">2010/12/14 11:38:43 PST</td>
+  <td class="sha">11603f3f8252a62f4e03766ae53d3162463f2aa1</td>
+</tr>
+<tr>
+  <td class="link"><a href="downloads/robolectric-0.9.4-src.jar">robolectric-0.9.4-src.jar</a></td>
+  <td class="version">0.9.4</td>
+  <td class="size">141k</td>
+  <td class="date">2010/12/14 11:38:43 PST</td>
+  <td class="sha">a211fd5e87304feaf4e3d88eefad0f2ac96dd410</td>
+</tr>
+<tr>
+  <td class="link"><a href="downloads/robolectric-0.9.4-all.jar">robolectric-0.9.4-all.jar</a></td>
+  <td class="version">0.9.4</td>
+  <td class="size">2973k</td>
+  <td class="date">2010/12/14 11:38:43 PST</td>
+  <td class="sha">61da54a8cc6e9acf9b42ebede706ee1f7d00a0a4</td>
+</tr>
+<tr>
   <td class="link"><a href="downloads/robolectric-0.9.3.jar">robolectric-0.9.3.jar</a></td>
   <td class="version">0.9.3</td>
   <td class="size">250k</td>
-  <td class="date">2010/12/03 12:28:22 PST</td>
-  <td class="sha">fe99f38da98215512c8a9e1ffed11277a126a20d</td>
+  <td class="date">2010/12/03 16:56:09 PST</td>
+  <td class="sha">103d18f6f36209cd76d8e853bc1e83a0a7bdfd89</td>
 </tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-0.9.3-src.jar">robolectric-0.9.3-src.jar</a></td>
   <td class="version">0.9.3</td>
   <td class="size">105k</td>
-  <td class="date">2010/12/02 14:56:37 PST</td>
+  <td class="date">2010/12/03 16:56:09 PST</td>
   <td class="sha">2ae961ae06f97fee0980f46fc0e99e33eb8fe9ab</td>
 </tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-0.9.3-all.jar">robolectric-0.9.3-all.jar</a></td>
   <td class="version">0.9.3</td>
   <td class="size">2098k</td>
-  <td class="date">2010/12/03 12:28:22 PST</td>
-  <td class="sha">de36471575e6e8a091bc5dd53cb9ddf3957e5c64</td>
+  <td class="date">2010/12/03 16:56:09 PST</td>
+  <td class="sha">b0a58102ab94b5aaf9148fa9d31e3bd1bba79d11</td>
 </tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-0.9.2.jar">robolectric-0.9.2.jar</a></td>
