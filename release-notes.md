@@ -6,6 +6,20 @@ title: Release Notes
 # Release Notes
 
 -----
+## Release 0.9.4 - December 14, 2010
+-----
+
+#### Features
+- Gingerbread support
+- http client support and shadowing
+- Shadow for AssetManager - Thanks gnorsilva!
+- Support string references in string resources.
+- Support for View background attribute resource id - Thanks macarse!
+
+#### Bug Fixes
+- Remove errant semicolon from generated ShadowSQLiteQueryBuilder - Thanks billmccord!
+
+-----
 ## Release 0.9.3 - December 3, 2010
 -----
 
