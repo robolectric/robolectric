@@ -1,15 +1,15 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class BitmapTest {
@@ -41,5 +41,19 @@ public class BitmapTest {
         shadowOf(bitmapA2).setHeight(101);
 
         assertFalse(bitmapA1.equals(bitmapA2));
+    }
+
+    @Test
+    public void shouldReceiveDescriptionWhenDrawingToCanvas() throws Exception {
+        Bitmap bitmap1 = Robolectric.newInstanceOf(Bitmap.class);
+        shadowOf(bitmap1).appendDescription("Bitmap One");
+
+        Bitmap bitmap2 = Robolectric.newInstanceOf(Bitmap.class);
+        shadowOf(bitmap2).appendDescription("Bitmap Two");
+
+        Canvas canvas = new Canvas(bitmap1);
+        canvas.drawBitmap(bitmap2, 0, 0, new Paint());
+
+        assertEquals("Bitmap One with bitmap drawn (Bitmap Two)", shadowOf(bitmap1).getDescription());
     }
 }

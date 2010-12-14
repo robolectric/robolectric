@@ -24,11 +24,16 @@ public class ShadowCanvas {
     private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<PathPaintHistoryEvent>();
     private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<CirclePaintHistoryEvent>();
     private Paint drawnPaint;
+    private Bitmap drawnBitmap;
     private boolean drewSomethingAfterCircle;
     private float translateX;
     private float translateY;
     private float scaleX = 1;
     private float scaleY = 1;
+
+    public void __constructor__(Bitmap bitmap) {
+        this.drawnBitmap = bitmap;
+    }
 
     public void appendDescription(String s) {
         description += s;
@@ -79,9 +84,12 @@ public class ShadowCanvas {
     public void drawBitmap(Bitmap bitmap, float left, float top, Paint paint) {
         appendDescription(shadowOf(bitmap).getDescription());
 
-        ColorFilter colorFilter = paint.getColorFilter();
-        if (colorFilter != null) {
-            appendDescription(" with " + colorFilter);
+
+        if (paint != null) {
+            ColorFilter colorFilter = paint.getColorFilter();
+            if (colorFilter != null) {
+                appendDescription(" with " + colorFilter);
+            }
         }
 
         int x = (int) (left + translateX);
@@ -92,6 +100,26 @@ public class ShadowCanvas {
 
         if (scaleX != 1 && scaleY != 1) {
             appendDescription(" scaled by (" + scaleX + "," + scaleY + ")");
+        }
+
+        if ( drawnBitmap != null ) {
+            shadowOf(drawnBitmap).appendDescription(" with bitmap drawn (" + shadowOf(bitmap).getDescription() + ")");
+        }
+    }
+
+    @Implementation
+    public void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
+        appendDescription(shadowOf(bitmap).getDescription());
+
+        if (paint != null) {
+            ColorFilter colorFilter = paint.getColorFilter();
+            if (colorFilter != null) {
+                appendDescription(" with " + colorFilter);
+            }
+        }
+
+        if ( drawnBitmap != null ) {
+            shadowOf(drawnBitmap).appendDescription(" with bitmap drawn (" + shadowOf(bitmap).getDescription() + ")");
         }
     }
 

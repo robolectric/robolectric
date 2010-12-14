@@ -33,6 +33,16 @@ public class ShadowBitmap {
     }
 
     @Implementation
+    public static Bitmap createBitmap(int width, int height, Bitmap.Config config) {
+        Bitmap scaledBitmap = Robolectric.newInstanceOf(Bitmap.class);
+        ShadowBitmap shadowBitmap = shadowOf(scaledBitmap);
+        shadowBitmap.appendDescription("Bitmap (" + width + " x " + height + ")");
+        shadowBitmap.setWidth(width);
+        shadowBitmap.setHeight(height);
+        return scaledBitmap;
+    }
+
+    @Implementation
     public static Bitmap createScaledBitmap(Bitmap src, int dstWidth, int dstHeight, boolean filter) {
         Bitmap scaledBitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(scaledBitmap);
