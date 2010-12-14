@@ -57,6 +57,10 @@ public class ShadowBitmap {
         description += s;
     }
 
+    public void setDescription(String s) {
+        description = s;
+    }
+
     public String getDescription() {
         return description;
     }

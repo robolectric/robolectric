@@ -1,8 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
+import android.graphics.*;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
@@ -52,8 +50,39 @@ public class BitmapTest {
         shadowOf(bitmap2).appendDescription("Bitmap Two");
 
         Canvas canvas = new Canvas(bitmap1);
-        canvas.drawBitmap(bitmap2, 0, 0, new Paint());
+        canvas.drawBitmap(bitmap2, 0, 0, null);
 
         assertEquals("Bitmap One with bitmap drawn (Bitmap Two)", shadowOf(bitmap1).getDescription());
     }
+
+    @Test
+    public void shouldReceiveDescriptionWhenDrawingToCanvasWithBitmapAndMatrixAndPaint() throws Exception {
+        Bitmap bitmap1 = Robolectric.newInstanceOf(Bitmap.class);
+        shadowOf(bitmap1).appendDescription("Bitmap One");
+
+        Bitmap bitmap2 = Robolectric.newInstanceOf(Bitmap.class);
+        shadowOf(bitmap2).appendDescription("Bitmap Two");
+
+        Canvas canvas = new Canvas(bitmap1);
+        canvas.drawBitmap(bitmap2, new Matrix(), null);
+
+        assertEquals("Bitmap One with bitmap drawn (Bitmap Two)", shadowOf(bitmap1).getDescription());
+    }
+
+    @Test
+    public void shouldReceiveDescriptionWhenDrawABitmapToCanvasWithAPaintEffect() throws Exception {
+        Bitmap bitmap1 = Robolectric.newInstanceOf(Bitmap.class);
+        shadowOf(bitmap1).appendDescription("Bitmap One");
+
+        Bitmap bitmap2 = Robolectric.newInstanceOf(Bitmap.class);
+        shadowOf(bitmap2).appendDescription("Bitmap Two");
+
+        Canvas canvas = new Canvas(bitmap1);
+        Paint paint = new Paint();
+        paint.setColorFilter(new ColorMatrixColorFilter(new ColorMatrix()));
+        canvas.drawBitmap(bitmap2, new Matrix(), paint);
+
+        assertEquals("Bitmap One with bitmap drawn (Bitmap Two with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>)", shadowOf(bitmap1).getDescription());
+    }
+
 }

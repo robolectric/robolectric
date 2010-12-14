@@ -11,7 +11,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadows the {@code android.graphics.Canvas} class.
- *
+ * <p/>
  * Broken.
  * This implementation is very specific to the application for which it was developed.
  * Todo: Reimplement. Consider using the same strategy of collecting a history of draw events and providing methods for writing queries based on type, number, and order of events.
@@ -33,6 +33,7 @@ public class ShadowCanvas {
 
     public void __constructor__(Bitmap bitmap) {
         this.drawnBitmap = bitmap;
+        appendDescription(shadowOf(bitmap).getDescription());
     }
 
     public void appendDescription(String s) {
@@ -82,8 +83,12 @@ public class ShadowCanvas {
 
     @Implementation
     public void drawBitmap(Bitmap bitmap, float left, float top, Paint paint) {
-        appendDescription(shadowOf(bitmap).getDescription());
-
+        boolean isDescriptionBlank = description.equalsIgnoreCase("");
+        if (isDescriptionBlank) {
+            appendDescription(shadowOf(bitmap).getDescription());
+        } else {
+            appendDescription(" with bitmap drawn (" + shadowOf(bitmap).getDescription());
+        }
 
         if (paint != null) {
             ColorFilter colorFilter = paint.getColorFilter();
@@ -102,14 +107,24 @@ public class ShadowCanvas {
             appendDescription(" scaled by (" + scaleX + "," + scaleY + ")");
         }
 
-        if ( drawnBitmap != null ) {
-            shadowOf(drawnBitmap).appendDescription(" with bitmap drawn (" + shadowOf(bitmap).getDescription() + ")");
+        if (!isDescriptionBlank) {
+            appendDescription(")");
         }
+
+        if (drawnBitmap != null) {
+            shadowOf(drawnBitmap).setDescription(getDescription());
+        }
+
     }
 
     @Implementation
     public void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
-        appendDescription(shadowOf(bitmap).getDescription());
+        boolean isDescriptionBlank = description.equalsIgnoreCase("");
+        if (isDescriptionBlank) {
+            appendDescription(shadowOf(bitmap).getDescription());
+        } else {
+            appendDescription(" with bitmap drawn (" + shadowOf(bitmap).getDescription());
+        }
 
         if (paint != null) {
             ColorFilter colorFilter = paint.getColorFilter();
@@ -118,9 +133,14 @@ public class ShadowCanvas {
             }
         }
 
-        if ( drawnBitmap != null ) {
-            shadowOf(drawnBitmap).appendDescription(" with bitmap drawn (" + shadowOf(bitmap).getDescription() + ")");
+        if (!isDescriptionBlank) {
+            appendDescription(")");
         }
+
+        if (drawnBitmap != null) {
+            shadowOf(drawnBitmap).setDescription(getDescription());
+        }
+
     }
 
     public int getPathPaintHistoryCount() {
