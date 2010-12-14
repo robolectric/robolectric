@@ -139,7 +139,6 @@ public class ShadowCanvas {
         if (drawnBitmap != null) {
             shadowOf(drawnBitmap).setDescription(getDescription());
         }
-
     }
 
     public int getPathPaintHistoryCount() {
