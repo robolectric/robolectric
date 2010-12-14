@@ -35,6 +35,12 @@ public class TestWindow extends Window {
         return false;
     }
 
+    @Override public void takeSurface(SurfaceHolder.Callback2 callback2) {
+    }
+
+    @Override public void takeInputQueue(InputQueue.Callback callback) {
+    }
+
     @Override public void setContentView(int layoutResID) {
     }
 

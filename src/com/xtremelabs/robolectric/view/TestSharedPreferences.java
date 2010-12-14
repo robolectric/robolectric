@@ -142,5 +142,9 @@ public class TestSharedPreferences implements SharedPreferences {
             }
             return true;
         }
+
+        @Override public void apply() {
+            throw new UnsupportedOperationException("");
+        }
     }
 }
