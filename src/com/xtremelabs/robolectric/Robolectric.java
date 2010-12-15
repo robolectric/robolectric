@@ -153,6 +153,7 @@ public class Robolectric {
                 ShadowDrawable.class,
                 ShadowDialog.class,
                 ShadowEditText.class,
+                ShadowExpandableListView.class,
                 ShadowGeocoder.class,
                 ShadowGeoPoint.class,
                 ShadowHandler.class,
@@ -262,6 +263,10 @@ public class Robolectric {
 
     public static ShadowListView shadowOf(ListView instance) {
         return (ShadowListView) shadowOf_(instance);
+    }
+
+    public static ExpandableListView shadowOf(ExpandableListView instance) {
+        return (ExpandableListView) shadowOf_(instance);
     }
 
     public static ShadowActivity shadowOf(Activity instance) {
