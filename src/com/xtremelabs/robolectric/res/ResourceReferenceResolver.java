@@ -19,11 +19,17 @@ class ResourceReferenceResolver<T> {
     }
 
     public void processResource(String name, String rawValue, ResourceValueConverter loader) {
+        String valuePointer = prefix + "/" + name;
         if (rawValue.startsWith("@" + prefix)) {
-           addAttributeReference(name, rawValue);
+            addAttributeReference(rawValue, valuePointer);
         } else {
-            addAttribute(prefix + "/" + name, (T) loader.convertRawValue(rawValue));
+            addAttribute(valuePointer, (T) loader.convertRawValue(rawValue));
         }
+    }
+
+    public void addAttribute(String valuePointer, T value) {
+        attributeNamesToValues.put(valuePointer, value);
+        resolveUnresolvedReferences(valuePointer, value);
     }
 
     private void resolveUnresolvedReferences(String attributeName, T value) {
@@ -45,13 +51,7 @@ class ResourceReferenceResolver<T> {
         references.add(valuePointer);
     }
 
-    public void addAttribute(String attributeName, T value) {
-        attributeNamesToValues.put(attributeName, value);
-        resolveUnresolvedReferences(attributeName, value);
-    }
-
-    private void addAttributeReference(String name, String rawValue) {
-        String valuePointer = prefix + "/" + name;
+    private void addAttributeReference(String rawValue, String valuePointer) {
         String attributeName = rawValue.substring(1);
         T value = attributeNamesToValues.get(attributeName);
         if (value == null) {

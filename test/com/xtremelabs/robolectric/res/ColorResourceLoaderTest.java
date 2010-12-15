@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.res;
 
+import android.graphics.Color;
 import com.xtremelabs.robolectric.R;
 import org.junit.Before;
 import org.junit.Test;
@@ -43,5 +44,25 @@ public class ColorResourceLoaderTest {
     @Test
     public void shouldLoadColorsWithAlpha() throws Exception {
         assertThat(colorResourceLoader.getValue(R.color.color_with_alpha), equalTo(0x802C76AD));
+    }
+
+    @Test
+    public void shouldReturnAndroidColors() throws Exception {
+        assertThat(colorResourceLoader.getValue(android.R.color.black), equalTo(Color.BLACK));
+    }
+
+    @Test
+    public void shouldNotSupportCarrierDefinedColors() throws Exception {
+        assertThat(colorResourceLoader.getValue(android.R.color.background_dark), equalTo(-1));
+    }
+
+    @Test
+    public void shouldParseAndroidColorReferences() throws Exception {
+        assertThat(colorResourceLoader.getValue(R.color.android_namespaced_black), equalTo(Color.BLACK));
+    }
+
+    @Test
+    public void shouldParseSimpleAndroidColorReferences() throws Exception {
+        assertThat(colorResourceLoader.getValue(R.color.android_red), equalTo(Color.RED));
     }
 }

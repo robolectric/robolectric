@@ -8,4 +8,9 @@
     <color name="color_with_alpha">#802C76AD</color>
 
     <color name="background">@color/grey42</color>
+
+    <color name="android_namespaced_black">@android:color/black</color>
+
+    <color name="android_red">red</color>
+
 </resources>

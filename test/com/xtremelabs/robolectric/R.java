@@ -48,6 +48,8 @@ public final class R {
         public static final int white = nextId++;
         public static final int clear = nextId++;
         public static final int color_with_alpha = nextId++;
+        public static final int android_namespaced_black = nextId++;
+        public static final int android_red = nextId++;
     }
 
     public static final class drawable {
