@@ -229,9 +229,25 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         ResourceLoader resourceLoader = createResourceLoader(projectRoot, resourceDir);
 
         Robolectric.bindDefaultShadowClasses();
+        bindShadowClasses();
+
         Robolectric.resetStaticState();
+        resetStaticState();
+
         Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
         Robolectric.application.onCreate();
+    }
+
+    /**
+     * Override this method to bind your own shadow classes
+     */
+    protected void bindShadowClasses() {
+    }
+
+    /**
+     * Override this method to reset the state of static members before each test.
+     */
+    protected void resetStaticState() {
     }
 
     /**
