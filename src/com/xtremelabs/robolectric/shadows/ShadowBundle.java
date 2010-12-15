@@ -62,6 +62,11 @@ public class ShadowBundle {
         return (Parcelable) map.get(key);
     }
 
+    @Implementation
+    public boolean containsKey(String key) {
+        return map.containsKey(key);
+    }
+
     @Override @Implementation
     public boolean equals(Object o) {
         if (o == null) return false;
