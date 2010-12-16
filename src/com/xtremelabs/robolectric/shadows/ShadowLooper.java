@@ -20,6 +20,7 @@ public class ShadowLooper {
     private static Looper MAIN_LOOPER;
 
     private Scheduler scheduler = new Scheduler();
+    private boolean isPaused = false;
 
 
     static {
@@ -95,7 +96,20 @@ public class ShadowLooper {
      * @param delayMillis how many milliseconds into the (virtual) future to run it
      */
     public void post(Runnable runnable, long delayMillis) {
-        scheduler.postDelayed(runnable, delayMillis);
+        if (isPaused || delayMillis > 0) {
+            scheduler.postDelayed(runnable, delayMillis);
+        } else {
+            runnable.run();
+        }
+    }
+
+    public void pause() {
+        isPaused = true;
+    }
+
+    public void unPause() {
+        isPaused = false;
+        scheduler.advanceToLastPostedRunnable();
     }
 
     /**

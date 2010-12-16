@@ -68,6 +68,10 @@ public class Scheduler {
         return postedRunnables.size();
     }
 
+    public boolean areAnyRunnable() {
+        return nextTaskIsScheduledBefore(currentTime);
+    }
+
     public void reset() {
         postedRunnables.clear();
     }
