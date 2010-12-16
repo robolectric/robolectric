@@ -140,6 +140,7 @@ public class Robolectric {
                 ShadowBundle.class,
                 ShadowCamera.class,
                 ShadowCameraParameters.class,
+                ShadowCameraSize.class,
                 ShadowCanvas.class,
                 ShadowCompoundButton.class,
                 ShadowComponentName.class,
@@ -400,6 +401,10 @@ public class Robolectric {
         return (ShadowCameraParameters) shadowOf_(instance);
     }
 
+    public static ShadowCameraSize shadowOf(Camera.Size instance) {
+        return (ShadowCameraSize) shadowOf_(instance);
+    }
+    
     public static ShadowMediaRecorder shadowOf(MediaRecorder instance) {
         return (ShadowMediaRecorder) shadowOf_(instance);
     }
