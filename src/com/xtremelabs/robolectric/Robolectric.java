@@ -458,4 +458,21 @@ public class Robolectric {
     public static HttpRequestData getSentHttpRequestData(int index) {
         return ShadowDefaultRequestDirector.getSentHttpRequestData(index);
     }
+
+    public static void pauseLooper(Looper looper) {
+        ShadowLooper.pauseLooper(looper);
+    }
+
+    public static void unPauseLooper(Looper looper) {
+        ShadowLooper.unPauseLooper(looper);
+    }
+
+    public static void pauseMainLooper() {
+        ShadowLooper.pauseMainLooper();
+    }
+
+    public static void unPauseMainLooper() {
+        ShadowLooper.unPauseMainLooper();
+    }
+
 }

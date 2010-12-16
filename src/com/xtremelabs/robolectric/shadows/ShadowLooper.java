@@ -6,6 +6,7 @@ import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.Scheduler;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow for {@code Looper} that enqueues posted {@link Runnable}s to be run (on this thread) later. {@code Runnable}s
@@ -46,6 +47,22 @@ public class ShadowLooper {
     @Implementation
     public static Looper myLooper() {
         return sThreadLocal.get();
+    }
+
+    public static void pauseLooper(Looper looper) {
+        shadowOf(looper).pause();
+    }
+
+    public static void unPauseLooper(Looper looper) {
+        shadowOf(looper).unPause();
+    }
+
+    public static void pauseMainLooper() {
+        pauseLooper(Looper.getMainLooper());
+    }
+
+    public static void unPauseMainLooper() {
+        unPauseLooper(Looper.getMainLooper());
     }
 
     /**

@@ -55,10 +55,10 @@ public class HandlerTest {
     @Test
     public void testDifferentLoopersGetDifferentQueues() throws Exception {
         Looper looper1 = Robolectric.newInstanceOf(Looper.class);
-        Robolectric.shadowOf(looper1).pause();
+        Robolectric.pauseLooper(looper1);
 
         Looper looper2 = Robolectric.newInstanceOf(Looper.class);
-        Robolectric.shadowOf(looper2).pause();
+        Robolectric.pauseLooper(looper2);
 
         Handler handler1 = new Handler(looper1);
         handler1.post(new Say("first thing"));
