@@ -9,8 +9,7 @@ import com.xtremelabs.robolectric.util.RealObject;
 
 @Implements(ExpandableListView.class)
 public class ShadowExpandableListView extends ShadowListView {
-	@RealObject
-	private ExpandableListView mExpandable;
+	@RealObject private ExpandableListView mExpandable;
 	private OnChildClickListener mChildClickListener;
 	
 	@Implementation
