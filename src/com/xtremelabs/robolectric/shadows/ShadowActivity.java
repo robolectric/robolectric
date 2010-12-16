@@ -82,6 +82,11 @@ public class ShadowActivity extends ShadowContextWrapper {
         return LayoutInflater.from(realActivity);
     }
 
+    @Implementation
+    public final void runOnUiThread(Runnable action) {
+        action.run();
+    }
+
     /**
      * Checks to ensure that the{@code contentView} has been set
      *
