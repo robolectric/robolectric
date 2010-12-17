@@ -52,7 +52,6 @@ import java.util.List;
 
 public class Robolectric {
     public static Application application;
-    private static Scheduler backgroundScheduler = new Scheduler();
 
     public static <T> T newInstanceOf(Class<T> clazz) {
         try {
@@ -211,7 +210,7 @@ public class Robolectric {
         ShadowAlertDialog.reset();
         ShadowDialog.reset();
         ShadowLooper.resetAll();
-        Robolectric.getBackgroundThreadScheduler().reset();
+        ShadowAsyncTask.resetAll();
         ShadowDefaultRequestDirector.reset();
     }
 
@@ -417,7 +416,7 @@ public class Robolectric {
     }
 
     public static void runBackgroundTasks() {
-        getBackgroundThreadScheduler().advanceBy(0);
+        ShadowAsyncTask.getAsyncTaskScheduler().advanceBy(0);
     }
 
     public static void runUiThreadTasks() {
@@ -475,13 +474,5 @@ public class Robolectric {
 
     public static Scheduler getUiThreadScheduler() {
         return shadowOf(Looper.getMainLooper()).getScheduler();
-    }
-
-    public static Scheduler getBackgroundThreadScheduler() {
-        return backgroundScheduler;
-    }
-
-    public static void setBackgroundScheduler(Scheduler backgroundScheduler) {
-        Robolectric.backgroundScheduler = backgroundScheduler;
     }
 }

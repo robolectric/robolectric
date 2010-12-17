@@ -6,12 +6,22 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.util.Scheduler;
 
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {
+    public static Scheduler backgroundScheduler = new Scheduler();
     @RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
     private boolean cancelled = false;
     private boolean hasRun = false;
+
+    public static Scheduler getAsyncTaskScheduler() {
+        return backgroundScheduler;
+    }
+
+    public static void resetAll() {
+        getAsyncTaskScheduler().reset();
+    }
 
 //    public android.os.AsyncTask.Status getStatus() {
 //        return null;
@@ -41,7 +51,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         final ShadowAsyncTaskBridge<Params, Progress, Result> bridge = new ShadowAsyncTaskBridge<Params, Progress, Result>(realAsyncTask);
         bridge.onPreExecute();
 
-        Robolectric.getBackgroundThreadScheduler().post(new Runnable() {
+        getAsyncTaskScheduler().post(new Runnable() {
             @Override public void run() {
                 if (cancelled) return;
                 hasRun = true;
