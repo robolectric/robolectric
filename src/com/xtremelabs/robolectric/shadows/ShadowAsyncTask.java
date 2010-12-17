@@ -41,7 +41,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         final ShadowAsyncTaskBridge<Params, Progress, Result> bridge = new ShadowAsyncTaskBridge<Params, Progress, Result>(realAsyncTask);
         bridge.onPreExecute();
 
-        Robolectric.backgroundScheduler.post(new Runnable() {
+        Robolectric.getBackgroundThreadScheduler().post(new Runnable() {
             @Override public void run() {
                 if (cancelled) return;
                 hasRun = true;

@@ -18,7 +18,7 @@ public class AsyncTaskTest {
 
     @Before public void setUp() throws Exception {
         transcript = new Transcript();
-        Robolectric.backgroundScheduler.pause();
+        Robolectric.getBackgroundThreadScheduler().pause();
         Robolectric.getUiThreadScheduler().pause();
     }
 
