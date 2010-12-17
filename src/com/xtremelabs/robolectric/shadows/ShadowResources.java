@@ -34,12 +34,12 @@ public class ShadowResources {
 
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
-        return resourceLoader.colorResourceLoader.getValue(id);
+        return resourceLoader.getColorValue(id);
     }
 
     @Implementation
     public String getString(int id) throws Resources.NotFoundException {
-        return resourceLoader.stringResourceLoader.getValue(id);
+        return resourceLoader.getStringValue(id);
     }
 
     @Implementation
@@ -50,12 +50,12 @@ public class ShadowResources {
 
     @Implementation
     public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    	return resourceLoader.rawResourceLoader.getValue(id);
+    	return resourceLoader.getRawValue(id);
     }
     
     @Implementation
     public String[] getStringArray(int id) throws Resources.NotFoundException {
-        String[] arrayValue = resourceLoader.stringArrayResourceLoader.getArrayValue(id);
+        String[] arrayValue = resourceLoader.getStringArrayValue(id);
         if (arrayValue == null) {
             throw new Resources.NotFoundException();
         }

@@ -10,7 +10,7 @@ import com.xtremelabs.robolectric.util.Scheduler;
 
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {
-    public static Scheduler backgroundScheduler = new Scheduler();
+    private static Scheduler backgroundScheduler = new Scheduler();
     @RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
     private boolean cancelled = false;
     private boolean hasRun = false;
