@@ -13,8 +13,8 @@ import org.junit.runner.RunWith;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class RobolectricTest {
@@ -74,6 +74,18 @@ public class RobolectricTest {
         View view = new View(null);
         view.setEnabled(false);
         Robolectric.clickOn(view);
+    }
+
+    @Test
+    public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
+        assertThat(Robolectric.backgroundScheduler.isPaused(), equalTo(false));
+        Robolectric.backgroundScheduler.pause();
+    }
+
+    @Test
+    public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
+        assertThat(Robolectric.backgroundScheduler.isPaused(), equalTo(false));
+        Robolectric.backgroundScheduler.pause();
     }
 
     public void clickOn_shouldCallClickListener() throws Exception {

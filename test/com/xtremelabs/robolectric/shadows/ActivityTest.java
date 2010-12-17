@@ -6,12 +6,13 @@ import android.content.IntentFilter;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.TestRunnable;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ActivityTest {
@@ -37,6 +38,27 @@ public class ActivityTest {
     public void shouldRetrievePackageNameFromTheManifest() throws Exception {
         Robolectric.application = new ApplicationResolver("test" + File.separator + "TestAndroidManifestWithPackageName.xml").resolveApplication();
         assertEquals("com.wacka.wa", new Activity().getPackageName());
+    }
+
+    @Test
+    public void shouldRunUiTasksImmediatelyByDefault() throws Exception {
+        TestRunnable runnable = new TestRunnable();
+        MyActivity activity = new MyActivity();
+        activity.runOnUiThread(runnable);
+        assertTrue(runnable.wasRun);
+    }
+
+    @Test
+    public void shouldQueueUiTasksWhenUiThreadIsPaused() throws Exception {
+        Robolectric.pauseMainLooper();
+
+        MyActivity activity = new MyActivity();
+        TestRunnable runnable = new TestRunnable();
+        activity.runOnUiThread(runnable);
+        assertFalse(runnable.wasRun);
+
+        Robolectric.unPauseMainLooper();
+        assertTrue(runnable.wasRun);
     }
 
     private static class MyActivity extends Activity {

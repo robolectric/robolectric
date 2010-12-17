@@ -47,7 +47,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
                 hasRun = true;
                 final Result result = bridge.doInBackground(params);
 
-                Robolectric.uiThreadScheduler.post(new Runnable() {
+                Robolectric.getUiThreadScheduler().post(new Runnable() {
                     @Override public void run() {
                         bridge.onPostExecute(result);
                     }

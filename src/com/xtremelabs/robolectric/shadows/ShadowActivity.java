@@ -12,6 +12,7 @@ import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
 import com.xtremelabs.robolectric.view.TestWindow;
 
+import static com.xtremelabs.robolectric.Robolectric.getUiThreadScheduler;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 
@@ -128,6 +129,11 @@ public class ShadowActivity extends ShadowContextWrapper {
             window = new TestWindow(realActivity);
         }
         return window;
+    }
+
+    @Implementation
+    public void runOnUiThread(Runnable action) {
+        getUiThreadScheduler().post(action);
     }
 
     /**

@@ -17,27 +17,16 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Looper.class)
 public class ShadowLooper {
-    private static ThreadLocal<Looper> sThreadLocal;
-    private static Looper MAIN_LOOPER;
+    private static Looper MAIN_LOOPER = newInstanceOf(Looper.class);
+    static Looper MY_LOOPER = MAIN_LOOPER;
 
     private Scheduler scheduler = new Scheduler();
 
-
-    static {
-        resetAll();
-    }
-
     public static void resetAll() {
-        sThreadLocal = new ThreadLocal<Looper>() {
-            @Override
-            protected Looper initialValue() {
-                return newInstanceOf(Looper.class);
-            }
-        };
-
-        MAIN_LOOPER = sThreadLocal.get();
+        shadowOf(MAIN_LOOPER).reset();
+        shadowOf(MY_LOOPER).reset();
     }
-
+    
     @Implementation
     public static Looper getMainLooper() {
         return MAIN_LOOPER;
@@ -45,7 +34,7 @@ public class ShadowLooper {
 
     @Implementation
     public static Looper myLooper() {
-        return sThreadLocal.get();
+        return MY_LOOPER;
     }
 
     public static void pauseLooper(Looper looper) {
@@ -138,4 +127,5 @@ public class ShadowLooper {
     public Scheduler getScheduler() {
         return scheduler;
     }
+
 }

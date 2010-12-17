@@ -19,6 +19,10 @@ public class Scheduler {
         advanceToLastPostedRunnable();
     }
 
+    public boolean isPaused() {
+        return paused;
+    }
+
     public void postDelayed(Runnable runnable, long delayMillis) {
         if (paused || delayMillis > 0) {
             postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
@@ -89,6 +93,7 @@ public class Scheduler {
 
     public void reset() {
         postedRunnables.clear();
+        paused = false;
     }
 
     class PostedRunnable implements Comparable<PostedRunnable> {
