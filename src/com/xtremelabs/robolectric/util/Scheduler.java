@@ -7,10 +7,25 @@ import java.util.List;
 public class Scheduler {
     private List<PostedRunnable> postedRunnables = new ArrayList<PostedRunnable>();
     private long currentTime = 0;
+    private boolean paused = false;
+
+
+    public void pause() {
+        paused = true;
+    }
+
+    public void unPause() {
+        paused = false;
+        advanceToLastPostedRunnable();
+    }
 
     public void postDelayed(Runnable runnable, long delayMillis) {
-        postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
-        Collections.sort(postedRunnables);
+        if (paused || delayMillis > 0) {
+            postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
+            Collections.sort(postedRunnables);
+        } else {
+            runnable.run();
+        }
     }
 
     public void post(Runnable runnable) {
