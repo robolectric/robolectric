@@ -79,6 +79,7 @@ public class Robolectric {
             ShadowWrangler.getInstance().bindShadowClass(realClass.value(), shadowClass);
         } catch (TypeNotPresentException ignored) {
             //this allows users of the robolectric.jar file to use the non-Google APIs version of the api
+            System.out.println("Warning: an error occurred while binding shadow class: " + shadowClass.getSimpleName());
         }
     }
 
