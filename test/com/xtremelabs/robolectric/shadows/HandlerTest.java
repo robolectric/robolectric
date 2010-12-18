@@ -22,9 +22,6 @@ public class HandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindShadowClass(Handler.class, ShadowHandler.class);
-        Robolectric.bindShadowClass(Looper.class, ShadowLooper.class);
-
         transcript = new Transcript();
     }
 

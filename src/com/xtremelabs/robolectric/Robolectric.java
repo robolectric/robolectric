@@ -69,10 +69,6 @@ public class Robolectric {
         }
     }
 
-    public static void bindShadowClass(Class<?> realClass, Class<?> shadowClass) {
-        ShadowWrangler.getInstance().bindShadowClass(realClass, shadowClass);
-    }
-
     public static void bindShadowClass(Class<?> shadowClass) {
         Implements realClass = shadowClass.getAnnotation(Implements.class);
         if (realClass == null) {
@@ -80,7 +76,7 @@ public class Robolectric {
         }
 
         try {
-            bindShadowClass(realClass.value(), shadowClass);
+            ShadowWrangler.getInstance().bindShadowClass(realClass.value(), shadowClass);
         } catch (TypeNotPresentException ignored) {
             //this allows users of the robolectric.jar file to use the non-Google APIs version of the api
         }
@@ -194,6 +190,7 @@ public class Robolectric {
                 ShadowTextView.class,
                 ShadowToast.class,
                 ShadowTypedValue.class,
+                ShadowURLSpan.class,
                 ShadowView.class,
                 ShadowViewGroup.class,
                 ShadowWebView.class,

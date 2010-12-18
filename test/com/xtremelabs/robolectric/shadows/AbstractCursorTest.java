@@ -1,8 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.ContentValues;
 import android.database.AbstractCursor;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,11 +19,7 @@ public class AbstractCursorTest {
 
 	@Before
 	public void setUp() throws Exception {
-		
-        Robolectric.bindShadowClass(ContentValues.class, ShadowContentValues.class);
-        Robolectric.bindShadowClass(AbstractCursor.class, ShadowAbstractCursor.class);
-        
-        cursor = new TestCursor();
+		cursor = new TestCursor();
 	}
 
 	@Test

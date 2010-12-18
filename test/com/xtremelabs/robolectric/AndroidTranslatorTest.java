@@ -30,7 +30,7 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testStaticMethodsAreDelegated() throws Exception {
-        Robolectric.bindShadowClass(AccountManager.class, ShadowAccountManagerForTests.class);
+        Robolectric.bindShadowClass(ShadowAccountManagerForTests.class);
 
         Context context = mock(Context.class);
         AccountManager.get(context);
@@ -40,7 +40,7 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testProtectedMethodsAreDelegated() throws Exception {
-        Robolectric.bindShadowClass(ItemizedOverlay.class, ShadowItemizedOverlay.class);
+        Robolectric.bindShadowClass(ShadowItemizedOverlay.class);
 
         ItemizedOverlayForTests overlay = new ItemizedOverlayForTests(null);
         overlay.triggerProtectedCall();
@@ -50,7 +50,7 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testNativeMethodsAreDelegated() throws Exception {
-        Robolectric.bindShadowClass(Paint.class, ShadowPaintForTests.class);
+        Robolectric.bindShadowClass(ShadowPaintForTests.class);
 
         Paint paint = new Paint();
         paint.setColor(1234);
@@ -65,7 +65,7 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testGeneratedDefaultConstructorIsWired() throws Exception {
-        Robolectric.bindShadowClass(ClassWithNoDefaultConstructor.class, ShadowClassWithNoDefaultConstructors.class);
+        Robolectric.bindShadowClass(ShadowClassWithNoDefaultConstructors.class);
 
         Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
         ctor.setAccessible(true);
@@ -218,6 +218,7 @@ public class AndroidTranslatorTest {
         }
     }
 
+    @Implements(ClassWithNoDefaultConstructor.class)
     public static class ShadowClassWithNoDefaultConstructors {
     }
 }

@@ -14,8 +14,6 @@ import static org.junit.Assert.assertThat;
 public class LayoutParamsTest {
     @Test
     public void testConstructor() throws Exception {
-        Robolectric.bindShadowClass(ViewGroup.LayoutParams.class, ShadowLayoutParams.class);
-
         Gallery.LayoutParams layoutParams = new Gallery.LayoutParams(123, 456);
         assertThat(layoutParams.width, equalTo(123));
         assertThat(layoutParams.height, equalTo(456));

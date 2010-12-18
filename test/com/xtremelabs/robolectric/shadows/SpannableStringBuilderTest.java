@@ -12,11 +12,7 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class SpannableStringBuilderTest {
-    @Before
-    public void setUp() throws Exception {
-        Robolectric.bindShadowClass(SpannableStringBuilder.class, ShadowSpannableStringBuilder.class);
-    }
-
+    
     @Test
     public void testAppend() throws Exception {
         SpannableStringBuilder builder = new SpannableStringBuilder("abc");

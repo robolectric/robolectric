@@ -1,11 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.ContextWrapper;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -16,13 +13,7 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AlertDialogTest {
-    @Before
-    public void setUp() throws Exception {
-        Robolectric.bindShadowClass(Dialog.class, ShadowDialog.class);
-        Robolectric.bindShadowClass(AlertDialog.class, ShadowAlertDialog.class);
-        Robolectric.bindShadowClass(AlertDialog.Builder.class, ShadowAlertDialog.ShadowBuilder.class);
-    }
-
+    
     @Test
     public void testBuilder() throws Exception {
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));

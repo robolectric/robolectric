@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric;
 
 import android.content.Context;
-import android.graphics.Rect;
 import android.test.mock.MockContext;
 import android.view.View;
 import android.widget.TextView;
@@ -25,7 +24,7 @@ public class ShadowWranglerTest {
 
     @Test
     public void testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnShadowClass() throws Exception {
-        Robolectric.bindShadowClass(View.class, TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class);
+        Robolectric.bindShadowClass(TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class);
 
         View view = new View(context);
         assertEquals(TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class, Robolectric.shadowOf_(view).getClass());
@@ -33,7 +32,7 @@ public class ShadowWranglerTest {
 
     @Test
     public void testConstructorInvocation() throws Exception {
-        Robolectric.bindShadowClass(View.class, TestShadowView.class);
+        Robolectric.bindShadowClass(TestShadowView.class);
 
         View view = new View(context);
         assertSame(context, shadowOf(view).context);
@@ -42,7 +41,7 @@ public class ShadowWranglerTest {
 
     @Test
     public void testRealObjectAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
-        Robolectric.bindShadowClass(View.class, TestShadowView.class);
+        Robolectric.bindShadowClass(TestShadowView.class);
 
         View view = new View(context);
         assertSame(context, shadowOf(view).context);
@@ -54,7 +53,7 @@ public class ShadowWranglerTest {
 
     @Test
     public void testMethodDelegation() throws Exception {
-        Robolectric.bindShadowClass(View.class, TestShadowView.class);
+        Robolectric.bindShadowClass(TestShadowView.class);
 
         View view = new View(context);
         assertSame(context, view.getContext());
@@ -62,21 +61,16 @@ public class ShadowWranglerTest {
 
     @Test
     public void testEqualsMethodDelegation() throws Exception {
-        Robolectric.bindShadowClass(View.class, WithEquals.class);
+        Robolectric.bindShadowClass(WithEquals.class);
 
         View view1 = new View(context);
         View view2 = new View(context);
         assertEquals(view1, view2);
-
-        Robolectric.bindShadowClass(Rect.class, WithEquals.class);
-        Rect rect1 = new Rect();
-        Rect rect2 = new Rect();
-        assertEquals(rect1, rect2);
     }
 
     @Test
     public void testHashCodeMethodDelegation() throws Exception {
-        Robolectric.bindShadowClass(View.class, WithEquals.class);
+        Robolectric.bindShadowClass(WithEquals.class);
 
         View view = new View(context);
         assertEquals(42, view.hashCode());
@@ -84,7 +78,7 @@ public class ShadowWranglerTest {
 
     @Test
     public void testToStringMethodDelegation() throws Exception {
-        Robolectric.bindShadowClass(View.class, WithToString.class);
+        Robolectric.bindShadowClass(WithToString.class);
 
         View view = new View(context);
         assertEquals("the expected string", view.toString());
@@ -92,7 +86,7 @@ public class ShadowWranglerTest {
 
     @Test
     public void testShadowSelectionSearchesSuperclasses() throws Exception {
-        Robolectric.bindShadowClass(View.class, TestShadowView.class);
+        Robolectric.bindShadowClass(TestShadowView.class);
 
         TextView textView = new TextView(context);
         assertEquals(TestShadowView.class, Robolectric.shadowOf_(textView).getClass());
@@ -100,8 +94,8 @@ public class ShadowWranglerTest {
 
     @Test
     public void shouldUseMostSpecificShadow() throws Exception {
-        Robolectric.bindShadowClass(View.class, TestShadowView.class);
-        Robolectric.bindShadowClass(TextView.class, TestShadowTextView.class);
+        Robolectric.bindShadowClass(TestShadowView.class);
+        Robolectric.bindShadowClass(TestShadowTextView.class);
 
         TextView textView = new TextView(context);
         assertThat(shadowOf(textView), instanceOf(TestShadowTextView.class));

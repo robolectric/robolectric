@@ -43,7 +43,7 @@ public class RobolectricTest {
 
     @Test
     public void shouldLogMissingInvokedShadowMethodsWhenRequested() throws Exception {
-        Robolectric.bindShadowClass(View.class, TestShadowView.class);
+        Robolectric.bindShadowClass(TestShadowView.class);
         Robolectric.logMissingInvokedShadowMethods();
 
 
@@ -61,8 +61,6 @@ public class RobolectricTest {
 
     @Test // This is nasty because it depends on the test above having run first in order to fail
     public void shouldNotLogMissingInvokedShadowMethodsByDefault() throws Exception {
-        Robolectric.bindShadowClass(View.class, ShadowWranglerTest.TestShadowView.class);
-
         View aView = new View(null);
         aView.findViewById(27);
         String output = buff.toString();
