@@ -28,11 +28,11 @@ public class CameraParametersTest {
 
     @Test
     public void testSetPreviewSize() throws Exception {
-        assertThat(shadowParameters.getPreviewWidth(), not(equalTo(640)));
-        assertThat(shadowParameters.getPreviewHeight(), not(equalTo(480)));
-        parameters.setPreviewSize(640, 480);
-        assertThat(shadowParameters.getPreviewWidth(), equalTo(640));
-        assertThat(shadowParameters.getPreviewHeight(), equalTo(480));
+        assertThat(shadowParameters.getPreviewWidth(), not(equalTo(320)));
+        assertThat(shadowParameters.getPreviewHeight(), not(equalTo(240)));
+        parameters.setPreviewSize(320, 240);
+        assertThat(shadowParameters.getPreviewWidth(), equalTo(320));
+        assertThat(shadowParameters.getPreviewHeight(), equalTo(240));
     }
 
     @Test

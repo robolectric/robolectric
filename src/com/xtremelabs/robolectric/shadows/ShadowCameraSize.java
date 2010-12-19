@@ -13,10 +13,10 @@ import android.hardware.Camera;
 public class ShadowCameraSize {
 	  @RealObject private Camera.Size realCameraSize;
 	  
-	  // TODO not being invoked -- why?  Fix.
-	  public void __constructor__(int width, int height) {
+	  // TODO not being invoked -- why?  Also causes RobolectrictricWiringTest to fail.
+/*	  public void __constructor__(int width, int height) {
 		  realCameraSize.width = width;
 		  realCameraSize.height = height;
-	  }
+	  }*/
 	  
 }

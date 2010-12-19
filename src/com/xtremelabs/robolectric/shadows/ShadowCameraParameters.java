@@ -45,7 +45,7 @@ public class ShadowCameraParameters {
     }
 
     @Implementation
-    int getPreviewFrameRate() {								// TODO test
+    public int getPreviewFrameRate() {						// TODO test
     	return previewFps;				
     }
     
