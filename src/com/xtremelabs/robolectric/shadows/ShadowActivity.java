@@ -1,5 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
@@ -28,6 +31,8 @@ public class ShadowActivity extends ShadowContextWrapper {
     private Activity parent;
     private boolean finishWasCalled;
     private TestWindow window;
+    
+    private List<IntentForResult> startedActivitiesForResults = new ArrayList<IntentForResult>();
 
     @Implementation
     public final Application getApplication() {
@@ -107,6 +112,12 @@ public class ShadowActivity extends ShadowContextWrapper {
     public void finish() {
         finishWasCalled = true;
     }
+    
+    @Implementation
+    public void startActivityForResult(Intent intent, int requestCode) {
+    	startedActivitiesForResults.add(new IntentForResult(intent, requestCode));
+    	getApplicationContext().startActivity(intent);
+    }
 
     /**
      * @return whether {@link #finish()} was called
@@ -177,4 +188,48 @@ public class ShadowActivity extends ShadowContextWrapper {
     public Intent getResultIntent() {
         return resultIntent;
     }
+    
+    /**
+     * Non-Android accessor consumes and returns the next {@code Intent} on the
+     * started activities for results stack.
+     *
+     * @return the next started {@code Intent} for an activity
+     */
+    public IntentForResult getNextStartedActivityForResult() {
+        if (startedActivitiesForResults.isEmpty()) {
+        	return null;
+        } else {
+        	return startedActivitiesForResults.remove(0);
+        }
+    }
+    
+    /**
+     * Non-Android accessor returns the most recent {@code Intent} started by
+     * {@link #startActivityForResult(android.content.Intent)} without
+     * consuming it.
+     *
+     * @return the most recently started {@code Intent}
+     */
+    public IntentForResult peekNextStartedActivityForResult() {
+        if (startedActivitiesForResults.isEmpty()) {
+            return null;
+        } else {
+            return startedActivitiesForResults.get(0);
+        }
+    }
+    
+    /**
+     * Container object to hold an Intent, together with the requestCode used
+     * in a call to {@code Activity#startActivityForResult(Intent, int)}
+     */
+    public class IntentForResult {
+    	public Intent intent;
+    	public int requestCode;
+    	
+    	public IntentForResult(Intent intent, int requestCode) {
+    		this.intent = intent;
+    		this.requestCode = requestCode;
+    	}
+    }
+
 }

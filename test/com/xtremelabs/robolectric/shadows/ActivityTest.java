@@ -2,12 +2,15 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.appwidget.AppWidgetProvider;
+import android.content.Intent;
 import android.content.IntentFilter;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.assertThat;
 
 import java.io.File;
 
@@ -37,6 +40,52 @@ public class ActivityTest {
     public void shouldRetrievePackageNameFromTheManifest() throws Exception {
         Robolectric.application = new ApplicationResolver("test" + File.separator + "TestAndroidManifestWithPackageName.xml").resolveApplication();
         assertEquals("com.wacka.wa", new Activity().getPackageName());
+    }
+    
+    @Test
+    public void shouldSupportStartActivityForResult() throws Exception {
+        MyActivity activity = new MyActivity();
+        ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
+        Intent intent = new Intent().setClass(activity, MyActivity.class);
+        assertThat(shadowActivity.getNextStartedActivity(), nullValue());
+        
+        activity.startActivityForResult(intent, 142);
+        
+        Intent startedIntent = shadowActivity.getNextStartedActivity();
+        assertThat(startedIntent, notNullValue());
+        assertThat(startedIntent, sameInstance(intent));
+    }
+    
+    @Test
+    public void shouldSupportGetStartedActitivitesForResult() throws Exception {
+        MyActivity activity = new MyActivity();
+        ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
+        Intent intent = new Intent().setClass(activity, MyActivity.class);
+        
+        activity.startActivityForResult(intent, 142);
+        
+        ShadowActivity.IntentForResult intentForResult = shadowActivity.getNextStartedActivityForResult();
+        assertThat(intentForResult, notNullValue());
+    	assertThat(shadowActivity.getNextStartedActivityForResult(), nullValue());
+    	assertThat(intentForResult.intent, notNullValue());
+    	assertThat(intentForResult.intent, sameInstance(intent));
+    	assertThat(intentForResult.requestCode, equalTo(142));
+    }
+    
+    @Test
+    public void shouldSupportPeekStartedActitivitesForResult() throws Exception {
+        MyActivity activity = new MyActivity();
+        ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
+        Intent intent = new Intent().setClass(activity, MyActivity.class);
+
+        activity.startActivityForResult(intent, 142);
+        
+        ShadowActivity.IntentForResult intentForResult = shadowActivity.peekNextStartedActivityForResult();
+        assertThat(intentForResult, notNullValue());
+    	assertThat(shadowActivity.peekNextStartedActivityForResult(), sameInstance(intentForResult));
+    	assertThat(intentForResult.intent, notNullValue());
+    	assertThat(intentForResult.intent, sameInstance(intent));
+    	assertThat(intentForResult.requestCode, equalTo(142));
     }
 
     private static class MyActivity extends Activity {
