@@ -26,7 +26,7 @@ public class ShadowCameraParameters {
     private int previewFps     = 30;
 
     @Implementation
-    public Camera.Size getPictureSize() {					// TODO test
+    public Camera.Size getPictureSize() {
     	Camera.Size pictureSize = Robolectric.newInstanceOf(Camera.class).new Size(0, 0);
     	pictureSize.width = pictureWidth;
     	pictureSize.height = pictureHeight;
@@ -39,18 +39,18 @@ public class ShadowCameraParameters {
     }
     
     @Implementation
-    public void getPreviewFpsRange(int[] range) {			// TODO test
+    public void getPreviewFpsRange(int[] range) {
     	range[0] = previewFpsMax;
     	range[1] = previewFpsMin;
     }
 
     @Implementation
-    public int getPreviewFrameRate() {						// TODO test
+    public int getPreviewFrameRate() {
     	return previewFps;				
     }
     
     @Implementation
-    public Camera.Size getPreviewSize() {					// TODO test
+    public Camera.Size getPreviewSize() {
     	Camera.Size previewSize = Robolectric.newInstanceOf(Camera.class).new Size(0, 0);
     	previewSize.width = previewWidth;
     	previewSize.height = previewHeight;
@@ -58,7 +58,7 @@ public class ShadowCameraParameters {
     }
 
     @Implementation
-    public List<Camera.Size> getSupportedPictureSizes() {		// TODO test
+    public List<Camera.Size> getSupportedPictureSizes() {
     	List<Camera.Size> supportedSizes = new ArrayList<Camera.Size>();
     	addSize(supportedSizes, 320, 240);
     	addSize(supportedSizes, 640, 480);
@@ -67,7 +67,7 @@ public class ShadowCameraParameters {
     }
     
     @Implementation
-    public List<Integer> getSupportedPictureFormats() {		// TODO test
+    public List<Integer> getSupportedPictureFormats() {
         List<Integer> formats = new ArrayList<Integer>();
         formats.add(ImageFormat.NV21);
         formats.add(ImageFormat.JPEG);
@@ -83,7 +83,7 @@ public class ShadowCameraParameters {
     }
     
     @Implementation
-    public List<int[]> getSupportedPreviewFpsRange() {	// TODO test
+    public List<int[]> getSupportedPreviewFpsRange() {
     	List<int[]> supportedRanges = new ArrayList<int[]>();
     	addRange(supportedRanges, 10, 30);
     	addRange(supportedRanges, 15, 15);
@@ -91,7 +91,7 @@ public class ShadowCameraParameters {
     }
     
     @Implementation
-    public List<Integer> getSupportedPreviewFrameRates() {	// TODO test
+    public List<Integer> getSupportedPreviewFrameRates() {
     	List<Integer> supportedRates = new ArrayList<Integer>();
     	supportedRates.add(10);
     	supportedRates.add(15);
@@ -100,7 +100,7 @@ public class ShadowCameraParameters {
     }
 
     @Implementation
-    public List<Camera.Size> getSupportedPreviewSizes() {	// TODO test
+    public List<Camera.Size> getSupportedPreviewSizes() {
     	List<Camera.Size> supportedSizes = new ArrayList<Camera.Size>();
     	addSize(supportedSizes, 320, 240);
     	addSize(supportedSizes, 640, 480);	
@@ -108,7 +108,7 @@ public class ShadowCameraParameters {
     }
     
     @Implementation
-    public void setPictureSize(int width, int height) {			// TODO test
+    public void setPictureSize(int width, int height) {
         pictureWidth = width;
         pictureHeight = height;
     }
@@ -119,14 +119,14 @@ public class ShadowCameraParameters {
     }
     
     @Implementation
-    public void setPreviewFpsRange(int min, int max) {			// TODO test
+    public void setPreviewFpsRange(int min, int max) {
     	previewFpsMin = min;
     	previewFpsMax = max;
     }
 
     @Implementation
     public void setPreviewFrameRate(int fps) {
-    	previewFps = fps;										// TODO test
+    	previewFps = fps;
     }
     
     @Implementation
