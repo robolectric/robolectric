@@ -210,7 +210,6 @@ public class Robolectric {
         ShadowDialog.reset();
         ShadowLooper.resetAll();
         ShadowAsyncTask.resetAll();
-        ShadowDefaultRequestDirector.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -273,8 +272,12 @@ public class Robolectric {
         return (ShadowContextWrapper) shadowOf_(instance);
     }
 
-    public static ShadowContextWrapper shadowOf(Context instance) {
-        return (ShadowContextWrapper) shadowOf_(instance);
+    public static ShadowApplication shadowOf(Application instance) {
+        return (ShadowApplication) shadowOf_(instance);
+    }
+
+    public static ShadowContext shadowOf(Context instance) {
+        return (ShadowContext) shadowOf_(instance);
     }
 
     public static ShadowPaint shadowOf(Paint instance) {
@@ -429,7 +432,7 @@ public class Robolectric {
      * @param responseBody the body of the response
      */
     public static void addPendingHttpResponse(int statusCode, String responseBody) {
-        ShadowDefaultRequestDirector.addPendingHttpResponse(statusCode, responseBody);
+        getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody);
     }
 
     /**
@@ -438,7 +441,7 @@ public class Robolectric {
      * @param httpResponse the response
      */
     public static void addPendingHttpResponse(HttpResponse httpResponse) {
-        ShadowDefaultRequestDirector.addPendingHttpResponse(httpResponse);
+        getFakeHttpLayer().addPendingHttpResponse(httpResponse);
     }
 
     /**
@@ -469,7 +472,7 @@ public class Robolectric {
      * @param response response to return when a match is found.
      */
     public static void addHttpResponseRule(String method, String uri, HttpResponse response) {
-        ShadowDefaultRequestDirector.addHttpResponseRule(method, uri, response);
+        getFakeHttpLayer().addHttpResponseRule(method, uri, response);
     }
 
     /**
@@ -479,7 +482,7 @@ public class Robolectric {
      * @param response response to return when a match is found.
      */
     public static void addHttpResponseRule(String uri, HttpResponse response) {
-        ShadowDefaultRequestDirector.addHttpResponseRule(uri, response);
+        getFakeHttpLayer().addHttpResponseRule(uri, response);
     }
 
     /**
@@ -489,7 +492,7 @@ public class Robolectric {
      * @param response response to return when a match is found.
      */
     public static void addHttpResponseRule(String uri, String response) {
-        ShadowDefaultRequestDirector.addHttpResponseRule(uri, response);
+        getFakeHttpLayer().addHttpResponseRule(uri, response);
     }
 
     /**
@@ -498,8 +501,12 @@ public class Robolectric {
      * @param requestMatcher custom {@code RequestMatcher}.
      * @param response response to return when a match is found.
      */
-    public static void addHttpResponseRule(ShadowDefaultRequestDirector.RequestMatcher requestMatcher, HttpResponse response) {
-        ShadowDefaultRequestDirector.addHttpResponseRule(requestMatcher, response);
+    public static void addHttpResponseRule(FakeHttpLayer.RequestMatcher requestMatcher, HttpResponse response) {
+        getFakeHttpLayer().addHttpResponseRule(requestMatcher, response);
+    }
+
+    public static FakeHttpLayer getFakeHttpLayer() {
+        return shadowOf(Robolectric.application).getFakeHttpLayer();
     }
 
     /**
@@ -508,7 +515,7 @@ public class Robolectric {
      * @param defaultHttpResponse the {@code HttpResponse} to return.
      */
     public static void setDefaultHttpResponse(HttpResponse defaultHttpResponse) {
-        ShadowDefaultRequestDirector.setDefaultHttpResponse(defaultHttpResponse);
+        getFakeHttpLayer().setDefaultHttpResponse(defaultHttpResponse);
     }
 
     public static void pauseLooper(Looper looper) {

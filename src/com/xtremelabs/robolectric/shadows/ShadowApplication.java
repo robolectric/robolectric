@@ -44,6 +44,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
+    private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -262,6 +263,10 @@ public class ShadowApplication extends ShadowContextWrapper {
      */
     public AppWidgetManager getAppWidgetManager() {
         return appWidgetManager;
+    }
+
+    public FakeHttpLayer getFakeHttpLayer() {
+        return fakeHttpLayer;
     }
 
     public class Wrapper {

@@ -2,16 +2,16 @@ package com.xtremelabs.robolectric.util;
 
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
-import org.apache.http.impl.client.DefaultRequestDirector;
+import org.apache.http.client.RequestDirector;
 import org.apache.http.protocol.HttpContext;
 
 public class HttpRequestInfo {
     HttpRequest httpRequest;
     HttpHost httpHost;
     HttpContext httpContext;
-    DefaultRequestDirector requestDirector;
+    RequestDirector requestDirector;
 
-    public HttpRequestInfo(HttpRequest httpRequest, HttpHost httpHost, HttpContext httpContext, DefaultRequestDirector requestDirector) {
+    public HttpRequestInfo(HttpRequest httpRequest, HttpHost httpHost, HttpContext httpContext, RequestDirector requestDirector) {
         this.httpRequest = httpRequest;
         this.httpHost = httpHost;
         this.httpContext = httpContext;
@@ -30,7 +30,7 @@ public class HttpRequestInfo {
         return httpContext;
     }
 
-    public DefaultRequestDirector getRequestDirector() {
+    public RequestDirector getRequestDirector() {
         return requestDirector;
     }
 }

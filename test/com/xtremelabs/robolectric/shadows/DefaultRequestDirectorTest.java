@@ -29,10 +29,12 @@ public class DefaultRequestDirectorTest {
 
     @Before
     public void setUp_EnsureStaticStateIsReset() {
-        assertTrue(ShadowDefaultRequestDirector.httpResponses.isEmpty());
-        assertTrue(ShadowDefaultRequestDirector.httpRequestInfos.isEmpty());
-        assertTrue(ShadowDefaultRequestDirector.httpResponseRules.isEmpty());
-        assertNull(ShadowDefaultRequestDirector.defaultHttpResponse);
+        FakeHttpLayer fakeHttpLayer = Robolectric.getFakeHttpLayer();
+        assertTrue(fakeHttpLayer.pendingHttpResponses.isEmpty());
+        assertTrue(fakeHttpLayer.httpRequestInfos.isEmpty());
+        assertTrue(fakeHttpLayer.httpResponseRules.isEmpty());
+        assertNull(fakeHttpLayer.defaultHttpResponse);
+
         connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
             @Override public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
                 return 0;
@@ -60,7 +62,7 @@ public class DefaultRequestDirectorTest {
     public void shouldPreferPendingResponses() throws Exception {
         Robolectric.addPendingHttpResponse(new TestHttpResponse(200, "a happy response body"));
 
-        ShadowDefaultRequestDirector.addHttpResponseRule(HttpGet.METHOD_NAME, "http://some.uri",
+        Robolectric.addHttpResponseRule(HttpGet.METHOD_NAME, "http://some.uri",
                 new TestHttpResponse(200, "a cheery response body"));
 
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
@@ -72,7 +74,7 @@ public class DefaultRequestDirectorTest {
 
     @Test
     public void shouldReturnRequestsByRule() throws Exception {
-        ShadowDefaultRequestDirector.addHttpResponseRule(HttpGet.METHOD_NAME, "http://some.uri",
+        Robolectric.addHttpResponseRule(HttpGet.METHOD_NAME, "http://some.uri",
                 new TestHttpResponse(200, "a cheery response body"));
 
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
@@ -84,8 +86,8 @@ public class DefaultRequestDirectorTest {
 
     @Test
     public void shouldReturnRequestsByRule_MatchingMethod() throws Exception {
-        ShadowDefaultRequestDirector.setDefaultHttpResponse(new TestHttpResponse(404, "no such page"));
-        ShadowDefaultRequestDirector.addHttpResponseRule(HttpPost.METHOD_NAME, "http://some.uri",
+        Robolectric.setDefaultHttpResponse(new TestHttpResponse(404, "no such page"));
+        Robolectric.addHttpResponseRule(HttpPost.METHOD_NAME, "http://some.uri",
                 new TestHttpResponse(200, "a cheery response body"));
 
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
@@ -96,7 +98,7 @@ public class DefaultRequestDirectorTest {
 
     @Test
     public void shouldReturnRequestsByRule_AnyMethod() throws Exception {
-        ShadowDefaultRequestDirector.addHttpResponseRule("http://some.uri", new TestHttpResponse(200, "a cheery response body"));
+        Robolectric.addHttpResponseRule("http://some.uri", new TestHttpResponse(200, "a cheery response body"));
 
         HttpResponse getResponse = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
         assertNotNull(getResponse);
@@ -111,7 +113,7 @@ public class DefaultRequestDirectorTest {
 
     @Test
     public void shouldReturnRequestsByRule_WithTextResponse() throws Exception {
-        ShadowDefaultRequestDirector.addHttpResponseRule("http://some.uri", "a cheery response body");
+        Robolectric.addHttpResponseRule("http://some.uri", "a cheery response body");
 
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
 
@@ -122,9 +124,9 @@ public class DefaultRequestDirectorTest {
 
     @Test
     public void shouldReturnRequestsByRule_WithCustomRequestMatcher() throws Exception {
-        ShadowDefaultRequestDirector.setDefaultHttpResponse(new TestHttpResponse(404, "no such page"));
+        Robolectric.setDefaultHttpResponse(new TestHttpResponse(404, "no such page"));
 
-        ShadowDefaultRequestDirector.addHttpResponseRule(new ShadowDefaultRequestDirector.RequestMatcher() {
+        Robolectric.addHttpResponseRule(new FakeHttpLayer.RequestMatcher() {
             @Override public boolean matches(HttpRequest request) {
                 return request.getRequestLine().getUri().equals("http://matching.uri");
             }
@@ -199,7 +201,7 @@ public class DefaultRequestDirectorTest {
         requestDirector.execute(null, httpGet, null);
 
         assertSame(Robolectric.getSentHttpRequestInfo(0).getHttpRequest(), httpGet);
-        ConnectionKeepAliveStrategy strategy = shadowOf(Robolectric.getSentHttpRequestInfo(0).getRequestDirector()).getConnectionKeepAliveStrategy();
+        ConnectionKeepAliveStrategy strategy = shadowOf((DefaultRequestDirector) Robolectric.getSentHttpRequestInfo(0).getRequestDirector()).getConnectionKeepAliveStrategy();
         assertSame(strategy, connectionKeepAliveStrategy);
     }
 }
