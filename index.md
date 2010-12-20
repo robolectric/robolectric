@@ -77,7 +77,7 @@ include tests!
 
 ## Sample Project
 
-Look at the sample project at: https://github.com/pivotal/robolectricsample to see how fast and easy it can be to test
+Look at the [sample project](https://github.com/pivotal/robolectricsample) to see how fast and easy it can be to test
 drive the development of Android applications.
 
 #### Robolectric's current maintainers are:
