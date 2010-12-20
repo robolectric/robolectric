@@ -20,9 +20,7 @@ import com.xtremelabs.robolectric.util.RealObject;
 import com.xtremelabs.robolectric.util.Scheduler;
 import com.xtremelabs.robolectric.view.TestWindowManager;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -50,6 +48,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private final Looper mainLooper = newInstanceOf(Looper.class);
     private Looper currentLooper = mainLooper;
     private Scheduler backgroundScheduler = new Scheduler();
+    private Map<String, Hashtable<String, Object>> sharedPreferenceMap = new HashMap<String, Hashtable<String, Object>>();
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -285,6 +284,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     public Looper getCurrentLooper() {
         return currentLooper;
+    }
+
+    public Map<String,Hashtable<String, Object>> getSharedPreferenceMap() {
+        return sharedPreferenceMap;
     }
 
     public class Wrapper {

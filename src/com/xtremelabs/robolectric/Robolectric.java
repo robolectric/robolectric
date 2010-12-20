@@ -36,7 +36,6 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
-import com.xtremelabs.robolectric.content.TestSharedPreferences;
 import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.util.HttpRequestInfo;
 import com.xtremelabs.robolectric.util.Implements;
@@ -204,7 +203,6 @@ public class Robolectric {
     public static void resetStaticState() {
         ShadowWrangler.getInstance().silence();
         Robolectric.application = new Application();
-        TestSharedPreferences.reset();
         ShadowToast.reset();
         ShadowAlertDialog.reset();
         ShadowDialog.reset();

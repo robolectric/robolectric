@@ -124,7 +124,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     @Implementation
     public SharedPreferences getSharedPreferences(String name, int mode) {
-        return new TestSharedPreferences(name, mode);
+        return new TestSharedPreferences(getShadowApplication().getSharedPreferenceMap(), name, mode);
     }
 
     @Implementation
