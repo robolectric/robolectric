@@ -1,6 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
-import com.xtremelabs.robolectric.util.HttpRequestData;
+import com.xtremelabs.robolectric.util.HttpRequestInfo;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
@@ -11,7 +11,6 @@ import org.apache.http.client.AuthenticationHandler;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.RedirectHandler;
 import org.apache.http.client.UserTokenHandler;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.routing.HttpRoutePlanner;
@@ -29,7 +28,7 @@ import java.util.List;
 @Implements(DefaultRequestDirector.class)
 public class ShadowDefaultRequestDirector {
     static List<HttpResponse> httpResponses = new ArrayList<HttpResponse>();
-    static List<HttpRequestData> httpRequestDatas = new ArrayList<HttpRequestData>();
+    static List<HttpRequestInfo> httpRequestInfos = new ArrayList<HttpRequestInfo>();
     static List<ResponseRule> httpResponseRules = new ArrayList<ResponseRule>();
     static HttpResponse defaultHttpResponse;
 
@@ -109,7 +108,7 @@ public class ShadowDefaultRequestDirector {
 
     public static void reset() {
         httpResponses.clear();
-        httpRequestDatas.clear();
+        httpRequestInfos.clear();
         httpResponseRules.clear();
         defaultHttpResponse = null;
     }
@@ -123,11 +122,11 @@ public class ShadowDefaultRequestDirector {
     }
 
     public static HttpRequest getSentHttpRequest(int index) {
-        return getSentHttpRequestData(index).getHttpRequest();
+        return getSentHttpRequestInfo(index).getHttpRequest();
     }
 
-    public static HttpRequestData getSentHttpRequestData(int index) {
-        return httpRequestDatas.get(index);
+    public static HttpRequestInfo getSentHttpRequestInfo(int index) {
+        return httpRequestInfos.get(index);
     }
 
     @Implementation
@@ -138,7 +137,7 @@ public class ShadowDefaultRequestDirector {
             throw new RuntimeException("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse().");
         }
 
-        httpRequestDatas.add(new HttpRequestData(httpRequest, httpHost, httpContext, this.realObject));
+        httpRequestInfos.add(new HttpRequestInfo(httpRequest, httpHost, httpContext, this.realObject));
         
         return httpResponse;
     }
@@ -214,23 +213,23 @@ public class ShadowDefaultRequestDirector {
     }
 
     public static void addHttpResponseRule(String uri, HttpResponse response) {
-        addHttpResponseRule(new DefaultRequestMatcher(HttpGet.METHOD_NAME, uri), response);
+        addHttpResponseRule(new UriRequestMatcher(uri), response);
     }
 
     public static void addHttpResponseRule(String uri, String response) {
-        addHttpResponseRule(new DefaultRequestMatcher(HttpGet.METHOD_NAME, uri), new TestHttpResponse(200, response));
+        addHttpResponseRule(new UriRequestMatcher(uri), new TestHttpResponse(200, response));
     }
 
     public static void addHttpResponseRule(RequestMatcher requestMatcher, HttpResponse response) {
         addHttpResponseRule(new ResponseRule(response, requestMatcher));
     }
 
-    public static void addHttpResponseRule(ResponseRule responseRule) {
+    private static void addHttpResponseRule(ResponseRule responseRule) {
         httpResponseRules.add(responseRule);
     }
 
-    public static void setDefaultHttpResponse(TestHttpResponse httpDefaultResponse) {
-        ShadowDefaultRequestDirector.defaultHttpResponse = httpDefaultResponse;
+    public static void setDefaultHttpResponse(HttpResponse defaultHttpResponse) {
+        ShadowDefaultRequestDirector.defaultHttpResponse = defaultHttpResponse;
     }
 
     public interface RequestMatcher {
@@ -250,6 +249,7 @@ public class ShadowDefaultRequestDirector {
         public boolean matches(HttpRequest request) {
             return requestMatcher.matches(request);
         }
+
         public HttpResponse getResponse() {
             return responseToGive;
         }
@@ -267,6 +267,18 @@ public class ShadowDefaultRequestDirector {
         @Override public boolean matches(HttpRequest request) {
             return request.getRequestLine().getMethod().equals(method) &&
                     request.getRequestLine().getUri().equals(uri);
+        }
+    }
+
+    private static class UriRequestMatcher implements RequestMatcher {
+        private String uri;
+
+        private UriRequestMatcher(String uri) {
+            this.uri = uri;
+        }
+
+        @Override public boolean matches(HttpRequest request) {
+            return request.getRequestLine().getUri().equals(uri);
         }
     }
 }

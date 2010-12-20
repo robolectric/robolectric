@@ -38,7 +38,7 @@ import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.content.TestSharedPreferences;
 import com.xtremelabs.robolectric.shadows.*;
-import com.xtremelabs.robolectric.util.HttpRequestData;
+import com.xtremelabs.robolectric.util.HttpRequestInfo;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.Scheduler;
 import org.apache.http.HttpRequest;
@@ -442,7 +442,7 @@ public class Robolectric {
     }
 
     /**
-     * Accessor to obtain requests made during the current test in the order in which they were made.
+     * Accessor to obtain HTTP requests made during the current test in the order in which they were made.
      *
      * @param index index of the request to retrieve.
      * @return the requested request.
@@ -451,8 +451,64 @@ public class Robolectric {
         return ShadowDefaultRequestDirector.getSentHttpRequest(index);
     }
 
-    public static HttpRequestData getSentHttpRequestData(int index) {
-        return ShadowDefaultRequestDirector.getSentHttpRequestData(index);
+    /**
+     * Accessor to obtain metadata for an HTTP request made during the current test in the order in which they were made.
+     *
+     * @param index index of the request to retrieve.
+     * @return the requested request metadata.
+     */
+    public static HttpRequestInfo getSentHttpRequestInfo(int index) {
+        return ShadowDefaultRequestDirector.getSentHttpRequestInfo(index);
+    }
+
+    /**
+     * Adds an HTTP response rule. The response will be returned when the rule is matched.
+     *
+     * @param method method to match.
+     * @param uri uri to match.
+     * @param response response to return when a match is found.
+     */
+    public static void addHttpResponseRule(String method, String uri, HttpResponse response) {
+        ShadowDefaultRequestDirector.addHttpResponseRule(method, uri, response);
+    }
+
+    /**
+     * Adds an HTTP response rule with a default method of GET. The response will be returned when the rule is matched.
+     *
+     * @param uri uri to match.
+     * @param response response to return when a match is found.
+     */
+    public static void addHttpResponseRule(String uri, HttpResponse response) {
+        ShadowDefaultRequestDirector.addHttpResponseRule(uri, response);
+    }
+
+    /**
+     * Adds an HTTP response rule. The response will be returned when the rule is matched.
+     *
+     * @param uri uri to match.
+     * @param response response to return when a match is found.
+     */
+    public static void addHttpResponseRule(String uri, String response) {
+        ShadowDefaultRequestDirector.addHttpResponseRule(uri, response);
+    }
+
+    /**
+     * Adds an HTTP response rule. The response will be returned when the rule is matched.
+     *
+     * @param requestMatcher custom {@code RequestMatcher}.
+     * @param response response to return when a match is found.
+     */
+    public static void addHttpResponseRule(ShadowDefaultRequestDirector.RequestMatcher requestMatcher, HttpResponse response) {
+        ShadowDefaultRequestDirector.addHttpResponseRule(requestMatcher, response);
+    }
+
+    /**
+     * Sets the default http response. This response will be returned if no other rules are matched.
+     *
+     * @param defaultHttpResponse the {@code HttpResponse} to return.
+     */
+    public static void setDefaultHttpResponse(HttpResponse defaultHttpResponse) {
+        ShadowDefaultRequestDirector.setDefaultHttpResponse(defaultHttpResponse);
     }
 
     public static void pauseLooper(Looper looper) {

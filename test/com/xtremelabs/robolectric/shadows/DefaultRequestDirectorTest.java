@@ -6,6 +6,7 @@ import com.xtremelabs.robolectric.util.Strings;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.DefaultRequestDirector;
@@ -29,7 +30,7 @@ public class DefaultRequestDirectorTest {
     @Before
     public void setUp_EnsureStaticStateIsReset() {
         assertTrue(ShadowDefaultRequestDirector.httpResponses.isEmpty());
-        assertTrue(ShadowDefaultRequestDirector.httpRequestDatas.isEmpty());
+        assertTrue(ShadowDefaultRequestDirector.httpRequestInfos.isEmpty());
         assertTrue(ShadowDefaultRequestDirector.httpResponseRules.isEmpty());
         assertNull(ShadowDefaultRequestDirector.defaultHttpResponse);
         connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
@@ -82,15 +83,30 @@ public class DefaultRequestDirectorTest {
     }
 
     @Test
-    public void shouldReturnRequestsByRule_DefaultMethodIsGet() throws Exception {
-        ShadowDefaultRequestDirector.addHttpResponseRule("http://some.uri",
+    public void shouldReturnRequestsByRule_MatchingMethod() throws Exception {
+        ShadowDefaultRequestDirector.setDefaultHttpResponse(new TestHttpResponse(404, "no such page"));
+        ShadowDefaultRequestDirector.addHttpResponseRule(HttpPost.METHOD_NAME, "http://some.uri",
                 new TestHttpResponse(200, "a cheery response body"));
 
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
 
         assertNotNull(response);
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
-        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a cheery response body"));
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(404));
+    }
+
+    @Test
+    public void shouldReturnRequestsByRule_AnyMethod() throws Exception {
+        ShadowDefaultRequestDirector.addHttpResponseRule("http://some.uri", new TestHttpResponse(200, "a cheery response body"));
+
+        HttpResponse getResponse = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+        assertNotNull(getResponse);
+        assertThat(getResponse.getStatusLine().getStatusCode(), equalTo(200));
+        assertThat(Strings.fromStream(getResponse.getEntity().getContent()), equalTo("a cheery response body"));
+
+        HttpResponse postResponse = requestDirector.execute(null, new HttpPost("http://some.uri"), null);
+        assertNotNull(postResponse);
+        assertThat(postResponse.getStatusLine().getStatusCode(), equalTo(200));
+        assertThat(Strings.fromStream(postResponse.getEntity().getContent()), equalTo("a cheery response body"));
     }
 
     @Test
@@ -182,8 +198,8 @@ public class DefaultRequestDirectorTest {
         HttpGet httpGet = new HttpGet("http://example.com");
         requestDirector.execute(null, httpGet, null);
 
-        assertSame(Robolectric.getSentHttpRequestData(0).getHttpRequest(), httpGet);
-        ConnectionKeepAliveStrategy strategy = shadowOf(Robolectric.getSentHttpRequestData(0).getRequestDirector()).getConnectionKeepAliveStrategy();
+        assertSame(Robolectric.getSentHttpRequestInfo(0).getHttpRequest(), httpGet);
+        ConnectionKeepAliveStrategy strategy = shadowOf(Robolectric.getSentHttpRequestInfo(0).getRequestDirector()).getConnectionKeepAliveStrategy();
         assertSame(strategy, connectionKeepAliveStrategy);
     }
 }

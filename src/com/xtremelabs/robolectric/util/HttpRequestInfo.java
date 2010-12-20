@@ -5,13 +5,13 @@ import org.apache.http.HttpRequest;
 import org.apache.http.impl.client.DefaultRequestDirector;
 import org.apache.http.protocol.HttpContext;
 
-public class HttpRequestData {
+public class HttpRequestInfo {
     HttpRequest httpRequest;
     HttpHost httpHost;
     HttpContext httpContext;
     DefaultRequestDirector requestDirector;
 
-    public HttpRequestData(HttpRequest httpRequest, HttpHost httpHost, HttpContext httpContext, DefaultRequestDirector requestDirector) {
+    public HttpRequestInfo(HttpRequest httpRequest, HttpHost httpHost, HttpContext httpContext, DefaultRequestDirector requestDirector) {
         this.httpRequest = httpRequest;
         this.httpHost = httpHost;
         this.httpContext = httpContext;
