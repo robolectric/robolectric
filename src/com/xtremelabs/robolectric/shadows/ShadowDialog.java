@@ -7,6 +7,7 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
@@ -17,7 +18,6 @@ import java.lang.reflect.Method;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Dialog.class)
 public class ShadowDialog {
-    private static ShadowDialog latestDialog;
 
     @RealObject private Dialog realDialog;
 
@@ -34,11 +34,15 @@ public class ShadowDialog {
     private Activity ownerActivity;
 
     public static void reset() {
-        latestDialog = null;
+        setLatestDialog(null);
     }
 
     public static ShadowDialog getLatestDialog() {
-        return latestDialog;
+        return Robolectric.getShadowApplication().getLatestDialog();
+    }
+
+    public static void setLatestDialog(ShadowDialog latestDialog) {
+        Robolectric.getShadowApplication().setLatestDialog(latestDialog);
     }
 
     public void __constructor__(Context context) {
@@ -49,7 +53,7 @@ public class ShadowDialog {
         this.context = context;
         this.themeId = themeId;
 
-        latestDialog = this;
+        setLatestDialog(this);
     }
 
     @Implementation

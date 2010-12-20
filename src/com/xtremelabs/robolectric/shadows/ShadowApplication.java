@@ -13,6 +13,7 @@ import android.os.Looper;
 import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
+import android.widget.Toast;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
@@ -49,6 +50,9 @@ public class ShadowApplication extends ShadowContextWrapper {
     private Looper currentLooper = mainLooper;
     private Scheduler backgroundScheduler = new Scheduler();
     private Map<String, Hashtable<String, Object>> sharedPreferenceMap = new HashMap<String, Hashtable<String, Object>>();
+    private ArrayList<Toast> shownToasts = new ArrayList<Toast>();
+    private ShadowAlertDialog latestAlertDialog;
+    private ShadowDialog latestDialog;
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -67,6 +71,10 @@ public class ShadowApplication extends ShadowContextWrapper {
         if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
         shadowApplication.resourceLoader = resourceLoader;
         return application;
+    }
+
+    public List<Toast> getShownToasts() {
+        return shownToasts;
     }
 
     public Scheduler getBackgroundScheduler() {
@@ -288,6 +296,22 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     public Map<String,Hashtable<String, Object>> getSharedPreferenceMap() {
         return sharedPreferenceMap;
+    }
+
+    public ShadowAlertDialog getLatestAlertDialog() {
+        return latestAlertDialog;
+    }
+
+    public void setLatestAlertDialog(ShadowAlertDialog latestAlertDialog) {
+        this.latestAlertDialog = latestAlertDialog;
+    }
+
+    public ShadowDialog getLatestDialog() {
+        return latestDialog;
+    }
+
+    public void setLatestDialog(ShadowDialog latestDialog) {
+        this.latestDialog = latestDialog;
     }
 
     public class Wrapper {

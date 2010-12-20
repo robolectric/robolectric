@@ -203,9 +203,6 @@ public class Robolectric {
     public static void resetStaticState() {
         ShadowWrangler.getInstance().silence();
         Robolectric.application = new Application();
-        ShadowToast.reset();
-        ShadowAlertDialog.reset();
-        ShadowDialog.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
