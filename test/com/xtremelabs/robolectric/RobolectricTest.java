@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric;
 
 import android.content.Context;
 import android.view.View;
-import com.xtremelabs.robolectric.shadows.ShadowAsyncTask;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.TestOnClickListener;
@@ -77,14 +76,14 @@ public class RobolectricTest {
 
     @Test
     public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
-        assertThat(ShadowAsyncTask.getAsyncTaskScheduler().isPaused(), equalTo(false));
-        ShadowAsyncTask.getAsyncTaskScheduler().pause();
+        assertThat(Robolectric.getBackgroundScheduler().isPaused(), equalTo(false));
+        Robolectric.getBackgroundScheduler().pause();
     }
 
     @Test
     public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
-        assertThat(ShadowAsyncTask.getAsyncTaskScheduler().isPaused(), equalTo(false));
-        ShadowAsyncTask.getAsyncTaskScheduler().pause();
+        assertThat(Robolectric.getBackgroundScheduler().isPaused(), equalTo(false));
+        Robolectric.getBackgroundScheduler().pause();
     }
 
     public void clickOn_shouldCallClickListener() throws Exception {

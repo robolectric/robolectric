@@ -56,6 +56,8 @@ public class ShadowLooper {
     /**
      * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis} milliseconds to
      * run while advancing the scheduler's clock.
+     *
+     * @param intervalMillis milliseconds to advance
      */
     public void idle(long intervalMillis) {
         scheduler.advanceBy(intervalMillis);

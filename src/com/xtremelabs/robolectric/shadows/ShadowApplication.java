@@ -17,6 +17,7 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.util.Scheduler;
 import com.xtremelabs.robolectric.view.TestWindowManager;
 
 import java.util.ArrayList;
@@ -48,6 +49,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
     private final Looper mainLooper = newInstanceOf(Looper.class);
     private Looper currentLooper = mainLooper;
+    private Scheduler backgroundScheduler = new Scheduler();
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -62,10 +64,14 @@ public class ShadowApplication extends ShadowContextWrapper {
      * todo: make this non-static?
      */
     public static Application bind(Application application, ResourceLoader resourceLoader) {
-        ShadowApplication shadowApplication = (ShadowApplication) shadowOf(application);
+        ShadowApplication shadowApplication = shadowOf(application);
         if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
         shadowApplication.resourceLoader = resourceLoader;
         return application;
+    }
+
+    public Scheduler getBackgroundScheduler() {
+        return backgroundScheduler;
     }
 
     @Override @Implementation

@@ -208,7 +208,6 @@ public class Robolectric {
         ShadowToast.reset();
         ShadowAlertDialog.reset();
         ShadowDialog.reset();
-        ShadowAsyncTask.resetAll();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -416,10 +415,23 @@ public class Robolectric {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
     }
 
+    /**
+     * Runs any background tasks previously queued by {@link android.os.AsyncTask#execute(Object[])}.
+     *
+     * <p/>
+     * Note: calling this method does not pause or un-pause the scheduler.
+     */
     public static void runBackgroundTasks() {
-        ShadowAsyncTask.getAsyncTaskScheduler().advanceBy(0);
+        getBackgroundScheduler().advanceBy(0);
     }
 
+    /**
+     * Runs any immediately runnable tasks previously queued on the UI thread,
+     * e.g. by {@link Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
+     *
+     * <p/>
+     * Note: calling this method does not pause or un-pause the scheduler.
+     */
     public static void runUiThreadTasks() {
         getUiThreadScheduler().advanceBy(0);
     }
@@ -535,6 +547,10 @@ public class Robolectric {
 
     public static Scheduler getUiThreadScheduler() {
         return shadowOf(Looper.getMainLooper()).getScheduler();
+    }
+
+    public static Scheduler getBackgroundScheduler() {
+        return getShadowApplication().getBackgroundScheduler();
     }
 
     public static ShadowApplication getShadowApplication() {
