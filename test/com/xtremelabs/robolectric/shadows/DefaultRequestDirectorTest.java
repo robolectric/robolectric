@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Strings;
+import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpUriRequest;
@@ -29,6 +30,8 @@ public class DefaultRequestDirectorTest {
     public void setUp_EnsureStaticStateIsReset() {
         assertTrue(ShadowDefaultRequestDirector.httpResponses.isEmpty());
         assertTrue(ShadowDefaultRequestDirector.httpRequestDatas.isEmpty());
+        assertTrue(ShadowDefaultRequestDirector.httpResponseRules.isEmpty());
+        assertNull(ShadowDefaultRequestDirector.defaultHttpResponse);
         connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
             @Override public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
                 return 0;
@@ -53,6 +56,76 @@ public class DefaultRequestDirectorTest {
     }
 
     @Test
+    public void shouldPreferPendingResponses() throws Exception {
+        Robolectric.addPendingHttpResponse(new TestHttpResponse(200, "a happy response body"));
+
+        ShadowDefaultRequestDirector.addHttpResponseRule(HttpGet.METHOD_NAME, "http://some.uri",
+                new TestHttpResponse(200, "a cheery response body"));
+
+        HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+
+        assertNotNull(response);
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
+        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a happy response body"));
+    }
+
+    @Test
+    public void shouldReturnRequestsByRule() throws Exception {
+        ShadowDefaultRequestDirector.addHttpResponseRule(HttpGet.METHOD_NAME, "http://some.uri",
+                new TestHttpResponse(200, "a cheery response body"));
+
+        HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+
+        assertNotNull(response);
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
+        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a cheery response body"));
+    }
+
+    @Test
+    public void shouldReturnRequestsByRule_DefaultMethodIsGet() throws Exception {
+        ShadowDefaultRequestDirector.addHttpResponseRule("http://some.uri",
+                new TestHttpResponse(200, "a cheery response body"));
+
+        HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+
+        assertNotNull(response);
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
+        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a cheery response body"));
+    }
+
+    @Test
+    public void shouldReturnRequestsByRule_WithTextResponse() throws Exception {
+        ShadowDefaultRequestDirector.addHttpResponseRule("http://some.uri", "a cheery response body");
+
+        HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+
+        assertNotNull(response);
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
+        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a cheery response body"));
+    }
+
+    @Test
+    public void shouldReturnRequestsByRule_WithCustomRequestMatcher() throws Exception {
+        ShadowDefaultRequestDirector.setDefaultHttpResponse(new TestHttpResponse(404, "no such page"));
+
+        ShadowDefaultRequestDirector.addHttpResponseRule(new ShadowDefaultRequestDirector.RequestMatcher() {
+            @Override public boolean matches(HttpRequest request) {
+                return request.getRequestLine().getUri().equals("http://matching.uri");
+            }
+        }, new TestHttpResponse(200, "a cheery response body"));
+
+        HttpResponse response = requestDirector.execute(null, new HttpGet("http://matching.uri"), null);
+        assertNotNull(response);
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
+        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a cheery response body"));
+
+        response = requestDirector.execute(null, new HttpGet("http://non-matching.uri"), null);
+        assertNotNull(response);
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(404));
+        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("no such page"));
+    }
+
+    @Test
     public void shouldGetHttpResponseFromExecuteSimpleApi() throws Exception {
         Robolectric.addPendingHttpResponse(200, "a happy response body");
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://example.com"), null);
@@ -63,7 +136,6 @@ public class DefaultRequestDirectorTest {
 
     @Test
     public void shouldHandleMultipleInvocations() throws Exception {
-
         Robolectric.addPendingHttpResponse(200, "a happy response body");
         Robolectric.addPendingHttpResponse(201, "another happy response body");
 

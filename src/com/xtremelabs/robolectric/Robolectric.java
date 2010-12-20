@@ -50,6 +50,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
+@SuppressWarnings({"UnusedDeclaration"})
 public class Robolectric {
     public static Application application;
 
@@ -422,22 +423,22 @@ public class Robolectric {
     }
 
     /**
-     * Sets up an HTTP response to be returned by calls to Apache's {@code }HttpClient} implementers.
+     * Sets up an HTTP response to be returned by calls to Apache's {@code HttpClient} implementers.
      *
      * @param statusCode the status code of the response
      * @param responseBody the body of the response
      */
     public static void addPendingHttpResponse(int statusCode, String responseBody) {
-        ShadowDefaultRequestDirector.addPendingResponse(statusCode, responseBody);
+        ShadowDefaultRequestDirector.addPendingHttpResponse(statusCode, responseBody);
     }
 
     /**
-     * Sets up an HTTP response to be returned by calls to Apache's {@code }HttpClient} implementers.
+     * Sets up an HTTP response to be returned by calls to Apache's {@code HttpClient} implementers.
      *
      * @param httpResponse the response
      */
     public static void addPendingHttpResponse(HttpResponse httpResponse) {
-        ShadowDefaultRequestDirector.addPendingResponse(httpResponse);
+        ShadowDefaultRequestDirector.addPendingHttpResponse(httpResponse);
     }
 
     /**

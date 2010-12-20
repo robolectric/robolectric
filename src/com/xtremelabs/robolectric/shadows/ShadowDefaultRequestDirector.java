@@ -11,6 +11,7 @@ import org.apache.http.client.AuthenticationHandler;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.RedirectHandler;
 import org.apache.http.client.UserTokenHandler;
+import org.apache.http.client.methods.HttpGet;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.routing.HttpRoutePlanner;
@@ -24,10 +25,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(DefaultRequestDirector.class)
 public class ShadowDefaultRequestDirector {
     static List<HttpResponse> httpResponses = new ArrayList<HttpResponse>();
     static List<HttpRequestData> httpRequestDatas = new ArrayList<HttpRequestData>();
+    static List<ResponseRule> httpResponseRules = new ArrayList<ResponseRule>();
+    static HttpResponse defaultHttpResponse;
 
     @RealObject DefaultRequestDirector realObject;
 
@@ -106,13 +110,15 @@ public class ShadowDefaultRequestDirector {
     public static void reset() {
         httpResponses.clear();
         httpRequestDatas.clear();
+        httpResponseRules.clear();
+        defaultHttpResponse = null;
     }
 
-    public static void addPendingResponse(int statusCode, String responseBody) {
-        addPendingResponse(new TestHttpResponse(statusCode, responseBody));
+    public static void addPendingHttpResponse(int statusCode, String responseBody) {
+        addPendingHttpResponse(new TestHttpResponse(statusCode, responseBody));
     }
 
-    public static void addPendingResponse(HttpResponse httpResponse) {
+    public static void addPendingHttpResponse(HttpResponse httpResponse) {
         httpResponses.add(httpResponse);
     }
 
@@ -126,11 +132,29 @@ public class ShadowDefaultRequestDirector {
 
     @Implementation
     public HttpResponse execute(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
-        if (httpResponses.isEmpty()) {
+        HttpResponse httpResponse = findResponse(httpRequest);
+
+        if (httpResponse == null) {
             throw new RuntimeException("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse().");
         }
+
         httpRequestDatas.add(new HttpRequestData(httpRequest, httpHost, httpContext, this.realObject));
-        return httpResponses.remove(0);
+        
+        return httpResponse;
+    }
+
+    private HttpResponse findResponse(HttpRequest httpRequest) {
+        if (!httpResponses.isEmpty()) {
+            return httpResponses.remove(0);
+        }
+
+        for (ResponseRule httpResponseRule : httpResponseRules) {
+            if (httpResponseRule.matches(httpRequest)) {
+                return httpResponseRule.getResponse();
+            }
+        }
+
+        return defaultHttpResponse;
     }
 
     public Log getLog() {
@@ -183,6 +207,67 @@ public class ShadowDefaultRequestDirector {
 
     public HttpParams getHttpParams() {
         return httpParams;
+    }
+
+    public static void addHttpResponseRule(String method, String uri, HttpResponse response) {
+        addHttpResponseRule(new DefaultRequestMatcher(method, uri), response);
+    }
+
+    public static void addHttpResponseRule(String uri, HttpResponse response) {
+        addHttpResponseRule(new DefaultRequestMatcher(HttpGet.METHOD_NAME, uri), response);
+    }
+
+    public static void addHttpResponseRule(String uri, String response) {
+        addHttpResponseRule(new DefaultRequestMatcher(HttpGet.METHOD_NAME, uri), new TestHttpResponse(200, response));
+    }
+
+    public static void addHttpResponseRule(RequestMatcher requestMatcher, HttpResponse response) {
+        addHttpResponseRule(new ResponseRule(response, requestMatcher));
+    }
+
+    public static void addHttpResponseRule(ResponseRule responseRule) {
+        httpResponseRules.add(responseRule);
+    }
+
+    public static void setDefaultHttpResponse(TestHttpResponse httpDefaultResponse) {
+        ShadowDefaultRequestDirector.defaultHttpResponse = httpDefaultResponse;
+    }
+
+    public interface RequestMatcher {
+        public boolean matches(HttpRequest request);
+    }
+
+    private static class ResponseRule {
+        private HttpResponse responseToGive;
+
+        private RequestMatcher requestMatcher;
+
+        private ResponseRule(HttpResponse responseToGive, RequestMatcher requestMatcher) {
+            this.responseToGive = responseToGive;
+            this.requestMatcher = requestMatcher;
+        }
+
+        public boolean matches(HttpRequest request) {
+            return requestMatcher.matches(request);
+        }
+        public HttpResponse getResponse() {
+            return responseToGive;
+        }
+    }
+
+    private static class DefaultRequestMatcher implements RequestMatcher {
+        private String method;
+        private String uri;
+
+        private DefaultRequestMatcher(String method, String uri) {
+            this.method = method;
+            this.uri = uri;
+        }
+
+        @Override public boolean matches(HttpRequest request) {
+            return request.getRequestLine().getMethod().equals(method) &&
+                    request.getRequestLine().getUri().equals(uri);
+        }
     }
 }
 

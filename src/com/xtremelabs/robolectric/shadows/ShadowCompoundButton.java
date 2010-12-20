@@ -15,17 +15,17 @@ import com.xtremelabs.robolectric.util.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(CompoundButton.class)
 public class ShadowCompoundButton extends ShadowTextView implements Checkable {
-    private boolean mChecked;
-    private CompoundButton.OnCheckedChangeListener mOnCheckedChangeListener;
+    private boolean checked;
+    private CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
 
-    public void __constructor__(Context context, AttributeSet attributeSet) {
+    @Override public void __constructor__(Context context, AttributeSet attributeSet) {
         super.__constructor__(context, attributeSet);
         setChecked(this.attributeSet.getAttributeBooleanValue("android", "checked", false));
     }
 
     @Implementation
     @Override public void toggle() {
-        setChecked(!mChecked);
+        setChecked(!checked);
     }
 
     @Implementation
@@ -36,22 +36,21 @@ public class ShadowCompoundButton extends ShadowTextView implements Checkable {
 
     @Implementation
     @Override public boolean isChecked() {
-        return mChecked;
+        return checked;
     }
 
     @Implementation
     @Override public void setChecked(boolean checked) {
-        if (mChecked != checked) {
-            mChecked = checked;
-
-            if (mOnCheckedChangeListener != null) {
-                mOnCheckedChangeListener.onCheckedChanged((CompoundButton) realView, mChecked);
+        if (this.checked != checked) {
+            this.checked = checked;
+            if (onCheckedChangeListener != null) {
+                onCheckedChangeListener.onCheckedChanged((CompoundButton) realView, this.checked);
             }
         }
     }
 
     @Implementation
     public void setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener listener) {
-        mOnCheckedChangeListener = listener;
+        onCheckedChangeListener = listener;
     }
 }

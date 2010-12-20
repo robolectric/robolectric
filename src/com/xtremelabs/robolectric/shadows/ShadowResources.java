@@ -63,6 +63,11 @@ public class ShadowResources {
     }
 
     @Implementation
+    public CharSequence[] getTextArray(int id) throws Resources.NotFoundException {
+        return getStringArray(id);
+    }
+
+    @Implementation
     public CharSequence getText(int id) throws Resources.NotFoundException {
         return getString(id);
     }
