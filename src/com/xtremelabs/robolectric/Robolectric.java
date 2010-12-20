@@ -114,6 +114,7 @@ public class Robolectric {
                 ShadowAlertDialog.ShadowBuilder.class,
                 ShadowApplication.class,
                 ShadowAppWidgetManager.class,
+                ShadowArrayAdapter.class,
                 ShadowAssetManager.class,
                 ShadowAsyncTask.class,
                 ShadowAudioManager.class,
