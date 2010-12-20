@@ -1,11 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.os.Looper;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Implementation;
 import com.xtremelabs.robolectric.util.Implements;
 import com.xtremelabs.robolectric.util.Scheduler;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
@@ -17,24 +17,16 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Looper.class)
 public class ShadowLooper {
-    private static Looper MAIN_LOOPER = newInstanceOf(Looper.class);
-    static Looper MY_LOOPER = MAIN_LOOPER;
-
     private Scheduler scheduler = new Scheduler();
 
-    public static void resetAll() {
-        shadowOf(MAIN_LOOPER).reset();
-        shadowOf(MY_LOOPER).reset();
-    }
-    
     @Implementation
     public static Looper getMainLooper() {
-        return MAIN_LOOPER;
+        return Robolectric.getShadowApplication().getMainLooper();
     }
 
     @Implementation
     public static Looper myLooper() {
-        return MY_LOOPER;
+        return Robolectric.getShadowApplication().getCurrentLooper();
     }
 
     public static void pauseLooper(Looper looper) {

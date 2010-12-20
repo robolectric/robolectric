@@ -9,6 +9,7 @@ import android.location.LocationManager;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
+import android.os.Looper;
 import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
@@ -45,6 +46,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     private List<Intent> startedServices = new ArrayList<Intent>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
     private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
+    private final Looper mainLooper = newInstanceOf(Looper.class);
+    private Looper currentLooper = mainLooper;
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -267,6 +270,15 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     public FakeHttpLayer getFakeHttpLayer() {
         return fakeHttpLayer;
+    }
+
+    @Override @Implementation
+    public Looper getMainLooper() {
+        return mainLooper;
+    }
+
+    public Looper getCurrentLooper() {
+        return currentLooper;
     }
 
     public class Wrapper {

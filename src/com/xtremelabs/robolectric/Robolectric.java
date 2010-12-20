@@ -208,7 +208,6 @@ public class Robolectric {
         ShadowToast.reset();
         ShadowAlertDialog.reset();
         ShadowDialog.reset();
-        ShadowLooper.resetAll();
         ShadowAsyncTask.resetAll();
     }
 
@@ -506,7 +505,7 @@ public class Robolectric {
     }
 
     public static FakeHttpLayer getFakeHttpLayer() {
-        return shadowOf(Robolectric.application).getFakeHttpLayer();
+        return getShadowApplication().getFakeHttpLayer();
     }
 
     /**
@@ -536,5 +535,9 @@ public class Robolectric {
 
     public static Scheduler getUiThreadScheduler() {
         return shadowOf(Looper.getMainLooper()).getScheduler();
+    }
+
+    public static ShadowApplication getShadowApplication() {
+        return shadowOf(Robolectric.application);
     }
 }
