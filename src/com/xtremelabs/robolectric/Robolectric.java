@@ -128,6 +128,7 @@ public class Robolectric {
                 ShadowActivity.class,
                 ShadowAdapterView.class,
                 ShadowAddress.class,
+                ShadowAlarmManager.class,
                 ShadowAlertDialog.class,
                 ShadowAlertDialog.ShadowBuilder.class,
                 ShadowApplication.class,
@@ -411,6 +412,10 @@ public class Robolectric {
 
     public static ShadowAssetManager shadowOf(AssetManager instance) {
         return (ShadowAssetManager) Robolectric.shadowOf_(instance);
+    }
+
+    public static ShadowAlarmManager shadowOf(AlarmManager instance) {
+        return (ShadowAlarmManager) Robolectric.shadowOf_(instance);
     }
 
     @SuppressWarnings({"unchecked"})

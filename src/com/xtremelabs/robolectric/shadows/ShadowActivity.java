@@ -193,7 +193,8 @@ public class ShadowActivity extends ShadowContextWrapper {
      * Non-Android accessor consumes and returns the next {@code Intent} on the
      * started activities for results stack.
      *
-     * @return the next started {@code Intent} for an activity
+     * @return the next started {@code Intent} for an activity, wrapped in
+     * an {@link ShadowActivity.IntentForResult} object
      */
     public IntentForResult getNextStartedActivityForResult() {
         if (startedActivitiesForResults.isEmpty()) {
@@ -208,7 +209,8 @@ public class ShadowActivity extends ShadowContextWrapper {
      * {@link #startActivityForResult(android.content.Intent)} without
      * consuming it.
      *
-     * @return the most recently started {@code Intent}
+     * @return the most recently started {@code Intent}, wrapped in
+     * an {@link ShadowActivity.IntentForResult} object
      */
     public IntentForResult peekNextStartedActivityForResult() {
         if (startedActivitiesForResults.isEmpty()) {
