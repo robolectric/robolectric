@@ -6,9 +6,7 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 
-
 public class ClassNameResolverTest {
-
     @Test
     public void shouldResolveClassesBySimpleName() throws Exception {
         assertEquals(TestApplication.class, new ClassNameResolver<Application>("com.xtremelabs.robolectric", "TestApplication").resolve());
