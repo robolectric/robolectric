@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric;
+package com.xtremelabs.robolectric.bytecode;
 
 import javassist.CtClass;
 

@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric;
+package com.xtremelabs.robolectric.bytecode;
 
 // keep this class package-local; it is made public by AndroidTranslator at runtime
 @SuppressWarnings({"UnusedDeclaration"})
-class RobolectricInternals {
+public class RobolectricInternals {
     // initialized via magic by AndroidTranslator
     private static ClassHandler classHandler;
 

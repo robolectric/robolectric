@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric;
 
 import android.content.Context;
 import android.view.View;
+import com.xtremelabs.robolectric.bytecode.ShadowWranglerTest;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.util.TestOnClickListener;

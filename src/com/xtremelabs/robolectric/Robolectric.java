@@ -36,6 +36,8 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
+import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
+import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.util.HttpRequestInfo;

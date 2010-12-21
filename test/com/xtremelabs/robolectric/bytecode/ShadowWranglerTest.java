@@ -1,9 +1,11 @@
-package com.xtremelabs.robolectric;
+package com.xtremelabs.robolectric.bytecode;
 
 import android.content.Context;
 import android.test.mock.MockContext;
 import android.view.View;
 import android.widget.TextView;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithoutTestDefaultsRunner;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import org.junit.Before;
