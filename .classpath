@@ -15,7 +15,7 @@
 	<classpathentry kind="lib" path="lib/main/httpclient-4.0.3.jar"/>
 	<classpathentry kind="lib" path="lib/main/httpcore-4.0.1.jar"/>
 	<classpathentry kind="lib" path="lib/main/javassist-3.12.GA-src.jar"/>
-	<classpathentry kind="var" path="ANDROID_JAR"/>
-	<classpathentry kind="var" path="MAPS_JAR"/>
+	<classpathentry kind="var" path="ANDROID_HOME/platforms/android-9/android.jar"/>
+	<classpathentry kind="var" path="ANDROID_HOME/add-ons/addon_google_apis_google_inc_9/libs/maps.jar"/>
 	<classpathentry kind="output" path="bin/classesMain"/>
 </classpath>
