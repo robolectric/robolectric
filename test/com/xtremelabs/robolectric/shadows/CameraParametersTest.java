@@ -11,7 +11,10 @@ import org.junit.runner.RunWith;
 
 import java.util.List;
 
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.core.IsCollectionContaining.hasItem;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -46,7 +49,7 @@ public class CameraParametersTest {
     public void testGetSupportedPreviewFormats() throws Exception {
         List<Integer> supportedFormats = parameters.getSupportedPreviewFormats();
         assertThat(supportedFormats, notNullValue());
-        assertThat(supportedFormats.size(), greaterThan(0));
-        assertThat(supportedFormats, hasItem(new Integer(ImageFormat.NV21)));
+        assertThat(supportedFormats.size(), not(equalTo(0)));
+        assertThat(supportedFormats, hasItem(ImageFormat.NV21));
     }
 }

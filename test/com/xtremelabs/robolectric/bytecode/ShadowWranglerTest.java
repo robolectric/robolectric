@@ -16,9 +16,9 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.*;
 
 @RunWith(WithoutTestDefaultsRunner.class)

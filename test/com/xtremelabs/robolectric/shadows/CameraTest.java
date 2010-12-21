@@ -13,10 +13,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -56,7 +56,7 @@ public class CameraTest {
         Camera.Parameters parameters = camera.getParameters();
         assertThat(parameters, notNullValue());
         assertThat(parameters.getSupportedPreviewFormats(), notNullValue());
-        assertThat(parameters.getSupportedPreviewFormats().size(), greaterThan(0));
+        assertThat(parameters.getSupportedPreviewFormats().size(), not(equalTo(0)));
     }
 
     @Test

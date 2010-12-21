@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.Arrays;
 
-import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertThat;
 
 public class StringArrayResourceLoaderTest {
@@ -25,11 +25,11 @@ public class StringArrayResourceLoaderTest {
 
     @Test
     public void testStringsAreResolved() throws Exception {
-        assertThat(Arrays.asList(stringArrayResourceLoader.getArrayValue(R.array.items)), contains("foo", "bar"));
+        assertThat(Arrays.asList(stringArrayResourceLoader.getArrayValue(R.array.items)), hasItems("foo", "bar"));
     }
 
     @Test
     public void testStringsAreWithReferences() throws Exception {
-        assertThat(Arrays.asList(stringArrayResourceLoader.getArrayValue(R.array.greetings)), contains("hola", "Hello"));
+        assertThat(Arrays.asList(stringArrayResourceLoader.getArrayValue(R.array.greetings)), hasItems("hola", "Hello"));
     }
 }

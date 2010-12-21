@@ -15,7 +15,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -75,7 +75,7 @@ public class SQLiteDatabaseTest {
 
         long key = database.insert("table_name", null, values);
 
-        assertThat(key, greaterThan(0L));
+        assertThat(key, not(equalTo(0L)));
     }
 
     @Test
@@ -186,7 +186,7 @@ public class SQLiteDatabaseTest {
 
         long key = database.insert("auto_table", null, values);
 
-        assertThat(key, greaterThan(0L));
+        assertThat(key, not(equalTo(0L)));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -249,6 +249,6 @@ public class SQLiteDatabaseTest {
     private void assertNonEmptyDatabase() {
         Cursor cursor = database.query("table_name", new String[]{"id", "name"}, null, null, null, null, null);
         assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.getCount(), greaterThan(0));
+        assertThat(cursor.getCount(), not(equalTo(0)));
     }
 }

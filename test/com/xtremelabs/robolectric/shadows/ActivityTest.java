@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import java.io.File;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.startsWith;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)

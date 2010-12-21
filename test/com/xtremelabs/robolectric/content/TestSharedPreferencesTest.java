@@ -7,8 +7,10 @@ import org.junit.Test;
 import java.util.HashMap;
 import java.util.Hashtable;
 
-import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class TestSharedPreferencesTest {
     private HashMap<String, Hashtable<String, Object>> content;

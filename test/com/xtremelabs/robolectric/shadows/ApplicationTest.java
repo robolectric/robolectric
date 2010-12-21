@@ -21,8 +21,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static java.io.File.separator;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 

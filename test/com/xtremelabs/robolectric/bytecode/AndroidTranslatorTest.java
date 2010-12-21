@@ -23,7 +23,8 @@ import java.lang.reflect.Constructor;
 import static com.xtremelabs.robolectric.Robolectric.directlyOn;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.core.StringContains.containsString;
+import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 

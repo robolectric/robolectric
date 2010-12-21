@@ -3,7 +3,11 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.app.Application;
 import android.appwidget.AppWidgetProvider;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.IntentFilter;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Transcript;
@@ -11,7 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)

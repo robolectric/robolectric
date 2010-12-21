@@ -10,7 +10,10 @@ import com.xtremelabs.robolectric.util.Transcript;
 
 import static com.xtremelabs.robolectric.matchers.TextViewHasTextMatcher.hasText;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.core.CombinableMatcher.both;
 import static org.junit.Assert.assertThat;
 
 public class AdapterViewBehavior {

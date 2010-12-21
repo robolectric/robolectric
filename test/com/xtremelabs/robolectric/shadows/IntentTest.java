@@ -16,7 +16,7 @@ import java.io.Serializable;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.Matchers.not;
+import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
