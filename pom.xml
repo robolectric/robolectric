@@ -139,6 +139,54 @@
         </plugins>
     </build>
 
+    <profiles>
+        <profile>
+            <id>ant-deps</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>clean-dependencies</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>run</goal>
+                                </goals>
+                                <configuration>
+                                    <target>
+                                        <delete dir="${project.basedir}/lib/main"/>
+                                        <mkdir dir="${project.basedir}/lib/main"/>
+                                    </target>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                    <plugin>
+                        <artifactId>maven-dependency-plugin</artifactId>
+                        <executions>
+                            <execution>
+                                <id>copy-dependencies</id>
+                                <phase>package</phase>
+                                <goals>
+                                    <goal>copy-dependencies</goal>
+                                </goals>
+                                <configuration>
+                                    <outputDirectory>${project.basedir}/lib/main</outputDirectory>
+                                    <overWriteReleases>false</overWriteReleases>
+                                    <overWriteSnapshots>false</overWriteSnapshots>
+                                    <overWriteIfNewer>true</overWriteIfNewer>
+                                    <excludeArtifactIds>android,maps,mockito-core</excludeArtifactIds>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
+
     <scm>
         <url>git@github.com:pivotal/robolectric.git</url>
         <connection>scm:git:git://github.com/pivotal/robolectric.git</connection>
