@@ -88,14 +88,13 @@ public class ShadowWrangler implements ClassHandler {
         List<StackTraceElement> stackTrace = new ArrayList<StackTraceElement>();
         for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
             String className = stackTraceElement.getClassName();
-            if (className.startsWith("sun.reflect.")
+            boolean isInternalCall = className.startsWith("sun.reflect.")
                     || className.startsWith("java.lang.reflect.")
                     || className.equals(ShadowWrangler.class.getName())
-                    || className.equals(RobolectricInternals.class.getName())
-                    ) {
-                continue;
+                    || className.equals(RobolectricInternals.class.getName());
+            if (!isInternalCall) {
+                stackTrace.add(stackTraceElement);
             }
-            stackTrace.add(stackTraceElement);
         }
         throwable.setStackTrace(stackTrace.toArray(new StackTraceElement[stackTrace.size()]));
         return throwable;
