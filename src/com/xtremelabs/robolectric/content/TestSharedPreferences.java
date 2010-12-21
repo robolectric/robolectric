@@ -2,21 +2,17 @@ package com.xtremelabs.robolectric.content;
 
 import android.content.SharedPreferences;
 
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
 public class TestSharedPreferences implements SharedPreferences {
 
-    public static Map<String, Hashtable<String, Object>> content = new HashMap<String, Hashtable<String, Object>>();
+    public Map<String, Hashtable<String, Object>> content;
     private String filename;
     public int mode;
 
-    public static void reset() {
-        content = new Hashtable<String, Hashtable<String, Object>>();
-    }
-
-    public TestSharedPreferences(String name, int mode) {
+    public TestSharedPreferences(Map<String, Hashtable<String, Object>> content, String name, int mode) {
+        this.content = content;
         this.filename = name;
         this.mode = mode;
         if (!content.containsKey(name)) {

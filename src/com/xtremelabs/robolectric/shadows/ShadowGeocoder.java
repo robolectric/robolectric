@@ -2,8 +2,8 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.location.Address;
 import android.location.Geocoder;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 import java.io.IOException;
 import java.util.ArrayList;

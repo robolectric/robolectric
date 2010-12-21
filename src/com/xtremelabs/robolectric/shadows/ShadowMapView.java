@@ -6,8 +6,8 @@ import android.view.MotionEvent;
 import android.widget.ZoomButtonsController;
 import com.google.android.maps.*;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 import java.util.ArrayList;
 import java.util.List;

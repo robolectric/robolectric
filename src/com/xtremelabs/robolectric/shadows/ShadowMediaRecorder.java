@@ -1,11 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
-
 import android.hardware.Camera;
 import android.media.MediaRecorder;
 import android.view.Surface;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 /**
  * Shadows the {@code MediaRecorder} class.

@@ -40,7 +40,7 @@ public class ViewLoaderTest {
         resourceExtractor.addRClass(R.class);
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
         new DocumentLoader(stringResourceLoader).loadResourceXmlDir(new File("test/res/values"));
-        viewLoader = new ViewLoader(resourceExtractor, stringResourceLoader, new AttrResourceLoader(resourceExtractor));
+        viewLoader = new ViewLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
         new DocumentLoader(viewLoader).loadResourceXmlDir(new File("test/res/layout"));
 
         context = new Activity();

@@ -2,8 +2,9 @@ package com.xtremelabs.robolectric;
 
 import android.content.Context;
 import android.view.View;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.bytecode.ShadowWranglerTest;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.util.TestOnClickListener;
 import org.junit.After;
 import org.junit.Before;
@@ -13,8 +14,8 @@ import org.junit.runner.RunWith;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class RobolectricTest {
@@ -42,7 +43,7 @@ public class RobolectricTest {
 
     @Test
     public void shouldLogMissingInvokedShadowMethodsWhenRequested() throws Exception {
-        Robolectric.bindShadowClass(View.class, TestShadowView.class);
+        Robolectric.bindShadowClass(TestShadowView.class);
         Robolectric.logMissingInvokedShadowMethods();
 
 
@@ -60,8 +61,6 @@ public class RobolectricTest {
 
     @Test // This is nasty because it depends on the test above having run first in order to fail
     public void shouldNotLogMissingInvokedShadowMethodsByDefault() throws Exception {
-        Robolectric.bindShadowClass(View.class, ShadowWranglerTest.TestShadowView.class);
-
         View aView = new View(null);
         aView.findViewById(27);
         String output = buff.toString();
@@ -74,6 +73,18 @@ public class RobolectricTest {
         View view = new View(null);
         view.setEnabled(false);
         Robolectric.clickOn(view);
+    }
+
+    @Test
+    public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
+        assertThat(Robolectric.getBackgroundScheduler().isPaused(), equalTo(false));
+        Robolectric.getBackgroundScheduler().pause();
+    }
+
+    @Test
+    public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
+        assertThat(Robolectric.getBackgroundScheduler().isPaused(), equalTo(false));
+        Robolectric.getBackgroundScheduler().pause();
     }
 
     public void clickOn_shouldCallClickListener() throws Exception {

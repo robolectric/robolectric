@@ -103,6 +103,7 @@
             <fileset dir="${main.external.libs.absolute.dir}" >
                  <exclude name="*src.jar" />
                  <exclude name="junit*.jar" />
+                 <exclude name="hamcrest*.jar" />
             </fileset>
         </unjar>
         <unjar dest="${target.dir}/staging" src="${target.dir}/robolectric.jar"/>

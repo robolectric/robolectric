@@ -4,11 +4,12 @@ import android.content.Context;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -18,8 +19,6 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Toast.class)
 public class ShadowToast {
-    private static ArrayList<Toast> shownToasts = new ArrayList<Toast>();
-
     private String text;
     private int gravity;
     private View view;
@@ -40,7 +39,7 @@ public class ShadowToast {
 
     @Implementation
     public void show() {
-        shownToasts.add(toast);
+        Robolectric.getShadowApplication().getShownToasts().add(toast);
     }
 
     @Implementation
@@ -67,7 +66,7 @@ public class ShadowToast {
      * Non-Android accessor that discards the recorded {@code Toast}s
      */
     public static void reset() {
-        shownToasts.clear();
+        Robolectric.getShadowApplication().getShownToasts().clear();
     }
 
     /**
@@ -78,7 +77,7 @@ public class ShadowToast {
      * or since {@link #reset()} has been called.
      */
     public static int shownToastCount() {
-        return shownToasts.size();
+        return Robolectric.getShadowApplication().getShownToasts().size();
     }
 
     /**
@@ -89,7 +88,7 @@ public class ShadowToast {
      * @return whether the {@code Toast} was requested
      */
     public static boolean showedCustomToast(CharSequence message, int layoutResourceIdToCheckForMessage) {
-        for (Toast toast : shownToasts) {
+        for (Toast toast : Robolectric.getShadowApplication().getShownToasts()) {
             String text = ((TextView) toast.getView().findViewById(layoutResourceIdToCheckForMessage)).getText().toString();
             if (text.equals(message.toString())) {
                 return true;
@@ -105,7 +104,7 @@ public class ShadowToast {
      * @return whether the {@code Toast} was requested
      */
     public static boolean showedToast(CharSequence message) {
-        for (Toast toast : shownToasts) {
+        for (Toast toast : Robolectric.getShadowApplication().getShownToasts()) {
             String text = shadowOf(toast).text;
             if (text != null && text.equals(message.toString())) {
                 return true;
@@ -120,7 +119,7 @@ public class ShadowToast {
      * @return the text of the most recently shown {@code Toast}
      */
     public static String getTextOfLatestToast() {
-        return shadowOf(shownToasts.get(0)).text;
+        return shadowOf(Robolectric.getShadowApplication().getShownToasts().get(0)).text;
     }
 
     /**
@@ -129,6 +128,7 @@ public class ShadowToast {
      * @return the most recently shown {@code Toast}
      */
     public static Toast getLatestToast() {
+        List<Toast> shownToasts = Robolectric.getShadowApplication().getShownToasts();
         return shownToasts.get(shownToasts.size() - 1);
     }
 }

@@ -3,24 +3,26 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.AlarmManager;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.*;
 import android.content.res.Resources;
 import android.location.LocationManager;
 import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
-import android.test.mock.MockContentResolver;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
+import android.widget.Toast;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.util.Scheduler;
 import com.xtremelabs.robolectric.view.TestWindowManager;
 
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -34,7 +36,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     @RealObject private Application realApplication;
 
     private ResourceLoader resourceLoader;
-    private MockContentResolver contentResolver = new MockContentResolver();
+    private ContentResolver contentResolver;
     private AlarmManager alarmManager;
     private LocationManager locationManager;
     private ConnectivityManager connectivityManager;
@@ -44,6 +46,15 @@ public class ShadowApplication extends ShadowContextWrapper {
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
+    private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
+    private final Looper mainLooper = newInstanceOf(Looper.class);
+    private Looper currentLooper = mainLooper;
+    private Scheduler backgroundScheduler = new Scheduler();
+    private Map<String, Hashtable<String, Object>> sharedPreferenceMap = new HashMap<String, Hashtable<String, Object>>();
+    private ArrayList<Toast> shownToasts = new ArrayList<Toast>();
+    private ShadowAlertDialog latestAlertDialog;
+    private ShadowDialog latestDialog;
+    private BluetoothAdapter bluetoothAdapter = Robolectric.newInstanceOf(BluetoothAdapter.class);
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -58,10 +69,18 @@ public class ShadowApplication extends ShadowContextWrapper {
      * todo: make this non-static?
      */
     public static Application bind(Application application, ResourceLoader resourceLoader) {
-        ShadowApplication shadowApplication = (ShadowApplication) shadowOf(application);
+        ShadowApplication shadowApplication = shadowOf(application);
         if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
         shadowApplication.resourceLoader = resourceLoader;
         return application;
+    }
+
+    public List<Toast> getShownToasts() {
+        return shownToasts;
+    }
+
+    public Scheduler getBackgroundScheduler() {
+        return backgroundScheduler;
     }
 
     @Override @Implementation
@@ -76,6 +95,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     @Implementation
     @Override public ContentResolver getContentResolver() {
+        if (contentResolver == null) {
+            contentResolver = new ContentResolver(realApplication) {
+            };
+        }
         return contentResolver;
     }
 
@@ -262,6 +285,43 @@ public class ShadowApplication extends ShadowContextWrapper {
      */
     public AppWidgetManager getAppWidgetManager() {
         return appWidgetManager;
+    }
+
+    public FakeHttpLayer getFakeHttpLayer() {
+        return fakeHttpLayer;
+    }
+
+    @Override @Implementation
+    public Looper getMainLooper() {
+        return mainLooper;
+    }
+
+    public Looper getCurrentLooper() {
+        return currentLooper;
+    }
+
+    public Map<String,Hashtable<String, Object>> getSharedPreferenceMap() {
+        return sharedPreferenceMap;
+    }
+
+    public ShadowAlertDialog getLatestAlertDialog() {
+        return latestAlertDialog;
+    }
+
+    public void setLatestAlertDialog(ShadowAlertDialog latestAlertDialog) {
+        this.latestAlertDialog = latestAlertDialog;
+    }
+
+    public ShadowDialog getLatestDialog() {
+        return latestDialog;
+    }
+
+    public void setLatestDialog(ShadowDialog latestDialog) {
+        this.latestDialog = latestDialog;
+    }
+
+    public BluetoothAdapter getBluetoothAdapter() {
+        return bluetoothAdapter;
     }
 
     public class Wrapper {

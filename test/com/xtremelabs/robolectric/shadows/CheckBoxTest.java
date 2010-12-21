@@ -14,7 +14,6 @@ import static org.junit.Assert.assertThat;
 public class CheckBoxTest {
     @Test
     public void testWorks() throws Exception {
-        Robolectric.bindShadowClass(CompoundButton.class, ShadowCompoundButton.class);
         CheckBox checkBox = new CheckBox(null);
         assertThat(checkBox.isChecked(), equalTo(false));
 

@@ -1,8 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.net.NetworkInfo;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 /**
  * Shadow of {@code NetworkInfo} which is used by ShadowConnectivityManager.

@@ -1,9 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
-import com.xtremelabs.robolectric.util.HttpRequestData;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.util.HttpRequestInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.*;
@@ -21,14 +22,10 @@ import org.apache.http.protocol.HttpProcessor;
 import org.apache.http.protocol.HttpRequestExecutor;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(DefaultRequestDirector.class)
 public class ShadowDefaultRequestDirector {
-    static List<HttpResponse> httpResponses = new ArrayList<HttpResponse>();
-    static List<HttpRequestData> httpRequestDatas = new ArrayList<HttpRequestData>();
-
     @RealObject DefaultRequestDirector realObject;
 
     protected Log log;
@@ -103,34 +100,17 @@ public class ShadowDefaultRequestDirector {
                 params);
     }
 
-    public static void reset() {
-        httpResponses.clear();
-        httpRequestDatas.clear();
-    }
-
-    public static void addPendingResponse(int statusCode, String responseBody) {
-        addPendingResponse(new TestHttpResponse(statusCode, responseBody));
-    }
-
-    public static void addPendingResponse(HttpResponse httpResponse) {
-        httpResponses.add(httpResponse);
-    }
-
     public static HttpRequest getSentHttpRequest(int index) {
-        return getSentHttpRequestData(index).getHttpRequest();
+        return getSentHttpRequestInfo(index).getHttpRequest();
     }
 
-    public static HttpRequestData getSentHttpRequestData(int index) {
-        return httpRequestDatas.get(index);
+    public static HttpRequestInfo getSentHttpRequestInfo(int index) {
+        return Robolectric.getFakeHttpLayer().httpRequestInfos.get(index);
     }
 
     @Implementation
     public HttpResponse execute(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
-        if (httpResponses.isEmpty()) {
-            throw new RuntimeException("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse().");
-        }
-        httpRequestDatas.add(new HttpRequestData(httpRequest, httpHost, httpContext, this.realObject));
-        return httpResponses.remove(0);
+        return Robolectric.getFakeHttpLayer().emulateRequest(httpHost, httpRequest, httpContext, realObject);
     }
 
     public Log getLog() {
@@ -184,5 +164,6 @@ public class ShadowDefaultRequestDirector {
     public HttpParams getHttpParams() {
         return httpParams;
     }
+
 }
 

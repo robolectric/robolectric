@@ -1,15 +1,17 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.bluetooth.BluetoothAdapter;
 import android.content.*;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.os.Looper;
 import android.test.mock.MockPackageManager;
 import com.xtremelabs.robolectric.content.TestSharedPreferences;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -123,7 +125,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     @Implementation
     public SharedPreferences getSharedPreferences(String name, int mode) {
-        return new TestSharedPreferences(name, mode);
+        return new TestSharedPreferences(getShadowApplication().getSharedPreferenceMap(), name, mode);
     }
 
     @Implementation
@@ -142,7 +144,7 @@ public class ShadowContextWrapper extends ShadowContext {
     }
 
     /**
-     * Non-Androic accessor that delegates to the application to return (without consuming) the next {@code Intent} on
+     * Non-Android accessor that delegates to the application to return (without consuming) the next {@code Intent} on
      * the started activities stack.
      *
      * @return the next started {@code Intent} for an activity
@@ -162,8 +164,7 @@ public class ShadowContextWrapper extends ShadowContext {
     }
 
     /**
-     * Non-Android accessor that delegates to the application to return (without consuming) the next {@code Intent} on
-     * the started services stack.
+     * Return (without consuming) the next {@code Intent} on the started services stack.
      *
      * @return the next started {@code Intent} for a service
      */
@@ -174,10 +175,16 @@ public class ShadowContextWrapper extends ShadowContext {
     /**
      * Non-Android accessor that is used at start-up to set the package name
      *
+     * @param packageName the package name
      * @return the next started {@code Intent} for a service
      */
     public void setPackageName(String packageName) {
         this.packageName = packageName;
+    }
+
+    @Implementation
+    public Looper getMainLooper() {
+        return getShadowApplication().getMainLooper();
     }
 
     private ShadowApplication getShadowApplication() {

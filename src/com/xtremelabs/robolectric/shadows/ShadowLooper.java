@@ -1,11 +1,12 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.os.Looper;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.util.Scheduler;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow for {@code Looper} that enqueues posted {@link Runnable}s to be run (on this thread) later. {@code Runnable}s
@@ -16,35 +17,32 @@ import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Looper.class)
 public class ShadowLooper {
-    private static ThreadLocal<Looper> sThreadLocal;
-    private static Looper MAIN_LOOPER;
-
     private Scheduler scheduler = new Scheduler();
-
-
-    static {
-        resetAll();
-    }
-
-    public static void resetAll() {
-        sThreadLocal = new ThreadLocal<Looper>() {
-            @Override
-            protected Looper initialValue() {
-                return newInstanceOf(Looper.class);
-            }
-        };
-
-        MAIN_LOOPER = sThreadLocal.get();
-    }
 
     @Implementation
     public static Looper getMainLooper() {
-        return MAIN_LOOPER;
+        return Robolectric.getShadowApplication().getMainLooper();
     }
 
     @Implementation
     public static Looper myLooper() {
-        return sThreadLocal.get();
+        return Robolectric.getShadowApplication().getCurrentLooper();
+    }
+
+    public static void pauseLooper(Looper looper) {
+        shadowOf(looper).pause();
+    }
+
+    public static void unPauseLooper(Looper looper) {
+        shadowOf(looper).unPause();
+    }
+
+    public static void pauseMainLooper() {
+        pauseLooper(Looper.getMainLooper());
+    }
+
+    public static void unPauseMainLooper() {
+        unPauseLooper(Looper.getMainLooper());
     }
 
     /**
@@ -58,6 +56,8 @@ public class ShadowLooper {
     /**
      * Causes {@link Runnable}s that have been scheduled to run within the next {@code intervalMillis} milliseconds to
      * run while advancing the scheduler's clock.
+     *
+     * @param intervalMillis milliseconds to advance
      */
     public void idle(long intervalMillis) {
         scheduler.advanceBy(intervalMillis);
@@ -91,11 +91,19 @@ public class ShadowLooper {
     /**
      * Enqueue a task to be run later.
      *
-     * @param runnable the task to be run
+     * @param runnable    the task to be run
      * @param delayMillis how many milliseconds into the (virtual) future to run it
      */
     public void post(Runnable runnable, long delayMillis) {
         scheduler.postDelayed(runnable, delayMillis);
+    }
+
+    public void pause() {
+        scheduler.pause();
+    }
+
+    public void unPause() {
+        scheduler.unPause();
     }
 
     /**
@@ -113,4 +121,5 @@ public class ShadowLooper {
     public Scheduler getScheduler() {
         return scheduler;
     }
+
 }

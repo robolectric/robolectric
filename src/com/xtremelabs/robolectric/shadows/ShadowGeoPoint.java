@@ -1,8 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import com.google.android.maps.GeoPoint;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 import static com.xtremelabs.robolectric.shadows.ShadowMapView.fromE6;

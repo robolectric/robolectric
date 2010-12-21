@@ -3,9 +3,9 @@ package com.xtremelabs.robolectric.shadows;
 import android.os.AsyncTask;
 import android.os.ShadowAsyncTaskBridge;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {
@@ -41,13 +41,13 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         final ShadowAsyncTaskBridge<Params, Progress, Result> bridge = new ShadowAsyncTaskBridge<Params, Progress, Result>(realAsyncTask);
         bridge.onPreExecute();
 
-        Robolectric.backgroundScheduler.post(new Runnable() {
+        Robolectric.getBackgroundScheduler().post(new Runnable() {
             @Override public void run() {
                 if (cancelled) return;
                 hasRun = true;
                 final Result result = bridge.doInBackground(params);
 
-                Robolectric.uiThreadScheduler.post(new Runnable() {
+                Robolectric.getUiThreadScheduler().post(new Runnable() {
                     @Override public void run() {
                         bridge.onPostExecute(result);
                     }

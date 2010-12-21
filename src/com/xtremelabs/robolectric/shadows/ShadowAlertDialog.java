@@ -5,9 +5,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
 import android.widget.Button;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.lang.reflect.Constructor;
 
@@ -17,8 +18,6 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
 public class ShadowAlertDialog extends ShadowDialog {
-    private static ShadowAlertDialog latestAlertDialog;
-
     private CharSequence[] items;
     private String title;
     private String message;
@@ -40,7 +39,7 @@ public class ShadowAlertDialog extends ShadowDialog {
      * @return the most recently created {@code AlertDialog}, or null if none has been created during this test run
      */
     public static ShadowAlertDialog getLatestAlertDialog() {
-        return latestAlertDialog;
+        return Robolectric.getShadowApplication().getLatestAlertDialog();
     }
 
     @Override @Implementation
@@ -52,7 +51,7 @@ public class ShadowAlertDialog extends ShadowDialog {
      * Resets the tracking of the most recently created {@code AlertDialog}
      */
     public static void reset() {
-        latestAlertDialog = null;
+        Robolectric.getShadowApplication().setLatestAlertDialog(null);
     }
 
     /**
@@ -266,7 +265,7 @@ public class ShadowAlertDialog extends ShadowDialog {
             latestAlertDialog.neutralButton = createButton(realDialog, AlertDialog.BUTTON_NEUTRAL, neutralText, neutralListener);
             latestAlertDialog.isCancelable = isCancelable;
 
-            ShadowAlertDialog.latestAlertDialog = latestAlertDialog;
+            Robolectric.getShadowApplication().setLatestAlertDialog(latestAlertDialog);
 
             return realDialog;
         }

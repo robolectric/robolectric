@@ -2,11 +2,17 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.widget.ImageView;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ImageView.class)
@@ -16,6 +22,7 @@ public class ShadowImageView extends ShadowView {
     private int resourceId;
     private Bitmap imageBitmap;
     private ImageView.ScaleType scaleType;
+    private Matrix matrix;
 
     @Override public void __constructor__(Context context, AttributeSet attributeSet) {
         super.__constructor__(context, attributeSet);
@@ -24,9 +31,11 @@ public class ShadowImageView extends ShadowView {
 
     @Implementation
     public void setImageBitmap(Bitmap imageBitmap) {
+        setImageDrawable(new BitmapDrawable(imageBitmap));
         this.imageBitmap = imageBitmap;
     }
 
+    @Deprecated
     public Bitmap getImageBitmap() {
         return imageBitmap;
     }
@@ -39,6 +48,7 @@ public class ShadowImageView extends ShadowView {
     @Implementation
     public void setImageResource(int resId) {
         this.resourceId = resId;
+        setImageDrawable(new BitmapDrawable(BitmapFactory.decodeResource(getResources(), resId)));
     }
 
     @Implementation
@@ -56,6 +66,15 @@ public class ShadowImageView extends ShadowView {
         this.scaleType = scaleType;
     }
 
+    @Implementation
+    public Drawable getDrawable() {
+        return imageDrawable;
+    }
+
+    /**
+     * @deprecated Use android.widget.ImageView#getDrawable() instead.
+     * @return the image drawable */
+    @Deprecated
     public Drawable getImageDrawable() {
         return imageDrawable;
     }
@@ -64,8 +83,23 @@ public class ShadowImageView extends ShadowView {
         return alpha;
     }
 
+    @Deprecated
     public int getResourceId() {
         return resourceId;
+    }
+
+    @Implementation
+    public void setImageMatrix(Matrix matrix) {
+        this.matrix = new Matrix(matrix);
+    }
+
+    @Implementation
+    public void draw(Canvas canvas) {
+        if (matrix != null) {
+            canvas.translate(shadowOf(matrix).getTransX(), shadowOf(matrix).getTransY());
+            canvas.scale(shadowOf(matrix).getScaleX(), shadowOf(matrix).getScaleY());
+        }
+        imageDrawable.draw(canvas);
     }
 
     private void applyImageAttribute() {

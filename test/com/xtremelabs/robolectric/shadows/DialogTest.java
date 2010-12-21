@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Test;
@@ -15,8 +14,6 @@ import static org.junit.Assert.assertThat;
 public class DialogTest {
     @Test
     public void shouldCallOnDismissListener() throws Exception {
-        Robolectric.bindShadowClass(Dialog.class, ShadowDialog.class);
-
         final Transcript transcript = new Transcript();
 
         final Dialog dialog = new Dialog(null);

@@ -1,8 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.database.sqlite.SQLiteCursor;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;

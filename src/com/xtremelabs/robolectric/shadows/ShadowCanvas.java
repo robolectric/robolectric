@@ -1,17 +1,18 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Path;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import android.graphics.*;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 /**
  * Shadows the {@code android.graphics.Canvas} class.
- *
+ * <p/>
  * Broken.
  * This implementation is very specific to the application for which it was developed.
  * Todo: Reimplement. Consider using the same strategy of collecting a history of draw events and providing methods for writing queries based on type, number, and order of events.
@@ -22,7 +23,41 @@ public class ShadowCanvas {
     private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<PathPaintHistoryEvent>();
     private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<CirclePaintHistoryEvent>();
     private Paint drawnPaint;
-    private boolean drewSomethingAfterCircle;
+    private Bitmap targetBitmap = newInstanceOf(Bitmap.class);
+    private float translateX;
+    private float translateY;
+    private float scaleX = 1;
+    private float scaleY = 1;
+
+    public void __constructor__(Bitmap bitmap) {
+        this.targetBitmap = bitmap;
+    }
+
+    public void appendDescription(String s) {
+        shadowOf(targetBitmap).appendDescription(s);
+    }
+
+    public String getDescription() {
+        return shadowOf(targetBitmap).getDescription();
+    }
+
+    @Implementation
+    public void translate(float x, float y) {
+        this.translateX = x;
+        this.translateY = y;
+    }
+
+    @Implementation
+    public void scale(float sx, float sy) {
+        this.scaleX = sx;
+        this.scaleY = sy;
+    }
+
+    @Implementation
+    public void scale(float sx, float sy, float px, float py) {
+        this.scaleX = sx;
+        this.scaleY = sy;
+    }
 
     @Implementation
     public void drawPaint(Paint paint) {
@@ -30,17 +65,40 @@ public class ShadowCanvas {
     }
 
     @Implementation
-    public void drawPath(Path path, Paint paint) {
-        pathPaintEvents.add(new PathPaintHistoryEvent(path, paint));
-        if (hasDrawnCircle()) {
-            drewSomethingAfterCircle = true;
+    public void drawBitmap(Bitmap bitmap, float left, float top, Paint paint) {
+        describeBitmap(bitmap, paint);
+
+        int x = (int) (left + translateX);
+        int y = (int) (top + translateY);
+        if (x != 0 && y != 0) {
+            appendDescription(" at (" + x + "," + y + ")");
+        }
+
+        if (scaleX != 1 && scaleY != 1) {
+            appendDescription(" scaled by (" + scaleX + "," + scaleY + ")");
+        }
+    }
+
+    private void describeBitmap(Bitmap bitmap, Paint paint) {
+        if (getDescription().length() != 0) {
+            appendDescription("\n");
+        }
+
+        appendDescription(shadowOf(bitmap).getDescription());
+
+        if (paint != null) {
+            ColorFilter colorFilter = paint.getColorFilter();
+            if (colorFilter != null) {
+                appendDescription(" with " + colorFilter);
+            }
         }
     }
 
     @Implementation
-    public void drawCircle(float cx, float cy, float radius, Paint paint) {
-        circlePaintEvents.add(new CirclePaintHistoryEvent(cx, cy, radius, paint));
-        drewSomethingAfterCircle = false;
+    public void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
+        describeBitmap(bitmap, paint);
+
+        appendDescription(" transformed by matrix");
     }
 
     public int getPathPaintHistoryCount() {
@@ -78,10 +136,6 @@ public class ShadowCanvas {
 
     public Paint getDrawnPaint() {
         return drawnPaint;
-    }
-
-    public boolean isDrewSomethingAfterCircle() {
-        return drewSomethingAfterCircle;
     }
 
     private static class PathPaintHistoryEvent {

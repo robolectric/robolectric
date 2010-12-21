@@ -4,8 +4,8 @@ import android.graphics.PixelFormat;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import android.view.Surface;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 /**
  * A shadow for Display with some reasonable defaults
@@ -14,8 +14,8 @@ import com.xtremelabs.robolectric.util.Implements;
 @Implements(Display.class)
 public class ShadowDisplay {
     private int displayId;
-    private int width = 800;
-    private int height = 480;
+    private int width = 480;
+    private int height = 800;
     private float density = 1.5f;
     private int densityDpi = DisplayMetrics.DENSITY_HIGH;
     private float xdpi = 240.0f;

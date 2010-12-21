@@ -18,9 +18,6 @@ import static org.junit.Assert.assertThat;
 public class TextViewTest {
     @Test
     public void testGetUrls() throws Exception {
-        Robolectric.bindShadowClass(TextView.class, ShadowTextView.class);
-        Robolectric.bindShadowClass(URLSpan.class, ShadowURLSpan.class);
-
         TextView textView = new TextView(null);
         textView.setText("here's some text http://google.com/\nblah\thttp://another.com/123?456 blah");
 

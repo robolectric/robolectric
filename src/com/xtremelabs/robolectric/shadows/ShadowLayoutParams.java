@@ -1,8 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.view.ViewGroup;
-import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewGroup.LayoutParams.class)

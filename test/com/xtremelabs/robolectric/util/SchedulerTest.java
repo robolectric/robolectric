@@ -13,6 +13,7 @@ public class SchedulerTest {
     @Before
     public void setUp() throws Exception {
         scheduler = new Scheduler();
+        scheduler.pause();
         transcript = new Transcript();
     }
 
@@ -78,6 +79,38 @@ public class SchedulerTest {
 
         scheduler.advanceBy(999);
         transcript.assertEventsSoFar("three");
+    }
+
+    @Test
+    public void resetShouldUnPause() throws Exception {
+        scheduler.pause();
+
+        TestRunnable runnable = new TestRunnable();
+        scheduler.post(runnable);
+
+        assertThat(runnable.wasRun, equalTo(false));
+        
+        scheduler.reset();
+        scheduler.post(runnable);
+        assertThat(runnable.wasRun, equalTo(true));
+    }
+
+    @Test
+    public void resetShouldClearPendingRunnables() throws Exception {
+        scheduler.pause();
+
+        TestRunnable runnable1 = new TestRunnable();
+        scheduler.post(runnable1);
+
+        assertThat(runnable1.wasRun, equalTo(false));
+
+        scheduler.reset();
+
+        TestRunnable runnable2 = new TestRunnable();
+        scheduler.post(runnable2);
+        
+        assertThat(runnable1.wasRun, equalTo(false));
+        assertThat(runnable2.wasRun, equalTo(true));
     }
 
     private class AddToTranscript implements Runnable {

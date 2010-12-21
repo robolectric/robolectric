@@ -2,13 +2,15 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
 
 import java.io.InputStream;
 import java.util.Locale;
@@ -30,16 +32,17 @@ public class ShadowResources {
         return resources;
     }
 
+    @RealObject Resources realResources;
     private ResourceLoader resourceLoader;
 
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
-        return resourceLoader.colorResourceLoader.getValue(id);
+        return resourceLoader.getColorValue(id);
     }
 
     @Implementation
     public String getString(int id) throws Resources.NotFoundException {
-        return resourceLoader.stringResourceLoader.getValue(id);
+        return resourceLoader.getStringValue(id);
     }
 
     @Implementation
@@ -50,16 +53,21 @@ public class ShadowResources {
 
     @Implementation
     public InputStream openRawResource(int id) throws Resources.NotFoundException {
-    	return resourceLoader.rawResourceLoader.getValue(id);
+    	return resourceLoader.getRawValue(id);
     }
     
     @Implementation
     public String[] getStringArray(int id) throws Resources.NotFoundException {
-        String[] arrayValue = resourceLoader.stringArrayResourceLoader.getArrayValue(id);
+        String[] arrayValue = resourceLoader.getStringArrayValue(id);
         if (arrayValue == null) {
             throw new Resources.NotFoundException();
         }
         return arrayValue;
+    }
+
+    @Implementation
+    public CharSequence[] getTextArray(int id) throws Resources.NotFoundException {
+        return getStringArray(id);
     }
 
     @Implementation
@@ -74,10 +82,7 @@ public class ShadowResources {
 
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
-        RobolectricBitmapDrawable bitmapDrawable = new RobolectricBitmapDrawable(drawableResourceId);
-        ShadowBitmapDrawable shadowBitmapDrawable = shadowOf(bitmapDrawable);
-        shadowBitmapDrawable.loadedFromResourceId = drawableResourceId;
-        return bitmapDrawable;
+        return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
     }
 
     @Implementation
@@ -117,31 +122,4 @@ public class ShadowResources {
     public void setDimension(int id, int value) {
         resourceLoader.dimensions.put(id, value);
     }
-
-    private static class RobolectricBitmapDrawable extends BitmapDrawable {
-        private int drawableResourceId;
-
-        public RobolectricBitmapDrawable(int drawableResourceId) {
-            this.drawableResourceId = drawableResourceId;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            RobolectricBitmapDrawable that = (RobolectricBitmapDrawable) o;
-
-            if (drawableResourceId != that.drawableResourceId) return false;
-            if (!getBounds().equals(that.getBounds())) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            return drawableResourceId;
-        }
-    }
-
 }

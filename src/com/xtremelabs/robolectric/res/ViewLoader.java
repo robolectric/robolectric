@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
-import com.xtremelabs.robolectric.util.TestAttributeSet;
+import com.xtremelabs.robolectric.internal.TestAttributeSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -23,12 +23,10 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ViewLoader extends XmlLoader {
     private Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
-    private StringResourceLoader stringResourceLoader;
     private AttrResourceLoader attrResourceLoader;
 
-    public ViewLoader(ResourceExtractor resourceExtractor, StringResourceLoader stringResourceLoader, AttrResourceLoader attrResourceLoader) {
+    public ViewLoader(ResourceExtractor resourceExtractor, AttrResourceLoader attrResourceLoader) {
         super(resourceExtractor);
-        this.stringResourceLoader = stringResourceLoader;
         this.attrResourceLoader = attrResourceLoader;
     }
 

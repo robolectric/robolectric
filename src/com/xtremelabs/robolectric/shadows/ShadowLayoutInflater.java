@@ -5,10 +5,10 @@ import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.xtremelabs.robolectric.res.ViewLoader;
-import com.xtremelabs.robolectric.util.AppSingletonizer;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.AppSingletonizer;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -23,6 +23,11 @@ public class ShadowLayoutInflater {
 
     private Context context;
 
+    private static LayoutInflater bind(LayoutInflater layoutInflater, Context context) {
+        shadowOf(layoutInflater).context = context;
+        return layoutInflater;
+    }
+
     @Implementation
     public static LayoutInflater from(Context context) {
         return bind(instances.getInstance(context), context);
@@ -30,7 +35,7 @@ public class ShadowLayoutInflater {
 
     @Implementation
     public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
-        return getViewLoader().inflateView(context, resource, attachToRoot ? root : null);
+        return getResourceLoader().inflateView(context, resource, attachToRoot ? root : null);
     }
 
     @Implementation
@@ -38,13 +43,8 @@ public class ShadowLayoutInflater {
         return inflate(resource, root, root != null);
     }
 
-    private ViewLoader getViewLoader() {
-        return shadowOf(context.getApplicationContext()).getResourceLoader().viewLoader;
-    }
-
-    private static LayoutInflater bind(LayoutInflater layoutInflater, Context context) {
-        shadowOf(layoutInflater).context = context;
-        return layoutInflater;
+    private ResourceLoader getResourceLoader() {
+        return shadowOf(context.getApplicationContext()).getResourceLoader();
     }
 
     private static class LayoutInflaterAppSingletonizer extends AppSingletonizer<LayoutInflater> {

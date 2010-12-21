@@ -7,10 +7,10 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Context;
 import android.view.View;
 import android.widget.RemoteViews;
-import com.xtremelabs.robolectric.util.AppSingletonizer;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.internal.AppSingletonizer;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.util.HashMap;
 import java.util.Map;

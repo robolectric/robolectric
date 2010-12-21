@@ -2,6 +2,8 @@ package com.xtremelabs.robolectric;
 
 import android.app.*;
 import android.appwidget.AppWidgetManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -12,9 +14,7 @@ import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
@@ -26,20 +26,18 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Display;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.webkit.WebView;
 import android.widget.*;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
-import com.xtremelabs.robolectric.content.TestSharedPreferences;
+import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
+import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
+import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.shadows.*;
-import com.xtremelabs.robolectric.util.HttpRequestData;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.util.HttpRequestInfo;
 import com.xtremelabs.robolectric.util.Scheduler;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -50,10 +48,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
+@SuppressWarnings({"UnusedDeclaration"})
 public class Robolectric {
     public static Application application;
-    public static Scheduler backgroundScheduler;
-    public static Scheduler uiThreadScheduler;
 
     public static <T> T newInstanceOf(Class<T> clazz) {
         try {
@@ -71,10 +68,6 @@ public class Robolectric {
         }
     }
 
-    public static void bindShadowClass(Class<?> realClass, Class<?> shadowClass) {
-        ShadowWrangler.getInstance().bindShadowClass(realClass, shadowClass);
-    }
-
     public static void bindShadowClass(Class<?> shadowClass) {
         Implements realClass = shadowClass.getAnnotation(Implements.class);
         if (realClass == null) {
@@ -82,9 +75,10 @@ public class Robolectric {
         }
 
         try {
-            bindShadowClass(realClass.value(), shadowClass);
+            ShadowWrangler.getInstance().bindShadowClass(realClass.value(), shadowClass);
         } catch (TypeNotPresentException ignored) {
             //this allows users of the robolectric.jar file to use the non-Google APIs version of the api
+            System.out.println("Warning: an error occurred while binding shadow class: " + shadowClass.getSimpleName());
         }
     }
 
@@ -108,18 +102,6 @@ public class Robolectric {
         ShadowWrangler.getInstance().logMissingInvokedShadowMethods();
     }
 
-    /**
-     * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
-     * is enabled.
-     *
-     * @param view the view to click on
-     * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
-     * @throws RuntimeException if the preconditions are not met.
-     */
-    public static boolean clickOn(View view) {
-        return shadowOf(view).checkedPerformClick();
-    }
-
     public static List<Class<?>> getDefaultShadowClasses() {
         return Arrays.asList(
                 ShadowAbsoluteLayout.class,
@@ -132,18 +114,26 @@ public class Robolectric {
                 ShadowAlertDialog.ShadowBuilder.class,
                 ShadowApplication.class,
                 ShadowAppWidgetManager.class,
+                ShadowArrayAdapter.class,
                 ShadowAssetManager.class,
                 ShadowAsyncTask.class,
                 ShadowAudioManager.class,
                 ShadowBaseAdapter.class,
+                ShadowBitmap.class,
                 ShadowBitmapDrawable.class,
+                ShadowBitmapFactory.class,
+                ShadowBluetoothAdapter.class,
+                ShadowBluetoothDevice.class,
                 ShadowBundle.class,
                 ShadowCamera.class,
                 ShadowCameraParameters.class,
                 ShadowCanvas.class,
+                ShadowColorMatrix.class,
+                ShadowColorMatrixColorFilter.class,
                 ShadowCompoundButton.class,
                 ShadowComponentName.class,
                 ShadowConnectivityManager.class,
+                ShadowContentResolver.class,
                 ShadowContentValues.class,
                 ShadowContext.class,
                 ShadowContextWrapper.class,
@@ -153,6 +143,8 @@ public class Robolectric {
                 ShadowDrawable.class,
                 ShadowDialog.class,
                 ShadowEditText.class,
+                ShadowExpandableListView.class,
+                ShadowFloatMath.class,
                 ShadowGeocoder.class,
                 ShadowGeoPoint.class,
                 ShadowHandler.class,
@@ -171,6 +163,8 @@ public class Robolectric {
                 ShadowMapActivity.class,
                 ShadowMapView.class,
                 ShadowMediaRecorder.class,
+                ShadowMatrix.class,
+                ShadowMediaStore.ShadowImages.ShadowMedia.class,
                 ShadowMotionEvent.class,
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
@@ -178,6 +172,7 @@ public class Robolectric {
                 ShadowPath.class,
                 ShadowPendingIntent.class,
                 ShadowPoint.class,
+                ShadowPointF.class,
                 ShadowPreferenceManager.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
@@ -191,10 +186,12 @@ public class Robolectric {
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
                 ShadowSQLiteQueryBuilder.class,
+                ShadowSurfaceView.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
                 ShadowTypedValue.class,
+                ShadowURLSpan.class,
                 ShadowView.class,
                 ShadowViewGroup.class,
                 ShadowWebView.class,
@@ -206,14 +203,7 @@ public class Robolectric {
     public static void resetStaticState() {
         ShadowWrangler.getInstance().silence();
         Robolectric.application = new Application();
-        Robolectric.backgroundScheduler = new Scheduler();
-        Robolectric.uiThreadScheduler = new Scheduler();
-        TestSharedPreferences.reset();
-        ShadowToast.reset();
-        ShadowAlertDialog.reset();
-        ShadowDialog.reset();
-        ShadowLooper.resetAll();
-        ShadowDefaultRequestDirector.reset();
+        ShadowBitmapFactory.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -264,6 +254,10 @@ public class Robolectric {
         return (ShadowListView) shadowOf_(instance);
     }
 
+    public static ExpandableListView shadowOf(ExpandableListView instance) {
+        return (ExpandableListView) shadowOf_(instance);
+    }
+
     public static ShadowActivity shadowOf(Activity instance) {
         return (ShadowActivity) shadowOf_(instance);
     }
@@ -272,8 +266,12 @@ public class Robolectric {
         return (ShadowContextWrapper) shadowOf_(instance);
     }
 
-    public static ShadowContextWrapper shadowOf(Context instance) {
-        return (ShadowContextWrapper) shadowOf_(instance);
+    public static ShadowApplication shadowOf(Application instance) {
+        return (ShadowApplication) shadowOf_(instance);
+    }
+
+    public static ShadowContext shadowOf(Context instance) {
+        return (ShadowContext) shadowOf_(instance);
     }
 
     public static ShadowPaint shadowOf(Paint instance) {
@@ -290,6 +288,10 @@ public class Robolectric {
 
     public static ShadowHandler shadowOf(Handler instance) {
         return (ShadowHandler) shadowOf_(instance);
+    }
+
+    public static ShadowColorMatrix shadowOf(ColorMatrix instance) {
+        return (ShadowColorMatrix) shadowOf_(instance);
     }
 
     public static ShadowIntent shadowOf(Intent instance) {
@@ -408,40 +410,73 @@ public class Robolectric {
         return (ShadowAssetManager) Robolectric.shadowOf_(instance);
     }
 
+    public static ShadowBitmap shadowOf(Bitmap other) {
+        return (ShadowBitmap) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowBluetoothAdapter shadowOf(BluetoothAdapter other) {
+        return (ShadowBluetoothAdapter) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowBluetoothDevice shadowOf(BluetoothDevice other) {
+        return (ShadowBluetoothDevice) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowMatrix shadowOf(Matrix other) {
+        return (ShadowMatrix) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowMotionEvent shadowOf(MotionEvent other) {
+        return (ShadowMotionEvent) Robolectric.shadowOf_(other);
+    }
+
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
     }
 
+    /**
+     * Runs any background tasks previously queued by {@link android.os.AsyncTask#execute(Object[])}.
+     *
+     * <p/>
+     * Note: calling this method does not pause or un-pause the scheduler.
+     */
     public static void runBackgroundTasks() {
-        backgroundScheduler.advanceBy(0);
-    }
-
-    public static void runUiThreadTasks() {
-        uiThreadScheduler.advanceBy(0);
+        getBackgroundScheduler().advanceBy(0);
     }
 
     /**
-     * Sets up an HTTP response to be returned by calls to Apache's {@code }HttpClient} implementers.
+     * Runs any immediately runnable tasks previously queued on the UI thread,
+     * e.g. by {@link Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
+     *
+     * <p/>
+     * Note: calling this method does not pause or un-pause the scheduler.
+     */
+    public static void runUiThreadTasks() {
+        getUiThreadScheduler().advanceBy(0);
+    }
+
+    /**
+     * Sets up an HTTP response to be returned by calls to Apache's {@code HttpClient} implementers.
      *
      * @param statusCode the status code of the response
      * @param responseBody the body of the response
      */
     public static void addPendingHttpResponse(int statusCode, String responseBody) {
-        ShadowDefaultRequestDirector.addPendingResponse(statusCode, responseBody);
+        getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody);
     }
 
     /**
-     * Sets up an HTTP response to be returned by calls to Apache's {@code }HttpClient} implementers.
+     * Sets up an HTTP response to be returned by calls to Apache's {@code HttpClient} implementers.
      *
      * @param httpResponse the response
      */
     public static void addPendingHttpResponse(HttpResponse httpResponse) {
-        ShadowDefaultRequestDirector.addPendingResponse(httpResponse);
+        getFakeHttpLayer().addPendingHttpResponse(httpResponse);
     }
 
     /**
-     * Accessor to obtain requests made during the current test in the order in which they were made.
+     * Accessor to obtain HTTP requests made during the current test in the order in which they were made.
      *
      * @param index index of the request to retrieve.
      * @return the requested request.
@@ -450,7 +485,113 @@ public class Robolectric {
         return ShadowDefaultRequestDirector.getSentHttpRequest(index);
     }
 
-    public static HttpRequestData getSentHttpRequestData(int index) {
-        return ShadowDefaultRequestDirector.getSentHttpRequestData(index);
+    /**
+     * Accessor to obtain metadata for an HTTP request made during the current test in the order in which they were made.
+     *
+     * @param index index of the request to retrieve.
+     * @return the requested request metadata.
+     */
+    public static HttpRequestInfo getSentHttpRequestInfo(int index) {
+        return ShadowDefaultRequestDirector.getSentHttpRequestInfo(index);
+    }
+
+    /**
+     * Adds an HTTP response rule. The response will be returned when the rule is matched.
+     *
+     * @param method method to match.
+     * @param uri uri to match.
+     * @param response response to return when a match is found.
+     */
+    public static void addHttpResponseRule(String method, String uri, HttpResponse response) {
+        getFakeHttpLayer().addHttpResponseRule(method, uri, response);
+    }
+
+    /**
+     * Adds an HTTP response rule with a default method of GET. The response will be returned when the rule is matched.
+     *
+     * @param uri uri to match.
+     * @param response response to return when a match is found.
+     */
+    public static void addHttpResponseRule(String uri, HttpResponse response) {
+        getFakeHttpLayer().addHttpResponseRule(uri, response);
+    }
+
+    /**
+     * Adds an HTTP response rule. The response will be returned when the rule is matched.
+     *
+     * @param uri uri to match.
+     * @param response response to return when a match is found.
+     */
+    public static void addHttpResponseRule(String uri, String response) {
+        getFakeHttpLayer().addHttpResponseRule(uri, response);
+    }
+
+    /**
+     * Adds an HTTP response rule. The response will be returned when the rule is matched.
+     *
+     * @param requestMatcher custom {@code RequestMatcher}.
+     * @param response response to return when a match is found.
+     */
+    public static void addHttpResponseRule(FakeHttpLayer.RequestMatcher requestMatcher, HttpResponse response) {
+        getFakeHttpLayer().addHttpResponseRule(requestMatcher, response);
+    }
+
+    public static FakeHttpLayer getFakeHttpLayer() {
+        return getShadowApplication().getFakeHttpLayer();
+    }
+
+    /**
+     * Sets the default http response. This response will be returned if no other rules are matched.
+     *
+     * @param defaultHttpResponse the {@code HttpResponse} to return.
+     */
+    public static void setDefaultHttpResponse(HttpResponse defaultHttpResponse) {
+        getFakeHttpLayer().setDefaultHttpResponse(defaultHttpResponse);
+    }
+
+    public static void pauseLooper(Looper looper) {
+        ShadowLooper.pauseLooper(looper);
+    }
+
+    public static void unPauseLooper(Looper looper) {
+        ShadowLooper.unPauseLooper(looper);
+    }
+
+    public static void pauseMainLooper() {
+        ShadowLooper.pauseMainLooper();
+    }
+
+    public static void unPauseMainLooper() {
+        ShadowLooper.unPauseMainLooper();
+    }
+
+    public static Scheduler getUiThreadScheduler() {
+        return shadowOf(Looper.getMainLooper()).getScheduler();
+    }
+
+    public static Scheduler getBackgroundScheduler() {
+        return getShadowApplication().getBackgroundScheduler();
+    }
+
+    public static ShadowApplication getShadowApplication() {
+        return shadowOf(Robolectric.application);
+    }
+
+    /**
+     * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
+     * is enabled.
+     *
+     * @param view the view to click on
+     * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
+     * @throws RuntimeException if the preconditions are not met.
+     */
+    public static boolean clickOn(View view) {
+        return shadowOf(view).checkedPerformClick();
+    }
+
+    public static String visualize(View view) {
+        Canvas canvas = new Canvas();
+        view.draw(canvas);
+        return shadowOf(canvas).getDescription();
     }
 }
