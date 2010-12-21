@@ -67,7 +67,7 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     @Override
-    public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) {
+    public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Exception {
         InvocationPlan invocationPlan = new InvocationPlan(clazz, methodName, instance, paramTypes);
         if (!invocationPlan.prepare()) {
             reportNoShadowMethodFound(clazz, methodName, paramTypes);
@@ -80,15 +80,25 @@ public class ShadowWrangler implements ClassHandler {
             throw new RuntimeException(invocationPlan.getShadow().getClass().getName() + " is not assignable from " +
                     invocationPlan.getDeclaredShadowClass().getName(), e);
         } catch (InvocationTargetException e) {
-            if (e.getCause() instanceof RuntimeException) {
-                throw (RuntimeException) e.getCause();
-            } else {
-                throw new RuntimeException("Did your shadow implementation of a method throw an exception? Refer to " +
-                        "the bottom of this stack trace.", e);
-            }
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw stripStackTrace((Exception) e.getCause());
         }
+    }
+
+    private <T extends Throwable> T stripStackTrace(T throwable) {
+        List<StackTraceElement> stackTrace = new ArrayList<StackTraceElement>();
+        for (StackTraceElement stackTraceElement : throwable.getStackTrace()) {
+            String className = stackTraceElement.getClassName();
+            if (className.startsWith("sun.reflect.")
+                    || className.startsWith("java.lang.reflect.")
+                    || className.equals(ShadowWrangler.class.getName())
+                    || className.equals(RobolectricInternals.class.getName())
+                    ) {
+                continue;
+            }
+            stackTrace.add(stackTraceElement);
+        }
+        throwable.setStackTrace(stackTrace.toArray(new StackTraceElement[stackTrace.size()]));
+        return throwable;
     }
 
     private void reportNoShadowMethodFound(Class clazz, String methodName, String[] paramTypes) {

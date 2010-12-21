@@ -46,7 +46,7 @@ public class RobolectricInternals {
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
-    public static Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) {
+    public static Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Exception {
         return classHandler.methodInvoked(clazz, methodName, instance, paramTypes, params);
     }
 

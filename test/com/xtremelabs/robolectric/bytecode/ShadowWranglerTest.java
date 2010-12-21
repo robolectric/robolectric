@@ -12,6 +12,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.*;
 
@@ -114,6 +120,36 @@ public class ShadowWranglerTest {
         assertEquals(Integer.TYPE, intArrayClass.getComponentType());
     }
 
+    @Test
+    public void shouldRemoveNoiseFromStackTraces() throws Exception {
+        Robolectric.bindShadowClass(ExceptionThrowingShadowView.class);
+        View view = new View(null);
+
+        Exception e = null;
+        try {
+            view.getContext();
+        } catch (Exception e1) {
+            e = e1;
+        }
+
+        assertNotNull(e);
+        assertEquals(IOException.class, e.getClass());
+        assertEquals("fake exception", e.getMessage());
+        StringWriter stringWriter = new StringWriter();
+        e.printStackTrace(new PrintWriter(stringWriter));
+        String stackTrace = stringWriter.getBuffer().toString();
+
+        assertThat(stackTrace, containsString("fake exception"));
+        assertThat(stackTrace, containsString(ExceptionThrowingShadowView.class.getName() + ".getContext("));
+        assertThat(stackTrace, containsString(View.class.getName() + ".getContext("));
+        assertThat(stackTrace, containsString(ShadowWranglerTest.class.getName() + ".shouldRemoveNoiseFromStackTraces"));
+
+        assertThat(stackTrace, not(containsString("sun.reflect")));
+        assertThat(stackTrace, not(containsString("java.lang.reflect")));
+        assertThat(stackTrace, not(containsString(ShadowWrangler.class.getName() + ".")));
+        assertThat(stackTrace, not(containsString(RobolectricInternals.class.getName() + ".")));
+    }
+
     private TestShadowView shadowOf(View view) {
         return (TestShadowView) Robolectric.shadowOf_(view);
     }
@@ -189,5 +225,13 @@ public class ShadowWranglerTest {
 
     @Implements(TextView.class)
     public static class TestShadowTextView {
+    }
+
+    @Implements(View.class)
+    public static class ExceptionThrowingShadowView {
+        @SuppressWarnings({"UnusedDeclaration"})
+        public Context getContext() throws IOException {
+            throw new IOException("fake exception");
+        }
     }
 }
