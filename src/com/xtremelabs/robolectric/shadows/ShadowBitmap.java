@@ -47,7 +47,10 @@ public class ShadowBitmap {
         Bitmap scaledBitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(scaledBitmap);
         shadowBitmap.appendDescription(shadowOf(src).getDescription());
-        shadowBitmap.appendDescription(" scaled to " + dstWidth + " x " + dstHeight + " with filter " + filter);
+        shadowBitmap.appendDescription(" scaled to " + dstWidth + " x " + dstHeight);
+        if (filter) {
+            shadowBitmap.appendDescription(" with filter " + filter);
+        }
         shadowBitmap.setWidth(dstWidth);
         shadowBitmap.setHeight(dstHeight);
         return scaledBitmap;

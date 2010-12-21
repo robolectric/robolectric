@@ -30,12 +30,12 @@ public class ImageViewTest {
     @Test
     public void shouldDrawWithImageMatrix() throws Exception {
         imageView.setImageMatrix(new Matrix());
-        Assert.assertEquals("Bitmap for resource drawable/an_image", visualize(imageView));
+        Assert.assertEquals("Bitmap for resource:drawable/an_image", visualize(imageView));
 
         Matrix matrix = new Matrix();
         matrix.setTranslate(15, 20);
         imageView.setImageMatrix(matrix);
-        Assert.assertEquals("Bitmap for resource drawable/an_image at (15,20)", visualize(imageView));
+        Assert.assertEquals("Bitmap for resource:drawable/an_image at (15,20)", visualize(imageView));
     }
 
     @Test
@@ -43,12 +43,12 @@ public class ImageViewTest {
         Matrix matrix = new Matrix();
         matrix.setTranslate(15, 20);
         imageView.setImageMatrix(matrix);
-        Assert.assertEquals("Bitmap for resource drawable/an_image at (15,20)", visualize(imageView));
+        Assert.assertEquals("Bitmap for resource:drawable/an_image at (15,20)", visualize(imageView));
 
         matrix.setTranslate(30, 40);
-        Assert.assertEquals("Bitmap for resource drawable/an_image at (15,20)", visualize(imageView));
+        Assert.assertEquals("Bitmap for resource:drawable/an_image at (15,20)", visualize(imageView));
 
         imageView.setImageMatrix(matrix);
-        Assert.assertEquals("Bitmap for resource drawable/an_image at (30,40)", visualize(imageView));
+        Assert.assertEquals("Bitmap for resource:drawable/an_image at (30,40)", visualize(imageView));
     }
 }

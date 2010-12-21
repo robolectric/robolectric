@@ -16,7 +16,7 @@ public class BitmapTest {
         Bitmap originalBitmap = Robolectric.newInstanceOf(Bitmap.class);
         shadowOf(originalBitmap).appendDescription("Original bitmap");
         Bitmap scaledBitmap = Bitmap.createScaledBitmap(originalBitmap, 100, 200, false);
-        assertEquals("Original bitmap scaled to 100 x 200 with filter false", shadowOf(scaledBitmap).getDescription());
+        assertEquals("Original bitmap scaled to 100 x 200", shadowOf(scaledBitmap).getDescription());
         assertEquals(100, scaledBitmap.getWidth());
         assertEquals(200, scaledBitmap.getHeight());
     }
@@ -52,7 +52,7 @@ public class BitmapTest {
         Canvas canvas = new Canvas(bitmap1);
         canvas.drawBitmap(bitmap2, 0, 0, null);
 
-        assertEquals("Bitmap One with bitmap drawn (Bitmap Two)", shadowOf(bitmap1).getDescription());
+        assertEquals("Bitmap One\nBitmap Two", shadowOf(bitmap1).getDescription());
     }
 
     @Test
@@ -66,7 +66,7 @@ public class BitmapTest {
         Canvas canvas = new Canvas(bitmap1);
         canvas.drawBitmap(bitmap2, new Matrix(), null);
 
-        assertEquals("Bitmap One with bitmap drawn (Bitmap Two)", shadowOf(bitmap1).getDescription());
+        assertEquals("Bitmap One\nBitmap Two transformed by matrix", shadowOf(bitmap1).getDescription());
     }
 
     @Test
@@ -82,7 +82,7 @@ public class BitmapTest {
         paint.setColorFilter(new ColorMatrixColorFilter(new ColorMatrix()));
         canvas.drawBitmap(bitmap2, new Matrix(), paint);
 
-        assertEquals("Bitmap One with bitmap drawn (Bitmap Two with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>)", shadowOf(bitmap1).getDescription());
+        assertEquals("Bitmap One\nBitmap Two with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0> transformed by matrix", shadowOf(bitmap1).getDescription());
     }
 
 }

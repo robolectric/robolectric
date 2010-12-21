@@ -7,6 +7,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
@@ -19,29 +20,25 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Canvas.class)
 public class ShadowCanvas {
-    private String description = "";
-
     private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<PathPaintHistoryEvent>();
     private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<CirclePaintHistoryEvent>();
     private Paint drawnPaint;
-    private Bitmap drawnBitmap;
-    private boolean drewSomethingAfterCircle;
+    private Bitmap targetBitmap = newInstanceOf(Bitmap.class);
     private float translateX;
     private float translateY;
     private float scaleX = 1;
     private float scaleY = 1;
 
     public void __constructor__(Bitmap bitmap) {
-        this.drawnBitmap = bitmap;
-        appendDescription(shadowOf(bitmap).getDescription());
+        this.targetBitmap = bitmap;
     }
 
     public void appendDescription(String s) {
-        description += s;
+        shadowOf(targetBitmap).appendDescription(s);
     }
 
     public String getDescription() {
-        return description;
+        return shadowOf(targetBitmap).getDescription();
     }
 
     @Implementation
@@ -68,34 +65,8 @@ public class ShadowCanvas {
     }
 
     @Implementation
-    public void drawPath(Path path, Paint paint) {
-        pathPaintEvents.add(new PathPaintHistoryEvent(path, paint));
-        if (hasDrawnCircle()) {
-            drewSomethingAfterCircle = true;
-        }
-    }
-
-    @Implementation
-    public void drawCircle(float cx, float cy, float radius, Paint paint) {
-        circlePaintEvents.add(new CirclePaintHistoryEvent(cx, cy, radius, paint));
-        drewSomethingAfterCircle = false;
-    }
-
-    @Implementation
     public void drawBitmap(Bitmap bitmap, float left, float top, Paint paint) {
-        boolean isDescriptionBlank = description.equalsIgnoreCase("");
-        if (isDescriptionBlank) {
-            appendDescription(shadowOf(bitmap).getDescription());
-        } else {
-            appendDescription(" with bitmap drawn (" + shadowOf(bitmap).getDescription());
-        }
-
-        if (paint != null) {
-            ColorFilter colorFilter = paint.getColorFilter();
-            if (colorFilter != null) {
-                appendDescription(" with " + colorFilter);
-            }
-        }
+        describeBitmap(bitmap, paint);
 
         int x = (int) (left + translateX);
         int y = (int) (top + translateY);
@@ -106,24 +77,14 @@ public class ShadowCanvas {
         if (scaleX != 1 && scaleY != 1) {
             appendDescription(" scaled by (" + scaleX + "," + scaleY + ")");
         }
-
-        if (!isDescriptionBlank) {
-            appendDescription(")");
-        }
-
-        if (drawnBitmap != null) {
-            shadowOf(drawnBitmap).setDescription(getDescription());
-        }
     }
 
-    @Implementation
-    public void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
-        boolean isDescriptionBlank = description.equalsIgnoreCase("");
-        if (isDescriptionBlank) {
-            appendDescription(shadowOf(bitmap).getDescription());
-        } else {
-            appendDescription(" with bitmap drawn (" + shadowOf(bitmap).getDescription());
+    private void describeBitmap(Bitmap bitmap, Paint paint) {
+        if (getDescription().length() != 0) {
+            appendDescription("\n");
         }
+
+        appendDescription(shadowOf(bitmap).getDescription());
 
         if (paint != null) {
             ColorFilter colorFilter = paint.getColorFilter();
@@ -131,14 +92,13 @@ public class ShadowCanvas {
                 appendDescription(" with " + colorFilter);
             }
         }
+    }
 
-        if (!isDescriptionBlank) {
-            appendDescription(")");
-        }
+    @Implementation
+    public void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
+        describeBitmap(bitmap, paint);
 
-        if (drawnBitmap != null) {
-            shadowOf(drawnBitmap).setDescription(getDescription());
-        }
+        appendDescription(" transformed by matrix");
     }
 
     public int getPathPaintHistoryCount() {
@@ -176,10 +136,6 @@ public class ShadowCanvas {
 
     public Paint getDrawnPaint() {
         return drawnPaint;
-    }
-
-    public boolean isDrewSomethingAfterCircle() {
-        return drewSomethingAfterCircle;
     }
 
     private static class PathPaintHistoryEvent {

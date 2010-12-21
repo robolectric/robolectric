@@ -20,7 +20,7 @@ public class BitmapFactoryTest {
     @Test
     public void decodeResource_shouldSetDescription() throws Exception {
         Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image);
-        assertEquals("Bitmap for resource drawable/an_image", shadowOf(bitmap).getDescription());
+        assertEquals("Bitmap for resource:drawable/an_image", shadowOf(bitmap).getDescription());
         assertEquals(100, bitmap.getWidth());
         assertEquals(100, bitmap.getHeight());
     }
@@ -28,7 +28,7 @@ public class BitmapFactoryTest {
     @Test
     public void decodeFile_shouldSetDescription() throws Exception {
         Bitmap bitmap = BitmapFactory.decodeFile("/some/file.jpg");
-        assertEquals("Bitmap for file /some/file.jpg", shadowOf(bitmap).getDescription());
+        assertEquals("Bitmap for file:/some/file.jpg", shadowOf(bitmap).getDescription());
         assertEquals(100, bitmap.getWidth());
         assertEquals(100, bitmap.getHeight());
     }
@@ -37,7 +37,7 @@ public class BitmapFactoryTest {
     public void decodeStream_shouldSetDescription() throws Exception {
         InputStream inputStream = Robolectric.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-        assertEquals("Bitmap for stream for content:/path", shadowOf(bitmap).getDescription());
+        assertEquals("Bitmap for content:/path", shadowOf(bitmap).getDescription());
         assertEquals(100, bitmap.getWidth());
         assertEquals(100, bitmap.getHeight());
     }
@@ -47,7 +47,7 @@ public class BitmapFactoryTest {
         ShadowBitmapFactory.provideWidthAndHeightHints(R.drawable.an_image, 123, 456);
 
         Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image);
-        assertEquals("Bitmap for resource drawable/an_image", shadowOf(bitmap).getDescription());
+        assertEquals("Bitmap for resource:drawable/an_image", shadowOf(bitmap).getDescription());
         assertEquals(123, bitmap.getWidth());
         assertEquals(456, bitmap.getHeight());
     }
@@ -57,7 +57,7 @@ public class BitmapFactoryTest {
         ShadowBitmapFactory.provideWidthAndHeightHints("/some/file.jpg", 123, 456);
 
         Bitmap bitmap = BitmapFactory.decodeFile("/some/file.jpg");
-        assertEquals("Bitmap for file /some/file.jpg", shadowOf(bitmap).getDescription());
+        assertEquals("Bitmap for file:/some/file.jpg", shadowOf(bitmap).getDescription());
         assertEquals(123, bitmap.getWidth());
         assertEquals(456, bitmap.getHeight());
     }
@@ -77,18 +77,18 @@ public class BitmapFactoryTest {
         ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse("content:/path"), 123, 456);
 
         Bitmap bitmap = MediaStore.Images.Media.getBitmap(Robolectric.application.getContentResolver(), Uri.parse("content:/path"));
-        assertEquals("Bitmap for uri content:/path", shadowOf(bitmap).getDescription());
+        assertEquals("Bitmap for content:/path", shadowOf(bitmap).getDescription());
         assertEquals(123, bitmap.getWidth());
         assertEquals(456, bitmap.getHeight());
     }
 
     @Test
     public void decodeStream_shouldGetWidthAndHeightFromHints() throws Exception {
-        ShadowBitmapFactory.provideWidthAndHeightHintsForStream("stream for content:/path", 123, 456);
+        ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse("content:/path"), 123, 456);
 
         InputStream inputStream = Robolectric.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
         Bitmap bitmap = BitmapFactory.decodeStream(inputStream);
-        assertEquals("Bitmap for stream for content:/path", shadowOf(bitmap).getDescription());
+        assertEquals("Bitmap for content:/path", shadowOf(bitmap).getDescription());
         assertEquals(123, bitmap.getWidth());
         assertEquals(456, bitmap.getHeight());
     }
