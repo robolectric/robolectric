@@ -1,8 +1,8 @@
 package com.xtremelabs.robolectric;
 
 import android.view.View;
+import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.shadows.ShadowView;
-import com.xtremelabs.robolectric.util.Implements;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
