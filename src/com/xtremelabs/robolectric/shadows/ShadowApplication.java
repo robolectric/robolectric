@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.AlarmManager;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
+import android.bluetooth.BluetoothAdapter;
 import android.content.*;
 import android.content.res.Resources;
 import android.location.LocationManager;
@@ -10,10 +11,10 @@ import android.media.AudioManager;
 import android.net.ConnectivityManager;
 import android.net.wifi.WifiManager;
 import android.os.Looper;
-import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
 import android.widget.Toast;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -35,7 +36,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     @RealObject private Application realApplication;
 
     private ResourceLoader resourceLoader;
-    private MockContentResolver contentResolver = new MockContentResolver();
+    private ContentResolver contentResolver;
     private AlarmManager alarmManager;
     private LocationManager locationManager;
     private ConnectivityManager connectivityManager;
@@ -53,6 +54,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private ArrayList<Toast> shownToasts = new ArrayList<Toast>();
     private ShadowAlertDialog latestAlertDialog;
     private ShadowDialog latestDialog;
+    private BluetoothAdapter bluetoothAdapter = Robolectric.newInstanceOf(BluetoothAdapter.class);
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -93,6 +95,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     @Implementation
     @Override public ContentResolver getContentResolver() {
+        if (contentResolver == null) {
+            contentResolver = new ContentResolver(realApplication) {
+            };
+        }
         return contentResolver;
     }
 
@@ -312,6 +318,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     public void setLatestDialog(ShadowDialog latestDialog) {
         this.latestDialog = latestDialog;
+    }
+
+    public BluetoothAdapter getBluetoothAdapter() {
+        return bluetoothAdapter;
     }
 
     public class Wrapper {

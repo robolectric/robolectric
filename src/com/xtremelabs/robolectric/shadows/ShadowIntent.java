@@ -26,9 +26,20 @@ public class ShadowIntent {
     private HashMap<String, Object> extras = new HashMap<String, Object>();
     private String action;
     private ComponentName componentName;
+    private String type;
     private Uri data;
     private int flags;
     private Class<?> intentClass;
+
+    @Implementation
+    public static Intent createChooser(Intent target, CharSequence title) {
+        Intent intent = new Intent(Intent.ACTION_CHOOSER);
+        intent.putExtra(Intent.EXTRA_INTENT, target);
+        if (title != null) {
+            intent.putExtra(Intent.EXTRA_TITLE, title);
+        }
+        return intent;
+    }
 
     public void __constructor__(Context packageContext, Class cls) {
         componentName = new ComponentName(packageContext, cls);
@@ -52,6 +63,17 @@ public class ShadowIntent {
     @Implementation
     public String getAction() {
         return action;
+    }
+
+    @Implementation
+    public Intent setType(String type) {
+        this.type = type;
+        return realIntent;
+    }
+
+    @Implementation
+    public String getType() {
+        return type;
     }
 
     @Implementation
@@ -132,6 +154,12 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Intent putExtra(String key, CharSequence value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
+    @Implementation
     public boolean hasExtra(String name) {
         return extras.containsKey(name);
     }
@@ -168,6 +196,12 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Intent setComponent(ComponentName componentName) {
+        this.componentName = componentName;
+        return realIntent;
+    }
+
+    @Implementation
     public ComponentName getComponent() {
         return componentName;
     }
@@ -178,7 +212,6 @@ public class ShadowIntent {
      *
      * @param o a {@code ShadowIntent}
      * @return whether they are equivalent
-     * todo: replace with equals()
      */
     @Deprecated
     public boolean realIntentEquals(ShadowIntent o) {
@@ -190,8 +223,26 @@ public class ShadowIntent {
             return false;
         if (data != null ? !data.equals(o.data) : o.data != null) return false;
         if (extras != null ? !extras.equals(o.extras) : o.extras != null) return false;
+        if (type != null ? !type.equals(o.type) : o.type != null) return false;
 
         return true;
+    }
+
+    @Override @Implementation
+    public int hashCode() {
+        int result = extras != null ? extras.hashCode() : 0;
+        result = 31 * result + (action != null ? action.hashCode() : 0);
+        result = 31 * result + (componentName != null ? componentName.hashCode() : 0);
+        result = 31 * result + (data != null ? data.hashCode() : 0);
+        result = 31 * result + (type != null ? type.hashCode() : 0);
+        result = 31 * result + flags;
+        return result;
+    }
+
+    @Override @Implementation
+    public boolean equals(Object o) {
+        if (!(o instanceof Intent)) return false;
+        return realIntentEquals(shadowOf((Intent) o));
     }
 
     /**
@@ -199,7 +250,7 @@ public class ShadowIntent {
      * {@link #setClass(android.content.Context, Class)}
      *
      * @return the {@code Class} object set by
-     * {@link #setClass(android.content.Context, Class)}
+     *         {@link #setClass(android.content.Context, Class)}
      */
     public Class<?> getIntentClass() {
         return intentClass;
@@ -213,7 +264,8 @@ public class ShadowIntent {
                         ifWeHave(componentName, "componentName"),
                         ifWeHave(action, "action"),
                         ifWeHave(extras, "extras"),
-                        ifWeHave(data, "data")
+                        ifWeHave(data, "data"),
+                        ifWeHave(type, "type")
                 ) +
                 '}';
     }

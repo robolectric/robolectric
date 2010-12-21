@@ -2,6 +2,8 @@ package com.xtremelabs.robolectric;
 
 import android.app.*;
 import android.appwidget.AppWidgetManager;
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -12,9 +14,7 @@ import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
@@ -26,10 +26,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.Display;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.webkit.WebView;
 import android.widget.*;
 import com.google.android.maps.GeoPoint;
@@ -105,18 +102,6 @@ public class Robolectric {
         ShadowWrangler.getInstance().logMissingInvokedShadowMethods();
     }
 
-    /**
-     * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
-     * is enabled.
-     *
-     * @param view the view to click on
-     * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
-     * @throws RuntimeException if the preconditions are not met.
-     */
-    public static boolean clickOn(View view) {
-        return shadowOf(view).checkedPerformClick();
-    }
-
     public static List<Class<?>> getDefaultShadowClasses() {
         return Arrays.asList(
                 ShadowAbsoluteLayout.class,
@@ -133,14 +118,21 @@ public class Robolectric {
                 ShadowAsyncTask.class,
                 ShadowAudioManager.class,
                 ShadowBaseAdapter.class,
+                ShadowBitmap.class,
                 ShadowBitmapDrawable.class,
+                ShadowBitmapFactory.class,
+                ShadowBluetoothAdapter.class,
+                ShadowBluetoothDevice.class,
                 ShadowBundle.class,
                 ShadowCamera.class,
                 ShadowCameraParameters.class,
                 ShadowCanvas.class,
+                ShadowColorMatrix.class,
+                ShadowColorMatrixColorFilter.class,
                 ShadowCompoundButton.class,
                 ShadowComponentName.class,
                 ShadowConnectivityManager.class,
+                ShadowContentResolver.class,
                 ShadowContentValues.class,
                 ShadowContext.class,
                 ShadowContextWrapper.class,
@@ -151,6 +143,7 @@ public class Robolectric {
                 ShadowDialog.class,
                 ShadowEditText.class,
                 ShadowExpandableListView.class,
+                ShadowFloatMath.class,
                 ShadowGeocoder.class,
                 ShadowGeoPoint.class,
                 ShadowHandler.class,
@@ -169,6 +162,8 @@ public class Robolectric {
                 ShadowMapActivity.class,
                 ShadowMapView.class,
                 ShadowMediaRecorder.class,
+                ShadowMatrix.class,
+                ShadowMediaStore.ShadowImages.ShadowMedia.class,
                 ShadowMotionEvent.class,
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
@@ -176,6 +171,7 @@ public class Robolectric {
                 ShadowPath.class,
                 ShadowPendingIntent.class,
                 ShadowPoint.class,
+                ShadowPointF.class,
                 ShadowPreferenceManager.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
@@ -189,6 +185,7 @@ public class Robolectric {
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
                 ShadowSQLiteQueryBuilder.class,
+                ShadowSurfaceView.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
@@ -205,6 +202,7 @@ public class Robolectric {
     public static void resetStaticState() {
         ShadowWrangler.getInstance().silence();
         Robolectric.application = new Application();
+        ShadowBitmapFactory.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -289,6 +287,10 @@ public class Robolectric {
 
     public static ShadowHandler shadowOf(Handler instance) {
         return (ShadowHandler) shadowOf_(instance);
+    }
+
+    public static ShadowColorMatrix shadowOf(ColorMatrix instance) {
+        return (ShadowColorMatrix) shadowOf_(instance);
     }
 
     public static ShadowIntent shadowOf(Intent instance) {
@@ -405,6 +407,26 @@ public class Robolectric {
 
     public static ShadowAssetManager shadowOf(AssetManager instance) {
         return (ShadowAssetManager) Robolectric.shadowOf_(instance);
+    }
+
+    public static ShadowBitmap shadowOf(Bitmap other) {
+        return (ShadowBitmap) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowBluetoothAdapter shadowOf(BluetoothAdapter other) {
+        return (ShadowBluetoothAdapter) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowBluetoothDevice shadowOf(BluetoothDevice other) {
+        return (ShadowBluetoothDevice) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowMatrix shadowOf(Matrix other) {
+        return (ShadowMatrix) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowMotionEvent shadowOf(MotionEvent other) {
+        return (ShadowMotionEvent) Robolectric.shadowOf_(other);
     }
 
     @SuppressWarnings({"unchecked"})
@@ -552,5 +574,23 @@ public class Robolectric {
 
     public static ShadowApplication getShadowApplication() {
         return shadowOf(Robolectric.application);
+    }
+
+    /**
+     * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
+     * is enabled.
+     *
+     * @param view the view to click on
+     * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
+     * @throws RuntimeException if the preconditions are not met.
+     */
+    public static boolean clickOn(View view) {
+        return shadowOf(view).checkedPerformClick();
+    }
+
+    public static String visualize(View view) {
+        Canvas canvas = new Canvas();
+        view.draw(canvas);
+        return shadowOf(canvas).getDescription();
     }
 }

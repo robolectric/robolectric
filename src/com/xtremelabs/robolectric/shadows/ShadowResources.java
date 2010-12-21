@@ -2,12 +2,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.DisplayMetrics;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 
 import java.io.InputStream;
@@ -30,6 +32,7 @@ public class ShadowResources {
         return resources;
     }
 
+    @RealObject Resources realResources;
     private ResourceLoader resourceLoader;
 
     @Implementation
@@ -79,10 +82,7 @@ public class ShadowResources {
 
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
-        RobolectricBitmapDrawable bitmapDrawable = new RobolectricBitmapDrawable(drawableResourceId);
-        ShadowBitmapDrawable shadowBitmapDrawable = shadowOf(bitmapDrawable);
-        shadowBitmapDrawable.loadedFromResourceId = drawableResourceId;
-        return bitmapDrawable;
+        return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
     }
 
     @Implementation
@@ -122,31 +122,4 @@ public class ShadowResources {
     public void setDimension(int id, int value) {
         resourceLoader.dimensions.put(id, value);
     }
-
-    private static class RobolectricBitmapDrawable extends BitmapDrawable {
-        private int drawableResourceId;
-
-        public RobolectricBitmapDrawable(int drawableResourceId) {
-            this.drawableResourceId = drawableResourceId;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
-
-            RobolectricBitmapDrawable that = (RobolectricBitmapDrawable) o;
-
-            if (drawableResourceId != that.drawableResourceId) return false;
-            if (!getBounds().equals(that.getBounds())) return false;
-
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            return drawableResourceId;
-        }
-    }
-
 }

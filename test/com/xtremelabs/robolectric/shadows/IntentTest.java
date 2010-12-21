@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Parcel;
@@ -14,6 +15,8 @@ import org.junit.runner.RunWith;
 import java.io.Serializable;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -113,6 +116,62 @@ public class IntentTest {
         Intent intent = new Intent();
         intent.setFlags(1234);
         assertEquals(1234, intent.getFlags());
+    }
+
+    @Test
+    public void equals_shouldTestActionComponentNameDataAndExtras() throws Exception {
+        Intent intentA = new Intent()
+                .setAction("action")
+                .setData(Uri.parse("content:1"))
+                .setComponent(new ComponentName("pkg", "cls"))
+                .putExtra("extra", "blah")
+                .setType("image/*");
+
+        Intent intentB = new Intent()
+                .setAction("action")
+                .setData(Uri.parse("content:1"))
+                .setComponent(new ComponentName("pkg", "cls"))
+                .putExtra("extra", "blah")
+                .setType("image/*");
+
+        assertThat(intentA, equalTo(intentB));
+
+        intentB.setAction("other action");
+        assertThat(intentA, not(equalTo(intentB)));
+
+        intentB.setAction("action");
+        intentB.setData(Uri.parse("content:other"));
+        assertThat(intentA, not(equalTo(intentB)));
+
+        intentB.setData(Uri.parse("content:1"));
+        intentB.setComponent(new ComponentName("other-pkg", "other-cls"));
+        assertThat(intentA, not(equalTo(intentB)));
+
+        intentB.setComponent(new ComponentName("pkg", "cls"));
+        intentB.putExtra("extra", "foo");
+        assertThat(intentA, not(equalTo(intentB)));
+
+        intentB.putExtra("extra", "blah");
+        intentB.setType("other/*");
+        assertThat(intentA, not(equalTo(intentB)));
+
+        intentB.setType("image/*");
+        assertThat(intentA, equalTo(intentB));
+    }
+
+    @Test
+    public void equals_whenOtherObjectIsNotAnIntent_shouldReturnFalse() throws Exception {
+        assertThat(new Intent(), not(equalTo(new Object())));
+    }
+
+    @Test
+    public void createChooser_shouldWrapIntent() throws Exception {
+        Intent originalIntent = new Intent(Intent.ACTION_BATTERY_CHANGED, Uri.parse("foo://blah"));
+        Intent chooserIntent = Intent.createChooser(originalIntent, "The title");
+        Intent expectedIntent = new Intent(Intent.ACTION_CHOOSER);
+        expectedIntent.putExtra(Intent.EXTRA_INTENT, originalIntent);
+        expectedIntent.putExtra(Intent.EXTRA_TITLE, "The title");
+        assertEquals(expectedIntent, chooserIntent);
     }
 
     private static class TestSerializable implements Serializable {
