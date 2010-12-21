@@ -28,12 +28,14 @@
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-core</artifactId>
             <version>1.2</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.8.2</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -76,12 +78,14 @@
             <groupId>android</groupId>
             <artifactId>android</artifactId>
             <version>2.3</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.google.android.maps</groupId>
             <artifactId>maps</artifactId>
             <version>9</version>
+            <scope>provided</scope>
         </dependency>
 
         <dependency>
@@ -112,6 +116,25 @@
                         <exclude>**/Test*.java</exclude>
                     </excludes>
                 </configuration>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>2.2</version>
+                <configuration>
+                    <descriptorRefs>
+                        <descriptorRef>jar-with-dependencies</descriptorRef>
+                    </descriptorRefs>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>make-assembly</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
         </plugins>
     </build>
