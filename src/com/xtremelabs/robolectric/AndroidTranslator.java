@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import android.net.Uri;
-import com.xtremelabs.robolectric.util.DoNotStrip;
+import com.xtremelabs.robolectric.internal.DoNotStrip;
 import javassist.*;
 
 import java.io.IOException;

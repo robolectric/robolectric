@@ -2,8 +2,8 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.os.Looper;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.util.Scheduler;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;

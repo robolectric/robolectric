@@ -1,8 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.view.KeyEvent;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(KeyEvent.class)

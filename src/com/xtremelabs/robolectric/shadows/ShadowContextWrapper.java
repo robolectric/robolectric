@@ -8,9 +8,9 @@ import android.content.res.Resources;
 import android.os.Looper;
 import android.test.mock.MockPackageManager;
 import com.xtremelabs.robolectric.content.TestSharedPreferences;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.RealObject;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.util.ArrayList;
 import java.util.List;

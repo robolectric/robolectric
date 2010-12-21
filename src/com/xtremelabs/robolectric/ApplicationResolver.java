@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import android.app.Application;
-import com.xtremelabs.robolectric.util.ClassNameResolver;
+import com.xtremelabs.robolectric.internal.ClassNameResolver;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilderFactory;

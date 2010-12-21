@@ -2,8 +2,8 @@ package com.xtremelabs.robolectric;
 
 import android.content.Context;
 import android.view.View;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.util.TestOnClickListener;
 import org.junit.After;
 import org.junit.Before;

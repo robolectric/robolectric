@@ -1,8 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.text.TextUtils;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 /**
  * Shadow for the {@code TextUtils} class that implements the {@link #expandTemplate(CharSequence, CharSequence...)}

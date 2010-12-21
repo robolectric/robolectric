@@ -2,8 +2,8 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.graphics.Paint;
 import android.graphics.Shader;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 /**
  * Shadow of {@code Paint} that has some extra accessors so that tests can tell whether a {@code Paint} object was

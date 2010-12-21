@@ -3,8 +3,8 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.ContentResolver;
 import android.provider.Settings;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 import java.util.HashMap;
 import java.util.Map;

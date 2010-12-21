@@ -2,8 +2,8 @@ package com.xtremelabs.robolectric.shadows;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.OverlayItem;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(OverlayItem.class)

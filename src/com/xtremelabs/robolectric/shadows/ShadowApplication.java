@@ -14,10 +14,10 @@ import android.test.mock.MockContentResolver;
 import android.view.LayoutInflater;
 import android.view.WindowManager;
 import android.widget.Toast;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
-import com.xtremelabs.robolectric.util.RealObject;
 import com.xtremelabs.robolectric.util.Scheduler;
 import com.xtremelabs.robolectric.view.TestWindowManager;
 

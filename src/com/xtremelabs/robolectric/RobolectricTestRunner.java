@@ -2,9 +2,9 @@ package com.xtremelabs.robolectric;
 
 import android.app.Application;
 import android.net.Uri__FromAndroid;
+import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
-import com.xtremelabs.robolectric.util.RealObject;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;

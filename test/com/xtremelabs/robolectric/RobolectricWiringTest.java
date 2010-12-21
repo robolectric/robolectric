@@ -1,6 +1,9 @@
-package com.xtremelabs.robolectric.util;
+package com.xtremelabs.robolectric;
 
-import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.util.Join;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,8 +12,6 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
-
-import static org.junit.Assert.assertEquals;
 
 public class RobolectricWiringTest {
     private List<String> mismatches;
@@ -25,7 +26,7 @@ public class RobolectricWiringTest {
             verifyClass(shadowClass);
         }
 
-        assertEquals("@Implementation method mismatch: " + Join.join("\n", mismatches), 0, mismatches.size());
+        Assert.assertEquals("@Implementation method mismatch: " + Join.join("\n", mismatches), 0, mismatches.size());
     }
 
     private void verifyClass(final Class<?> shadowClass) {

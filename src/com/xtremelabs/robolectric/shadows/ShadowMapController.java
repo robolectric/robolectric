@@ -2,8 +2,8 @@ package com.xtremelabs.robolectric.shadows;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 /**
  * A Shadow of {@code MapController} that tracks its own state and keeps the state of the {@code MapView} it controlls

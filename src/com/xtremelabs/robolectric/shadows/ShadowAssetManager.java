@@ -1,8 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.res.AssetManager;
-import com.xtremelabs.robolectric.util.Implementation;
-import com.xtremelabs.robolectric.util.Implements;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 import java.io.File;
 import java.io.FileInputStream;

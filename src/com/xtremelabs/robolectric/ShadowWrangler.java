@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric;
 
+import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.Join;
-import com.xtremelabs.robolectric.util.RealObject;
 import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtField;
@@ -372,9 +372,9 @@ public class ShadowWrangler implements ClassHandler {
 
         private boolean isOnShadowClass(Method method) {
             Class<?> declaringClass = method.getDeclaringClass();
-            // why doesn't getAnnotation(com.xtremelabs.robolectric.util.Implements) work here? It always returns null. pg 20101115
+            // why doesn't getAnnotation(com.xtremelabs.robolectric.internal.Implements) work here? It always returns null. pg 20101115
             for (Annotation annotation : declaringClass.getAnnotations()) {
-                if (annotation.annotationType().toString().equals("interface com.xtremelabs.robolectric.util.Implements")) {
+                if (annotation.annotationType().toString().equals("interface com.xtremelabs.robolectric.internal.Implements")) {
                     return true;
                 }
             }
