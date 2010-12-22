@@ -1,6 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
@@ -44,5 +48,16 @@ public class CanvasTest {
 
         assertEquals("Bitmap for file:/an/image.jpg transformed by matrix\n" +
                 "Bitmap for file:/an/image.jpg transformed by matrix", shadowOf(targetBitmap).getDescription());
+    }
+
+    @Test
+    public void visualize_shouldReturnDescription() throws Exception {
+        Canvas canvas = new Canvas(targetBitmap);
+        canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
+        canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
+
+        assertEquals("Bitmap for file:/an/image.jpg transformed by matrix\n" +
+                "Bitmap for file:/an/image.jpg transformed by matrix", Robolectric.visualize(canvas));
+
     }
 }

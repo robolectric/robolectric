@@ -1,13 +1,20 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Matrix;
+import android.graphics.Paint;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class BitmapTest {
@@ -85,4 +92,12 @@ public class BitmapTest {
         assertEquals("Bitmap One\nBitmap Two with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0> transformed by matrix", shadowOf(bitmap1).getDescription());
     }
 
+    @Test
+    public void visualize_shouldReturnDescription() throws Exception {
+        Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
+        shadowOf(bitmap).appendDescription("Bitmap One");
+
+        assertEquals("Bitmap One", Robolectric.visualize(bitmap));
+
+    }
 }
