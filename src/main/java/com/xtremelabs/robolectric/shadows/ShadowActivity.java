@@ -66,11 +66,13 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public void setContentView(int layoutResID) {
         contentView = getLayoutInflater().inflate(layoutResID, null);
+        realActivity.onContentChanged();
     }
 
     @Implementation
     public void setContentView(View view) {
         contentView = view;
+        realActivity.onContentChanged();
     }
 
     @Implementation

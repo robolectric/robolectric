@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
 import com.xtremelabs.robolectric.ApplicationResolver;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestRunnable;
@@ -72,6 +73,19 @@ public class ActivityTest {
         } catch (Exception e) {
             assertThat(e.getMessage(), startsWith("No intent matches " + requestIntent));
         }
+    }
+
+    @Test
+    public void onContentChangedShouldBeCalledAfterContentViewIsSet() throws RuntimeException {
+        final Transcript transcript = new Transcript();
+        Activity customActivity = new Activity() {
+            @Override
+            public void onContentChanged() {
+                transcript.add("onContentChanged was called; title is \"" + shadowOf(findViewById(R.id.title)).innerText() + "\"");
+            }
+        };
+        customActivity.setContentView(R.layout.main);
+        transcript.assertEventsSoFar("onContentChanged was called; title is \"Main Layout\"");
     }
 
     @Test
