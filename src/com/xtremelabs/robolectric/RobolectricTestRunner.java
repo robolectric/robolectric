@@ -291,7 +291,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         resetStaticState();
 
         Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
-        Robolectric.application.onCreate();
     }
 
     /**

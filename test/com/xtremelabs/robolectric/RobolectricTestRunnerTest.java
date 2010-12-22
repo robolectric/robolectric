@@ -3,16 +3,37 @@ package com.xtremelabs.robolectric;
 import android.app.Application;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.junit.runners.model.InitializationError;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(RobolectricTestRunnerTest.RunnerForTesting.class)
 public class RobolectricTestRunnerTest {
 
     @Test
-    public void shouldInitializeApplication() throws Exception {
+    public void shouldInitializeAndBindApplicationButNotCallOnCreate() throws Exception {
         assertNotNull(Robolectric.application);
-        assertEquals(Application.class, Robolectric.application.getClass());
+        assertEquals(MyTestApplication.class, Robolectric.application.getClass());
+        assertFalse(((MyTestApplication) Robolectric.application).onCreateWasCalled);
+        assertNotNull(shadowOf(Robolectric.application).getResourceLoader());
+    }
+
+    public static class RunnerForTesting extends WithTestDefaultsRunner {
+        public RunnerForTesting(Class<?> testClass) throws InitializationError {
+            super(testClass);
+        }
+
+        @Override protected Application createApplication() {
+            return new MyTestApplication();
+        }
+    }
+
+    private static class MyTestApplication extends Application {
+        private boolean onCreateWasCalled;
+
+        @Override public void onCreate() {
+            this.onCreateWasCalled = true;
+        }
     }
 }
