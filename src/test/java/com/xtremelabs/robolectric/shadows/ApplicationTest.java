@@ -20,10 +20,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -78,7 +79,7 @@ public class ApplicationTest {
 
     @Test
     public void packageManager_shouldKnowPackageName() throws Exception {
-        Application application = new ApplicationResolver(new File("test", "TestAndroidManifestWithPackageName.xml")).resolveApplication();
+        Application application = new ApplicationResolver(resourceFile("TestAndroidManifestWithPackageName.xml")).resolveApplication();
         assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo(null, 0).packageName);
     }
 }

@@ -16,9 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -29,7 +28,7 @@ public class AppWidgetManagerTest {
     @Before
     public void setUp() throws Exception {
         Robolectric.bindDefaultShadowClasses();
-        Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
+        Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, resourceFile("res")));
         appWidgetManager = AppWidgetManager.getInstance(Robolectric.application);
         shadowAppWidgetManager = shadowOf(appWidgetManager);
     }

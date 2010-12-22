@@ -28,6 +28,7 @@ import java.io.File;
 import static android.test.MoreAsserts.assertNotEqual;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -44,9 +45,9 @@ public class ViewLoaderTest {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(new File("test/res/values"));
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
         viewLoader = new ViewLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
-        new DocumentLoader(viewLoader).loadResourceXmlDir(new File("test/res/layout"));
+        new DocumentLoader(viewLoader).loadResourceXmlDir(resourceFile("res", "layout"));
 
         context = new Activity();
     }

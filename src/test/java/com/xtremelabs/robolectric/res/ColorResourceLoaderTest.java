@@ -5,8 +5,7 @@ import com.xtremelabs.robolectric.R;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -17,7 +16,7 @@ public class ColorResourceLoaderTest {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);
         colorResourceLoader = new ColorResourceLoader(resourceExtractor);
-        new DocumentLoader(colorResourceLoader).loadResourceXmlDir(new File("test/res/values"));
+        new DocumentLoader(colorResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
     }
 
     @Test

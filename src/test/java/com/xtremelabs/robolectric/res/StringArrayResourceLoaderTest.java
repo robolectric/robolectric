@@ -7,6 +7,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.Arrays;
 
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertThat;
 
@@ -17,7 +18,7 @@ public class StringArrayResourceLoaderTest {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        File resourceXmlDir = new File("test/res/values");
+        File resourceXmlDir = resourceFile("res", "values");
         new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceXmlDir);
         stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
         new DocumentLoader(stringArrayResourceLoader).loadResourceXmlDir(resourceXmlDir);

@@ -7,8 +7,7 @@ import com.xtremelabs.robolectric.util.CustomView;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -20,7 +19,7 @@ public class AttrResourceLoaderTest {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(R.class);
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
-        new DocumentLoader(attrResourceLoader).loadResourceXmlDir(new File("test/res/values"));
+        new DocumentLoader(attrResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
     }
 
     @Test
