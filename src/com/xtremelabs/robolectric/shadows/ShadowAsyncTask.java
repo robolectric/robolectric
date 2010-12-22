@@ -7,6 +7,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {
     @RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
@@ -38,18 +39,17 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
     @Implementation
     public android.os.AsyncTask<Params, Progress, Result> execute(final Params... params) {
-        final ShadowAsyncTaskBridge<Params, Progress, Result> bridge = new ShadowAsyncTaskBridge<Params, Progress, Result>(realAsyncTask);
-        bridge.onPreExecute();
+        getBridge().onPreExecute();
 
         Robolectric.getBackgroundScheduler().post(new Runnable() {
             @Override public void run() {
                 if (cancelled) return;
                 hasRun = true;
-                final Result result = bridge.doInBackground(params);
+                final Result result = getBridge().doInBackground(params);
 
                 Robolectric.getUiThreadScheduler().post(new Runnable() {
                     @Override public void run() {
-                        bridge.onPostExecute(result);
+                        getBridge().onPostExecute(result);
                     }
                 });
             }
@@ -58,6 +58,23 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         return null;
     }
 
-//    public void publishProgress(Progress... values) {
-//    }
+    /**
+     * Enqueue a call to {@link AsyncTask#onProgressUpdate(Object[])} on UI looper (or run it immediately
+     * if the looper it is not paused).
+     *
+     * @param values The progress values to update the UI with.
+     * @see AsyncTask#publishProgress(Object[])
+     */
+    @Implementation
+    public void publishProgress(final Progress... values) {
+        Robolectric.getUiThreadScheduler().post(new Runnable() {
+            @Override public void run() {
+                getBridge().onProgressUpdate(values);
+            }
+        });
+    }
+
+    private ShadowAsyncTaskBridge<Params, Progress, Result> getBridge() {
+        return new ShadowAsyncTaskBridge<Params, Progress, Result>(realAsyncTask);
+    }
 }

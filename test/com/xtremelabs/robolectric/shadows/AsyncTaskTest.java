@@ -68,6 +68,31 @@ public class AsyncTaskTest {
         transcript.assertEventsSoFar("onPostExecute c");
     }
 
+    @Test
+    public void progressUpdatesAreQueuedUntilBackgroundThreadFinishes() throws Exception {
+        AsyncTask<String, String, String> asyncTask = new MyAsyncTask() {
+            @Override protected String doInBackground(String... strings) {
+                publishProgress("33%");
+                publishProgress("66%");
+                publishProgress("99%");
+                return "done";
+            }
+        };
+
+        asyncTask.execute("a", "b");
+        transcript.assertEventsSoFar("onPreExecute");
+
+        Robolectric.runBackgroundTasks();
+        transcript.assertNoEventsSoFar();
+
+        Robolectric.runUiThreadTasks();
+        transcript.assertEventsSoFar(
+                "onProgressUpdate 33%",
+                "onProgressUpdate 66%",
+                "onProgressUpdate 99%",
+                "onPostExecute done");
+    }
+
     private class MyAsyncTask extends AsyncTask<String, String, String> {
         @Override protected void onPreExecute() {
             transcript.add("onPreExecute");
@@ -79,12 +104,11 @@ public class AsyncTaskTest {
         }
 
         @Override protected void onProgressUpdate(String... values) {
-            super.onProgressUpdate(values);
+            transcript.add("onProgressUpdate " + Join.join(", ", (Object[]) values));
         }
 
         @Override protected void onPostExecute(String s) {
             transcript.add("onPostExecute " + s);
-            super.onPostExecute(s);
         }
 
         @Override protected void onCancelled() {
