@@ -68,7 +68,7 @@ public class ShadowHandler {
     }
 
     /**
-     * @Deprecated use {@link #idleMainLooper()} instead
+     * @deprecated use {@link #idleMainLooper()} instead
      */
     public static void flush() {
         idleMainLooper();

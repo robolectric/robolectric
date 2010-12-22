@@ -79,7 +79,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param testClass            the test class to be run
      * @param androidProjectRoot   the directory containing your AndroidManifest.xml file and res dir
      * @throws InitializationError if junit says so
-     * @deprecated Use #RobolectricTestRunner(Class, File) instead.
+     * @deprecated Use {@link #RobolectricTestRunner(Class, File)} instead.
      */
     public RobolectricTestRunner(Class<?> testClass, String androidProjectRoot) throws InitializationError {
         this(testClass, new File(androidProjectRoot));
@@ -115,7 +115,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param androidManifestPath the relative path to the AndroidManifest.xml file
      * @param resourceDirectory   the relative path to the directory containing the project's resources
      * @throws InitializationError if junit says so
-     * @deprecated Use ##RobolectricTestRunner(Class, File, File) instead.
+     * @deprecated Use {@link RobolectricTestRunner(Class, File, File)} instead.
      */
     protected RobolectricTestRunner(Class<?> testClass, String androidManifestPath, String resourceDirectory)
             throws InitializationError {
