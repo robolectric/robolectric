@@ -46,8 +46,8 @@ public class CameraParametersTest {
     	assertThat(fpsRange[0], not(equalTo(25)));
     	parameters.setPreviewFpsRange(15, 25);
        	parameters.getPreviewFpsRange(fpsRange);
-    	assertThat(fpsRange[1], equalTo(15));
-    	assertThat(fpsRange[0], equalTo(25));
+    	assertThat(fpsRange[1], equalTo(25));
+    	assertThat(fpsRange[0], equalTo(15));
     }
     
     @Test
@@ -115,8 +115,10 @@ public class CameraParametersTest {
     	List<int[]> supportedRanges = parameters.getSupportedPreviewFpsRange();
     	assertThat(supportedRanges, notNullValue());
     	assertThat(supportedRanges.size(), greaterThan(0));
-    	assertThat(supportedRanges.get(0)[0], equalTo(30));
-    	assertThat(supportedRanges.get(0)[1], equalTo(10));
+    	assertThat(supportedRanges.get(0)[0], equalTo(15));
+    	assertThat(supportedRanges.get(0)[1], equalTo(15));
+    	assertThat(supportedRanges.get(1)[0], equalTo(10));
+    	assertThat(supportedRanges.get(1)[1], equalTo(30));
     }
     
     @Test

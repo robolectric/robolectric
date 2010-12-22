@@ -40,8 +40,8 @@ public class ShadowCameraParameters {
     
     @Implementation
     public void getPreviewFpsRange(int[] range) {
-    	range[0] = previewFpsMax;
-    	range[1] = previewFpsMin;
+    	range[0] = previewFpsMin;
+    	range[1] = previewFpsMax;
     }
 
     @Implementation
@@ -85,8 +85,8 @@ public class ShadowCameraParameters {
     @Implementation
     public List<int[]> getSupportedPreviewFpsRange() {
     	List<int[]> supportedRanges = new ArrayList<int[]>();
-    	addRange(supportedRanges, 10, 30);
     	addRange(supportedRanges, 15, 15);
+    	addRange(supportedRanges, 10, 30);
     	return supportedRanges;
     }
     
@@ -160,9 +160,9 @@ public class ShadowCameraParameters {
     
     private void addRange(List<int[]> ranges, int min, int max) {
     	int[] range = new int[2];
-    	range[0] = max;
-    	range[1] = min;
-    	ranges.add(range);
+       	range[0] = min;
+       	range[1] = max;
+     	ranges.add(range);
     }
     
 }

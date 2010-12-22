@@ -16,12 +16,10 @@ import com.xtremelabs.robolectric.util.Implements;
 @Implements(AlarmManager.class)
 public class ShadowAlarmManager {
 	
-	// TODO tests
-	
 	private List<ScheduledAlarm> scheduledAlarms = new ArrayList<ScheduledAlarm>();
 
 	@Implementation
-	void set(int type, long triggerAtTime, PendingIntent operation) {
+	public void set(int type, long triggerAtTime, PendingIntent operation) {
 		scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, operation));
 	}
 	
