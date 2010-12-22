@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.internal;
 
+import java.io.File;
 import java.lang.reflect.Method;
 
 public interface RobolectricTestRunnerInterface {
@@ -9,7 +10,7 @@ public interface RobolectricTestRunnerInterface {
 
     void internalAfterTest(Method method);
 
-    void setAndroidManifestPath(String projectRoot);
+    void setAndroidManifestPath(File projectRoot);
 
-    void setResourceDirectory(String resourceDirectory);
+    void setResourceDirectory(File resourceDirectory);
 }

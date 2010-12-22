@@ -77,7 +77,7 @@ public class ActivityTest {
 
     @Test
     public void shouldRetrievePackageNameFromTheManifest() throws Exception {
-        Robolectric.application = new ApplicationResolver("test" + File.separator + "TestAndroidManifestWithPackageName.xml").resolveApplication();
+        Robolectric.application = new ApplicationResolver(new File("test", "TestAndroidManifestWithPackageName.xml")).resolveApplication();
         assertEquals("com.wacka.wa", new Activity().getPackageName());
     }
 

@@ -5,13 +5,14 @@ import com.xtremelabs.robolectric.internal.ClassNameResolver;
 import org.w3c.dom.Document;
 
 import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ApplicationResolver {
-    private String androidManifestPath;
+    private File androidManifestPath;
 
-    public ApplicationResolver(String androidManifestPath) {
+    public ApplicationResolver(File androidManifestPath) {
         this.androidManifestPath = androidManifestPath;
     }
 

@@ -27,8 +27,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import static java.io.File.separator;
-
 /**
  * Installs a {@link RobolectricClassLoader} and {@link com.xtremelabs.robolectric.res.ResourceLoader} in order to
  * provide a simulation of the Android runtime environment.
@@ -43,8 +41,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     private RobolectricTestRunnerInterface delegate;
 
     // fields in the RobolectricTestRunner in the instrumented ClassLoader
-    private String resourceDirectory;
-    private String androidManifestPath;
+    private File resourceDirectory;
+    private File androidManifestPath;
 
     private static RobolectricClassLoader getDefaultLoader() {
         if (defaultLoader == null) {
@@ -54,24 +52,57 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     /**
-     * Creates a runner to run {@code testClass}.
+     * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
+     * and res directory.
      *
-     * @param testClass the test class to be run
-     * @throws InitializationError
+     * @param testClass            the test class to be run
+     * @throws InitializationError if junit says so
      */
     public RobolectricTestRunner(Class<?> testClass) throws InitializationError {
-        this(testClass, "AndroidManifest.xml", "res");
+        this(testClass, new File("."));
     }
 
     /**
-     * Call this constructor in subclasses in order to specify the project root directory. The location of the
-     * AndroidManifest.xml file and the resource directory are deduced from this value.
+     * Call this constructor in subclasses in order to specify the project root directory.
      *
-     * @param testClass the test class to be run
-     * @throws InitializationError
+     * @param testClass            the test class to be run
+     * @param androidProjectRoot   the directory containing your AndroidManifest.xml file and res dir
+     * @throws InitializationError if the test class is malformed
+     */
+    public RobolectricTestRunner(Class<?> testClass, File androidProjectRoot) throws InitializationError {
+        this(testClass, new File(androidProjectRoot, "AndroidManifest.xml"), new File(androidProjectRoot, "res"));
+    }
+
+    /**
+     * Call this constructor in subclasses in order to specify the project root directory.
+     *
+     * @param testClass            the test class to be run
+     * @param androidProjectRoot   the directory containing your AndroidManifest.xml file and res dir
+     * @throws InitializationError if junit says so
+     * @deprecated Use #RobolectricTestRunner(Class, File) instead.
      */
     public RobolectricTestRunner(Class<?> testClass, String androidProjectRoot) throws InitializationError {
-        this(testClass, androidProjectRoot + separator + "AndroidManifest.xml", androidProjectRoot + separator + "res");
+        this(testClass, new File(androidProjectRoot));
+    }
+
+    /**
+     * Call this constructor in subclasses in order to specify the location of the AndroidManifest.xml file and the
+     * resource directory. The #androidManifestPath is used to locate the AndroidManifest.xml file which, in turn,
+     * contains package name for the {@code R} class which contains the identifiers for all of the resources. The
+     * resource directory is where the resource loader will look for resources to load.
+     *
+     * @param testClass            the test class to be run
+     * @param androidManifestPath  the AndroidManifest.xml file
+     * @param resourceDirectory    the directory containing the project's resources
+     * @throws InitializationError if junit says so
+     */
+    protected RobolectricTestRunner(Class<?> testClass, File androidManifestPath, File resourceDirectory)
+            throws InitializationError {
+        this(testClass,
+                isInstrumented() ? null : ShadowWrangler.getInstance(),
+                isInstrumented() ? null : getDefaultLoader(),
+                androidManifestPath,
+                resourceDirectory);
     }
 
     /**
@@ -83,35 +114,32 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param testClass           the test class to be run
      * @param androidManifestPath the relative path to the AndroidManifest.xml file
      * @param resourceDirectory   the relative path to the directory containing the project's resources
-     * @throws InitializationError
+     * @throws InitializationError if junit says so
+     * @deprecated Use ##RobolectricTestRunner(Class, File, File) instead.
      */
     protected RobolectricTestRunner(Class<?> testClass, String androidManifestPath, String resourceDirectory)
             throws InitializationError {
-        this(testClass,
-                isInstrumented() ? null : ShadowWrangler.getInstance(),
-                isInstrumented() ? null : getDefaultLoader(),
-                androidManifestPath,
-                resourceDirectory);
+        this(testClass, new File(androidManifestPath), new File(resourceDirectory));
     }
 
     /**
      * This is not the constructor you are looking for... probably. This constructor creates a bridge between the test
      * runner called by JUnit and a second instance of the test runner that is loaded via the instrumenting class
      * loader. This instrumented instance of the test runner, along with the instrumented instance of the actual test,
-     * provides access to Robolectric's features and the uninstrumented instance of the test runner delegates most of
+     * provides access to Robolectric's features and the un-instrumented instance of the test runner delegates most of
      * the interesting test runner behavior to it. Providing your own class handler and class loader here in order to
      * get different functionality is a difficult and dangerous project. If you need to customize the project root and
      * resource directory, use {@link #RobolectricTestRunner(Class, String, String)}. For other extensions, consider
      * creating a subclass and overriding the documented methods of this class.
      *
-     * @param testClass
-     * @param classHandler
-     * @param classLoader
-     * @param androidManifestPath
-     * @param resourceDirectory
-     * @throws InitializationError
+     * @param testClass           the test class to be run
+     * @param classHandler        the {@link ClassHandler} to use to in shadow delegation
+     * @param classLoader         the {@link RobolectricClassLoader}
+     * @param androidManifestPath  the AndroidManifest.xml file
+     * @param resourceDirectory    the directory containing the project's resources
+     * @throws InitializationError if junit says so
      */
-    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader classLoader, String androidManifestPath, String resourceDirectory) throws InitializationError {
+    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader classLoader, File androidManifestPath, File resourceDirectory) throws InitializationError {
         super(isInstrumented() ? testClass : classLoader.bootstrap(testClass));
 
         if (!isInstrumented()) {
@@ -137,15 +165,39 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         }
     }
 
+    /**
+     * This is not the constructor you are looking for... probably. This constructor creates a bridge between the test
+     * runner called by JUnit and a second instance of the test runner that is loaded via the instrumenting class
+     * loader. This instrumented instance of the test runner, along with the instrumented instance of the actual test,
+     * provides access to Robolectric's features and the un-instrumented instance of the test runner delegates most of
+     * the interesting test runner behavior to it. Providing your own class handler and class loader here in order to
+     * get different functionality is a difficult and dangerous project. If you need to customize the project root and
+     * resource directory, use {@link #RobolectricTestRunner(Class, String, String)}. For other extensions, consider
+     * creating a subclass and overriding the documented methods of this class.
+     *
+     * @param testClass           the test class to be run
+     * @param classHandler        the {@link ClassHandler} to use to in shadow delegation
+     * @param classLoader         the {@link RobolectricClassLoader}
+     * @param androidManifestPath  the AndroidManifest.xml file
+     * @param resourceDirectory    the directory containing the project's resources
+     * @throws InitializationError if junit says so
+     * @deprecated Use {@link #RobolectricTestRunner(Class, ClassHandler, RobolectricClassLoader, File, File)}
+     */
+    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader classLoader, String androidManifestPath, String resourceDirectory) throws InitializationError {
+        this(testClass, classHandler, classLoader, new File(androidManifestPath), new File(resourceDirectory));
+    }
+
     private static boolean isInstrumented() {
         return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(RobolectricClassLoader.class.getName());
     }
 
     /**
      * Only used when creating the delegate instance within the instrumented ClassLoader.
+     *
+     * This is not the constructor you are looking for.
      */
-    @SuppressWarnings({"UnusedDeclaration"})
-    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, String androidManifestPath, String resourceDirectory) throws InitializationError {
+    @SuppressWarnings({"UnusedDeclaration", "JavaDoc"})
+    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, File androidManifestPath, File resourceDirectory) throws InitializationError {
         super(testClass);
         this.classHandler = classHandler;
         this.androidManifestPath = androidManifestPath;
@@ -187,11 +239,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         afterTest(method);
     }
 
-    @Override public void setAndroidManifestPath(String androidManifestPath) {
+    @Override public void setAndroidManifestPath(File androidManifestPath) {
         this.androidManifestPath = androidManifestPath;
     }
 
-    @Override public void setResourceDirectory(String resourceDirectory) {
+    @Override public void setResourceDirectory(File resourceDirectory) {
         this.resourceDirectory = resourceDirectory;
     }
 
@@ -229,7 +281,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     public void prepareTest(Object test) {
     }
 
-    public void setupApplicationState(String projectRoot, String resourceDir) {
+    public void setupApplicationState(File projectRoot, File resourceDir) {
         ResourceLoader resourceLoader = createResourceLoader(projectRoot, resourceDir);
 
         Robolectric.bindDefaultShadowClasses();
@@ -266,24 +318,22 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return new ApplicationResolver(androidManifestPath).resolveApplication();
     }
 
-    private ResourceLoader createResourceLoader(String projectRoot, String resourceDirectory) {
+    private ResourceLoader createResourceLoader(File projectRoot, File resourceDirectory) {
         RootAndDirectory rootAndDirectory = new RootAndDirectory(projectRoot, resourceDirectory);
         ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(rootAndDirectory);
         if (resourceLoader == null) {
             try {
-                File projectManifestFile = new File(projectRoot);
-                if (!projectManifestFile.exists() || !projectManifestFile.isFile()) {
-                    throw new FileNotFoundException(projectManifestFile.getAbsolutePath() + " not found or not a file; it should point to your project's AndroidManifest.xml");
+                if (!projectRoot.exists() || !projectRoot.isFile()) {
+                    throw new FileNotFoundException(projectRoot.getAbsolutePath() + " not found or not a file; it should point to your project's AndroidManifest.xml");
                 }
 
-                String rClassName = findResourcePackageName(projectManifestFile);
+                String rClassName = findResourcePackageName(projectRoot);
                 Class rClass = Class.forName(rClassName);
-                File resourceDir = new File(resourceDirectory);
-                if (!resourceDir.exists() || !resourceDir.isDirectory()) {
-                    throw new FileNotFoundException(resourceDir.getAbsolutePath() + " not found or not a directory; it should point to your project's res directory");
+                if (!resourceDirectory.exists() || !resourceDirectory.isDirectory()) {
+                    throw new FileNotFoundException(resourceDirectory.getAbsolutePath() + " not found or not a directory; it should point to your project's res directory");
                 }
 
-                resourceLoader = new ResourceLoader(rClass, resourceDir);
+                resourceLoader = new ResourceLoader(rClass, resourceDirectory);
                 resourceLoaderForRootAndDirectory.put(rootAndDirectory, resourceLoader);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -303,10 +353,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     private static class RootAndDirectory {
-        public String projectRoot;
-        public String resourceDirectory;
+        public File projectRoot;
+        public File resourceDirectory;
 
-        private RootAndDirectory(String projectRoot, String resourceDirectory) {
+        private RootAndDirectory(File projectRoot, File resourceDirectory) {
             this.projectRoot = projectRoot;
             this.resourceDirectory = resourceDirectory;
         }
