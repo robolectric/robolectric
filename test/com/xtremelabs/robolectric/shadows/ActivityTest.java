@@ -3,6 +3,9 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.appwidget.AppWidgetProvider;
 import android.content.IntentFilter;
+import android.os.Bundle;
+import android.view.View;
+
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -39,9 +42,35 @@ public class ActivityTest {
         assertEquals("com.wacka.wa", new Activity().getPackageName());
     }
 
+    @Test
+    public void onContentChangedTest() throws RuntimeException{
+    	CustomActivity customActivity = new CustomActivity();
+    	customActivity.onCreate(null); // should not throw exception
+    }
+
     private static class MyActivity extends Activity {
         @Override protected void onDestroy() {
             super.onDestroy();
         }
+    }
+    
+    private static class CustomActivity extends Activity{
+    	private static final int CUSTOM_ID = 1032421210;
+    	
+    	@Override
+    	public void onCreate(Bundle icicle){
+    		super.onCreate(icicle);
+    		View customView = new View(this);
+    		customView.setId(CUSTOM_ID);
+    		setContentView(customView);
+    	}
+    	
+    	@Override
+    	public void onContentChanged(){
+    		View theView = findViewById(CUSTOM_ID);
+    		if( theView == null ){
+    			throw new RuntimeException("Your content must have a HeaderView whose id attribute is 1032421210");
+    		}
+    	}
     }
 }
