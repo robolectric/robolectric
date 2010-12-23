@@ -115,7 +115,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param androidManifestPath the relative path to the AndroidManifest.xml file
      * @param resourceDirectory   the relative path to the directory containing the project's resources
      * @throws InitializationError if junit says so
-     * @deprecated Use {@link RobolectricTestRunner(Class, File, File)} instead.
+     * @deprecated Use {@link #RobolectricTestRunner(Class, File, File)} instead.
      */
     protected RobolectricTestRunner(Class<?> testClass, String androidManifestPath, String resourceDirectory)
             throws InitializationError {
@@ -265,7 +265,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     /**
      * You probably don't want to override this method. Override #prepareTest(Object) instead.
-     * {@see BlockJUnit4TestRunner#createTest()}
+     *
+     * @see BlockJUnit4ClassRunner#createTest()
      */
     @Override
     public Object createTest() throws Exception {

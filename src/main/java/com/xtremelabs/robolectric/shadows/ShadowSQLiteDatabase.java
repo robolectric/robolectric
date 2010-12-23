@@ -166,8 +166,7 @@ public class ShadowSQLiteDatabase {
     /**
      * Allows test cases access to the underlying JDBC connection, for use in
      * setup or assertions.
-     *
-     * @return
+     * @return the connection
      */
     public Connection getConnection() {
         return connection;

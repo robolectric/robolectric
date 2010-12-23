@@ -1,7 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.bluetooth.BluetoothAdapter;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -176,7 +182,6 @@ public class ShadowContextWrapper extends ShadowContext {
      * Non-Android accessor that is used at start-up to set the package name
      *
      * @param packageName the package name
-     * @return the next started {@code Intent} for a service
      */
     public void setPackageName(String packageName) {
         this.packageName = packageName;
