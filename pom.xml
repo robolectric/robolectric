@@ -11,19 +11,13 @@
 
     <groupId>com.pivotallabs</groupId>
     <artifactId>robolectric</artifactId>
-    <version>0.9.4-SNAPSHOT</version>
+    <version>0.9.5-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Robolectric</name>
     <description>An alternative Android testing framework.</description>
     <url>http://pivotal.github.com/robolectric/</url>
 
     <dependencies>
-        <dependency>
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20090211</version>
-        </dependency>
-
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-core</artifactId>
@@ -75,9 +69,9 @@
         </dependency>
 
         <dependency>
-            <groupId>android</groupId>
+            <groupId>com.google.android</groupId>
             <artifactId>android</artifactId>
-            <version>2.3</version>
+            <version>2.3.1</version>
             <scope>provided</scope>
         </dependency>
 
