@@ -1,6 +1,7 @@
 bin/
 out/
 .idea/workspace.xml
+.idea/libraries/
 tmp/
 target/
 pages
