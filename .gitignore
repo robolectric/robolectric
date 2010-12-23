@@ -2,6 +2,7 @@ bin/
 out/
 .idea/workspace.xml
 .idea/libraries/
+robolectric.iml
 tmp/
 target/
 pages
@@ -9,3 +10,6 @@ pages
 *~
 local.properties
 \#*\#
+.project
+.classpath
+.settings
