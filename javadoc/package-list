@@ -1,3 +1,9 @@
+com.xtremelabs.robolectric
+com.xtremelabs.robolectric.bytecode
+com.xtremelabs.robolectric.content
+com.xtremelabs.robolectric.internal
+com.xtremelabs.robolectric.matchers
+com.xtremelabs.robolectric.res
 com.xtremelabs.robolectric.shadows
 com.xtremelabs.robolectric.util
 com.xtremelabs.robolectric.view
