@@ -36,11 +36,11 @@ public class MenuInflaterTest {
 		MenuInflater.inflate(R.menu.test, menu);
 		
         TestMenuItem testMenuItem = (TestMenuItem) menu.getItem(0);
-        assertEquals(testMenuItem.getTitle().toString(), "Test menu item 1");
+        assertEquals("Test menu item 1", testMenuItem.getTitle().toString());
         testMenuItem.click();
 
 		testMenuItem = (TestMenuItem) menu.getItem(1);
-        assertEquals(testMenuItem.getTitle().toString(), "Test menu item 2");
+        assertEquals("Test menu item 2", testMenuItem.getTitle().toString());
         testMenuItem.click();
 	}
 
