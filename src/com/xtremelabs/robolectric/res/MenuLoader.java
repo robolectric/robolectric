@@ -1,9 +1,11 @@
 package com.xtremelabs.robolectric.res;
 
 import android.view.Menu;
+import android.view.MenuItem;
 import android.content.Context;
 import android.util.AttributeSet;
 import com.xtremelabs.robolectric.util.TestAttributeSet;
+import com.xtremelabs.robolectric.view.TestMenu;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -33,7 +35,14 @@ public class MenuLoader extends XmlLoader {
     @Override
     protected void processResourceXml(File xmlFile, Document document) throws Exception {
         MenuNode topLevelNode = new MenuNode("top-level", new HashMap<String, String>());
-        processChildren(document.getChildNodes(), topLevelNode);
+		
+		NodeList items = document.getChildNodes();
+		if (items.getLength()!=1)
+			throw new RuntimeException("Expected only one top-level item in menu file "+xmlFile.getName());
+		if (items.item(0).getNodeName().compareTo("menu")!=0)
+			throw new RuntimeException("Expected a top-level item called 'menu' in menu file "+xmlFile.getName());
+
+        processChildren(items.item(0).getChildNodes(), topLevelNode);
         menuNodesByMenuName.put(
                 "menu/" + xmlFile.getName().replace(".xml", ""),
                 topLevelNode);
@@ -59,20 +68,22 @@ public class MenuLoader extends XmlLoader {
         }
 
         if (!name.startsWith("#")) {
-            MenuNode menuNode = new MenuNode(name, attrMap);
-            processChildren(node.getChildNodes(), menuNode);
-        }
+			MenuNode menuNode = new MenuNode(name, attrMap);
+			parent.addChild(menuNode);
+			if (node.getChildNodes().getLength() != 0)
+				throw new RuntimeException(node.getChildNodes().toString());
+		}
     }
 
-    public Menu inflateMenu(Context context, String key) {
-        return inflateMenu(context, key, null);
+    public void inflateMenu(Context context, String key, Menu root) {
+        inflateMenu(context, key, null, root);
     }
 
-    public Menu inflateMenu(Context context, int resourceId) {
-        return inflateMenu(context, resourceExtractor.getResourceName(resourceId));
+    public void inflateMenu(Context context, int resourceId, Menu root) {
+        inflateMenu(context, resourceExtractor.getResourceName(resourceId), root);
     }
 
-    private Menu inflateMenu(Context context, String key, Map<String, String> attributes) {
+    private void inflateMenu(Context context, String key, Map<String, String> attributes, Menu root) {
         MenuNode menuNode = menuNodesByMenuName.get(key);
         if (menuNode == null) {
             throw new RuntimeException("Could not find menu " + key);
@@ -85,7 +96,7 @@ public class MenuLoader extends XmlLoader {
                     }
                 }
             }
-            return menuNode.inflate(context);
+            menuNode.inflate(context, root);
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + key, e);
         }
@@ -96,7 +107,6 @@ public class MenuLoader extends XmlLoader {
         private final Map<String, String> attributes;
 
         private List<MenuNode> children = new ArrayList<MenuNode>();
-        boolean requestFocusOverride = false;
 
         public MenuNode(String name, Map<String, String> attributes) {
             this.name = name;
@@ -111,64 +121,14 @@ public class MenuLoader extends XmlLoader {
             children.add(MenuNode);
         }
 
-        public Menu inflate(Context context) throws Exception {
-            Menu menu = create(context);
-
+        public void inflate(Context context, Menu root) throws Exception {
             for (MenuNode child : children) {
-                child.inflate(context);
-            }
-            return menu;
-        }
-
-		private Menu create(Context context) throws Exception {
-			Menu menu = constructMenu(context);
-			return menu;
-		}
-
-		private Menu constructMenu(Context context) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-			Class<? extends Menu> clazz = pickMenuClass();
-			try {
-				TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, clazz);
-				return ((Constructor<? extends Menu>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
-			} catch (NoSuchMethodException e) {
-				try {
-					return ((Constructor<? extends Menu>) clazz.getConstructor(Context.class)).newInstance(context);
-				} catch (NoSuchMethodException e1) {
-					return ((Constructor<? extends Menu>) clazz.getConstructor(Context.class, String.class)).newInstance(context, "");
-				}
-			}
-		}
-
-		private Class<? extends Menu> pickMenuClass() {
-			Class<? extends Menu> clazz = loadClass(name);
-			if (clazz == null) {
-				clazz = loadClass("android.view." + name);
-			}
-			if (clazz == null) {
-				clazz = loadClass("android.widget." + name);
-			}
-			if (clazz == null) {
-				clazz = loadClass("android.webkit." + name);
-			}
-			if (clazz == null) {
-				clazz = loadClass("com.google.android.maps." + name);
-			}
-
-			if (clazz == null) {
-				throw new RuntimeException("couldn't find menu class " + name);
-			}
-			return clazz;
-		}
-
-        private Class<? extends Menu> loadClass(String className) {
-            try {
-                //noinspection unchecked
-                return (Class<? extends Menu>) getClass().getClassLoader().loadClass(className);
-            } catch (ClassNotFoundException e) {
-                return null;
+				assert(child.getChildren().size() == 0);
+				MenuItem menuItem = root.add(child.attributes.get("android:id"));
+				assert (menuItem != null);
+				menuItem.setTitle(child.attributes.get("android:title"));
             }
         }
-
 	}
 }
 

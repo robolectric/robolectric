@@ -25,7 +25,7 @@ public class ShadowMenuInflater {
 
     @Implementation
     public void inflate(int resource, Menu root) {
-        getMenuLoader().inflateMenu(context, resource);
+        getMenuLoader().inflateMenu(context, resource, root);
     }
 
     private MenuLoader getMenuLoader() {
