@@ -70,7 +70,7 @@ public final class R {
     }
 
     public static final class menu {
-		public static final int test_menu = nextId++;
+		public static final int test = nextId++;
 	}
 
 }

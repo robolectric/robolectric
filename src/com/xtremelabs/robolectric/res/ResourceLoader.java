@@ -12,6 +12,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ResourceLoader {
     private final ResourceExtractor resourceExtractor;
     public final ViewLoader viewLoader;
+    public final MenuLoader menuLoader;
     public final StringResourceLoader stringResourceLoader;
     public final StringArrayResourceLoader stringArrayResourceLoader;
     public final AttrResourceLoader attrResourceLoader;
@@ -48,13 +49,29 @@ public class ResourceLoader {
                 }
             });
             viewDocumentLoader.loadResourceXmlDirs(layoutDirs);
+
+			menuLoader = new MenuLoader(resourceExtractor, stringResourceLoader, attrResourceLoader);
+            DocumentLoader menuDocumentLoader = new DocumentLoader(menuLoader);
+            File[] menuDirs = resourceDir.listFiles(new FileFilter() {
+                @Override
+                public boolean accept(File file) {
+                    return isMenuDirectory(file.getPath());
+                }
+            });
+            menuDocumentLoader.loadResourceXmlDirs(menuDirs);
+
         } else {
             viewLoader = null;
+			menuLoader = null;
         }
     }
 
     boolean isLayoutDirectory(String path) {
         return path.contains(File.separator + "layout");
+    }
+
+    boolean isMenuDirectory(String path) {
+        return path.contains(File.separator + "menu");
     }
 
     /**
@@ -64,6 +81,7 @@ public class ResourceLoader {
         resourceExtractor = new ResourceExtractor();
         this.stringResourceLoader = stringResourceLoader;
         viewLoader = null;
+        menuLoader = null;
         stringArrayResourceLoader = null;
         attrResourceLoader = null;
         colorResourceLoader = null;

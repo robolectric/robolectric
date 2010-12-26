@@ -26,6 +26,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -166,6 +167,7 @@ public class Robolectric {
                 ShadowMapController.class,
                 ShadowMapActivity.class,
                 ShadowMapView.class,
+                ShadowMenuInflater.class,
                 ShadowMotionEvent.class,
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
@@ -353,6 +355,10 @@ public class Robolectric {
 
     public static ShadowLayoutInflater shadowOf(LayoutInflater instance) {
         return (ShadowLayoutInflater) shadowOf_(instance);
+    }
+
+    public static ShadowMenuInflater shadowOf(MenuInflater instance) {
+        return (ShadowMenuInflater) shadowOf_(instance);
     }
 
     public static ShadowDisplay shadowOf(Display instance) {

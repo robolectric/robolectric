@@ -12,10 +12,10 @@ public class TestAttributeSet implements AttributeSet {
     Map<String, String> attributes = new HashMap<String, String>();
     private ResourceExtractor resourceExtractor;
     private AttrResourceLoader attrResourceLoader;
-    private Class<? extends View> viewClass;
+    private Class viewClass;
 
     public TestAttributeSet(Map<String, String> attributes, ResourceExtractor resourceExtractor,
-                            AttrResourceLoader attrResourceLoader, Class<? extends View> viewClass) {
+                            AttrResourceLoader attrResourceLoader, Class viewClass) {
         this.attributes = attributes;
         this.resourceExtractor = resourceExtractor;
         this.attrResourceLoader = attrResourceLoader;
