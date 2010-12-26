@@ -13,26 +13,24 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.File;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 import static org.junit.Assert.assertEquals;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class MenuInflaterTest {
-    private ShadowMenuInflater MenuInflater;
+    private MenuInflater MenuInflater;
 
     @Before
     public void setUp() throws Exception {
         Robolectric.bindDefaultShadowClasses();
         Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
-        MenuInflater = shadowOf(new MenuInflater(Robolectric.application));
+        MenuInflater = new MenuInflater(Robolectric.application);
     }
 
 	@Test
 	public void canRetrieveMenuList()
 	{
         TestMenu menu = new TestMenu();
-		System.out.println(MenuInflater);
 		MenuInflater.inflate(R.menu.test, menu);
 		
         TestMenuItem testMenuItem = (TestMenuItem) menu.getItem(0);
