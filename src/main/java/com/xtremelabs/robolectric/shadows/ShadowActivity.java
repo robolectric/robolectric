@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.View;
 import android.view.Window;
 import com.xtremelabs.robolectric.Robolectric;
@@ -89,6 +90,11 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public LayoutInflater getLayoutInflater() {
         return LayoutInflater.from(realActivity);
+    }
+
+    @Implementation
+    public MenuInflater getMenuInflater() {
+        return new MenuInflater(realActivity);
     }
 
     /**

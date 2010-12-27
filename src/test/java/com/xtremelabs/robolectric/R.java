@@ -70,4 +70,9 @@ public final class R {
         public static final int raw_resource = nextId++;
         public static final int raw_no_ext = nextId++;
     }
+
+    public static final class menu {
+		public static final int test = nextId++;
+	}
+
 }

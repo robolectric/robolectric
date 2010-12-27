@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.res;
 
 import android.content.Context;
+import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -15,6 +16,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ResourceLoader {
     private final ResourceExtractor resourceExtractor;
     private ViewLoader viewLoader;
+    private MenuLoader menuLoader;
     private final StringResourceLoader stringResourceLoader;
     private final StringArrayResourceLoader stringArrayResourceLoader;
     private final AttrResourceLoader attrResourceLoader;
@@ -62,8 +64,19 @@ public class ResourceLoader {
                     }
                 });
                 viewDocumentLoader.loadResourceXmlDirs(layoutDirs);
-            } else {
+
+                menuLoader = new MenuLoader(resourceExtractor, stringResourceLoader, attrResourceLoader);
+                DocumentLoader menuDocumentLoader = new DocumentLoader(menuLoader);
+                File[] menuDirs = resourceDir.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(File file) {
+                        return isMenuDirectory(file.getPath());
+                    }
+                });
+                menuDocumentLoader.loadResourceXmlDirs(menuDirs);
+             } else {
                 viewLoader = null;
+                menuLoader = null;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -75,7 +88,11 @@ public class ResourceLoader {
         return path.contains(File.separator + "layout");
     }
 
-    /*
+    boolean isMenuDirectory(String path) {
+        return path.contains(File.separator + "menu");
+    }
+
+ 	 /*
      * For tests only...
      */
     protected ResourceLoader(StringResourceLoader stringResourceLoader) {
@@ -122,5 +139,9 @@ public class ResourceLoader {
     public String[] getStringArrayValue(int id) {
         init();
         return stringArrayResourceLoader.getArrayValue(id);
+    }
+
+    public void inflateMenu(Context context, int resource, Menu root) {
+        menuLoader.inflateMenu(context, resource, root);
     }
 }

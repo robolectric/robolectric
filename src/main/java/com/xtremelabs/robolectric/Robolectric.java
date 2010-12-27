@@ -37,6 +37,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.view.Display;
 import android.view.LayoutInflater;
+import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
@@ -117,6 +118,7 @@ import com.xtremelabs.robolectric.shadows.ShadowMapView;
 import com.xtremelabs.robolectric.shadows.ShadowMatrix;
 import com.xtremelabs.robolectric.shadows.ShadowMediaRecorder;
 import com.xtremelabs.robolectric.shadows.ShadowMediaStore;
+import com.xtremelabs.robolectric.shadows.ShadowMenuInflater;
 import com.xtremelabs.robolectric.shadows.ShadowMotionEvent;
 import com.xtremelabs.robolectric.shadows.ShadowNetworkInfo;
 import com.xtremelabs.robolectric.shadows.ShadowOverlayItem;
@@ -472,6 +474,10 @@ public class Robolectric {
         return (ShadowLayoutInflater) shadowOf_(instance);
     }
 
+    public static ShadowMenuInflater shadowOf(MenuInflater instance) {
+        return (ShadowMenuInflater) shadowOf_(instance);
+    }
+
     public static ShadowDisplay shadowOf(Display instance) {
         return (ShadowDisplay) shadowOf_(instance);
     }
@@ -547,7 +553,7 @@ public class Robolectric {
 
     /**
      * Runs any background tasks previously queued by {@link android.os.AsyncTask#execute(Object[])}.
-     *
+     * <p/>
      * <p/>
      * Note: calling this method does not pause or un-pause the scheduler.
      */
@@ -558,7 +564,7 @@ public class Robolectric {
     /**
      * Runs any immediately runnable tasks previously queued on the UI thread,
      * e.g. by {@link Activity#runOnUiThread(Runnable)} or {@link android.os.AsyncTask#onPostExecute(Object)}.
-     *
+     * <p/>
      * <p/>
      * Note: calling this method does not pause or un-pause the scheduler.
      */
@@ -569,7 +575,7 @@ public class Robolectric {
     /**
      * Sets up an HTTP response to be returned by calls to Apache's {@code HttpClient} implementers.
      *
-     * @param statusCode the status code of the response
+     * @param statusCode   the status code of the response
      * @param responseBody the body of the response
      */
     public static void addPendingHttpResponse(int statusCode, String responseBody) {
@@ -608,8 +614,8 @@ public class Robolectric {
     /**
      * Adds an HTTP response rule. The response will be returned when the rule is matched.
      *
-     * @param method method to match.
-     * @param uri uri to match.
+     * @param method   method to match.
+     * @param uri      uri to match.
      * @param response response to return when a match is found.
      */
     public static void addHttpResponseRule(String method, String uri, HttpResponse response) {
@@ -619,7 +625,7 @@ public class Robolectric {
     /**
      * Adds an HTTP response rule with a default method of GET. The response will be returned when the rule is matched.
      *
-     * @param uri uri to match.
+     * @param uri      uri to match.
      * @param response response to return when a match is found.
      */
     public static void addHttpResponseRule(String uri, HttpResponse response) {
@@ -629,7 +635,7 @@ public class Robolectric {
     /**
      * Adds an HTTP response rule. The response will be returned when the rule is matched.
      *
-     * @param uri uri to match.
+     * @param uri      uri to match.
      * @param response response to return when a match is found.
      */
     public static void addHttpResponseRule(String uri, String response) {
@@ -640,7 +646,7 @@ public class Robolectric {
      * Adds an HTTP response rule. The response will be returned when the rule is matched.
      *
      * @param requestMatcher custom {@code RequestMatcher}.
-     * @param response response to return when a match is found.
+     * @param response       response to return when a match is found.
      */
     public static void addHttpResponseRule(FakeHttpLayer.RequestMatcher requestMatcher, HttpResponse response) {
         getFakeHttpLayer().addHttpResponseRule(requestMatcher, response);
