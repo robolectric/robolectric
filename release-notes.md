@@ -6,18 +6,38 @@ title: Release Notes
 # Release Notes
 
 -----
+## Release 0.9.5 - December 23, 2010
+-----
+
+#### Features
+- Improved testing of asynchronous and background tasks. Loopers and AsyncTask background threads are now un-paused by default (see Robolectric.pauseMainLooper() et al.).
+- Shadows for Bitmap, BitmapFactory, and Canvas, and related classes, with textual descriptions (see Robolectric.visualize()) - Thanks xtremelabs!
+- Improved HTTP testing (see Robolectric.addHttpResponseRule()).
+- Shadow for Camera, Camera.Parameters, MediaRecorder - Thanks mportuesi!
+- Shadow for ArrayAdapter - Thanks mylacc!
+- Shadow for ExpandableListView - Thanks casidiablo!
+- Nicer stack traces from within shadowed methods.
+- Now available from Maven Central (and built with Maven).
+- More shadowed methods on numerous classes.
+- The onCreate() method of the application is no longer called automatically as part of test setup and must now be
+  called manually.
+
+
+
+-----
 ## Release 0.9.4 - December 14, 2010
 -----
 
 #### Features
 - Gingerbread support
-- http client support and shadowing
+- HTTP client support and shadowing
 - Shadow for AssetManager - Thanks gnorsilva!
 - Support string references in string resources.
 - Support for View background attribute resource id - Thanks macarse!
 
 #### Bug Fixes
 - Remove errant semicolon from generated ShadowSQLiteQueryBuilder - Thanks billmccord!
+
 
 -----
 ## Release 0.9.3 - December 3, 2010
@@ -34,7 +54,6 @@ Mike Burton!
 - The Robolectric jars will now work for projects that use the standard Android SDK (and not the Android Google APIs
 version which contains optional APIs such as Google Maps).
 
-
 #### Bug Fixes
 - Windows fixes for path separators
 - Windows users can ant build the robolectric library and run the robolectric tests
@@ -45,6 +64,7 @@ version which contains optional APIs such as Google Maps).
 - We have added [Roboguice](http://code.google.com/p/roboguice/) integration to the
 [RobolectricSample](http://github.com/pivotal/RobolectricSample) project.
 - Support for maven and submission to central is WIP
+
 
 -----
 ## Release 0.9.2 - November 24, 2010
@@ -69,6 +89,7 @@ version which contains optional APIs such as Google Maps).
 #### Bug Fixes
 - Fixed JSON "stub!" exceptions.
 
+
 -----
 ## Release 0.9 - November 17, 2010
 -----
@@ -87,6 +108,7 @@ almost impossible to write a useful Shadow class for it.
 #### Bug Fixes
 - Fixed support for equals(), hashcode(), and toString()
 - Improved the documentation for getting Robolectric to work under Eclipse
+
 
 -----
 ## Release 0.8 - November 5, 2010
