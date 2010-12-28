@@ -11,7 +11,7 @@ title: Release Notes
 
 #### Note
 We have recently changed the Robolectric project structure to work with Maven. If you are developing directly from the
-repository rather than from a jar release then you should close your IDE, delete its project files (.classpath, *.iml,
+repository rather than from a jar release then you should close your IDE, delete its project files (.classpath, &#42;.iml,
 etc...) and reload the project by importing the pom.xml into your IDE. This process has been tested with both IntelliJ
 and Eclipse.
 
