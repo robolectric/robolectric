@@ -5,10 +5,10 @@ title: Quick Start
 
 ## Quick Start
 
-If you'd like to quickly get started using Robolectric to test your app, these instructions are for you. These
-instructions show how to get started by using a pre-built Robolectric jar. While it's possible to make some changes to
-how Robolectric works in this configuration, you won't be able to make larger changes or contribute to the Robolectric
-project itself. However, this is still a good place to get started even if you want to do more complicated work later.
+If you'd like to quickly get started using Robolectric to test your app, these instructions are for you. They will show
+you how to get started with Robolectric using a pre-built jar. While this is a good place to get started, you may find
+later that you want to make larger changes and contribute to Robolectric. A later section will explain how to start
+using Robolectric as a sub-module of your project.
 
 ### In Eclipse:
 Eclipse will try to use the Android JUnit test runner by default for Android projects, so you will need a separate test
@@ -77,7 +77,7 @@ clone the Robolectric repository:
 
 * Add robolectric as an Eclipse project and make your test project depend on it.
 
-* Add the Android SDK jars to the robolectric project also, as above.
+* Add the Android SDK jars to the robolectric project, as above.
 
 ### In IntelliJ:
 

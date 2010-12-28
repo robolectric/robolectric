@@ -20,6 +20,25 @@ source level debugging and browsing.
 
 Most people will want to grab the latest robolectric-all.jar below.
 
+### Using Maven
+
+Add the following to your <code>pom.xml</code>:
+
+{% highlight xml %}
+<dependencies>
+    <dependency>
+        <groupId>com.pivotallabs</groupId>
+        <artifactId>robolectric</artifactId>
+        <version>XXX</version>
+        <scope>test</scope>
+    </dependency>
+</dependencies>
+{% endhighlight %}
+
+Or, you can manually download it here: http://mvnrepository.com/artifact/com.pivotallabs/robolectric
+
+### Older releases are still available here:
+
 <table id="standalone-downloads">
 <tr>
   <th></th>
@@ -29,6 +48,34 @@ Most people will want to grab the latest robolectric-all.jar below.
   <th>SHA1</th>
 </tr>
 <!-- START_DOWNLOADS -->
+<tr>
+  <td class="link"><a href="downloads/robolectric.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric.jar'); ">robolectric.jar</a></td>
+  <td class="version">SNAPSHOT</td>
+  <td class="size">303k</td>
+  <td class="date">2010/12/23 11:56:38 PST</td>
+  <td class="sha">235053f0c52a82c764b20dbc1de3801b0b956ad5</td>
+</tr>
+<tr>
+  <td class="link"><a href="downloads/robolectric-src.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-src.jar'); ">robolectric-src.jar</a></td>
+  <td class="version">SNAPSHOT</td>
+  <td class="size">160k</td>
+  <td class="date">2010/12/23 11:56:38 PST</td>
+  <td class="sha">989375cd270823132df93403179dd02f85628e76</td>
+</tr>
+<tr>
+  <td class="link"><a href="downloads/robolectric-all.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-all.jar'); ">robolectric-all.jar</a></td>
+  <td class="version">SNAPSHOT</td>
+  <td class="size">2984k</td>
+  <td class="date">2010/12/23 11:56:38 PST</td>
+  <td class="sha">529ad4f2c162325bde31df8b134abb65f8da8b10</td>
+</tr>
+<tr>
+  <td class="link"><a href="downloads/robolectric-0.9.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-0.9.jar'); ">robolectric-0.9.jar</a></td>
+  <td class="version">0.9</td>
+  <td class="size">228k</td>
+  <td class="date">2010/11/17 15:33:54 PST</td>
+  <td class="sha">6cb44fe6e9bd0a62e0b2038e8b3cd088736795ba</td>
+</tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-0.9.4.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-0.9.4.jar'); ">robolectric-0.9.4.jar</a></td>
   <td class="version">0.9.4</td>
@@ -112,13 +159,6 @@ Most people will want to grab the latest robolectric-all.jar below.
   <td class="size">894k</td>
   <td class="date">2010/11/19 14:03:53 PST</td>
   <td class="sha">fe772e16820896d860459059e6a440e54e17d834</td>
-</tr>
-<tr>
-  <td class="link"><a href="downloads/robolectric-0.9.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-0.9.jar'); ">robolectric-0.9.jar</a></td>
-  <td class="version">0.9</td>
-  <td class="size">228k</td>
-  <td class="date">2010/11/17 15:33:54 PST</td>
-  <td class="sha">6cb44fe6e9bd0a62e0b2038e8b3cd088736795ba</td>
 </tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-0.9-src.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-0.9-src.jar'); ">robolectric-0.9-src.jar</a></td>
