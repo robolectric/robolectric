@@ -40,6 +40,9 @@ public class ResourceExtractor {
     }
 
     public String getResourceName(int resourceId) {
-        return resourceIdToString.get(resourceId);
+        String ret = resourceIdToString.get(resourceId);
+        if (ret == null)
+            throw new RuntimeException("Can't find resource "+resourceId);
+        return ret;
     }
 }
