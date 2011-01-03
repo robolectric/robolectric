@@ -4,8 +4,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
 import android.widget.ArrayAdapter;
+import android.view.View;
+import android.view.ViewGroup;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.Robolectric;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -17,9 +23,11 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
 
   private Context context;
   private List<T> list;
+  private int resource;
+  private int textViewResourceId;
 
   public void __constructor__(Context context, int textViewResourceId) {
-    init(context, textViewResourceId, 0, new ArrayList<T>());
+    init(context, 0, textViewResourceId, new ArrayList<T>());
   }
 
   public void __constructor__(Context context, int resource, int textViewResourceId) {
@@ -27,7 +35,7 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
   }
 
   public void __constructor__(Context context, int textViewResourceId, T[] objects) {
-    init(context, textViewResourceId, 0, Arrays.asList(objects));
+    init(context, 0, textViewResourceId, Arrays.asList(objects));
   }
 
   public void __constructor__(Context context, int resource, int textViewResourceId, T[] objects) {
@@ -35,7 +43,7 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
   }
 
   public void __constructor__(Context context, int textViewResourceId, List<T> objects) {
-    init(context, textViewResourceId, 0, objects);
+    init(context, 0, textViewResourceId, objects);
   }
 
   public void __constructor__(Context context, int resource, int textViewResourceId, List<T> objects) {
@@ -45,6 +53,8 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
   private void init(Context context, int resource, int textViewResourceId, List<T> objects) {
     this.context = context;
     this.list = objects;
+	this.resource = resource;
+	this.textViewResourceId = textViewResourceId;
   }
 
   @Implementation
@@ -70,5 +80,15 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
   @Implementation
   public int getPosition(T item) {
     return list.indexOf(item);
+  }
+
+  @Implementation
+  public View getView(int position, View convertView, ViewGroup parent) {
+    T item = list.get(position);
+    return getResourceLoader().inflateView(context, textViewResourceId, parent);
+  }
+
+  private ResourceLoader getResourceLoader() {
+    return shadowOf(Robolectric.application).getResourceLoader();
   }
 }
