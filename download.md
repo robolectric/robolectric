@@ -22,7 +22,8 @@ Most people will want to grab the latest robolectric-all.jar below.
 
 ### Using Maven
 
-<b>NOTE:</b> due to a permissions problem, robolectric artifacts are not yet available through maven. Coming soon.
+<b>NOTE:</b>
+due to a permissions problem, robolectric artifacts are not yet available through maven. Coming soon.
 
 Add the following to your <code>pom.xml</code>:
 
