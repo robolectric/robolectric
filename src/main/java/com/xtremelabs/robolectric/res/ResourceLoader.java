@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.R;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -31,6 +32,7 @@ public class ResourceLoader {
     public ResourceLoader(Class rClass, File resourceDir) throws Exception {
         resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(rClass);
+        resourceExtractor.addRClass(R.class);
 
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
         stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
