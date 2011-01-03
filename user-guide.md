@@ -18,10 +18,10 @@ work. This is done by adding the JUnit annotation to your tests. JUnit will defe
 class defined in the <code>@RunWith(RobolectricTestRunner.class)</code> annotation. The
 <code>RobolectricTestRunner.class</code> sets up your test to run with Robolectric.
 
-## <code>Robolectric#shadowOf()</code>
+## <code>Robolectric.shadowOf()</code>
 
 Sometimes Android classes don't provide methods to access the state of the Android objects under test. The
-<code>Robolectric#shadowOf()</code> methods provide reference to the shadow instances representing Android objects,
+<code>Robolectric.shadowOf()</code> methods provide reference to the shadow instances representing Android objects,
 allowing tests to assert on state otherwise not available.
 
 Suppose the application assigns a drawable resource id on an <code>ImageView</code> in layout xml, like this:
@@ -53,7 +53,7 @@ public void shouldHaveALogo() throws Exception {
 
 Robolectric defines many shadow objects that give behavior to the stripped classes in the SDK jar. When an Android
 class's constructor is invoked, a shadow object is created if a shadow class has been registered.
-(See <code>Robolectric#getDefaultShadowClasses()</code> for the complete list of shadows Robolectric provides.)
+(See <code>Robolectric.getDefaultShadowClasses()</code> for the complete list of shadows Robolectric provides.)
 
 #### Writing your own Shadow Classes
 The library of shadow classes supplied with Robolectric does not cover the entire Android API. Even if it did, some
