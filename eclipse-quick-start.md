@@ -47,7 +47,7 @@ Add dependency on the Android project
 At the command line:
 <pre>
 mkdir -p .../MyProjectTest/lib
-cp .../robolectric-x.x.x-all.jar .../MyProjectTest/lib
+cp .../robolectric-X.X.X-jar-with-dependencies.jar .../MyProjectTest/lib
 </pre>
 
 ###Configure build path
@@ -68,7 +68,7 @@ Add JUnit library
 Add Robolectric jar
 - Click "Add JARs..."
 - Expand MyProjectTest -> lib
-- Select robolectric-x.x.x-all.jar
+- Select robolectric-X.X.X-jar-with-dependencies.jar
 - Click "OK" (keep the Properties dialog for MyProjectTest open)
 
 Add Android Jars

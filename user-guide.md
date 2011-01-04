@@ -61,19 +61,19 @@ projects will require behavior that differs from what is in the library. When th
 it will be necessary to extend existing or add new shadow classes. Creating new shadow classes is easy. Here is an
 outline of the process, details about each step will follow:
 
-- <b>Clone the Robolectric project on GitHub</b><br />
+- <b>Clone the Robolectric project on GitHub</b>
 We very often make Robolectric a sub-module of the project that we are working on in order to make it easier to add
 new shadow classes as we need them, but you could also create dependencies between projects or build and copy .jar files
 depending on your needs.
 
-- <b>Add tests for your shadow class</b><br />
+- <b>Add tests for your shadow class</b>
 They live in the com.extremelabs.robolectric.shadows package under the code/tests folder
 
-- <b>Develop the implementation</b><br />
+- <b>Develop the implementation</b>
 Put it in the same package under code/src. There are lots of shadow classes that are already implemented there that can
 be used as examples. The most important aspects of writing a shadow class are described below.
 
-- <b>Register your new class with the Robolectric framework</b><br />
+- <b>Register your new class with the Robolectric framework</b>
 Add it to the list returned by Robolectric.getDefaultShadowClasses() and also add an implementation of
 Robolectric.shadowOf(). Just duplicate the examples that are already in the Robolectric class.
 

@@ -5,27 +5,11 @@
 
 ## Downloads
 
-These are the most recent releases of Robolectric. Newer releases appear first on the list. Snapshot jars contain
-relatively stable work in progress on the next release.
+We now distribute Robolectric releases via the
+[Maven Central Repository](http://mvnrepository.com/artifact/com.pivotallabs/robolectric).
 
-The <b>robolectric-X.X.X.jar</b> contains the Robolectric code without its dependencies. If you use this jar in your project
-you will have to include the jars that satisfy these dependencies separately (javassist, junit, json, hamcrest,
-h2 and objenesis).
-
-The <b>robolectric-X.X.X-all.jar</b> contains the same Robolectric code and also bundles all of the dependencies as well. This
-is the easiest and most convenient way to use Robolectric.
-
-The <b>robolectric-X.X.X-src.jar</b> contains all of the Robolectric source code and is included for use in IDEs that support
-source level debugging and browsing.
-
-Most people will want to grab the latest robolectric-all.jar below.
-
-### Using Maven
-
-<b>NOTE:</b>
-due to a permissions problem, robolectric artifacts are not yet available through maven. Coming soon.
-
-Add the following to your <code>pom.xml</code>:
+If you're <a href="maven-quick-start.html">using Maven to build your project</a> (which we recommend), just add the
+following to your <code>pom.xml</code>:
 
 {% highlight xml %}
 <dependencies>
@@ -38,9 +22,23 @@ Add the following to your <code>pom.xml</code>:
 </dependencies>
 {% endhighlight %}
 
-Or, you can manually download it here: http://mvnrepository.com/artifact/com.pivotallabs/robolectric
+If you're not using Maven to build your project, you'll probably want to grab the latest
+robolectric-X.X.X-jar-with-dependencies.jar from
+[Maven Central](http://mvnrepository.com/artifact/com.pivotallabs/robolectric).
 
 ### Older releases are still available here:
+
+If you're looking for an older release, you'll probably want to grab one of the robolectric-X.X.X-all.jars below.
+
+The <b>robolectric-X.X.X.jar</b> contains the Robolectric code without its dependencies. If you use this jar in your project
+you will have to include the jars that satisfy these dependencies separately (javassist, junit, json, hamcrest,
+h2 and objenesis).
+
+The <b>robolectric-X.X.X-all.jar</b> contains the same Robolectric code and also bundles all of the dependencies as well. This
+is the easiest and most convenient way to use Robolectric.
+
+The <b>robolectric-X.X.X-src.jar</b> contains all of the Robolectric source code and is included for use in IDEs that support
+source level debugging and browsing.
 
 <table id="standalone-downloads">
 <tr>
@@ -51,34 +49,6 @@ Or, you can manually download it here: http://mvnrepository.com/artifact/com.piv
   <th>SHA1</th>
 </tr>
 <!-- START_DOWNLOADS -->
-<tr>
-  <td class="link"><a href="downloads/robolectric.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric.jar'); ">robolectric.jar</a></td>
-  <td class="version">SNAPSHOT</td>
-  <td class="size">303k</td>
-  <td class="date">2010/12/23 11:56:38 PST</td>
-  <td class="sha">235053f0c52a82c764b20dbc1de3801b0b956ad5</td>
-</tr>
-<tr>
-  <td class="link"><a href="downloads/robolectric-src.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-src.jar'); ">robolectric-src.jar</a></td>
-  <td class="version">SNAPSHOT</td>
-  <td class="size">160k</td>
-  <td class="date">2010/12/23 11:56:38 PST</td>
-  <td class="sha">989375cd270823132df93403179dd02f85628e76</td>
-</tr>
-<tr>
-  <td class="link"><a href="downloads/robolectric-all.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-all.jar'); ">robolectric-all.jar</a></td>
-  <td class="version">SNAPSHOT</td>
-  <td class="size">2984k</td>
-  <td class="date">2010/12/23 11:56:38 PST</td>
-  <td class="sha">529ad4f2c162325bde31df8b134abb65f8da8b10</td>
-</tr>
-<tr>
-  <td class="link"><a href="downloads/robolectric-0.9.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-0.9.jar'); ">robolectric-0.9.jar</a></td>
-  <td class="version">0.9</td>
-  <td class="size">228k</td>
-  <td class="date">2010/11/17 15:33:54 PST</td>
-  <td class="sha">6cb44fe6e9bd0a62e0b2038e8b3cd088736795ba</td>
-</tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-0.9.4.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-0.9.4.jar'); ">robolectric-0.9.4.jar</a></td>
   <td class="version">0.9.4</td>
@@ -162,6 +132,13 @@ Or, you can manually download it here: http://mvnrepository.com/artifact/com.piv
   <td class="size">894k</td>
   <td class="date">2010/11/19 14:03:53 PST</td>
   <td class="sha">fe772e16820896d860459059e6a440e54e17d834</td>
+</tr>
+<tr>
+  <td class="link"><a href="downloads/robolectric-0.9.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-0.9.jar'); ">robolectric-0.9.jar</a></td>
+  <td class="version">0.9</td>
+  <td class="size">228k</td>
+  <td class="date">2010/11/17 15:33:54 PST</td>
+  <td class="sha">6cb44fe6e9bd0a62e0b2038e8b3cd088736795ba</td>
 </tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-0.9-src.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-0.9-src.jar'); ">robolectric-0.9-src.jar</a></td>

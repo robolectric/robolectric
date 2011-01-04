@@ -5,6 +5,12 @@
 
 ##Quick Start for IntelliJ
 
+IntelliJ currently has a [bug](http://youtrack.jetbrains.net/issue/IDEA-60449) (please vote for it!) which causes JUnit
+tests within Android projects to run very slowly. To get around this, we place our production and test code into a
+non-Android module, which allows the tests to build and run at maximum speed, and declare a dependency to this code from
+the main Android module, so we can build the final apk.
+
+
 ###Project Creation
 ----------------------
 Create a project
@@ -15,7 +21,7 @@ Create a project
 
 Fill in the source directory
 - "Create source directory" (radio):
-- Enter: code/src
+- Enter: src/main/java
 - Next
 
 Select the SDK
@@ -28,17 +34,17 @@ _<br>(You may need to run the Android tool to download/install an sdk version. R
 ------------------------------
 At the command line:
 <pre>
-mkdir -p .../MyProject/code/libs/test
-mkdir -p .../MyProject/code/libs/main    #production jars go here e.g. roboguice
-mkdir -p .../MyProject/code/test
-mkdir -p .../MyProject/code/gen
+mkdir -p .../MyProject/src/libs/test
+mkdir -p .../MyProject/src/libs/main    #production jars go here e.g. roboguice
+mkdir -p .../MyProject/src/test/java
+mkdir -p .../MyProject/src/gen
 </pre>
 
 ###Install downloaded jars
 -------------------------------
 <pre>
-cp robolectric-X.X-all.jar .../MyProject/code/libs/test
-cp junit-4.x.x.jar .../MyProject/code/libs/test
+cp robolectric-X.X.X-jar-with-dependencies.jar .../MyProject/src/libs/test
+cp junit-4.x.x.jar .../MyProject/src/libs/test
 </pre>
 
 
@@ -52,13 +58,13 @@ Create a new module
 - Press the "+" in the tool bar at the top of the dialog to create a new module
 - "Create module from scratch" radio -> Next
 <blockquote>
-	Name: code<br>
-	Content root: .../MyProject/code 	# default value<br>
-	Module file location: .../MyProject/code  	# default value<br>
+	Name: src<br>
+	Content root: .../MyProject/src 	# default value<br>
+	Module file location: .../MyProject/src  	# default value<br>
 	Type: java  	# default selection<br>
 	Next<br>
 </blockquote>
-- Accept .../MyProject/src [java] as a source root<br>
+- Accept .../MyProject/src/main/java \[java\] as a source root
 - Next<br>
 
 No additional facets/technologies required
@@ -73,8 +79,8 @@ In the Modules tab of Project Settings
 - Expand the MyProject module's node
 - select "Android" facet
 - select "compiler"
-- Under AAPT Complier - Destination Directory enter: <code>.../MyProject/code/gen</code>
-- Under AIDL Compiler - Destination Directory enter: <code>.../MyProject/code/gen</code>
+- Under AAPT Complier - Destination Directory enter: <code>.../MyProject/src/gen</code>
+- Under AIDL Compiler - Destination Directory enter: <code>.../MyProject/src/gen</code>
 
 ###Remove unused source directories from the main project
 ------------------------------
@@ -82,34 +88,34 @@ _(you may have to do this several times since IntelliJ
 automatically replaces this setting from time to time)_
 - Select the MyProject module "Sources" tab
 - Delete the "gen" source folder by clicking the "x" at the end of its line
-- Delete the "code/gen" source folder by clicking the "x" at the end of its line
+- Delete the "src/gen" source folder by clicking the "x" at the end of its line
 
-###Set up source directories for the "code" module
+###Set up source directories for the "src" module
 -------------------------------
-- Select the "code" module --> "Sources" tab
-- In the source tree out on the far right, select the <code>.../MyProject/code/test</code>
+- Select the "src" module --> "Sources" tab
+- In the source tree out on the far right, select the <code>.../MyProject/src/test/java</code>
 folder and click the green "Test Sources" button above the source tree, adding it as a test source folder
-- Select the <code>.../MyProject/code/gen</code> folder and click the blue "Sources" button, adding it as a source folder
+- Select the <code>.../MyProject/src/gen</code> folder and click the blue "Sources" button, adding it as a source folder
 - Click "Apply"
 
 NOTE: you may get an error dialog here reading:<br>
-"Cannot save settings   Module 'MyProject' must not contain source root .../MyProject/code/src.  The root already
-belongs to module 'code'"<br>
+"Cannot save settings   Module 'MyProject' must not contain source root .../MyProject/src/main/java.  The root already
+belongs to module 'src'"<br>
 To fix this problem follow the steps under "Removed unused source directories from the main project" above.
 
-###Set up dependencies for the "code" module
+###Set up dependencies for the "src" module
 -------------------------------
-- Select the "code" module --> "Dependencies" tab
+- Select the "src" module --> "Dependencies" tab
 
 Add the Robolectric jar
 - "Add..." --> "Single Entry Module Library"
-- Select .../MyProject/code/libs/test/robolectic-X.X-all.jar
+- Select .../MyProject/src/libs/test/robolectric-X.X.X-jar-with-dependencies.jar
 - Click "Ok"
 - Click on "Compile" at the end of the newly-created dependency line, and choose "Test" from the resulting list
 
 Add the JUnit jar
 -"Add..." --> "Single Entry Module Library"
-- Select .../MyProject/code/libs/test/junit-4.x.x.jar
+- Select .../MyProject/src/libs/test/junit-4.x.x.jar
 - Click "Ok"
 - Click on "Compile" at the end of the newly-created dependency line, and choose "Test" from the resulting list
 
@@ -125,13 +131,13 @@ NOTE: Android X.X Google Apis MUST be moved below the junit and robolectric jar.
 ----------------------------
 Select "MyProject" module --> "Dependencies tab"
 
-Add the "code" module
+Add the "src" module
 - Click "Add..." --> "Module Dependency..."
-- Select "code"
+- Select "src"
 - Click "OK"
-- Move the newly created dependency "code" row above the Android line by clicking the "Move Up" button
-- Check the "code" row's export box
-- Leave the code module scope at the default of "scope" --> "compile"
+- Move the newly created dependency "src" row above the Android line by clicking the "Move Up" button
+- Check the "src" row's export box
+- Leave the src module scope at the default of "scope" --> "compile"
 - Click	"Apply"
 
 ###Set up exclusions for the main Android Project module
@@ -142,7 +148,7 @@ Add the "code" module
 
 ### Verify your setup
 --------------------------------------------------------------------------------------------
-In Project View, right click on MyProject>code>test -> New -> Java class ->  MyActivityTest
+In Project View, right click on MyProject>src>test>java -> New -> Java class ->  MyActivityTest
 Add the following source:
 
 {% highlight java %}
