@@ -21,15 +21,13 @@ public class CameraSizeTest {
 
 	@Before
 	public void setUp() throws Exception {
+        Robolectric.bindDefaultShadowClasses();
 		cameraSize = Robolectric.newInstanceOf(Camera.class).new Size(480, 320);
 	}
 	
 	@Test
 	@Ignore
 	public void testConstructor() throws Exception {
-		// TODO This test fails, for some mysterious reason - the shadow constructor is not
-		// being invoked, so the values are never set.
-
 		assertThat(cameraSize.width, equalTo(480));
 		assertThat(cameraSize.height, equalTo(320));
 	}

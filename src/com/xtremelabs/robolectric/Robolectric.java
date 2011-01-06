@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -145,6 +146,7 @@ public class Robolectric {
                 ShadowCanvas.class,
                 ShadowCompoundButton.class,
                 ShadowComponentName.class,
+                ShadowConfiguration.class,
                 ShadowConnectivityManager.class,
                 ShadowContentValues.class,
                 ShadowContext.class,
@@ -416,6 +418,10 @@ public class Robolectric {
 
     public static ShadowAlarmManager shadowOf(AlarmManager instance) {
         return (ShadowAlarmManager) Robolectric.shadowOf_(instance);
+    }
+    
+    public static ShadowConfiguration shadowOf(Configuration instance) {
+    	return (ShadowConfiguration) Robolectric.shadowOf_(instance);
     }
 
     @SuppressWarnings({"unchecked"})

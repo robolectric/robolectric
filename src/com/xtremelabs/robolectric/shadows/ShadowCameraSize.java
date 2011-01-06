@@ -17,6 +17,6 @@ public class ShadowCameraSize {
 /*	  public void __constructor__(int width, int height) {
 		  realCameraSize.width = width;
 		  realCameraSize.height = height;
-	  }*/
-	  
+	  }
+*/  
 }
