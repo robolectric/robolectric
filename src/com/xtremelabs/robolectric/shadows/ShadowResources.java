@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.res.AssetManager;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -35,6 +36,13 @@ public class ShadowResources {
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
         return resourceLoader.colorResourceLoader.getValue(id);
+    }
+    
+    @Implementation
+    public Configuration getConfiguration() {
+    	Configuration configuration = new Configuration();
+    	configuration.setToDefaults();
+    	return configuration;
     }
 
     @Implementation
