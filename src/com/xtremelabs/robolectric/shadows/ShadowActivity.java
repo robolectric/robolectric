@@ -6,6 +6,7 @@ import java.util.List;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
+import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.Window;
@@ -150,6 +151,11 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public void onDestroy() {
         assertNoBroadcastListenersRegistered();
+    }
+    
+    @Implementation
+    public final void runOnUiThread( Runnable action ) {
+    	shadowOf(Looper.myLooper()).post( action, 0 );
     }
 
     /**
