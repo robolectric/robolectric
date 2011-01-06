@@ -4,11 +4,17 @@ import android.app.Activity;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Looper;
+
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.Scheduler;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.Matchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -86,6 +92,19 @@ public class ActivityTest {
     	assertThat(intentForResult.intent, notNullValue());
     	assertThat(intentForResult.intent, sameInstance(intent));
     	assertThat(intentForResult.requestCode, equalTo(142));
+    }
+    
+    @Test
+    public void shouldSupportRunOnUiThread() {
+        MyActivity activity = new MyActivity();
+        Runnable runnable = new Runnable() { public void run() { } };
+        ShadowLooper shadowLooper = shadowOf(Looper.myLooper());
+        Scheduler scheduler = shadowLooper.getScheduler();
+        
+        shadowLooper.reset();
+        assertThat( scheduler.enqueuedTaskCount(), equalTo( 0 ) );
+        activity.runOnUiThread( runnable );
+        assertThat( scheduler.enqueuedTaskCount(), equalTo( 1 ) );
     }
 
     private static class MyActivity extends Activity {
