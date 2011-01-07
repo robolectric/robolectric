@@ -3,4 +3,8 @@
 
 **An Android Testing Framework**
 
-Want to use Robolectric in a project? Go HERE: [http://pivotal.github.com/robolectric/index.html](http://pivotal.github.com/robolectric/index.html)
+Robolectric can be built using either Maven or Ant. Both Eclipse (with the M2Eclipse plug-in) and
+IntelliJ can import the pom.xml file and will automatically generate their project files from it.
+
+For more information about how to use Robolectric on your project, extend its functionality, and join the community of
+contributors, please see: [http://pivotal.github.com/robolectric/index.html](http://pivotal.github.com/robolectric/index.html)

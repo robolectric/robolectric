@@ -150,7 +150,7 @@
             <formatter type="plain"/>
             <formatter type="xml"/>
             <batchtest todir="${basedir}/out/reports/tests">
-                <fileset dir="${basedir}/test">
+                <fileset dir="${test.absolute.dir}">
                     <include name="**/*Test.java"/>
                 </fileset>
             </batchtest>
@@ -185,7 +185,8 @@
     <target name="gen-javadoc" description="generate javadoc for the public API" depends="check-for-pages-dir" if="pages.dir.exists">
         <mkdir dir="${javadoc.out.dir}" />
         <javadoc
-                packagenames="${base.package}/shadows, ${base.package}/view, ${base.package}/util"
+                packagenames="${base.package}.*"
+                access="protected"
                 defaultexcludes="yes"
                 windowtitle="Robolectric API"
                 sourcepath="${main.absolute.dir}"

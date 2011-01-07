@@ -1,10 +1,15 @@
 bin/
 out/
 .idea/workspace.xml
+.idea/libraries/
+robolectric.iml
 tmp/
 target/
 pages
 .DS_Store
-*~
 local.properties
+.project
+.classpath
+.settings
+*~
 \#*\#
