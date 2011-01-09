@@ -54,7 +54,6 @@ public class ResourceLoader {
                 if (!respath.startsWith("jar:file:") || respath.indexOf("android.jar!")==-1)
                     throw new RuntimeException("Unusable jar path: "+respath);
                 respath = respath.substring(new String("jar:file:").length(), respath.indexOf("android.jar!")) + "data/res";
-                //System.out.println("Resource Path: "+respath);
                 File systemResourceDir = new File(respath);
 
                 DocumentLoader stringResourcesDocumentLoader = new DocumentLoader(stringResourceLoader);
