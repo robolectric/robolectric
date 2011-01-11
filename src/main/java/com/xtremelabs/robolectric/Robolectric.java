@@ -43,6 +43,7 @@ import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
@@ -151,6 +152,7 @@ import com.xtremelabs.robolectric.shadows.ShadowTypedValue;
 import com.xtremelabs.robolectric.shadows.ShadowURLSpan;
 import com.xtremelabs.robolectric.shadows.ShadowView;
 import com.xtremelabs.robolectric.shadows.ShadowViewGroup;
+import com.xtremelabs.robolectric.shadows.ShadowWebSettings;
 import com.xtremelabs.robolectric.shadows.ShadowWebView;
 import com.xtremelabs.robolectric.shadows.ShadowWifiManager;
 import com.xtremelabs.robolectric.shadows.ShadowZoomButtonsController;
@@ -315,6 +317,7 @@ public class Robolectric {
                 ShadowURLSpan.class,
                 ShadowView.class,
                 ShadowViewGroup.class,
+                ShadowWebSettings.class,
                 ShadowWebView.class,
                 ShadowWifiManager.class,
                 ShadowZoomButtonsController.class
@@ -425,6 +428,10 @@ public class Robolectric {
 
     public static ShadowViewGroup shadowOf(ViewGroup instance) {
         return (ShadowViewGroup) shadowOf_(instance);
+    }
+
+    public static ShadowWebSettings shadowOf(WebSettings instance) {
+        return (ShadowWebSettings) shadowOf_(instance);
     }
 
     public static ShadowWebView shadowOf(WebView instance) {
