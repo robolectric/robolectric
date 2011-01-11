@@ -638,4 +638,10 @@ public class ShadowView {
     public Bitmap getDrawingCache() {
         return Robolectric.newInstanceOf(Bitmap.class);
     }
+    
+    @Implementation
+    public void post(Runnable action) {
+        Robolectric.getUiThreadScheduler().post(action);
+    }
+    
 }
