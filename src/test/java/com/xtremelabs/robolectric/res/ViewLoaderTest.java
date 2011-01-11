@@ -23,9 +23,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-
-import static android.test.MoreAsserts.assertNotEqual;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
@@ -73,7 +70,7 @@ public class ViewLoaderTest {
     @Test
     public void testAddsChildren() throws Exception {
         ViewGroup view = (ViewGroup) viewLoader.inflateView(context, "layout/media");
-        assertNotEqual(0, view.getChildCount());
+        assertTrue(view.getChildCount() > 0);
 
         assertSame(context, view.getChildAt(0).getContext());
     }

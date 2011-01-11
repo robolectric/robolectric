@@ -13,11 +13,11 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Looper;
-import android.test.mock.MockPackageManager;
 import com.xtremelabs.robolectric.content.TestSharedPreferences;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.util.StubPackageManager;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,7 +30,7 @@ public class ShadowContextWrapper extends ShadowContext {
     @RealObject private ContextWrapper realContextWrapper;
     private Context baseContext;
 
-    private MockPackageManager packageManager;
+    private PackageManager packageManager;
 
     private String packageName;
 
@@ -79,14 +79,14 @@ public class ShadowContextWrapper extends ShadowContext {
     }
 
     /**
-     * Implements Android's {@code MockPackageManager} with an anonymous inner class.
+     * Implements Android's {@code PackageManager} with an anonymous inner class.
      *
      * @return a {@code MockPackageManager}
      */
     @Implementation
     public PackageManager getPackageManager() {
         if (packageManager == null) {
-            packageManager = new MockPackageManager() {
+            packageManager = new StubPackageManager() {
                 public PackageInfo packageInfo;
                 public ArrayList<PackageInfo> packageList;
 
