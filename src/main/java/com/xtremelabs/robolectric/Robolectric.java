@@ -54,10 +54,8 @@ import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
-import com.xtremelabs.robolectric.bytecode.RobolectricClassNotFoundException;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
-import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.shadows.FakeHttpLayer;
 import com.xtremelabs.robolectric.shadows.ShadowAbsSpinner;
 import com.xtremelabs.robolectric.shadows.ShadowAbsoluteLayout;
@@ -156,54 +154,19 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class Robolectric {
     public static Application application;
-    private static Set<String> unloadableClassNames = new HashSet<String>();
 
     public static <T> T newInstanceOf(Class<T> clazz) {
-        try {
-            Constructor<T> defaultConstructor = clazz.getDeclaredConstructor();
-            defaultConstructor.setAccessible(true);
-            return defaultConstructor.newInstance();
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+        return RobolectricInternals.newInstanceOf(clazz);
     }
 
     public static void bindShadowClass(Class<?> shadowClass) {
-        Implements realClass = shadowClass.getAnnotation(Implements.class);
-        if (realClass == null) {
-            throw new IllegalArgumentException(shadowClass + " is not annotated with @Implements");
-        }
-
-        try {
-            ShadowWrangler.getInstance().bindShadowClass(realClass.value(), shadowClass);
-        } catch (TypeNotPresentException typeLoadingException) {
-            String unloadableClassName = shadowClass.getSimpleName();
-            if (isIgnorable(typeLoadingException) )
-            {
-                //this allows users of the robolectric.jar file to use the non-Google APIs version of the api
-                if (unloadableClassNames.add(unloadableClassName)) {
-                    System.out.println("Warning: an error occurred while binding shadow class: " + unloadableClassName);
-                }
-            } else {
-                throw typeLoadingException;
-            }
-        }
+        RobolectricInternals.bindShadowClass(shadowClass);
     }
 
     public static void bindDefaultShadowClasses() {
@@ -730,20 +693,5 @@ public class Robolectric {
 
     public static String visualize(Bitmap bitmap) {
         return shadowOf(bitmap).getDescription();
-    }
-
-    private static boolean isIgnorable(TypeNotPresentException typeLoadingException) {
-        Throwable cause = typeLoadingException.getCause();
-        if (cause instanceof NoClassDefFoundError) {
-            cause = cause.getCause();
-            if (cause instanceof  ClassNotFoundException) {
-                cause = cause.getCause();
-                // instanceof doesn't work here. Are we in different classloaders?
-                if (cause.getClass().getName().equals(RobolectricClassNotFoundException.class.getName())) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }
