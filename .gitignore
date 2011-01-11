@@ -11,5 +11,6 @@ local.properties
 .project
 .classpath
 .settings
+*.iws
 *~
 \#*\#
