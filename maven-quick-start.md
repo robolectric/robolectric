@@ -146,3 +146,29 @@ To open the project in Eclipse, make sure you have the
 When running tests from within IntelliJ or Eclipse, be sure to run tests using the JUnit runner, not the Android Test
 runner.
 
+### Troubleshooting
+
+If Maven reports ''No Android SDK path could be found.'' you need to tell Maven where to find Android by making your
+<code>~/.m2/settings.xml</code> file look something like this:
+
+{% highlight xml %}
+    <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+            http://maven.apache.org/xsd/settings-1.0.0.xsd">
+        <profiles>
+            <profile>
+                <id>android</id>
+                <properties>
+                    <android.sdk.path>
+                        PATH / TO / THE / ANDROID / SDK
+                    </android.sdk.path>
+                </properties>
+            </profile>
+        </profiles>
+        <activeProfiles>
+            <!--make the profile active all the time -->
+            <activeProfile>android</activeProfile>
+        </activeProfiles>
+    </settings>
+{% endhighlight %}
