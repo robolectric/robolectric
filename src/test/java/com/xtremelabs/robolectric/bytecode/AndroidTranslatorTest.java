@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import java.lang.reflect.Constructor;
 
 import static com.xtremelabs.robolectric.Robolectric.directlyOn;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.RobolectricForMaps.shadowOf;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.core.StringStartsWith.startsWith;

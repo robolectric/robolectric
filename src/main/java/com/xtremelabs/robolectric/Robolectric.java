@@ -50,10 +50,6 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController;
-import com.google.android.maps.GeoPoint;
-import com.google.android.maps.ItemizedOverlay;
-import com.google.android.maps.MapController;
-import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.FakeHttpLayer;
@@ -320,22 +316,6 @@ public class Robolectric {
 
     public static ShadowZoomButtonsController shadowOf(ZoomButtonsController instance) {
         return (ShadowZoomButtonsController) shadowOf_(instance);
-    }
-
-    public static ShadowGeoPoint shadowOf(GeoPoint instance) {
-        return (ShadowGeoPoint) shadowOf_(instance);
-    }
-
-    public static ShadowMapView shadowOf(MapView instance) {
-        return (ShadowMapView) shadowOf_(instance);
-    }
-
-    public static ShadowMapController shadowOf(MapController instance) {
-        return (ShadowMapController) shadowOf_(instance);
-    }
-
-    public static ShadowItemizedOverlay shadowOf(ItemizedOverlay instance) {
-        return (ShadowItemizedOverlay) shadowOf_(instance);
     }
 
     public static ShadowListView shadowOf(ListView instance) {
