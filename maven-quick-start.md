@@ -148,7 +148,9 @@ runner.
 
 ### Troubleshooting
 
-If Maven reports ''No Android SDK path could be found.'' you need to tell Maven where to find Android by making your
+#### No Android SDK path could be found.
+
+If Maven reports "No Android SDK path could be found." you need to tell Maven where to find Android by making your
 <code>~/.m2/settings.xml</code> file look something like this:
 
 {% highlight xml %}
