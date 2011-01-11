@@ -57,16 +57,4 @@ public class WebViewTest {
         	assertThat( shadowWebView.getJavascriptInterface(name), sameInstance(obj));        	
         }
     }
-    
-    @Test
-    public void shouldRecordBackgroundColor() {
-        WebView webView = new WebView(null);
-        ShadowWebView shadowWebView = Robolectric.shadowOf(webView);
-        int[] colors = { 0, 1, 727 }; 
-        
-        for(int color : colors) {
-        	webView.setBackgroundColor(color);
-        	assertThat(shadowWebView.getBackgroundColor(), equalTo(color));
-        }
-    }
 }

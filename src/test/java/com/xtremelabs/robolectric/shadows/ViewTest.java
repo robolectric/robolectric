@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.view.View;
 import android.view.ViewGroup;
+import android.webkit.WebView;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -131,4 +132,15 @@ public class ViewTest {
         shadowOf(view).checkedPerformClick();
     }
 
+    
+    @Test
+    public void shouldRecordBackgroundColor() {
+        int[] colors = { 0, 1, 727 }; 
+        
+        for(int color : colors) {
+        	view.setBackgroundColor(color);
+        	assertThat(shadowOf(view).getBackgroundColor(), equalTo(color));
+        }
+    }
+    
 }
