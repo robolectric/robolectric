@@ -43,17 +43,18 @@ public class RobolectricConfig {
         this.assetsDirectory = assetsDirectory;
     }
 
-    public Class findRClass() throws Exception {
+    public String findRClassName() throws Exception {
+        return findResourcePackageName(getAndroidManifestFile());
+    }
+
+    public void validate() throws FileNotFoundException {
         if (!getAndroidManifestFile().exists() || !getAndroidManifestFile().isFile()) {
             throw new FileNotFoundException(getAndroidManifestFile().getAbsolutePath() + " not found or not a file; it should point to your project's AndroidManifest.xml");
         }
 
-        String rClassName = findResourcePackageName(getAndroidManifestFile());
-        Class rClass = Class.forName(rClassName);
         if (!getResourceDirectory().exists() || !getResourceDirectory().isDirectory()) {
             throw new FileNotFoundException(getResourceDirectory().getAbsolutePath() + " not found or not a directory; it should point to your project's res directory");
         }
-        return rClass;
     }
 
     private String findResourcePackageName(File projectManifestFile) throws ParserConfigurationException, IOException, SAXException {
