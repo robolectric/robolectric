@@ -4,6 +4,7 @@ import android.content.Context;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import android.R;
 
 import java.io.File;
 import java.io.FileFilter;
@@ -34,6 +35,7 @@ public class ResourceLoader {
         this.assetsDir = assetsDir;
         resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(rClass);
+        resourceExtractor.addRClass(R.class);
 
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
         stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
@@ -51,16 +53,33 @@ public class ResourceLoader {
 
         try {
             if (resourceDir != null) {
+                String respath = R.class.getResource("/res/layout").toString();
+                if (!respath.startsWith("jar:file:") || respath.indexOf("android.jar!")==-1)
+                    throw new RuntimeException("Unusable jar path: "+respath);
+                respath = respath.substring(new String("jar:file:").length(), respath.indexOf("android.jar!")) + "data/res";
+                File systemResourceDir = new File(respath);
+
                 DocumentLoader stringResourcesDocumentLoader = new DocumentLoader(stringResourceLoader);
                 File valuesResourceDir = new File(resourceDir, "values");
+                File systemValuesResourceDir = new File(systemResourceDir, "values");
                 stringResourcesDocumentLoader.loadResourceXmlDir(valuesResourceDir);
+                stringResourcesDocumentLoader.loadResourceXmlDir(systemValuesResourceDir);
 
                 DocumentLoader resourcesDocumentLoader = new DocumentLoader(stringArrayResourceLoader, colorResourceLoader, attrResourceLoader);
                 resourcesDocumentLoader.loadResourceXmlDir(valuesResourceDir);
+                resourcesDocumentLoader.loadResourceXmlDir(systemValuesResourceDir);
 
                 viewLoader = new ViewLoader(resourceExtractor, attrResourceLoader);
                 DocumentLoader viewDocumentLoader = new DocumentLoader(viewLoader);
                 File[] layoutDirs = resourceDir.listFiles(new FileFilter() {
+                    @Override
+                    public boolean accept(File file) {
+                        return isLayoutDirectory(file.getPath());
+                    }
+                });
+                viewDocumentLoader.loadResourceXmlDirs(layoutDirs);
+
+                layoutDirs = systemResourceDir.listFiles(new FileFilter() {
                     @Override
                     public boolean accept(File file) {
                         return isLayoutDirectory(file.getPath());
