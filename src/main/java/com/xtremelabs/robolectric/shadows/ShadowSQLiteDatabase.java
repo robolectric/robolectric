@@ -8,7 +8,12 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Iterator;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;

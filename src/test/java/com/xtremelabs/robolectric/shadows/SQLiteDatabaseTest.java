@@ -3,33 +3,36 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class SQLiteDatabaseTest {
     private SQLiteDatabase database;
-    private Connection connection;
 
     @Before
     public void setUp() throws Exception {
         database = SQLiteDatabase.openDatabase("path", null, 0);
-        connection = Robolectric.shadowOf(database).getConnection();
 
-        Statement statement = connection.createStatement();
-        statement.execute("CREATE TABLE table_name (id INT PRIMARY KEY AUTO_INCREMENT, first_column VARCHAR(255), second_column BINARY, name VARCHAR(255));");
+        database.execSQL("CREATE TABLE table_name (\n" +
+                "  id INT PRIMARY KEY AUTOINCREMENT,\n" +
+                "  first_column VARCHAR(255),\n" +
+                "  second_column BINARY,\n" +
+                "  name VARCHAR(255),\n" +
+                "  big_int INTEGER\n" +
+                ");");
     }
 
     @After
@@ -39,7 +42,6 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testInsertAndQuery() throws Exception {
-
         String stringColumnValue = "column_value";
         byte[] byteColumnValue = new byte[]{1, 2, 3};
 
@@ -160,12 +162,12 @@ public class SQLiteDatabaseTest {
 
         database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
 
-        statement = connection.createStatement();
+        statement = shadowOf(database).getConnection().createStatement();
         resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
         assertThat(resultSet.first(), equalTo(true));
         assertThat(resultSet.getInt(1), equalTo(1));
 
-        statement = connection.createStatement();
+        statement = shadowOf(database).getConnection().createStatement();
         resultSet = statement.executeQuery("SELECT * FROM table_name");
         assertThat(resultSet.first(), equalTo(true));
         assertThat(resultSet.getInt(1), equalTo(1234));
@@ -185,8 +187,10 @@ public class SQLiteDatabaseTest {
         values.put("name", "Chuck");
 
         long key = database.insert("auto_table", null, values);
-
         assertThat(key, not(equalTo(0L)));
+
+        long key2 = database.insert("auto_table", null, values);
+        assertThat(key2, not(equalTo(key)));
     }
 
     @Test(expected = IllegalStateException.class)
@@ -201,6 +205,13 @@ public class SQLiteDatabaseTest {
         assertThat(database.isOpen(), equalTo(true));
         database.close();
         assertThat(database.isOpen(), equalTo(false));
+    }
+
+    @Test
+    public void shouldStoreGreatBigHonkinIntegersCorrectly() throws Exception {
+        database.execSQL("INSERT INTO table_name(big_int) VALUES(1234567890123456789);");
+        Cursor cursor = database.query("table_name", new String[]{"big_int"}, null, null, null, null, null);
+        assertEquals(1234567890123456789L, cursor.getLong(0));
     }
 
     private void addChuck() {
