@@ -32,6 +32,7 @@ import android.hardware.Camera;
 import android.location.Geocoder;
 import android.location.LocationManager;
 import android.media.AudioManager;
+import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -122,6 +123,7 @@ import com.xtremelabs.robolectric.shadows.ShadowMapActivity;
 import com.xtremelabs.robolectric.shadows.ShadowMapController;
 import com.xtremelabs.robolectric.shadows.ShadowMapView;
 import com.xtremelabs.robolectric.shadows.ShadowMatrix;
+import com.xtremelabs.robolectric.shadows.ShadowMediaPlayer;
 import com.xtremelabs.robolectric.shadows.ShadowMediaRecorder;
 import com.xtremelabs.robolectric.shadows.ShadowMediaStore;
 import com.xtremelabs.robolectric.shadows.ShadowMenuInflater;
@@ -285,6 +287,7 @@ public class Robolectric {
                 ShadowMapActivity.class,
                 ShadowMapView.class,
                 ShadowMatrix.class,
+                ShadowMediaPlayer.class,
                 ShadowMediaRecorder.class,
                 ShadowMediaStore.ShadowImages.ShadowMedia.class,
                 ShadowMenuInflater.class,
@@ -538,6 +541,10 @@ public class Robolectric {
         return (ShadowCameraSize) shadowOf_(instance);
     }
     
+    public static ShadowMediaPlayer shadowOf(MediaPlayer instance) {
+        return (ShadowMediaPlayer) shadowOf_(instance);
+    }
+
     public static ShadowMediaRecorder shadowOf(MediaRecorder instance) {
         return (ShadowMediaRecorder) shadowOf_(instance);
     }
