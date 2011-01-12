@@ -1,12 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.content.Context;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Gallery;
 import android.widget.Spinner;
-import android.widget.ArrayAdapter;
-import android.content.Context;
-import android.test.mock.MockContext;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
@@ -18,16 +19,15 @@ public class AbsSpinnerTest {
     private AdapterView adapterView;
 	private Spinner spinner;
 	private ArrayAdapter<String> arrayAdapter;
-	private Context context;
 
     @Before
     public void setUp() throws Exception {
         Robolectric.bindDefaultShadowClasses();
-		context = new MockContext();
+        Context context = new Activity();
         adapterView = new Gallery(new Activity());
 		spinner = new Spinner(context);
 		String [] testItems = {"foo", "bar"};
-		arrayAdapter = new ArrayAdapter<String>(context, android.R.layout.simple_spinner_item, testItems);
+		arrayAdapter = new MyArrayAdapter(context, testItems);
     }
 
     @Test
@@ -36,8 +36,17 @@ public class AbsSpinnerTest {
     }
 
 	@Test
-	public void checkSetAdapter()
-	{
+	public void checkSetAdapter() {
 		spinner.setAdapter(arrayAdapter);
 	}
+
+    private static class MyArrayAdapter extends ArrayAdapter<String> {
+        public MyArrayAdapter(Context context, String[] testItems) {
+            super(context, android.R.layout.simple_spinner_item, testItems);
+        }
+
+        @Override public View getView(int position, View convertView, ViewGroup parent) {
+            return new View(getContext());
+        }
+    }
 }
