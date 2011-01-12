@@ -110,7 +110,7 @@ public class ShadowResources {
 
     @Implementation
     public AssetManager getAssets(){
-        return Robolectric.newInstanceOf(AssetManager.class);
+        return ShadowAssetManager.bind(Robolectric.newInstanceOf(AssetManager.class), resourceLoader);
     }
 
     /**

@@ -41,16 +41,20 @@ public abstract class TestUtil {
     public static File resourcesBaseDir() {
         if (testDirLocation == null) {
             File testDir = file("src", "test", "resources");
-            if (testDir.isDirectory()) return testDirLocation = testDir;
+            if (hasTestManifest(testDir)) return testDirLocation = testDir;
 
             File roboTestDir = file("robolectric", "src", "test", "resources");
-            if (roboTestDir.isDirectory()) return testDirLocation = roboTestDir;
+            if (hasTestManifest(roboTestDir)) return testDirLocation = roboTestDir;
 
             throw new RuntimeException("can't find your TestAndroidManifest.xml in "
                     + testDir.getAbsolutePath() + " or " + roboTestDir.getAbsolutePath());
         } else {
             return testDirLocation;
         }
+    }
+
+    private static boolean hasTestManifest(File testDir) {
+        return new File(testDir, "TestAndroidManifest.xml").isFile();
     }
 
     public static File resourceFile(String... pathParts) {

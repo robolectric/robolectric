@@ -28,7 +28,7 @@ public class AppWidgetManagerTest {
     @Before
     public void setUp() throws Exception {
         Robolectric.bindDefaultShadowClasses();
-        Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, resourceFile("res")));
+        Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, resourceFile("res"), resourceFile("assets")));
         appWidgetManager = AppWidgetManager.getInstance(Robolectric.application);
         shadowAppWidgetManager = shadowOf(appWidgetManager);
     }

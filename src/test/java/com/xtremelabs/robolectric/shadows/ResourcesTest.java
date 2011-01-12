@@ -17,7 +17,7 @@ public class ResourcesTest {
     @Test(expected = Resources.NotFoundException.class)
     public void getStringArray_shouldThrowExceptionIfNotFound() throws Exception {
         Robolectric.bindDefaultShadowClasses();
-        Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, resourceFile("res")));
+        Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, resourceFile("res"), resourceFile("assets")));
 
         new Activity().getResources().getStringArray(-1);
     }

@@ -14,6 +14,9 @@ import java.util.Map;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ResourceLoader {
+    private File resourceDir;
+    private File assetsDir;
+
     private final ResourceExtractor resourceExtractor;
     private ViewLoader viewLoader;
     private MenuLoader menuLoader;
@@ -26,9 +29,9 @@ public class ResourceLoader {
 
     // TODO: get these value from the xml resources instead [xw 20101011]
     public final Map<Integer, Integer> dimensions = new HashMap<Integer, Integer>();
-    private File resourceDir;
 
-    public ResourceLoader(Class rClass, File resourceDir) throws Exception {
+    public ResourceLoader(Class rClass, File resourceDir, File assetsDir) throws Exception {
+        this.assetsDir = assetsDir;
         resourceExtractor = new ResourceExtractor();
         resourceExtractor.addRClass(rClass);
 
@@ -143,5 +146,9 @@ public class ResourceLoader {
 
     public void inflateMenu(Context context, int resource, Menu root) {
         menuLoader.inflateMenu(context, resource, root);
+    }
+
+    public File getAssetsBase() {
+        return assetsDir;
     }
 }

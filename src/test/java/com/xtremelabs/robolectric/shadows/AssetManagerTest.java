@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
-import android.app.Application;
 import android.content.res.AssetManager;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -15,33 +14,29 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AssetManagerTest {
-	Application app;
 	AssetManager assetManager;
 	String sp = System.getProperty("file.separator");
 
-	@Before
-	public void setUp() throws Exception {
-		Robolectric.application = new Application();
-		app = Robolectric.application;
-		assetManager = app.getAssets();
-	}
+    @Before
+    public void setUp() throws Exception {
+        assetManager = new Activity().getAssets();
+    }
 
-	@Test
+    @Test
 	public void assertGetAssetsNotNull() {
-		AssetManager manager;
+		assertNotNull(assetManager);
 
-		manager = new Activity().getAssets();
-		assertNotNull(manager);
+		assetManager = Robolectric.application.getAssets();
+		assertNotNull(assetManager);
 
-		manager = app.getAssets();
-		assertNotNull(manager);
-
-		manager = app.getResources().getAssets();
-		assertNotNull(manager);
+		assetManager = Robolectric.application.getResources().getAssets();
+		assertNotNull(assetManager);
 	}
 
 	@Test
