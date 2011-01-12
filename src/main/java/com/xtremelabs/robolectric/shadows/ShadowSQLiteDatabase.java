@@ -135,6 +135,8 @@ public class ShadowSQLiteDatabase {
 
         // Map 'autoincrement' (sqlite) to 'auto_increment' (h2).
         String scrubbedSQL = sql.replaceAll("(?i:autoincrement)", "auto_increment");
+        // Map 'integer' (sqlite) to 'bigint(19)' (h2).
+        scrubbedSQL = scrubbedSQL.replaceAll("(?i:integer)", "bigint(19)");
 
         try {
             connection.createStatement().execute(scrubbedSQL);
