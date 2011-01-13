@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric;
 
 import android.content.Context;
 import android.view.View;
-import com.xtremelabs.robolectric.bytecode.ShadowWranglerTest;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.util.TestOnClickListener;
@@ -53,7 +52,8 @@ public class RobolectricTest {
         // There's a shadow method for this
         aView.getContext();
         String output = buff.toString();
-        assertEquals("", output);
+        assertEquals("No Shadow method found for View.<init>(android.content.Context)\n", output);
+        buff.reset();
 
         aView.findViewById(27);
         // No shadow here... should be logged
@@ -98,7 +98,7 @@ public class RobolectricTest {
     }
 
     @Implements(View.class)
-    public static class TestShadowView extends ShadowWranglerTest.TestShadowViewParent {
+    public static class TestShadowView {
         @SuppressWarnings({"UnusedDeclaration"})
         @Implementation
         public Context getContext() {
