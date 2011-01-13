@@ -5,12 +5,17 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.io.InputStream;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)
 public class ShadowDrawable {
+    @RealObject Drawable realObject;
+
     private Rect bounds = new Rect(0, 0, 0, 0);
     private int intrinsicWidth = -1;
     private int intrinsicHeight = -1;
@@ -51,5 +56,27 @@ public class ShadowDrawable {
 
     public void setIntrinsicHeight(int intrinsicHeight) {
         this.intrinsicHeight = intrinsicHeight;
+    }
+
+    @Override @Implementation
+    public boolean equals(Object o) {
+        if (realObject == o) return true;
+        if (o == null || realObject.getClass() != o.getClass()) return false;
+
+        ShadowDrawable that = shadowOf((Drawable) o);
+
+        if (intrinsicHeight != that.intrinsicHeight) return false;
+        if (intrinsicWidth != that.intrinsicWidth) return false;
+        if (bounds != null ? !bounds.equals(that.bounds) : that.bounds != null) return false;
+
+        return true;
+    }
+
+    @Override @Implementation
+    public int hashCode() {
+        int result = bounds != null ? bounds.hashCode() : 0;
+        result = 31 * result + intrinsicWidth;
+        result = 31 * result + intrinsicHeight;
+        return result;
     }
 }

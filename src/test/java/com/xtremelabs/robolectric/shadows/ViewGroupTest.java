@@ -38,7 +38,7 @@ public class ViewGroupTest {
         Robolectric.bindDefaultShadowClasses();
 
         Application context = new Application();
-        ShadowApplication.bind(context, new ResourceLoader(R.class, null));
+        ShadowApplication.bind(context, new ResourceLoader(R.class, null, null));
 
         root = new FrameLayout(context);
 

@@ -65,7 +65,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
 
         if (bitmap != null ? !bitmap.equals(that.bitmap) : that.bitmap != null) return false;
 
-        return true;
+        return super.equals(o);
     }
 
     @Override @Implementation

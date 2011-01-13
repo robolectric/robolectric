@@ -7,6 +7,6 @@ import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 public class WithTestDefaultsRunner extends RobolectricTestRunner {
 
     public WithTestDefaultsRunner(Class testClass) throws InitializationError {
-        super(testClass, resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
+        super(testClass, new RobolectricConfig(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets")));
     }
 }

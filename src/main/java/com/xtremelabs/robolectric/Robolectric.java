@@ -54,13 +54,8 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController;
-import com.google.android.maps.GeoPoint;
-import com.google.android.maps.ItemizedOverlay;
-import com.google.android.maps.MapController;
-import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
-import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.shadows.FakeHttpLayer;
 import com.xtremelabs.robolectric.shadows.ShadowAbsSpinner;
 import com.xtremelabs.robolectric.shadows.ShadowAbsoluteLayout;
@@ -164,8 +159,6 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 import java.util.List;
 
@@ -174,33 +167,11 @@ public class Robolectric {
     public static Application application;
 
     public static <T> T newInstanceOf(Class<T> clazz) {
-        try {
-            Constructor<T> defaultConstructor = clazz.getDeclaredConstructor();
-            defaultConstructor.setAccessible(true);
-            return defaultConstructor.newInstance();
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+        return RobolectricInternals.newInstanceOf(clazz);
     }
 
     public static void bindShadowClass(Class<?> shadowClass) {
-        Implements realClass = shadowClass.getAnnotation(Implements.class);
-        if (realClass == null) {
-            throw new IllegalArgumentException(shadowClass + " is not annotated with @Implements");
-        }
-
-        try {
-            ShadowWrangler.getInstance().bindShadowClass(realClass.value(), shadowClass);
-        } catch (TypeNotPresentException ignored) {
-            //this allows users of the robolectric.jar file to use the non-Google APIs version of the api
-            System.out.println("Warning: an error occurred while binding shadow class: " + shadowClass.getSimpleName());
-        }
+        RobolectricInternals.bindShadowClass(shadowClass);
     }
 
     public static void bindDefaultShadowClasses() {
@@ -359,22 +330,6 @@ public class Robolectric {
 
     public static ShadowZoomButtonsController shadowOf(ZoomButtonsController instance) {
         return (ShadowZoomButtonsController) shadowOf_(instance);
-    }
-
-    public static ShadowGeoPoint shadowOf(GeoPoint instance) {
-        return (ShadowGeoPoint) shadowOf_(instance);
-    }
-
-    public static ShadowMapView shadowOf(MapView instance) {
-        return (ShadowMapView) shadowOf_(instance);
-    }
-
-    public static ShadowMapController shadowOf(MapController instance) {
-        return (ShadowMapController) shadowOf_(instance);
-    }
-
-    public static ShadowItemizedOverlay shadowOf(ItemizedOverlay instance) {
-        return (ShadowItemizedOverlay) shadowOf_(instance);
     }
 
     public static ShadowListView shadowOf(ListView instance) {

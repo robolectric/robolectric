@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.bytecode;
 
+import android.app.Activity;
 import android.content.Context;
-import android.test.mock.MockContext;
 import android.view.View;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.Robolectric;
@@ -27,7 +27,7 @@ public class ShadowWranglerTest {
 
     @Before
     public void setUp() throws Exception {
-        context = new MockContext();
+        context = new Activity();
     }
 
     @Test
