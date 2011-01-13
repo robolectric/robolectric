@@ -2,10 +2,8 @@ package com.xtremelabs.robolectric.content;
 
 import android.content.SharedPreferences;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -67,7 +65,7 @@ public class TestSharedPreferences implements SharedPreferences {
 
     @Override
     public boolean contains(String key) {
-        return content.get(filename).get(key) == null;
+        return content.get(filename).containsKey(key);
     }
 
     @Override
