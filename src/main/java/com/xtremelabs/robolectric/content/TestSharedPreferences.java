@@ -2,8 +2,12 @@ package com.xtremelabs.robolectric.content;
 
 import android.content.SharedPreferences;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Hashtable;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class TestSharedPreferences implements SharedPreferences {
 
@@ -81,42 +85,49 @@ public class TestSharedPreferences implements SharedPreferences {
 
     private class TestSharedPreferencesEditor implements Editor {
 
-        Hashtable<String, Object> editsThatNeedCommit = new Hashtable<String, Object>();
+    	Hashtable<String, Object> editsThatNeedCommit = new Hashtable<String, Object>();
+    	Set<String> editsThatNeedRemove = new HashSet<String>();
         private boolean shouldClearOnCommit = false;
 
         @Override
         public Editor putString(String key, String value) {
             editsThatNeedCommit.put(key, value);
+        	editsThatNeedRemove.remove(key);
             return this;
         }
 
         @Override
         public Editor putInt(String key, int value) {
             editsThatNeedCommit.put(key, value);
+        	editsThatNeedRemove.remove(key);
             return this;
         }
 
         @Override
         public Editor putLong(String key, long value) {
             editsThatNeedCommit.put(key, value);
+        	editsThatNeedRemove.remove(key);
             return this;
         }
 
         @Override
         public Editor putFloat(String key, float value) {
             editsThatNeedCommit.put(key, value);
+        	editsThatNeedRemove.remove(key);
             return this;
         }
 
         @Override
         public Editor putBoolean(String key, boolean value) {
             editsThatNeedCommit.put(key, value);
+        	editsThatNeedRemove.remove(key);
             return this;
         }
 
         @Override
         public Editor remove(String key) {
-            return null;
+        	editsThatNeedRemove.add(key);
+            return this;
         }
 
         @Override
@@ -133,6 +144,9 @@ public class TestSharedPreferences implements SharedPreferences {
             } else {
                 for (String key : editsThatNeedCommit.keySet()) {
                     previousContent.put(key, editsThatNeedCommit.get(key));
+                }
+                for (String key : editsThatNeedRemove) {
+                	previousContent.remove(key);
                 }
             }
             return true;
