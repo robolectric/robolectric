@@ -155,4 +155,15 @@ public class ViewTest {
         assertTrue(runnable.wasRun);
     }
     
+    @Test
+    public void shouldPostActionsToTheMessageQueueWithDelay() throws Exception {
+        Robolectric.pauseMainLooper();
+
+        TestRunnable runnable = new TestRunnable();
+        view.postDelayed(runnable, 1);
+        assertFalse(runnable.wasRun);
+
+        Robolectric.getUiThreadScheduler().advanceBy(1);
+        assertTrue(runnable.wasRun);
+    }
 }

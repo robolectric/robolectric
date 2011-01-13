@@ -643,5 +643,9 @@ public class ShadowView {
     public void post(Runnable action) {
         Robolectric.getUiThreadScheduler().post(action);
     }
-    
+
+    @Implementation
+    public void postDelayed(Runnable action, long delayMills) {
+        Robolectric.getUiThreadScheduler().postDelayed(action, delayMills);
+    }
 }
