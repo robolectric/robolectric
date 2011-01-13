@@ -24,7 +24,7 @@ public class ResourcesTest {
 	@Before
 	public void setUp() throws Exception {
         Robolectric.bindDefaultShadowClasses();		
-        Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res")));
+        Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res"), new File("test/assets")));
 	}
 	
     @Test(expected = Resources.NotFoundException.class)
