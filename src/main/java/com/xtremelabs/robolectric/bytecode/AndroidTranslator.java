@@ -1,7 +1,8 @@
 package com.xtremelabs.robolectric.bytecode;
 
 import android.net.Uri;
-import com.xtremelabs.robolectric.internal.DoNotStrip;
+import com.xtremelabs.robolectric.internal.DoNotInstrument;
+import com.xtremelabs.robolectric.internal.Instrument;
 import javassist.CannotCompileException;
 import javassist.ClassMap;
 import javassist.ClassPool;
@@ -72,18 +73,20 @@ public class AndroidTranslator implements Translator {
             return;
         }
 
-        boolean needsStripping =
-                className.startsWith("android.")
-                        || className.startsWith("com.google.android.maps")
-                        || className.equals("org.apache.http.impl.client.DefaultRequestDirector");
-
         CtClass ctClass;
         try {
             ctClass = classPool.get(className);
         } catch (NotFoundException e) {
             throw new RobolectricClassNotFoundException(e);
         }
-        if (needsStripping && !ctClass.hasAnnotation(DoNotStrip.class)) {
+
+        boolean wantsToBeInstrumented =
+                className.startsWith("android.")
+                        || className.startsWith("com.google.android.maps")
+                        || className.equals("org.apache.http.impl.client.DefaultRequestDirector")
+                        || ctClass.hasAnnotation(Instrument.class);
+
+        if (wantsToBeInstrumented && !ctClass.hasAnnotation(DoNotInstrument.class)) {
             int modifiers = ctClass.getModifiers();
             if (Modifier.isFinal(modifiers)) {
                 ctClass.setModifiers(modifiers & ~Modifier.FINAL);

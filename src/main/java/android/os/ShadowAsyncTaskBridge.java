@@ -1,8 +1,8 @@
 package android.os;
 
-import com.xtremelabs.robolectric.internal.DoNotStrip;
+import com.xtremelabs.robolectric.internal.DoNotInstrument;
 
-@DoNotStrip
+@DoNotInstrument
 public class ShadowAsyncTaskBridge<Params, Progress, Result> {
     private AsyncTask<Params, Progress, Result> asyncTask;
 
