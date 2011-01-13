@@ -4,7 +4,6 @@ import android.accounts.AccountManager;
 import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
-import android.test.ClassWithNoDefaultConstructor;
 import android.util.Log;
 import android.view.View;
 import android.widget.TextView;
@@ -14,6 +13,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.Instrument;
 import com.xtremelabs.robolectric.shadows.ShadowItemizedOverlay;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -68,13 +68,13 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testGeneratedDefaultConstructorIsWired() throws Exception {
-        Robolectric.bindShadowClass(ShadowClassWithNoDefaultConstructors.class);
+        Robolectric.bindShadowClass(ShadowClassWithNoDefaultConstructor.class);
 
         Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
         ctor.setAccessible(true);
         ClassWithNoDefaultConstructor instance = ctor.newInstance();
         assertThat(Robolectric.shadowOf_(instance), not(nullValue()));
-        assertThat(Robolectric.shadowOf_(instance), instanceOf(ShadowClassWithNoDefaultConstructors.class));
+        assertThat(Robolectric.shadowOf_(instance), instanceOf(ShadowClassWithNoDefaultConstructor.class));
     }
 
     @Test
@@ -221,7 +221,14 @@ public class AndroidTranslatorTest {
         }
     }
 
+    @Instrument
+    @SuppressWarnings({"UnusedDeclaration"})
+    public static class ClassWithNoDefaultConstructor {
+        ClassWithNoDefaultConstructor(String string) {
+        }
+    }
+
     @Implements(ClassWithNoDefaultConstructor.class)
-    public static class ShadowClassWithNoDefaultConstructors {
+    public static class ShadowClassWithNoDefaultConstructor {
     }
 }
