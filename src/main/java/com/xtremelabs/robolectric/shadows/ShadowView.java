@@ -50,6 +50,7 @@ public class ShadowView {
     protected boolean focusable;
     boolean focusableInTouchMode;
     private int backgroundResourceId = -1;
+    private int backgroundColor;
     protected View.OnKeyListener onKeyListener;
     private boolean isFocused;
     private View.OnFocusChangeListener onFocusChangeListener;
@@ -453,7 +454,16 @@ public class ShadowView {
     public int getBackgroundResourceId() {
         return backgroundResourceId;
     }
-
+    
+    @Implementation 
+    public void setBackgroundColor(int color) {
+    	backgroundColor = color;
+    }
+    
+    public int getBackgroundColor() {
+    	return backgroundColor;
+    }
+   
     /**
      * Non-Android accessor.
      *
@@ -628,4 +638,10 @@ public class ShadowView {
     public Bitmap getDrawingCache() {
         return Robolectric.newInstanceOf(Bitmap.class);
     }
+    
+    @Implementation
+    public void post(Runnable action) {
+        Robolectric.getUiThreadScheduler().post(action);
+    }
+    
 }

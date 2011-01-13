@@ -1,8 +1,14 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.util.HashMap;
+
 import android.content.Context;
 import android.util.AttributeSet;
+import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -11,6 +17,9 @@ import com.xtremelabs.robolectric.internal.Implements;
 public class ShadowWebView extends ShadowAbsoluteLayout {
 
     private String lastUrl;
+    private HashMap<String,Object> javascriptInterfaces = new HashMap<String,Object>();
+    private WebSettings webSettings = Robolectric.newInstanceOf(WebSettings.class);
+    private WebViewClient webViewClient = null;
 
     @Override public void __constructor__(Context context, AttributeSet attributeSet) {
         super.__constructor__(context, attributeSet);
@@ -20,7 +29,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     public void loadUrl(String url) {
         lastUrl = url;
     }
-
+    
     /**
      * Non-Android accessor.
      *
@@ -29,4 +38,27 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     public String getLastLoadedUrl() {
         return lastUrl;
     }
+    
+    @Implementation 
+    public WebSettings getSettings() {
+    	return webSettings;
+    }
+
+    @Implementation
+    public void setWebViewClient(WebViewClient client) {
+    	webViewClient = client;
+    }
+    
+    public WebViewClient getWebViewClient() {
+    	return webViewClient;
+    }
+    
+    @Implementation
+    public void addJavascriptInterface(Object obj, String interfaceName) {
+    	javascriptInterfaces.put(interfaceName, obj);
+    }
+    
+    public Object getJavascriptInterface(String interfaceName) {
+    	return javascriptInterfaces.get(interfaceName);
+    } 
 }

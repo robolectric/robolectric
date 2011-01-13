@@ -8,6 +8,7 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestOnClickListener;
+import com.xtremelabs.robolectric.util.TestRunnable;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
@@ -131,4 +132,27 @@ public class ViewTest {
         shadowOf(view).checkedPerformClick();
     }
 
+    
+    @Test
+    public void shouldRecordBackgroundColor() {
+        int[] colors = { 0, 1, 727 }; 
+        
+        for(int color : colors) {
+        	view.setBackgroundColor(color);
+        	assertThat(shadowOf(view).getBackgroundColor(), equalTo(color));
+        }
+    }
+ 
+    @Test
+    public void shouldPostActionsToTheMessageQueue() throws Exception {
+        Robolectric.pauseMainLooper();
+
+        TestRunnable runnable = new TestRunnable();
+        view.post(runnable);
+        assertFalse(runnable.wasRun);
+
+        Robolectric.unPauseMainLooper();
+        assertTrue(runnable.wasRun);
+    }
+    
 }
