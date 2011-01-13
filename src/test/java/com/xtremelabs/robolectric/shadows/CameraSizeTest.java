@@ -26,7 +26,6 @@ public class CameraSizeTest {
 	}
 	
 	@Test
-	@Ignore
 	public void testConstructor() throws Exception {
 		assertThat(cameraSize.width, equalTo(480));
 		assertThat(cameraSize.height, equalTo(320));
