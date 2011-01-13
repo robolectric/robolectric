@@ -1,12 +1,9 @@
 package com.xtremelabs.robolectric.bytecode;
 
-import android.app.Activity;
-import android.content.Context;
-import android.view.View;
-import android.widget.TextView;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithoutTestDefaultsRunner;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.Instrument;
 import com.xtremelabs.robolectric.internal.RealObject;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,90 +20,90 @@ import static org.junit.Assert.*;
 
 @RunWith(WithoutTestDefaultsRunner.class)
 public class ShadowWranglerTest {
-    private Context context;
+    private String name;
 
     @Before
     public void setUp() throws Exception {
-        context = new Activity();
+        name = "context";
     }
 
     @Test
     public void testConstructorInvocation_WithDefaultConstructorAndNoConstructorDelegateOnShadowClass() throws Exception {
-        Robolectric.bindShadowClass(TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class);
+        Robolectric.bindShadowClass(ShadowFoo_WithDefaultConstructorAndNoConstructorDelegate.class);
 
-        View view = new View(context);
-        assertEquals(TestShadowView_WithDefaultConstructorAndNoConstructorDelegate.class, Robolectric.shadowOf_(view).getClass());
+        Foo foo = new Foo(name);
+        assertEquals(ShadowFoo_WithDefaultConstructorAndNoConstructorDelegate.class, Robolectric.shadowOf_(foo).getClass());
     }
 
     @Test
     public void testConstructorInvocation() throws Exception {
-        Robolectric.bindShadowClass(TestShadowView.class);
+        Robolectric.bindShadowClass(ShadowFoo.class);
 
-        View view = new View(context);
-        assertSame(context, shadowOf(view).context);
-        assertSame(view, shadowOf(view).realViewCtor);
+        Foo foo = new Foo(name);
+        assertSame(name, shadowOf(foo).name);
+        assertSame(foo, shadowOf(foo).realFooCtor);
     }
 
     @Test
     public void testRealObjectAnnotatedFieldsAreSetBeforeConstructorIsCalled() throws Exception {
-        Robolectric.bindShadowClass(TestShadowView.class);
+        Robolectric.bindShadowClass(ShadowFoo.class);
 
-        View view = new View(context);
-        assertSame(context, shadowOf(view).context);
-        assertSame(view, shadowOf(view).realViewField);
+        Foo foo = new Foo(name);
+        assertSame(name, shadowOf(foo).name);
+        assertSame(foo, shadowOf(foo).realFooField);
 
-        assertSame(view, shadowOf(view).realViewInConstructor);
-        assertSame(view, shadowOf(view).realViewInParentConstructor);
+        assertSame(foo, shadowOf(foo).realFooInConstructor);
+        assertSame(foo, shadowOf(foo).realFooInParentConstructor);
     }
 
     @Test
     public void testMethodDelegation() throws Exception {
-        Robolectric.bindShadowClass(TestShadowView.class);
+        Robolectric.bindShadowClass(ShadowFoo.class);
 
-        View view = new View(context);
-        assertSame(context, view.getContext());
+        Foo foo = new Foo(name);
+        assertSame(name, foo.getName());
     }
 
     @Test
     public void testEqualsMethodDelegation() throws Exception {
         Robolectric.bindShadowClass(WithEquals.class);
 
-        View view1 = new View(context);
-        View view2 = new View(context);
-        assertEquals(view1, view2);
+        Foo foo1 = new Foo(name);
+        Foo foo2 = new Foo(name);
+        assertEquals(foo1, foo2);
     }
 
     @Test
     public void testHashCodeMethodDelegation() throws Exception {
         Robolectric.bindShadowClass(WithEquals.class);
 
-        View view = new View(context);
-        assertEquals(42, view.hashCode());
+        Foo foo = new Foo(name);
+        assertEquals(42, foo.hashCode());
     }
 
     @Test
     public void testToStringMethodDelegation() throws Exception {
         Robolectric.bindShadowClass(WithToString.class);
 
-        View view = new View(context);
-        assertEquals("the expected string", view.toString());
+        Foo foo = new Foo(name);
+        assertEquals("the expected string", foo.toString());
     }
 
     @Test
     public void testShadowSelectionSearchesSuperclasses() throws Exception {
-        Robolectric.bindShadowClass(TestShadowView.class);
+        Robolectric.bindShadowClass(ShadowFoo.class);
 
-        TextView textView = new TextView(context);
-        assertEquals(TestShadowView.class, Robolectric.shadowOf_(textView).getClass());
+        TextFoo textFoo = new TextFoo(name);
+        assertEquals(ShadowFoo.class, Robolectric.shadowOf_(textFoo).getClass());
     }
 
     @Test
     public void shouldUseMostSpecificShadow() throws Exception {
-        Robolectric.bindShadowClass(TestShadowView.class);
-        Robolectric.bindShadowClass(TestShadowTextView.class);
+        Robolectric.bindShadowClass(ShadowFoo.class);
+        Robolectric.bindShadowClass(ShadowTextFoo.class);
 
-        TextView textView = new TextView(context);
-        assertThat(shadowOf(textView), instanceOf(TestShadowTextView.class));
+        TextFoo textFoo = new TextFoo(name);
+        assertThat(shadowOf(textFoo), instanceOf(ShadowTextFoo.class));
     }
 
     @Test
@@ -122,12 +119,12 @@ public class ShadowWranglerTest {
 
     @Test
     public void shouldRemoveNoiseFromStackTraces() throws Exception {
-        Robolectric.bindShadowClass(ExceptionThrowingShadowView.class);
-        View view = new View(null);
+        Robolectric.bindShadowClass(ExceptionThrowingShadowFoo.class);
+        Foo foo = new Foo(null);
 
         Exception e = null;
         try {
-            view.getContext();
+            foo.getName();
         } catch (Exception e1) {
             e = e1;
         }
@@ -140,8 +137,8 @@ public class ShadowWranglerTest {
         String stackTrace = stringWriter.getBuffer().toString();
 
         assertThat(stackTrace, containsString("fake exception"));
-        assertThat(stackTrace, containsString(ExceptionThrowingShadowView.class.getName() + ".getContext("));
-        assertThat(stackTrace, containsString(View.class.getName() + ".getContext("));
+        assertThat(stackTrace, containsString(ExceptionThrowingShadowFoo.class.getName() + ".getName("));
+        assertThat(stackTrace, containsString(Foo.class.getName() + ".getName("));
         assertThat(stackTrace, containsString(ShadowWranglerTest.class.getName() + ".shouldRemoveNoiseFromStackTraces"));
 
         assertThat(stackTrace, not(containsString("sun.reflect")));
@@ -150,20 +147,21 @@ public class ShadowWranglerTest {
         assertThat(stackTrace, not(containsString(RobolectricInternals.class.getName() + ".")));
     }
 
-    private TestShadowView shadowOf(View view) {
-        return (TestShadowView) Robolectric.shadowOf_(view);
+    private ShadowFoo shadowOf(Foo foo) {
+        return (ShadowFoo) Robolectric.shadowOf_(foo);
     }
 
-    private TestShadowTextView shadowOf(TextView view) {
-        return (TestShadowTextView) Robolectric.shadowOf_(view);
+    private ShadowTextFoo shadowOf(TextFoo foo) {
+        return (ShadowTextFoo) Robolectric.shadowOf_(foo);
     }
 
-    @Implements(View.class)
+    @Implements(Foo.class)
     public static class WithEquals {
         @Override
         public boolean equals(Object o) {
             return true;
         }
+
 
         @Override
         public int hashCode() {
@@ -172,7 +170,7 @@ public class ShadowWranglerTest {
 
     }
 
-    @Implements(View.class)
+    @Implements(Foo.class)
     public static class WithToString {
         @Override
         public String toString() {
@@ -180,57 +178,36 @@ public class ShadowWranglerTest {
         }
     }
 
-    @Implements(View.class)
-    public static class TestShadowView extends TestShadowViewParent {
+    @Implements(TextFoo.class)
+    public static class ShadowTextFoo {
+    }
+
+    @Instrument
+    public static class TextFoo extends Foo {
+        public TextFoo(String s) {
+            super(s);
+        }
+    }
+
+    @Implements(Foo.class)
+    public static class ShadowFooParent {
         @RealObject
-        private View realViewField;
-        private View realViewInConstructor;
+        private Foo realFoo;
+        Foo realFooInParentConstructor;
 
-        private View realViewCtor;
-
-        private Context context;
-
-        public TestShadowView(View view) {
-            this.realViewCtor = view;
+        public void __constructor__(String name) {
+            realFooInParentConstructor = realFoo;
         }
+    }
 
-        @Override
+    @Implements(Foo.class)
+    public static class ShadowFoo_WithDefaultConstructorAndNoConstructorDelegate {
+    }
+
+    @Implements(Foo.class)
+    public static class ExceptionThrowingShadowFoo {
         @SuppressWarnings({"UnusedDeclaration"})
-        public void __constructor__(Context context) {
-            super.__constructor__(context);
-            this.context = context;
-            realViewInConstructor = realViewField;
-        }
-
-        @SuppressWarnings({"UnusedDeclaration"})
-        public Context getContext() {
-            return context;
-        }
-    }
-
-    @Implements(View.class)
-    public static class TestShadowViewParent {
-        @RealObject
-        private View realView;
-        View realViewInParentConstructor;
-
-        public void __constructor__(Context context) {
-            realViewInParentConstructor = realView;
-        }
-    }
-
-    @Implements(View.class)
-    public static class TestShadowView_WithDefaultConstructorAndNoConstructorDelegate {
-    }
-
-    @Implements(TextView.class)
-    public static class TestShadowTextView {
-    }
-
-    @Implements(View.class)
-    public static class ExceptionThrowingShadowView {
-        @SuppressWarnings({"UnusedDeclaration"})
-        public Context getContext() throws IOException {
+        public String getName() throws IOException {
             throw new IOException("fake exception");
         }
     }

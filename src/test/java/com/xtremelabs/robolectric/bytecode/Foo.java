@@ -9,10 +9,10 @@ public class Foo {
     }
 
     public String getName() {
-//        return null;
         throw new RuntimeException("stub!");
     }
 
     public void findFooById(int i) {
+        throw new RuntimeException("stub!");
     }
 }
