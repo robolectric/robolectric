@@ -72,8 +72,6 @@ public class AndroidTranslator implements Translator {
             return;
         }
 
-//        throw new RuntimeException("fake problem!");
-
         boolean needsStripping =
                 className.startsWith("android.")
                         || className.startsWith("com.google.android.maps")

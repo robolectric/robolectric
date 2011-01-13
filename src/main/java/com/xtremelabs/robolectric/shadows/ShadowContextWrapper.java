@@ -75,9 +75,9 @@ public class ShadowContextWrapper extends ShadowContext {
     }
 
     /**
-     * Implements Android's {@code PackageManager} with an anonymous inner class.
+     * Implements Android's {@code PackageManager}.
      *
-     * @return a {@code MockPackageManager}
+     * @return a {@code RobolectricPackageManager}
      */
     @Implementation
     public PackageManager getPackageManager() {
