@@ -20,7 +20,7 @@ You can override these defaults in your custom test runner by specifying alterna
 public class CustomTestRunner extends RobolectricTestRunner {
     public CustomTestRunner(Class testClass) throws InitializationError {
         // defaults to "AndroidManifest.xml", "res" in the current directory
-        super(testClass, "../other/project-root/AndroidManifest.xml", "../other/project-root/res");
+        super(testClass, new File("../other/project-root"));
     }
 }
 {% endhighlight %}
