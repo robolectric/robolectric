@@ -6,7 +6,7 @@
 ## Downloads
 
 We now distribute Robolectric releases via the
-[Maven Central Repository](http://mvnrepository.com/artifact/com.pivotallabs/robolectric).
+[Maven Central Repository](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/).
 
 If you're <a href="maven-quick-start.html">using Maven to build your project</a> (which we recommend), just add the
 following to your <code>pom.xml</code>:
@@ -24,7 +24,7 @@ following to your <code>pom.xml</code>:
 
 If you're not using Maven to build your project, you'll probably want to grab the latest
 robolectric-X.X.X-jar-with-dependencies.jar from
-[Maven Central](http://mvnrepository.com/artifact/com.pivotallabs/robolectric).
+[Maven Central](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/).
 
 ### Older releases are still available here:
 
