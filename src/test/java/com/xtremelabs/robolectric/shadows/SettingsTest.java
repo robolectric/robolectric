@@ -20,8 +20,6 @@ public class SettingsTest {
 
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-        Robolectric.application = new Application();
         activity = new Activity();
         contentResolver = activity.getContentResolver();
     }

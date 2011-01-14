@@ -1,25 +1,16 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.app.Application;
 import android.app.Service;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.IBinder;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ServiceTest {
-    @Before
-    public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-
-        Robolectric.application = new Application();
-    }
 
     @Test(expected = IllegalStateException.class)
     public void shouldComplainIfServiceIsDestroyedWithRegisteredBroadcastReceivers() throws Exception {

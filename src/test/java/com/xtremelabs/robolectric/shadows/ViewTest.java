@@ -27,8 +27,6 @@ public class ViewTest {
     private View view;
 
     @Before public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-
         view = new View(null);
     }
 

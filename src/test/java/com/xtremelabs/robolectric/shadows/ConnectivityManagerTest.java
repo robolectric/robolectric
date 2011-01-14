@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.app.Application;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import com.xtremelabs.robolectric.Robolectric;
@@ -20,8 +19,6 @@ public class ConnectivityManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-        Robolectric.application = new Application();
         connectivityManager = (ConnectivityManager) Robolectric.application.getSystemService(Context.CONNECTIVITY_SERVICE);
         networkInfo = Robolectric.shadowOf(connectivityManager.getActiveNetworkInfo());
     }

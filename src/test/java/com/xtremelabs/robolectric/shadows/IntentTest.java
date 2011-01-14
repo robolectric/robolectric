@@ -6,9 +6,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,11 +19,6 @@ import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class IntentTest {
-    @Before
-    public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-    }
-
     @Test
     public void testStringExtra() throws Exception {
         Intent intent = new Intent();

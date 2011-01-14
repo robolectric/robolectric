@@ -32,8 +32,6 @@ import static org.mockito.Mockito.when;
 public class ApplicationTest {
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-
         Robolectric.application = new Application();
     }
 

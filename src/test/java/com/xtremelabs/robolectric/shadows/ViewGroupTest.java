@@ -5,7 +5,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import org.junit.After;
@@ -36,8 +35,6 @@ public class ViewGroupTest {
     private View child3b;
 
     @Before public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-
         Application context = new Application();
         ShadowApplication.bind(context, new ResourceLoader(R.class, null, null));
 

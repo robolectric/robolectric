@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.app.Application;
 import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
@@ -24,10 +23,7 @@ public class BitmapDrawableTest {
 
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-
-        Application application = new Application();
-        resources = application.getResources();
+        resources = Robolectric.application.getResources();
     }
 
     @Test

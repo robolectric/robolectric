@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
 import android.content.Context;
@@ -11,13 +10,11 @@ import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.res.ResourceLoader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -27,8 +24,6 @@ public class AppWidgetManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-        Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, resourceFile("res"), resourceFile("assets")));
         appWidgetManager = AppWidgetManager.getInstance(Robolectric.application);
         shadowAppWidgetManager = shadowOf(appWidgetManager);
     }

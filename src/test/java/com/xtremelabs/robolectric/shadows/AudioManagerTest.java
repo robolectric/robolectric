@@ -13,14 +13,11 @@ import static org.junit.Assert.assertEquals;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AudioManagerTest {
-
     private AudioManager audioManager;
     private ShadowAudioManager shadowAudioManager;
 
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-
         audioManager = Robolectric.newInstanceOf(AudioManager.class);
         shadowAudioManager = Robolectric.shadowOf(audioManager);
     }

@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
-import android.app.Application;
 import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -24,10 +23,6 @@ public class ContextWrapperTest {
     private ContextWrapper contextWrapper;
 
     @Before public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-
-        Robolectric.application = new Application();
-
         transcript = new Transcript();
         contextWrapper = new ContextWrapper(new Activity());
     }

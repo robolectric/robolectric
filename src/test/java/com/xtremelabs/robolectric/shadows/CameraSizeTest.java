@@ -19,7 +19,6 @@ public class CameraSizeTest {
 
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
         cameraSize = Robolectric.newInstanceOf(Camera.class).new Size(480, 320);
     }
 

@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric.shadows;
 
 
 import android.content.res.Configuration;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +17,6 @@ public class ConfigurationTest {
 
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
         configuration = new Configuration();
     }
 
