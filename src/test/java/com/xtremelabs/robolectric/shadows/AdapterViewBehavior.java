@@ -19,7 +19,7 @@ import static org.junit.Assert.assertThat;
 public class AdapterViewBehavior {
     public static void shouldActAsAdapterView(AdapterView adapterView) throws Exception {
         Robolectric.shadowOf(Looper.getMainLooper()).pause();
-        
+
         testSetAdapter_ShouldCauseViewsToBeRenderedAsynchronously(adapterView);
         testSetAdapter_ShouldSelectFirstItemAsynchronously(adapterView);
         shouldOnlyUpdateOnceIfInvalidatedMultipleTimes(adapterView);

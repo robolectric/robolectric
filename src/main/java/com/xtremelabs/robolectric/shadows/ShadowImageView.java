@@ -72,8 +72,9 @@ public class ShadowImageView extends ShadowView {
     }
 
     /**
+     * @return the image drawable
      * @deprecated Use android.widget.ImageView#getDrawable() instead.
-     * @return the image drawable */
+     */
     @Deprecated
     public Drawable getImageDrawable() {
         return imageDrawable;

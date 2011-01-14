@@ -43,7 +43,7 @@ public class ShadowItemizedOverlay {
      * than -1.
      *
      * @return whether {@link #setLastFocusedIndex(int)} has been called with a value other
-     * than -1
+     *         than -1
      */
     public boolean lastFocusedIndexWasReset() {
         return lastFocusedIndexWasReset;
@@ -62,7 +62,8 @@ public class ShadowItemizedOverlay {
      * {@link #hitTest(com.google.android.maps.OverlayItem, android.graphics.drawable.Drawable, int, int)}
      *
      * @param shouldHit the value that
-     * {@link #hitTest(com.google.android.maps.OverlayItem, android.graphics.drawable.Drawable, int, int)} shoule return
+     *                  {@link #hitTest(com.google.android.maps.OverlayItem, android.graphics.drawable.Drawable, int, int)}
+     *                  should return
      */
     public void setShouldHit(boolean shouldHit) {
         this.shouldHit = shouldHit;

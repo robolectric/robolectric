@@ -7,13 +7,13 @@ import java.io.InputStream;
 
 public class RawResourceLoader {
 
-	private ResourceExtractor resourceExtractor;
-	private File resourceDir;
+    private ResourceExtractor resourceExtractor;
+    private File resourceDir;
 
-	public RawResourceLoader(ResourceExtractor resourceExtractor, File resourceDir) {
-		this.resourceExtractor = resourceExtractor;
-		this.resourceDir = resourceDir;
-	}
+    public RawResourceLoader(ResourceExtractor resourceExtractor, File resourceDir) {
+        this.resourceExtractor = resourceExtractor;
+        this.resourceDir = resourceDir;
+    }
 
     public InputStream getValue(int resourceId) {
         String resourceFileName = resourceExtractor.getResourceName(resourceId);
@@ -37,9 +37,9 @@ public class RawResourceLoader {
                     return new FileInputStream(file);
                 }
             }
-		} catch (FileNotFoundException e) {
-			return null;
-		}
+        } catch (FileNotFoundException e) {
+            return null;
+        }
         return null;
     }
 

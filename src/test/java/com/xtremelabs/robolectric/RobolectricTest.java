@@ -23,7 +23,7 @@ public class RobolectricTest {
 
     private PrintStream originalSystemOut;
     private ByteArrayOutputStream buff;
-	private String defaultLineSeparator;
+    private String defaultLineSeparator;
 
     @Before
     public void setUp() {
@@ -35,10 +35,10 @@ public class RobolectricTest {
         PrintStream testOut = new PrintStream(buff);
         System.setOut(testOut);
     }
-    
+
     @After
     public void tearDown() throws Exception {
-    	System.setProperty("line.separator", defaultLineSeparator);
+        System.setProperty("line.separator", defaultLineSeparator);
         System.setOut(originalSystemOut);
     }
 
@@ -70,7 +70,7 @@ public class RobolectricTest {
         assertEquals("", output);
     }
 
-    @Test(expected= RuntimeException.class)
+    @Test(expected = RuntimeException.class)
     public void clickOn_shouldThrowIfViewIsDisabled() throws Exception {
         View view = new View(null);
         view.setEnabled(false);

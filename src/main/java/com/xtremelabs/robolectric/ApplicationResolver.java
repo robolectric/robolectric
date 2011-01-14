@@ -21,10 +21,10 @@ public class ApplicationResolver {
         String packageName = null;
         try {
             Document manifestDoc =
-                DocumentBuilderFactory
-                    .newInstance()
-                    .newDocumentBuilder()
-                    .parse(androidManifestPath);
+                    DocumentBuilderFactory
+                            .newInstance()
+                            .newDocumentBuilder()
+                            .parse(androidManifestPath);
 
             packageName = getTagAttributeText(manifestDoc, "manifest", "package");
             //TODO: should use getNamedItemNS, but that's not working as expected

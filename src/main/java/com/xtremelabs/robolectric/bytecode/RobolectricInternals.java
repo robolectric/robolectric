@@ -49,8 +49,7 @@ public class RobolectricInternals {
             ShadowWrangler.getInstance().bindShadowClass(realClass.value(), shadowClass);
         } catch (TypeNotPresentException typeLoadingException) {
             String unloadableClassName = shadowClass.getSimpleName();
-            if (isIgnorable(typeLoadingException) )
-            {
+            if (isIgnorable(typeLoadingException)) {
                 //this allows users of the robolectric.jar file to use the non-Google APIs version of the api
                 if (unloadableClassNames.add(unloadableClassName)) {
                     System.out.println("Warning: an error occurred while binding shadow class: " + unloadableClassName);
@@ -65,7 +64,7 @@ public class RobolectricInternals {
         Throwable cause = typeLoadingException.getCause();
         if (cause instanceof NoClassDefFoundError) {
             cause = cause.getCause();
-            if (cause instanceof  ClassNotFoundException) {
+            if (cause instanceof ClassNotFoundException) {
                 cause = cause.getCause();
                 // instanceof doesn't work here. Are we in different classloaders?
                 if (cause.getClass().getName().equals(RobolectricClassNotFoundException.class.getName())) {

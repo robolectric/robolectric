@@ -1,9 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.text.SpannableStringBuilder;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -12,7 +10,7 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class SpannableStringBuilderTest {
-    
+
     @Test
     public void testAppend() throws Exception {
         SpannableStringBuilder builder = new SpannableStringBuilder("abc");

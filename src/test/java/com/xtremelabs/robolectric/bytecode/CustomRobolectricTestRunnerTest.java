@@ -11,7 +11,9 @@ import org.junit.runners.model.InitializationError;
 
 import java.lang.reflect.Method;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(CustomRobolectricTestRunnerTest.CustomRobolectricTestRunner.class)
 public class CustomRobolectricTestRunnerTest {

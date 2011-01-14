@@ -44,7 +44,7 @@ public class BitmapDrawableTest {
 
         assertEquals("Bitmap for resource:drawable/an_image", shadowOf(canvas).getDescription());
     }
-    
+
     @Test
     public void withColorFilterSet_draw_shouldCopyDescriptionToCanvas() throws Exception {
         BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);

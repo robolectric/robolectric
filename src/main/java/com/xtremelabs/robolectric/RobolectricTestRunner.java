@@ -53,7 +53,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
      * and res directory.
      *
-     * @param testClass            the test class to be run
+     * @param testClass the test class to be run
      * @throws InitializationError if junit says so
      */
     public RobolectricTestRunner(Class<?> testClass) throws InitializationError {
@@ -64,8 +64,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * Call this constructor in subclasses in order to specify non-default configuration (e.g. location of the
      * AndroidManifest.xml file and resource directory).
      *
-     * @param testClass            the test class to be run
-     * @param robolectricConfig               the configuration data
+     * @param testClass         the test class to be run
+     * @param robolectricConfig the configuration data
      * @throws InitializationError if junit says so
      */
     protected RobolectricTestRunner(Class<?> testClass, RobolectricConfig robolectricConfig)
@@ -79,8 +79,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     /**
      * Call this constructor in subclasses in order to specify the project root directory.
      *
-     * @param testClass            the test class to be run
-     * @param androidProjectRoot   the directory containing your AndroidManifest.xml file and res dir
+     * @param testClass          the test class to be run
+     * @param androidProjectRoot the directory containing your AndroidManifest.xml file and res dir
      * @throws InitializationError if the test class is malformed
      */
     public RobolectricTestRunner(Class<?> testClass, File androidProjectRoot) throws InitializationError {
@@ -90,8 +90,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     /**
      * Call this constructor in subclasses in order to specify the project root directory.
      *
-     * @param testClass            the test class to be run
-     * @param androidProjectRoot   the directory containing your AndroidManifest.xml file and res dir
+     * @param testClass          the test class to be run
+     * @param androidProjectRoot the directory containing your AndroidManifest.xml file and res dir
      * @throws InitializationError if junit says so
      * @deprecated Use {@link #RobolectricTestRunner(Class, File)} instead.
      */
@@ -105,9 +105,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * contains package name for the {@code R} class which contains the identifiers for all of the resources. The
      * resource directory is where the resource loader will look for resources to load.
      *
-     * @param testClass            the test class to be run
-     * @param androidManifestPath  the AndroidManifest.xml file
-     * @param resourceDirectory    the directory containing the project's resources
+     * @param testClass           the test class to be run
+     * @param androidManifestPath the AndroidManifest.xml file
+     * @param resourceDirectory   the directory containing the project's resources
      * @throws InitializationError if junit says so
      */
     protected RobolectricTestRunner(Class<?> testClass, File androidManifestPath, File resourceDirectory)
@@ -145,10 +145,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * resource directory, use {@link #RobolectricTestRunner(Class, String, String)}. For other extensions, consider
      * creating a subclass and overriding the documented methods of this class.
      *
-     * @param testClass           the test class to be run
-     * @param classHandler        the {@link ClassHandler} to use to in shadow delegation
-     * @param classLoader         the {@link RobolectricClassLoader}
-     * @param robolectricConfig              the configuration
+     * @param testClass         the test class to be run
+     * @param classHandler      the {@link ClassHandler} to use to in shadow delegation
+     * @param classLoader       the {@link RobolectricClassLoader}
+     * @param robolectricConfig the configuration
      * @throws InitializationError if junit says so
      */
     protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader classLoader, RobolectricConfig robolectricConfig) throws InitializationError {
@@ -182,7 +182,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     /**
      * Only used when creating the delegate instance within the instrumented ClassLoader.
-     *
+     * <p/>
      * This is not the constructor you are looking for.
      */
     @SuppressWarnings({"UnusedDeclaration", "JavaDoc"})
@@ -292,11 +292,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     /**
      * Override this method if you want to provide your own implementation of Application.
-     *
+     * <p/>
      * This method attempts to instantiate an application instance as specified by the AndroidManifest.xml.
      *
      * @return An instance of the Application class specified by the ApplicationManifest.xml or an instance of
-     * Application if not specified.
+     *         Application if not specified.
      */
     protected Application createApplication() {
         return new ApplicationResolver(robolectricConfig.getAndroidManifestFile()).resolveApplication();

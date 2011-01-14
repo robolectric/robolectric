@@ -11,9 +11,9 @@ import com.xtremelabs.robolectric.internal.Implements;
 @Implements(NetworkInfo.class)
 public class ShadowNetworkInfo {
 
-	private boolean isConnected = true;
+    private boolean isConnected = true;
 
-	@Implementation
+    @Implementation
     public boolean isConnectedOrConnecting() {
         return isConnected;
     }
@@ -21,7 +21,7 @@ public class ShadowNetworkInfo {
     /**
      * Non-Android accessor
      * Sets up the return value of {@link #isConnectedOrConnecting()}.
-     * 
+     *
      * @param isConnected the value that {@link #isConnectedOrConnecting()} will return.
      */
     public void setConnectionStatus(boolean isConnected) {

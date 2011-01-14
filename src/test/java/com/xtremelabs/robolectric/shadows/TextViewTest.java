@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.text.style.URLSpan;
 import android.widget.TextView;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,13 +1,18 @@
 package com.xtremelabs.robolectric.shadows;
 
-import org.apache.http.*;
+import org.apache.http.Header;
+import org.apache.http.HeaderIterator;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
 import org.apache.http.params.HttpParams;
 
 import java.util.Locale;
 
 public class HttpResponseStub implements HttpResponse {
     @Override public StatusLine getStatusLine() {
-                         throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException();
 
     }
 

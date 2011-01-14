@@ -90,7 +90,7 @@ public class ShadowViewGroup extends ShadowView {
     /**
      * Returns a string representation of this {@code ViewGroup} by concatenating all of the strings contained in all
      * of the descendants of this {@code ViewGroup}.
-     *
+     * <p/>
      * Robolectric extension.
      */
     @Override

@@ -77,7 +77,7 @@ public class ResourceLoader {
                     }
                 });
                 menuDocumentLoader.loadResourceXmlDirs(menuDirs);
-             } else {
+            } else {
                 viewLoader = null;
                 menuLoader = null;
             }
@@ -95,9 +95,9 @@ public class ResourceLoader {
         return path.contains(File.separator + "menu");
     }
 
- 	 /*
-     * For tests only...
-     */
+    /*
+    * For tests only...
+    */
     protected ResourceLoader(StringResourceLoader stringResourceLoader) {
         resourceExtractor = new ResourceExtractor();
         this.stringResourceLoader = stringResourceLoader;

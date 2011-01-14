@@ -74,7 +74,7 @@ public class ShadowToast {
      * or since {@link #reset()} has been called.
      *
      * @return the number of {@code Toast} requests that have been made during this test run
-     * or since {@link #reset()} has been called.
+     *         or since {@link #reset()} has been called.
      */
     public static int shownToastCount() {
         return Robolectric.getShadowApplication().getShownToasts().size();
@@ -84,7 +84,8 @@ public class ShadowToast {
      * Non-Android query method that returns whether or not a particular custom {@code Toast} has been shown.
      *
      * @param message the message to search for
-     * @param layoutResourceIdToCheckForMessage the id of the resource that contains the toast messages
+     * @param layoutResourceIdToCheckForMessage
+     *                the id of the resource that contains the toast messages
      * @return whether the {@code Toast} was requested
      */
     public static boolean showedCustomToast(CharSequence message, int layoutResourceIdToCheckForMessage) {

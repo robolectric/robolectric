@@ -25,7 +25,7 @@ public class ShadowBaseAdapter {
 
     /**
      * Registers the observer.
-     * 
+     *
      * @param observer observer
      */
     @Implementation
@@ -35,7 +35,7 @@ public class ShadowBaseAdapter {
 
     /**
      * Unregisters the observer if it can be found. Nothing otherwise.
-     * 
+     *
      * @param observer observer
      */
     @Implementation

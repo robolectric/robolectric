@@ -43,22 +43,22 @@ public class TestSharedPreferencesTest {
 
     @Test
     public void commit_shouldRemoveValues() throws Exception {
-    	editor.putString("deleteMe", "foobar");
-    	editor.remove("deleteMe");
-    	
-    	editor.putString("dontDeleteMe", "quux");
-    	editor.remove("dontDeleteMe");
-    	editor.putString("dontDeleteMe", "baz");
-    	
-    	editor.commit();
-    	
+        editor.putString("deleteMe", "foobar");
+        editor.remove("deleteMe");
+
+        editor.putString("dontDeleteMe", "quux");
+        editor.remove("dontDeleteMe");
+        editor.putString("dontDeleteMe", "baz");
+
+        editor.commit();
+
         TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "prefsName", 3);
         assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
         assertThat(anotherSharedPreferences.getFloat("float", 666f), equalTo(1.1f));
         assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(2));
         assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(3l));
         assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
-    	
+
         assertThat(anotherSharedPreferences.contains("deleteMe"), equalTo(false));
         assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops"), equalTo("baz"));
     }
@@ -81,5 +81,4 @@ public class TestSharedPreferencesTest {
         assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(666l));
         assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("wacka wa"));
     }
-    
 }

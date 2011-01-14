@@ -59,10 +59,10 @@ public class ShadowGeocoder {
     /**
      * Sets up a simulated response for {@link #getFromLocation(double, double, int)}
      *
-     * @param address the address for the response
-     * @param city the city for the response
-     * @param state the state for the response
-     * @param zip the zip code for the response
+     * @param address     the address for the response
+     * @param city        the city for the response
+     * @param state       the state for the response
+     * @param zip         the zip code for the response
      * @param countryCode the country code for the response
      */
     public void setSimulatedResponse(String address, String city, String state, String zip, String countryCode) {

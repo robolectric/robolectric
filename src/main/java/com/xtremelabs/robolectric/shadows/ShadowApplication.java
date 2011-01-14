@@ -4,7 +4,12 @@ import android.app.AlarmManager;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.location.LocationManager;
 import android.media.AudioManager;
@@ -22,7 +27,12 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Scheduler;
 import com.xtremelabs.robolectric.view.TestWindowManager;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Hashtable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -62,11 +72,11 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
-     * 
-     * @param application application
+     *
+     * @param application    application
      * @param resourceLoader resource loader
      * @return the application
-     * todo: make this non-static?
+     *         todo: make this non-static?
      */
     public static Application bind(Application application, ResourceLoader resourceLoader) {
         ShadowApplication shadowApplication = shadowOf(application);
@@ -117,7 +127,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         } else if (name.equals(Context.AUDIO_SERVICE)) {
             return audioManager == null ? audioManager = newInstanceOf(AudioManager.class) : audioManager;
         } else if (name.equals(Context.CONNECTIVITY_SERVICE)) {
-        	return connectivityManager == null ? connectivityManager = newInstanceOf(ConnectivityManager.class) : connectivityManager;
+            return connectivityManager == null ? connectivityManager = newInstanceOf(ConnectivityManager.class) : connectivityManager;
         }
         return null;
     }
@@ -265,6 +275,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Non-Android accessor.
+     *
      * @return list of {@link Wrapper}s for registered receivers
      */
     public List<Wrapper> getRegisteredReceivers() {
@@ -273,6 +284,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Non-Android accessor.
+     *
      * @return the layout inflater used by this {@code Application}
      */
     public LayoutInflater getLayoutInflater() {
@@ -281,6 +293,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     /**
      * Non-Android accessor.
+     *
      * @return the app widget manager used by this {@code Application}
      */
     public AppWidgetManager getAppWidgetManager() {
@@ -300,7 +313,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         return currentLooper;
     }
 
-    public Map<String,Hashtable<String, Object>> getSharedPreferenceMap() {
+    public Map<String, Hashtable<String, Object>> getSharedPreferenceMap() {
         return sharedPreferenceMap;
     }
 

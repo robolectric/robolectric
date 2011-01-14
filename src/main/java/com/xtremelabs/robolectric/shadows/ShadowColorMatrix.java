@@ -44,9 +44,17 @@ public class ShadowColorMatrix {
         final float G = 0.715f * invSat;
         final float B = 0.072f * invSat;
 
-        m[0] = R + sat; m[1] = G;       m[2] = B;
-        m[5] = R;       m[6] = G + sat; m[7] = B;
-        m[10] = R;      m[11] = G;      m[12] = B + sat;
+        m[0] = R + sat;
+        m[1] = G;
+        m[2] = B;
+
+        m[5] = R;
+        m[6] = G + sat;
+        m[7] = B;
+
+        m[10] = R;
+        m[11] = G;
+        m[12] = B + sat;
     }
 
     @Override @Implementation

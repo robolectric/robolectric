@@ -34,5 +34,6 @@ public class TemporaryBindingsTest {
     }
 
     @Implements(View.class)
-    public static class TemporaryShadowView {}
+    public static class TemporaryShadowView {
+    }
 }

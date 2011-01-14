@@ -70,9 +70,9 @@ public class ShadowAppWidgetManager {
 
     /**
      * Simulates updating an {@code AppWidget} with a new set of views
-     * 
+     *
      * @param appWidgetId id of widget
-     * @param views views to update
+     * @param views       views to update
      */
     @Implementation
     public void updateAppWidget(int appWidgetId, RemoteViews views) {
@@ -100,9 +100,9 @@ public class ShadowAppWidgetManager {
 
     /**
      * Creates a widget by inflating its layout.
-     * 
+     *
      * @param appWidgetProviderClass the app widget provider class
-     * @param widgetLayoutId id of the layout to inflate
+     * @param widgetLayoutId         id of the layout to inflate
      * @return the ID of the new widget
      */
     public int createWidget(Class<? extends AppWidgetProvider> appWidgetProviderClass, int widgetLayoutId) {
@@ -111,10 +111,10 @@ public class ShadowAppWidgetManager {
 
     /**
      * Creates a bunch of widgets by inflating the same layout multiple times.
-     * 
+     *
      * @param appWidgetProviderClass the app widget provider class
-     * @param widgetLayoutId id of the layout to inflate
-     * @param howManyToCreate number of new widgets to create
+     * @param widgetLayoutId         id of the layout to inflate
+     * @param howManyToCreate        number of new widgets to create
      * @return the IDs of the new widgets
      */
     public int[] createWidgets(Class<? extends AppWidgetProvider> appWidgetProviderClass, int widgetLayoutId, int howManyToCreate) {
@@ -166,6 +166,7 @@ public class ShadowAppWidgetManager {
      * Non-Android mechanism that enables testing of widget behavior when all of the views are recreated on every
      * update. This is useful for ensuring that your widget will behave correctly even if it is restarted by the OS
      * between events.
+     *
      * @param alwaysRecreate whether or not to always recreate the views
      */
     public void setAlwaysRecreateViewsDuringUpdate(boolean alwaysRecreate) {

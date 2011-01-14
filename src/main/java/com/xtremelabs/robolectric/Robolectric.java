@@ -495,7 +495,7 @@ public class Robolectric {
     public static ShadowCameraSize shadowOf(Camera.Size instance) {
         return (ShadowCameraSize) shadowOf_(instance);
     }
-    
+
     public static ShadowMediaPlayer shadowOf(MediaPlayer instance) {
         return (ShadowMediaPlayer) shadowOf_(instance);
     }
@@ -512,8 +512,8 @@ public class Robolectric {
         return (ShadowAlarmManager) Robolectric.shadowOf_(instance);
     }
 
-public static ShadowConfiguration shadowOf(Configuration instance) {
-    	return (ShadowConfiguration) Robolectric.shadowOf_(instance);
+    public static ShadowConfiguration shadowOf(Configuration instance) {
+        return (ShadowConfiguration) Robolectric.shadowOf_(instance);
     }
 
     public static ShadowBitmap shadowOf(Bitmap other) {

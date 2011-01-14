@@ -83,48 +83,48 @@ public class TestSharedPreferences implements SharedPreferences {
 
     private class TestSharedPreferencesEditor implements Editor {
 
-    	Hashtable<String, Object> editsThatNeedCommit = new Hashtable<String, Object>();
-    	Set<String> editsThatNeedRemove = new HashSet<String>();
+        Hashtable<String, Object> editsThatNeedCommit = new Hashtable<String, Object>();
+        Set<String> editsThatNeedRemove = new HashSet<String>();
         private boolean shouldClearOnCommit = false;
 
         @Override
         public Editor putString(String key, String value) {
             editsThatNeedCommit.put(key, value);
-        	editsThatNeedRemove.remove(key);
+            editsThatNeedRemove.remove(key);
             return this;
         }
 
         @Override
         public Editor putInt(String key, int value) {
             editsThatNeedCommit.put(key, value);
-        	editsThatNeedRemove.remove(key);
+            editsThatNeedRemove.remove(key);
             return this;
         }
 
         @Override
         public Editor putLong(String key, long value) {
             editsThatNeedCommit.put(key, value);
-        	editsThatNeedRemove.remove(key);
+            editsThatNeedRemove.remove(key);
             return this;
         }
 
         @Override
         public Editor putFloat(String key, float value) {
             editsThatNeedCommit.put(key, value);
-        	editsThatNeedRemove.remove(key);
+            editsThatNeedRemove.remove(key);
             return this;
         }
 
         @Override
         public Editor putBoolean(String key, boolean value) {
             editsThatNeedCommit.put(key, value);
-        	editsThatNeedRemove.remove(key);
+            editsThatNeedRemove.remove(key);
             return this;
         }
 
         @Override
         public Editor remove(String key) {
-        	editsThatNeedRemove.add(key);
+            editsThatNeedRemove.add(key);
             return this;
         }
 
@@ -144,7 +144,7 @@ public class TestSharedPreferences implements SharedPreferences {
                     previousContent.put(key, editsThatNeedCommit.get(key));
                 }
                 for (String key : editsThatNeedRemove) {
-                	previousContent.remove(key);
+                    previousContent.remove(key);
                 }
             }
             return true;

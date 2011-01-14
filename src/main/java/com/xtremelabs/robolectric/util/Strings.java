@@ -10,7 +10,7 @@ public class Strings {
         byte[] buffer = new byte[bufSize];
         int inSize;
         StringBuilder stringBuilder = new StringBuilder();
-        while((inSize = inputStream.read(buffer)) > 0) {
+        while ((inSize = inputStream.read(buffer)) > 0) {
             stringBuilder.append(new String(buffer, 0, inSize));
         }
         return stringBuilder.toString();

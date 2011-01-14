@@ -26,7 +26,7 @@ public class ShadowLocationManager {
     /**
      * Sets the value to return from {@link #isProviderEnabled(String)} for the given {@code provider}
      *
-     * @param provider name of the provider whose status to set
+     * @param provider  name of the provider whose status to set
      * @param isEnabled whether that provider should appear enabled
      */
     public void setProviderEnabled(String provider, boolean isEnabled) {

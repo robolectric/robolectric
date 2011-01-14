@@ -133,7 +133,7 @@ public class ShadowView {
      */
     @Implementation
     public static View inflate(Context context, int resource, ViewGroup root) {
-       return ShadowLayoutInflater.from(context).inflate(resource, root);
+        return ShadowLayoutInflater.from(context).inflate(resource, root);
     }
 
     /**
@@ -371,7 +371,7 @@ public class ShadowView {
 
     /**
      * Returns a string representation of this {@code View}. Unless overridden, it will be an empty string.
-     *
+     * <p/>
      * Robolectric extension.
      */
     public String innerText() {
@@ -454,16 +454,16 @@ public class ShadowView {
     public int getBackgroundResourceId() {
         return backgroundResourceId;
     }
-    
-    @Implementation 
+
+    @Implementation
     public void setBackgroundColor(int color) {
-    	backgroundColor = color;
+        backgroundColor = color;
     }
-    
+
     public int getBackgroundColor() {
-    	return backgroundColor;
+        return backgroundColor;
     }
-   
+
     /**
      * Non-Android accessor.
      *
@@ -608,12 +608,12 @@ public class ShadowView {
     }
 
     private void applyBackgroundAttribute() {
-    	String source = attributeSet.getAttributeValue("android", "background");
-    	if (source != null) {
-    		if (source.startsWith("@drawable/")) {
-    			setBackgroundResource(attributeSet.getAttributeResourceValue("android", "background", 0));    			
-    		}
-    	}
+        String source = attributeSet.getAttributeValue("android", "background");
+        if (source != null) {
+            if (source.startsWith("@drawable/")) {
+                setBackgroundResource(attributeSet.getAttributeResourceValue("android", "background", 0));
+            }
+        }
     }
 
     private boolean noParentHasFocus(View view) {
@@ -638,7 +638,7 @@ public class ShadowView {
     public Bitmap getDrawingCache() {
         return Robolectric.newInstanceOf(Bitmap.class);
     }
-    
+
     @Implementation
     public void post(Runnable action) {
         Robolectric.getUiThreadScheduler().post(action);

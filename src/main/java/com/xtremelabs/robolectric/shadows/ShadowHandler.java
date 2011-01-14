@@ -73,9 +73,9 @@ public class ShadowHandler {
     public static void flush() {
         idleMainLooper();
     }
-    
+
     /**
-     * @see com.xtremelabs.robolectric.shadows.ShadowLooper#idle() 
+     * @see com.xtremelabs.robolectric.shadows.ShadowLooper#idle()
      */
     public static void idleMainLooper() {
         shadowOf(Looper.myLooper()).idle();

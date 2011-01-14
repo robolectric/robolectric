@@ -89,7 +89,7 @@ public class SchedulerTest {
         scheduler.post(runnable);
 
         assertThat(runnable.wasRun, equalTo(false));
-        
+
         scheduler.reset();
         scheduler.post(runnable);
         assertThat(runnable.wasRun, equalTo(true));
@@ -108,7 +108,7 @@ public class SchedulerTest {
 
         TestRunnable runnable2 = new TestRunnable();
         scheduler.post(runnable2);
-        
+
         assertThat(runnable1.wasRun, equalTo(false));
         assertThat(runnable2.wasRun, equalTo(true));
     }

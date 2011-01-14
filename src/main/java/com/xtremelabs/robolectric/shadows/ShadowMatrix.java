@@ -32,7 +32,7 @@ public class ShadowMatrix {
     public void set(Matrix src) {
         transX = shadowOf(src).transX;
         scaleX = shadowOf(src).scaleX;
-        
+
         transY = shadowOf(src).transY;
         scaleY = shadowOf(src).scaleY;
     }

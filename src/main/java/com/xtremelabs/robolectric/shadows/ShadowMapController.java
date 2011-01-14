@@ -68,7 +68,7 @@ public class ShadowMapController {
     /**
      * Non-Android accessor that returns the most recent value set by a call to either version of {@code animateTo()}
      *
-     * @return  the most recent value set by a call to either version of {@code animateTo()}
+     * @return the most recent value set by a call to either version of {@code animateTo()}
      */
     public GeoPoint getGeoPointAnimatedTo() {
         return geoPointAnimatedTo;
@@ -78,7 +78,7 @@ public class ShadowMapController {
      * Non-Android accessor that allows the {@code MapView} being controlled to be set explicitly.
      *
      * @param shadowMapView the {@link ShadowMapView} to be controlled (either created explicitly or obtained via a call
-     * to {@link com.xtremelabs.robolectric.Robolectric.shadowOf(com.google.android.maps.MapView)})
+     *                      to {@link com.xtremelabs.robolectric.RobolectricForMaps.shadowOf(com.google.android.maps.MapView)})
      */
     void setShadowMapView(ShadowMapView shadowMapView) {
         this.shadowMapView = shadowMapView;

@@ -13,7 +13,7 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AlertDialogTest {
-    
+
     @Test
     public void testBuilder() throws Exception {
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));

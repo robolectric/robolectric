@@ -17,7 +17,7 @@ public class RobolectricConfig {
 
     /**
      * Creates a Robolectric configuration using default Android files relative to the specified base directory.
-     *
+     * <p/>
      * The manifest will be baseDir/AndroidManifest.xml, res will be baseDir/res, and assets in baseDir/assets.
      *
      * @param baseDir the base directory of your Android project

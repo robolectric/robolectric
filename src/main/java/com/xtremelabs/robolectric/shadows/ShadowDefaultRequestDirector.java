@@ -7,7 +7,11 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.HttpRequestInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.*;
+import org.apache.http.ConnectionReuseStrategy;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.AuthenticationHandler;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.RedirectHandler;
@@ -56,18 +60,18 @@ public class ShadowDefaultRequestDirector {
             AuthenticationHandler proxyAuthHandler,
             UserTokenHandler userTokenHandler,
             HttpParams params) {
-        this.log               = log;
+        this.log = log;
         this.httpRequestExecutor = requestExec;
         this.connectionManager = conman;
         this.connectionReuseStrategy = reustrat;
         this.connectionKeepAliveStrategy = kastrat;
         this.httpRoutePlanner = rouplan;
-        this.httpProcessor     = httpProcessor;
+        this.httpProcessor = httpProcessor;
         this.httpRequestRetryHandler = retryHandler;
         this.redirectHandler = redirectHandler;
         this.targetAuthenticationHandler = targetAuthHandler;
         this.proxyAuthenticationHandler = proxyAuthHandler;
-        this.userTokenHandler  = userTokenHandler;
+        this.userTokenHandler = userTokenHandler;
         this.httpParams = params;
     }
 

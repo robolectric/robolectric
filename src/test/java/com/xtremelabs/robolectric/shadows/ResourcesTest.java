@@ -7,26 +7,25 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.notNullValue;
-
 import java.io.File;
+
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ResourcesTest {
-	
-	@Before
-	public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();		
+
+    @Before
+    public void setUp() throws Exception {
+        Robolectric.bindDefaultShadowClasses();
         Robolectric.application = ShadowApplication.bind(new Application(), new ResourceLoader(R.class, new File("test/res"), new File("test/assets")));
-	}
-	
+    }
+
     @Test(expected = Resources.NotFoundException.class)
     public void getStringArray_shouldThrowExceptionIfNotFound() throws Exception {
         Robolectric.bindDefaultShadowClasses();
@@ -34,9 +33,9 @@ public class ResourcesTest {
 
         new Activity().getResources().getStringArray(-1);
     }
-    
+
     @Test
     public void testConfiguration() {
-        assertThat( new Activity().getResources().getConfiguration(), notNullValue() );
+        assertThat(new Activity().getResources().getConfiguration(), notNullValue());
     }
 }

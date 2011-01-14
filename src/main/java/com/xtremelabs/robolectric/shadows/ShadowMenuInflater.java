@@ -18,7 +18,7 @@ public class ShadowMenuInflater {
     private Context context;
 
     public void __constructor__(Context context) {
-		this.context = context;
+        this.context = context;
     }
 
     @Implementation

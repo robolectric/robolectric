@@ -85,7 +85,7 @@ public class ViewTest {
     @Test
     public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
         assertTrue(shadowOf(view).derivedIsVisible());
-        
+
         ViewGroup grandParent = new LinearLayout(null);
         ViewGroup parent = new LinearLayout(null);
         grandParent.addView(parent);
@@ -115,7 +115,7 @@ public class ViewTest {
         assertTrue(clickListener.clicked);
     }
 
-    @Test(expected= RuntimeException.class)
+    @Test(expected = RuntimeException.class)
     public void checkedClick_shouldThrowIfViewIsNotVisible() throws Exception {
         ViewGroup grandParent = new LinearLayout(null);
         ViewGroup parent = new LinearLayout(null);
@@ -126,23 +126,23 @@ public class ViewTest {
         shadowOf(view).checkedPerformClick();
     }
 
-    @Test(expected= RuntimeException.class)
+    @Test(expected = RuntimeException.class)
     public void checkedClick_shouldThrowIfViewIsDisabled() throws Exception {
         view.setEnabled(false);
         shadowOf(view).checkedPerformClick();
     }
 
-    
+
     @Test
     public void shouldRecordBackgroundColor() {
-        int[] colors = { 0, 1, 727 }; 
-        
-        for(int color : colors) {
-        	view.setBackgroundColor(color);
-        	assertThat(shadowOf(view).getBackgroundColor(), equalTo(color));
+        int[] colors = {0, 1, 727};
+
+        for (int color : colors) {
+            view.setBackgroundColor(color);
+            assertThat(shadowOf(view).getBackgroundColor(), equalTo(color));
         }
     }
- 
+
     @Test
     public void shouldPostActionsToTheMessageQueue() throws Exception {
         Robolectric.pauseMainLooper();
@@ -154,7 +154,7 @@ public class ViewTest {
         Robolectric.unPauseMainLooper();
         assertTrue(runnable.wasRun);
     }
-    
+
     @Test
     public void shouldPostActionsToTheMessageQueueWithDelay() throws Exception {
         Robolectric.pauseMainLooper();

@@ -9,7 +9,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ConnectivityManagerTest {
@@ -26,21 +28,21 @@ public class ConnectivityManagerTest {
 
     @Test
     public void getConnectivityManagerShouldNotBeNull() {
-    	assertNotNull(connectivityManager);
-    	assertNotNull(connectivityManager.getActiveNetworkInfo());
+        assertNotNull(connectivityManager);
+        assertNotNull(connectivityManager.getActiveNetworkInfo());
     }
 
     @Test
     public void networkInfoShouldReturnTrueCorrectly() {
-    	networkInfo.setConnectionStatus(true);
+        networkInfo.setConnectionStatus(true);
 
-    	assertTrue(connectivityManager.getActiveNetworkInfo().isConnectedOrConnecting());
+        assertTrue(connectivityManager.getActiveNetworkInfo().isConnectedOrConnecting());
     }
 
     @Test
     public void networkInfoShouldReturnFalseCorrectly() {
-    	networkInfo.setConnectionStatus(false);
+        networkInfo.setConnectionStatus(false);
 
-    	assertFalse(connectivityManager.getActiveNetworkInfo().isConnectedOrConnecting());
+        assertFalse(connectivityManager.getActiveNetworkInfo().isConnectedOrConnecting());
     }
 }

@@ -63,7 +63,7 @@ public class ViewLoaderTest {
         WebView webView = (WebView) view.findViewById(R.id.web_view);
 
         webView.loadUrl("www.example.com");
-        
+
         assertThat(shadowOf(webView).getLastLoadedUrl(), equalTo("www.example.com"));
     }
 

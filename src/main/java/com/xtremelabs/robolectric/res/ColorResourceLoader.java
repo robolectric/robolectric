@@ -50,7 +50,7 @@ public class ColorResourceLoader extends XpathResourceXmlLoader implements Resou
             return androidColorsFromIds.get(colorId);
         } else {
             String resourceName = resourceExtractor.getResourceName(colorId);
-            return resourceName == null ? -1:colorResolver.getValue(resourceName);
+            return resourceName == null ? -1 : colorResolver.getValue(resourceName);
         }
     }
 

@@ -8,7 +8,6 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -22,11 +21,13 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewGroupTest {
-	private String defaultLineSeparator;
+    private String defaultLineSeparator;
     private ViewGroup root;
     private View child1;
     private View child2;
@@ -54,14 +55,14 @@ public class ViewGroupTest {
 
         child3.addView(child3a);
         child3.addView(child3b);
-        
+
         defaultLineSeparator = System.getProperty("line.separator");
         System.setProperty("line.separator", "\n");
     }
-    
+
     @After
     public void tearDown() throws Exception {
-    	System.setProperty("line.separator", defaultLineSeparator);
+        System.setProperty("line.separator", defaultLineSeparator);
     }
 
     @Test
