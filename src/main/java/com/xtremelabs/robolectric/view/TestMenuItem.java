@@ -7,138 +7,183 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 
 public class TestMenuItem implements MenuItem {
-    private CharSequence title;
-    private boolean enabled = true;
-    private OnMenuItemClickListener menuItemClickListener;
-    public int iconRes;
 
-    @Override public int getItemId() {
-        return 0;
-    }
+	private int itemId;
+	private CharSequence title;
+	private boolean enabled = true;
+	private OnMenuItemClickListener menuItemClickListener;
+	public int iconRes;
 
-    @Override public int getGroupId() {
-        return 0;
-    }
+	public TestMenuItem() {
+		super();
+	}
 
-    @Override public int getOrder() {
-        return 0;
-    }
+	public TestMenuItem(int itemId) {
+		super();
+		this.itemId = itemId;
+	}
 
-    @Override public MenuItem setTitle(CharSequence title) {
-        this.title = title;
-        return this;
-    }
+	public void setItemId(int itemId) {
+		this.itemId = itemId;
+	}
 
-    @Override public MenuItem setTitle(int title) {
-        return null;
-    }
+	@Override
+	public int getItemId() {
+		return itemId;
+	}
 
-    @Override public CharSequence getTitle() {
-        return title;
-    }
+	@Override
+	public int getGroupId() {
+		return 0;
+	}
 
-    @Override public MenuItem setTitleCondensed(CharSequence title) {
-        return null;
-    }
+	@Override
+	public int getOrder() {
+		return 0;
+	}
 
-    @Override public CharSequence getTitleCondensed() {
-        return null;
-    }
+	@Override
+	public MenuItem setTitle(CharSequence title) {
+		this.title = title;
+		return this;
+	}
 
-    @Override public MenuItem setIcon(Drawable icon) {
-        return null;
-    }
+	@Override
+	public MenuItem setTitle(int title) {
+		return null;
+	}
 
-    @Override public MenuItem setIcon(int iconRes) {
-        this.iconRes = iconRes;
-        return this;
-    }
+	@Override
+	public CharSequence getTitle() {
+		return title;
+	}
 
-    @Override public Drawable getIcon() {
-        return null;
-    }
+	@Override
+	public MenuItem setTitleCondensed(CharSequence title) {
+		return null;
+	}
 
-    @Override public MenuItem setIntent(Intent intent) {
-        return null;
-    }
+	@Override
+	public CharSequence getTitleCondensed() {
+		return null;
+	}
 
-    @Override public Intent getIntent() {
-        return null;
-    }
+	@Override
+	public MenuItem setIcon(Drawable icon) {
+		return null;
+	}
 
-    @Override public MenuItem setShortcut(char numericChar, char alphaChar) {
-        return null;
-    }
+	@Override
+	public MenuItem setIcon(int iconRes) {
+		this.iconRes = iconRes;
+		return this;
+	}
 
-    @Override public MenuItem setNumericShortcut(char numericChar) {
-        return null;
-    }
+	@Override
+	public Drawable getIcon() {
+		return null;
+	}
 
-    @Override public char getNumericShortcut() {
-        return 0;
-    }
+	@Override
+	public MenuItem setIntent(Intent intent) {
+		return null;
+	}
 
-    @Override public MenuItem setAlphabeticShortcut(char alphaChar) {
-        return null;
-    }
+	@Override
+	public Intent getIntent() {
+		return null;
+	}
 
-    @Override public char getAlphabeticShortcut() {
-        return 0;
-    }
+	@Override
+	public MenuItem setShortcut(char numericChar, char alphaChar) {
+		return null;
+	}
 
-    @Override public MenuItem setCheckable(boolean checkable) {
-        return null;
-    }
+	@Override
+	public MenuItem setNumericShortcut(char numericChar) {
+		return null;
+	}
 
-    @Override public boolean isCheckable() {
-        return false;
-    }
+	@Override
+	public char getNumericShortcut() {
+		return 0;
+	}
 
-    @Override public MenuItem setChecked(boolean checked) {
-        return null;
-    }
+	@Override
+	public MenuItem setAlphabeticShortcut(char alphaChar) {
+		return null;
+	}
 
-    @Override public boolean isChecked() {
-        return false;
-    }
+	@Override
+	public char getAlphabeticShortcut() {
+		return 0;
+	}
 
-    @Override public MenuItem setVisible(boolean visible) {
-        return null;
-    }
+	@Override
+	public MenuItem setCheckable(boolean checkable) {
+		return null;
+	}
 
-    @Override public boolean isVisible() {
-        return false;
-    }
+	@Override
+	public boolean isCheckable() {
+		return false;
+	}
 
-    @Override public MenuItem setEnabled(boolean enabled) {
-        this.enabled = enabled;
-        return this;
-    }
+	@Override
+	public MenuItem setChecked(boolean checked) {
+		return null;
+	}
 
-    @Override public boolean isEnabled() {
-        return enabled;
-    }
+	@Override
+	public boolean isChecked() {
+		return false;
+	}
 
-    @Override public boolean hasSubMenu() {
-        return false;
-    }
+	@Override
+	public MenuItem setVisible(boolean visible) {
+		return null;
+	}
 
-    @Override public SubMenu getSubMenu() {
-        return null;
-    }
+	@Override
+	public boolean isVisible() {
+		return false;
+	}
 
-    @Override public MenuItem setOnMenuItemClickListener(OnMenuItemClickListener menuItemClickListener) {
-        this.menuItemClickListener = menuItemClickListener;
-        return this;
-    }
+	@Override
+	public MenuItem setEnabled(boolean enabled) {
+		this.enabled = enabled;
+		return this;
+	}
 
-    @Override public ContextMenu.ContextMenuInfo getMenuInfo() {
-        return null;
-    }
+	@Override
+	public boolean isEnabled() {
+		return enabled;
+	}
 
-    public void click() {
-        if (enabled && menuItemClickListener != null) {
-            menuItemClickListener.onMenuItemClick(this);
-        }
-    }
+	@Override
+	public boolean hasSubMenu() {
+		return false;
+	}
+
+	@Override
+	public SubMenu getSubMenu() {
+		return null;
+	}
+
+	@Override
+	public MenuItem setOnMenuItemClickListener(OnMenuItemClickListener menuItemClickListener) {
+		this.menuItemClickListener = menuItemClickListener;
+		return this;
+	}
+
+	@Override
+	public ContextMenu.ContextMenuInfo getMenuInfo() {
+		return null;
+	}
+
+	public void click() {
+		if (enabled && menuItemClickListener != null) {
+			menuItemClickListener.onMenuItemClick(this);
+		}
+	}
 }
