@@ -1,3 +1,4 @@
 #!/bin/sh
 
-which android | sed 's/\/tools\/android$//'
+ANDROID_HOME=`which android | sed 's/\/tools\/android$//'`
+echo "sdk.dir=$ANDROID_HOME" >> local.properties
