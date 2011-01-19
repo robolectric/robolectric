@@ -24,7 +24,7 @@ public class RawResourceLoaderTest {
 
     @Before public void setUp() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addRClass(R.class);
+        resourceExtractor.addLocalRClass(R.class);
         rawResourceLoader = new RawResourceLoader(resourceExtractor, resourceFile("res"));
     }
 
