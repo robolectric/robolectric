@@ -6,6 +6,17 @@ title: Release Notes
 # Release Notes
 
 -----
+## Release 0.9.7 - January 19, 2011
+-----
+
+#### Features
+- Loading of Android platform resources - Thanks palfrey!
+
+
+#### Bug Fix
+- Fixed ClassNotFoundExceptions when maps.jar is not being used by the project under test
+
+-----
 ## Release 0.9.6 - January 13, 2011
 -----
 
