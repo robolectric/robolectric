@@ -24,7 +24,7 @@ public class TestAttributeSetTest {
         attributes = new HashMap<String, String>();
 
         resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addRClass(R.class);
+        resourceExtractor.addLocalRClass(R.class);
     }
 
     @Test
@@ -93,7 +93,7 @@ public class TestAttributeSetTest {
         attributes.put("itemType", "string");
 
         AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
-        new DocumentLoader(attrResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
+        new DocumentLoader(attrResourceLoader).loadLocalResourceXmlDir(resourceFile("res", "values"));
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, attrResourceLoader, CustomView.class);
         assertThat(testAttributeSet.getAttributeIntValue("some namespace", "itemType", 0), equalTo(1));
     }

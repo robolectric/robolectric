@@ -86,7 +86,7 @@ public class DefaultRequestDirectorTest {
 
     @Test
     public void shouldReturnRequestsByRule_MatchingMethod() throws Exception {
-        Robolectric.setDefaultHttpResponse(new TestHttpResponse(404, "no such page"));
+        Robolectric.setDefaultHttpResponse(404, "no such page");
         Robolectric.addHttpResponseRule(HttpPost.METHOD_NAME, "http://some.uri",
                 new TestHttpResponse(200, "a cheery response body"));
 
@@ -124,7 +124,7 @@ public class DefaultRequestDirectorTest {
 
     @Test
     public void shouldReturnRequestsByRule_WithCustomRequestMatcher() throws Exception {
-        Robolectric.setDefaultHttpResponse(new TestHttpResponse(404, "no such page"));
+        Robolectric.setDefaultHttpResponse(404, "no such page");
 
         Robolectric.addHttpResponseRule(new FakeHttpLayer.RequestMatcher() {
             @Override public boolean matches(HttpRequest request) {

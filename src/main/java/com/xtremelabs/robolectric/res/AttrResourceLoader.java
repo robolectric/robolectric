@@ -22,7 +22,7 @@ public class AttrResourceLoader extends XmlLoader {
         super(resourceExtractor);
     }
 
-    @Override protected void processResourceXml(File xmlFile, Document document) throws Exception {
+    @Override protected void processResourceXml(File xmlFile, Document document, boolean ignored) throws Exception {
         XPathExpression stringsXPath = XPathFactory.newInstance().newXPath().compile("/resources/declare-styleable/attr/enum");
         NodeList stringNodes = (NodeList) stringsXPath.evaluate(document, XPathConstants.NODESET);
         for (int i = 0; i < stringNodes.getLength(); i++) {

@@ -646,11 +646,10 @@ public class Robolectric {
         return getShadowApplication().getFakeHttpLayer();
     }
 
-    /**
-     * Sets the default http response. This response will be returned if no other rules are matched.
-     *
-     * @param defaultHttpResponse the {@code HttpResponse} to return.
-     */
+    public static void setDefaultHttpResponse(int statusCode, String responseBody) {
+        getFakeHttpLayer().setDefaultHttpResponse(statusCode, responseBody);
+    }
+
     public static void setDefaultHttpResponse(HttpResponse defaultHttpResponse) {
         getFakeHttpLayer().setDefaultHttpResponse(defaultHttpResponse);
     }

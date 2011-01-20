@@ -48,6 +48,10 @@ public class FakeHttpLayer {
         this.defaultHttpResponse = defaultHttpResponse;
     }
 
+    public void setDefaultHttpResponse(int statusCode, String responseBody) {
+        setDefaultHttpResponse(new TestHttpResponse(statusCode, responseBody));
+    }
+
     private HttpResponse findResponse(HttpRequest httpRequest) {
         if (!pendingHttpResponses.isEmpty()) {
             return pendingHttpResponses.remove(0);

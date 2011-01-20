@@ -11,5 +11,5 @@ public abstract class XmlLoader {
         this.resourceExtractor = resourceExtractor;
     }
 
-    protected abstract void processResourceXml(File xmlFile, Document document) throws Exception;
+    protected abstract void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception;
 }

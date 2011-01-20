@@ -16,17 +16,13 @@ import java.util.Map;
 
 public class MenuLoader extends XmlLoader {
     private Map<String, MenuNode> menuNodesByMenuName = new HashMap<String, MenuNode>();
-    private StringResourceLoader stringResourceLoader;
-    private AttrResourceLoader attrResourceLoader;
 
-    public MenuLoader(ResourceExtractor resourceExtractor, StringResourceLoader stringResourceLoader, AttrResourceLoader attrResourceLoader) {
+    public MenuLoader(ResourceExtractor resourceExtractor) {
         super(resourceExtractor);
-        this.stringResourceLoader = stringResourceLoader;
-        this.attrResourceLoader = attrResourceLoader;
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, Document document) throws Exception {
+    protected void processResourceXml(File xmlFile, Document document, boolean ignored) throws Exception {
         MenuNode topLevelNode = new MenuNode("top-level", new HashMap<String, String>());
 
         NodeList items = document.getChildNodes();

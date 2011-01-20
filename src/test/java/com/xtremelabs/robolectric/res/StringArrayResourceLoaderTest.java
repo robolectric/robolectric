@@ -16,12 +16,12 @@ public class StringArrayResourceLoaderTest {
 
     @Before public void setUp() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addRClass(R.class);
+        resourceExtractor.addLocalRClass(R.class);
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
         File resourceXmlDir = resourceFile("res", "values");
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceXmlDir);
+        new DocumentLoader(stringResourceLoader).loadLocalResourceXmlDir(resourceXmlDir);
         stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
-        new DocumentLoader(stringArrayResourceLoader).loadResourceXmlDir(resourceXmlDir);
+        new DocumentLoader(stringArrayResourceLoader).loadLocalResourceXmlDir(resourceXmlDir);
     }
 
     @Test
