@@ -13,11 +13,11 @@ public class StringResourceLoader extends XpathResourceXmlLoader implements Reso
         return stringResolver.getValue(resourceExtractor.getResourceName(resourceId));
     }
 
-    public String getValue(String resourceName) {
-        return getValue(resourceExtractor.getResourceId(resourceName));
+    public String getValue(String resourceName, boolean isSystem) {
+        return getValue(resourceExtractor.getResourceId(resourceName, isSystem));
     }
 
-    @Override protected void processNode(Node node, String name) {
+    @Override protected void processNode(Node node, String name, boolean ignored) {
         stringResolver.processResource(name, node.getTextContent(), this);
     }
 

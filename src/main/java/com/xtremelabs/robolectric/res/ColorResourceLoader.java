@@ -55,7 +55,7 @@ public class ColorResourceLoader extends XpathResourceXmlLoader implements Resou
     }
 
     @Override
-    protected void processNode(Node node, String name) {
+    protected void processNode(Node node, String name, boolean ignored) {
         colorResolver.processResource(name, node.getTextContent(), this);
     }
 

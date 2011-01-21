@@ -13,9 +13,9 @@ public class StringResourceLoaderTest {
 
     @Before public void setUp() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addRClass(R.class);
+        resourceExtractor.addLocalRClass(R.class);
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
+        new DocumentLoader(stringResourceLoader).loadLocalResourceXmlDir(resourceFile("res", "values"));
     }
 
     @Test

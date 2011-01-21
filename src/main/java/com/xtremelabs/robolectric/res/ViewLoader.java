@@ -31,7 +31,7 @@ public class ViewLoader extends XmlLoader {
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, Document document) throws Exception {
+    protected void processResourceXml(File xmlFile, Document document, boolean ignored) throws Exception {
         ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>());
         processChildren(document.getChildNodes(), topLevelNode);
         viewNodesByLayoutName.put(
