@@ -58,8 +58,7 @@ public class ResourceLoader {
 
         try {
             if (resourceDir != null) {
-                String resourcePath = getPathToAndroidResources();
-                File systemResourceDir = new File(resourcePath);
+                File systemResourceDir = new File(getPathToAndroidResources());
 
                 DocumentLoader stringResourcesDocumentLoader = new DocumentLoader(stringResourceLoader);
                 File valuesResourceDir = new File(resourceDir, "values");
@@ -110,9 +109,7 @@ public class ResourceLoader {
 
     private String getPathToAndroidResources() {
         String resourcePath;
-        if ((resourcePath = getAndroidResourcePathFromRClass()) != null) {
-            return resourcePath;
-        } else if ((resourcePath = getAndroidResourcePathFromLocalProperties()) != null) {
+        if ((resourcePath = getAndroidResourcePathFromLocalProperties()) != null) {
             return resourcePath;
         } else if ((resourcePath = getAndroidResourcePathFromSystemEnvironment()) != null) {
             return resourcePath;
@@ -121,16 +118,6 @@ public class ResourceLoader {
         }
 
         throw new RuntimeException("Unable to find path to Android SDK");
-    }
-
-    private String getAndroidResourcePathFromRClass() {
-        // Cribbed from known-working code from palfrey
-        // ToDo: Is this still a valid strategy?
-        String resourcePath = R.class.getResource("/res/layout").toString();
-        if (resourcePath.startsWith("jar:file:") && resourcePath.indexOf("android.jar!")!=-1) {
-            return resourcePath.substring("jar:file:".length(), resourcePath.indexOf("android.jar!")) + "data/res";
-        }
-        return null;
     }
 
     private String getAndroidResourcePathFromSystemEnvironment() {
