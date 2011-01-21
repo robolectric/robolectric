@@ -25,37 +25,25 @@ public class DocumentLoader {
         documentBuilderFactory.setIgnoringElementContentWhitespace(true);
     }
 
-    public void loadLocalResourceXmlDirs(File... resourceXmlDirs) throws Exception {
-        loadResourceXmlDirs(false, resourceXmlDirs);
-    }
-
-    public void loadResourceXmlDirs(boolean isSystem, File... resourceXmlDirs) throws Exception {
+    public void loadResourceXmlDirs(File... resourceXmlDirs) throws Exception {
         for (File resourceXmlDir : resourceXmlDirs) {
-            loadResourceXmlDir(resourceXmlDir, isSystem);
+            loadResourceXmlDir(resourceXmlDir);
         }
     }
 
-    public void loadLocalResourceXmlDir(File resourceXmlDir) throws Exception {
-        loadResourceXmlDir(resourceXmlDir, false);
-    }
-
-    public void loadSystemResourceXmlDir(File resourceXmlDir) throws Exception {
-        loadResourceXmlDir(resourceXmlDir, true);
-    }
-
-    private void loadResourceXmlDir(File resourceXmlDir, boolean isSystem) throws Exception {
+    public void loadResourceXmlDir(File resourceXmlDir) throws Exception {
         if (!resourceXmlDir.exists()) {
             throw new RuntimeException("no such directory " + resourceXmlDir);
         }
 
         for (File file : resourceXmlDir.listFiles(xmlFileFilter)) {
-            loadResourceXmlFile(file, isSystem);
+            loadResourceXmlFile(file);
         }
     }
 
-    private void loadResourceXmlFile(File file, boolean isSystem) throws Exception {
+    public void loadResourceXmlFile(File file) throws Exception {
         for (XmlLoader xmlLoader : xmlLoaders) {
-            xmlLoader.processResourceXml(file, parse(file), isSystem);
+            xmlLoader.processResourceXml(file, parse(file));
         }
     }
 

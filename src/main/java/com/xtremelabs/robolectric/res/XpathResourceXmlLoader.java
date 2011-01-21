@@ -18,15 +18,15 @@ public abstract class XpathResourceXmlLoader extends XmlLoader {
         this.expression = expression;
     }
 
-    @Override protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
+    @Override protected void processResourceXml(File xmlFile, Document document) throws Exception {
         XPathExpression stringsXPath = XPathFactory.newInstance().newXPath().compile(expression);
         NodeList nodes = (NodeList) stringsXPath.evaluate(document, XPathConstants.NODESET);
         for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             String name = node.getAttributes().getNamedItem("name").getNodeValue();
-            processNode(node, name, isSystem);
+            processNode(node, name);
         }
     }
 
-    protected abstract void processNode(Node node, String name, boolean isSystem) throws XPathExpressionException;
+    protected abstract void processNode(Node node, String name) throws XPathExpressionException;
 }

@@ -40,11 +40,11 @@ public class ViewLoaderTest {
         Robolectric.bindDefaultShadowClasses();
 
         ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
+        resourceExtractor.addRClass(R.class);
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadLocalResourceXmlDir(resourceFile("res", "values"));
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
         viewLoader = new ViewLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
-        new DocumentLoader(viewLoader).loadLocalResourceXmlDir(resourceFile("res", "layout"));
+        new DocumentLoader(viewLoader).loadResourceXmlDir(resourceFile("res", "layout"));
 
         context = new Activity();
     }

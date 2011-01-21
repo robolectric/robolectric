@@ -14,9 +14,9 @@ public class ColorResourceLoaderTest {
 
     @Before public void setUp() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
+        resourceExtractor.addRClass(R.class);
         colorResourceLoader = new ColorResourceLoader(resourceExtractor);
-        new DocumentLoader(colorResourceLoader).loadLocalResourceXmlDir(resourceFile("res", "values"));
+        new DocumentLoader(colorResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
     }
 
     @Test

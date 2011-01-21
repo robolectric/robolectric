@@ -39,8 +39,7 @@ public class ResourceLoader {
     public ResourceLoader(Class rClass, File resourceDir, File assetsDir) throws Exception {
         this.assetsDir = assetsDir;
         resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(rClass);
-        resourceExtractor.addSystemRClass(R.class);
+        resourceExtractor.addRClass(rClass);
 
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
         stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
@@ -63,13 +62,10 @@ public class ResourceLoader {
 
                 DocumentLoader stringResourcesDocumentLoader = new DocumentLoader(stringResourceLoader);
                 File valuesResourceDir = new File(resourceDir, "values");
-                File systemValuesResourceDir = new File(systemResourceDir, "values");
-                stringResourcesDocumentLoader.loadLocalResourceXmlDir(valuesResourceDir);
-                stringResourcesDocumentLoader.loadSystemResourceXmlDir(systemValuesResourceDir);
+                stringResourcesDocumentLoader.loadResourceXmlDir(valuesResourceDir);
 
                 DocumentLoader resourcesDocumentLoader = new DocumentLoader(stringArrayResourceLoader, colorResourceLoader, attrResourceLoader);
-                resourcesDocumentLoader.loadLocalResourceXmlDir(valuesResourceDir);
-                resourcesDocumentLoader.loadSystemResourceXmlDir(systemValuesResourceDir);
+                resourcesDocumentLoader.loadResourceXmlDir(valuesResourceDir);
 
                 viewLoader = new ViewLoader(resourceExtractor, attrResourceLoader);
                 DocumentLoader viewDocumentLoader = new DocumentLoader(viewLoader);
@@ -79,17 +75,9 @@ public class ResourceLoader {
                         return isLayoutDirectory(file.getPath());
                     }
                 });
-                viewDocumentLoader.loadLocalResourceXmlDirs(layoutDirs);
+                viewDocumentLoader.loadResourceXmlDirs(layoutDirs);
 
-                layoutDirs = systemResourceDir.listFiles(new FileFilter() {
-                    @Override
-                    public boolean accept(File file) {
-                        return isLayoutDirectory(file.getPath());
-                    }
-                });
-                viewDocumentLoader.loadLocalResourceXmlDirs(layoutDirs);
-
-                menuLoader = new MenuLoader(resourceExtractor);
+                menuLoader = new MenuLoader(resourceExtractor, stringResourceLoader, attrResourceLoader);
                 DocumentLoader menuDocumentLoader = new DocumentLoader(menuLoader);
                 File[] menuDirs = resourceDir.listFiles(new FileFilter() {
                     @Override
@@ -97,7 +85,7 @@ public class ResourceLoader {
                         return isMenuDirectory(file.getPath());
                     }
                 });
-                menuDocumentLoader.loadLocalResourceXmlDirs(menuDirs);
+                menuDocumentLoader.loadResourceXmlDirs(menuDirs);
             } else {
                 viewLoader = null;
                 menuLoader = null;
@@ -120,15 +108,14 @@ public class ResourceLoader {
             return resourcePath;
         }
 
-        throw new RuntimeException("Unable to find path to Android SDK");
+//        throw new RuntimeException("Unable to find path to android SDK");
+        return null;
     }
 
     private String getAndroidResourcePathFromRClass() {
-        // Cribbed from known-working code from palfrey
-        // ToDo: Is this still a valid strategy?
         String resourcePath = R.class.getResource("/res/layout").toString();
         if (resourcePath.startsWith("jar:file:") && resourcePath.indexOf("android.jar!")!=-1) {
-            return resourcePath.substring("jar:file:".length(), resourcePath.indexOf("android.jar!")) + "data/res";
+            return resourcePath.substring(new String("jar:file:").length(), resourcePath.indexOf("android.jar!")) + "data/res";
         }
         return null;
     }
@@ -144,13 +131,8 @@ public class ResourceLoader {
 
     private String getAndroidResourcePathFromLocalProperties() {
         // Hand tested
-        // This is the path most often taken by IntelliJ
         File rootDir = resourceDir.getParentFile();
-        String localPropertiesFileName = "local.properties";
-        File localPropertiesFile = new File(rootDir, localPropertiesFileName);
-        if (!localPropertiesFile.exists()) {
-            localPropertiesFile = new File(localPropertiesFileName);
-        }
+        File localPropertiesFile = new File(rootDir, "local.properties");
         if (localPropertiesFile.exists()) {
             Properties localProperties = new Properties();
             try {
@@ -168,12 +150,11 @@ public class ResourceLoader {
 
     private String getAndroidResourcePathByExecingWhichAndroid() {
         // Hand tested
-        // Should always work from the command line. Often fails in IDEs because they don't pass the full PATH in the environment
         try {
             Process process = Runtime.getRuntime().exec(new String[] {"which", "android"});
             String resourcePath = new BufferedReader(new InputStreamReader(process.getInputStream())).readLine();
             if (resourcePath != null && resourcePath.endsWith("tools/android")) {
-                return new File(resourcePath.substring(0, resourcePath.indexOf("tools/android")), getAndroidResourceSubPath()).toString();
+                return new File(resourcePath.substring(resourcePath.indexOf("tools/android")), getAndroidResourceSubPath()).toString();
             }
         } catch (IOException e) {
             // fine we'll try something else
