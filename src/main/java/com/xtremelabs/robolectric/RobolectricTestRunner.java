@@ -164,7 +164,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             delegateLoadingOf(RealObject.class.getName());
             delegateLoadingOf(ShadowWrangler.class.getName());
             delegateLoadingOf(RobolectricConfig.class.getName());
-            delegateLoadingOf(android.R.class.getName());
 
             Class<?> delegateClass = classLoader.bootstrap(this.getClass());
             try {
