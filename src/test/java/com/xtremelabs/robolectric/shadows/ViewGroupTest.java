@@ -20,9 +20,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewGroupTest {
@@ -71,6 +69,17 @@ public class ViewGroupTest {
         assertThat(root.getChildAt(1), sameInstance((View) child3));
 
         assertThat(child2.getParent(), nullValue());
+    }
+
+    @Test
+    public void testAddViewAt() throws Exception {
+        root.removeAllViews();
+        root.addView(child1);
+        root.addView(child2);
+        root.addView(child3, 1);
+        assertThat(root.getChildAt(0), sameInstance(child1));
+        assertThat(root.getChildAt(1), sameInstance((View) child3));
+        assertThat(root.getChildAt(2), sameInstance(child2));
     }
 
     @Test
