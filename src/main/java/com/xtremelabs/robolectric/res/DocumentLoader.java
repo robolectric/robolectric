@@ -25,7 +25,7 @@ public class DocumentLoader {
         documentBuilderFactory.setIgnoringElementContentWhitespace(true);
     }
 
-    public void loadLocalResourceXmlDirs(File... resourceXmlDirs) throws Exception {
+    public void loadResourceXmlDirs(File... resourceXmlDirs) throws Exception {
         loadResourceXmlDirs(false, resourceXmlDirs);
     }
 
@@ -35,7 +35,7 @@ public class DocumentLoader {
         }
     }
 
-    public void loadLocalResourceXmlDir(File resourceXmlDir) throws Exception {
+    public void loadResourceXmlDir(File resourceXmlDir) throws Exception {
         loadResourceXmlDir(resourceXmlDir, false);
     }
 
