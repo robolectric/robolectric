@@ -6,18 +6,26 @@ title: Release Notes
 # Release Notes
 
 -----
-## Release 0.9.7 - January 19, 2011
+## [Release 0.9.8](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.8/) - January 21, 2011
+-----
+
+#### One step back...
+- Temporarily reverted loading of Android platform resources -- sorry, jumped the gun a bit, it wasn't quite ready.
+
+
+-----
+## [Release 0.9.7](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.7/) - January 19, 2011
 -----
 
 #### Features
 - Loading of Android platform resources - Thanks palfrey!
 
-
 #### Bug Fix
 - Fixed ClassNotFoundExceptions when maps.jar is not being used by the project under test
 
+
 -----
-## Release 0.9.6 - January 13, 2011
+## [Release 0.9.6](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.6/) - January 13, 2011
 -----
 
 #### Features
@@ -32,7 +40,7 @@ title: Release Notes
 
 
 -----
-## Release 0.9.5 - December 23, 2010
+## [Release 0.9.5](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.5/) - December 23, 2010
 -----
 
 #### Note
