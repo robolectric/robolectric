@@ -1,13 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.util.AttributeSet;
 import android.widget.ImageView;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -24,8 +22,8 @@ public class ShadowImageView extends ShadowView {
     private ImageView.ScaleType scaleType;
     private Matrix matrix;
 
-    @Override public void __constructor__(Context context, AttributeSet attributeSet) {
-        super.__constructor__(context, attributeSet);
+    @Override public void applyAttributes() {
+        super.applyAttributes();
         applyImageAttribute();
     }
 
