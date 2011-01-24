@@ -22,26 +22,32 @@ public class ResourceExtractor {
         for (Class innerClass : rClass.getClasses()) {
             for (Field field : innerClass.getDeclaredFields()) {
                 if (field.getType().equals(Integer.TYPE) && Modifier.isStatic(field.getModifiers())) {
-                    String name = innerClass.getSimpleName() + "/" + field.getName();
+                    String section = innerClass.getSimpleName();
+                    String name = section + "/" + field.getName();
                     int value = field.getInt(null);
-                    if (isSystemRClass) {
-                        systemResourceStringToId.put(name, value);
-                    } else {
-                        localResourceStringToId.put(name, value);
+
+                    if (!section.equals("styleable")) {
+                        if (isSystemRClass) {
+                            systemResourceStringToId.put(name, value);
+                        } else {
+                            localResourceStringToId.put(name, value);
+                        }
+
+                        if (resourceIdToString.containsKey(value)) {
+                            throw new RuntimeException(value + " is already defined with name: " + resourceIdToString.get(value) + " can't also call it: " + name);
+                        }
+                        resourceIdToString.put(value, name);
                     }
-                    if (resourceIdToString.containsKey(value)) {
-                        throw new RuntimeException(value + " is already defined with name: " + resourceIdToString.get(value) + " can't also call it: " + name);
-                    }
-                    resourceIdToString.put(value, name);
                 }
             }
         }
     }
 
-    public int getLocalResourceId(String value) {
+    public Integer getLocalResourceId(String value) {
         boolean isSystem = false;
         return getResourceId(value, isSystem);
     }
+    
     public Integer getResourceId(String resourceName, boolean isSystemResource) {
         if (resourceName == null) {
             return null;
