@@ -49,7 +49,6 @@ public class ShadowViewGroup extends ShadowView {
         }
         shadowOf(child).parent = this;
     }
-
     @Implementation
     public void addView(View child, int width, int height) {
         ((ViewGroup)realView).addView(child, -1);
