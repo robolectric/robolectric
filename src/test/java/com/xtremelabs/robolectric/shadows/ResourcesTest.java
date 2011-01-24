@@ -21,4 +21,9 @@ public class ResourcesTest {
     public void testConfiguration() {
         assertThat(new Activity().getResources().getConfiguration(), notNullValue());
     }
+
+    @Test
+    public void testNewTheme() {
+        assertThat(new Activity().getResources().newTheme(), notNullValue());
+    }
 }
