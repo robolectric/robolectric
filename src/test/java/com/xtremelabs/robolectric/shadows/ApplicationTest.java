@@ -1,15 +1,9 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
-import android.app.AlarmManager;
 import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
-import android.location.LocationManager;
-import android.media.AudioManager;
-import android.net.wifi.WifiManager;
-import android.view.LayoutInflater;
-import android.view.WindowManager;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -22,9 +16,9 @@ import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -59,20 +53,30 @@ public class ApplicationTest {
 
     @Test
     public void shouldProvideServices() throws Exception {
-        Application app = Robolectric.application;
+        checkSystemService(Context.LAYOUT_INFLATER_SERVICE, android.view.LayoutInflater.class);
+        checkSystemService(Context.ACTIVITY_SERVICE, android.app.ActivityManager.class);
+        checkSystemService(Context.POWER_SERVICE, android.os.PowerManager.class);
+        checkSystemService(Context.ALARM_SERVICE, android.app.AlarmManager.class);
+        checkSystemService(Context.NOTIFICATION_SERVICE, android.app.NotificationManager.class);
+        checkSystemService(Context.KEYGUARD_SERVICE, android.app.KeyguardManager.class);
+        checkSystemService(Context.LOCATION_SERVICE, android.location.LocationManager.class);
+        checkSystemService(Context.SEARCH_SERVICE, android.app.SearchManager.class);
+        checkSystemService(Context.SENSOR_SERVICE, android.hardware.SensorManager.class);
+        checkSystemService(Context.STORAGE_SERVICE, android.os.storage.StorageManager.class);
+        checkSystemService(Context.VIBRATOR_SERVICE, android.os.Vibrator.class);
+        checkSystemService(Context.CONNECTIVITY_SERVICE, android.net.ConnectivityManager.class);
+        checkSystemService(Context.WIFI_SERVICE, android.net.wifi.WifiManager.class);
+        checkSystemService(Context.AUDIO_SERVICE, android.media.AudioManager.class);
+        checkSystemService(Context.TELEPHONY_SERVICE, android.telephony.TelephonyManager.class);
+        checkSystemService(Context.INPUT_METHOD_SERVICE, android.view.inputmethod.InputMethodManager.class);
+        checkSystemService(Context.UI_MODE_SERVICE, android.app.UiModeManager.class);
+        checkSystemService(Context.DOWNLOAD_SERVICE, android.app.DownloadManager.class);
+    }
 
-        Object service = app.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        assertTrue(service instanceof LayoutInflater);
-        service = app.getSystemService(Context.ALARM_SERVICE);
-        assertTrue(service instanceof AlarmManager);
-        service = app.getSystemService(Context.LOCATION_SERVICE);
-        assertTrue(service instanceof LocationManager);
-        service = app.getSystemService(Context.WIFI_SERVICE);
-        assertTrue(service instanceof WifiManager);
-        service = app.getSystemService(Context.WINDOW_SERVICE);
-        assertTrue(service instanceof WindowManager);
-        service = app.getSystemService(Context.AUDIO_SERVICE);
-        assertTrue(service instanceof AudioManager);
+    private void checkSystemService(String name, Class expectedClass) {
+        Object systemService = Robolectric.application.getSystemService(name);
+        assertThat(systemService, instanceOf(expectedClass));
+        assertThat(systemService, sameInstance(Robolectric.application.getSystemService(name)));
     }
 
     @Test
