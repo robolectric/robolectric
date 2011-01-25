@@ -113,7 +113,8 @@ public class ShadowActivity extends ShadowContextWrapper {
         if (contentView != null) {
             return contentView.findViewById(id);
         } else {
-            throw new RuntimeException("you should have called setContentView() first");
+            System.out.println("WARNING: you probably should have called setContentView() first");
+            return null;
         }
     }
 
@@ -172,7 +173,7 @@ public class ShadowActivity extends ShadowContextWrapper {
      * @see ShadowApplication#assertNoBroadcastListenersRegistered(android.content.Context, String)
      */
     public void assertNoBroadcastListenersRegistered() {
-        ((ShadowApplication) shadowOf(getApplicationContext())).assertNoBroadcastListenersRegistered(realActivity, "Activity");
+        shadowOf(getApplicationContext()).assertNoBroadcastListenersRegistered(realActivity, "Activity");
     }
 
     /**
