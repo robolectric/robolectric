@@ -2,6 +2,8 @@ bin/
 out/
 .idea/workspace.xml
 .idea/libraries/
+.idea/modules.xml
+.idea/vcs.xml
 robolectric.iml
 tmp/
 target/
@@ -12,5 +14,7 @@ local.properties
 .classpath
 .settings
 *.iws
+*.iml
+*.ipr
 *~
 \#*\#

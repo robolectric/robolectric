@@ -77,7 +77,7 @@ public class AndroidTranslator implements Translator {
         try {
             ctClass = classPool.get(className);
         } catch (NotFoundException e) {
-            throw new RobolectricClassNotFoundException(e);
+            throw new IgnorableClassNotFoundException(e);
         }
 
         boolean wantsToBeInstrumented =

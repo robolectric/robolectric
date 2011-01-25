@@ -24,7 +24,7 @@ public class TestAttributeSetTest {
         attributes = new HashMap<String, String>();
 
         resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addRClass(R.class);
+        resourceExtractor.addLocalRClass(R.class);
     }
 
     @Test

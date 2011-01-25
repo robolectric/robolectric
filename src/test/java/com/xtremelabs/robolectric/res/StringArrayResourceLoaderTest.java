@@ -16,7 +16,7 @@ public class StringArrayResourceLoaderTest {
 
     @Before public void setUp() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addRClass(R.class);
+        resourceExtractor.addLocalRClass(R.class);
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
         File resourceXmlDir = resourceFile("res", "values");
         new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceXmlDir);

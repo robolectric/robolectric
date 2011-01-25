@@ -1,7 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.Context;
-import android.util.AttributeSet;
 import android.widget.Checkable;
 import android.widget.CompoundButton;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -18,8 +16,8 @@ public class ShadowCompoundButton extends ShadowTextView implements Checkable {
     private boolean checked;
     private CompoundButton.OnCheckedChangeListener onCheckedChangeListener;
 
-    @Override public void __constructor__(Context context, AttributeSet attributeSet) {
-        super.__constructor__(context, attributeSet);
+    @Override public void applyAttributes() {
+        super.applyAttributes();
         setChecked(this.attributeSet.getAttributeBooleanValue("android", "checked", false));
     }
 

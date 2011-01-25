@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.app.AlarmManager;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
@@ -11,13 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Resources;
-import android.location.LocationManager;
-import android.media.AudioManager;
-import android.net.ConnectivityManager;
-import android.net.wifi.WifiManager;
 import android.os.Looper;
 import android.view.LayoutInflater;
-import android.view.WindowManager;
 import android.widget.Toast;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -25,7 +19,6 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Scheduler;
-import com.xtremelabs.robolectric.view.TestWindowManager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,16 +36,38 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Application.class)
 public class ShadowApplication extends ShadowContextWrapper {
+    private static final Map<String, String> SYSTEM_SERVICE_MAP = new HashMap<String, String>();
+
+    static {
+        // note that this one is different!
+        SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "com.xtremelabs.robolectric.view.TestWindowManager");
+
+        // the rest are as mapped in docs...
+        SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "android.view.LayoutInflater");
+        SYSTEM_SERVICE_MAP.put(Context.ACTIVITY_SERVICE, "android.app.ActivityManager");
+        SYSTEM_SERVICE_MAP.put(Context.POWER_SERVICE, "android.os.PowerManager");
+        SYSTEM_SERVICE_MAP.put(Context.ALARM_SERVICE, "android.app.AlarmManager");
+        SYSTEM_SERVICE_MAP.put(Context.NOTIFICATION_SERVICE, "android.app.NotificationManager");
+        SYSTEM_SERVICE_MAP.put(Context.KEYGUARD_SERVICE, "android.app.KeyguardManager");
+        SYSTEM_SERVICE_MAP.put(Context.LOCATION_SERVICE, "android.location.LocationManager");
+        SYSTEM_SERVICE_MAP.put(Context.SEARCH_SERVICE, "android.app.SearchManager");
+        SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.SensorManager");
+        SYSTEM_SERVICE_MAP.put(Context.STORAGE_SERVICE, "android.os.storage.StorageManager");
+        SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.Vibrator");
+        SYSTEM_SERVICE_MAP.put(Context.CONNECTIVITY_SERVICE, "android.net.ConnectivityManager");
+        SYSTEM_SERVICE_MAP.put(Context.WIFI_SERVICE, "android.net.wifi.WifiManager");
+        SYSTEM_SERVICE_MAP.put(Context.AUDIO_SERVICE, "android.media.AudioManager");
+        SYSTEM_SERVICE_MAP.put(Context.TELEPHONY_SERVICE, "android.telephony.TelephonyManager");
+        SYSTEM_SERVICE_MAP.put(Context.INPUT_METHOD_SERVICE, "android.view.inputmethod.InputMethodManager");
+        SYSTEM_SERVICE_MAP.put(Context.UI_MODE_SERVICE, "android.app.UiModeManager");
+        SYSTEM_SERVICE_MAP.put(Context.DOWNLOAD_SERVICE, "android.app.DownloadManager");
+    }
+
     @RealObject private Application realApplication;
 
     private ResourceLoader resourceLoader;
     private ContentResolver contentResolver;
-    private AlarmManager alarmManager;
-    private LocationManager locationManager;
-    private ConnectivityManager connectivityManager;
-    private WifiManager wifiManager;
-    private WindowManager windowManager;
-    private AudioManager audioManager;
+    private Map<String, Object> systemServices = new HashMap<String, Object>();
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
@@ -116,20 +131,21 @@ public class ShadowApplication extends ShadowContextWrapper {
     @Override public Object getSystemService(String name) {
         if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
             return LayoutInflater.from(realApplication);
-        } else if (name.equals(Context.ALARM_SERVICE)) {
-            return alarmManager == null ? alarmManager = newInstanceOf(AlarmManager.class) : alarmManager;
-        } else if (name.equals(Context.LOCATION_SERVICE)) {
-            return locationManager == null ? locationManager = newInstanceOf(LocationManager.class) : locationManager;
-        } else if (name.equals(Context.WIFI_SERVICE)) {
-            return wifiManager == null ? wifiManager = newInstanceOf(WifiManager.class) : wifiManager;
-        } else if (name.equals(Context.WINDOW_SERVICE)) {
-            return windowManager == null ? windowManager = new TestWindowManager() : windowManager;
-        } else if (name.equals(Context.AUDIO_SERVICE)) {
-            return audioManager == null ? audioManager = newInstanceOf(AudioManager.class) : audioManager;
-        } else if (name.equals(Context.CONNECTIVITY_SERVICE)) {
-            return connectivityManager == null ? connectivityManager = newInstanceOf(ConnectivityManager.class) : connectivityManager;
+        } else {
+            Object service = systemServices.get(name);
+            if (service == null) {
+                String serviceClassName = SYSTEM_SERVICE_MAP.get(name);
+                if (serviceClassName != null) {
+                    try {
+                        service = newInstanceOf(Class.forName(serviceClassName));
+                    } catch (ClassNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
+                    systemServices.put(name, service);
+                }
+            }
+            return service;
         }
-        return null;
     }
 
     @Implementation

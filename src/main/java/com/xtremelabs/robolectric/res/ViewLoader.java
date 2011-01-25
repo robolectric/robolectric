@@ -14,6 +14,7 @@ import org.w3c.dom.NodeList;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -31,7 +32,7 @@ public class ViewLoader extends XmlLoader {
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, Document document) throws Exception {
+    protected void processResourceXml(File xmlFile, Document document, boolean ignored) throws Exception {
         ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>());
         processChildren(document.getChildNodes(), topLevelNode);
         viewNodesByLayoutName.put(
@@ -126,7 +127,15 @@ public class ViewLoader extends XmlLoader {
             for (ViewNode child : children) {
                 child.inflate(context, view);
             }
+
+            invokeOnFinishInflate(view);
             return view;
+        }
+
+        private void invokeOnFinishInflate(View view) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+            Method onFinishInflate = View.class.getDeclaredMethod("onFinishInflate");
+            onFinishInflate.setAccessible(true);
+            onFinishInflate.invoke(view);
         }
 
         private View create(Context context, ViewGroup parent) throws Exception {

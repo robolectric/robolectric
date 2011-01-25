@@ -26,7 +26,7 @@ public class StringArrayResourceLoader extends XpathResourceXmlLoader {
         return stringArrayValues.get(resourceName);
     }
 
-    @Override protected void processNode(Node node, String name) throws XPathExpressionException {
+    @Override protected void processNode(Node node, String name, boolean isSystem) throws XPathExpressionException {
         XPathExpression itemXPath = XPathFactory.newInstance().newXPath().compile("item");
         NodeList childNodes = (NodeList) itemXPath.evaluate(node, XPathConstants.NODESET);
         List<String> arrayValues = new ArrayList<String>();
@@ -35,7 +35,8 @@ public class StringArrayResourceLoader extends XpathResourceXmlLoader {
 
             String value = childNode.getTextContent();
             if (value.startsWith("@")) {
-                arrayValues.add(stringResourceLoader.getValue(value.substring(1)));
+                value = value.substring(1);
+                arrayValues.add(stringResourceLoader.getValue(value , isSystem));
             } else {
                 arrayValues.add(value);
             }

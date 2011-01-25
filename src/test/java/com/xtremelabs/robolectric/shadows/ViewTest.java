@@ -17,10 +17,7 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewTest {
@@ -163,5 +160,12 @@ public class ViewTest {
 
         Robolectric.getUiThreadScheduler().advanceBy(1);
         assertTrue(runnable.wasRun);
+    }
+
+    @Test
+    public void shouldSupportAllConstructors() throws Exception {
+        new View(null);
+        new View(null, null);
+        new View(null, null, 0);
     }
 }
