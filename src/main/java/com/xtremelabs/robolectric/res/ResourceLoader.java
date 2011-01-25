@@ -176,7 +176,8 @@ public class ResourceLoader {
             Properties localProperties = new Properties();
             try {
                 localProperties.load(new FileInputStream(localPropertiesFile));
-                String sdkPath = localProperties.getProperty("sdk.dir");
+                String rawSdkPath = localProperties.getProperty("sdk.dir");
+                String sdkPath = doSingleSubstitution(rawSdkPath);
                 if (sdkPath != null) {
                     return getResourcePathFromSdkPath(sdkPath);
                 }
@@ -185,6 +186,31 @@ public class ResourceLoader {
             }
         }
         return null;
+    }
+
+    private String doSingleSubstitution(String rawSdkPath) {
+        if (rawSdkPath == null) {
+            return null;
+        }
+
+        int startOfQuote = rawSdkPath.indexOf("${");
+        if (startOfQuote == -1) {
+            return rawSdkPath;
+        }
+
+        int endOfQuote = rawSdkPath.indexOf("}");
+        if (endOfQuote == -1) {
+            throw new RuntimeException("Could not parse: " + rawSdkPath);
+        }
+
+        String propertyName = rawSdkPath.substring(startOfQuote + 2, endOfQuote);
+        String propertyValue = System.getProperty(propertyName);
+
+        if (propertyValue == null) {
+            throw new RuntimeException("Could not resolve system property " + propertyName);
+        }
+
+        return rawSdkPath.replaceFirst(java.util.regex.Pattern.quote("${" + propertyName + "}"), propertyValue);
     }
 
     private String getAndroidResourcePathFromSystemEnvironment() {
