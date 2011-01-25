@@ -160,7 +160,8 @@ public class ResourceLoader {
             return resourcePath;
         }
 
-        throw new RuntimeException("Unable to find path to Android SDK");
+        System.out.println("WARNING: Unable to find path to Android SDK");
+        return null;
     }
 
     private String getAndroidResourcePathFromLocalProperties() {
