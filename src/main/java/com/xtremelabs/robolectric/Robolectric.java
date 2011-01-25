@@ -156,6 +156,7 @@ import com.xtremelabs.robolectric.shadows.ShadowViewGroup;
 import com.xtremelabs.robolectric.shadows.ShadowWebSettings;
 import com.xtremelabs.robolectric.shadows.ShadowWebView;
 import com.xtremelabs.robolectric.shadows.ShadowWifiManager;
+import com.xtremelabs.robolectric.shadows.ShadowWindow;
 import com.xtremelabs.robolectric.shadows.ShadowZoomButtonsController;
 import com.xtremelabs.robolectric.util.HttpRequestInfo;
 import com.xtremelabs.robolectric.util.Scheduler;
@@ -303,6 +304,7 @@ public class Robolectric {
                 ShadowWebSettings.class,
                 ShadowWebView.class,
                 ShadowWifiManager.class,
+                ShadowWindow.class,
                 ShadowZoomButtonsController.class
         );
     }
