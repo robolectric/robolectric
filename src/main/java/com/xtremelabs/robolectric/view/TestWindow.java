@@ -13,6 +13,7 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import com.xtremelabs.robolectric.Robolectric;
 
 public class TestWindow extends Window {
     public int flags;
@@ -137,7 +138,7 @@ public class TestWindow extends Window {
     }
 
     @Override public View getDecorView() {
-        return null;
+        return new View(Robolectric.application);
     }
 
     @Override public View peekDecorView() {

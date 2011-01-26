@@ -14,12 +14,21 @@ public class TestAttributeSet implements AttributeSet {
     private AttrResourceLoader attrResourceLoader;
     private Class<? extends View> viewClass;
 
+    public TestAttributeSet() {
+        this.attributes = new HashMap<String, String>();
+    }
+
     public TestAttributeSet(Map<String, String> attributes, ResourceExtractor resourceExtractor,
                             AttrResourceLoader attrResourceLoader, Class<? extends View> viewClass) {
         this.attributes = attributes;
         this.resourceExtractor = resourceExtractor;
         this.attrResourceLoader = attrResourceLoader;
         this.viewClass = viewClass;
+    }
+
+    public TestAttributeSet put(String name, String value) {
+        attributes.put(name, value);
+        return this;
     }
 
     @Override public boolean getAttributeBooleanValue(String namespace, String attribute, boolean defaultValue) {

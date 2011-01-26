@@ -288,4 +288,8 @@ public class ResourceLoader {
     public File getAssetsBase() {
         return assetsDir;
     }
+
+    public ResourceExtractor getResourceExtractor() {
+        return resourceExtractor;
+    }
 }

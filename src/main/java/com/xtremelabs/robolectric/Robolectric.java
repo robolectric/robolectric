@@ -153,6 +153,7 @@ import com.xtremelabs.robolectric.shadows.ShadowTypedValue;
 import com.xtremelabs.robolectric.shadows.ShadowURLSpan;
 import com.xtremelabs.robolectric.shadows.ShadowView;
 import com.xtremelabs.robolectric.shadows.ShadowViewGroup;
+import com.xtremelabs.robolectric.shadows.ShadowViewStub;
 import com.xtremelabs.robolectric.shadows.ShadowWebSettings;
 import com.xtremelabs.robolectric.shadows.ShadowWebView;
 import com.xtremelabs.robolectric.shadows.ShadowWifiManager;
@@ -301,6 +302,7 @@ public class Robolectric {
                 ShadowURLSpan.class,
                 ShadowView.class,
                 ShadowViewGroup.class,
+                ShadowViewStub.class,
                 ShadowWebSettings.class,
                 ShadowWebView.class,
                 ShadowWifiManager.class,

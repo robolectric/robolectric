@@ -65,6 +65,17 @@ public class ShadowViewGroup extends ShadowView {
     }
 
     @Implementation
+    public int indexOfChild(View child) {
+        int count = getChildCount();
+        for (int i = 0; i < count; i++) {
+            if (children.get(i) == child) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Implementation
     public int getChildCount() {
         return children.size();
     }
