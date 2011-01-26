@@ -30,6 +30,9 @@ public final class R {
         public static final int textStyle = nextId++;
         public static final int textStyle2 = nextId++;
         public static final int textStyle3 = nextId++;
+
+        public static final int test_menu_1 = nextId++;
+        public static final int test_menu_2 = nextId++;
     }
 
     public static final class string {
@@ -42,6 +45,7 @@ public final class R {
     public static final class array {
         public static final int items = nextId++;
         public static final int greetings = nextId++;
+        public static final int alertDialogTestItems = nextId++;
     }
 
     public static final class color {
@@ -80,14 +84,10 @@ public final class R {
     }
 
     public static final class styleable {
-        public static final int[] TitleBar = {
-                id.textStyle
-        };
+        public static final int[] TitleBar = { id.textStyle };
         public static final int TitleBar_textStyle = 0;
 
-        public static final int[] HeaderBar = {
-                id.textStyle2, id.textStyle3
-        };
+        public static final int[] HeaderBar = { id.textStyle2, id.textStyle3 };
         public static final int HeaderBar_textStyle2 = 0;
         public static final int HeaderBar_textStyle3 = 1;
     }

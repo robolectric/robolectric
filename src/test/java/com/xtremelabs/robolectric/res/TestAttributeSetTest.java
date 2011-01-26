@@ -25,6 +25,14 @@ public class TestAttributeSetTest {
 
         resourceExtractor = new ResourceExtractor();
         resourceExtractor.addLocalRClass(R.class);
+        resourceExtractor.addSystemRClass(android.R.class);
+    }
+
+    @Test
+    public void getSystemAttributeResourceValue_shouldReturnTheResourceValue() throws Exception {
+        attributes.put("android:id", "@android:id/text1");
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
+        assertThat(testAttributeSet.getAttributeResourceValue("android", "id", 0), equalTo(android.R.id.text1));
     }
 
     @Test

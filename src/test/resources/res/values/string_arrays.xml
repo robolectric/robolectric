@@ -9,4 +9,9 @@
         <item>hola</item>
         <item>@string/hello</item>
     </string-array>
+
+     <string-array name="alertDialogTestItems">
+        <item>Aloha</item>
+        <item>Hawai</item>
+    </string-array>
 </resources>

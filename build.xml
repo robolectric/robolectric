@@ -201,4 +201,10 @@
             <doctitle><![CDATA[<h1>Robolectric<br/>API Documentation</h1>]]></doctitle>
         </javadoc>
     </target>
+
+    <target name="maven-install-jars" description="Install the jar files that Maven can't find for itself">
+        <exec executable="mvn">
+            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=9_r1 -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon_google_apis_google_inc_9/libs/maps.jar" />
+        </exec>
+    </target>
 </project>
