@@ -5,6 +5,7 @@ import android.content.Context;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import com.xtremelabs.robolectric.util.PropertiesHelper;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -160,7 +161,8 @@ public class ResourceLoader {
             return resourcePath;
         }
 
-        throw new RuntimeException("Unable to find path to Android SDK");
+        System.out.println("WARNING: Unable to find path to Android SDK");
+        return null;
     }
 
     private String getAndroidResourcePathFromLocalProperties() {
@@ -176,6 +178,7 @@ public class ResourceLoader {
             Properties localProperties = new Properties();
             try {
                 localProperties.load(new FileInputStream(localPropertiesFile));
+                PropertiesHelper.doSubstitutions(localProperties);
                 String sdkPath = localProperties.getProperty("sdk.dir");
                 if (sdkPath != null) {
                     return getResourcePathFromSdkPath(sdkPath);
