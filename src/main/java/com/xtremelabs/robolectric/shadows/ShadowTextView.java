@@ -1,10 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
-import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -28,13 +26,13 @@ public class ShadowTextView extends ShadowView {
     private CharSequence hintText;
     private int compoundDrawablePadding;
 
-    @Override public void __constructor__(Context context, AttributeSet attributeSet) {
-        super.__constructor__(context, attributeSet);
+    @Override public void applyAttributes() {
+        super.applyAttributes();
         applyTextAttribute();
         applyCompoundDrawablesWithIntrinsicBoundsAttributes();
     }
 
-    @Implementation
+  @Implementation
     public void setText(CharSequence text) {
         if (text == null) {
             text = "";

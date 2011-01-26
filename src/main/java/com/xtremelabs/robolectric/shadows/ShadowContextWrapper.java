@@ -40,6 +40,11 @@ public class ShadowContextWrapper extends ShadowContext {
     }
 
     @Implementation
+    public Resources.Theme getTheme() {
+        return getResources().newTheme();
+    }
+
+    @Implementation
     public Resources getResources() {
         return getApplicationContext().getResources();
     }

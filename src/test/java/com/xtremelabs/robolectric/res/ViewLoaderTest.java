@@ -18,6 +18,7 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.shadows.ShadowImageView;
 import com.xtremelabs.robolectric.shadows.ShadowTextView;
 import com.xtremelabs.robolectric.util.CustomView;
+import com.xtremelabs.robolectric.util.CustomView2;
 import com.xtremelabs.robolectric.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -42,9 +43,9 @@ public class ViewLoaderTest {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addLocalRClass(R.class);
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadLocalResourceXmlDir(resourceFile("res", "values"));
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
         viewLoader = new ViewLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
-        new DocumentLoader(viewLoader).loadLocalResourceXmlDir(resourceFile("res", "layout"));
+        new DocumentLoader(viewLoader).loadResourceXmlDir(resourceFile("res", "layout"));
 
         context = new Activity();
     }
@@ -237,5 +238,13 @@ public class ViewLoaderTest {
         ShadowImageView shadowImageView = Robolectric.shadowOf(imageView);
 
         assertThat(shadowImageView.getBackgroundResourceId(), equalTo(R.drawable.image_background));
+    }
+    
+    @Test
+    public void shouldInvokeOnFinishInflate() throws Exception {
+        CustomView2 outerCustomView = (CustomView2) viewLoader.inflateView(context, "layout/custom_layout2");
+        CustomView2 innerCustomView = (CustomView2) outerCustomView.getChildAt(0);
+        assertThat(outerCustomView.childCountAfterInflate, equalTo(1));
+        assertThat(innerCustomView.childCountAfterInflate, equalTo(3));
     }
 }

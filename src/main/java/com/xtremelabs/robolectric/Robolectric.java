@@ -84,6 +84,7 @@ import com.xtremelabs.robolectric.shadows.ShadowCameraSize;
 import com.xtremelabs.robolectric.shadows.ShadowCanvas;
 import com.xtremelabs.robolectric.shadows.ShadowColorMatrix;
 import com.xtremelabs.robolectric.shadows.ShadowColorMatrixColorFilter;
+import com.xtremelabs.robolectric.shadows.ShadowColorStateList;
 import com.xtremelabs.robolectric.shadows.ShadowComponentName;
 import com.xtremelabs.robolectric.shadows.ShadowCompoundButton;
 import com.xtremelabs.robolectric.shadows.ShadowConfiguration;
@@ -93,6 +94,7 @@ import com.xtremelabs.robolectric.shadows.ShadowContentValues;
 import com.xtremelabs.robolectric.shadows.ShadowContext;
 import com.xtremelabs.robolectric.shadows.ShadowContextThemeWrapper;
 import com.xtremelabs.robolectric.shadows.ShadowContextWrapper;
+import com.xtremelabs.robolectric.shadows.ShadowCookieManager;
 import com.xtremelabs.robolectric.shadows.ShadowDefaultRequestDirector;
 import com.xtremelabs.robolectric.shadows.ShadowDialog;
 import com.xtremelabs.robolectric.shadows.ShadowDisplay;
@@ -130,6 +132,7 @@ import com.xtremelabs.robolectric.shadows.ShadowPath;
 import com.xtremelabs.robolectric.shadows.ShadowPendingIntent;
 import com.xtremelabs.robolectric.shadows.ShadowPoint;
 import com.xtremelabs.robolectric.shadows.ShadowPointF;
+import com.xtremelabs.robolectric.shadows.ShadowPowerManager;
 import com.xtremelabs.robolectric.shadows.ShadowPreferenceManager;
 import com.xtremelabs.robolectric.shadows.ShadowRect;
 import com.xtremelabs.robolectric.shadows.ShadowRemoteViews;
@@ -145,6 +148,7 @@ import com.xtremelabs.robolectric.shadows.ShadowSurfaceView;
 import com.xtremelabs.robolectric.shadows.ShadowTextUtils;
 import com.xtremelabs.robolectric.shadows.ShadowTextView;
 import com.xtremelabs.robolectric.shadows.ShadowToast;
+import com.xtremelabs.robolectric.shadows.ShadowTypedArray;
 import com.xtremelabs.robolectric.shadows.ShadowTypedValue;
 import com.xtremelabs.robolectric.shadows.ShadowURLSpan;
 import com.xtremelabs.robolectric.shadows.ShadowView;
@@ -152,6 +156,7 @@ import com.xtremelabs.robolectric.shadows.ShadowViewGroup;
 import com.xtremelabs.robolectric.shadows.ShadowWebSettings;
 import com.xtremelabs.robolectric.shadows.ShadowWebView;
 import com.xtremelabs.robolectric.shadows.ShadowWifiManager;
+import com.xtremelabs.robolectric.shadows.ShadowWindow;
 import com.xtremelabs.robolectric.shadows.ShadowZoomButtonsController;
 import com.xtremelabs.robolectric.util.HttpRequestInfo;
 import com.xtremelabs.robolectric.util.Scheduler;
@@ -224,6 +229,7 @@ public class Robolectric {
                 ShadowCanvas.class,
                 ShadowColorMatrix.class,
                 ShadowColorMatrixColorFilter.class,
+                ShadowColorStateList.class,
                 ShadowComponentName.class,
                 ShadowCompoundButton.class,
                 ShadowConfiguration.class,
@@ -233,6 +239,7 @@ public class Robolectric {
                 ShadowContext.class,
                 ShadowContextWrapper.class,
                 ShadowContextThemeWrapper.class,
+                ShadowCookieManager.class,
                 ShadowDefaultRequestDirector.class,
                 ShadowDisplay.class,
                 ShadowDrawable.class,
@@ -270,10 +277,12 @@ public class Robolectric {
                 ShadowPendingIntent.class,
                 ShadowPoint.class,
                 ShadowPointF.class,
+                ShadowPowerManager.class,
                 ShadowPreferenceManager.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
                 ShadowResources.class,
+                ShadowResources.ShadowTheme.class,
                 ShadowService.class,
                 ShadowSettings.class,
                 ShadowSettings.ShadowSecure.class,
@@ -287,6 +296,7 @@ public class Robolectric {
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
+                ShadowTypedArray.class,
                 ShadowTypedValue.class,
                 ShadowURLSpan.class,
                 ShadowView.class,
@@ -294,6 +304,7 @@ public class Robolectric {
                 ShadowWebSettings.class,
                 ShadowWebView.class,
                 ShadowWifiManager.class,
+                ShadowWindow.class,
                 ShadowZoomButtonsController.class
         );
     }

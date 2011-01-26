@@ -37,8 +37,31 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public void addView(View child) {
-        children.add(child);
+        ((ViewGroup)realView).addView(child, -1);
+    }
+
+    @Implementation
+    public void addView(View child, int index) {
+        if (index == -1) {
+            children.add(child);
+        } else {
+            children.add(index, child);
+        }
         shadowOf(child).parent = this;
+    }
+    @Implementation
+    public void addView(View child, int width, int height) {
+        ((ViewGroup)realView).addView(child, -1);
+    }
+
+    @Implementation
+    public void addView(View child, ViewGroup.LayoutParams params) {
+        ((ViewGroup)realView).addView(child, -1);
+    }
+
+    @Implementation
+    public void addView(View child, int index, ViewGroup.LayoutParams params) {
+        ((ViewGroup)realView).addView(child, index);
     }
 
     @Implementation

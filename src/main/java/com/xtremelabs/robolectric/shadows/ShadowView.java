@@ -60,12 +60,23 @@ public class ShadowView {
     private boolean drawingCacheEnabled;
 
     public void __constructor__(Context context) {
-        this.context = context;
+        __constructor__(context, null);
     }
 
     public void __constructor__(Context context, AttributeSet attributeSet) {
+        __constructor__(context, attributeSet, 0);
+    }
+
+    public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
+        this.context = context;
         this.attributeSet = attributeSet;
-        __constructor__(context);
+
+        if (attributeSet != null) {
+            applyAttributes();
+        }
+    }
+
+    public void applyAttributes() {
         applyIdAttribute();
         applyVisibilityAttribute();
         applyEnabledAttribute();

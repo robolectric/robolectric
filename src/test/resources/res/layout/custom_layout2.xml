@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<com.xtremelabs.robolectric.util.CustomView2 message="@string/hello">
+    <com.xtremelabs.robolectric.util.CustomView2>
+        <TextView/>
+        <TextView/>
+        <TextView/>
+    </com.xtremelabs.robolectric.util.CustomView2>
+</com.xtremelabs.robolectric.util.CustomView2>
