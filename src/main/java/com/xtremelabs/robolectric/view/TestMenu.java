@@ -1,23 +1,49 @@
 package com.xtremelabs.robolectric.view;
 
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.lang.reflect.Field;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class TestMenu implements Menu {
-    private List<MenuItem> menuItems = new ArrayList<MenuItem>();
+    private int menuCounter = 0;
+    private Context context;
+    private Map<Integer, MenuItem> menuItems = new LinkedHashMap<Integer, MenuItem>();
 
-    @Override public MenuItem add(CharSequence title) {
-        TestMenuItem menuItem = new TestMenuItem();
-        menuItems.add(menuItem);
-        menuItem.setTitle(title);
+    public TestMenu() {
+        this(null);
+    }
+
+    public TestMenu(Context context) {
+        this.context = context;
+    }
+
+    @Override public MenuItem add(CharSequence id) {
+        int resourceId = 0;
+        TestMenuItem menuItem = null;
+
+        if (context != null) {
+            try {
+                Class<?> c = Class.forName(context.getPackageName() + ".R$id");
+                Field idField = c.getDeclaredField(id.toString().split("/")[1]);
+                resourceId = idField.getInt(idField);
+            } catch (Exception e) {
+                resourceId = menuCounter++;
+            }
+        } else {
+            resourceId = menuCounter++;
+        }
+        menuItem = new TestMenuItem(resourceId);
+        menuItems.put(new Integer(resourceId), menuItem);
         return menuItem;
+
     }
 
     @Override public MenuItem add(int titleRes) {
@@ -77,7 +103,7 @@ public class TestMenu implements Menu {
     }
 
     @Override public MenuItem findItem(int id) {
-        return null;
+		return menuItems.get(new Integer(id));
     }
 
     @Override public int size() {
@@ -85,7 +111,7 @@ public class TestMenu implements Menu {
     }
 
     @Override public MenuItem getItem(int index) {
-        return menuItems.get(index);
+		return menuItems.values().toArray(new MenuItem[menuItems.size()])[index];
     }
 
     @Override public void close() {

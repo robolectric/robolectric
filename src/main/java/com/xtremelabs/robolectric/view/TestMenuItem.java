@@ -7,13 +7,28 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 
 public class TestMenuItem implements MenuItem {
+
+    private int itemId;
     private CharSequence title;
     private boolean enabled = true;
     private OnMenuItemClickListener menuItemClickListener;
     public int iconRes;
 
+    public TestMenuItem() {
+        super();
+    }
+
+    public TestMenuItem(int itemId) {
+        super();
+        this.itemId = itemId;
+    }
+
+    public void setItemId(int itemId) {
+        this.itemId = itemId;
+    }
+
     @Override public int getItemId() {
-        return 0;
+        return itemId;
     }
 
     @Override public int getGroupId() {

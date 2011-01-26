@@ -34,7 +34,8 @@ public class ResourceExtractor {
                         }
 
                         if (resourceIdToString.containsKey(value)) {
-                            throw new RuntimeException(value + " is already defined with name: " + resourceIdToString.get(value) + " can't also call it: " + name);
+                            throw new RuntimeException(value + " is already defined with name: " + resourceIdToString.get(value) + " can't also call it: "
+                                    + name);
                         }
                         resourceIdToString.put(value, name);
                     }
@@ -43,11 +44,19 @@ public class ResourceExtractor {
         }
     }
 
+    public Integer getResourceId(String resourceName) {
+        if (resourceName.startsWith("@android:")) { // namespace needed for platform files
+            return getResourceId(resourceName, true);
+        } else {
+            return getResourceId(resourceName, false);
+        }
+    }
+
     public Integer getLocalResourceId(String value) {
         boolean isSystem = false;
         return getResourceId(value, isSystem);
     }
-    
+
     public Integer getResourceId(String resourceName, boolean isSystemResource) {
         if (resourceName == null) {
             return null;
