@@ -8,14 +8,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 
-import java.lang.reflect.Field;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TestMenu implements Menu {
-    private int menuCounter = 0;
+    private List<MenuItem> menuItems = new ArrayList<MenuItem>();
     private Context context;
-    private Map<Integer, MenuItem> menuItems = new LinkedHashMap<Integer, MenuItem>();
 
     public TestMenu() {
         this(null);
@@ -25,37 +23,24 @@ public class TestMenu implements Menu {
         this.context = context;
     }
 
-    @Override public MenuItem add(CharSequence id) {
-        int resourceId = 0;
-        TestMenuItem menuItem = null;
-
-        if (context != null) {
-            try {
-                Class<?> c = Class.forName(context.getPackageName() + ".R$id");
-                Field idField = c.getDeclaredField(id.toString().split("/")[1]);
-                resourceId = idField.getInt(idField);
-            } catch (Exception e) {
-                resourceId = menuCounter++;
-            }
-        } else {
-            resourceId = menuCounter++;
-        }
-        menuItem = new TestMenuItem(resourceId);
-        menuItems.put(new Integer(resourceId), menuItem);
-        return menuItem;
-
+    @Override public MenuItem add(CharSequence title) {
+        return add(0, 0, 0, title);
     }
 
     @Override public MenuItem add(int titleRes) {
-        return null;
+        return add(0, 0, 0, titleRes);
     }
 
     @Override public MenuItem add(int groupId, int itemId, int order, CharSequence title) {
-        return null;
+        TestMenuItem menuItem = new TestMenuItem();
+        menuItems.add(menuItem);
+        menuItem.setItemId(itemId);
+        menuItem.setTitle(title);
+        return menuItem;
     }
 
     @Override public MenuItem add(int groupId, int itemId, int order, int titleRes) {
-        return null;
+        return add(groupId, itemId, order, context.getResources().getString(titleRes));
     }
 
     @Override public SubMenu addSubMenu(CharSequence title) {
@@ -103,7 +88,12 @@ public class TestMenu implements Menu {
     }
 
     @Override public MenuItem findItem(int id) {
-		return menuItems.get(new Integer(id));
+        for (MenuItem item : menuItems) {
+            if (item.getItemId() == id) {
+                return item;
+            }
+        }
+        return null;
     }
 
     @Override public int size() {
@@ -111,7 +101,7 @@ public class TestMenu implements Menu {
     }
 
     @Override public MenuItem getItem(int index) {
-		return menuItems.values().toArray(new MenuItem[menuItems.size()])[index];
+        return menuItems.get(index);
     }
 
     @Override public void close() {
