@@ -142,7 +142,6 @@ public class ViewLoader extends XmlLoader {
             if (name.equals("include")) {
                 String layout = attributes.get("layout");
                 View view = inflateView(context, layout.substring(1), attributes, parent);
-                addToParent(parent, view);
                 return view;
             } else if (name.equals("merge")) {
                 return parent;

@@ -248,4 +248,10 @@ public class ViewLoaderTest {
         assertThat(outerCustomView.childCountAfterInflate, equalTo(1));
         assertThat(innerCustomView.childCountAfterInflate, equalTo(3));
     }
+
+    @Test
+    public void testIncludesLinearLayoutsOnlyOnce() throws Exception {
+        ViewGroup parentView = (ViewGroup) viewLoader.inflateView(context, "layout/included_layout_parent");
+        assertEquals(1, parentView.getChildCount());
+    }
 }
