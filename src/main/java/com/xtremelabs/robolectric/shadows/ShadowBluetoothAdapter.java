@@ -21,7 +21,7 @@ public class ShadowBluetoothAdapter {
 
     @Implementation
     public static BluetoothAdapter getDefaultAdapter() {
-        return shadowOf(Robolectric.application).getBluetoothAdapter();
+        return (BluetoothAdapter) shadowOf(Robolectric.application).getBluetoothAdapter();
     }
 
     @Implementation

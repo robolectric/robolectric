@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
-import android.bluetooth.BluetoothAdapter;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.ContentResolver;
@@ -79,7 +78,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private ArrayList<Toast> shownToasts = new ArrayList<Toast>();
     private ShadowAlertDialog latestAlertDialog;
     private ShadowDialog latestDialog;
-    private BluetoothAdapter bluetoothAdapter = Robolectric.newInstanceOf(BluetoothAdapter.class);
+    private Object bluetoothAdapter = Robolectric.newInstanceOf("android.bluetooth.BluetoothAdapter");
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -349,7 +348,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         this.latestDialog = latestDialog;
     }
 
-    public BluetoothAdapter getBluetoothAdapter() {
+    public Object getBluetoothAdapter() {
         return bluetoothAdapter;
     }
 

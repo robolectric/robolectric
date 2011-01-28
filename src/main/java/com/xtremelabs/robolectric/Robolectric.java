@@ -176,6 +176,17 @@ public class Robolectric {
         return RobolectricInternals.newInstanceOf(clazz);
     }
 
+    public static Object newInstanceOf(String className) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            if (clazz != null) {
+                return newInstanceOf(clazz);
+            }
+        } catch (ClassNotFoundException e) {
+        }
+        return null;
+    }
+
     public static void bindShadowClass(Class<?> shadowClass) {
         RobolectricInternals.bindShadowClass(shadowClass);
     }
