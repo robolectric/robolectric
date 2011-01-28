@@ -121,6 +121,7 @@ public class ViewLoaderTest {
         assertInstanceOf(LinearLayout.class, overrideIncludeView.findViewById(R.id.outer_merge));
         assertInstanceOf(TextView.class, overrideIncludeView.findViewById(R.id.inner_text));
         assertNull(overrideIncludeView.findViewById(R.id.include_id));
+        assertEquals(1, overrideIncludeView.getChildCount());
     }
 
     @Test
