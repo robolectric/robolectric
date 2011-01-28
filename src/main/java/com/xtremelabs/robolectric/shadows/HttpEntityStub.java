@@ -41,5 +41,6 @@ public class HttpEntityStub implements HttpEntity {
     }
 
     @Override public void consumeContent() throws IOException {
+        throw new UnsupportedOperationException();
     }
 }

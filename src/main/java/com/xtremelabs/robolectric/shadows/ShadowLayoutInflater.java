@@ -34,6 +34,11 @@ public class ShadowLayoutInflater {
     }
 
     @Implementation
+    public Context getContext() {
+        return context;
+    }
+
+    @Implementation
     public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
         return getResourceLoader().inflateView(context, resource, attachToRoot ? root : null);
     }

@@ -1,13 +1,19 @@
-package com.xtremelabs.robolectric.shadows;
+package com.xtremelabs.robolectric.util;
 
+import com.xtremelabs.robolectric.shadows.HttpEntityStub;
+import com.xtremelabs.robolectric.shadows.HttpResponseStub;
+import com.xtremelabs.robolectric.shadows.StatusLineStub;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpVersion;
+import org.apache.http.ProtocolVersion;
 import org.apache.http.StatusLine;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 
-class TestHttpResponse extends HttpResponseStub {
+public class TestHttpResponse extends HttpResponseStub {
 
     private int statusCode;
     private String responseBody;
@@ -28,7 +34,6 @@ class TestHttpResponse extends HttpResponseStub {
     }
 
     public class TestHttpEntity extends HttpEntityStub {
-
         @Override public long getContentLength() {
             return responseBody.length();
         }
@@ -36,11 +41,26 @@ class TestHttpResponse extends HttpResponseStub {
         @Override public InputStream getContent() throws IOException, IllegalStateException {
             return new ByteArrayInputStream(responseBody.getBytes());
         }
+
+        @Override public void writeTo(OutputStream outputStream) throws IOException {
+            outputStream.write(responseBody.getBytes());
+        }
+
+        @Override public void consumeContent() throws IOException {
+        }
     }
 
     public class TestStatusLine extends StatusLineStub {
+        @Override public ProtocolVersion getProtocolVersion() {
+            return new HttpVersion(1, 0);
+        }
+
         @Override public int getStatusCode() {
             return statusCode;
+        }
+
+        @Override public String getReasonPhrase() {
+            return "HTTP status " + statusCode;
         }
     }
 }

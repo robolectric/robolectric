@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Strings;
+import com.xtremelabs.robolectric.util.TestHttpResponse;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
