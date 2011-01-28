@@ -36,6 +36,7 @@ public class ResourceLoader {
 
     private File resourceDir;
     private File assetsDir;
+    private int sdkVersion;
 
     private final ResourceExtractor resourceExtractor;
     private ViewLoader viewLoader;
@@ -50,7 +51,8 @@ public class ResourceLoader {
     // TODO: get these value from the xml resources instead [xw 20101011]
     public final Map<Integer, Integer> dimensions = new HashMap<Integer, Integer>();
 
-    public ResourceLoader(Class rClass, File resourceDir, File assetsDir) throws Exception {
+    public ResourceLoader(int sdkVersion, Class rClass, File resourceDir, File assetsDir) throws Exception {
+        this.sdkVersion = sdkVersion;
         this.assetsDir = assetsDir;
         resourceExtractor = new ResourceExtractor();
         resourceExtractor.addLocalRClass(rClass);
@@ -220,8 +222,7 @@ public class ResourceLoader {
     }
 
     private String getAndroidResourceSubPath() {
-        // TODO: Use the targetSDKVersion from the Android Manifest instead of a hard-coded "9"
-        return "platforms/android-9/data/res";
+        return "platforms/android-" + sdkVersion + "/data/res";
     }
 
     static boolean isLayoutDirectory(String path) {

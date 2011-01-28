@@ -19,6 +19,7 @@ public class RobolectricConfig {
     private String packageName;
     private String applicationName;
     private boolean manifestIsParsed = false;
+    private int sdkVersion;
 
     /**
      * Creates a Robolectric configuration using default Android files relative to the specified base directory.
@@ -70,14 +71,23 @@ public class RobolectricConfig {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
             DocumentBuilder db = dbf.newDocumentBuilder();
-            Document manifestDocument= db.parse(androidManifestFile);
+            Document manifestDocument = db.parse(androidManifestFile);
 
             packageName = getTagAttributeText(manifestDocument, "manifest", "package");
             rClassName = packageName + ".R";
             applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
+            sdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion", 9);
         } catch (Exception ignored) {
         }
         manifestIsParsed = true;
+    }
+
+    private int getTagAttributeIntValue(Document doc, String tag, String attribute, int defaultValue) {
+        String sdkVersionString = getTagAttributeText(doc, tag, attribute);
+        if (sdkVersionString != null) {
+            return Integer.parseInt(sdkVersionString);
+        }
+        return defaultValue;
     }
 
     public String getApplicationName() {
@@ -90,6 +100,11 @@ public class RobolectricConfig {
         return packageName;
     }
 
+    public int getSdkVersion() {
+        parseAndroidManifest();
+        return sdkVersion;
+    }
+
     public File getResourceDirectory() {
         return resourceDirectory;
     }
@@ -98,12 +113,16 @@ public class RobolectricConfig {
         return assetsDirectory;
     }
 
-
     private static String getTagAttributeText(Document doc, String tag, String attribute) {
         NodeList elementsByTagName = doc.getElementsByTagName(tag);
-        Node firstItem = elementsByTagName.getLength() > 0 ? elementsByTagName.item(0) : null;
-        Node namedItem = firstItem != null ? firstItem.getAttributes().getNamedItem(attribute) : null;
-        return namedItem != null ? namedItem.getTextContent() : null;
+        for (int i = 0; i < elementsByTagName.getLength(); ++i) {
+            Node item = elementsByTagName.item(i);
+            Node namedItem = item.getAttributes().getNamedItem(attribute);
+            if (namedItem != null) {
+                return namedItem.getTextContent();
+            }
+        }
+        return null;
     }
 
     private static Application newApplicationInstance(String packageName, String applicationName) {

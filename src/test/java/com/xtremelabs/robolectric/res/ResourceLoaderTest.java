@@ -18,7 +18,7 @@ public class ResourceLoaderTest {
 
     @Test
     public void shouldLoadSystemResources() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(R.class, resourceFile("res"), resourceFile("assets"));
+        ResourceLoader resourceLoader = new ResourceLoader(9, R.class, resourceFile("res"), resourceFile("assets"));
         String stringValue = resourceLoader.getStringValue(android.R.string.copy);
         assertEquals("Copy", stringValue);
     }
