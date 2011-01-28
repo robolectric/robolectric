@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import com.xtremelabs.robolectric.util.HttpRequestInfo;
+import com.xtremelabs.robolectric.util.TestHttpResponse;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
