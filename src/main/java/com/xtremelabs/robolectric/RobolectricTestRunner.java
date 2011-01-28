@@ -297,7 +297,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      *         Application if not specified.
      */
     protected Application createApplication() {
-        return new ApplicationResolver(robolectricConfig.getAndroidManifestFile()).resolveApplication();
+        return new ApplicationResolver(robolectricConfig).resolveApplication();
     }
 
     private ResourceLoader createResourceLoader(RobolectricConfig robolectricConfig) {
@@ -306,7 +306,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             try {
                 robolectricConfig.validate();
 
-                String rClassName = robolectricConfig.findRClassName();
+                String rClassName = robolectricConfig.getRClassName();
                 Class rClass = Class.forName(rClassName);
                 resourceLoader = new ResourceLoader(rClass, robolectricConfig.getResourceDirectory(), robolectricConfig.getAssetsDirectory());
                 resourceLoaderForRootAndDirectory.put(robolectricConfig, resourceLoader);

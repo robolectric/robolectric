@@ -4,33 +4,18 @@ import android.app.Application;
 import com.xtremelabs.robolectric.internal.ClassNameResolver;
 import org.w3c.dom.Document;
 
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
-
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ApplicationResolver {
-    private File androidManifestPath;
+    RobolectricConfig config;
 
-    public ApplicationResolver(File androidManifestPath) {
-        this.androidManifestPath = androidManifestPath;
+    public ApplicationResolver(RobolectricConfig config) {
+        this.config = config;
     }
 
     public Application resolveApplication() {
-        String applicationName = null;
-        String packageName = null;
-        try {
-            Document manifestDoc =
-                    DocumentBuilderFactory
-                            .newInstance()
-                            .newDocumentBuilder()
-                            .parse(androidManifestPath);
-
-            packageName = getTagAttributeText(manifestDoc, "manifest", "package");
-            //TODO: should use getNamedItemNS, but that's not working as expected
-            applicationName = getTagAttributeText(manifestDoc, "application", "android:name");
-        } catch (Exception ignored) {
-        }
+        String applicationName = config.getApplicationName();
+        String packageName = config.getPackageName();
 
         Application application;
         if (applicationName != null) {

@@ -1,19 +1,24 @@
 package com.xtremelabs.robolectric;
 
+import android.app.Application;
+import com.xtremelabs.robolectric.internal.ClassNameResolver;
 import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 
 public class RobolectricConfig {
     private File androidManifestFile;
     private File resourceDirectory;
     private File assetsDirectory;
+    private String rClassName;
+    private String packageName;
+    private String applicationName;
+    private boolean manifestIsParsed = false;
 
     /**
      * Creates a Robolectric configuration using default Android files relative to the specified base directory.
@@ -43,13 +48,14 @@ public class RobolectricConfig {
         this.assetsDirectory = assetsDirectory;
     }
 
-    public String findRClassName() throws Exception {
-        return findResourcePackageName(getAndroidManifestFile());
+    public String getRClassName() throws Exception {
+        parseAndroidManifest();
+        return rClassName;
     }
 
     public void validate() throws FileNotFoundException {
-        if (!getAndroidManifestFile().exists() || !getAndroidManifestFile().isFile()) {
-            throw new FileNotFoundException(getAndroidManifestFile().getAbsolutePath() + " not found or not a file; it should point to your project's AndroidManifest.xml");
+        if (!androidManifestFile.exists() || !androidManifestFile.isFile()) {
+            throw new FileNotFoundException(androidManifestFile.getAbsolutePath() + " not found or not a file; it should point to your project's AndroidManifest.xml");
         }
 
         if (!getResourceDirectory().exists() || !getResourceDirectory().isDirectory()) {
@@ -57,18 +63,31 @@ public class RobolectricConfig {
         }
     }
 
-    private String findResourcePackageName(File projectManifestFile) throws ParserConfigurationException, IOException, SAXException {
+    private void parseAndroidManifest() {
+        if (manifestIsParsed) {
+            return;
+        }
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = db.parse(projectManifestFile);
+        try {
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            Document manifestDocument= db.parse(androidManifestFile);
 
-        String projectPackage = doc.getElementsByTagName("manifest").item(0).getAttributes().getNamedItem("package").getTextContent();
-
-        return projectPackage + ".R";
+            packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+            rClassName = packageName + ".R";
+            applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
+        } catch (Exception ignored) {
+        }
+        manifestIsParsed = true;
     }
 
-    public File getAndroidManifestFile() {
-        return androidManifestFile;
+    public String getApplicationName() {
+        parseAndroidManifest();
+        return applicationName;
+    }
+
+    public String getPackageName() {
+        parseAndroidManifest();
+        return packageName;
     }
 
     public File getResourceDirectory() {
@@ -79,6 +98,26 @@ public class RobolectricConfig {
         return assetsDirectory;
     }
 
+
+    private static String getTagAttributeText(Document doc, String tag, String attribute) {
+        NodeList elementsByTagName = doc.getElementsByTagName(tag);
+        Node firstItem = elementsByTagName.getLength() > 0 ? elementsByTagName.item(0) : null;
+        Node namedItem = firstItem != null ? firstItem.getAttributes().getNamedItem(attribute) : null;
+        return namedItem != null ? namedItem.getTextContent() : null;
+    }
+
+    private static Application newApplicationInstance(String packageName, String applicationName) {
+        Application application;
+        try {
+            Class<? extends Application> applicationClass =
+                    new ClassNameResolver<Application>(packageName, applicationName).resolve();
+            application = applicationClass.newInstance();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return application;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) return true;
@@ -86,7 +125,7 @@ public class RobolectricConfig {
 
         RobolectricConfig that = (RobolectricConfig) o;
 
-        if (getAndroidManifestFile() != null ? !getAndroidManifestFile().equals(that.getAndroidManifestFile()) : that.getAndroidManifestFile() != null)
+        if (androidManifestFile != null ? !androidManifestFile.equals(that.androidManifestFile) : that.androidManifestFile != null)
             return false;
         if (getAssetsDirectory() != null ? !getAssetsDirectory().equals(that.getAssetsDirectory()) : that.getAssetsDirectory() != null)
             return false;
@@ -96,10 +135,9 @@ public class RobolectricConfig {
         return true;
     }
 
-
     @Override
     public int hashCode() {
-        int result = getAndroidManifestFile() != null ? getAndroidManifestFile().hashCode() : 0;
+        int result = androidManifestFile != null ? androidManifestFile.hashCode() : 0;
         result = 31 * result + (getResourceDirectory() != null ? getResourceDirectory().hashCode() : 0);
         result = 31 * result + (getAssetsDirectory() != null ? getAssetsDirectory().hashCode() : 0);
         return result;

@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -140,7 +140,7 @@ public class ActivityTest {
 
     @Test
     public void shouldRetrievePackageNameFromTheManifest() throws Exception {
-        Robolectric.application = new ApplicationResolver(resourceFile("TestAndroidManifestWithPackageName.xml")).resolveApplication();
+        Robolectric.application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
         assertEquals("com.wacka.wa", new Activity().getPackageName());
     }
 

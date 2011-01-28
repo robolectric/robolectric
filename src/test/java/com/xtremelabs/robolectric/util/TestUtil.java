@@ -1,5 +1,7 @@
 package com.xtremelabs.robolectric.util;
 
+import com.xtremelabs.robolectric.RobolectricConfig;
+
 import java.io.File;
 import java.util.Collection;
 
@@ -59,5 +61,9 @@ public abstract class TestUtil {
 
     public static File resourceFile(String... pathParts) {
         return file(resourcesBaseDir(), pathParts);
+    }
+
+    public static RobolectricConfig newConfig(String androidManifestFile) {
+        return new RobolectricConfig(resourceFile(androidManifestFile), null, null);
     }
 }

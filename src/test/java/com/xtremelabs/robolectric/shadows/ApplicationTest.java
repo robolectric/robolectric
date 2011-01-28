@@ -14,7 +14,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
@@ -81,7 +81,7 @@ public class ApplicationTest {
 
     @Test
     public void packageManager_shouldKnowPackageName() throws Exception {
-        Application application = new ApplicationResolver(resourceFile("TestAndroidManifestWithPackageName.xml")).resolveApplication();
+        Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
         assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo(null, 0).packageName);
     }
 }
