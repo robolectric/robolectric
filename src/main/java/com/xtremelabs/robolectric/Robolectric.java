@@ -167,6 +167,7 @@ public class Robolectric {
                 ShadowFloatMath.class,
                 ShadowGeocoder.class,
                 ShadowGeoPoint.class,
+                ShadowGridView.class,
                 ShadowHandler.class,
                 ShadowImageView.class,
                 ShadowIntent.class,
