@@ -69,7 +69,7 @@ public class ShadowAdapterView extends ShadowViewGroup {
     }    
     
     @Implementation
-    public Object getSelectedItem(){
+    public Object getSelectedItem() {
     	int pos = getSelectedItemPosition();
     	return getItemAtPosition(pos);
     }
