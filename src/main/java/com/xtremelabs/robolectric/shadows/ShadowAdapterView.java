@@ -66,8 +66,13 @@ public class ShadowAdapterView extends ShadowViewGroup {
     @Implementation
     public int getSelectedItemPosition() {
         return selectedPosition;
+    }    
+    
+    @Implementation
+    public Object getSelectedItem(){
+    	return adapter.getItem(getSelectedItemPosition());
     }
-
+    
     @Implementation
     public Adapter getAdapter() {
         return adapter;
