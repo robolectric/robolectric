@@ -1,5 +1,15 @@
 package com.xtremelabs.robolectric.shadows;
 
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import android.app.Activity;
 import android.content.Context;
 import android.view.View;
@@ -8,10 +18,8 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Gallery;
 import android.widget.Spinner;
+
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AbsSpinnerTest {
@@ -39,6 +47,29 @@ public class AbsSpinnerTest {
 		spinner.setAdapter(arrayAdapter);
 	}
 
+	@Test
+	public void getSelectedItemShouldReturnCorrectValue(){
+		spinner.setAdapter(arrayAdapter);
+		spinner.setSelection(0);
+		assertThat((String)spinner.getSelectedItem(), equalTo("foo"));
+		assertThat((String)spinner.getSelectedItem(), not(equalTo("bar")));
+		
+		spinner.setSelection(1);
+		assertThat((String)spinner.getSelectedItem(), equalTo("bar"));
+		assertThat((String)spinner.getSelectedItem(), not(equalTo("foo")));
+	}
+	
+	@Test
+	public void getSelectedItemShouldReturnNull_NoAdapterSet(){
+		assertThat(spinner.getSelectedItem(), nullValue());
+	}
+	
+	@Test (expected = IndexOutOfBoundsException.class)	
+	public void getSelectedItemShouldTHrowException_EmptyArray(){
+		spinner.setAdapter(new MyArrayAdapter(context, new String[]{}));
+		spinner.getSelectedItem();		
+	}
+	
     private static class MyArrayAdapter extends ArrayAdapter<String> {
         public MyArrayAdapter(Context context, String[] testItems) {
             super(context, android.R.layout.simple_spinner_item, testItems);
