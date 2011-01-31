@@ -1,13 +1,18 @@
 package com.xtremelabs.robolectric.shadows;
 
 import com.xtremelabs.robolectric.util.HttpRequestInfo;
+import com.xtremelabs.robolectric.util.RequestMatcher;
+import com.xtremelabs.robolectric.util.ResponseRule;
 import com.xtremelabs.robolectric.util.TestHttpResponse;
+import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.RequestDirector;
 import org.apache.http.protocol.HttpContext;
 
+import javax.xml.ws.http.HTTPException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -38,7 +43,7 @@ public class FakeHttpLayer {
     }
 
     public void addHttpResponseRule(RequestMatcher requestMatcher, HttpResponse response) {
-        addHttpResponseRule(new ResponseRule(response, requestMatcher));
+        addHttpResponseRule(new RequestMatcherResponseRule(requestMatcher, response));
     }
 
     public void addHttpResponseRule(ResponseRule responseRule) {
@@ -53,7 +58,7 @@ public class FakeHttpLayer {
         setDefaultHttpResponse(new TestHttpResponse(statusCode, responseBody));
     }
 
-    private HttpResponse findResponse(HttpRequest httpRequest) {
+    private HttpResponse findResponse(HttpRequest httpRequest) throws HttpException, IOException {
         if (!pendingHttpResponses.isEmpty()) {
             return pendingHttpResponses.remove(0);
         }
@@ -67,7 +72,7 @@ public class FakeHttpLayer {
         return defaultHttpResponse;
     }
 
-    HttpResponse emulateRequest(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext, RequestDirector requestDirector) {
+    HttpResponse emulateRequest(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext, RequestDirector requestDirector) throws HttpException, IOException {
         HttpResponse httpResponse = findResponse(httpRequest);
 
         if (httpResponse == null) {
@@ -79,34 +84,43 @@ public class FakeHttpLayer {
         return httpResponse;
     }
 
-    public interface RequestMatcher {
-        public boolean matches(HttpRequest request);
-    }
-
-    public class ResponseRule {
-        private HttpResponse responseToGive;
-
+    public static class RequestMatcherResponseRule implements ResponseRule {
         private RequestMatcher requestMatcher;
+        private HttpResponse responseToGive;
+        private IOException ioException;
+        private HTTPException httpException;
 
-        private ResponseRule(HttpResponse responseToGive, RequestMatcher requestMatcher) {
-            this.responseToGive = responseToGive;
+        public RequestMatcherResponseRule(RequestMatcher requestMatcher, HttpResponse responseToGive) {
             this.requestMatcher = requestMatcher;
+            this.responseToGive = responseToGive;
         }
 
-        public boolean matches(HttpRequest request) {
+        public RequestMatcherResponseRule(RequestMatcher requestMatcher, IOException ioException) {
+            this.requestMatcher = requestMatcher;
+            this.ioException = ioException;
+        }
+
+        public RequestMatcherResponseRule(RequestMatcher requestMatcher, HTTPException httpException) {
+            this.requestMatcher = requestMatcher;
+            this.httpException = httpException;
+        }
+
+        @Override public boolean matches(HttpRequest request) {
             return requestMatcher.matches(request);
         }
 
-        public HttpResponse getResponse() {
+        @Override public HttpResponse getResponse() throws HttpException, IOException {
+            if (httpException != null) throw httpException;
+            if (ioException != null) throw ioException;
             return responseToGive;
         }
     }
 
-    public class DefaultRequestMatcher implements RequestMatcher {
+    public static class DefaultRequestMatcher implements RequestMatcher {
         private String method;
         private String uri;
 
-        private DefaultRequestMatcher(String method, String uri) {
+        public DefaultRequestMatcher(String method, String uri) {
             this.method = method;
             this.uri = uri;
         }
@@ -117,10 +131,10 @@ public class FakeHttpLayer {
         }
     }
 
-    public class UriRequestMatcher implements RequestMatcher {
+    public static class UriRequestMatcher implements RequestMatcher {
         private String uri;
 
-        private UriRequestMatcher(String uri) {
+        public UriRequestMatcher(String uri) {
             this.uri = uri;
         }
 

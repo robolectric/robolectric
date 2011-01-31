@@ -2,8 +2,10 @@ package com.xtremelabs.robolectric.shadows;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.RequestMatcher;
 import com.xtremelabs.robolectric.util.Strings;
 import com.xtremelabs.robolectric.util.TestHttpResponse;
+import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -17,9 +19,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.IOException;
 import java.net.URI;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 
@@ -127,7 +131,7 @@ public class DefaultRequestDirectorTest {
     public void shouldReturnRequestsByRule_WithCustomRequestMatcher() throws Exception {
         Robolectric.setDefaultHttpResponse(404, "no such page");
 
-        Robolectric.addHttpResponseRule(new FakeHttpLayer.RequestMatcher() {
+        Robolectric.addHttpResponseRule(new RequestMatcher() {
             @Override public boolean matches(HttpRequest request) {
                 return request.getRequestLine().getUri().equals("http://matching.uri");
             }
@@ -204,5 +208,27 @@ public class DefaultRequestDirectorTest {
         assertSame(Robolectric.getSentHttpRequestInfo(0).getHttpRequest(), httpGet);
         ConnectionKeepAliveStrategy strategy = shadowOf((DefaultRequestDirector) Robolectric.getSentHttpRequestInfo(0).getRequestDirector()).getConnectionKeepAliveStrategy();
         assertSame(strategy, connectionKeepAliveStrategy);
+    }
+
+    @Test
+    public void shouldSupportThrowingIOException() throws Exception {
+        IOException fakeException = new IOException("fake");
+        Robolectric.getFakeHttpLayer().addHttpResponseRule(
+                new FakeHttpLayer.RequestMatcherResponseRule(
+                        new FakeHttpLayer.UriRequestMatcher("http://example.com"),
+                        fakeException
+                ));
+
+        HttpGet httpGet = new HttpGet("http://example.com");
+        IOException exception = null;
+        try {
+            requestDirector.execute(null, httpGet, null);
+            fail();
+        } catch (HttpException e) {
+            fail();
+        } catch (IOException e) {
+            exception = e;
+        }
+        assertThat(exception, sameInstance(fakeException));
     }
 }

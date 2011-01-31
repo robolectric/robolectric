@@ -60,6 +60,7 @@ import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.util.HttpRequestInfo;
+import com.xtremelabs.robolectric.util.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -572,7 +573,7 @@ public class Robolectric {
      * @param requestMatcher custom {@code RequestMatcher}.
      * @param response       response to return when a match is found.
      */
-    public static void addHttpResponseRule(FakeHttpLayer.RequestMatcher requestMatcher, HttpResponse response) {
+    public static void addHttpResponseRule(RequestMatcher requestMatcher, HttpResponse response) {
         getFakeHttpLayer().addHttpResponseRule(requestMatcher, response);
     }
 
