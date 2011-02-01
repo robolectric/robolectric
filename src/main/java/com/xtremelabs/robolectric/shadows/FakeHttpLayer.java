@@ -84,6 +84,10 @@ public class FakeHttpLayer {
         return httpResponse;
     }
 
+    public void clearHttpResponseRules() {
+        httpResponseRules.clear();
+    }
+
     public static class RequestMatcherResponseRule implements ResponseRule {
         private RequestMatcher requestMatcher;
         private HttpResponse responseToGive;

@@ -589,6 +589,10 @@ public class Robolectric {
         getFakeHttpLayer().setDefaultHttpResponse(defaultHttpResponse);
     }
 
+    public static void clearHttpResponseRules() {
+        getFakeHttpLayer().clearHttpResponseRules();
+    }
+
     public static void pauseLooper(Looper looper) {
         ShadowLooper.pauseLooper(looper);
     }
