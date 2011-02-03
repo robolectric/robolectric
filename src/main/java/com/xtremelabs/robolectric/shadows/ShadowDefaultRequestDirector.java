@@ -4,7 +4,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.util.HttpRequestInfo;
+import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.ConnectionReuseStrategy;
@@ -109,7 +109,7 @@ public class ShadowDefaultRequestDirector {
     }
 
     public static HttpRequestInfo getSentHttpRequestInfo(int index) {
-        return Robolectric.getFakeHttpLayer().httpRequestInfos.get(index);
+        return Robolectric.getFakeHttpLayer().getSentHttpRequestInfo(index);
     }
 
     @Implementation

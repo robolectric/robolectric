@@ -1,9 +1,5 @@
-package com.xtremelabs.robolectric.shadows;
+package com.xtremelabs.robolectric.tester.org.apache.http;
 
-import com.xtremelabs.robolectric.util.HttpRequestInfo;
-import com.xtremelabs.robolectric.util.RequestMatcher;
-import com.xtremelabs.robolectric.util.ResponseRule;
-import com.xtremelabs.robolectric.util.TestHttpResponse;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -19,8 +15,9 @@ import java.util.List;
 public class FakeHttpLayer {
     List<HttpResponse> pendingHttpResponses = new ArrayList<HttpResponse>();
     List<HttpRequestInfo> httpRequestInfos = new ArrayList<HttpRequestInfo>();
-    List<ResponseRule> httpResponseRules = new ArrayList<ResponseRule>();
+    List<HttpEntityStub.ResponseRule> httpResponseRules = new ArrayList<HttpEntityStub.ResponseRule>();
     HttpResponse defaultHttpResponse;
+    private HttpResponse defaultResponse;
 
     public void addPendingHttpResponse(int statusCode, String responseBody) {
         addPendingHttpResponse(new TestHttpResponse(statusCode, responseBody));
@@ -46,7 +43,7 @@ public class FakeHttpLayer {
         addHttpResponseRule(new RequestMatcherResponseRule(requestMatcher, response));
     }
 
-    public void addHttpResponseRule(ResponseRule responseRule) {
+    public void addHttpResponseRule(HttpEntityStub.ResponseRule responseRule) {
         httpResponseRules.add(responseRule);
     }
 
@@ -63,7 +60,7 @@ public class FakeHttpLayer {
             return pendingHttpResponses.remove(0);
         }
 
-        for (ResponseRule httpResponseRule : httpResponseRules) {
+        for (HttpEntityStub.ResponseRule httpResponseRule : httpResponseRules) {
             if (httpResponseRule.matches(httpRequest)) {
                 return httpResponseRule.getResponse();
             }
@@ -72,7 +69,7 @@ public class FakeHttpLayer {
         return defaultHttpResponse;
     }
 
-    HttpResponse emulateRequest(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext, RequestDirector requestDirector) throws HttpException, IOException {
+    public HttpResponse emulateRequest(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext, RequestDirector requestDirector) throws HttpException, IOException {
         HttpResponse httpResponse = findResponse(httpRequest);
 
         if (httpResponse == null) {
@@ -84,7 +81,27 @@ public class FakeHttpLayer {
         return httpResponse;
     }
 
-    public static class RequestMatcherResponseRule implements ResponseRule {
+    public boolean hasPendingResponses() {
+        return !pendingHttpResponses.isEmpty();
+    }
+
+    public boolean hasRequestInfos() {
+        return !httpRequestInfos.isEmpty();
+    }
+
+    public boolean hasResponseRules() {
+        return !httpResponseRules.isEmpty();
+    }
+
+    public HttpResponse getDefaultResponse() {
+        return defaultResponse;
+    }
+
+    public HttpRequestInfo getSentHttpRequestInfo(int index) {
+        return httpRequestInfos.get(index);
+    }
+
+    public static class RequestMatcherResponseRule implements HttpEntityStub.ResponseRule {
         private RequestMatcher requestMatcher;
         private HttpResponse responseToGive;
         private IOException ioException;

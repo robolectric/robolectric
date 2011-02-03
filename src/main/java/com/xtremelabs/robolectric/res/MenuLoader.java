@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.res;
 import android.content.Context;
 import android.view.Menu;
 import android.view.MenuItem;
-import com.xtremelabs.robolectric.internal.TestAttributeSet;
+import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

@@ -7,7 +7,7 @@ import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.internal.TestAttributeSet;
+import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

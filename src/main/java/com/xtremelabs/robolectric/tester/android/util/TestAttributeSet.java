@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.internal;
+package com.xtremelabs.robolectric.tester.android.util;
 
 import android.util.AttributeSet;
 import android.view.View;

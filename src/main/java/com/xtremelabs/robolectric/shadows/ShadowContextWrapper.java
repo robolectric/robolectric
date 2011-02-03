@@ -12,7 +12,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Looper;
-import com.xtremelabs.robolectric.content.TestSharedPreferences;
+import com.xtremelabs.robolectric.tester.android.content.TestSharedPreferences;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;

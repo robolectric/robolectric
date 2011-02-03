@@ -11,7 +11,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.view.TestWindow;
+import com.xtremelabs.robolectric.tester.android.view.TestWindow;
 
 import java.lang.reflect.Method;
 

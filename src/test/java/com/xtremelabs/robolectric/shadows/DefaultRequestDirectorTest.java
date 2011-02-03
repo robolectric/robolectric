@@ -2,10 +2,10 @@ package com.xtremelabs.robolectric.shadows;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.RequestMatcher;
+import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
+import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
+import com.xtremelabs.robolectric.tester.org.apache.http.TestHttpResponse;
 import com.xtremelabs.robolectric.util.Strings;
-import com.xtremelabs.robolectric.util.TestHttpResponse;
-import org.apache.http.HttpException;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -19,11 +19,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.IOException;
 import java.net.URI;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 
@@ -35,10 +33,10 @@ public class DefaultRequestDirectorTest {
     @Before
     public void setUp_EnsureStaticStateIsReset() {
         FakeHttpLayer fakeHttpLayer = Robolectric.getFakeHttpLayer();
-        assertTrue(fakeHttpLayer.pendingHttpResponses.isEmpty());
-        assertTrue(fakeHttpLayer.httpRequestInfos.isEmpty());
-        assertTrue(fakeHttpLayer.httpResponseRules.isEmpty());
-        assertNull(fakeHttpLayer.defaultHttpResponse);
+        assertFalse(fakeHttpLayer.hasPendingResponses());
+        assertFalse(fakeHttpLayer.hasRequestInfos());
+        assertFalse(fakeHttpLayer.hasResponseRules());
+        assertNull(fakeHttpLayer.getDefaultResponse());
 
         connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
             @Override public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
@@ -208,27 +206,5 @@ public class DefaultRequestDirectorTest {
         assertSame(Robolectric.getSentHttpRequestInfo(0).getHttpRequest(), httpGet);
         ConnectionKeepAliveStrategy strategy = shadowOf((DefaultRequestDirector) Robolectric.getSentHttpRequestInfo(0).getRequestDirector()).getConnectionKeepAliveStrategy();
         assertSame(strategy, connectionKeepAliveStrategy);
-    }
-
-    @Test
-    public void shouldSupportThrowingIOException() throws Exception {
-        IOException fakeException = new IOException("fake");
-        Robolectric.getFakeHttpLayer().addHttpResponseRule(
-                new FakeHttpLayer.RequestMatcherResponseRule(
-                        new FakeHttpLayer.UriRequestMatcher("http://example.com"),
-                        fakeException
-                ));
-
-        HttpGet httpGet = new HttpGet("http://example.com");
-        IOException exception = null;
-        try {
-            requestDirector.execute(null, httpGet, null);
-            fail();
-        } catch (HttpException e) {
-            fail();
-        } catch (IOException e) {
-            exception = e;
-        }
-        assertThat(exception, sameInstance(fakeException));
     }
 }
