@@ -263,8 +263,8 @@ public class Robolectric {
         return (ShadowListView) shadowOf_(instance);
     }
 
-    public static ExpandableListView shadowOf(ExpandableListView instance) {
-        return (ExpandableListView) shadowOf_(instance);
+    public static ShadowExpandableListView shadowOf(ExpandableListView instance) {
+        return (ShadowExpandableListView) shadowOf_(instance);
     }
 
     public static ShadowActivity shadowOf(Activity instance) {
