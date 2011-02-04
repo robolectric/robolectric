@@ -69,6 +69,8 @@ public class FakeHttpLayer {
             }
         }
 
+        System.err.println("Unexpected HTTP call " + httpRequest.getRequestLine());
+
         return defaultHttpResponse;
     }
 
