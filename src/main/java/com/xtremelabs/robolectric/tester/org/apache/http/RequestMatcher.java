@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.util;
+package com.xtremelabs.robolectric.tester.org.apache.http;
 
 import org.apache.http.HttpRequest;
 

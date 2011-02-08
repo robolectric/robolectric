@@ -59,8 +59,9 @@ import android.widget.ZoomButtonsController;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
-import com.xtremelabs.robolectric.util.HttpRequestInfo;
-import com.xtremelabs.robolectric.util.RequestMatcher;
+import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
+import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
+import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -263,8 +264,8 @@ public class Robolectric {
         return (ShadowListView) shadowOf_(instance);
     }
 
-    public static ExpandableListView shadowOf(ExpandableListView instance) {
-        return (ExpandableListView) shadowOf_(instance);
+    public static ShadowExpandableListView shadowOf(ExpandableListView instance) {
+        return (ShadowExpandableListView) shadowOf_(instance);
     }
 
     public static ShadowActivity shadowOf(Activity instance) {

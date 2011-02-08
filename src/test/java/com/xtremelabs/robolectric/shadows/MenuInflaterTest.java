@@ -4,8 +4,8 @@ import android.view.MenuInflater;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.view.TestMenu;
-import com.xtremelabs.robolectric.view.TestMenuItem;
+import com.xtremelabs.robolectric.tester.android.view.TestMenu;
+import com.xtremelabs.robolectric.tester.android.view.TestMenuItem;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

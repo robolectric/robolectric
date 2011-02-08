@@ -11,7 +11,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.view.TestWindow;
+import com.xtremelabs.robolectric.tester.android.view.TestWindow;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -137,7 +137,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
 
     /**
-     * Constructs a new Window (a {@link com.xtremelabs.robolectric.view.TestWindow}) if no window has previously been
+     * Constructs a new Window (a {@link com.xtremelabs.robolectric.tester.android.view.TestWindow}) if no window has previously been
      * set.
      *
      * @return the window associated with this Activity

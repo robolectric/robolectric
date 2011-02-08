@@ -1,7 +1,5 @@
-package com.xtremelabs.robolectric.util;
+package com.xtremelabs.robolectric.tester.org.apache.http;
 
-import com.xtremelabs.robolectric.shadows.HttpEntityStub;
-import com.xtremelabs.robolectric.shadows.HttpResponseStub;
 import com.xtremelabs.robolectric.shadows.StatusLineStub;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpVersion;

@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.view;
+package com.xtremelabs.robolectric.tester.android.view;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;

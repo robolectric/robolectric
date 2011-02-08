@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.res;
 
 import android.content.ContextWrapper;
 import android.content.pm.PackageInfo;
-import com.xtremelabs.robolectric.util.StubPackageManager;
+import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
 
 import java.util.ArrayList;
 import java.util.List;

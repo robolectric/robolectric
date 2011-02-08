@@ -1,7 +1,10 @@
-package com.xtremelabs.robolectric.shadows;
+package com.xtremelabs.robolectric.tester.org.apache.http;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -42,5 +45,11 @@ public class HttpEntityStub implements HttpEntity {
 
     @Override public void consumeContent() throws IOException {
         throw new UnsupportedOperationException();
+    }
+
+    public static interface ResponseRule {
+        boolean matches(HttpRequest request);
+
+        HttpResponse getResponse() throws HttpException, IOException;
     }
 }
