@@ -187,9 +187,9 @@
     </profiles>
 
     <scm>
-        <url>git@github.com:pivotal/robolectric.git</url>
-        <connection>scm:git:git://github.com/pivotal/robolectric.git</connection>
-        <developerConnection>scm:git:git@github.com:pivotal/robolectric.git</developerConnection>
+        <url>https://github.com/adamcohenrose/robolectric</url>
+        <connection>scm:git:git://github.com/adamcohenrose/robolectric.git</connection>
+        <developerConnection>scm:git:git://github.com/adamcohenrose/robolectric.git</developerConnection>
     </scm>
 
     <ciManagement>
