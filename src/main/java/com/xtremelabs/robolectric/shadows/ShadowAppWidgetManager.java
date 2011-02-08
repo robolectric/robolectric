@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -11,12 +12,13 @@ import com.xtremelabs.robolectric.internal.AppSingletonizer;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+import org.apache.commons.lang.ArrayUtils;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.apache.commons.lang.ArrayUtils.add;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AppWidgetManager.class)
@@ -84,6 +86,20 @@ public class ShadowAppWidgetManager {
         }
         widgetInfo.lastRemoteViews = views;
         views.reapply(context, widgetInfo.view);
+    }
+
+    @Implementation
+    public int[] getAppWidgetIds(ComponentName provider) {
+        int ids[] = new int[0];
+        for (int id : widgetInfos.keySet()){
+            WidgetInfo widgetInfo = widgetInfos.get(id);
+            String widgetClass = widgetInfo.appWidgetProvider.getClass().getName();
+            String widgetPackage = widgetInfo.appWidgetProvider.getClass().getPackage().getName();
+            if ( provider.getClassName().equals(widgetClass) && provider.getPackageName().equals(widgetPackage) ) {
+                ids = add(ids, id);
+            }
+        }
+        return ids.length == 0 ? null : ids;
     }
 
     /**
