@@ -99,7 +99,7 @@ public class ShadowAppWidgetManager {
                 ids = add(ids, id);
             }
         }
-        return ids.length == 0 ? null : ids;
+        return ids;
     }
 
     /**
