@@ -24,6 +24,11 @@ public class ShadowNetworkInfo {
           NetworkInfo.State.DISCONNECTED;
     }
 
+    @Implementation
+    public boolean isConnected() {
+        return isConnected;
+    }
+
     /**
      * Non-Android accessor
      * Sets up the return value of {@link #isConnectedOrConnecting()}.
