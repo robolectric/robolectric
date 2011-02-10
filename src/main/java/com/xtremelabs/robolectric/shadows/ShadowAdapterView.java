@@ -28,7 +28,10 @@ public class ShadowAdapterView extends ShadowViewGroup {
     @Implementation
     public void setAdapter(Adapter adapter) {
         this.adapter = adapter;
-        adapter.registerDataSetObserver(new AdapterViewDataSetObserver());
+        
+        if ( null != adapter ) {
+        	adapter.registerDataSetObserver(new AdapterViewDataSetObserver());
+        }
 
         invalidateAndScheduleUpdate();
         setSelection(0);
