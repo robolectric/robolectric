@@ -46,6 +46,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
+import android.preference.DialogPreference;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -146,6 +147,7 @@ public class Robolectric {
                 ShadowDisplay.class,
                 ShadowDrawable.class,
                 ShadowDialog.class,
+                ShadowDialogPreference.class,
                 ShadowEditText.class,
                 ShadowExpandableListView.class,
                 ShadowFloatMath.class,
@@ -332,6 +334,10 @@ public class Robolectric {
 
     public static ShadowDialog shadowOf(Dialog instance) {
         return (ShadowDialog) shadowOf_(instance);
+    }
+    
+    public static ShadowDialogPreference shadowOf(DialogPreference instance) {
+        return (ShadowDialogPreference) shadowOf_(instance);
     }
 
     public static ShadowDefaultRequestDirector shadowOf(DefaultRequestDirector instance) {
