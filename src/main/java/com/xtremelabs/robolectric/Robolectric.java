@@ -63,6 +63,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
 import android.widget.RemoteViews;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController;
@@ -194,6 +195,7 @@ public class Robolectric {
                 ShadowRemoteViews.class,
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
+                ShadowSeekBar.class,
                 ShadowService.class,
                 ShadowSettings.class,
                 ShadowSettings.ShadowSecure.class,
@@ -476,6 +478,10 @@ public class Robolectric {
 
     public static ShadowAbsSeekBar shadowOf(AbsSeekBar instance) {
         return (ShadowAbsSeekBar) shadowOf_(instance);
+    }
+    
+    public static ShadowSeekBar shadowOf(SeekBar instance) {
+        return (ShadowSeekBar) shadowOf_(instance);
     }
     
     @SuppressWarnings({"unchecked"})
