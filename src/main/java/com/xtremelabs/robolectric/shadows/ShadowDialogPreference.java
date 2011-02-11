@@ -28,6 +28,7 @@ public class ShadowDialogPreference {
 	}
 
 	// TOOD remove when ShadowPreference implements getContext()
+	@Implementation
     public Context getContext() {
     	return context;
     }

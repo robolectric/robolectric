@@ -72,7 +72,6 @@ import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
-// import com.xtremelabs.robolectric.util.HttpRequestInfo;
 import com.xtremelabs.robolectric.util.Scheduler;
 
 @SuppressWarnings({"UnusedDeclaration"})
