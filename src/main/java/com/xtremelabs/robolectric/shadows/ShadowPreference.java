@@ -15,6 +15,7 @@ public class ShadowPreference {
 	protected int defStyle;	
 	protected boolean shouldPersist = false;
 	protected int persistedInt;
+	protected Object callChangeListenerValue = null;
 
 	public void __constructor__(Context context, AttributeSet attrs, int defStyle) {
 		this.context = context;
@@ -54,7 +55,19 @@ public class ShadowPreference {
 		return shouldPersist ? persistedInt : defaultReturnValue;
 	}
 	
-	public void setPersistedInt(int persistedInt) {
-		this.persistedInt = persistedInt;
+	@Implementation
+	public boolean persistInt(int value) {
+		this.persistedInt = value;
+		return shouldPersist;
+	}
+	
+	@Implementation
+	public boolean callChangeListener(Object newValue) {
+		callChangeListenerValue = newValue;
+		return true;
+	}
+	
+	public Object getCallChangeListenerValue() {
+		return callChangeListenerValue;
 	}
 }

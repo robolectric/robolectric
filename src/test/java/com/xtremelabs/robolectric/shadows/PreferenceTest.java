@@ -68,13 +68,23 @@ public class PreferenceTest {
 		int[] values = { 0, 1, 2, 2011 };
 		
 		for(int persistedInt : values) {			
-			shadow.setPersistedInt(persistedInt);
+			shadow.persistInt(persistedInt);
 			
 			shadow.setShouldPersist(false);
 			assertThat(preference.getPersistedInt(defaultValue), equalTo(defaultValue));
 			
 			shadow.setShouldPersist(true);
 			assertThat(preference.getPersistedInt(defaultValue), equalTo(persistedInt));			
+		}
+	}
+	
+	@Test
+	public void testCallChangeListener() {
+		Integer[] values = { 0, 1, 2, 2011 };
+		
+		for(Integer newValue : values) {			
+			assertThat(preference.callChangeListener(newValue), equalTo(true));
+			assertThat(shadow.getCallChangeListenerValue(), sameInstance((Object)newValue));
 		}
 	}
 	
@@ -95,5 +105,13 @@ public class PreferenceTest {
 		public int getPersistedInt(int defaultReturnValue) {
 			return super.getPersistedInt(defaultReturnValue);
 		}	
+		
+		public boolean persistInt(int value) {
+			return super.persistInt(value);
+		}
+		
+		public boolean callChangeListener(Object newValue) {
+			return super.callChangeListener(newValue);
+		}
 	}
 }
