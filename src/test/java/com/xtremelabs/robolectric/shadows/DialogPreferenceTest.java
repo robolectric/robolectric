@@ -6,8 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 import android.app.Activity;
@@ -15,10 +14,8 @@ import android.content.Context;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
 
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.internal.TestAttributeSet;
-import com.xtremelabs.robolectric.shadows.ShadowDialogPreference;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class DialogPreferenceTest {
@@ -26,40 +23,15 @@ public class DialogPreferenceTest {
 	private static final String TEST_DIALOG_MESSAGE = "This is only a test";
 
 	private DialogPreference preference;
-	private ShadowDialogPreference shadow;
-
-	private Context context;
-	private TestAttributeSet attrs;
-	
 
 	@Before
 	public void setup() {
 		HashMap<String, String> hash = new HashMap<String, String>();
 		hash.put("dialogMessage", TEST_DIALOG_MESSAGE);
-		
-		context = new Activity();
-		attrs = new TestAttributeSet(hash);
-		preference = new TestDialogPreference(context, attrs);
-		shadow = Robolectric.shadowOf(preference);		
+
+		preference = new TestDialogPreference(new Activity(), new TestAttributeSet(hash));
 	}
-	
-	@Test
-	public void testConstructors() {
-		int defStyle = 7;
 		
-		preference = new TestDialogPreference( context, attrs, defStyle );
-		shadow = Robolectric.shadowOf( preference );		
-		assertThat( shadow.getContext(), sameInstance( context ) );
-		assertThat( shadow.getAttrs(), sameInstance( (AttributeSet)attrs ) );
-		assertThat( shadow.getDefStyle(), equalTo( defStyle ) );	
-		
-		preference = new TestDialogPreference( context, attrs );
-		shadow = Robolectric.shadowOf( preference );		
-		assertThat( shadow.getContext(), sameInstance( context ) );
-		assertThat( shadow.getAttrs(), sameInstance( (AttributeSet)attrs ) );
-		assertThat( shadow.getDefStyle(), equalTo( 0 ) );		
-	}
-	
 	@Test
 	public void testGetDialogMessage() {
 		assertThat( (String) preference.getDialogMessage(), equalTo(TEST_DIALOG_MESSAGE) );

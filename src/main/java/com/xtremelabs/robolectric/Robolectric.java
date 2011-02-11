@@ -47,6 +47,7 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.DialogPreference;
+import android.preference.Preference;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -59,6 +60,7 @@ import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -183,7 +185,9 @@ public class Robolectric {
                 ShadowPoint.class,
                 ShadowPointF.class,
                 ShadowPowerManager.class,
+                ShadowPreference.class,
                 ShadowPreferenceManager.class,
+                ShadowProgressBar.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
                 ShadowResources.class,
@@ -284,6 +288,14 @@ public class Robolectric {
         return (ShadowPath) shadowOf_(instance);
     }
 
+    public static ShadowPreference shadowOf(Preference instance) {
+        return (ShadowPreference) shadowOf_(instance);
+    }
+    
+    public static ShadowProgressBar shadowOf(ProgressBar instance) {
+        return (ShadowProgressBar) shadowOf_(instance);
+    }
+    
     public static ShadowListActivity shadowOf(ListActivity instance) {
         return (ShadowListActivity) shadowOf_(instance);
     }
