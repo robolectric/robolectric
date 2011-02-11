@@ -13,7 +13,7 @@ public class ShadowPreference {
 	protected Context context;
 	protected AttributeSet attrs;
 	protected int defStyle;	
-	protected boolean shouldPersist = true;
+	protected boolean shouldPersist = false;
 	protected int persistedInt;
 
 	public void __constructor__(Context context, AttributeSet attrs, int defStyle) {
