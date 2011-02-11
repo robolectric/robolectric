@@ -13,6 +13,8 @@ public class ShadowPreference {
 	protected Context context;
 	protected AttributeSet attrs;
 	protected int defStyle;	
+	protected boolean shouldPersist = true;
+	protected int persistedInt;
 
 	public void __constructor__(Context context, AttributeSet attrs, int defStyle) {
 		this.context = context;
@@ -37,4 +39,22 @@ public class ShadowPreference {
     public int getDefStyle() {
     	return defStyle;
     }	
+        
+	@Implementation
+	public boolean shouldPersist() {
+		return shouldPersist;
+	}
+	
+	public void setShouldPersist(boolean shouldPersist) {
+		this.shouldPersist = shouldPersist;
+	}
+	
+	@Implementation
+	public int getPersistedInt(int defaultReturnValue) {
+		return shouldPersist ? persistedInt : defaultReturnValue;
+	}
+	
+	public void setPersistedInt(int persistedInt) {
+		this.persistedInt = persistedInt;
+	}
 }
