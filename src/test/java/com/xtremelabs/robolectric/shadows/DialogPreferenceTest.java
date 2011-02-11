@@ -6,8 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
 import android.app.Activity;
@@ -17,7 +16,7 @@ import android.util.AttributeSet;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.internal.TestAttributeSet;
+import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.shadows.ShadowDialogPreference;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -31,12 +30,10 @@ public class DialogPreferenceTest {
 	private Context context;
 	private TestAttributeSet attrs;
 	
-
 	@Before
 	public void setup() {
 		HashMap<String, String> hash = new HashMap<String, String>();
 		hash.put("dialogMessage", TEST_DIALOG_MESSAGE);
-		
 		context = new Activity();
 		attrs = new TestAttributeSet(hash);
 		preference = new TestDialogPreference(context, attrs);
@@ -59,7 +56,7 @@ public class DialogPreferenceTest {
 		assertThat( shadow.getAttrs(), sameInstance( (AttributeSet)attrs ) );
 		assertThat( shadow.getDefStyle(), equalTo( 0 ) );		
 	}
-	
+
 	@Test
 	public void testGetDialogMessage() {
 		assertThat( (String) preference.getDialogMessage(), equalTo(TEST_DIALOG_MESSAGE) );

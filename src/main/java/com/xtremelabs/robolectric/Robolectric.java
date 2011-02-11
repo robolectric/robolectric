@@ -49,6 +49,7 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.DialogPreference;
+import android.preference.Preference;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -57,11 +58,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
+import android.widget.AbsSeekBar;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RemoteViews;
+import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController;
@@ -120,6 +124,7 @@ public class Robolectric {
     public static List<Class<?>> getDefaultShadowClasses() {
         return Arrays.asList(
                 ShadowAbsoluteLayout.class,
+                ShadowAbsSeekBar.class,
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowActivity.class,
@@ -200,11 +205,14 @@ public class Robolectric {
                 ShadowPoint.class,
                 ShadowPointF.class,
                 ShadowPowerManager.class,
+                ShadowPreference.class,
                 ShadowPreferenceManager.class,
+                ShadowProgressBar.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
+                ShadowSeekBar.class,
                 ShadowService.class,
                 ShadowSettings.class,
                 ShadowSettings.ShadowSecure.class,
@@ -302,6 +310,14 @@ public class Robolectric {
         return (ShadowPath) shadowOf_(instance);
     }
 
+    public static ShadowPreference shadowOf(Preference instance) {
+        return (ShadowPreference) shadowOf_(instance);
+    }
+    
+    public static ShadowProgressBar shadowOf(ProgressBar instance) {
+        return (ShadowProgressBar) shadowOf_(instance);
+    }
+    
     public static ShadowListActivity shadowOf(ListActivity instance) {
         return (ShadowListActivity) shadowOf_(instance);
     }
@@ -486,6 +502,14 @@ public class Robolectric {
         return (ShadowNotification) Robolectric.shadowOf_(other);
     }
 
+    public static ShadowAbsSeekBar shadowOf(AbsSeekBar instance) {
+        return (ShadowAbsSeekBar) shadowOf_(instance);
+    }
+    
+    public static ShadowSeekBar shadowOf(SeekBar instance) {
+        return (ShadowSeekBar) shadowOf_(instance);
+    }
+    
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
