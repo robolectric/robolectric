@@ -1,19 +1,24 @@
 package com.xtremelabs.robolectric.res;
 
-import android.content.ContextWrapper;
-import android.content.pm.PackageInfo;
-import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import android.content.ContextWrapper;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+
+import com.xtremelabs.robolectric.RobolectricConfig;
+import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
 
 public class RobolectricPackageManager extends StubPackageManager {
     public PackageInfo packageInfo;
     public ArrayList<PackageInfo> packageList;
     private ContextWrapper contextWrapper;
-
-    public RobolectricPackageManager(ContextWrapper contextWrapper) {
+    private RobolectricConfig config;
+    
+    public RobolectricPackageManager(ContextWrapper contextWrapper, RobolectricConfig config) {
         this.contextWrapper = contextWrapper;
+        this.config = config;
     }
 
     @Override
@@ -23,6 +28,21 @@ public class RobolectricPackageManager extends StubPackageManager {
     }
 
     @Override
+    public ApplicationInfo getApplicationInfo(String packageName, int flags) throws NameNotFoundException {
+    	if (config.getPackageName().equals(packageName))
+    	{
+    		ApplicationInfo applicationInfo = new ApplicationInfo();
+        	applicationInfo.flags = config.getApplicationFlags();
+        	applicationInfo.targetSdkVersion = config.getSdkVersion();
+    		applicationInfo.packageName = config.getPackageName();
+    		applicationInfo.processName = config.getProcessName();
+    		return applicationInfo;
+    	}
+    	
+    	throw new NameNotFoundException();
+    }
+
+	@Override
     public List<PackageInfo> getInstalledPackages(int flags) {
         ensurePackageInfo();
         if (packageList == null) {
@@ -39,5 +59,4 @@ public class RobolectricPackageManager extends StubPackageManager {
             packageInfo.versionName = "1.0";
         }
     }
-
 }

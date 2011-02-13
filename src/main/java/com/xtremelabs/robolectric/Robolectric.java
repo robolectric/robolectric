@@ -1,5 +1,12 @@
 package com.xtremelabs.robolectric;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultRequestDirector;
+
 import android.app.Activity;
 import android.app.AlarmManager;
 import android.app.AlertDialog;
@@ -15,6 +22,8 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageItemInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -56,6 +65,7 @@ import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ZoomButtonsController;
+
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
@@ -63,12 +73,6 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultRequestDirector;
-
-import java.util.Arrays;
-import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class Robolectric {
@@ -125,6 +129,7 @@ public class Robolectric {
                 ShadowAlertDialog.class,
                 ShadowAlertDialog.ShadowBuilder.class,
                 ShadowApplication.class,
+                ShadowApplicationInfo.class,
                 ShadowAppWidgetManager.class,
                 ShadowArrayAdapter.class,
                 ShadowAssetManager.class,
@@ -188,6 +193,7 @@ public class Robolectric {
                 ShadowNotificationManager.class,
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
+                ShadowPackageItemInfo.class,
                 ShadowPaint.class,
                 ShadowPath.class,
                 ShadowPendingIntent.class,
@@ -279,7 +285,15 @@ public class Robolectric {
     public static ShadowApplication shadowOf(Application instance) {
         return (ShadowApplication) shadowOf_(instance);
     }
+    
+    public static ShadowApplicationInfo shadowOf(ApplicationInfo instance) {
+        return (ShadowApplicationInfo) shadowOf_(instance);
+    }
 
+    public static ShadowPackageItemInfo shadowOf(PackageItemInfo instance) {
+        return (ShadowPackageItemInfo) shadowOf_(instance);
+    }
+    
     public static ShadowContext shadowOf(Context instance) {
         return (ShadowContext) shadowOf_(instance);
     }

@@ -1,15 +1,20 @@
 package com.xtremelabs.robolectric;
 
-import android.app.Application;
-import com.xtremelabs.robolectric.internal.ClassNameResolver;
+import java.io.File;
+import java.io.FileNotFoundException;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import java.io.File;
-import java.io.FileNotFoundException;
+import android.app.Application;
+
+import com.xtremelabs.robolectric.internal.ClassNameResolver;
+
+import static android.content.pm.ApplicationInfo.*;
 
 public class RobolectricConfig {
     private File androidManifestFile;
@@ -17,11 +22,14 @@ public class RobolectricConfig {
     private File assetsDirectory;
     private String rClassName;
     private String packageName;
+    private String processName;
     private String applicationName;
     private boolean manifestIsParsed = false;
     private int sdkVersion;
-
-    /**
+    private int minSdkVersion;
+    private int applicationFlags;
+    
+	/**
      * Creates a Robolectric configuration using default Android files relative to the specified base directory.
      * <p/>
      * The manifest will be baseDir/AndroidManifest.xml, res will be baseDir/res, and assets in baseDir/assets.
@@ -76,16 +84,43 @@ public class RobolectricConfig {
             packageName = getTagAttributeText(manifestDocument, "manifest", "package");
             rClassName = packageName + ".R";
             applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
+            minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion", 9);
             sdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion", 9);
+            processName = getTagAttributeText(manifestDocument, "application", "android:process");
+            
+            if (processName == null)
+            	processName = packageName;
+            
+            applicationFlags = getApplicationFlag(manifestDocument, "android:allowBackup", FLAG_ALLOW_BACKUP);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:allowClearUserData", FLAG_ALLOW_CLEAR_USER_DATA);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:allowTaskReparenting", FLAG_ALLOW_TASK_REPARENTING);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:debuggable", FLAG_DEBUGGABLE);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:hasCode", FLAG_HAS_CODE);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:killAfterRestore", FLAG_KILL_AFTER_RESTORE);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:persistent", FLAG_PERSISTENT);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:resizeable", FLAG_RESIZEABLE_FOR_SCREENS);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:restoreAnyVersion", FLAG_RESTORE_ANY_VERSION);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:largeScreens", FLAG_SUPPORTS_LARGE_SCREENS);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:normalScreens", FLAG_SUPPORTS_NORMAL_SCREENS);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:anyDensity", FLAG_SUPPORTS_SCREEN_DENSITIES);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:smallScreens", FLAG_SUPPORTS_SMALL_SCREENS);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:testOnly", FLAG_TEST_ONLY);
+            applicationFlags += getApplicationFlag(manifestDocument, "android:vmSafeMode", FLAG_VM_SAFE_MODE);
+            
         } catch (Exception ignored) {
         }
         manifestIsParsed = true;
     }
 
+    private int getApplicationFlag(Document doc, String attribute, int attributeValue) {
+    	String flagString = getTagAttributeText(doc, "application", attribute);
+    	return "true".equalsIgnoreCase(flagString) ? attributeValue : 0;
+    }
+    
     private int getTagAttributeIntValue(Document doc, String tag, String attribute, int defaultValue) {
-        String sdkVersionString = getTagAttributeText(doc, tag, attribute);
-        if (sdkVersionString != null) {
-            return Integer.parseInt(sdkVersionString);
+        String valueString = getTagAttributeText(doc, tag, attribute);
+        if (valueString != null) {
+            return Integer.parseInt(valueString);
         }
         return defaultValue;
     }
@@ -99,12 +134,27 @@ public class RobolectricConfig {
         parseAndroidManifest();
         return packageName;
     }
+    
+    public int getMinSdkVersion() {
+    	parseAndroidManifest();
+		return minSdkVersion;
+	}
 
     public int getSdkVersion() {
         parseAndroidManifest();
         return sdkVersion;
     }
 
+    public int getApplicationFlags() {
+    	parseAndroidManifest();
+    	return applicationFlags;
+    }
+    
+    public String getProcessName() {
+		parseAndroidManifest();
+		return processName;
+	}
+    
     public File getResourceDirectory() {
         return resourceDirectory;
     }
