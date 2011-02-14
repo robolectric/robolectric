@@ -11,7 +11,7 @@
     <groupId>com.pivotallabs</groupId>
     <artifactId>robolectric</artifactId>
 
-    <version>1.0-RC1--widgetId-fork</version>
+    <version>1.0-RC1-widgetId-fork</version>
 
     <packaging>jar</packaging>
     <name>Robolectric</name>
