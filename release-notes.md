@@ -6,6 +6,29 @@ title: Release Notes
 # Release Notes
 
 -----
+## [Release 1.0-RC1](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.0-RC1/) - February 13, 2011
+-----
+
+#### Features
+- Loads Android platform resources, looks at ANDROID_HOME, local.properties and "which android" to find the Android SDK
+- General code cleanup and refactorings, Repackaging of source trees
+- Improvements to TestAttributeSet (Thanks Ronald D.!)
+- Ant task for mvn that adds the maps.jar to the local mvn repo
+- Shadow for ViewStub
+- Improvements for Http layer Shadows and fakes
+- AndroidManifest.xml parsing improvements
+- Added ShadowNotificationManager
+
+#### Bug Fixes
+- Fix bug where layouts were getting included twice
+- Fix regressions for early API versions related to BluetoothAdaptor
+- Fix bugs in menu view loading
+- Various View loading improvements and bug fixes
+
+#### Note
+ant maven-install-jars will update Maven with the correct version of maps.jar
+
+-----
 ## [Release 0.9.8](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.8/) - January 21, 2011
 -----
 
