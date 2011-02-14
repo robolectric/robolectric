@@ -10,7 +10,9 @@
 
     <groupId>com.pivotallabs</groupId>
     <artifactId>robolectric</artifactId>
-    <version>0.9.9-widgetId-fork</version>
+
+    <version>1.0-RC1--widgetId-fork</version>
+
     <packaging>jar</packaging>
     <name>Robolectric</name>
     <description>An alternative Android testing framework.</description>
