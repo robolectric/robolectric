@@ -46,6 +46,7 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
 import android.preference.DialogPreference;
@@ -163,6 +164,7 @@ public class Robolectric {
                 ShadowContextWrapper.class,
                 ShadowContextThemeWrapper.class,
                 ShadowCookieManager.class,
+                ShadowCountDownTimer.class,
                 ShadowDefaultRequestDirector.class,
                 ShadowDisplay.class,
                 ShadowDrawable.class,
@@ -474,6 +476,10 @@ public class Robolectric {
         return (ShadowConfiguration) Robolectric.shadowOf_(instance);
     }
 
+    public static ShadowCountDownTimer shadowOf(CountDownTimer instance) {
+        return (ShadowCountDownTimer) Robolectric.shadowOf_(instance);
+    }    
+    
     public static ShadowBitmap shadowOf(Bitmap other) {
         return (ShadowBitmap) Robolectric.shadowOf_(other);
     }
