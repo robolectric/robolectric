@@ -20,6 +20,7 @@ public class ShadowBitmap {
     private int height;
     private String description = "";
     private int loadedFromResourceId = -1;
+    private boolean recycled = false;
 
     @Implementation
     public boolean compress(Bitmap.CompressFormat format, int quality, OutputStream stream) {
@@ -55,7 +56,17 @@ public class ShadowBitmap {
         shadowBitmap.setHeight(dstHeight);
         return scaledBitmap;
     }
+    
+    @Implementation
+    public void recycle() {
+    	recycled = true;
+    }
 
+    @Implementation
+    public final boolean isRecycled() {
+    	return recycled;
+    }
+    
     public void appendDescription(String s) {
         description += s;
     }
