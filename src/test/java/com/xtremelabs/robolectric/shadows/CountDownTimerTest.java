@@ -11,6 +11,7 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -58,13 +59,15 @@ public class CountDownTimerTest {
 	@Test
 	public void testStart() {
 		assertThat(shadowCountDownTimer.hasStarted(), equalTo(false));
-		shadowCountDownTimer.start();
+		CountDownTimer timer = shadowCountDownTimer.start();
+		assertThat(timer, notNullValue());
 		assertThat(shadowCountDownTimer.hasStarted(), equalTo(true));
 	}
 	
 	@Test
 	public void testCancel() {
-		shadowCountDownTimer.start();
+		CountDownTimer timer = shadowCountDownTimer.start();
+		assertThat(timer, notNullValue());
 		assertThat(shadowCountDownTimer.hasStarted(), equalTo(true));
 		shadowCountDownTimer.cancel();
 		assertThat(shadowCountDownTimer.hasStarted(), equalTo(false));			

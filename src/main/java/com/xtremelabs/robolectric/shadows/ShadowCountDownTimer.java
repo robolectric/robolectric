@@ -24,7 +24,7 @@ public class ShadowCountDownTimer {
 	@Implementation
 	public final synchronized CountDownTimer start() {
 		started = true;
-		return null;
+		return countDownTimer;
 	}
 
 	
