@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
@@ -10,7 +10,7 @@
 
     <groupId>com.pivotallabs</groupId>
     <artifactId>robolectric</artifactId>
-    <version>0.9.9</version>
+    <version>1.0-RC2</version>
     <packaging>jar</packaging>
     <name>Robolectric</name>
     <description>An alternative Android testing framework.</description>
@@ -197,7 +197,7 @@
         <connection>scm:git:git://github.com/pivotal/robolectric.git</connection>
         <developerConnection>scm:git:git@github.com:pivotal/robolectric.git</developerConnection>
     </scm>
- 
+
     <ciManagement>
         <system>Hudson</system>
         <url>http://cibuilder.pivotallabs.com:8080/job/robolectric/</url>
