@@ -1,19 +1,21 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class WebViewTest {
@@ -58,5 +60,22 @@ public class WebViewTest {
             webView.addJavascriptInterface(obj, name);
             assertThat(shadowWebView.getJavascriptInterface(name), sameInstance(obj));
         }
+    }
+    
+    @Test
+    public void shouldStartPostRun() {
+ 
+    	WebView webView = new WebView(null);
+    	ShadowWebView shadowWebView = Robolectric.shadowOf(webView);
+    	
+    	Runnable testRun = new Runnable() {
+    		public void run() {
+    			//Do something...
+    			return;
+    		}
+    	};
+    	assertThat(shadowWebView.getRunFlag(), equalTo(false));
+    	shadowWebView.post(testRun);
+    	assertThat(shadowWebView.getRunFlag(), equalTo(true));
     }
 }
