@@ -15,4 +15,13 @@ public class Foo {
     public void findFooById(int i) {
         throw new RuntimeException("stub!");
     }
+
+    public void displayText(CharSequence text, boolean bold) {
+        throw new RuntimeException("stub!");
+    }
+
+    /** Represents a method overload added to the android API to support internationalization. */
+    public void displayText(int textId, boolean bold) {
+        throw new RuntimeException("stub!");
+    }
 }

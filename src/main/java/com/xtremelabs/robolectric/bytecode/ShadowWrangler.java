@@ -1,6 +1,9 @@
 package com.xtremelabs.robolectric.bytecode;
 
+import android.app.Application;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.Join;
 import javassist.CannotCompileException;
 import javassist.CtClass;
@@ -77,14 +80,14 @@ public class ShadowWrangler implements ClassHandler {
 
     @Override
     public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Exception {
-        InvocationPlan invocationPlan = new InvocationPlan(clazz, methodName, instance, paramTypes);
+        InvocationPlan invocationPlan = new InvocationPlan(clazz, methodName, instance, paramTypes, params);
         if (!invocationPlan.prepare()) {
             reportNoShadowMethodFound(clazz, methodName, paramTypes);
             return null;
         }
 
         try {
-            return invocationPlan.getMethod().invoke(invocationPlan.getShadow(), params);
+            return invocationPlan.getMethod().invoke(invocationPlan.getShadow(), invocationPlan.getParams());
         } catch (IllegalArgumentException e) {
             throw new RuntimeException(invocationPlan.getShadow().getClass().getName() + " is not assignable from " +
                     invocationPlan.getDeclaredShadowClass().getName(), e);
@@ -269,16 +272,18 @@ public class ShadowWrangler implements ClassHandler {
         private String methodName;
         private Object instance;
         private String[] paramTypes;
+        private Object[] params;
         private Class<?> declaredShadowClass;
         private Method method;
         private Object shadow;
 
-        public InvocationPlan(Class clazz, String methodName, Object instance, String... paramTypes) {
+        public InvocationPlan(Class clazz, String methodName, Object instance, String[] paramTypes, Object... params) {
             this.clazz = clazz;
             this.classLoader = clazz.getClassLoader();
             this.methodName = methodName;
             this.instance = instance;
             this.paramTypes = paramTypes;
+            this.params = params;
         }
 
         public Class<?> getDeclaredShadowClass() {
@@ -287,6 +292,10 @@ public class ShadowWrangler implements ClassHandler {
 
         public Method getMethod() {
             return method;
+        }
+
+        public Object[] getParams() {
+            return params;
         }
 
         public Object getShadow() {
@@ -307,15 +316,23 @@ public class ShadowWrangler implements ClassHandler {
                 methodName = "__constructor__";
             }
 
-            if (instance != null) {
-                shadow = shadowFor(instance);
-                method = getMethod(shadow.getClass(), methodName, paramClasses);
-            } else {
-                shadow = null;
-                method = getMethod(findShadowClass(clazz), methodName, paramClasses);
-            }
+            method = findMethodAndSetShadow(paramClasses);
 
             if (method == null) {
+                //try again but replacing the first int with a CharSequence resource value
+                Class<?>[] paramClassesWithText = Arrays.copyOf(paramClasses, paramClasses.length);
+                for (int i = 0; i < paramClasses.length; i++) {
+                    if (paramClasses[i] == int.class) {
+                        paramClassesWithText[i] = CharSequence.class;
+                        if (findMethodAndSetShadow(paramClassesWithText) != null) {
+                            paramTypes[i] = CharSequence.class.getName();
+                            params[i] = getText((Integer) params[i]);
+                            return prepare();
+                        } else {
+                            break;
+                        }
+                    }
+                }
                 if (debug) {
                     System.out.println("No method found for " + clazz + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + declaredShadowClass.getName());
                 }
@@ -329,6 +346,37 @@ public class ShadowWrangler implements ClassHandler {
             method.setAccessible(true);
 
             return true;
+        }
+
+        private Method findMethodAndSetShadow(Class<?>[] paramClasses) {
+            Method method;
+            if (instance != null) {
+                shadow = shadowFor(instance);
+                method = getMethod(shadow.getClass(), methodName, paramClasses);
+            } else {
+                shadow = null;
+                method = getMethod(findShadowClass(clazz), methodName, paramClasses);
+            }
+            return method;
+        }
+
+        private CharSequence getText(int textId) {
+            try {
+                // Use reflection since Roboelectric.application isn't available in the current code.
+                Object application = readField(null, classLoader.loadClass(Robolectric.class.getName()).getField("application"));
+                Object resources = application.getClass().getMethod("getResources").invoke(application);
+                return (CharSequence) resources.getClass().getMethod("getText", int.class).invoke(resources, textId);
+            } catch (InvocationTargetException e) {
+                throw (RuntimeException) e.getCause();
+            } catch (NoSuchFieldException e) {
+                throw new IllegalStateException(e);
+            } catch (IllegalAccessException e) {
+                throw new IllegalStateException(e);
+            } catch (ClassNotFoundException e) {
+                throw new IllegalStateException(e);
+            } catch (NoSuchMethodException e) {
+                throw new IllegalStateException(e);
+            }
         }
 
         private Class<?> findDeclaredShadowClassForMethod(Class<?> originalClass, String methodName, Class<?>[] paramClasses) {
