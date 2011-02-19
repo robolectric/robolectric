@@ -92,7 +92,11 @@ public class ShadowWrangler implements ClassHandler {
             throw new RuntimeException(invocationPlan.getShadow().getClass().getName() + " is not assignable from " +
                     invocationPlan.getDeclaredShadowClass().getName(), e);
         } catch (InvocationTargetException e) {
-            throw stripStackTrace((Exception) e.getCause());
+            if (e.getCause() instanceof Error) {
+                throw stripStackTrace((Error) e.getCause());
+            } else {
+                throw stripStackTrace((Exception) e.getCause());
+            }
         }
     }
 
