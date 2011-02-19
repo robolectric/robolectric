@@ -19,6 +19,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Gallery;
 import android.widget.Spinner;
 
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -26,6 +27,7 @@ public class AbsSpinnerTest {
     private Context context;
     private AdapterView adapterView;
 	private Spinner spinner;
+	private ShadowAbsSpinner shadowSpinner;
 	private ArrayAdapter<String> arrayAdapter;
 
     @Before
@@ -33,6 +35,7 @@ public class AbsSpinnerTest {
         context = new Activity();
         adapterView = new Gallery(context);
 		spinner = new Spinner(context);
+		shadowSpinner = (ShadowAbsSpinner) Robolectric.shadowOf(spinner);
 		String [] testItems = {"foo", "bar"};
 		arrayAdapter = new MyArrayAdapter(this.context, testItems);
     }
@@ -69,6 +72,19 @@ public class AbsSpinnerTest {
 		spinner.setAdapter(new MyArrayAdapter(context, new String[]{}));
 		spinner.getSelectedItem();		
 	}
+	
+	@Test
+	public void setSelectionWithAnimatedTransition() {		
+		spinner.setAdapter(arrayAdapter);
+		spinner.setSelection(0, true);
+		
+		assertThat((String)spinner.getSelectedItem(), equalTo("foo"));
+		assertThat((String)spinner.getSelectedItem(), not(equalTo("bar")));
+		
+		assertThat(shadowSpinner.isAnimatedTransition(), equalTo(true));
+		
+	}
+	
 	
     private static class MyArrayAdapter extends ArrayAdapter<String> {
         public MyArrayAdapter(Context context, String[] testItems) {
