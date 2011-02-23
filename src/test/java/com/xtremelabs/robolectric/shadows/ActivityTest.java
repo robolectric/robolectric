@@ -5,10 +5,12 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.os.Bundle;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.shadows.testing.OnMethodTestActivity;
 import com.xtremelabs.robolectric.util.TestRunnable;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Test;
@@ -16,10 +18,7 @@ import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 
@@ -165,9 +164,67 @@ public class ActivityTest {
         assertTrue(runnable.wasRun);
     }
 
+    @Test
+    public void callOnXxxMethods_shouldCallProtectedVersions() throws Exception {
+        final Transcript transcript = new Transcript();
+
+        Activity activity = new OnMethodTestActivity(transcript);
+
+        ShadowActivity shadowActivity = shadowOf(activity);
+
+        Bundle bundle = new Bundle();
+        bundle.putString("key", "value");
+        shadowActivity.callOnCreate(bundle);
+        transcript.assertEventsSoFar("onCreate was called with value");
+
+        shadowActivity.callOnStart();
+        transcript.assertEventsSoFar("onStart was called");
+
+        shadowActivity.callOnRestoreInstanceState(null);
+        transcript.assertEventsSoFar("onRestoreInstanceState was called");
+
+        shadowActivity.callOnPostCreate(null);
+        transcript.assertEventsSoFar("onPostCreate was called");
+
+        shadowActivity.callOnRestart();
+        transcript.assertEventsSoFar("onRestart was called");
+
+        shadowActivity.callOnResume();
+        transcript.assertEventsSoFar("onResume was called");
+
+        shadowActivity.callOnPostResume();
+        transcript.assertEventsSoFar("onPostResume was called");
+
+        Intent intent = new Intent("some action");
+        shadowActivity.callOnNewIntent(intent);
+        transcript.assertEventsSoFar("onNewIntent was called with " + intent);
+
+        shadowActivity.callOnSaveInstanceState(null);
+        transcript.assertEventsSoFar("onSaveInstanceState was called");
+
+        shadowActivity.callOnPause();
+        transcript.assertEventsSoFar("onPause was called");
+
+        shadowActivity.callOnUserLeaveHint();
+        transcript.assertEventsSoFar("onUserLeaveHint was called");
+
+        shadowActivity.callOnStop();
+        transcript.assertEventsSoFar("onStop was called");
+
+        shadowActivity.callOnDestroy();
+        transcript.assertEventsSoFar("onDestroy was called");
+    }
+
+    @Test
+    public void callOnXxxMethods_shouldWorkIfNotDeclaredOnConcreteClass() throws Exception {
+        Activity activity = new Activity() {};
+        shadowOf(activity).callOnStart();
+    }
+
     private static class MyActivity extends Activity {
         @Override protected void onDestroy() {
             super.onDestroy();
         }
     }
+
 }
