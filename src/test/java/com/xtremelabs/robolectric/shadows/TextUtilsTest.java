@@ -16,4 +16,12 @@ public class TextUtilsTest {
                 (String) TextUtils.expandTemplate("a^1b^2c^3d", "A", "B", "C", "D"),
                 equalTo("aAbBcCd"));
     }
+
+    @Test
+    public void testIsEmpty() throws Exception {
+        assertThat(TextUtils.isEmpty(null), equalTo(true));
+        assertThat(TextUtils.isEmpty(""), equalTo(true));
+        assertThat(TextUtils.isEmpty(" "), equalTo(false));
+        assertThat(TextUtils.isEmpty("123"), equalTo(false));
+    }
 }
