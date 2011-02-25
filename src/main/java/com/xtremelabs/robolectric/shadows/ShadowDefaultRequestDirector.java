@@ -104,10 +104,16 @@ public class ShadowDefaultRequestDirector {
                 params);
     }
 
+    /**
+     * @deprecated Use {@link Robolectric#getSentHttpRequestInfo(int)} instead.)
+     */
     public static HttpRequest getSentHttpRequest(int index) {
         return getSentHttpRequestInfo(index).getHttpRequest();
     }
 
+    /**
+     * @deprecated Use {@link Robolectric#getSentHttpRequest(int)} instead.)
+     */
     public static HttpRequestInfo getSentHttpRequestInfo(int index) {
         return Robolectric.getFakeHttpLayer().getSentHttpRequestInfo(index);
     }

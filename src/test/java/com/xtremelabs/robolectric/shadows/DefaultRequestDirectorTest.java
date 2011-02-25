@@ -220,4 +220,24 @@ public class DefaultRequestDirectorTest {
         ConnectionKeepAliveStrategy strategy = shadowOf((DefaultRequestDirector) Robolectric.getSentHttpRequestInfo(0).getRequestDirector()).getConnectionKeepAliveStrategy();
         assertSame(strategy, connectionKeepAliveStrategy);
     }
+
+    @Test
+    public void getNextSentHttpRequestInfo_shouldRemoveHttpRequestInfos() throws Exception {
+        Robolectric.addPendingHttpResponse(200, "a happy response body");
+        HttpGet httpGet = new HttpGet("http://example.com");
+        requestDirector.execute(null, httpGet, null);
+
+        assertSame(Robolectric.getNextSentHttpRequestInfo().getHttpRequest(), httpGet);
+        assertNull(Robolectric.getNextSentHttpRequestInfo());
+    }
+
+    @Test
+    public void getNextSentHttpRequest_shouldRemoveHttpRequests() throws Exception {
+        Robolectric.addPendingHttpResponse(200, "a happy response body");
+        HttpGet httpGet = new HttpGet("http://example.com");
+        requestDirector.execute(null, httpGet, null);
+
+        assertSame(Robolectric.getNextSentHttpRequest(), httpGet);
+        assertNull(Robolectric.getNextSentHttpRequest());
+    }
 }
