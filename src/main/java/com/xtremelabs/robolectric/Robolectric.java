@@ -52,6 +52,7 @@ import android.widget.AdapterView;
 import android.widget.ExpandableListView;
 import android.widget.ImageView;
 import android.widget.ListView;
+import android.widget.ProgressBar;
 import android.widget.RemoteViews;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -195,6 +196,7 @@ public class Robolectric {
                 ShadowPointF.class,
                 ShadowPowerManager.class,
                 ShadowPreferenceManager.class,
+                ShadowProgressBar.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
                 ShadowResources.class,
@@ -290,6 +292,10 @@ public class Robolectric {
 
     public static ShadowPath shadowOf(Path instance) {
         return (ShadowPath) shadowOf_(instance);
+    }
+
+    public static ShadowProgressBar shadowOf(ProgressBar instance) {
+        return (ShadowProgressBar) shadowOf_(instance);
     }
 
     public static ShadowListActivity shadowOf(ListActivity instance) {
@@ -588,6 +594,10 @@ public class Robolectric {
 
     public static void setDefaultHttpResponse(HttpResponse defaultHttpResponse) {
         getFakeHttpLayer().setDefaultHttpResponse(defaultHttpResponse);
+    }
+
+    public static void clearHttpResponseRules() {
+        getFakeHttpLayer().clearHttpResponseRules();
     }
 
     public static void pauseLooper(Looper looper) {

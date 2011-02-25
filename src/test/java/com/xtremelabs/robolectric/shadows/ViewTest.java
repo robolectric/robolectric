@@ -1,6 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -17,6 +19,7 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -136,6 +139,13 @@ public class ViewTest {
             view.setBackgroundColor(color);
             assertThat(shadowOf(view).getBackgroundColor(), equalTo(color));
         }
+    }
+
+    @Test
+    public void shouldRecordBackgroundDrawable() {
+        Drawable drawable = new BitmapDrawable();
+        view.setBackgroundDrawable(drawable);
+        assertThat(view.getBackground(), sameInstance(drawable));
     }
 
     @Test

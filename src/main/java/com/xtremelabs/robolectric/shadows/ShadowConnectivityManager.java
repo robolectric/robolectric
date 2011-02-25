@@ -15,10 +15,16 @@ import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 @Implements(ConnectivityManager.class)
 public class ShadowConnectivityManager {
 
-    private NetworkInfo networkInfo;
+    private NetworkInfo activeNetwork;
+    private NetworkInfo[] networkInfo;
 
     @Implementation
     public NetworkInfo getActiveNetworkInfo() {
-        return networkInfo == null ? networkInfo = newInstanceOf(NetworkInfo.class) : networkInfo;
+        return activeNetwork == null ? activeNetwork = newInstanceOf(NetworkInfo.class) : activeNetwork;
+    }
+
+    @Implementation
+    public NetworkInfo[] getAllNetworkInfo() {
+        return networkInfo == null ? networkInfo = new NetworkInfo[]{getActiveNetworkInfo()} : networkInfo;
     }
 }

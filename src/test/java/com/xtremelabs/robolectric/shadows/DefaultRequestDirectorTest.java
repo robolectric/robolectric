@@ -126,6 +126,19 @@ public class DefaultRequestDirectorTest {
     }
 
     @Test
+    public void clearHttpResponseRules_shouldRemoveAllRules() throws Exception {
+        Robolectric.addHttpResponseRule("http://some.uri", "a cheery response body");
+        Robolectric.clearHttpResponseRules();
+        Robolectric.addHttpResponseRule("http://some.uri", "a gloomy response body");
+
+        HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+
+        assertNotNull(response);
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
+        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a gloomy response body"));
+    }
+
+    @Test
     public void shouldReturnRequestsByRule_WithCustomRequestMatcher() throws Exception {
         Robolectric.setDefaultHttpResponse(404, "no such page");
 

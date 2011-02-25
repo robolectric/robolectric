@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.app.Application;
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
@@ -40,6 +41,86 @@ public class ShadowActivity extends ShadowContextWrapper {
     private List<IntentForResult> startedActivitiesForResults = new ArrayList<IntentForResult>();
 
     private Map<Intent, Integer> intentRequestCodeMap = new HashMap<Intent, Integer>();
+
+    public void callOnCreate(Bundle bundle) {
+        invokeReflectively("onCreate", Bundle.class, bundle);
+    }
+
+    public void callOnRestoreInstanceState(Bundle savedInstanceState) {
+        invokeReflectively("onRestoreInstanceState", Bundle.class, savedInstanceState);
+    }
+
+    public void callOnPostCreate(android.os.Bundle savedInstanceState) {
+        invokeReflectively("onPostCreate", Bundle.class, savedInstanceState);
+    }
+
+    public void callOnStart() {
+        invokeReflectively("onStart");
+    }
+
+    public void callOnRestart() {
+        invokeReflectively("onRestart");
+    }
+
+    public void callOnResume() {
+        invokeReflectively("onResume");
+    }
+
+    public void callOnPostResume() {
+        invokeReflectively("onPostResume");
+    }
+
+    public void callOnNewIntent(android.content.Intent intent) {
+        invokeReflectively("onNewIntent", Intent.class, intent);
+    }
+
+    public void callOnSaveInstanceState(android.os.Bundle outState) {
+        invokeReflectively("onSaveInstanceState", Bundle.class, outState);
+    }
+
+    public void callOnPause() {
+        invokeReflectively("onPause");
+    }
+
+    public void callOnUserLeaveHint() {
+        invokeReflectively("onUserLeaveHint");
+    }
+
+    public void callOnStop() {
+        invokeReflectively("onStop");
+    }
+
+    public void callOnDestroy() {
+        invokeReflectively("onDestroy");
+    }
+
+    private void invokeReflectively(String methodName, Class<?> argClass, Object arg) {
+        try {
+            Method method = Activity.class.getDeclaredMethod(methodName, argClass);
+            method.setAccessible(true);
+            method.invoke(realActivity, arg);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void invokeReflectively(String methodName) {
+        try {
+            Method method = Activity.class.getDeclaredMethod(methodName);
+            method.setAccessible(true);
+            method.invoke(realActivity);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Implementation
     public final Application getApplication() {
