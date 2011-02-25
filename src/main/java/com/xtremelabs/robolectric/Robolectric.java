@@ -474,9 +474,9 @@ public class Robolectric {
         return (ShadowNotification) Robolectric.shadowOf_(other);
     }
 
-    public static <E> SparseArray<E> shadowOf(SparseArray<E> other) {
+    public static <E> ShadowSparseArray<E> shadowOf(SparseArray<E> other) {
         //noinspection unchecked
-        return (SparseArray<E>) Robolectric.shadowOf_(other);
+        return (ShadowSparseArray<E>) Robolectric.shadowOf_(other);
     }
 
     @SuppressWarnings({"unchecked"})
