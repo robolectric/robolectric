@@ -26,4 +26,34 @@ public class ShadowTextUtils {
     public static boolean isEmpty(CharSequence s) {
       return (s == null || s.length() == 0);
     }
+
+    @Implementation
+    public static String join(CharSequence delimiter, Iterable tokens) {
+        StringBuilder sb = new StringBuilder();
+        boolean firstTime = true;
+        for (Object token: tokens) {
+            if (firstTime) {
+                firstTime = false;
+            } else {
+                sb.append(delimiter);
+            }
+            sb.append(token);
+        }
+        return sb.toString();
+    }
+
+    @Implementation
+    public static String join(CharSequence delimiter, Object[] tokens) {
+        StringBuilder sb = new StringBuilder();
+        boolean firstTime = true;
+        for (Object token: tokens) {
+            if (firstTime) {
+                firstTime = false;
+            } else {
+                sb.append(delimiter);
+            }
+            sb.append(token);
+        }
+        return sb.toString();
+    }
 }
