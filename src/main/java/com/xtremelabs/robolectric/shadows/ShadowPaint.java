@@ -5,6 +5,7 @@ import android.graphics.Paint;
 import android.graphics.Shader;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 /**
  * Shadow of {@code Paint} that has some extra accessors so that tests can tell whether a {@code Paint} object was
@@ -26,6 +27,10 @@ public class ShadowPaint {
     private Shader shader;
     private int alpha;
     private ColorFilter filter;
+    private boolean aa;
+    private boolean dither;
+    
+    @RealObject Paint paint;
 
     @Implementation
     public Shader setShader(Shader shader) {
@@ -179,6 +184,26 @@ public class ShadowPaint {
     public ColorFilter setColorFilter(ColorFilter filter) {
         this.filter = filter;
         return filter;
+    }
+    
+    @Implementation
+    public void setAntiAlias(boolean aa) {
+    	this.aa = aa;
+    }
+    
+    @Implementation
+    public void setDither(boolean dither) {
+    	this.dither = dither;
+    }
+    
+    @Implementation
+    public final boolean isDither() {
+    	return dither;
+    }
+    
+    @Implementation
+    public final boolean isAntiAlias() {
+    	return aa;
     }
 
 }

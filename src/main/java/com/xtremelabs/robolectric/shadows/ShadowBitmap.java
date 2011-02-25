@@ -18,6 +18,8 @@ public class ShadowBitmap {
 
     private int width;
     private int height;
+    private Bitmap.Config config;
+    private boolean mutable;
     private String description = "";
     private int loadedFromResourceId = -1;
     private boolean recycled = false;
@@ -40,7 +42,15 @@ public class ShadowBitmap {
         shadowBitmap.appendDescription("Bitmap (" + width + " x " + height + ")");
         shadowBitmap.setWidth(width);
         shadowBitmap.setHeight(height);
+        shadowBitmap.setConfig(config);
         return scaledBitmap;
+    }
+    
+    @Implementation
+    public static Bitmap createBitmap(Bitmap bitmap) {
+        ShadowBitmap shadowBitmap = shadowOf(bitmap);
+        shadowBitmap.appendDescription(" created from Bitmap object");
+        return bitmap;   	
     }
 
     @Implementation
@@ -65,6 +75,32 @@ public class ShadowBitmap {
     @Implementation
     public final boolean isRecycled() {
     	return recycled;
+    }
+    
+    @Implementation
+    public Bitmap copy(Bitmap.Config config, boolean isMutable) {
+    	ShadowBitmap shadowBitmap = shadowOf(realBitmap);
+    	shadowBitmap.setConfig(config);
+    	shadowBitmap.setMutable(isMutable);
+		return realBitmap;    	
+    }
+    
+    @Implementation
+    public final Bitmap.Config getConfig() {
+		return config;  	
+    }
+    
+    public void setConfig(Bitmap.Config config) {
+    	this.config = config;
+    }
+    
+    @Implementation
+    public final boolean isMutable() {
+    	return mutable;
+    }
+    
+    public void setMutable(boolean mutable) {
+    	this.mutable = mutable;
     }
     
     public void appendDescription(String s) {
@@ -144,4 +180,10 @@ public class ShadowBitmap {
                 ", height=" + height +
                 '}';
     }
+    
+    public Bitmap getRealBitmap() {
+    	return realBitmap;
+    }
+    
+    
 }

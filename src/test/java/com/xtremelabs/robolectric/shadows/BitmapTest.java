@@ -36,6 +36,21 @@ public class BitmapTest {
     }
     
     @Test
+    public void shouldCreateBitmapWithCorrectConfig() throws Exception {
+        Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
+        assertEquals( bitmap.getConfig(), Config.ARGB_8888 );
+    }
+    
+    @Test
+    public void shouldCreateBitmapFromAnotherBitmap() {
+    	Bitmap originalBitmap = Robolectric.newInstanceOf(Bitmap.class);
+        shadowOf(originalBitmap).appendDescription("Original bitmap");
+        Bitmap newBitmap = Bitmap.createBitmap(originalBitmap);
+        assertEquals("Original bitmap created from Bitmap object", shadowOf(newBitmap).getDescription());
+    }
+    
+    
+    @Test
     public void shouldRecycleBitmap() throws Exception {
         Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
         bitmap.recycle();
@@ -114,4 +129,13 @@ public class BitmapTest {
         assertEquals("Bitmap One", Robolectric.visualize(bitmap));
 
     }
+    
+    @Test
+    public void shouldCopyBitmap() {
+    	Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
+    	Bitmap bitmapCopy = bitmap.copy(Config.ARGB_8888, true);
+    	assertEquals(shadowOf(bitmapCopy).getConfig(), Config.ARGB_8888);
+    	assertTrue(shadowOf(bitmapCopy).isMutable());
+    }
+
 }

@@ -1,8 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.graphics.Paint;
 import android.graphics.Path;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,6 +18,7 @@ import java.util.List;
 public class ShadowPath {
     private List<Point> points = new ArrayList<Point>();
     private Point wasMovedTo;
+    private String quadDescription = "";
 
     @Implementation
     public void moveTo(float x, float y) {
@@ -27,6 +30,16 @@ public class ShadowPath {
     @Implementation
     public void lineTo(float x, float y) {
         points.add(new Point(x, y));
+    }
+    
+    @Implementation
+    public void quadTo(float x1, float y1, float x2, float y2) {
+    	quadDescription = "Add a quadratic bezier from last point, approaching (" + x1 + "," + y1 + "), " +
+    			"ending at (" +x2+","+ y2 + ")";
+    }
+    
+    public String getQuadDescription() {
+    	return quadDescription;
     }
 
     /**
@@ -79,5 +92,15 @@ public class ShadowPath {
         public String toString() {
             return "Point(" + x + "," + y + ")";
         }
+        
+        public float getX() {
+        	return x;       	
+        }
+        
+        public float getY() {
+        	return y;
+        }
+        
+        
     }
 }
