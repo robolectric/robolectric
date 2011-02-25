@@ -204,6 +204,7 @@ public class Robolectric {
                 ShadowSettings.ShadowSecure.class,
                 ShadowSettings.ShadowSystem.class,
                 ShadowSpannableStringBuilder.class,
+                ShadowSparseArray.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
