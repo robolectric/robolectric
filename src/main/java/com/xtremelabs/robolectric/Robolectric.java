@@ -40,6 +40,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.SparseArray;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -471,6 +472,11 @@ public class Robolectric {
 
     public static ShadowNotification shadowOf(Notification other) {
         return (ShadowNotification) Robolectric.shadowOf_(other);
+    }
+
+    public static <E> SparseArray<E> shadowOf(SparseArray<E> other) {
+        //noinspection unchecked
+        return (SparseArray<E>) Robolectric.shadowOf_(other);
     }
 
     @SuppressWarnings({"unchecked"})
