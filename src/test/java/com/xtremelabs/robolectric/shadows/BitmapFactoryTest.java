@@ -83,6 +83,28 @@ public class BitmapFactoryTest {
     }
 
     @Test
+    public void decodeByteArray_shouldGetWidthAndHeightFromHints() throws Exception {
+        String data = "arbitrary bytes";
+        ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse(data), 123, 456);
+
+        byte[] bytes = data.getBytes();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        assertEquals("Bitmap for " + data, shadowOf(bitmap).getDescription());
+        assertEquals(123, bitmap.getWidth());
+        assertEquals(456, bitmap.getHeight());
+    }
+
+    @Test
+    public void decodeByteArray_shouldIncludeOffsets() throws Exception {
+        String data = "arbitrary bytes";
+        ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse(data), 123, 456);
+
+        byte[] bytes = data.getBytes();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 1, bytes.length - 2);
+        assertEquals("Bitmap for " + data + " bytes 1..13", shadowOf(bitmap).getDescription());
+    }
+
+    @Test
     public void decodeStream_shouldGetWidthAndHeightFromHints() throws Exception {
         ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse("content:/path"), 123, 456);
 

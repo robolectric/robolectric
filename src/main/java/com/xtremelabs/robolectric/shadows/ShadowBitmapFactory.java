@@ -46,6 +46,23 @@ public class ShadowBitmapFactory {
     }
 
     @Implementation
+    public static Bitmap decodeByteArray(byte[] data, int offset, int length, BitmapFactory.Options options) {
+        if ((offset | length) < 0 || data.length < offset + length) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        String desc = new String(data);
+        if (offset != 0 && length != data.length) {
+            desc += " bytes " + offset + ".." + length;
+        }
+        return create(desc, options);
+    }
+
+    @Implementation
+    public static Bitmap decodeByteArray(byte[] data, int offset, int length) {
+        return decodeByteArray(data, offset, length, new BitmapFactory.Options());
+    }
+
+    @Implementation
     public static Bitmap decodeStream(InputStream is) {
         return decodeStream(is, null, new BitmapFactory.Options());
     }
