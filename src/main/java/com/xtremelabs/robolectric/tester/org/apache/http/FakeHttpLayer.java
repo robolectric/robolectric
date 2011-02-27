@@ -18,6 +18,7 @@ public class FakeHttpLayer {
     List<HttpEntityStub.ResponseRule> httpResponseRules = new ArrayList<HttpEntityStub.ResponseRule>();
     HttpResponse defaultHttpResponse;
     private HttpResponse defaultResponse;
+    private boolean logHttpRequests = false;
 
     public void addPendingHttpResponse(int statusCode, String responseBody) {
         addPendingHttpResponse(new TestHttpResponse(statusCode, responseBody));
@@ -72,8 +73,14 @@ public class FakeHttpLayer {
     }
 
     public HttpResponse emulateRequest(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext, RequestDirector requestDirector) throws HttpException, IOException {
+        if (logHttpRequests) {
+            System.out.println("  <-- " + httpRequest.getRequestLine());
+        }
         HttpResponse httpResponse = findResponse(httpRequest);
-
+        if (logHttpRequests) {
+            System.out.println("  --> " + (httpResponse == null ? null : httpResponse.getStatusLine().getStatusCode()));
+        }
+        
         if (httpResponse == null) {
             throw new RuntimeException("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse().");
         }
@@ -108,6 +115,14 @@ public class FakeHttpLayer {
 
     public void clearHttpResponseRules() {
         httpResponseRules.clear();
+    }
+
+    public void logHttpRequests() {
+        logHttpRequests = true;
+    }
+
+    public void silence() {
+        logHttpRequests = false;
     }
 
     public static class RequestMatcherResponseRule implements HttpEntityStub.ResponseRule {
