@@ -75,6 +75,10 @@ public class ShadowWrangler implements ClassHandler {
         if (debug) System.out.println("shadow " + realClass + " with " + shadowClass);
     }
 
+    public Class<?> getShadowClass(Class<?> realClass, ClassLoader loader) throws ClassNotFoundException {
+        return loader.loadClass(shadowClassMap.get(realClass.getName()));
+    }
+
     @Override
     public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Exception {
         InvocationPlan invocationPlan = new InvocationPlan(clazz, methodName, instance, paramTypes);

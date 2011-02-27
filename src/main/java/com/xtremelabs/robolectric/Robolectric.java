@@ -15,6 +15,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.Signature;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -38,8 +39,11 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.BadParcelableException;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Parcel;
 import android.util.SparseArray;
 import android.view.Display;
 import android.view.LayoutInflater;
@@ -190,6 +194,7 @@ public class Robolectric {
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
                 ShadowPaint.class,
+                ShadowParcel.class,
                 ShadowPath.class,
                 ShadowPendingIntent.class,
                 ShadowPoint.class,
@@ -204,6 +209,7 @@ public class Robolectric {
                 ShadowSettings.class,
                 ShadowSettings.ShadowSecure.class,
                 ShadowSettings.ShadowSystem.class,
+                ShadowSignature.class,
                 ShadowSpannableStringBuilder.class,
                 ShadowSparseArray.class,
                 ShadowSQLiteDatabase.class,
@@ -477,6 +483,18 @@ public class Robolectric {
     public static <E> ShadowSparseArray<E> shadowOf(SparseArray<E> other) {
         //noinspection unchecked
         return (ShadowSparseArray<E>) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowParcel shadowOf(Parcel other) {
+        return (ShadowParcel) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowBundle shadowOf(Bundle other) {
+        return (ShadowBundle) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowSignature shadowOf(Signature other) {
+        return (ShadowSignature) Robolectric.shadowOf_(other);
     }
 
     @SuppressWarnings({"unchecked"})

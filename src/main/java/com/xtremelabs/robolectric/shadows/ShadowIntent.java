@@ -3,8 +3,10 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Rect;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Parcel;
 import android.os.Parcelable;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -18,7 +20,9 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -124,7 +128,7 @@ public class ShadowIntent {
     @Implementation
     public Bundle getExtras() {
         Bundle bundle = new Bundle();
-        ((ShadowBundle) Robolectric.shadowOf_(bundle)).map.putAll(extras);
+        ((ShadowBundle) Robolectric.shadowOf_(bundle)).mMap.putAll(extras);
         return bundle;
     }
 
@@ -250,6 +254,24 @@ public class ShadowIntent {
         return realIntentEquals(shadowOf((Intent) o));
     }
 
+    @Implementation
+    public void writeToParcel(Parcel out, int flags) {
+        out.writeString(action);
+        Uri.writeToParcel(out, data);
+        out.writeString(type);
+        out.writeInt(flags);
+        ComponentName.writeToParcel(componentName, out);
+    }
+
+    @Implementation
+    public void readFromParcel(Parcel in) {
+        action = in.readString();
+        data = Uri.CREATOR.createFromParcel(in);
+        type = in.readString();
+        flags = in.readInt();
+        componentName = ComponentName.readFromParcel(in);
+    }
+
     /**
      * Non-Android accessor that returns the {@code Class} object set by
      * {@link #setClass(android.content.Context, Class)}
@@ -297,4 +319,23 @@ public class ShadowIntent {
         if (o instanceof Map && ((Map) o).isEmpty()) return null;
         return name + "=" + o;
     }
+
+    public static final Parcelable.Creator<Intent> CREATOR
+            = new Parcelable.Creator<Intent>() {
+        public Intent createFromParcel(Parcel in) {
+            try {
+                Constructor c = Intent.class.getDeclaredConstructor();
+                c.setAccessible(true);
+                ShadowIntent intent = Robolectric.shadowOf((Intent) c.newInstance());
+                intent.readFromParcel(in);
+                return intent.realIntent;
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        public Intent[] newArray(int size) {
+            return new Intent[size];
+        }
+    };
 }

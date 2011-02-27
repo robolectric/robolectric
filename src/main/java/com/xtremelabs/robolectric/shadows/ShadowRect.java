@@ -1,9 +1,15 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.pm.Signature;
 import android.graphics.Rect;
+import android.os.Parcel;
+import android.os.Parcelable;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+
+import java.lang.reflect.Constructor;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
@@ -59,4 +65,24 @@ public class ShadowRect {
         sb.append(")");
         return sb.toString();
     }
+
+    public static final Parcelable.Creator<Rect> CREATOR
+            = new Parcelable.Creator<Rect>() {
+        public Rect createFromParcel(Parcel source) {
+            try {
+                int left = source.readInt();
+                int top = source.readInt();
+                int right = source.readInt();
+                int bottom = source.readInt();
+                return new Rect(left, top, right, bottom);
+            }
+            catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public Rect[] newArray(int size) {
+            return new Rect[size];
+        }
+    };
 }
