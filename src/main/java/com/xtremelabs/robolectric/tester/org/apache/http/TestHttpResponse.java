@@ -46,6 +46,14 @@ public class TestHttpResponse extends HttpResponseStub {
         @Override public Header getContentType() {
             return contentType;
         }
+        
+        @Override public boolean isStreaming() {
+            return true;
+        }
+        
+        @Override public boolean isRepeatable() {
+            return true;
+        }
 
         @Override public InputStream getContent() throws IOException, IllegalStateException {
             return new ByteArrayInputStream(responseBody.getBytes());
