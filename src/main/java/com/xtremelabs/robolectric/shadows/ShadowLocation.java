@@ -19,6 +19,10 @@ public class ShadowLocation {
     private double latitude;
     private double longitude;
     private float accuracy;
+    
+    public void __constructor__(String provider) {
+    	this.provider = provider;
+    }
 
     @Implementation
     public String getProvider() {
