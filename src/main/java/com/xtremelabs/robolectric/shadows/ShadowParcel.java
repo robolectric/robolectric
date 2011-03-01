@@ -116,9 +116,9 @@ public class ShadowParcel {
     @Implementation
     public static Parcel obtain() {
         try {
-            Constructor<?>[] constructor = Parcel.class.getDeclaredConstructors();
-            constructor[0].setAccessible(true);
-            Parcel parcel = (Parcel) constructor[0].newInstance();
+            Constructor<Parcel> constructor = findDefaultConstructor(Parcel.class);
+            constructor.setAccessible(true);
+            Parcel parcel = constructor.newInstance();
             ShadowParcel shadow = Robolectric.shadowOf(parcel);
             return shadow.This;
         }
@@ -1276,20 +1276,35 @@ public class ShadowParcel {
         }
 
         try {
-
-            Bundle bundle = (Bundle) Bundle.class.getDeclaredConstructors()[0].newInstance(Bundle.class.getClassLoader());
-            ShadowWrangler.getInstance().methodInvoked(
-                    Bundle.class, "<init>", bundle,
-                    new String[] { },
-                    new Object[] { } );
-            if (loader != null) {
-                bundle.setClassLoader(loader);
+            Constructor<Bundle> constructor = findDefaultConstructor(Bundle.class);
+            if (constructor != null) {
+                constructor.setAccessible(true);
+                Bundle bundle = constructor.newInstance();
+                ShadowWrangler.getInstance().methodInvoked(
+                        Bundle.class, "<init>", bundle,
+                        new String[] {}, new Object[] {});
+                if (loader != null) {
+                    bundle.setClassLoader(loader);
+                }
+                Robolectric.shadowOf(bundle).readFromParcelInner(This, length);
+                return bundle;
             }
-            Robolectric.shadowOf(bundle).readFromParcelInner(This, length);
-            return bundle;
-        } catch (Exception e) {
+         } catch (Exception e) {
             throw new RuntimeException(e);
+         }
+
+        throw new RuntimeException("Could not find Bundle constructor");
+    }
+
+    private static <T> Constructor<T> findDefaultConstructor(Class<T> clazz) {
+        Constructor<T>[] constructors =
+                (Constructor<T>[]) clazz.getDeclaredConstructors();
+        for (Constructor<T> constructor : constructors) {
+            if (constructor.getParameterTypes().length == 0) {
+                return constructor;
+            }
         }
+        return null;
     }
 
     /**
