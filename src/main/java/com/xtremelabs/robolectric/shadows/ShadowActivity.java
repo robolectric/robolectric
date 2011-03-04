@@ -41,6 +41,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     private List<IntentForResult> startedActivitiesForResults = new ArrayList<IntentForResult>();
 
     private Map<Intent, Integer> intentRequestCodeMap = new HashMap<Intent, Integer>();
+    private int requestedOrientation;
 
     public void callOnCreate(Bundle bundle) {
         invokeReflectively("onCreate", Bundle.class, bundle);
@@ -204,6 +205,14 @@ public class ShadowActivity extends ShadowContextWrapper {
         return parent;
     }
 
+    /**
+     * Allow setting of Parent activity (for unit testing purposes only)
+     * @param parent Parent activity to set on this activity
+     */
+    public void setParent(Activity parent){
+        this.parent = parent;
+    }
+
     @Implementation
     public void finish() {
         finishWasCalled = true;
@@ -245,6 +254,24 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public void onDestroy() {
         assertNoBroadcastListenersRegistered();
+    }
+
+    @Implementation
+    public void setRequestedOrientation(int requestedOrientation) {
+        if (getParent() != null){
+            getParent().setRequestedOrientation(requestedOrientation);
+        } else {
+            this.requestedOrientation = requestedOrientation;
+        }
+    }
+
+    @Implementation
+    public int getRequestedOrientation() {
+        if (getParent() != null){
+            return getParent().getRequestedOrientation();
+        } else {
+            return this.requestedOrientation;
+        }
     }
 
     /**

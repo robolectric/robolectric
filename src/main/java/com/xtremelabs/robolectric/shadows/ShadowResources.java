@@ -39,6 +39,23 @@ public class ShadowResources {
     @RealObject Resources realResources;
     private ResourceLoader resourceLoader;
 
+    private Configuration configuration;
+
+    public ShadowResources() {
+        Configuration configuration = new Configuration();
+        configuration.setToDefaults();
+        setConfiguration(configuration);
+    }
+
+    /**
+     * Non-Android accessor that sets the value to be returned by {@link #getConfiguration()}
+     *
+     * @param configuration Configuration instance to set on this Resources obj
+     */
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
+    }
+
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
         return resourceLoader.getColorValue(id);
@@ -46,8 +63,6 @@ public class ShadowResources {
 
     @Implementation
     public Configuration getConfiguration() {
-        Configuration configuration = new Configuration();
-        configuration.setToDefaults();
         return configuration;
     }
 

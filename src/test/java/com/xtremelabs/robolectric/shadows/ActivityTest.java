@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import com.xtremelabs.robolectric.ApplicationResolver;
@@ -219,6 +220,32 @@ public class ActivityTest {
     public void callOnXxxMethods_shouldWorkIfNotDeclaredOnConcreteClass() throws Exception {
         Activity activity = new Activity() {};
         shadowOf(activity).callOnStart();
+    }
+
+    @Test
+    public void getAndSetParentActivity_shouldWorkForTestingPurposes() throws Exception {
+        Activity parentActivity = new Activity(){};
+        Activity activity = new Activity(){};
+        shadowOf(activity).setParent(parentActivity);
+        assertSame(parentActivity, activity.getParent());
+    }
+
+    @Test
+    public void getAndSetRequestedOrientation_shouldRemember() throws Exception {
+        Activity activity = new Activity(){};
+        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
+    }
+
+    @Test
+    public void getAndSetRequestedOrientation_shouldDelegateToParentIfPresent() throws Exception {
+        Activity parentActivity = new Activity(){};
+        Activity activity = new Activity(){};
+        shadowOf(activity).setParent(parentActivity);
+        parentActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
+        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE, parentActivity.getRequestedOrientation());
     }
 
     private static class MyActivity extends Activity {

@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.res.Resources;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -14,11 +15,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -83,5 +84,19 @@ public class ApplicationTest {
     public void packageManager_shouldKnowPackageName() throws Exception {
         Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
         assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo(null, 0).packageName);
+    }
+
+    @Test
+    public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
+        Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
+        assertSame(application.getResources(), application.getResources());
+    }
+
+    @Test
+    public void shouldBeAbleToResetResources() throws Exception {
+        Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
+        Resources res = application.getResources();
+        shadowOf(application).resetResources();
+        assertFalse(res == application.getResources());
     }
 }
