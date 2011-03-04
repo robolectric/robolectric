@@ -57,11 +57,13 @@ import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.AnimationUtils;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.AbsSeekBar;
 import android.widget.AdapterView;
 import android.widget.ExpandableListView;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.ProgressBar;
@@ -134,6 +136,7 @@ public class Robolectric {
                 ShadowAlarmManager.class,
                 ShadowAlertDialog.class,
                 ShadowAlertDialog.ShadowBuilder.class,
+                ShadowAnimationUtils.class,
                 ShadowApplication.class,
                 ShadowAppWidgetManager.class,
                 ShadowArrayAdapter.class,
@@ -514,6 +517,14 @@ public class Robolectric {
     
     public static ShadowSeekBar shadowOf(SeekBar instance) {
         return (ShadowSeekBar) shadowOf_(instance);
+    }
+    
+    public static ShadowAnimationUtils shadowOf(AnimationUtils instance) {
+    	return (ShadowAnimationUtils) shadowOf_(instance);
+    }
+    
+    public static ShadowGridView shadowOf(GridView instance) {
+    	return (ShadowGridView) shadowOf_(instance);
     }
     
     @SuppressWarnings({"unchecked"})
