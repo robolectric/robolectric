@@ -3,6 +3,8 @@ package com.xtremelabs.robolectric.res;
 import android.app.Activity;
 import android.content.Context;
 import android.view.View;
+import android.widget.Button;
+import android.os.Bundle;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.CheckBox;
@@ -27,6 +29,7 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
@@ -240,7 +243,42 @@ public class ViewLoaderTest {
 
         assertThat(shadowImageView.getBackgroundResourceId(), equalTo(R.drawable.image_background));
     }
-    
+
+    @Test
+    public void testOnClickAttribute() throws Exception {
+        ClickActivity activity = new ClickActivity();
+        activity.onCreate(null);
+
+        assertThat(activity.clicked, equalTo(false));
+
+        Button button = (Button)activity.findViewById(R.id.button);
+        button.performClick();
+
+        assertThat(activity.clicked, equalTo(true));
+    }
+
+    @Test
+    public void testInvalidOnClickAttribute() throws Exception {
+        Activity activity = new Activity();
+        activity.setContentView(R.layout.with_invalid_onclick);
+
+        Button button =
+            (Button)activity.findViewById(R.id.invalid_onclick_button);
+
+        IllegalStateException exception = null;
+        try {
+            button.performClick();
+        } catch (IllegalStateException e) {
+            exception = e;
+        } finally {
+            assertNotNull(exception);
+            assertThat("The error message should contain the id name of the "
+                       + "faulty button",
+                       exception.getMessage(),
+                       containsString("invalid_onclick_button"));
+        }
+    }
+
     @Test
     public void shouldInvokeOnFinishInflate() throws Exception {
         CustomView2 outerCustomView = (CustomView2) viewLoader.inflateView(context, "layout/custom_layout2");
@@ -253,5 +291,18 @@ public class ViewLoaderTest {
     public void testIncludesLinearLayoutsOnlyOnce() throws Exception {
         ViewGroup parentView = (ViewGroup) viewLoader.inflateView(context, "layout/included_layout_parent");
         assertEquals(1, parentView.getChildCount());
+    }
+
+    public static class ClickActivity extends Activity {
+        public boolean clicked = false;
+
+        @Override protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.main);
+        }
+
+        public void onButtonClick(View v) {
+            clicked = true;
+        }
     }
 }
