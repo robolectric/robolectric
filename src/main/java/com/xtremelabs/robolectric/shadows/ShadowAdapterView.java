@@ -28,7 +28,10 @@ public class ShadowAdapterView extends ShadowViewGroup {
     @Implementation
     public void setAdapter(Adapter adapter) {
         this.adapter = adapter;
-        adapter.registerDataSetObserver(new AdapterViewDataSetObserver());
+
+        if (null != adapter) {
+            adapter.registerDataSetObserver(new AdapterViewDataSetObserver());
+        }
 
         invalidateAndScheduleUpdate();
         setSelection(0);
@@ -66,6 +69,12 @@ public class ShadowAdapterView extends ShadowViewGroup {
     @Implementation
     public int getSelectedItemPosition() {
         return selectedPosition;
+    }
+
+    @Implementation
+    public Object getSelectedItem() {
+        int pos = getSelectedItemPosition();
+        return getItemAtPosition(pos);
     }
 
     @Implementation

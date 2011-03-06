@@ -16,6 +16,7 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
@@ -95,6 +96,84 @@ public class CameraTest {
         assertThat(shadowCamera.isReleased(), equalTo(false));
         camera.release();
         assertThat(shadowCamera.isReleased(), equalTo(true));
+    }
+
+    @Test
+    public void testSetPreviewCallbacks() throws Exception {
+    	TestPreviewCallback callback = new TestPreviewCallback();
+    	assertThat(callback.camera, nullValue());
+    	assertThat(callback.data, nullValue());
+    	
+    	camera.setPreviewCallback(callback);
+    	shadowCamera.invokePreviewCallback("foobar".getBytes());
+    	
+    	assertThat(callback.camera, sameInstance(camera));
+    	assertThat(callback.data, equalTo("foobar".getBytes()));
+    }
+    
+    @Test
+    public void testSetOneShotPreviewCallbacks() throws Exception {
+    	TestPreviewCallback callback = new TestPreviewCallback();
+    	assertThat(callback.camera, nullValue());
+    	assertThat(callback.data, nullValue());
+    	
+    	camera.setOneShotPreviewCallback(callback);
+    	shadowCamera.invokePreviewCallback("foobar".getBytes());
+    	
+    	assertThat(callback.camera, sameInstance(camera));
+    	assertThat(callback.data, equalTo("foobar".getBytes()));
+    }
+    
+    @Test
+    public void testPreviewCallbacksWithBuffers() throws Exception {
+    	TestPreviewCallback callback = new TestPreviewCallback();
+    	assertThat(callback.camera, nullValue());
+    	assertThat(callback.data, nullValue());
+    	
+    	camera.setPreviewCallbackWithBuffer(callback);
+    	shadowCamera.invokePreviewCallback("foobar".getBytes());
+    	
+    	assertThat(callback.camera, sameInstance(camera));
+    	assertThat(callback.data, equalTo("foobar".getBytes()));
+    }
+
+    @Test
+    public void testClearPreviewCallback() throws Exception {
+    	TestPreviewCallback callback = new TestPreviewCallback();
+    	assertThat(callback.camera, nullValue());
+    	assertThat(callback.data, nullValue());
+    	
+    	camera.setPreviewCallback(callback);
+    	camera.setPreviewCallback(null);   	
+
+    	shadowCamera.invokePreviewCallback("foobar".getBytes());
+    	assertThat(callback.camera, nullValue());
+    	assertThat(callback.data, nullValue());
+    	
+    	camera.setOneShotPreviewCallback(callback);
+    	camera.setOneShotPreviewCallback(null);
+
+    	shadowCamera.invokePreviewCallback("foobar".getBytes());
+    	assertThat(callback.camera, nullValue());
+    	assertThat(callback.data, nullValue());
+    	
+    	camera.setPreviewCallbackWithBuffer(callback);
+    	camera.setPreviewCallbackWithBuffer(null);	
+    	
+    	shadowCamera.invokePreviewCallback("foobar".getBytes());
+    	assertThat(callback.camera, nullValue());
+    	assertThat(callback.data, nullValue());
+    }
+    
+    private class TestPreviewCallback implements Camera.PreviewCallback {
+    	public Camera camera = null;
+    	public byte[] data = null;
+    	
+		@Override
+		public void onPreviewFrame(byte[] data, Camera camera) {
+			this.data = data;
+			this.camera = camera;
+		}
     }
 
     private class TestSurfaceHolder implements SurfaceHolder {
