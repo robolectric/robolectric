@@ -50,12 +50,12 @@ public class AbsSpinnerTest {
 	public void getSelectedItemShouldReturnCorrectValue(){
 		spinner.setAdapter(arrayAdapter);
 		spinner.setSelection(0);
-		assertThat(spinner.getSelectedItem(), equalTo("foo"));
-		assertThat(spinner.getSelectedItem(), not(equalTo("bar")));
+		assertThat((String) spinner.getSelectedItem(), equalTo("foo"));
+		assertThat((String) spinner.getSelectedItem(), not(equalTo("bar")));
 		
 		spinner.setSelection(1);
-		assertThat(spinner.getSelectedItem(), equalTo("bar"));
-		assertThat(spinner.getSelectedItem(), not(equalTo("foo")));
+		assertThat((String) spinner.getSelectedItem(), equalTo("bar"));
+		assertThat((String) spinner.getSelectedItem(), not(equalTo("foo")));
 	}
 	
 	@Test
@@ -74,8 +74,8 @@ public class AbsSpinnerTest {
 		spinner.setAdapter(arrayAdapter);
 		spinner.setSelection(0, true);
 		
-		assertThat(spinner.getSelectedItem(), equalTo("foo"));
-		assertThat(spinner.getSelectedItem(), not(equalTo("bar")));
+		assertThat((String) spinner.getSelectedItem(), equalTo("foo"));
+		assertThat((String) spinner.getSelectedItem(), not(equalTo("bar")));
 		
 		assertThat(shadowSpinner.isAnimatedTransition(), equalTo(true));
 	}

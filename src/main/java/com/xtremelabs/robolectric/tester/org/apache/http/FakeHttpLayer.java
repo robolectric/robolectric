@@ -66,6 +66,8 @@ public class FakeHttpLayer {
             }
         }
 
+        System.err.println("Unexpected HTTP call " + httpRequest.getRequestLine());
+
         return defaultHttpResponse;
     }
 
@@ -80,7 +82,6 @@ public class FakeHttpLayer {
 
         return httpResponse;
     }
-
     public boolean hasPendingResponses() {
         return !pendingHttpResponses.isEmpty();
     }
@@ -99,6 +100,9 @@ public class FakeHttpLayer {
 
     public HttpRequestInfo getSentHttpRequestInfo(int index) {
         return httpRequestInfos.get(index);
+    }
+    public void clearHttpResponseRules() {
+        httpResponseRules.clear();
     }
 
     public static class RequestMatcherResponseRule implements HttpEntityStub.ResponseRule {

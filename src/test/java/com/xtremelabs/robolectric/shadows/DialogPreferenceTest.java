@@ -57,7 +57,7 @@ public class DialogPreferenceTest {
 
     @Test
     public void testGetDialogMessage() {
-        assertThat(preference.getDialogMessage(), equalTo(TEST_DIALOG_MESSAGE));
+        assertThat((String) preference.getDialogMessage(), equalTo(TEST_DIALOG_MESSAGE));
     }
 
     protected static class TestDialogPreference extends DialogPreference {

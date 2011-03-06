@@ -114,6 +114,12 @@ public class ShadowAdapterView extends ShadowViewGroup {
     }
 
     @Implementation
+    public long getItemIdAtPosition(int position) {
+        Adapter adapter = getAdapter();
+        return (adapter == null || position < 0) ? AdapterView.INVALID_ROW_ID : adapter.getItemId(position);
+    }
+
+    @Implementation
     public void setSelection(final int position) {
         selectedPosition = position;
         new Handler().post(new Runnable() {
