@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.view.View;
@@ -77,6 +78,19 @@ public class AppWidgetManagerTest {
 
         View mediaWidgetView = shadowAppWidgetManager.getViewFor(widgetId);
         assertContains("Media Layout", mediaWidgetView);
+    }
+
+    @Test
+    public void getAppWidgetIds() {
+        int expectedWidgetId = shadowAppWidgetManager.createWidget(SpanishTestAppWidgetProvider.class, R.layout.main);
+
+        int[] appWidgetIds = appWidgetManager.getAppWidgetIds(
+                new ComponentName(
+                        SpanishTestAppWidgetProvider.class.getPackage().getName(),
+                        SpanishTestAppWidgetProvider.class.getName()));
+
+        assertEquals(1, appWidgetIds.length);
+        assertEquals(expectedWidgetId, appWidgetIds[0]);
     }
 
     private void assertContains(String expectedText, View view) {

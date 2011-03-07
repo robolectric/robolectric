@@ -66,6 +66,14 @@ abstract public class ShadowContext {
     }
 
     @Implementation
+    public File getCacheDir() {
+        // todo: clean this up when tests finish? [xw 20110124]
+        File file = new File(System.getProperty("java.io.tmpdir"), "android-cache");
+        file.mkdirs();
+        return file;
+    }
+
+    @Implementation
     public File getFilesDir() {
         // todo: clean this up when tests finish? [xw 20110124]
         File file = new File(System.getProperty("java.io.tmpdir"), "android-tmp");

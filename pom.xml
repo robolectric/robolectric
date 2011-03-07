@@ -16,19 +16,6 @@
     <description>An alternative Android testing framework.</description>
     <url>http://pivotal.github.com/robolectric/</url>
 
-	<distributionManagement>
-		<repository>
-			<id>artifactory-releases</id>
-			<name>artifactory release repository</name>
-			<url>http://192.168.20.124:8081/artifactory/ext-release-local</url>
-		</repository>
-		<snapshotRepository>
-			<id>artifactory-snapshots</id>
-			<name>artifactory snapshot repository</name>
-			<url>http://192.168.20.124:8081/artifactory/ext-snapshot-local</url>
-		</snapshotRepository>
-	</distributionManagement>
-
     <dependencies>
         <dependency>
             <groupId>org.hamcrest</groupId>

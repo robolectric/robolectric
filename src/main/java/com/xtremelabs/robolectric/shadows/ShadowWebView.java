@@ -19,6 +19,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     private HashMap<String, Object> javascriptInterfaces = new HashMap<String, Object>();
     private WebSettings webSettings = Robolectric.newInstanceOf(WebSettings.class);
     private WebViewClient webViewClient = null;
+    private boolean runFlag = false;
 
     @Override public void __constructor__(Context context, AttributeSet attributeSet) {
         super.__constructor__(context, attributeSet);
@@ -59,5 +60,15 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
 
     public Object getJavascriptInterface(String interfaceName) {
         return javascriptInterfaces.get(interfaceName);
+    }
+    
+    @Implementation
+    public void post(Runnable action) {
+    	action.run();
+    	runFlag = true;
+    }
+    
+    public boolean getRunFlag() {
+    	return runFlag;
     }
 }
