@@ -11,9 +11,14 @@ import com.xtremelabs.robolectric.internal.Implements;
 
 @Implements(NetworkInfo.class)
 public class ShadowNetworkInfo {
-
+    private boolean isAvailable = true;
     private boolean isConnected = true;
     private int connectionType = ConnectivityManager.TYPE_MOBILE;
+
+    @Implementation
+    public boolean isConnected() {
+        return isConnected;
+    }
 
     @Implementation
     public boolean isConnectedOrConnecting() {
@@ -30,17 +35,28 @@ public class ShadowNetworkInfo {
     public int getType(){
     	return connectionType;
     }
+
+    /**
+     * Non-Android accessor
+     * Sets up the return value of {@link #isAvailable()}.
+     *
+     * @param isAvailable the value that {@link #isAvailable()} will return.
+     */
+    public void setAvailableStatus(boolean isAvailable) {
+        this.isAvailable = isAvailable;
+    }
     
+
     @Implementation
-    public boolean isConnected() {
-        return isConnected;
+    public boolean isAvailable() {
+        return isAvailable;
     }
 
     /**
      * Non-Android accessor
-     * Sets up the return value of {@link #isConnectedOrConnecting()}.
+     * Sets up the return value of {@link #isConnectedOrConnecting()} and {@link @isConnected()}.
      *
-     * @param isConnected the value that {@link #isConnectedOrConnecting()} will return.
+     * @param isConnected the value that {@link #isConnectedOrConnecting()} and {@link #isConnected()} will return.
      */
     public void setConnectionStatus(boolean isConnected) {
         this.isConnected = isConnected;
@@ -52,7 +68,7 @@ public class ShadowNetworkInfo {
      *
      * @param connectionType the value that {@link #getType()} will return.
      */
-    public void setConnectionType(int type){
-    	this.connectionType = type;
+    public void setConnectionType(int connectionType){
+    	this.connectionType = connectionType;
     }
 }

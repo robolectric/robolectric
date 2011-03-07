@@ -44,6 +44,7 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
+import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
@@ -531,6 +532,17 @@ public class Robolectric {
      */
     public static void addPendingHttpResponse(int statusCode, String responseBody) {
         getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody);
+    }
+
+    /**
+     * Sets up an HTTP response to be returned by calls to Apache's {@code HttpClient} implementers.
+     *
+     * @param statusCode   the status code of the response
+     * @param responseBody the body of the response
+     * @param contentType the contentType of the response
+     */
+    public static void addPendingHttpResponseWithContentType(int statusCode, String responseBody, Header contentType) {
+        getFakeHttpLayer().addPendingHttpResponseWithContentType(statusCode, responseBody, contentType);
     }
 
     /**

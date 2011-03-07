@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
+import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -21,6 +22,10 @@ public class FakeHttpLayer {
 
     public void addPendingHttpResponse(int statusCode, String responseBody) {
         addPendingHttpResponse(new TestHttpResponse(statusCode, responseBody));
+    }
+
+    public void addPendingHttpResponseWithContentType(int statusCode, String responseBody, Header contentType) {
+        addPendingHttpResponse(new TestHttpResponse(statusCode, responseBody, contentType));
     }
 
     public void addPendingHttpResponse(HttpResponse httpResponse) {
