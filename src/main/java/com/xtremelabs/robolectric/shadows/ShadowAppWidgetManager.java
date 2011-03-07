@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.content.ComponentName;
 import android.content.Context;
 import android.view.View;
 import android.widget.RemoteViews;
@@ -12,7 +13,9 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
@@ -22,11 +25,13 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(AppWidgetManager.class)
 public class ShadowAppWidgetManager {
     private static AppSingletonizer<AppWidgetManager> instances = new AppSingletonizer<AppWidgetManager>(AppWidgetManager.class) {
-        @Override protected AppWidgetManager get(ShadowApplication shadowApplication) {
+        @Override
+        protected AppWidgetManager get(ShadowApplication shadowApplication) {
             return shadowApplication.appWidgetManager;
         }
 
-        @Override protected void set(ShadowApplication shadowApplication, AppWidgetManager instance) {
+        @Override
+        protected void set(ShadowApplication shadowApplication, AppWidgetManager instance) {
             shadowApplication.appWidgetManager = instance;
         }
 
@@ -38,7 +43,8 @@ public class ShadowAppWidgetManager {
         }
     };
 
-    @RealObject private AppWidgetManager realAppWidgetManager;
+    @RealObject
+    private AppWidgetManager realAppWidgetManager;
 
     private Context context;
     private Map<Integer, WidgetInfo> widgetInfos = new HashMap<Integer, WidgetInfo>();
@@ -84,6 +90,24 @@ public class ShadowAppWidgetManager {
         }
         widgetInfo.lastRemoteViews = views;
         views.reapply(context, widgetInfo.view);
+    }
+
+    @Implementation
+    public int[] getAppWidgetIds(ComponentName provider) {
+        List<Integer> idList = new ArrayList<Integer>();
+        for (int id : widgetInfos.keySet()) {
+            WidgetInfo widgetInfo = widgetInfos.get(id);
+            String widgetClass = widgetInfo.appWidgetProvider.getClass().getName();
+            String widgetPackage = widgetInfo.appWidgetProvider.getClass().getPackage().getName();
+            if (provider.getClassName().equals(widgetClass) && provider.getPackageName().equals(widgetPackage)) {
+                idList.add(id);
+            }
+        }
+        int ids[] = new int[idList.size()];
+        for (int i = 0; i < idList.size(); i++) {
+            ids[i] = idList.get(i);
+        }
+        return ids;
     }
 
     /**
