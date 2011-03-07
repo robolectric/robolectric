@@ -4,6 +4,7 @@ import android.database.DataSetObserver;
 import android.widget.BaseAdapter;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +12,13 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BaseAdapter.class)
 public class ShadowBaseAdapter {
+	@RealObject private BaseAdapter realBaseAdapter;
     private final List<DataSetObserver> dataSetObservers = new ArrayList<DataSetObserver>();
+    
+    @Implementation
+    public boolean isEmpty() {
+    	return realBaseAdapter.getCount() == 0;
+    }
 
     /**
      * Just returns true
