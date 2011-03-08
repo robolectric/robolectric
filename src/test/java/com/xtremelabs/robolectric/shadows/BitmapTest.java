@@ -28,17 +28,17 @@ public class BitmapTest {
         assertEquals(100, scaledBitmap.getWidth());
         assertEquals(200, scaledBitmap.getHeight());
     }
-    
+
     @Test
     public void shouldCreateActiveBitmap() throws Exception {
         Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
-        assertFalse( bitmap.isRecycled() );
+        assertFalse(bitmap.isRecycled());
     }
     
     @Test
     public void shouldCreateBitmapWithCorrectConfig() throws Exception {
         Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
-        assertEquals( bitmap.getConfig(), Config.ARGB_8888 );
+        assertEquals(bitmap.getConfig(), Config.ARGB_8888);
     }
     
     @Test
@@ -137,5 +137,4 @@ public class BitmapTest {
     	assertEquals(shadowOf(bitmapCopy).getConfig(), Config.ARGB_8888);
     	assertTrue(shadowOf(bitmapCopy).isMutable());
     }
-
 }

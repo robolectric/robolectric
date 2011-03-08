@@ -11,11 +11,11 @@ public class ShadowSeekBar extends ShadowAbsSeekBar {
 	private SeekBar.OnSeekBarChangeListener listener;
 
     @Implementation
-	public void setOnSeekBarChangeListener(SeekBar.OnSeekBarChangeListener l) {
-		listener = l;		
+	public void setOnSeekBarChangeListener(SeekBar.OnSeekBarChangeListener listener) {
+		this.listener = listener;
 	}
     
     public SeekBar.OnSeekBarChangeListener getOnSeekBarChangeListener() {
-    	return listener;
+    	return this.listener;
     }
 }

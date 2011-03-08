@@ -27,7 +27,7 @@ public class ShadowPaint {
     private Shader shader;
     private int alpha;
     private ColorFilter filter;
-    private boolean aa;
+    private boolean antiAlias;
     private boolean dither;
     
     @RealObject Paint paint;
@@ -187,8 +187,8 @@ public class ShadowPaint {
     }
     
     @Implementation
-    public void setAntiAlias(boolean aa) {
-    	this.aa = aa;
+    public void setAntiAlias(boolean antiAlias) {
+    	this.antiAlias = antiAlias;
     }
     
     @Implementation
@@ -203,7 +203,6 @@ public class ShadowPaint {
     
     @Implementation
     public final boolean isAntiAlias() {
-    	return aa;
+    	return antiAlias;
     }
-
 }

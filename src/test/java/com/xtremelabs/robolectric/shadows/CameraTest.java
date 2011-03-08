@@ -97,7 +97,7 @@ public class CameraTest {
         camera.release();
         assertThat(shadowCamera.isReleased(), equalTo(true));
     }
-    
+
     @Test
     public void testSetPreviewCallbacks() throws Exception {
     	TestPreviewCallback callback = new TestPreviewCallback();
@@ -108,7 +108,7 @@ public class CameraTest {
     	shadowCamera.invokePreviewCallback("foobar".getBytes());
     	
     	assertThat(callback.camera, sameInstance(camera));
-    	assertThat(callback.data, equalTo( "foobar".getBytes()));
+    	assertThat(callback.data, equalTo("foobar".getBytes()));
     }
     
     @Test
@@ -121,7 +121,7 @@ public class CameraTest {
     	shadowCamera.invokePreviewCallback("foobar".getBytes());
     	
     	assertThat(callback.camera, sameInstance(camera));
-    	assertThat(callback.data, equalTo( "foobar".getBytes()));
+    	assertThat(callback.data, equalTo("foobar".getBytes()));
     }
     
     @Test
@@ -134,7 +134,7 @@ public class CameraTest {
     	shadowCamera.invokePreviewCallback("foobar".getBytes());
     	
     	assertThat(callback.camera, sameInstance(camera));
-    	assertThat(callback.data, equalTo( "foobar".getBytes()));
+    	assertThat(callback.data, equalTo("foobar".getBytes()));
     }
 
     @Test
@@ -166,7 +166,6 @@ public class CameraTest {
     }
     
     private class TestPreviewCallback implements Camera.PreviewCallback {
-
     	public Camera camera = null;
     	public byte[] data = null;
     	
@@ -175,7 +174,6 @@ public class CameraTest {
 			this.data = data;
 			this.camera = camera;
 		}
-
     }
 
     private class TestSurfaceHolder implements SurfaceHolder {

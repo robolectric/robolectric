@@ -8,46 +8,46 @@ import android.os.CountDownTimer;
 
 @Implements(CountDownTimer.class)
 public class ShadowCountDownTimer {
-	
-	private boolean started;
-	private long countDownInterval;
-	private long millisInFuture;
-	
-	@RealObject CountDownTimer countDownTimer;
-	
-	public void __constructor__(long millisInFuture, long countDownInterval) {
-		this.countDownInterval = countDownInterval;
-		this.millisInFuture = millisInFuture;
-		this.started = false;
-	}
-			
-	@Implementation
-	public final synchronized CountDownTimer start() {
-		started = true;
-		return countDownTimer;
-	}
 
-	
-	@Implementation
-	public final void cancel() {
-		started = false;
-	}
-	
-	
-	/*********************************************************
-	 * Non-implementation methods for firing abstract methods
-	 *********************************************************/
-	public void invokeTick( long millisUntilFinished ) {
-		countDownTimer.onTick(millisUntilFinished);
-	}
-	
-	public void invokeFinish() {
-		countDownTimer.onFinish();
-	}
+    private boolean started;
+    private long countDownInterval;
+    private long millisInFuture;
 
-	public boolean hasStarted() {
-		return started;
-	}
-	
+    @RealObject CountDownTimer countDownTimer;
 
+    public void __constructor__(long millisInFuture, long countDownInterval) {
+        this.countDownInterval = countDownInterval;
+        this.millisInFuture = millisInFuture;
+        this.started = false;
+    }
+
+    @Implementation
+    public final synchronized CountDownTimer start() {
+        started = true;
+        return countDownTimer;
+    }
+
+
+    @Implementation
+    public final void cancel() {
+        started = false;
+    }
+
+
+    /**
+     * ******************************************************
+     * Non-implementation methods for firing abstract methods
+     * *******************************************************
+     */
+    public void invokeTick(long millisUntilFinished) {
+        countDownTimer.onTick(millisUntilFinished);
+    }
+
+    public void invokeFinish() {
+        countDownTimer.onFinish();
+    }
+
+    public boolean hasStarted() {
+        return started;
+    }
 }

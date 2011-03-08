@@ -1,20 +1,6 @@
 package com.xtremelabs.robolectric;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultRequestDirector;
-
-import android.app.Activity;
-import android.app.AlarmManager;
-import android.app.AlertDialog;
-import android.app.Application;
-import android.app.Dialog;
-import android.app.ListActivity;
-import android.app.Notification;
-import android.app.NotificationManager;
+import android.app.*;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -29,12 +15,7 @@ import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.ColorMatrix;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
@@ -51,29 +32,11 @@ import android.os.Handler;
 import android.os.Looper;
 import android.preference.DialogPreference;
 import android.preference.Preference;
-import android.view.Display;
-import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.view.animation.AnimationUtils;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.AbsSeekBar;
-import android.widget.AdapterView;
-import android.widget.CursorAdapter;
-import android.widget.ExpandableListView;
-import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.RemoteViews;
-import android.widget.SeekBar;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.ZoomButtonsController;
-
+import android.widget.*;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
@@ -81,6 +44,13 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultRequestDirector;
+
+import java.util.Arrays;
+import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class Robolectric {
@@ -572,6 +542,17 @@ public class Robolectric {
     /**
      * Sets up an HTTP response to be returned by calls to Apache's {@code HttpClient} implementers.
      *
+     * @param statusCode   the status code of the response
+     * @param responseBody the body of the response
+     * @param contentType the contentType of the response
+     */
+    public static void addPendingHttpResponseWithContentType(int statusCode, String responseBody, Header contentType) {
+        getFakeHttpLayer().addPendingHttpResponseWithContentType(statusCode, responseBody, contentType);
+    }
+
+    /**
+     * Sets up an HTTP response to be returned by calls to Apache's {@code HttpClient} implementers.
+     *
      * @param httpResponse the response
      */
     public static void addPendingHttpResponse(HttpResponse httpResponse) {
@@ -649,6 +630,10 @@ public class Robolectric {
 
     public static void setDefaultHttpResponse(HttpResponse defaultHttpResponse) {
         getFakeHttpLayer().setDefaultHttpResponse(defaultHttpResponse);
+    }
+
+    public static void clearHttpResponseRules() {
+        getFakeHttpLayer().clearHttpResponseRules();
     }
 
     public static void pauseLooper(Looper looper) {

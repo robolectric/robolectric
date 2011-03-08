@@ -73,6 +73,4 @@ public class CountDownTimerTest {
 		shadowCountDownTimer.cancel();
 		assertThat(shadowCountDownTimer.hasStarted(), equalTo(false));			
 	}
-	
-	
 }

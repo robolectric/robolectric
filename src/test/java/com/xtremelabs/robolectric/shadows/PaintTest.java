@@ -15,7 +15,6 @@ import static org.junit.Assert.*;
 @RunWith(WithTestDefaultsRunner.class)
 public class PaintTest {
 
-	
 	@Test
 	public void shouldGetIsDitherInfo() {
 		Paint paint = Robolectric.newInstanceOf(Paint.class);
@@ -33,5 +32,4 @@ public class PaintTest {
 		shadowPaint.setDither(true);
 		assertTrue(paint.isDither());				
 	}
-	
 }

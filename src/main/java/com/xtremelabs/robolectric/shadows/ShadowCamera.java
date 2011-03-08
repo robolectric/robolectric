@@ -19,7 +19,7 @@ public class ShadowCamera {
     private Camera.Parameters parameters;
     private Camera.PreviewCallback previewCallback;
     private SurfaceHolder surfaceHolder;
-    
+
     @RealObject
     private Camera realCamera;
 
@@ -76,31 +76,31 @@ public class ShadowCamera {
     public void release() {
         released = true;
     }
-    
+
     @Implementation
-    public void setPreviewCallback( Camera.PreviewCallback cb ) {
-    	previewCallback = cb;
+    public void setPreviewCallback(Camera.PreviewCallback cb) {
+        previewCallback = cb;
     }
-    
+
     @Implementation
-    public void setOneShotPreviewCallback( Camera.PreviewCallback cb ) {
-    	previewCallback = cb;
+    public void setOneShotPreviewCallback(Camera.PreviewCallback cb) {
+        previewCallback = cb;
     }
-    
+
     @Implementation
-    public void setPreviewCallbackWithBuffer( Camera.PreviewCallback cb ) {
-    	previewCallback = cb;
+    public void setPreviewCallbackWithBuffer(Camera.PreviewCallback cb) {
+        previewCallback = cb;
     }
-    
+
     /**
      * Allows test cases to invoke the preview callback, to simulate a frame of camera data.
-     * 
-     * @param data	byte buffer of simulated camera data
+     *
+     * @param data byte buffer of simulated camera data
      */
-    public void invokePreviewCallback( byte[] data ) {
-    	if ( previewCallback != null ) {
-    		previewCallback.onPreviewFrame(data, realCamera);
-    	}
+    public void invokePreviewCallback(byte[] data) {
+        if (previewCallback != null) {
+            previewCallback.onPreviewFrame(data, realCamera);
+        }
     }
 
     public boolean isLocked() {
@@ -118,6 +118,4 @@ public class ShadowCamera {
     public SurfaceHolder getPreviewDisplay() {
         return surfaceHolder;
     }
-    
-    
 }

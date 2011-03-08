@@ -31,6 +31,4 @@ public class ShadowAbsSpinner extends ShadowAdapterView {
     public boolean isAnimatedTransition() {
     	return animatedTransition;
     }
-    
-    
 }

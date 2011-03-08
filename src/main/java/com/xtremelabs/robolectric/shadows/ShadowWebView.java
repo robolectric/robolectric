@@ -20,7 +20,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     private WebSettings webSettings = Robolectric.newInstanceOf(WebSettings.class);
     private WebViewClient webViewClient = null;
     private boolean runFlag = false;
-    
+
     @Override public void __constructor__(Context context, AttributeSet attributeSet) {
         super.__constructor__(context, attributeSet);
     }

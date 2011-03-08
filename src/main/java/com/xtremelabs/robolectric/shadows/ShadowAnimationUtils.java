@@ -17,6 +17,4 @@ public class ShadowAnimationUtils {
 	public static Animation loadAnimation(Context context, int id) {
 		return new TranslateAnimation(0, 0, 30, 0);
 	}
-	
-
 }
