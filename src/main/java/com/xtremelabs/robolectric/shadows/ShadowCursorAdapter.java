@@ -19,7 +19,9 @@ public class ShadowCursorAdapter {
     
     @Implementation
 	public void changeCursor( Cursor curs ) {
-    	cursor.close();
+    	if( curs != null && !curs.isClosed() ) {
+    		cursor.close();
+    	}
     	cursor = curs;
     }
     
