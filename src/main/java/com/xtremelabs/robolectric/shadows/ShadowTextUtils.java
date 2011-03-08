@@ -21,4 +21,9 @@ public class ShadowTextUtils {
         }
         return s;
     }
+    
+    @Implementation
+    public static boolean isEmpty( CharSequence str ) {
+    	return str == null || str.length() == 0;
+    }
 }

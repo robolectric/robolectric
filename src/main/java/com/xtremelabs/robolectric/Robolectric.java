@@ -62,6 +62,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.AbsSeekBar;
 import android.widget.AdapterView;
+import android.widget.CursorAdapter;
 import android.widget.ExpandableListView;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -168,6 +169,7 @@ public class Robolectric {
                 ShadowContextThemeWrapper.class,
                 ShadowCookieManager.class,
                 ShadowCountDownTimer.class,
+                ShadowCursorAdapter.class,
                 ShadowDefaultRequestDirector.class,
                 ShadowDisplay.class,
                 ShadowDrawable.class,
@@ -255,6 +257,10 @@ public class Robolectric {
         return RobolectricInternals.directlyOn(shadowedObject);
     }
 
+    public static ShadowCursorAdapter shadowOf(CursorAdapter instance) {
+    	return (ShadowCursorAdapter) shadowOf_(instance);
+    }
+    
     public static ShadowDrawable shadowOf(Drawable instance) {
         return (ShadowDrawable) shadowOf_(instance);
     }
