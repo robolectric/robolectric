@@ -57,6 +57,11 @@ public class ShadowDisplay {
     }
 
     @Implementation
+    public int getOrientation() {
+        return getRotation();
+    }
+
+    @Implementation
     public int getRotation() {
         return rotation;
     }
