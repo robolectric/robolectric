@@ -32,6 +32,7 @@ import android.graphics.Path;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
+import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
 import android.media.AudioManager;
@@ -497,6 +498,11 @@ public class Robolectric {
         return (ShadowSignature) Robolectric.shadowOf_(other);
     }
 
+    public static ShadowAddress shadowOf(Address other) {
+        return (ShadowAddress) Robolectric.shadowOf_(other);
+    }
+
+
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
@@ -668,4 +674,5 @@ public class Robolectric {
     public static String visualize(Bitmap bitmap) {
         return shadowOf(bitmap).getDescription();
     }
+
 }
