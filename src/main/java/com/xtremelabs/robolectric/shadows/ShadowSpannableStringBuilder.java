@@ -32,6 +32,17 @@ public class ShadowSpannableStringBuilder implements CharSequence {
     }
 
     @Implementation
+    public SpannableStringBuilder replace(int start, int end, CharSequence tb) {
+        return replace(start, end, tb, 0, tb.length());
+    }
+
+    @Implementation
+    public SpannableStringBuilder replace(int start, int end, CharSequence tb, int tbStart, int tbEnd) {
+        builder.replace(start, end, tb.subSequence(tbStart, tbEnd).toString());
+        return realSpannableStringBuilder;
+    }
+
+    @Implementation
     @Override public int length() {
         return builder.length();
     }
