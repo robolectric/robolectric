@@ -20,6 +20,7 @@ public class ShadowMotionEvent {
     private int action;
     private float[] x = new float[2];
     private float[] y = new float[2];
+    private int pointerCount = 1;
 
     @Implementation
     public static MotionEvent obtain(long downTime, long eventTime, int action, float x, float y, int metaState) {
@@ -61,10 +62,16 @@ public class ShadowMotionEvent {
     public final float getY(int pointerIndex) {
         return y[pointerIndex];
     }
+    
+    @Implementation
+    public final int getPointerCount() {
+    	return pointerCount;
+    }
 
     public MotionEvent setPointer2(float x, float y) {
         this.x[1] = x;
         this.y[1] = y;
+        pointerCount = 2;
         return realObject;
     }
 }
