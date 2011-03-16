@@ -132,4 +132,12 @@ public class ViewGroupTest {
                 "  </FrameLayout>\n" +
                 "</FrameLayout>\n", out.toString());
     }
+
+    @Test
+    public void getChildAt_shouldReturnNullForInvalidIndices() {
+        assertThat(root.getChildCount(), equalTo(3));
+        assertThat(root.getChildAt(13), nullValue());
+        assertThat(root.getChildAt(3), nullValue());
+        assertThat(root.getChildAt(-1), nullValue());
+    }
 }

@@ -82,7 +82,7 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public View getChildAt(int index) {
-        return children.get(index);
+        return isValidIndex(index) ? children.get(index) : null;
     }
 
     @Implementation
@@ -161,5 +161,9 @@ public class ShadowViewGroup extends ShadowView {
         } else {
             out.println("/>");
         }
+    }
+
+    private boolean isValidIndex(int i){
+        return i >= 0 && i < children.size();
     }
 }
