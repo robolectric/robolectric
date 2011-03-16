@@ -30,6 +30,17 @@ public class ShadowBundle {
     public String getString(String key) {
         return (String) map.get(key);
     }
+    
+    @Implementation
+    public void putInt(String key, int value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public long getInt(String key) {
+        Object value = map.get(key);
+        return value == null ? 0 : (Integer) value;
+    }
 
     @Implementation
     public void putLong(String key, long value) {
