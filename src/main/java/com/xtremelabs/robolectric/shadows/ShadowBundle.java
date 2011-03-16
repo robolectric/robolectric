@@ -37,7 +37,7 @@ public class ShadowBundle {
     }
 
     @Implementation
-    public long getInt(String key) {
+    public int getInt(String key) {
         Object value = map.get(key);
         return value == null ? 0 : (Integer) value;
     }
