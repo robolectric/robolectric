@@ -33,6 +33,7 @@ public class ShadowView {
     ShadowView parent;
     protected Context context;
     private boolean selected;
+    private boolean pressed;
     private View.OnClickListener onClickListener;
     private Object tag;
     private boolean enabled = true;
@@ -221,6 +222,16 @@ public class ShadowView {
     @Implementation
     public boolean isSelected() {
         return this.selected;
+    }
+
+    @Implementation
+    public void setPressed(boolean pressed) {
+        this.pressed = pressed;
+    }
+
+    @Implementation
+    public boolean isPressed() {
+        return this.pressed;
     }
 
     @Implementation

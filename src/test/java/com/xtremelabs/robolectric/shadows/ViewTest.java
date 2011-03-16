@@ -178,4 +178,12 @@ public class ViewTest {
         new View(null, null);
         new View(null, null, 0);
     }
+
+    @Test
+    public void shouldRememberIsPressed() {
+        view.setPressed(true);
+        assertTrue(view.isPressed());
+        view.setPressed(false);
+        assertFalse(view.isPressed());
+    }
 }
