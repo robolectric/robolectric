@@ -357,6 +357,11 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
 
     @Implementation
+    public void startActivity(Intent intent) {
+        startActivityForResult(intent, -1);
+    }
+
+    @Implementation
     public void startActivityForResult(Intent intent, int requestCode) {
         intentRequestCodeMap.put(intent, requestCode);
         startedActivitiesForResults.add(new IntentForResult(intent, requestCode));

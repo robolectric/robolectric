@@ -44,6 +44,21 @@ public class ActivityTest {
     }
 
     @Test
+    public void startActivity_shouldDelegateToStartActivityForResult() {
+        final Transcript transcript = new Transcript();
+        Activity activity = new Activity() {
+            @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                transcript.add("onActivityResult called with requestCode " + requestCode + ", resultCode " + resultCode + ", intent data " + data.getData());
+            }
+        };
+        activity.startActivity(new Intent().setType("image/*"));
+
+        shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
+                new Intent().setData(Uri.parse("content:foo")));
+        transcript.assertEventsSoFar("onActivityResult called with requestCode -1, resultCode -1, intent data content:foo");
+    }
+
+    @Test
     public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity() throws Exception {
         final Transcript transcript = new Transcript();
         Activity activity = new Activity() {
