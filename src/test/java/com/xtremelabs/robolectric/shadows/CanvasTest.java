@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import com.xtremelabs.robolectric.Robolectric;
@@ -60,4 +61,15 @@ public class CanvasTest {
                 "Bitmap for file:/an/image.jpg transformed by matrix", Robolectric.visualize(canvas));
 
     }
+    
+    @Test
+    public void drawColor_shouldReturnDescription() throws Exception {
+        Canvas canvas = new Canvas(targetBitmap);
+        canvas.drawColor( Color.WHITE );
+        canvas.drawColor( Color.GREEN );
+        canvas.drawColor( Color.TRANSPARENT );
+        assertEquals( "draw color -1draw color -16711936draw color 0",
+        		shadowOf(canvas).getDescription());
+    }
+
 }
