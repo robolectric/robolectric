@@ -221,6 +221,7 @@ public class Robolectric {
     public static List<Class<?>> getDefaultShadowClasses() {
         return Arrays.asList(
                 ShadowAbsoluteLayout.class,
+                ShadowAbsoluteLayout.ShadowLayoutParams.class,
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowActivity.class,
