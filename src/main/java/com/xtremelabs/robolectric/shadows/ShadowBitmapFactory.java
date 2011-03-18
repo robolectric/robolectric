@@ -25,10 +25,15 @@ public class ShadowBitmapFactory {
     private static Map<String, Point> widthAndHeightMap = new HashMap<String, Point>();
 
     @Implementation
-    public static Bitmap decodeResource(Resources res, int id) {
-        Bitmap bitmap = create("resource:" + getResourceName(id));
+    public static Bitmap decodeResource(Resources res, int id, BitmapFactory.Options options) {
+        Bitmap bitmap = create("resource:" + getResourceName(id), options);
         shadowOf(bitmap).setLoadedFromResourceId(id);
         return bitmap;
+    }
+
+    @Implementation
+    public static Bitmap decodeResource(Resources res, int id) {
+        return decodeResource(res, id, null);
     }
 
     private static String getResourceName(int id) {
@@ -59,12 +64,12 @@ public class ShadowBitmapFactory {
 
     @Implementation
     public static Bitmap decodeByteArray(byte[] data, int offset, int length) {
-        return decodeByteArray(data, offset, length, new BitmapFactory.Options());
+        return decodeByteArray(data, offset, length, null);
     }
 
     @Implementation
     public static Bitmap decodeStream(InputStream is) {
-        return decodeStream(is, null, new BitmapFactory.Options());
+        return decodeStream(is, null, null);
     }
 
     @Implementation
@@ -73,10 +78,12 @@ public class ShadowBitmapFactory {
     }
 
     static Bitmap create(String name) {
-        return create(name, new BitmapFactory.Options());
+        return create(name, null);
     }
 
     public static Bitmap create(String name, BitmapFactory.Options options) {
+        if (options == null) options = new BitmapFactory.Options();
+        
         Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(bitmap);
         shadowBitmap.appendDescription("Bitmap for " + name);

@@ -6,6 +6,8 @@ import android.graphics.ColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
+import android.graphics.Rect;
+import android.graphics.RectF;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -71,10 +73,28 @@ public class ShadowCanvas {
 
     @Implementation
     public void drawBitmap(Bitmap bitmap, float left, float top, Paint paint) {
+        describeDrawBitmap(bitmap, 0, 0, left, top, paint);
+    }
+
+    @Implementation
+    public void drawBitmap(Bitmap bitmap, Rect src, Rect dst, Paint paint) {
+        describeDrawBitmap(bitmap, 0, 0, dst.left, dst.top, paint);
+    }
+
+    @Implementation
+    public void drawBitmap(Bitmap bitmap, Rect src, RectF dst, Paint paint) {
+        describeDrawBitmap(bitmap, 0, 0, dst.left, dst.top, paint);
+    }
+
+    private void describeDrawBitmap(Bitmap bitmap, int srcLeft, int srcTop, float dstLeft, float dstTop, Paint paint) {
         describeBitmap(bitmap, paint);
 
-        int x = (int) (left + translateX);
-        int y = (int) (top + translateY);
+        if (srcLeft != 0 || srcTop != 0) {
+            appendDescription(" from (" + srcLeft + "," + srcTop + ")");
+        }
+
+        int x = (int) (dstLeft + translateX);
+        int y = (int) (dstTop + translateY);
         if (x != 0 && y != 0) {
             appendDescription(" at (" + x + "," + y + ")");
         }
