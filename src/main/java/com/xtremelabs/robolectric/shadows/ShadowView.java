@@ -62,6 +62,8 @@ public class ShadowView {
     protected AttributeSet attributeSet;
     private boolean drawingCacheEnabled;
     private Drawable backgroundDrawable;
+    private int measuredWidth;
+    private int measuredHeight;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -286,8 +288,19 @@ public class ShadowView {
     }
 
     @Implementation
+    public final void setMeasuredDimension(int measuredWidth, int measuredHeight) {
+        this.measuredWidth = measuredWidth;
+        this.measuredHeight = measuredHeight;
+    }
+
+    @Implementation
     public final int getMeasuredWidth() {
-        return getWidth();
+        return measuredWidth;
+    }
+
+    @Implementation
+    public final int getMeasuredHeight() {
+        return measuredHeight;
     }
 
     @Implementation

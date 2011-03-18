@@ -47,6 +47,17 @@ public class ViewTest {
     }
 
     @Test
+    public void measuredDimensions() throws Exception {
+        View view1 = new View(null) {
+            {
+                setMeasuredDimension(123, 456);
+            }
+        };
+        assertThat(view1.getMeasuredWidth(), equalTo(123));
+        assertThat(view1.getMeasuredHeight(), equalTo(456));
+    }
+
+    @Test
     public void layout_shouldCallOnLayoutOnlyIfChanged() throws Exception {
         View view1 = new View(null) {
             @Override
