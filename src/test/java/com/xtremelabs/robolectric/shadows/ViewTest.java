@@ -17,16 +17,16 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewTest {
     private View view;
+    private Transcript transcript;
 
     @Before public void setUp() throws Exception {
+        transcript = new Transcript();
         view = new View(null);
     }
 
@@ -44,6 +44,27 @@ public class ViewTest {
         view.layout(100, 200, 303, 404);
         assertThat(view.getWidth(), equalTo(303 - 100));
         assertThat(view.getHeight(), equalTo(404 - 200));
+    }
+
+    @Test
+    public void layout_shouldCallOnLayoutOnlyIfChanged() throws Exception {
+        View view1 = new View(null) {
+            @Override
+            protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
+                transcript.add("onLayout " + changed + " " + left + " " + top + " " + right + " " + bottom);
+            }
+
+            @Override
+            public void invalidate() {
+                transcript.add("invalidate");
+            }
+        };
+        view1.layout(0, 0, 0, 0);
+        transcript.assertNoEventsSoFar();
+        view1.layout(1, 2, 3, 4);
+        transcript.assertEventsSoFar("invalidate", "onLayout true 1 2 3 4");
+        view1.layout(1, 2, 3, 4);
+        transcript.assertNoEventsSoFar();
     }
 
     @Test

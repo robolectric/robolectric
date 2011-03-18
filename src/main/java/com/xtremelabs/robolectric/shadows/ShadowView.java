@@ -13,6 +13,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.util.ReflectionUtil;
 
 import java.io.PrintStream;
 import java.util.HashMap;
@@ -291,12 +292,17 @@ public class ShadowView {
 
     @Implementation
     public final void layout(int l, int t, int r, int b) {
-        left = l;
-        top = t;
-        right = r;
-        bottom = b;
+        if (l != left || r != right || t != top || b != bottom) {
+            left = l;
+            top = t;
+            right = r;
+            bottom = b;
 
-// todo:       realView.onLayout();
+            realView.invalidate();
+            ReflectionUtil.invoke(realView, "onLayout",
+                    new Class<?>[]{Boolean.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE},
+                    true, l, t, r, b);
+        }
     }
 
     @Implementation
