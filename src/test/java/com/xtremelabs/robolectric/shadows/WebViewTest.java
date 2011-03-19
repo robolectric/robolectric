@@ -91,4 +91,32 @@ public class WebViewTest {
     	assertThat( shadowWebView.wasClearCacheCalled(), equalTo( true ) );
     	assertThat( shadowWebView.didClearCacheIncludeDiskFiles(), equalTo( true ) );    	
     }
+    
+    @Test
+    public void shouldRecordClearFormData() {
+    	assertThat( shadowWebView.wasClearFormDataCalled(), equalTo( false ) );
+    	webView.clearFormData();
+    	assertThat( shadowWebView.wasClearFormDataCalled(), equalTo( true ) );
+    }
+    
+    @Test
+    public void shouldRecordClearHistory() {
+    	assertThat( shadowWebView.wasClearHistoryCalled(), equalTo( false ) );
+    	webView.clearHistory();
+    	assertThat( shadowWebView.wasClearHistoryCalled(), equalTo( true ) );
+    }
+    
+    @Test
+    public void shouldRecordClearView() {
+    	assertThat( shadowWebView.wasClearViewCalled(), equalTo( false ) );
+    	webView.clearView();
+    	assertThat( shadowWebView.wasClearViewCalled(), equalTo( true ) );
+    }
+    
+    @Test
+    public void shouldRecordDestroy() {
+    	assertThat( shadowWebView.wasDestroyCalled(), equalTo( false ) );
+    	webView.destroy();
+    	assertThat( shadowWebView.wasDestroyCalled(), equalTo( true ) );
+    }
 }
