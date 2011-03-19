@@ -20,6 +20,8 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     private WebSettings webSettings = Robolectric.newInstanceOf(WebSettings.class);
     private WebViewClient webViewClient = null;
     private boolean runFlag = false;
+    private boolean clearCacheCalled = false;
+    private boolean clearCacheIncludeDiskFiles = false;
 
     @Override public void __constructor__(Context context, AttributeSet attributeSet) {
         super.__constructor__(context, attributeSet);
@@ -60,6 +62,20 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
 
     public Object getJavascriptInterface(String interfaceName) {
         return javascriptInterfaces.get(interfaceName);
+    }
+    
+    @Implementation
+    public void clearCache (boolean includeDiskFiles) {
+    	clearCacheCalled = true;
+    	clearCacheIncludeDiskFiles = includeDiskFiles;
+    }
+    
+    public boolean wasClearCacheCalled() {
+    	return clearCacheCalled;
+    }
+    
+    public boolean didClearCacheIncludeDiskFiles() {
+    	return clearCacheIncludeDiskFiles;
     }
     
     @Implementation
