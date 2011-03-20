@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.xtremelabs.robolectric">
+    <application android:name="com.xtremelabs.robolectric.TestApplication"
+    	android:allowBackup="true"
+    	android:allowClearUserData="true"
+    	android:allowTaskReparenting="true"
+    	android:debuggable="true"
+    	android:hasCode="true"
+    	android:killAfterRestore="true"
+    	android:persistent="true"
+    	android:resizeable="true"
+    	android:restoreAnyVersion="true"
+    	android:largeScreens="true"
+    	android:normalScreens="true"
+    	android:smallScreens="true"
+    	android:anyDensity="true"
+    	android:testOnly="true"
+    	android:vmSafeMode="true" />
+</manifest>
