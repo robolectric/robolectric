@@ -14,7 +14,8 @@ public class RobolectricPackageManager extends StubPackageManager {
     public ArrayList<PackageInfo> packageList;
     private ContextWrapper contextWrapper;
     private RobolectricConfig config;
-    
+    private ApplicationInfo applicationInfo;
+
     public RobolectricPackageManager(ContextWrapper contextWrapper, RobolectricConfig config) {
         this.contextWrapper = contextWrapper;
         this.config = config;
@@ -28,19 +29,22 @@ public class RobolectricPackageManager extends StubPackageManager {
 
     @Override
     public ApplicationInfo getApplicationInfo(String packageName, int flags) throws NameNotFoundException {
-    	if (config.getPackageName().equals(packageName)) {
-    		ApplicationInfo applicationInfo = new ApplicationInfo();
-        	applicationInfo.flags = config.getApplicationFlags();
-        	applicationInfo.targetSdkVersion = config.getSdkVersion();
-    		applicationInfo.packageName = config.getPackageName();
-    		applicationInfo.processName = config.getProcessName();
-    		return applicationInfo;
-    	}
-    	
-    	throw new NameNotFoundException();
+
+        if (config.getPackageName().equals(packageName)) {
+            if (applicationInfo == null) {
+                applicationInfo = new ApplicationInfo();
+                applicationInfo.flags = config.getApplicationFlags();
+                applicationInfo.targetSdkVersion = config.getSdkVersion();
+                applicationInfo.packageName = config.getPackageName();
+                applicationInfo.processName = config.getProcessName();
+            }
+            return applicationInfo;
+        }
+
+        throw new NameNotFoundException();
     }
 
-	@Override
+    @Override
     public List<PackageInfo> getInstalledPackages(int flags) {
         ensurePackageInfo();
         if (packageList == null) {

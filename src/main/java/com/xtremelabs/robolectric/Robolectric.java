@@ -8,8 +8,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageItemInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -111,7 +109,6 @@ public class Robolectric {
                 ShadowAlertDialog.ShadowBuilder.class,
                 ShadowAnimationUtils.class,
                 ShadowApplication.class,
-                ShadowApplicationInfo.class,
                 ShadowAppWidgetManager.class,
                 ShadowArrayAdapter.class,
                 ShadowAssetManager.class,
@@ -178,7 +175,6 @@ public class Robolectric {
                 ShadowNotificationManager.class,
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
-                ShadowPackageItemInfo.class,
                 ShadowPaint.class,
                 ShadowPath.class,
                 ShadowPendingIntent.class,
@@ -276,14 +272,6 @@ public class Robolectric {
 
     public static ShadowApplication shadowOf(Application instance) {
         return (ShadowApplication) shadowOf_(instance);
-    }
-    
-    public static ShadowApplicationInfo shadowOf(ApplicationInfo instance) {
-        return (ShadowApplicationInfo) shadowOf_(instance);
-    }
-
-    public static ShadowPackageItemInfo shadowOf(PackageItemInfo instance) {
-        return (ShadowPackageItemInfo) shadowOf_(instance);
     }
     
     public static ShadowContext shadowOf(Context instance) {
