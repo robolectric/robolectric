@@ -1,22 +1,14 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Looper;
-import com.xtremelabs.robolectric.tester.android.content.TestSharedPreferences;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.res.RobolectricPackageManager;
+import com.xtremelabs.robolectric.tester.android.content.TestSharedPreferences;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -86,10 +78,7 @@ public class ShadowContextWrapper extends ShadowContext {
      */
     @Implementation
     public PackageManager getPackageManager() {
-        if (packageManager == null) {
-            packageManager = new RobolectricPackageManager(realContextWrapper);
-        }
-        return packageManager;
+        return realContextWrapper == getApplicationContext() ? packageManager : getApplicationContext().getPackageManager();
     }
 
     @Implementation
@@ -159,6 +148,16 @@ public class ShadowContextWrapper extends ShadowContext {
     public void setPackageName(String packageName) {
         this.packageName = packageName;
     }
+
+    /**
+     * Non-Android accessor that is used at start-up to set the packageManager =
+     *
+     * @param packageManager the package manager
+     */
+    public void setPackageManager(PackageManager packageManager) {
+        this.packageManager = packageManager;
+    }
+
 
     @Implementation
     public Looper getMainLooper() {

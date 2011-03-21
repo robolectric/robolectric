@@ -280,7 +280,7 @@ public class Robolectric {
     public static ShadowApplication shadowOf(Application instance) {
         return (ShadowApplication) shadowOf_(instance);
     }
-
+    
     public static ShadowContext shadowOf(Context instance) {
         return (ShadowContext) shadowOf_(instance);
     }
