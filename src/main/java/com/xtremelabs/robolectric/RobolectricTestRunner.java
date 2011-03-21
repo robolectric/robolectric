@@ -40,7 +40,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     private RobolectricTestRunnerInterface delegate;
 
     // fields in the RobolectricTestRunner in the instrumented ClassLoader
-    private RobolectricConfig robolectricConfig;
+    protected RobolectricConfig robolectricConfig;
 
     private static RobolectricClassLoader getDefaultLoader() {
         if (defaultLoader == null) {
