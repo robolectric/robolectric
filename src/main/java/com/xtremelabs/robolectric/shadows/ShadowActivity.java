@@ -114,6 +114,7 @@ public class ShadowActivity extends ShadowContextWrapper {
             return contentView.findViewById(id);
         } else {
             System.out.println("WARNING: you probably should have called setContentView() first");
+            Thread.dumpStack();
             return null;
         }
     }

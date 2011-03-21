@@ -174,7 +174,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         }
     }
 
-    private static boolean isInstrumented() {
+    protected static boolean isInstrumented() {
         return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(RobolectricClassLoader.class.getName());
     }
 

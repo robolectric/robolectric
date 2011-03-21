@@ -34,6 +34,7 @@ import android.preference.DialogPreference;
 import android.preference.Preference;
 import android.view.*;
 import android.view.animation.AnimationUtils;
+import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.*;
@@ -199,6 +200,7 @@ public class Robolectric {
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
                 ShadowSQLiteQueryBuilder.class,
+                ShadowSslErrorHandler.class,
                 ShadowSurfaceView.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
@@ -305,6 +307,10 @@ public class Robolectric {
 
     public static ShadowHandler shadowOf(Handler instance) {
         return (ShadowHandler) shadowOf_(instance);
+    }
+
+    public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
+        return (ShadowSslErrorHandler) shadowOf_(instance);
     }
 
     public static ShadowColorMatrix shadowOf(ColorMatrix instance) {

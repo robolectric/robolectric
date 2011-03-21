@@ -32,12 +32,25 @@ public class AndroidTranslator implements Translator {
 
     private ClassHandler classHandler;
     private ClassCache classCache;
+    private static final ArrayList<String> instrumentingList = new ArrayList<String>();
 
     public AndroidTranslator(ClassHandler classHandler, ClassCache classCache) {
         this.classHandler = classHandler;
         this.classCache = classCache;
+        
+        // Initialize list
+        instrumentingList.add("android.");
+        instrumentingList.add("com.google.android.maps");
+        instrumentingList.add("org.apache.http.impl.client.DefaultRequestDirector");
     }
-
+    
+    public AndroidTranslator(ClassHandler classHandler, ClassCache classCache, ArrayList<String> customShadowClassNames) {
+    	this(classHandler, classCache);
+    	if ( customShadowClassNames != null && !customShadowClassNames.isEmpty() ) {
+        	instrumentingList.addAll(customShadowClassNames);    		
+    	}
+    }
+       
     public static ClassHandler getClassHandler(int index) {
         return CLASS_HANDLERS.get(index);
     }
@@ -79,13 +92,15 @@ public class AndroidTranslator implements Translator {
         } catch (NotFoundException e) {
             throw new IgnorableClassNotFoundException(e);
         }
-
-        boolean wantsToBeInstrumented =
-                className.startsWith("android.")
-                        || className.startsWith("com.google.android.maps")
-                        || className.equals("org.apache.http.impl.client.DefaultRequestDirector")
-                        || ctClass.hasAnnotation(Instrument.class);
-
+        
+        boolean wantsToBeInstrumented = ctClass.hasAnnotation(Instrument.class);
+        if ( !wantsToBeInstrumented ) {
+        	for ( String klassName : instrumentingList ) {
+        		wantsToBeInstrumented = className.startsWith(klassName);
+        		if (wantsToBeInstrumented) break;
+        	}
+        }
+                
         if (wantsToBeInstrumented && !ctClass.hasAnnotation(DoNotInstrument.class)) {
             int modifiers = ctClass.getModifiers();
             if (Modifier.isFinal(modifiers)) {
