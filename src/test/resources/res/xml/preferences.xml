@@ -2,20 +2,45 @@
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
 
-	<Preference
-		android:key="title"
-		android:title="Title"
-		android:summary=""/>
-
 	<PreferenceCategory
 		android:key="category"
-		android:title="Category">
+		android:title="Category Test">
 		
 		<Preference
 			android:key="inside_category"
-			android:title="Inside Category"
+			android:title="Inside Category Test"
 			android:summary=""/>
 			
 	</PreferenceCategory>
+
+	<CheckBoxPreference
+		android:key="checkbox"
+		android:title="Checkbox Test"
+		android:summary=""
+		android:defaultValue="true"
+		/>
+
+	<EditTextPreference
+		android:key="edit_text"
+		android:title="EditText Test"
+		android:summary=""
+		/>
+
+	<ListPreference
+		android:key="list"
+		android:title="List Test"
+		android:summary=""
+		/>
+
+	<Preference
+		android:key="preference"
+		android:title="Preference Title"
+		android:summary=""/>
+
+	<RingtonePreference
+		android:key="ringtone"
+		android:title="Ringtone Test"
+		android:summary=""
+		/>
 
 </PreferenceScreen>  

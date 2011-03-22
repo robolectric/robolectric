@@ -7,12 +7,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.app.Activity;
+import android.preference.CheckBoxPreference;
+import android.preference.EditTextPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.PreferenceCategory;
 import android.preference.PreferenceScreen;
+import android.preference.RingtonePreference;
 
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class PreferenceLoaderTest {
@@ -32,7 +41,16 @@ public class PreferenceLoaderTest {
     
     @Test
     public void testCreatesCorrectClasses() throws Exception {
-    	PreferenceScreen screen = prefLoader.inflatePrefs(new Activity(), "xml/preferences");
+    	PreferenceScreen screen = prefLoader.inflatePreferences(new Activity(), "preferences"); 	
+    	assertThat(screen.getPreferenceCount(), equalTo(6));
     	
+    	assertThat(screen.getPreference(0), instanceOf(PreferenceCategory.class));
+    	assertThat(((PreferenceCategory)screen.getPreference(0)).getPreference(0), instanceOf(Preference.class));
+   	  	
+    	assertThat(screen.getPreference(1), instanceOf(CheckBoxPreference.class));
+    	assertThat(screen.getPreference(2), instanceOf(EditTextPreference.class));
+    	assertThat(screen.getPreference(3), instanceOf(ListPreference.class));
+    	assertThat(screen.getPreference(4), instanceOf(Preference.class));
+    	assertThat(screen.getPreference(5), instanceOf(RingtonePreference.class));
     }
 }
