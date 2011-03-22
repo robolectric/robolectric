@@ -52,6 +52,17 @@ public class PreferenceTest {
 	}
 	
 	@Test
+	public void shouldEnable() {
+		assertThat(preference.isEnabled(), equalTo(true));
+		
+		preference.setEnabled(false);
+		assertThat(preference.isEnabled(), equalTo(false));
+		
+		preference.setEnabled(true);
+		assertThat(preference.isEnabled(), equalTo(true));
+	}
+		
+	@Test
 	public void testShouldPersist() {
 		boolean[] values = { true, false };
 		

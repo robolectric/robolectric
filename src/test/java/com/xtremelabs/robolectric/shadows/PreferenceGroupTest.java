@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
@@ -38,18 +37,6 @@ public class PreferenceGroupTest {
 	public void shouldInheritFromPreference() {
 		assertThat(shadow, instanceOf(ShadowPreference.class));
 	}	
-	
-	@Test
-	public void shouldEnable() {
-		assertThat(shadow.isEnabled(), equalTo(true));
-		
-		group.setEnabled(false);
-		assertThat(shadow.isEnabled(), equalTo(false));
-		
-		group.setEnabled(true);
-		assertThat(shadow.isEnabled(), equalTo(true));
-	}
-	
 	
 	private static class TestPreferenceGroup extends PreferenceGroup {		
 		public TestPreferenceGroup(Context context, AttributeSet attrs, int defStyle) {

@@ -52,6 +52,7 @@ import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
+import android.preference.PreferenceScreen;
 import android.view.*;
 import android.view.animation.AnimationUtils;
 import android.webkit.SslErrorHandler;
@@ -209,6 +210,7 @@ public class Robolectric {
                 ShadowPreferenceCategory.class,
                 ShadowPreferenceGroup.class,
                 ShadowPreferenceManager.class,
+                ShadowPreferenceScreen.class,
                 ShadowProgressBar.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
@@ -331,6 +333,10 @@ public class Robolectric {
     
     public static ShadowPreferenceGroup shadowOf(PreferenceGroup instance) {
         return (ShadowPreferenceGroup) shadowOf_(instance);
+    }
+    
+    public static ShadowPreferenceScreen shadowOf(PreferenceScreen instance) {
+        return (ShadowPreferenceScreen) shadowOf_(instance);
     }
     
     public static ShadowProgressBar shadowOf(ProgressBar instance) {

@@ -16,7 +16,8 @@ public class ShadowPreference {
 	protected boolean shouldPersist = false;
 	protected int persistedInt;
 	protected Object callChangeListenerValue = null;
-
+	private boolean enabled = true;
+	
 	public void __constructor__(Context context, AttributeSet attrs, int defStyle) {
 		this.context = context;
 		this.attrs = attrs;
@@ -40,7 +41,17 @@ public class ShadowPreference {
     public int getDefStyle() {
     	return defStyle;
     }	
-        
+   
+	@Implementation
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
+	}
+	
+	@Implementation
+	public boolean isEnabled() {
+		return enabled;
+	}
+    
 	@Implementation
 	public boolean shouldPersist() {
 		return shouldPersist;
