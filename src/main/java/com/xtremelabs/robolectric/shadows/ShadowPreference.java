@@ -16,7 +16,9 @@ public class ShadowPreference {
 	protected boolean shouldPersist = false;
 	protected int persistedInt;
 	protected Object callChangeListenerValue = null;
-	private boolean enabled = true;
+	protected boolean enabled = true;
+	protected CharSequence title;
+	protected String key;
 	
 	public void __constructor__(Context context, AttributeSet attrs, int defStyle) {
 		this.context = context;
@@ -81,4 +83,30 @@ public class ShadowPreference {
 	public Object getCallChangeListenerValue() {
 		return callChangeListenerValue;
 	}
+
+	@Implementation
+	public void setTitle(int titleResId) {
+		this.title = context.getResources().getText(titleResId);
+	}
+
+	@Implementation
+	public void setTitle(CharSequence title) {
+		this.title = title;
+	}
+	
+	@Implementation 
+	public CharSequence getTitle() {
+		return title;
+	}
+	
+	@Implementation
+	public void setKey(String key) {
+		this.key = key;
+	}
+	
+	@Implementation 
+	public String getKey() {
+		return key;
+	}
+	
 }

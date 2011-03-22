@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.preference.Preference;
 import android.util.AttributeSet;
+
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
@@ -14,6 +16,8 @@ import org.junit.runner.RunWith;
 import java.util.HashMap;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
@@ -49,6 +53,33 @@ public class PreferenceTest {
 		assertThat(shadow.getContext(), sameInstance( context ));
 		assertThat(shadow.getAttrs(), sameInstance((AttributeSet)attrs));
 		assertThat(shadow.getDefStyle(), equalTo(0));		
+	}
+	
+	@Test
+	public void shouldHaveAKey() {
+		String key = "key_value";
+		
+		assertThat( preference.getKey(), nullValue() );
+		preference.setKey(key);
+		assertThat( preference.getKey(), equalTo(key) );
+	}
+
+	@Test
+	public void shouldHaveATitle() {
+		CharSequence title = "Test Preference";
+		
+		assertThat( preference.getTitle(), nullValue() );
+		preference.setTitle(title);
+		assertThat( preference.getTitle(), equalTo(title) );
+	}
+	
+	@Test
+	public void shouldSetTitleByResId() {
+		CharSequence expected = "Hello";
+		
+		assertThat( preference.getTitle(), not( equalTo(expected) ) );	
+		preference.setTitle(R.string.hello);
+		assertThat( preference.getTitle(), equalTo(expected) );	
 	}
 	
 	@Test
@@ -98,6 +129,10 @@ public class PreferenceTest {
 		}
 	}
 	
+	////////////////////////////////////////////////////////////
+	// TestPreference
+	////////////////////////////////////////////////////////////
+
 	private static class TestPreference extends Preference {
 		public TestPreference(Context context, AttributeSet attrs, int defStyle) {
 			super(context, attrs, defStyle);
