@@ -1,6 +1,22 @@
 package com.xtremelabs.robolectric;
 
-import android.app.*;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultRequestDirector;
+
+import android.app.Activity;
+import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.app.Application;
+import android.app.Dialog;
+import android.app.KeyguardManager;
+import android.app.ListActivity;
+import android.app.Notification;
+import android.app.NotificationManager;
+
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -30,6 +46,7 @@ import android.net.wifi.WifiManager;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.preference.DialogPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -160,6 +177,7 @@ public class Robolectric {
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowItemizedOverlay.class,
+                ShadowKeyguardManager.class,
                 ShadowLayoutInflater.class,
                 ShadowLayoutParams.class,
                 ShadowListActivity.class,
@@ -525,6 +543,14 @@ public class Robolectric {
     
     public static ShadowGridView shadowOf(GridView instance) {
     	return (ShadowGridView) shadowOf_(instance);
+    }
+    
+    public static ShadowPowerManager shadowOf(PowerManager instance) {
+    	return (ShadowPowerManager) shadowOf_(instance);
+    }
+    
+    public static ShadowKeyguardManager shadowOf(KeyguardManager instance) {
+    	return (ShadowKeyguardManager) shadowOf_(instance);
     }
     
     @SuppressWarnings({"unchecked"})
