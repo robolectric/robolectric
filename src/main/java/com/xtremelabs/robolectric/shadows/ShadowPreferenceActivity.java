@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
+import android.widget.ListView;
 
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;

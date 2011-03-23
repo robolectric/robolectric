@@ -3,13 +3,16 @@ package com.xtremelabs.robolectric.shadows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import android.app.Activity;
 import android.preference.PreferenceActivity;
+import android.widget.ListView;
 
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -25,6 +28,13 @@ public class PreferenceActivityTest {
     public void setUp() throws Exception {
     	activity = new TestPreferenceActivity();
     	shadow = Robolectric.shadowOf(activity);
+    }
+    
+    @Test
+    public void shouldGetListView() {
+    	assertThat( activity.getListView(), nullValue() );
+    	shadow.setListView( new ListView( new Activity() ) );
+    	assertThat( activity.getListView(), notNullValue() );    	
     }
     
 	@Test
