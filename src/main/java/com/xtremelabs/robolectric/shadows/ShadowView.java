@@ -634,6 +634,15 @@ public class ShadowView {
         }
         return true;
     }
+    
+    /**
+     * Non-android accessor.  Returns touch listener, if set.
+     * 
+     * @return
+     */
+    public View.OnTouchListener getOnTouchListener() {
+    	return onTouchListener;
+    }
 
     @Implementation
     public void setDrawingCacheEnabled(boolean drawingCacheEnabled) {
