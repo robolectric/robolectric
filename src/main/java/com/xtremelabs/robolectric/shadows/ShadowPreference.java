@@ -21,6 +21,7 @@ public class ShadowPreference {
 	protected CharSequence title;
 	protected CharSequence summary;
 	protected Object defaultValue;
+	protected int order;
 	
 	public void __constructor__(Context context) {
 		__constructor__(context, null, 0);
@@ -140,6 +141,16 @@ public class ShadowPreference {
 	
 	public Object getDefaultValue() {
 		return defaultValue;
+	}
+	
+	@Implementation
+	public int getOrder() {
+		return order;
+	}
+	
+	@Implementation
+	public void setOrder(int order) {
+		this.order = order;
 	}
 	
 }

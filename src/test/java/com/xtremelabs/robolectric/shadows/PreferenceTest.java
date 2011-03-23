@@ -125,6 +125,16 @@ public class PreferenceTest {
 		preference.setDefaultValue(defaultValue);
 		assertThat(shadow.getDefaultValue(), sameInstance(defaultValue));
 	}
+	
+	@Test
+	public void shouldOrder() {
+		int[] values = { 0, 1, 2, 2011 };
+		
+		for(int order : values) {		
+			preference.setOrder(order);
+			assertThat(preference.getOrder(), equalTo(order));
+		}
+	}
 
 	
 	@Test
