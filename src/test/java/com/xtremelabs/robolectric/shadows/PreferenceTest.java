@@ -98,6 +98,25 @@ public class PreferenceTest {
 		preference.setTitle(R.string.hello);
 		assertThat(preference.getTitle(), equalTo(expected));	
 	}
+
+	@Test
+	public void shouldHaveASummary() {
+		CharSequence summary = "This is only a test.";
+		
+		assertThat(preference.getSummary(), nullValue());
+		preference.setSummary(summary);
+		assertThat(preference.getSummary(), equalTo(summary));
+	}
+	
+	@Test
+	public void shouldSetSummaryByResId() {
+		CharSequence expected = "Hello";
+		
+		assertThat(preference.getSummary(), not(equalTo(expected)));	
+		preference.setSummary(R.string.hello);
+		assertThat(preference.getSummary(), equalTo(expected));	
+	}
+
 	
 	@Test
 	public void shouldEnable() {
