@@ -3,7 +3,6 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.Context;
 import android.content.Intent;
 import android.preference.Preference;
-import android.preference.PreferenceGroup;
 import android.util.AttributeSet;
 
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -26,7 +25,7 @@ public class ShadowPreference {
 	protected int order;
 	protected boolean enabled = true;
 
-	protected boolean shouldPersist = false;
+	protected boolean persistent = false;
 	protected int persistedInt;
 	protected Object callChangeListenerValue = null;
 	
@@ -76,22 +75,28 @@ public class ShadowPreference {
     
 	@Implementation
 	public boolean shouldPersist() {
-		return shouldPersist;
+		return persistent;
 	}
-	
-	public void setShouldPersist(boolean shouldPersist) {
-		this.shouldPersist = shouldPersist;
+
+	@Implementation
+	public boolean isPersistent() {
+		return persistent;
+	}
+
+	@Implementation
+	public void setPersistent(boolean persistent) {
+		this.persistent = persistent;
 	}
 	
 	@Implementation
 	public int getPersistedInt(int defaultReturnValue) {
-		return shouldPersist ? persistedInt : defaultReturnValue;
+		return persistent ? persistedInt : defaultReturnValue;
 	}
 	
 	@Implementation
 	public boolean persistInt(int value) {
 		this.persistedInt = value;
-		return shouldPersist;
+		return persistent;
 	}
 	
 	@Implementation
@@ -173,7 +178,6 @@ public class ShadowPreference {
 		return onClickListener;
 	}	
 	
-
 	public boolean click() {
 		return onClickListener.onPreferenceClick(realPreference);
 	}

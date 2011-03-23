@@ -21,7 +21,7 @@ public class PreferenceCategoryTest {
 
     @Before
     public void setUp() throws Exception {
-    	category = new PreferenceCategory( new Activity() );
+    	category = new PreferenceCategory(new Activity());
     	shadow = Robolectric.shadowOf(category);
     }
     

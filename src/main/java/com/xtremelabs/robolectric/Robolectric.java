@@ -48,6 +48,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.PowerManager;
 import android.preference.DialogPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
@@ -182,6 +183,7 @@ public class Robolectric {
                 ShadowLayoutInflater.class,
                 ShadowLayoutParams.class,
                 ShadowListActivity.class,
+                ShadowListPreference.class,
                 ShadowListView.class,
                 ShadowLocation.class,
                 ShadowLocationManager.class,
@@ -345,6 +347,10 @@ public class Robolectric {
     
     public static ShadowListActivity shadowOf(ListActivity instance) {
         return (ShadowListActivity) shadowOf_(instance);
+    }
+
+    public static ShadowListPreference shadowOf(ListPreference instance) {
+        return (ShadowListPreference) shadowOf_(instance);
     }
 
     public static ShadowHandler shadowOf(Handler instance) {

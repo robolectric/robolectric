@@ -97,7 +97,7 @@ public class PreferenceTest {
 	}
 	
 	@Test
-	public void shouldSetTitleByResId() {
+	public void shouldSetTitleByResourceId() {
 		CharSequence expected = "Hello";
 		
 		assertThat(preference.getTitle(), not(equalTo(expected)));	
@@ -115,7 +115,7 @@ public class PreferenceTest {
 	}
 	
 	@Test
-	public void shouldSetSummaryByResId() {
+	public void shouldSetSummaryByResourceId() {
 		CharSequence expected = "Hello";
 		
 		assertThat(preference.getSummary(), not(equalTo(expected)));	
@@ -141,7 +141,6 @@ public class PreferenceTest {
 			assertThat(preference.getOrder(), equalTo(order));
 		}
 	}
-
 	
 	@Test
 	public void shouldEnable() {
@@ -155,12 +154,13 @@ public class PreferenceTest {
 	}
 		
 	@Test
-	public void testShouldPersist() {
+	public void testPersistent() {
 		boolean[] values = { true, false };
 		
 		for( boolean shouldPersist : values ) { 
-			shadow.setShouldPersist(shouldPersist);
+			shadow.setPersistent(shouldPersist);
 			assertThat(preference.shouldPersist(), equalTo(shouldPersist));
+			assertThat(preference.isPersistent(), equalTo(shouldPersist));
 		}
 	}
 	
@@ -172,10 +172,10 @@ public class PreferenceTest {
 		for(int persistedInt : values) {			
 			shadow.persistInt(persistedInt);
 			
-			shadow.setShouldPersist(false);
+			shadow.setPersistent(false);
 			assertThat(preference.getPersistedInt(defaultValue), equalTo(defaultValue));
 			
-			shadow.setShouldPersist(true);
+			shadow.setPersistent(true);
 			assertThat(preference.getPersistedInt(defaultValue), equalTo(persistedInt));			
 		}
 	}
