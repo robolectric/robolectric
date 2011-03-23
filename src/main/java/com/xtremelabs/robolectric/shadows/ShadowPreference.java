@@ -20,19 +20,22 @@ public class ShadowPreference {
 	protected CharSequence title;
 	protected String key;
 	
-	public void __constructor__(Context context, AttributeSet attrs, int defStyle) {
-		this.context = context;
-		this.attrs = attrs;
-		this.defStyle = defStyle;
+	public void __constructor__(Context context, AttributeSet attributeSet) {
+		__constructor__(context, attributeSet, 0);
 	}
-	   
-	public void __constructor__(Context context, AttributeSet attrs) {
+
+	public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
 		this.context = context;
-		this.attrs = attrs;
+		this.attrs = attributeSet;
+		this.defStyle = defStyle;
+		
+		if (attributeSet != null) {
+			key = attributeSet.getAttributeValue("android", "key");
+        }
 	}
 
 	@Implementation
-   public Context getContext() {
+	public Context getContext() {
     	return context;
     }
     

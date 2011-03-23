@@ -39,7 +39,7 @@ public class PreferenceTest {
 	}
 
 	@Test
-	public void testConstructors() {
+	public void shouldConstruct() {
 		int defStyle = 7;
 		
 		preference = new TestPreference(context, attrs, defStyle);
@@ -56,30 +56,41 @@ public class PreferenceTest {
 	}
 	
 	@Test
+	public void shouldInitializeFromAttributes() {
+		String key = "key_value";
+		HashMap<String, String> hash = new HashMap<String, String>();
+		hash.put( "android:key", key );
+		attrs = new TestAttributeSet( hash );
+		
+		preference = new TestPreference(context, attrs);
+		assertThat( preference.getKey(), equalTo(key) );
+	}
+	
+	@Test
 	public void shouldHaveAKey() {
 		String key = "key_value";
 		
-		assertThat( preference.getKey(), nullValue() );
+		assertThat(preference.getKey(), nullValue());
 		preference.setKey(key);
-		assertThat( preference.getKey(), equalTo(key) );
+		assertThat(preference.getKey(), equalTo(key));
 	}
 
 	@Test
 	public void shouldHaveATitle() {
 		CharSequence title = "Test Preference";
 		
-		assertThat( preference.getTitle(), nullValue() );
+		assertThat(preference.getTitle(), nullValue());
 		preference.setTitle(title);
-		assertThat( preference.getTitle(), equalTo(title) );
+		assertThat(preference.getTitle(), equalTo(title));
 	}
 	
 	@Test
 	public void shouldSetTitleByResId() {
 		CharSequence expected = "Hello";
 		
-		assertThat( preference.getTitle(), not( equalTo(expected) ) );	
+		assertThat(preference.getTitle(), not(equalTo(expected)));	
 		preference.setTitle(R.string.hello);
-		assertThat( preference.getTitle(), equalTo(expected) );	
+		assertThat(preference.getTitle(), equalTo(expected));	
 	}
 	
 	@Test
