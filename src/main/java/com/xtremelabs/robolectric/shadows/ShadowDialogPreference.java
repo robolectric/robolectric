@@ -9,10 +9,8 @@ import android.preference.DialogPreference;
 @Implements(DialogPreference.class)
 public class ShadowDialogPreference extends ShadowPreference {
 	
-	private static final String ANDROID_NS = "http://schemas.android.com/apk/res/android";
-
     @Implementation
     public CharSequence getDialogMessage() {
-    	return attrs.getAttributeValue(ANDROID_NS,"dialogMessage");
+    	return attrs.getAttributeValue("android","dialogMessage");
     }
 }

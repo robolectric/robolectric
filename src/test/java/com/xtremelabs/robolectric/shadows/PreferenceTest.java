@@ -1,21 +1,29 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.app.Activity;
-import android.content.Context;
-import android.preference.Preference;
-import android.util.AttributeSet;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+
+import java.util.HashMap;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.HashMap;
+import android.app.Activity;
+import android.content.Context;
+import android.content.Intent;
+import android.preference.Preference;
+import android.preference.Preference.OnPreferenceClickListener;
+import android.util.AttributeSet;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class PreferenceTest {
@@ -26,6 +34,8 @@ public class PreferenceTest {
 	private Context context;
 	private TestAttributeSet attrs;
 	
+	private boolean clicked = false;
+	
 	@Before
 	public void setup() {
 		context = new Activity();
@@ -35,7 +45,7 @@ public class PreferenceTest {
 	}
 
 	@Test
-	public void testConstructors() {
+	public void shouldConstruct() {
 		int defStyle = 7;
 		
 		preference = new TestPreference(context, attrs, defStyle);
@@ -49,36 +59,158 @@ public class PreferenceTest {
 		assertThat(shadow.getContext(), sameInstance( context ));
 		assertThat(shadow.getAttrs(), sameInstance((AttributeSet)attrs));
 		assertThat(shadow.getDefStyle(), equalTo(0));		
+
+		preference = new TestPreference(context);
+		shadow = Robolectric.shadowOf(preference);		
+		assertThat(shadow.getContext(), sameInstance( context ));
+		assertThat(shadow.getAttrs(), nullValue());
+		assertThat(shadow.getDefStyle(), equalTo(0));		
+}
+	
+	@Test
+	public void shouldInitializeFromAttributes() {
+		String key = "key_value";
+		HashMap<String, String> hash = new HashMap<String, String>();
+		hash.put( "android:key", key );
+		attrs = new TestAttributeSet( hash );
+		
+		preference = new TestPreference(context, attrs);
+		assertThat( preference.getKey(), equalTo(key) );
 	}
 	
 	@Test
-	public void testShouldPersist() {
-		boolean[] values = { true, false };
+	public void shouldHaveAKey() {
+		String key = "key_value";
 		
-		for( boolean shouldPersist : values ) { 
-			shadow.setShouldPersist(shouldPersist);
-			assertThat(preference.shouldPersist(), equalTo(shouldPersist));
+		assertThat(preference.getKey(), nullValue());
+		preference.setKey(key);
+		assertThat(preference.getKey(), equalTo(key));
+	}
+
+	@Test
+	public void shouldHaveATitle() {
+		CharSequence title = "Test Preference";
+		
+		assertThat(preference.getTitle(), nullValue());
+		preference.setTitle(title);
+		assertThat(preference.getTitle(), equalTo(title));
+	}
+	
+	@Test
+	public void shouldSetTitleByResourceId() {
+		CharSequence expected = "Hello";
+		
+		assertThat(preference.getTitle(), not(equalTo(expected)));	
+		preference.setTitle(R.string.hello);
+		assertThat(preference.getTitle(), equalTo(expected));	
+	}
+
+	@Test
+	public void shouldHaveASummary() {
+		CharSequence summary = "This is only a test.";
+		
+		assertThat(preference.getSummary(), nullValue());
+		preference.setSummary(summary);
+		assertThat(preference.getSummary(), equalTo(summary));
+	}
+	
+	@Test
+	public void shouldSetSummaryByResourceId() {
+		CharSequence expected = "Hello";
+		
+		assertThat(preference.getSummary(), not(equalTo(expected)));	
+		preference.setSummary(R.string.hello);
+		assertThat(preference.getSummary(), equalTo(expected));	
+	}
+	
+	@Test
+	public void shouldRememberDefaultValue() {
+		Object defaultValue = "Zoodles was here";
+		
+		assertThat(shadow.getDefaultValue(), nullValue());
+		preference.setDefaultValue(defaultValue);
+		assertThat(shadow.getDefaultValue(), sameInstance(defaultValue));
+	}
+	
+	@Test
+	public void shouldOrder() {
+		int[] values = { 0, 1, 2, 2011 };
+		
+		for(int order : values) {		
+			preference.setOrder(order);
+			assertThat(preference.getOrder(), equalTo(order));
 		}
 	}
 	
 	@Test
-	public void testPersistedInt() {
+	public void shouldEnable() {
+		assertThat(preference.isEnabled(), equalTo(true));
+		
+		preference.setEnabled(false);
+		assertThat(preference.isEnabled(), equalTo(false));
+		
+		preference.setEnabled(true);
+		assertThat(preference.isEnabled(), equalTo(true));
+	}
+		
+	@Test
+	public void testPersistent() {
+		boolean[] values = { true, false };
+		
+		for( boolean shouldPersist : values ) { 
+			shadow.setPersistent(shouldPersist);
+			assertThat(preference.shouldPersist(), equalTo(shouldPersist));
+			assertThat(preference.isPersistent(), equalTo(shouldPersist));
+		}
+	}
+	
+	@Test
+	public void shouldPersistedIn() {
 		int defaultValue = 727;
 		int[] values = { 0, 1, 2, 2011 };
 		
 		for(int persistedInt : values) {			
 			shadow.persistInt(persistedInt);
 			
-			shadow.setShouldPersist(false);
+			shadow.setPersistent(false);
 			assertThat(preference.getPersistedInt(defaultValue), equalTo(defaultValue));
 			
-			shadow.setShouldPersist(true);
+			shadow.setPersistent(true);
 			assertThat(preference.getPersistedInt(defaultValue), equalTo(persistedInt));			
 		}
 	}
 	
 	@Test
-	public void testCallChangeListener() {
+	public void shouldRememberOnClickListener() {
+		Preference.OnPreferenceClickListener onPreferenceClickListener = new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {	
+				return true;
+			}
+		};
+		
+		preference.setOnPreferenceClickListener(onPreferenceClickListener);
+		assertThat(shadow.getOnPreferenceClickListener(), sameInstance(onPreferenceClickListener));
+	}
+	
+	@Test
+	public void shouldClickThroughToClickListener() {
+		Preference.OnPreferenceClickListener onPreferenceClickListener = new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {	
+				clicked = true;
+				return true;
+			}
+		};
+		preference.setOnPreferenceClickListener(onPreferenceClickListener);
+		
+		assertThat( clicked, equalTo(false)); 
+		assertThat( shadow.click(), equalTo(true)); 		
+		assertThat( clicked, equalTo(true)); 		
+	}
+	
+	@Test
+	public void shouldCallChangeListener() {
 		Integer[] values = { 0, 1, 2, 2011 };
 		
 		for(Integer newValue : values) {			
@@ -87,15 +219,30 @@ public class PreferenceTest {
 		}
 	}
 	
+	@Test
+	public void shouldReturnIntent() {
+		assertThat( preference.getIntent(), nullValue() );
+		preference.setIntent( new Intent() );
+		assertThat( preference.getIntent(), notNullValue() );
+	}
+	
+	////////////////////////////////////////////////////////////
+	// TestPreference
+	////////////////////////////////////////////////////////////
+
 	private static class TestPreference extends Preference {
-		public TestPreference(Context context, AttributeSet attrs, int defStyle) {
-			super(context, attrs, defStyle);
+		public TestPreference(Context context) {
+			super(context);
 		}
-		   
+		
 		public TestPreference(Context context, AttributeSet attrs) {
 			super(context, attrs);
 		}
 		
+		public TestPreference(Context context, AttributeSet attrs, int defStyle) {
+			super(context, attrs, defStyle);
+		}
+		   
 		public boolean shouldPersist() {
 			return super.shouldPersist();
 		}
