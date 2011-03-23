@@ -1,7 +1,21 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+
+import java.util.HashMap;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.util.AttributeSet;
@@ -10,17 +24,6 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.util.HashMap;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class PreferenceTest {
@@ -214,6 +217,13 @@ public class PreferenceTest {
 			assertThat(preference.callChangeListener(newValue), equalTo(true));
 			assertThat(shadow.getCallChangeListenerValue(), sameInstance((Object)newValue));
 		}
+	}
+	
+	@Test
+	public void shouldReturnIntent() {
+		assertThat( preference.getIntent(), nullValue() );
+		preference.setIntent( new Intent() );
+		assertThat( preference.getIntent(), notNullValue() );
 	}
 	
 	////////////////////////////////////////////////////////////
