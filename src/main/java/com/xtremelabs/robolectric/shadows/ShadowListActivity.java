@@ -27,6 +27,10 @@ public class ShadowListActivity extends ShadowActivity {
         return listView;
     }
 
+    public void setListView(ListView view) {
+    	listView = view;
+    }
+    
     private ListView findListView(View parent) {
         if (parent instanceof ListView) {
             return (ListView) parent;
