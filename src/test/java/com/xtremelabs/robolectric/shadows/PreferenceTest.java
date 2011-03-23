@@ -31,6 +31,8 @@ public class PreferenceTest {
 	private Context context;
 	private TestAttributeSet attrs;
 	
+	private boolean clicked = false;
+	
 	@Before
 	public void setup() {
 		context = new Activity();
@@ -186,6 +188,22 @@ public class PreferenceTest {
 		
 		preference.setOnPreferenceClickListener(onPreferenceClickListener);
 		assertThat(shadow.getOnPreferenceClickListener(), sameInstance(onPreferenceClickListener));
+	}
+	
+	@Test
+	public void shouldClickThroughToClickListener() {
+		Preference.OnPreferenceClickListener onPreferenceClickListener = new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {	
+				clicked = true;
+				return true;
+			}
+		};
+		preference.setOnPreferenceClickListener(onPreferenceClickListener);
+		
+		assertThat( clicked, equalTo(false)); 
+		assertThat( shadow.click(), equalTo(true)); 		
+		assertThat( clicked, equalTo(true)); 		
 	}
 	
 	@Test

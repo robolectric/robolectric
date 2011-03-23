@@ -2,15 +2,19 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
 import android.preference.Preference;
+import android.preference.PreferenceGroup;
 import android.util.AttributeSet;
 
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 @Implements(Preference.class)
 public class ShadowPreference {
 
-	protected Context context;
+    @RealObject private Preference realPreference;
+
+    protected Context context;
 	protected AttributeSet attrs;
 	protected int defStyle;	
 
@@ -165,4 +169,8 @@ public class ShadowPreference {
 	public Preference.OnPreferenceClickListener getOnPreferenceClickListener() {
 		return onClickListener;
 	}	
+	
+	public boolean click() {
+		return onClickListener.onPreferenceClick(realPreference);
+	}
 }
