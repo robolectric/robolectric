@@ -20,6 +20,7 @@ public class ShadowPreference {
 	protected String key;
 	protected CharSequence title;
 	protected CharSequence summary;
+	protected Object defaultValue;
 	
 	public void __constructor__(Context context) {
 		__constructor__(context, null, 0);
@@ -130,6 +131,15 @@ public class ShadowPreference {
 	@Implementation 
 	public String getKey() {
 		return key;
+	}
+	
+	@Implementation
+	public void setDefaultValue(Object defaultValue) {
+		this.defaultValue = defaultValue;
+	}
+	
+	public Object getDefaultValue() {
+		return defaultValue;
 	}
 	
 }

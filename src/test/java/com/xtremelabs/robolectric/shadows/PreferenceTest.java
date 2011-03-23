@@ -116,6 +116,15 @@ public class PreferenceTest {
 		preference.setSummary(R.string.hello);
 		assertThat(preference.getSummary(), equalTo(expected));	
 	}
+	
+	@Test
+	public void shouldRememberDefaultValue() {
+		Object defaultValue = "Zoodles was here";
+		
+		assertThat(shadow.getDefaultValue(), nullValue());
+		preference.setDefaultValue(defaultValue);
+		assertThat(shadow.getDefaultValue(), sameInstance(defaultValue));
+	}
 
 	
 	@Test
