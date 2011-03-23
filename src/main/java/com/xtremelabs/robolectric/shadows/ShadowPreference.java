@@ -20,6 +20,10 @@ public class ShadowPreference {
 	protected CharSequence title;
 	protected String key;
 	
+	public void __constructor__(Context context) {
+		__constructor__(context, null, 0);
+	}
+
 	public void __constructor__(Context context, AttributeSet attributeSet) {
 		__constructor__(context, attributeSet, 0);
 	}

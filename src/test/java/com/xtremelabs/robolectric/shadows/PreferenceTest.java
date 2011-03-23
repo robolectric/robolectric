@@ -53,7 +53,13 @@ public class PreferenceTest {
 		assertThat(shadow.getContext(), sameInstance( context ));
 		assertThat(shadow.getAttrs(), sameInstance((AttributeSet)attrs));
 		assertThat(shadow.getDefStyle(), equalTo(0));		
-	}
+
+		preference = new TestPreference(context);
+		shadow = Robolectric.shadowOf(preference);		
+		assertThat(shadow.getContext(), sameInstance( context ));
+		assertThat(shadow.getAttrs(), nullValue());
+		assertThat(shadow.getDefStyle(), equalTo(0));		
+}
 	
 	@Test
 	public void shouldInitializeFromAttributes() {
@@ -145,14 +151,18 @@ public class PreferenceTest {
 	////////////////////////////////////////////////////////////
 
 	private static class TestPreference extends Preference {
-		public TestPreference(Context context, AttributeSet attrs, int defStyle) {
-			super(context, attrs, defStyle);
+		public TestPreference(Context context) {
+			super(context);
 		}
-		   
+		
 		public TestPreference(Context context, AttributeSet attrs) {
 			super(context, attrs);
 		}
 		
+		public TestPreference(Context context, AttributeSet attrs, int defStyle) {
+			super(context, attrs, defStyle);
+		}
+		   
 		public boolean shouldPersist() {
 			return super.shouldPersist();
 		}
