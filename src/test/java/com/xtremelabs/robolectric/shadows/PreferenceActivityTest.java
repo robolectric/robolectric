@@ -32,7 +32,6 @@ public class PreferenceActivityTest {
     
     @Test
     public void shouldGetListView() {
-    	assertThat( activity.getListView(), nullValue() );
     	shadow.setListView( new ListView( new Activity() ) );
     	assertThat( activity.getListView(), notNullValue() );    	
     }

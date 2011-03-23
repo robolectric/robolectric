@@ -168,6 +168,7 @@ public class ShadowPreference {
 		this.onClickListener = onPreferenceClickListener;
 	}
 	
+	@Implementation
 	public Preference.OnPreferenceClickListener getOnPreferenceClickListener() {
 		return onClickListener;
 	}	
@@ -175,6 +176,7 @@ public class ShadowPreference {
 
 	public boolean click() {
 		return onClickListener.onPreferenceClick(realPreference);
+	}
 
 	@Implementation
 	public void setIntent(Intent i) {
