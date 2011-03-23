@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.content.Context;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceClickListener;
 import android.util.AttributeSet;
 
 import com.xtremelabs.robolectric.R;
@@ -159,7 +160,7 @@ public class PreferenceTest {
 	}
 	
 	@Test
-	public void testPersistedInt() {
+	public void shouldPersistedIn() {
 		int defaultValue = 727;
 		int[] values = { 0, 1, 2, 2011 };
 		
@@ -175,7 +176,20 @@ public class PreferenceTest {
 	}
 	
 	@Test
-	public void testCallChangeListener() {
+	public void shouldRememberOnClickListener() {
+		Preference.OnPreferenceClickListener onPreferenceClickListener = new OnPreferenceClickListener() {
+			@Override
+			public boolean onPreferenceClick(Preference preference) {	
+				return true;
+			}
+		};
+		
+		preference.setOnPreferenceClickListener(onPreferenceClickListener);
+		assertThat(shadow.getOnPreferenceClickListener(), sameInstance(onPreferenceClickListener));
+	}
+	
+	@Test
+	public void shouldCallChangeListener() {
 		Integer[] values = { 0, 1, 2, 2011 };
 		
 		for(Integer newValue : values) {			

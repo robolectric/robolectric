@@ -13,15 +13,19 @@ public class ShadowPreference {
 	protected Context context;
 	protected AttributeSet attrs;
 	protected int defStyle;	
-	protected boolean shouldPersist = false;
-	protected int persistedInt;
-	protected Object callChangeListenerValue = null;
-	protected boolean enabled = true;
+
 	protected String key;
 	protected CharSequence title;
 	protected CharSequence summary;
 	protected Object defaultValue;
 	protected int order;
+	protected boolean enabled = true;
+
+	protected boolean shouldPersist = false;
+	protected int persistedInt;
+	protected Object callChangeListenerValue = null;
+	
+	protected Preference.OnPreferenceClickListener  onClickListener;
 	
 	public void __constructor__(Context context) {
 		__constructor__(context, null, 0);
@@ -153,4 +157,12 @@ public class ShadowPreference {
 		this.order = order;
 	}
 	
+	@Implementation
+	public void setOnPreferenceClickListener( Preference.OnPreferenceClickListener onPreferenceClickListener ) {
+		this.onClickListener = onPreferenceClickListener;
+	}
+	
+	public Preference.OnPreferenceClickListener getOnPreferenceClickListener() {
+		return onClickListener;
+	}	
 }
