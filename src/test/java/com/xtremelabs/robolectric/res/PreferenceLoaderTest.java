@@ -40,8 +40,18 @@ public class PreferenceLoaderTest {
     }
     
     @Test
-    public void testCreatesCorrectClasses() throws Exception {
-    	PreferenceScreen screen = prefLoader.inflatePreferences(new Activity(), "preferences"); 	
+    public void shouldCreateCorrectClasses() {
+    	PreferenceScreen screen = prefLoader.inflatePreferences(new Activity(), "xml/preferences"); 	
+    	assertThatScreenMatchesExpected(screen);
+    }
+    
+    @Test
+    public void shouldLoadByResourceId() {
+       	PreferenceScreen screen = prefLoader.inflatePreferences(new Activity(), R.xml.preferences); 	
+       	assertThatScreenMatchesExpected(screen); 	
+    }
+    
+    protected void assertThatScreenMatchesExpected(PreferenceScreen screen) {
     	assertThat(screen.getPreferenceCount(), equalTo(6));
     	
     	assertThat(screen.getPreference(0), instanceOf(PreferenceCategory.class));
@@ -51,6 +61,6 @@ public class PreferenceLoaderTest {
     	assertThat(screen.getPreference(2), instanceOf(EditTextPreference.class));
     	assertThat(screen.getPreference(3), instanceOf(ListPreference.class));
     	assertThat(screen.getPreference(4), instanceOf(Preference.class));
-    	assertThat(screen.getPreference(5), instanceOf(RingtonePreference.class));
+    	assertThat(screen.getPreference(5), instanceOf(RingtonePreference.class));   	
     }
 }

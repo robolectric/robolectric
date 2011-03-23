@@ -23,7 +23,7 @@ import android.util.AttributeSet;
 
 public class PreferenceLoader extends XmlLoader {
 	
-    private Map<String, PreferenceNode> prefNodesByFileName = new HashMap<String, PreferenceNode>();
+    private Map<String, PreferenceNode> prefNodesByResourceName = new HashMap<String, PreferenceNode>();
 
 	public PreferenceLoader(ResourceExtractor resourceExtractor) {
 		super(resourceExtractor);
@@ -33,7 +33,7 @@ public class PreferenceLoader extends XmlLoader {
 	protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
 		PreferenceNode topLevelNode = new PreferenceNode("top-level", new HashMap<String, String>());
 		processChildren(document.getChildNodes(), topLevelNode);
-		prefNodesByFileName.put( xmlFile.getName().replace(".xml", ""), topLevelNode.getChildren().get(0));
+		prefNodesByResourceName.put( "xml/" + xmlFile.getName().replace(".xml", ""), topLevelNode.getChildren().get(0));
 	}
 
     private void processChildren(NodeList childNodes, PreferenceNode parent) {
@@ -63,10 +63,18 @@ public class PreferenceLoader extends XmlLoader {
 	        processChildren(node.getChildNodes(), prefNode);  
         }
     }
-    
-	public PreferenceScreen inflatePreferences(Context context, String key) throws Exception {
-		PreferenceNode prefNode = prefNodesByFileName.get(key);
-		return (PreferenceScreen) prefNode.inflate(context, null);
+ 
+	public PreferenceScreen inflatePreferences(Context context, int resourceId) {
+		return inflatePreferences(context, resourceExtractor.getResourceName(resourceId));		
+	}
+	
+	public PreferenceScreen inflatePreferences(Context context, String key) {
+        try {
+        	PreferenceNode prefNode = prefNodesByResourceName.get(key);
+        	return (PreferenceScreen) prefNode.inflate(context, null);
+        } catch (Exception e) {
+            throw new RuntimeException("error inflating " + key, e);
+        }
 	}
 
     public class PreferenceNode {

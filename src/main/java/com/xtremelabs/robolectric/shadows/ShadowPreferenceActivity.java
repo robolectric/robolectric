@@ -3,7 +3,6 @@ package com.xtremelabs.robolectric.shadows;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceScreen;
 
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -14,12 +13,12 @@ public class ShadowPreferenceActivity extends ShadowListActivity {
 	private PreferenceScreen preferenceScreen;
 	
 	public ShadowPreferenceActivity() {
-		preferenceScreen = Robolectric.newInstanceOf(PreferenceScreen.class);
 	}
 
 	@Implementation
 	public void addPreferencesFromResource(int preferencesResId) {
 		this.preferencesResId = preferencesResId;
+		preferenceScreen = getResourceLoader().inflatePreferences(getApplicationContext(), preferencesResId);
 	}
 	
 	public int getPreferencesResId() {
