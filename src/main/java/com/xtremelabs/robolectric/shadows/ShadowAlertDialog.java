@@ -237,10 +237,20 @@ public class ShadowAlertDialog extends ShadowDialog {
         }
 
         @Implementation
+        public AlertDialog.Builder setPositiveButton(int textId, final DialogInterface.OnClickListener listener) {
+        	return setPositiveButton( context.getResources().getString(textId), listener);
+        }
+
+        @Implementation
         public AlertDialog.Builder setPositiveButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.positiveText = text;
             this.positiveListener = listener;
             return realBuilder;
+        }
+
+        @Implementation
+        public AlertDialog.Builder setNegativeButton(int textId, final DialogInterface.OnClickListener listener) {
+        	return setNegativeButton( context.getResources().getString(textId), listener);
         }
 
         @Implementation
@@ -251,6 +261,11 @@ public class ShadowAlertDialog extends ShadowDialog {
         }
 
         @Implementation
+        public AlertDialog.Builder setNeutralButton(int textId, final DialogInterface.OnClickListener listener) {
+        	return setNeutralButton( context.getResources().getString(textId), listener);
+        }
+
+       @Implementation
         public AlertDialog.Builder setNeutralButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.neutralText = text;
             this.neutralListener = listener;
