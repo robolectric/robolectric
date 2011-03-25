@@ -22,6 +22,7 @@ public class AlertDialogTest {
     public void testBuilder() throws Exception {
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));
         builder.setTitle("title").setMessage("message");
+        builder.setCancelable(true);
         AlertDialog alert = builder.create();
         alert.show();
 
@@ -30,6 +31,7 @@ public class AlertDialogTest {
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
         assertThat(shadowAlertDialog.getTitle(), equalTo("title"));
         assertThat(shadowAlertDialog.getMessage(), equalTo("message"));
+        assertThat(shadowAlertDialog.isCancelable(), equalTo(true));
         assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
     }
 

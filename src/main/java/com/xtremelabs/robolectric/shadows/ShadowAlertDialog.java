@@ -124,6 +124,15 @@ public class ShadowAlertDialog extends ShadowDialog {
     }
 
     /**
+     * Non-Android accessor.
+     *
+     * @return the message displayed in the dialog
+     */
+    public boolean isCancelable() {
+        return isCancelable;
+    }
+    
+    /**
      * Shadows the {@code android.app.AlertDialog.Builder} class.
      */
     @Implements(AlertDialog.Builder.class)
