@@ -28,10 +28,12 @@ public class CursorAdapterTest {
 		CursorAdapter adapter = new TestAdapter( curs );
 		assertThat( adapter.getCursor(), notNullValue() );
 		assertThat( adapter.getCursor(), sameInstance( curs ) );
+		assertThat( adapter.getCount(), equalTo( curs.getCount() ) );
 		
 		adapter.changeCursor( null );
 		assertThat( curs.isClosed(), equalTo( true ) );
-		assertThat( adapter.getCursor(), nullValue() );		
+		assertThat( adapter.getCursor(), nullValue() );
+		assertThat( adapter.getCount(), equalTo(0) );
 	}
 	
 	private class TestAdapter extends CursorAdapter {

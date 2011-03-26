@@ -29,4 +29,12 @@ public class ShadowCursorAdapter {
     public Cursor getCursor() {
     	return cursor;
     }
+    
+    @Implementation
+    public int getCount() {
+    	if ( cursor == null ) {
+    		return 0;
+    	}
+    	return cursor.getCount();
+    }
 }
