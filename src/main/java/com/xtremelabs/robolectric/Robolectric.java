@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric;
 import java.util.Arrays;
 import java.util.List;
 
+import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
@@ -16,7 +17,6 @@ import android.app.KeyguardManager;
 import android.app.ListActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
-
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -31,7 +31,12 @@ import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Path;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
@@ -46,6 +51,7 @@ import android.net.wifi.WifiManager;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Parcel;
 import android.os.PowerManager;
 import android.preference.DialogPreference;
 import android.preference.ListPreference;
@@ -54,12 +60,30 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
-import android.view.*;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.*;
+import android.widget.AbsSeekBar;
+import android.widget.AdapterView;
+import android.widget.CursorAdapter;
+import android.widget.ExpandableListView;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.RemoteViews;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.ZoomButtonsController;
+
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
@@ -67,13 +91,6 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultRequestDirector;
-
-import java.util.Arrays;
-import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class Robolectric {
@@ -202,6 +219,7 @@ public class Robolectric {
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
                 ShadowPaint.class,
+                ShadowParcel.class,
                 ShadowPath.class,
                 ShadowPendingIntent.class,
                 ShadowPoint.class,
@@ -547,6 +565,10 @@ public class Robolectric {
     
     public static ShadowSeekBar shadowOf(SeekBar instance) {
         return (ShadowSeekBar) shadowOf_(instance);
+    }
+    
+    public static ShadowParcel shadowOf(Parcel instance) {
+    	return (ShadowParcel) shadowOf_(instance);
     }
     
     public static ShadowAnimationUtils shadowOf(AnimationUtils instance) {
