@@ -31,6 +31,13 @@ public class TestAttributeSet implements AttributeSet {
         return this;
     }
 
+    public TestAttributeSet(Map<String, String> attributes) {
+		this.attributes = attributes;		
+		this.resourceExtractor = new ResourceExtractor();		
+		this.attrResourceLoader = new AttrResourceLoader(this.resourceExtractor);
+		this.viewClass = null;
+	}
+
     @Override public boolean getAttributeBooleanValue(String namespace, String attribute, boolean defaultValue) {
         String value = getAttributeValueInMap(attribute);
         return (value != null) ? Boolean.valueOf(value) : defaultValue;

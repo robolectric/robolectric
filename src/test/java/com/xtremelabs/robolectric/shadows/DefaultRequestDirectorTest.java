@@ -6,13 +6,17 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.tester.org.apache.http.TestHttpResponse;
 import com.xtremelabs.robolectric.util.Strings;
+import junit.framework.Assert;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultRequestDirector;
+import org.apache.http.message.BasicHeader;
 import org.apache.http.protocol.HttpContext;
 import org.junit.After;
 import org.junit.Before;
@@ -126,6 +130,19 @@ public class DefaultRequestDirectorTest {
     }
 
     @Test
+    public void clearHttpResponseRules_shouldRemoveAllRules() throws Exception {
+        Robolectric.addHttpResponseRule("http://some.uri", "a cheery response body");
+        Robolectric.clearHttpResponseRules();
+        Robolectric.addHttpResponseRule("http://some.uri", "a gloomy response body");
+
+        HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+
+        assertNotNull(response);
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
+        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a gloomy response body"));
+    }
+
+    @Test
     public void shouldReturnRequestsByRule_WithCustomRequestMatcher() throws Exception {
         Robolectric.setDefaultHttpResponse(404, "no such page");
 
@@ -206,5 +223,20 @@ public class DefaultRequestDirectorTest {
         assertSame(Robolectric.getSentHttpRequestInfo(0).getHttpRequest(), httpGet);
         ConnectionKeepAliveStrategy strategy = shadowOf((DefaultRequestDirector) Robolectric.getSentHttpRequestInfo(0).getRequestDirector()).getConnectionKeepAliveStrategy();
         assertSame(strategy, connectionKeepAliveStrategy);
+    }
+    
+    @Test
+    public void shouldSupportBasicResponseHandlerHandleResponse() throws Exception {
+        Robolectric.addPendingHttpResponseWithContentType(200, "OK", new BasicHeader("Content-Type", "text/plain"));
+
+        DefaultHttpClient client = new DefaultHttpClient();
+        HttpResponse response = client.execute(new HttpGet("http://www.nowhere.org"));
+
+        assertThat(((HttpUriRequest) Robolectric.getSentHttpRequest(0)).getURI(),
+                equalTo(URI.create("http://www.nowhere.org")));
+
+        Assert.assertNotNull(response);
+        String responseStr = new BasicResponseHandler().handleResponse(response);
+        Assert.assertEquals("OK", responseStr);
     }
 }

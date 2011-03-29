@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.graphics.Bitmap;
+import android.graphics.Bitmap.Config;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
@@ -26,6 +27,34 @@ public class BitmapTest {
         assertEquals("Original bitmap scaled to 100 x 200", shadowOf(scaledBitmap).getDescription());
         assertEquals(100, scaledBitmap.getWidth());
         assertEquals(200, scaledBitmap.getHeight());
+    }
+
+    @Test
+    public void shouldCreateActiveBitmap() throws Exception {
+        Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
+        assertFalse(bitmap.isRecycled());
+    }
+    
+    @Test
+    public void shouldCreateBitmapWithCorrectConfig() throws Exception {
+        Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
+        assertEquals(bitmap.getConfig(), Config.ARGB_8888);
+    }
+    
+    @Test
+    public void shouldCreateBitmapFromAnotherBitmap() {
+    	Bitmap originalBitmap = Robolectric.newInstanceOf(Bitmap.class);
+        shadowOf(originalBitmap).appendDescription("Original bitmap");
+        Bitmap newBitmap = Bitmap.createBitmap(originalBitmap);
+        assertEquals("Original bitmap created from Bitmap object", shadowOf(newBitmap).getDescription());
+    }
+    
+    
+    @Test
+    public void shouldRecycleBitmap() throws Exception {
+        Bitmap bitmap = Bitmap.createBitmap(100, 200, Config.ARGB_8888);
+        bitmap.recycle();
+        assertTrue( bitmap.isRecycled() );    	
     }
 
     @Test
@@ -99,5 +128,13 @@ public class BitmapTest {
 
         assertEquals("Bitmap One", Robolectric.visualize(bitmap));
 
+    }
+    
+    @Test
+    public void shouldCopyBitmap() {
+    	Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
+    	Bitmap bitmapCopy = bitmap.copy(Config.ARGB_8888, true);
+    	assertEquals(shadowOf(bitmapCopy).getConfig(), Config.ARGB_8888);
+    	assertTrue(shadowOf(bitmapCopy).isMutable());
     }
 }

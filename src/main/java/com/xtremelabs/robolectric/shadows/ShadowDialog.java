@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -14,6 +15,8 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.tester.android.view.TestWindow;
 
 import java.lang.reflect.Method;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Dialog.class)
@@ -173,5 +176,32 @@ public class ShadowDialog {
 
     public CharSequence getTitle() {
         return title;
+    }
+
+    public void clickOnText(int textId) {
+        if (inflatedView == null) {
+            inflatedView = ShadowLayoutInflater.from(context).inflate(layoutId, null);
+        }
+        String text = getContext().getResources().getString(textId);
+        if (!clickOnText(inflatedView, text)) {
+            throw new IllegalArgumentException("Text not found: " + text);
+        }
+    }
+
+    private boolean clickOnText(View view, String text) {
+        if (text.equals(shadowOf(view).innerText())) {
+            view.performClick();
+            return true;
+        }
+        if (view instanceof ViewGroup) {
+            ViewGroup viewGroup = (ViewGroup) view;
+            for (int i = 0; i < viewGroup.getChildCount(); i++) {
+                View child = viewGroup.getChildAt(i);
+                if (clickOnText(child, text)) {
+                    return true;
+                }
+            }
+        }
+      return false;
     }
 }

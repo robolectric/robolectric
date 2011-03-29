@@ -5,6 +5,7 @@ import android.view.SurfaceHolder;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 /**
  * Shadows the Android {@code Camera} class.
@@ -16,7 +17,11 @@ public class ShadowCamera {
     private boolean previewing;
     private boolean released;
     private Camera.Parameters parameters;
+    private Camera.PreviewCallback previewCallback;
     private SurfaceHolder surfaceHolder;
+
+    @RealObject
+    private Camera realCamera;
 
     public void __constructor__() {
         locked = true;
@@ -70,6 +75,32 @@ public class ShadowCamera {
     @Implementation
     public void release() {
         released = true;
+    }
+
+    @Implementation
+    public void setPreviewCallback(Camera.PreviewCallback cb) {
+        previewCallback = cb;
+    }
+
+    @Implementation
+    public void setOneShotPreviewCallback(Camera.PreviewCallback cb) {
+        previewCallback = cb;
+    }
+
+    @Implementation
+    public void setPreviewCallbackWithBuffer(Camera.PreviewCallback cb) {
+        previewCallback = cb;
+    }
+
+    /**
+     * Allows test cases to invoke the preview callback, to simulate a frame of camera data.
+     *
+     * @param data byte buffer of simulated camera data
+     */
+    public void invokePreviewCallback(byte[] data) {
+        if (previewCallback != null) {
+            previewCallback.onPreviewFrame(data, realCamera);
+        }
     }
 
     public boolean isLocked() {
