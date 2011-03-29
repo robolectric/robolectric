@@ -38,6 +38,15 @@ public class ShadowAnimation {
 	}
 	
 	/**
+	 * Non-Android accessor.  Returns most recently set animation listener.
+	 * 
+	 * @return
+	 */
+	public Animation.AnimationListener getAnimationListener() {
+		return listener;
+	}
+	
+	/**
 	 * Non-Android accessor.  Use to simulate repeat loops of animation.
 	 */
 	public void invokeRepeat() {
