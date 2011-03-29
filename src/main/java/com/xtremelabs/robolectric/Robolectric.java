@@ -66,6 +66,7 @@ import android.view.MenuInflater;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
@@ -147,6 +148,7 @@ public class Robolectric {
                 ShadowAlarmManager.class,
                 ShadowAlertDialog.class,
                 ShadowAlertDialog.ShadowBuilder.class,
+                ShadowAnimation.class,
                 ShadowAnimationUtils.class,
                 ShadowApplication.class,
                 ShadowAppWidgetManager.class,
@@ -585,6 +587,10 @@ public class Robolectric {
     
     public static ShadowKeyguardManager shadowOf(KeyguardManager instance) {
     	return (ShadowKeyguardManager) shadowOf_(instance);
+    }
+    
+    public static ShadowAnimation shadowOf(Animation instance) {
+    	return (ShadowAnimation) shadowOf_(instance);
     }
     
     @SuppressWarnings({"unchecked"})
