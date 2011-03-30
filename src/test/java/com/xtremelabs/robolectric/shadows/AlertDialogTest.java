@@ -29,7 +29,7 @@ public class AlertDialogTest {
         assertThat(alert.isShowing(), equalTo(true));
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-        assertThat(shadowAlertDialog.getTitle(), equalTo("title"));
+        assertThat(shadowAlertDialog.getTitle(), equalTo((CharSequence)"title"));
         assertThat(shadowAlertDialog.getMessage(), equalTo("message"));
         assertThat(shadowAlertDialog.isCancelable(), equalTo(true));
         assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
@@ -56,7 +56,7 @@ public class AlertDialogTest {
         assertThat(alert.isShowing(), equalTo(true));
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-        assertThat(shadowAlertDialog.getTitle(), equalTo("title"));
+        assertThat(shadowAlertDialog.getTitle(), equalTo((CharSequence)"title"));
         assertThat(shadowAlertDialog.getItems().length, equalTo(2));
         assertEquals(shadowAlertDialog.getItems()[0], "Aloha");
         assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
