@@ -10,6 +10,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 public class ShadowProgressDialog {
 
 	private CharSequence message;
+	private boolean indeterminate;
 	
 	@Implementation
 	public void setMessage(CharSequence message) {
@@ -19,4 +20,14 @@ public class ShadowProgressDialog {
 	public CharSequence getMessage() {
 		return message;
 	}	
+	
+	@Implementation
+	public void setIndeterminate(boolean indeterminate) {
+		this.indeterminate = indeterminate;
+	}
+	
+	@Implementation
+	public boolean isIndeterminate() {
+		return indeterminate;
+	}
 }

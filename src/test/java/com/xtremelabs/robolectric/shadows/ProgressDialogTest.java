@@ -34,4 +34,14 @@ public class ProgressDialogTest {
     	assertThat(shadow.getMessage(), equalTo(message));
    }
     
+    @Test
+    public void shouldSetIndeterminate() {
+    	assertThat(dialog.isIndeterminate(), equalTo(false));
+  	
+    	dialog.setIndeterminate(true);
+    	assertThat(dialog.isIndeterminate(), equalTo(true));
+    	
+    	dialog.setIndeterminate(false);
+    	assertThat(dialog.isIndeterminate(), equalTo(false));
+    }   
 }
