@@ -30,7 +30,7 @@ public class AlertDialogTest {
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
         assertThat(shadowAlertDialog.getTitle(), equalTo((CharSequence)"title"));
-        assertThat(shadowAlertDialog.getMessage(), equalTo("message"));
+        assertThat(shadowAlertDialog.getMessage(), equalTo((CharSequence)"message"));
         assertThat(shadowAlertDialog.isCancelable(), equalTo(true));
         assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
     }

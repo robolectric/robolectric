@@ -7,19 +7,9 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
 @Implements(ProgressDialog.class)
-public class ShadowProgressDialog {
+public class ShadowProgressDialog extends ShadowAlertDialog {
 
-	private CharSequence message;
 	private boolean indeterminate;
-	
-	@Implementation
-	public void setMessage(CharSequence message) {
-		this.message = message;
-	}
-	
-	public CharSequence getMessage() {
-		return message;
-	}	
 	
 	@Implementation
 	public void setIndeterminate(boolean indeterminate) {

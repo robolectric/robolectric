@@ -10,6 +10,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
@@ -23,6 +24,11 @@ public class ProgressDialogTest {
     public void setUp() {
     	dialog = new ProgressDialog(null);
     	shadow = Robolectric.shadowOf(dialog);
+    }
+    
+    @Test
+    public void shouldExtendAlertDialog() {
+    	assertThat(shadow, instanceOf(ShadowAlertDialog.class));
     }
     
     @Test

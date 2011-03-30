@@ -18,7 +18,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(AlertDialog.class)
 public class ShadowAlertDialog extends ShadowDialog {
     private CharSequence[] items;
-    private String message;
+    private CharSequence message;
     private DialogInterface.OnClickListener clickListener;
     private AlertDialog realDialog;
     private boolean isMultiItem;
@@ -93,13 +93,18 @@ public class ShadowAlertDialog extends ShadowDialog {
     public CharSequence[] getItems() {
         return items;
     }
+    
+    @Implementation
+    public void setMessage(CharSequence message) {
+    	this.message = message;
+    }
 
     /**
      * Non-Android accessor.
      *
      * @return the message displayed in the dialog
      */
-    public String getMessage() {
+    public CharSequence getMessage() {
         return message;
     }
 
