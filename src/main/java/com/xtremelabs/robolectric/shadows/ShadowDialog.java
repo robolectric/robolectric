@@ -35,7 +35,8 @@ public class ShadowDialog {
     private DialogInterface.OnCancelListener onCancelListener;
     private Window window;
     private Activity ownerActivity;
-
+    private boolean isCancelable;
+    
     public static void reset() {
         setLatestDialog(null);
     }
@@ -139,6 +140,15 @@ public class ShadowDialog {
     @Implementation
     public void setOnDismissListener(DialogInterface.OnDismissListener onDismissListener) {
         this.onDismissListener = onDismissListener;
+    }
+    
+    @Implementation
+    public void setCancelable(boolean flag) {
+    	isCancelable = flag;
+    }
+    
+    public boolean isCancelable() {
+    	return isCancelable;
     }
 
     @Implementation
