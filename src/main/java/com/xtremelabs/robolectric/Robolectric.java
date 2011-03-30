@@ -17,6 +17,7 @@ import android.app.KeyguardManager;
 import android.app.ListActivity;
 import android.app.Notification;
 import android.app.NotificationManager;
+import android.app.ProgressDialog;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -234,6 +235,7 @@ public class Robolectric {
                 ShadowPreferenceManager.class,
                 ShadowPreferenceScreen.class,
                 ShadowProgressBar.class,
+                ShadowProgressDialog.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
                 ShadowResources.class,
@@ -363,6 +365,10 @@ public class Robolectric {
     
     public static ShadowProgressBar shadowOf(ProgressBar instance) {
         return (ShadowProgressBar) shadowOf_(instance);
+    }
+    
+    public static ShadowProgressDialog shadowOf(ProgressDialog instance) {
+        return (ShadowProgressDialog) shadowOf_(instance);
     }
     
     public static ShadowListActivity shadowOf(ListActivity instance) {
