@@ -42,6 +42,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     private List<IntentForResult> startedActivitiesForResults = new ArrayList<IntentForResult>();
 
     private Map<Intent, Integer> intentRequestCodeMap = new HashMap<Intent, Integer>();
+    private int requestedOrientation = -1;
 
     @Implementation
     public final Application getApplication() {
@@ -171,6 +172,16 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public WindowManager getWindowManager() {
         return (WindowManager) Robolectric.application.getSystemService(Context.WINDOW_SERVICE);
+    }
+
+    @Implementation
+    public void setRequestedOrientation(int requestedOrientation) {
+        this.requestedOrientation = requestedOrientation;
+    }
+
+    @Implementation
+    public int getRequestedOrientation() {
+        return requestedOrientation;
     }
 
     /**
