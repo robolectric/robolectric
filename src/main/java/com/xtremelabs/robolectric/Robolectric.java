@@ -69,6 +69,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.inputmethod.InputMethodManager;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -196,6 +197,7 @@ public class Robolectric {
                 ShadowGridView.class,
                 ShadowHandler.class,
                 ShadowImageView.class,
+                ShadowInputMethodManager.class,
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowItemizedOverlay.class,
@@ -595,7 +597,11 @@ public class Robolectric {
     	return (ShadowKeyguardManager) shadowOf_(instance);
     }
     
-    public static ShadowAnimation shadowOf(Animation instance) {
+    public static ShadowInputMethodManager shadowOf(InputMethodManager instance) {
+    	return (ShadowInputMethodManager) shadowOf_(instance);
+    }
+    
+   public static ShadowAnimation shadowOf(Animation instance) {
     	return (ShadowAnimation) shadowOf_(instance);
     }
     
