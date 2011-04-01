@@ -27,6 +27,7 @@ public class ShadowTextView extends ShadowView {
     private CharSequence hintText;
     private int compoundDrawablePadding;
     private MovementMethod movementMethod;
+    private boolean linksClickable;
 
     @Override public void applyAttributes() {
         super.applyAttributes();
@@ -75,6 +76,16 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public CharSequence getHint() {
         return hintText;
+    }
+    
+    @Implementation
+    public final boolean getLinksClickable() {
+    	return linksClickable;
+    }
+    
+    @Implementation
+    public final void setLinksClickable(boolean whether) {
+    	linksClickable = whether;
     }
     
     @Implementation
