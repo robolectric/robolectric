@@ -69,6 +69,16 @@ public class AnimationTest {
 		assertThat(listener.wasRepeatCalled, equalTo(false));		
 	}
 	
+	@Test
+	public void testHasStarted() throws Exception {
+		assertThat(animation.hasStarted(), equalTo(false));
+		animation.start();
+		assertThat(animation.hasStarted(), equalTo(true));
+		animation.cancel();
+		assertThat(animation.hasStarted(), equalTo(false));
+	}
+	
+	
 	private class TestAnimation extends Animation {
 		
 	}

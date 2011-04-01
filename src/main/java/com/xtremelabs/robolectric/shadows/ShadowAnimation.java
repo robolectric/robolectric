@@ -14,6 +14,7 @@ import android.view.animation.Animation;
 public class ShadowAnimation {
 	
 	private Animation.AnimationListener listener;
+	private boolean startFlag = false;
 	
 	@RealObject
 	private Animation realAnimation;
@@ -25,6 +26,7 @@ public class ShadowAnimation {
 	
 	@Implementation
 	public void start() {
+		startFlag = true;
 		if ( listener != null ) {
 			listener.onAnimationStart(realAnimation);
 		}
@@ -32,9 +34,15 @@ public class ShadowAnimation {
 	
 	@Implementation
 	public void cancel() {
+		startFlag = false;
 		if ( listener != null ) {
 			listener.onAnimationEnd(realAnimation);
 		}
+	}
+	
+	@Implementation
+	public boolean hasStarted() {
+		return startFlag;
 	}
 	
 	/**
@@ -63,4 +71,6 @@ public class ShadowAnimation {
 			listener.onAnimationEnd(realAnimation);
 		}
 	}
+	
+	
 }
