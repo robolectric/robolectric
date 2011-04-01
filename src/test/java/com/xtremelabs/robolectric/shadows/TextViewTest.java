@@ -5,6 +5,8 @@ import android.text.method.MovementMethod;
 import android.text.style.URLSpan;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -19,9 +21,15 @@ import static org.junit.Assert.assertThat;
 @RunWith(WithTestDefaultsRunner.class)
 public class TextViewTest {
 	
+	private TextView textView;
+	
+    @Before
+    public void setUp() throws Exception {
+    	textView = new TextView(null);
+    }
+    
     @Test
     public void testGetUrls() throws Exception {
-        TextView textView = new TextView(null);
         textView.setText("here's some text http://google.com/\nblah\thttp://another.com/123?456 blah");
 
         assertThat(urlStringsFrom(textView.getUrls()), equalTo(asList(
@@ -32,12 +40,22 @@ public class TextViewTest {
     
     @Test
     public void testMovementMethod() {
-        TextView textView = new TextView(null);
         MovementMethod movement = new ArrowKeyMovementMethod();
         
         assertThat(textView.getMovementMethod(), equalTo(null));
         textView.setMovementMethod(movement);
         assertThat(textView.getMovementMethod(), sameInstance(movement));       
+    }
+    
+    @Test
+    public void testLinksClickable() {
+    	assertThat(textView.getLinksClickable(), equalTo(false));
+    	
+    	textView.setLinksClickable(true);
+    	assertThat(textView.getLinksClickable(), equalTo(true));
+   	
+    	textView.setLinksClickable(false);
+    	assertThat(textView.getLinksClickable(), equalTo(false));
     }
 
     private List<String> urlStringsFrom(URLSpan[] urlSpans) {
