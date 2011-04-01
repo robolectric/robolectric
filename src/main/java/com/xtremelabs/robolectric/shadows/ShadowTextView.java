@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.graphics.drawable.Drawable;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
+import android.text.method.MovementMethod;
 import android.view.KeyEvent;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -25,6 +26,7 @@ public class ShadowTextView extends ShadowView {
     private int autoLinkMask;
     private CharSequence hintText;
     private int compoundDrawablePadding;
+    private MovementMethod movementMethod;
 
     @Override public void applyAttributes() {
         super.applyAttributes();
@@ -74,7 +76,17 @@ public class ShadowTextView extends ShadowView {
     public CharSequence getHint() {
         return hintText;
     }
+    
+    @Implementation
+    public final MovementMethod getMovementMethod() {
+    	return movementMethod;
+    }
 
+    @Implementation
+    public final void setMovementMethod(MovementMethod movement) {
+    	movementMethod = movement;
+    }
+    
     @Implementation
     public URLSpan[] getUrls() {
         String[] words = text.toString().split("\\s+");
