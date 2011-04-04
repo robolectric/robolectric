@@ -22,6 +22,7 @@ public class ShadowAdapterView extends ShadowViewGroup {
     private AdapterView.OnItemClickListener onItemClickListener;
     private boolean valid = false;
     private int selectedPosition;
+    private View emptyView;
 
     private List<Object> previousItems = new ArrayList<Object>();
 
@@ -140,6 +141,17 @@ public class ShadowAdapterView extends ShadowViewGroup {
         }
         return false;
     }
+    
+    @Implementation
+    public void setEmptyView(View emptyView) {
+    	this.emptyView = emptyView;
+    }
+    
+    @Implementation
+    public View getEmptyView() {
+    	return emptyView;
+    }
+    
 
     private void update() {
         removeAllViews();
