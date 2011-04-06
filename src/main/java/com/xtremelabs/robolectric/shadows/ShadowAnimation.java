@@ -5,6 +5,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 import android.view.animation.Animation;
+import android.view.animation.Interpolator;
 
 /**
  * Shadow implementation of {@code Animation} that provides support for invoking listener callbacks. 
@@ -14,7 +15,9 @@ import android.view.animation.Animation;
 public class ShadowAnimation {
 	
 	private Animation.AnimationListener listener;
+	private Interpolator interpolator;
 	private boolean startFlag = false;
+	private long durationMillis = 0;
 	
 	@RealObject
 	private Animation realAnimation;
@@ -44,6 +47,27 @@ public class ShadowAnimation {
 	public boolean hasStarted() {
 		return startFlag;
 	}
+	
+	@Implementation
+	public void setDuration(long durationMillis) {
+		this.durationMillis = durationMillis;
+	}
+	
+	@Implementation
+	public long getDuration() {
+		return durationMillis;
+	}
+	
+	@Implementation
+	public void setInterpolator (Interpolator interpolator) {
+		this.interpolator = interpolator;
+	}
+	
+	@Implementation
+	public Interpolator getInterpolator() {
+		return interpolator;
+	}
+	
 	
 	/**
 	 * Non-Android accessor.  Returns most recently set animation listener.

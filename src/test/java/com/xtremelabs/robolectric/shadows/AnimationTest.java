@@ -1,6 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+
+
 import static org.junit.Assert.assertThat;
 
 import org.junit.After;
@@ -13,6 +18,7 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestAnimationListener;
 
 import android.view.animation.Animation;
+import android.view.animation.LinearInterpolator;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AnimationTest {
@@ -77,6 +83,22 @@ public class AnimationTest {
 		animation.cancel();
 		assertThat(animation.hasStarted(), equalTo(false));
 	}
+	
+	@Test
+	public void testDuration() throws Exception {
+		assertThat(animation.getDuration(), not(equalTo(1000l)));
+		animation.setDuration(1000);
+		assertThat(animation.getDuration(), equalTo(1000l));
+	}
+	
+	@Test
+	public void testInterpolation() throws Exception {
+		assertThat(animation.getInterpolator(), nullValue());
+		LinearInterpolator i = new LinearInterpolator();
+		animation.setInterpolator(i);
+		assertThat((LinearInterpolator)animation.getInterpolator(), sameInstance(i));
+	}
+	
 	
 	
 	private class TestAnimation extends Animation {
