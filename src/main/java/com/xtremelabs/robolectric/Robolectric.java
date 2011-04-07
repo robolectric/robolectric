@@ -140,6 +140,7 @@ public class Robolectric {
                 ShadowContextThemeWrapper.class,
                 ShadowCookieManager.class,
                 ShadowCountDownTimer.class,
+                ShadowCursorAdapter.class,
                 ShadowDateFormat.class,
                 ShadowDefaultRequestDirector.class,
                 ShadowDisplay.class,
@@ -188,6 +189,7 @@ public class Robolectric {
                 ShadowProgressBar.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
+                ShadowResourceCursorAdapter.class,
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
                 ShadowSeekBar.class,
@@ -195,6 +197,7 @@ public class Robolectric {
                 ShadowSettings.class,
                 ShadowSettings.ShadowSecure.class,
                 ShadowSettings.ShadowSystem.class,
+                ShadowSimpleCursorAdapter.class,
                 ShadowSpannableStringBuilder.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
@@ -503,6 +506,18 @@ public class Robolectric {
     public static ShadowDateFormat shadowOf(DateFormat instance) {
 		return (ShadowDateFormat) shadowOf_(instance);
 	}
+
+    public static ShadowCursorAdapter shadowOf(CursorAdapter instance) {
+    	return (ShadowCursorAdapter) shadowOf_(instance);
+    }
+    
+    public static ShadowResourceCursorAdapter shadowOf(ResourceCursorAdapter instance) {
+    	return (ShadowResourceCursorAdapter) shadowOf_(instance);
+    }
+    
+    public static ShadowSimpleCursorAdapter shadowOf(SimpleCursorAdapter instance) {
+    	return (ShadowSimpleCursorAdapter) shadowOf_(instance);
+    }
     
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
