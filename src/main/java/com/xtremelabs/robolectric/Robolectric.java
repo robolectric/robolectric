@@ -32,6 +32,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.preference.DialogPreference;
 import android.preference.Preference;
+import android.text.format.DateFormat;
 import android.view.*;
 import android.view.animation.AnimationUtils;
 import android.webkit.WebSettings;
@@ -139,6 +140,7 @@ public class Robolectric {
                 ShadowContextThemeWrapper.class,
                 ShadowCookieManager.class,
                 ShadowCountDownTimer.class,
+                ShadowDateFormat.class,
                 ShadowDefaultRequestDirector.class,
                 ShadowDisplay.class,
                 ShadowDrawable.class,
@@ -497,6 +499,10 @@ public class Robolectric {
     public static ShadowGridView shadowOf(GridView instance) {
     	return (ShadowGridView) shadowOf_(instance);
     }
+    
+    public static ShadowDateFormat shadowOf(DateFormat instance) {
+		return (ShadowDateFormat) shadowOf_(instance);
+	}
     
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
