@@ -10,6 +10,9 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -29,6 +32,28 @@ public class BitmapFactoryTest {
     public void decodeFile_shouldSetDescription() throws Exception {
         Bitmap bitmap = BitmapFactory.decodeFile("/some/file.jpg");
         assertEquals("Bitmap for file:/some/file.jpg", shadowOf(bitmap).getDescription());
+        assertEquals(100, bitmap.getWidth());
+        assertEquals(100, bitmap.getHeight());
+    }
+
+    @Test
+    public void decodeFile_ifFileExists_shouldSetDescriptionToContentsOfFile() throws Exception {
+        File tempFile = File.createTempFile("temp-image", ".jpg");
+        writeTo(tempFile, "image bytes", " more image bytes");
+
+        Bitmap bitmap = BitmapFactory.decodeFile(tempFile.getPath());
+        assertEquals("Bitmap for image bytes more image bytes", shadowOf(bitmap).getDescription());
+        assertEquals(100, bitmap.getWidth());
+        assertEquals(100, bitmap.getHeight());
+    }
+
+    @Test
+    public void decodeFile_ifFileExists_shouldSetDescriptionToContentsOfFile_UsingOptions() throws Exception {
+        File tempFile = File.createTempFile("temp-image", ".jpg");
+        writeTo(tempFile, "image bytes", " more image bytes");
+
+        Bitmap bitmap = BitmapFactory.decodeFile(tempFile.getPath(), new BitmapFactory.Options());
+        assertEquals("Bitmap for image bytes more image bytes", shadowOf(bitmap).getDescription());
         assertEquals(100, bitmap.getWidth());
         assertEquals(100, bitmap.getHeight());
     }
@@ -113,5 +138,15 @@ public class BitmapFactoryTest {
         assertEquals("Bitmap for content:/path", shadowOf(bitmap).getDescription());
         assertEquals(123, bitmap.getWidth());
         assertEquals(456, bitmap.getHeight());
+    }
+
+    //////////////////
+
+    private void writeTo(File tempFile, String... strings) throws IOException {
+        FileWriter fileWriter = new FileWriter(tempFile);
+        for (String s : strings) {
+            fileWriter.write(s);
+        }
+        fileWriter.close();
     }
 }

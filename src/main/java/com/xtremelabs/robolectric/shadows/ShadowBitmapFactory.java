@@ -11,7 +11,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.util.Join;
 
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -42,11 +42,30 @@ public class ShadowBitmapFactory {
 
     @Implementation
     public static Bitmap decodeFile(String pathName) {
-        return create("file:" + pathName);
+        return decodeFile(pathName, null);
     }
 
     @Implementation
     public static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
+        File file = new File(pathName);
+        if (file.exists()){
+            try {
+                BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+                String line = bufferedReader.readLine();
+                StringBuilder sb = new StringBuilder();
+                while (line != null){
+                    sb.append(line);
+                    line = bufferedReader.readLine();
+                }
+                bufferedReader.close();
+
+                return create(sb.toString());
+
+            } catch (FileNotFoundException ignore) {
+            } catch (IOException ignore) {
+            }
+        }
+
         return create("file:" + pathName, options);
     }
 
