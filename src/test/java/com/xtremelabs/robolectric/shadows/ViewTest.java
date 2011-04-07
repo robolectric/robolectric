@@ -1,6 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.view.View;
@@ -17,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.Robolectric.visualize;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
@@ -175,9 +178,10 @@ public class ViewTest {
 
     @Test
     public void shouldRecordBackgroundDrawable() {
-        Drawable drawable = new BitmapDrawable();
+        Drawable drawable = new BitmapDrawable(BitmapFactory.decodeFile("some/fake/file"));
         view.setBackgroundDrawable(drawable);
         assertThat(view.getBackground(), sameInstance(drawable));
+        assertThat(visualize(view), equalTo("background:\nBitmap for file:some/fake/file"));
     }
 
     @Test

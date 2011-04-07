@@ -304,6 +304,14 @@ public class ShadowView {
     }
 
     @Implementation
+    public void draw(android.graphics.Canvas canvas) {
+        if (backgroundDrawable != null) {
+            shadowOf(canvas).appendDescription("background:");
+            backgroundDrawable.draw(canvas);
+        }
+    }
+
+    @Implementation
     public final void layout(int l, int t, int r, int b) {
         if (l != left || r != right || t != top || b != bottom) {
             left = l;
