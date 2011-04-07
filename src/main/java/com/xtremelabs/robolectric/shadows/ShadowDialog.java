@@ -187,6 +187,12 @@ public class ShadowDialog {
         }
     }
 
+    public void clickOnText(String text) {
+        if (!clickOnText(inflatedView, text)) {
+            throw new IllegalArgumentException("Text not found: " + text);
+        }
+    }
+
     private boolean clickOnText(View view, String text) {
         if (text.equals(shadowOf(view).innerText())) {
             view.performClick();
