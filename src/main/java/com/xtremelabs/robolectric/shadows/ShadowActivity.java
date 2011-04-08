@@ -44,6 +44,8 @@ public class ShadowActivity extends ShadowContextWrapper {
     private Map<Intent, Integer> intentRequestCodeMap = new HashMap<Intent, Integer>();
     private int requestedOrientation = -1;
 
+    private Integer lastShownDialogId = null;
+    
     @Implementation
     public final Application getApplication() {
         return Robolectric.application;
@@ -290,4 +292,18 @@ public class ShadowActivity extends ShadowContextWrapper {
             throw new RuntimeException(e);
         }
     }
+    
+    /**
+     * Very simplistic dialog handling. Your activity can {@link #showDialog(int)}, you can then
+     * check that the dialog has been shown by calling {@link #getLastShownDialogId()} and then
+     * go on to calling {@link Activity#createDialog(int)} if you want to test the dialog itself.
+     */
+    @Implementation
+    public void showDialog(int id) {
+    	lastShownDialogId = id;
+    }
+    
+    public Integer getLastShownDialogId() {
+		return lastShownDialogId;
+	}
 }
