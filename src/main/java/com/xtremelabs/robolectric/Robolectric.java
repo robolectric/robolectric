@@ -519,6 +519,10 @@ public class Robolectric {
     	return (ShadowSimpleCursorAdapter) shadowOf_(instance);
     }
     
+    public static ShadowService shadowOf(Service instance) {
+    	return (ShadowService) shadowOf_(instance);
+    }
+    
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
