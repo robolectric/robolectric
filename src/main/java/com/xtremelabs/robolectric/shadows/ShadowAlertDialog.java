@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.view.View;
 import android.widget.Button;
 import com.xtremelabs.robolectric.Robolectric;
@@ -133,6 +134,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         private CharSequence[] items;
         private DialogInterface.OnClickListener clickListener;
+		private DialogInterface.OnCancelListener cancelListener;
         private String title;
         private String message;
         private Context context;
@@ -272,6 +274,12 @@ public class ShadowAlertDialog extends ShadowDialog {
             this.isCancelable = cancelable;
             return realBuilder;
         }
+        
+        @Implementation
+        public AlertDialog.Builder setOnCancelListener(DialogInterface.OnCancelListener listener) {
+			this.cancelListener = listener;
+        	return realBuilder;
+        }
 
         @Implementation
         public AlertDialog create() {
@@ -291,6 +299,7 @@ public class ShadowAlertDialog extends ShadowDialog {
             latestAlertDialog.title = title;
             latestAlertDialog.message = message;
             latestAlertDialog.clickListener = clickListener;
+            latestAlertDialog.setOnCancelListener(cancelListener);
             latestAlertDialog.isMultiItem = isMultiItem;
             latestAlertDialog.isSingleItem = isSingleItem;
             latestAlertDialog.checkedItemIndex = checkedItem;
