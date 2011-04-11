@@ -4,6 +4,7 @@ import android.graphics.drawable.Drawable;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
 import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -25,6 +26,7 @@ public class ShadowTextView extends ShadowView {
     private int autoLinkMask;
     private CharSequence hintText;
     private int compoundDrawablePadding;
+    private int imeOptions = EditorInfo.IME_NULL;
 
     @Override public void applyAttributes() {
         super.applyAttributes();
@@ -141,6 +143,16 @@ public class ShadowTextView extends ShadowView {
             return false;
         }
     }
+    
+    @Implementation
+    public int getImeOptions() {
+    	return imeOptions;
+    }
+    
+    @Implementation
+    public void setImeOptions(int imeOptions) {
+    	this.imeOptions = imeOptions;
+    }
 
     /**
      * Returns the text string of this {@code TextView}.
@@ -182,7 +194,7 @@ public class ShadowTextView extends ShadowView {
     public boolean isAutoLinkPhoneNumbers() {
         return autoLinkPhoneNumbers;
     }
-
+    
     private void applyTextAttribute() {
         String text = attributeSet.getAttributeValue("android", "text");
         if (text != null) {
