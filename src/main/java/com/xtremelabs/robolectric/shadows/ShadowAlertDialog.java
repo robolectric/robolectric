@@ -217,14 +217,18 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         @Implementation
         public AlertDialog.Builder setTitle(int titleId) {
-            this.title = context.getResources().getString(titleId);
-            return realBuilder;
+            return setTitle(context.getResources().getString(titleId));
         }
-
+        
         @Implementation
         public AlertDialog.Builder setMessage(CharSequence message) {
             this.message = message.toString();
             return realBuilder;
+        }
+
+        @Implementation
+        public AlertDialog.Builder setMessage(int messageId) {
+        	return setMessage(context.getResources().getString(messageId));
         }
 
         @Implementation
@@ -235,6 +239,11 @@ public class ShadowAlertDialog extends ShadowDialog {
         }
 
         @Implementation
+        public AlertDialog.Builder setPositiveButton(int positiveTextId, final DialogInterface.OnClickListener listener) {
+        	return setPositiveButton(context.getResources().getText(positiveTextId), listener);
+        }
+
+        @Implementation
         public AlertDialog.Builder setNegativeButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.negativeText = text;
             this.negativeListener = listener;
@@ -242,12 +251,22 @@ public class ShadowAlertDialog extends ShadowDialog {
         }
 
         @Implementation
+        public AlertDialog.Builder setNegativeButton(int negativeTextId, final DialogInterface.OnClickListener listener) {
+        	return setNegativeButton(context.getResources().getString(negativeTextId), listener);
+        }
+        
+        @Implementation
         public AlertDialog.Builder setNeutralButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.neutralText = text;
             this.neutralListener = listener;
             return realBuilder;
         }
 
+        @Implementation
+        public AlertDialog.Builder setNeutralButton(int neutralTextId, final DialogInterface.OnClickListener listener) {
+        	return setNegativeButton(context.getResources().getText(neutralTextId), listener);
+        }
+        
         @Implementation
         public AlertDialog.Builder setCancelable(boolean cancelable) {
             this.isCancelable = cancelable;
