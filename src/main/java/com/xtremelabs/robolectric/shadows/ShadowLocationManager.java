@@ -4,7 +4,9 @@ import android.location.LocationManager;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,6 +18,11 @@ import java.util.Map;
 @Implements(LocationManager.class)
 public class ShadowLocationManager {
     private final Map<String, Boolean> providersEnabled = new HashMap<String, Boolean>();
+
+    @Implementation
+    public List<String> getAllProviders() {
+        return new ArrayList<String>(providersEnabled.keySet());
+    }
 
     @Implementation
     public boolean isProviderEnabled(String provider) {
