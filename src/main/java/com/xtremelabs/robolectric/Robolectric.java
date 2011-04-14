@@ -85,6 +85,7 @@ import android.widget.RemoteViews;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.VideoView;
 import android.widget.ZoomButtonsController;
 
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
@@ -260,6 +261,7 @@ public class Robolectric {
                 ShadowTypedArray.class,
                 ShadowTypedValue.class,
                 ShadowURLSpan.class,
+                ShadowVideoView.class,
                 ShadowView.class,
                 ShadowViewGroup.class,
                 ShadowViewStub.class,
@@ -604,6 +606,10 @@ public class Robolectric {
    public static ShadowAnimation shadowOf(Animation instance) {
     	return (ShadowAnimation) shadowOf_(instance);
     }
+   
+   public static ShadowVideoView shadowOf(VideoView instance) {
+   	return (ShadowVideoView) shadowOf_(instance);
+   }   
     
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
