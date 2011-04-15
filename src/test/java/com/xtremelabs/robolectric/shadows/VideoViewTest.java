@@ -106,6 +106,22 @@ public class VideoViewTest {
     	assertThat(shadowVideoView.getPrevVideoState(), equalTo(ShadowVideoView.START));
     	assertThat(shadowVideoView.getCurrentVideoState(), equalTo(ShadowVideoView.PAUSE));
     }
+    
+    @Test
+    public void shouldDetermineIfPausible() throws Exception {   	
+    	view.start();
+    	assertThat(view.canPause(), equalTo(true));
+
+    	view.pause();
+    	assertThat(view.canPause(), equalTo(false));
+    	
+    	view.resume();
+    	assertThat(view.canPause(), equalTo(true));
+    	
+    	view.suspend();
+    	assertThat(view.canPause(), equalTo(false));
+    	
+    }
         
         
     /**

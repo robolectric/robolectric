@@ -80,7 +80,14 @@ public class ShadowVideoView extends ShadowSurfaceView {
 	public boolean isPlaying() {
 		return (currentState == ShadowVideoView.START);
 	}
-		
+	
+	@Implementation
+	public boolean canPause() {
+		return (currentState != ShadowVideoView.PAUSE && 
+				currentState != ShadowVideoView.STOP && 
+				currentState != ShadowVideoView.SUSPEND);
+	}
+
 	/**
 	 * Non-Android accessor.
 	 */
