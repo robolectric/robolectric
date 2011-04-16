@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -13,6 +14,9 @@ import com.xtremelabs.robolectric.util.TestRunnable;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.lang.ref.Reference;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
@@ -165,9 +169,46 @@ public class ActivityTest {
         assertTrue(runnable.wasRun);
     }
 
+    @Test
+    public void showDialog_shouldCreatePrepareAndShowDialog() {
+        final MyActivity activity = new MyActivity();
+        final AtomicBoolean dialogWasShowed = new AtomicBoolean(false);
+
+        new Dialog(activity) {
+            {  activity.dialog = this; }
+
+            @Override
+            public void show() {
+                dialogWasShowed.set(true);
+            }
+        };
+
+        ShadowActivity shadow = Robolectric.shadowOf(activity);
+        shadow.showDialog(1);
+
+        assertTrue(activity.createdDialog);
+        assertTrue(activity.preparedDialog);
+        assertTrue(dialogWasShowed.get());
+    }
+
     private static class MyActivity extends Activity {
+        public boolean createdDialog = false;
+        public boolean preparedDialog = false;
+        public Dialog dialog = null;
+
         @Override protected void onDestroy() {
             super.onDestroy();
+        }
+
+        @Override
+        protected Dialog onCreateDialog(int id) {
+            createdDialog = true;
+            return dialog;
+        }
+
+        @Override
+        protected void onPrepareDialog(int id, Dialog dialog) {
+            preparedDialog = true;
         }
     }
 }
