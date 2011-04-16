@@ -43,6 +43,7 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     private Map<Intent, Integer> intentRequestCodeMap = new HashMap<Intent, Integer>();
     private int requestedOrientation = -1;
+    private View currentFocus;
 
     @Implementation
     public final Application getApplication() {
@@ -250,6 +251,20 @@ public class ShadowActivity extends ShadowContextWrapper {
         } else {
             return startedActivitiesForResults.get(0);
         }
+    }
+
+    /**
+     * Non-Android accessor Sets the {@code View} for this {@code Activity}
+     *
+     * @param view
+     */
+    public void setCurrentFocus(View view) {
+        currentFocus = view;
+    }
+
+    @Implementation
+    public View getCurrentFocus() {
+        return currentFocus;
     }
 
     /**

@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.net.Uri;
+import android.view.View;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -163,6 +164,16 @@ public class ActivityTest {
 
         Robolectric.unPauseMainLooper();
         assertTrue(runnable.wasRun);
+    }
+
+    @Test
+    public void shouldSupportCurrentFocus() {
+        MyActivity activity = new MyActivity();
+        ShadowActivity shadow = shadowOf(activity);
+
+        assertNull(shadow.getCurrentFocus());
+        shadow.setCurrentFocus(new View(activity));
+        assertNotNull(shadow.getCurrentFocus());
     }
 
     private static class MyActivity extends Activity {
