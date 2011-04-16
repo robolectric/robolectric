@@ -6,11 +6,13 @@ import android.content.DialogInterface;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -31,6 +33,22 @@ public class AlertDialogTest {
         assertThat(shadowAlertDialog.getTitle(), equalTo("title"));
         assertThat(shadowAlertDialog.getMessage(), equalTo("message"));
         assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
+    }
+
+    @Test
+    public void testSetMessageAfterCreation() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));
+        builder.setTitle("title").setMessage("message");
+        AlertDialog alert = builder.create();
+
+        ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
+        assertThat(shadowAlertDialog.getMessage(), equalTo("message"));
+
+        shadowAlertDialog.setMessage("new message");
+        assertThat(shadowAlertDialog.getMessage(), equalTo("new message"));
+
+        shadowAlertDialog.setMessage(null);
+        assertThat(shadowAlertDialog.getMessage(), nullValue());
     }
 
     @Test

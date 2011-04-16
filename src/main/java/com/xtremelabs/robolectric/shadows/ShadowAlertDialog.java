@@ -113,6 +113,11 @@ public class ShadowAlertDialog extends ShadowDialog {
         return message;
     }
 
+    @Implementation
+    public void setMessage(CharSequence message) {
+        this.message = (message == null ? null : message.toString());
+    }
+
     /**
      * Non-Android accessor.
      *
