@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.view.LayoutInflater;
@@ -43,6 +44,19 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     private Map<Intent, Integer> intentRequestCodeMap = new HashMap<Intent, Integer>();
     private int requestedOrientation = -1;
+    private static Method onCreateDialog;
+    private static Method onPrepareDialog;
+
+    static {
+        try {
+            onCreateDialog = Activity.class.getDeclaredMethod("onCreateDialog", int.class);
+            onCreateDialog.setAccessible(true);
+            onPrepareDialog = Activity.class.getDeclaredMethod("onPrepareDialog", int.class, Dialog.class);
+            onPrepareDialog.setAccessible(true);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
     @Implementation
     public final Application getApplication() {
@@ -249,6 +263,19 @@ public class ShadowActivity extends ShadowContextWrapper {
             return null;
         } else {
             return startedActivitiesForResults.get(0);
+        }
+    }
+
+    @Implementation
+    public void showDialog(int i) {
+        try {
+            Dialog dialog = (Dialog) onCreateDialog.invoke(realActivity, i);
+            onPrepareDialog.invoke(realActivity, i, dialog);
+            dialog.show();
+        } catch (InvocationTargetException e) {
+            throw new IllegalArgumentException(e);
+        } catch (IllegalAccessException e) {
+            throw new IllegalArgumentException(e);
         }
     }
 
