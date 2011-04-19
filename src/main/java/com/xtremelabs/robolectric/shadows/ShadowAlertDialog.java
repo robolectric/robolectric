@@ -233,6 +233,12 @@ public class ShadowAlertDialog extends ShadowDialog {
         }
 
         @Implementation
+        public AlertDialog.Builder setMessage(int messageId) {
+            setMessage(context.getResources().getString(messageId));
+            return realBuilder;
+        }
+
+        @Implementation
         public AlertDialog.Builder setPositiveButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.positiveText = text;
             this.positiveListener = listener;
