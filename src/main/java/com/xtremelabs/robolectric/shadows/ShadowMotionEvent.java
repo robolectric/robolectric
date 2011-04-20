@@ -20,6 +20,8 @@ public class ShadowMotionEvent {
     private int action;
     private float[] x = new float[2];
     private float[] y = new float[2];
+    private long downTime;
+    private long eventTime;
 
     @Implementation
     public static MotionEvent obtain(long downTime, long eventTime, int action, float x, float y, int metaState) {
@@ -31,6 +33,8 @@ public class ShadowMotionEvent {
             shadowMotionEvent.x[0] = x;
             shadowMotionEvent.y[0] = y;
             shadowMotionEvent.action = action;
+            shadowMotionEvent.downTime = downTime;
+            shadowMotionEvent.eventTime = eventTime;
             return motionEvent;
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -60,6 +64,16 @@ public class ShadowMotionEvent {
     @Implementation
     public final float getY(int pointerIndex) {
         return y[pointerIndex];
+    }
+
+    @Implementation
+    public final long getEventTime() {
+        return eventTime;
+    }
+
+    @Implementation
+    public final long getDownTime() {
+        return downTime;
     }
 
     public MotionEvent setPointer2(float x, float y) {
