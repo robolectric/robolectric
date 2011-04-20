@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.style.URLSpan;
+import android.view.Gravity;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
@@ -15,6 +16,7 @@ import java.util.List;
 
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
@@ -36,6 +38,13 @@ public class TextViewTest {
                 "http://google.com/",
                 "http://another.com/123?456"
         )));
+    }
+    
+    @Test
+    public void testGetGravity() throws Exception {
+    	assertThat(textView.getGravity(), not(equalTo(Gravity.CENTER)));
+    	textView.setGravity(Gravity.CENTER);
+    	assertThat(textView.getGravity(), equalTo(Gravity.CENTER));
     }
     
     @Test

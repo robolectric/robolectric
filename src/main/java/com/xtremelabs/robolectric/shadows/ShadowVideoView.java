@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static org.junit.Assert.assertThat;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.widget.VideoView;
@@ -28,9 +29,9 @@ public class ShadowVideoView extends ShadowSurfaceView {
 	
 	@Implementation
 	public void setOnPreparedListener(MediaPlayer.OnPreparedListener l) {
-		preparedListener = l;
+		preparedListener = l;		
 	}
-	
+		
 	@Implementation
 	public void setOnErrorListener(MediaPlayer.OnErrorListener l) {
 		errorListener = l;

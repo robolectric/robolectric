@@ -28,6 +28,7 @@ public class ShadowTextView extends ShadowView {
     private int compoundDrawablePadding;
     private MovementMethod movementMethod;
     private boolean linksClickable;
+    private int gravity;
 
     @Override public void applyAttributes() {
         super.applyAttributes();
@@ -46,6 +47,7 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public void setText(int textResourceId) {
         this.text = getResources().getText(textResourceId);
+        System.out.println(text);
     }
 
     @Implementation
@@ -164,6 +166,17 @@ public class ShadowTextView extends ShadowView {
             return false;
         }
     }
+    
+    @Implementation
+    public int getGravity() {
+    	return gravity;
+    }
+    
+    @Implementation
+    public void setGravity(int gravity) {
+    	this.gravity = gravity;
+    }
+    
 
     /**
      * Returns the text string of this {@code TextView}.
@@ -184,8 +197,8 @@ public class ShadowTextView extends ShadowView {
     public int hashCode() {
         return super.hashCode();
     }
-
-    public CompoundDrawables getCompoundDrawablesImpl() {
+    
+     public CompoundDrawables getCompoundDrawablesImpl() {
         return compoundDrawablesImpl;
     }
 
