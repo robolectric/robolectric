@@ -42,6 +42,11 @@ public class ShadowMotionEvent {
     }
 
     @Implementation
+    public static MotionEvent obtain(MotionEvent motionEvent) {
+        return obtain(motionEvent.getDownTime(), motionEvent.getEventTime(), motionEvent.getAction(), motionEvent.getX(), motionEvent.getY(), motionEvent.getMetaState());
+    }
+
+    @Implementation
     public int getAction() {
         return action;
     }
