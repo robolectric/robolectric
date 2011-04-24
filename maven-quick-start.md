@@ -1,6 +1,6 @@
 ---
   layout: default
-  title: IntelliJ Quick Start
+  title: Maven Quick Start
 ---
 
 ##Quick Start for Maven

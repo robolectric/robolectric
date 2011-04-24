@@ -31,7 +31,7 @@ However we have provided IDE specific instructions if that is the method you pre
 
 ### Using Maven
 
-This is the method we use internally.
+This is the method we recommend.
 
 If you are using Maven and the excellent
 [maven-android-plugin](http://code.google.com/p/maven-android-plugin/) to build your project, simply add this to the
@@ -46,6 +46,11 @@ dependencies section of your <code>pom.xml</code>:
 </dependency>
 {% endhighlight %}
 <b>&gt;&gt; <a href="maven-quick-start.html">Detailed step-by-step Maven instructions</a></b>
+
+### Using IntelliJ:
+* It just works!
+
+<b>&gt;&gt; <a href="intellij-quick-start.html">Detailed step-by-step IntelliJ instructions</a></b> in case it doesn't.
 
 ### Using Eclipse:
 
@@ -74,12 +79,6 @@ multiple launchers are available, make sure to select the Eclipse JUnit Launcher
 <b>Set the working directory to be the root of your main project, not that of your test project.</b>
 
 <b>&gt;&gt; <a href="eclipse-quick-start.html">Detailed step-by-step Eclipse instructions</a></b>
-
-### Using IntelliJ:
-* [Download](http://pivotal.github.com/robolectric/download.html) robolectric-X.X.X-jar-with-dependencies.jar and add it to your other test
-library dependencies (such as junit.jar).
-
-<b>&gt;&gt; <a href="intellij-quick-start.html">Detailed step-by-step IntelliJ instructions</a></b>
 
 ### In any configuration:
 * Use the <code>@RunWith</code> annotation available in JUnit 4 to run your tests under Robolectric:
@@ -114,6 +113,13 @@ To edit your project and Robolectric side-by-side in your IDE, follow the instru
 pom as a module (in IntelliJ) or a separate project (in Eclipse).
 
 
+### Using IntelliJ without Maven:
+
+* [Download](http://pivotal.github.com/robolectric/download.html) robolectric-X.X.X-jar-with-dependencies.jar and add it to your other test
+library dependencies (such as junit.jar).
+
+<b>&gt;&gt; <a href="intellij-quick-start.html">Detailed step-by-step IntelliJ instructions</a></b>
+
 ### Using Eclipse without Maven:
 
 * Follow the instructions for Eclipse quick start above, but don't download the
@@ -127,8 +133,3 @@ clone the Robolectric repository:
 * Add robolectric as an Eclipse project and make your test project depend on it.
 
 * Add the Android SDK jars to the robolectric project, as above.
-
-### Using IntelliJ without Maven:
-
-_more details to come..._
-

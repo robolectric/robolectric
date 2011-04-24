@@ -5,12 +5,14 @@
 
 ##Quick Start for IntelliJ
 
-IntelliJ currently has a [bug](http://youtrack.jetbrains.net/issue/IDEA-60449) (please vote for it!) which causes JUnit
-tests within Android projects to run very slowly. To get around this, we place our production and test code into a
-non-Android module, which allows the tests to build and run at maximum speed, and declare a dependency to this code from
-the main Android module, so we can build the final apk.
+###Thanks JetBrains!
+As of IntelliJ 10.0.2, JetBrains has fixed the [bug](http://youtrack.jetbrains.net/issue/IDEA-60449) which made JUnit
+tests within Android projects run slowly. If you used the second module workaround we suggested before, you can now
+move your Robolectric tests back into the Android module!
 
+Now, you should be able to add the robolectric jar to your test path and go! The old instructions are below for reference.
 
+##Old Quick Start...
 ###Project Creation
 ----------------------
 Create a project
