@@ -12,7 +12,7 @@ import java.io.OutputStream;
 
 public class HttpEntityStub implements HttpEntity {
     @Override public boolean isRepeatable() {
-        throw new UnsupportedOperationException();
+        return true;
     }
 
     @Override public boolean isChunked() {
