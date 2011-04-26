@@ -2,13 +2,11 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
+import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
-import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
+import android.os.Bundle;
+import android.view.*;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -290,4 +288,35 @@ public class ShadowActivity extends ShadowContextWrapper {
             throw new RuntimeException(e);
         }
     }
+
+    @Implementation
+    public final void showDialog(int id) {
+        showDialog(id, null);
+    }
+
+    @Implementation
+    public final boolean showDialog(int id, Bundle args) {
+        Dialog dialog = null;
+
+        try {
+            Method method = Activity.class.getDeclaredMethod("onCreateDialog", Integer.TYPE);
+            method.setAccessible(true);
+            dialog = (Dialog) method.invoke(realActivity, id);
+
+            method = Activity.class.getDeclaredMethod("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class);
+            method.setAccessible(true);
+            method.invoke(realActivity, id, dialog, args);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+
+        dialog.show();
+
+        return true;
+    }
+
 }

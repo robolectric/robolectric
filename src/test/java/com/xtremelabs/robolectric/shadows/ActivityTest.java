@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.app.Dialog;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -11,15 +12,13 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestRunnable;
 import com.xtremelabs.robolectric.util.Transcript;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 
@@ -141,7 +140,7 @@ public class ActivityTest {
     @Test
     public void shouldRetrievePackageNameFromTheManifest() throws Exception {
         Robolectric.application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
-        assertEquals("com.wacka.wa", new Activity().getPackageName());
+        assertThat("com.wacka.wa", equalTo(new Activity().getPackageName()));
     }
 
     @Test
@@ -165,9 +164,27 @@ public class ActivityTest {
         assertTrue(runnable.wasRun);
     }
 
+    @Test
+    public void shouldCallOnCreateDialogFromShowDialog() {
+        ActivityWithOnCreateDialog activity = new ActivityWithOnCreateDialog();
+        activity.showDialog(123);
+        assertTrue(activity.onCreateDialogWasCalled);
+        assertThat(ShadowDialog.getLatestDialog(), CoreMatchers.<Object>notNullValue());
+    }
+
     private static class MyActivity extends Activity {
         @Override protected void onDestroy() {
             super.onDestroy();
+        }
+    }
+
+    private static class ActivityWithOnCreateDialog extends Activity {
+        boolean onCreateDialogWasCalled = false;
+
+        @Override
+        protected Dialog onCreateDialog(int id) {
+            onCreateDialogWasCalled = true;
+            return new Dialog(null);
         }
     }
 }
