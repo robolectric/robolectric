@@ -47,7 +47,6 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public void setText(int textResourceId) {
         this.text = getResources().getText(textResourceId);
-        System.out.println(text);
     }
 
     @Implementation
