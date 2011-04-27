@@ -15,6 +15,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -125,6 +127,17 @@ public class ContextWrapperTest {
     @Test
     public void shouldReturnSameAlarmServiceEveryTime() throws Exception {
         assertSameInstanceEveryTime(Context.ALARM_SERVICE);
+    }
+    
+    @Test
+    public void shouldReturnAContext() {
+    	assertThat( contextWrapper.getBaseContext(), notNullValue() );
+    	ShadowContextWrapper shContextWrapper = Robolectric.shadowOf( contextWrapper );
+    	shContextWrapper.attachBaseContext( null );
+    	assertThat( contextWrapper.getBaseContext(), nullValue() );
+    	Activity baseContext = new Activity();
+    	shContextWrapper.attachBaseContext( baseContext );
+    	assertThat( contextWrapper.getBaseContext(), sameInstance( ( Context ) baseContext ) );
     }
 
     private void assertSameInstanceEveryTime(String serviceName) {

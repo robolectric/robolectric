@@ -1,16 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.Intent;
-import android.net.Uri;
-import android.os.Bundle;
-import android.os.Parcelable;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.util.Join;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -18,10 +8,22 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Parcelable;
+
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.util.Join;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)
@@ -173,7 +175,18 @@ public class ShadowIntent {
     public void putExtra(String key, byte[] value) {
         extras.put(key, value);
     }
+    
+    @Implementation
+    public Intent putParcelableArrayListExtra(String key, ArrayList<Parcelable> value) {
+    	extras.put(key, value );
+    	return realIntent;
+    }
 
+    @Implementation
+    public ArrayList<Parcelable> getParcelableArrayListExtra(String key) {
+    	return (ArrayList<Parcelable>) extras.get(key);
+    }
+    
     @Implementation
     public String getStringExtra(String name) {
         return (String) extras.get(name);

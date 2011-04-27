@@ -164,6 +164,16 @@ public class ShadowContextWrapper extends ShadowContext {
         return getShadowApplication().getMainLooper();
     }
 
+    @Implementation
+    public Context getBaseContext() {
+    	return baseContext;
+    }
+    
+    @Implementation
+    public void attachBaseContext(Context context) {
+    	baseContext = context;
+    }
+    
     private ShadowApplication getShadowApplication() {
         return ((ShadowApplication) shadowOf(getApplicationContext()));
     }
