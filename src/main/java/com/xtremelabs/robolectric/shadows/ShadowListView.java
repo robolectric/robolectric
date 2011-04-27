@@ -50,6 +50,17 @@ public class ShadowListView extends ShadowAdapterView {
     }
 
     @Implementation
+    public void addHeaderView(View headerView, Object data, boolean isSelectable ) {
+        ensureAdapterNotSet("header");
+        headerViews.add(headerView);
+    }
+    
+    @Implementation
+    public int getHeaderViewsCount() {
+    	return headerViews.size();
+    }
+    
+    @Implementation
     public void addFooterView(View footerView, Object data, boolean isSelectable) {
         ensureAdapterNotSet("footer");
         footerViews.add(footerView);

@@ -63,16 +63,30 @@ public class ListViewTest {
         } catch (java.lang.IllegalStateException exception) {
             assertThat(exception.getMessage(), equalTo("Cannot add header view to list -- setAdapter has already been called"));
         }
+        
+        try {
+            listView.addHeaderView(new View(null), null, false );
+            fail();
+        } catch (java.lang.IllegalStateException exception) {
+            assertThat(exception.getMessage(), equalTo("Cannot add header view to list -- setAdapter has already been called"));
+        }
     }
 
     @Test
     public void addHeaderView_ShouldRecordHeaders() throws Exception {
         View view0 = new View(null);
         View view1 = new View(null);
+        View view2 = new View(null);
+        View view3 = new View(null);
         listView.addHeaderView(view0);
         listView.addHeaderView(view1);
+        listView.addHeaderView( view2, null, false );
+        listView.addHeaderView( view3, null, false );
+        assertThat( listView.getHeaderViewsCount(), equalTo( 4 ) );
         assertThat(shadowOf(listView).getHeaderViews().get(0), sameInstance(view0));
         assertThat(shadowOf(listView).getHeaderViews().get(1), sameInstance(view1));
+        assertThat(shadowOf(listView).getHeaderViews().get(2), sameInstance(view2));
+        assertThat(shadowOf(listView).getHeaderViews().get(3), sameInstance(view3));
     }
 
     @Test
