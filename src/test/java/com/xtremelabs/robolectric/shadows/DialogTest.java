@@ -2,12 +2,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -28,5 +30,11 @@ public class DialogTest {
         dialog.dismiss();
 
         transcript.assertEventsSoFar("onDismiss called!");
+    }
+
+    @Test
+    public void shouldGetLayoutInflater() {
+        Dialog dialog = new Dialog(Robolectric.application);
+        assertNotNull(dialog.getLayoutInflater());
     }
 }
