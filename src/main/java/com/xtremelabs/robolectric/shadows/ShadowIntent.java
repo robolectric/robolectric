@@ -204,6 +204,12 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public long getLongExtra(String name, long defaultValue) {
+        Long foundValue = (Long) extras.get(name);
+        return foundValue == null ? defaultValue : foundValue;
+    }
+    
+    @Implementation
     public byte[] getByteArrayExtra(String name) {
         return (byte[]) extras.get(name);
     }
