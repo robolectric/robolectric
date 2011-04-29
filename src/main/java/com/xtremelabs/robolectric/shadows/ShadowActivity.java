@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
@@ -38,6 +39,13 @@ public class ShadowActivity extends ShadowContextWrapper {
     private Activity parent;
     private boolean finishWasCalled;
     private TestWindow window;
+    
+    private IntentSender startIntentSenderIntent;
+    private Intent startIntentSenderFillInIntent;
+    private int startIntentSenderFlagsMask;
+    private int startIntentSenderFlagsValues;
+    private int startIntentSenderExtraFlags;
+    private boolean startIntentSenderShouldThrowException = false;
 
     private List<IntentForResult> startedActivitiesForResults = new ArrayList<IntentForResult>();
 
@@ -289,5 +297,43 @@ public class ShadowActivity extends ShadowContextWrapper {
      */
     public Intent getStartServiceIntent() {
     	return startServiceIntent;
+    }
+    
+    @Implementation
+    public void startIntentSender (IntentSender intent, Intent fillInIntent, int flagsMask, int flagsValues, int extraFlags)
+    	throws IntentSender.SendIntentException {
+        startIntentSenderIntent = intent;
+        startIntentSenderFillInIntent = fillInIntent;
+        startIntentSenderFlagsMask = flagsMask;
+        startIntentSenderFlagsValues = flagsValues;
+        startIntentSenderExtraFlags = extraFlags; 	
+        
+        if (startIntentSenderShouldThrowException) {
+        	throw new IntentSender.SendIntentException();
+        }
+    }
+    
+    public void setStartIntentSenderShouldThrowException(boolean flag) {
+    	startIntentSenderShouldThrowException = flag;
+    }
+    
+    public IntentSender getStartIntentSenderIntent() {
+    	return startIntentSenderIntent;
+    }
+    
+    public Intent getStartIntentSenderFillInIntent() {
+    	return startIntentSenderFillInIntent;
+    }
+    
+    public int getStartIntentSenderFlagsMask() {
+    	return startIntentSenderFlagsMask;
+    }
+    
+    public int getStartIntentSenderFlagsValues() {
+    	return startIntentSenderFlagsValues;
+    }
+    
+    public int getStartIntentSenderExtraFlags() {
+    	return startIntentSenderExtraFlags;
     }
 }

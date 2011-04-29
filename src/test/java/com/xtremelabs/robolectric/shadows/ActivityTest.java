@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.net.Uri;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
@@ -15,6 +16,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -168,11 +170,38 @@ public class ActivityTest {
     @Test
     public void shouldSaveStartServiceIntent() {
         MyActivity activity = new MyActivity();
-        ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
+        ShadowActivity shadowActivity = shadowOf(activity);
         Intent intent = new Intent();
     	
         assertThat( activity.startService(intent), nullValue() );
         assertThat( shadowActivity.getStartServiceIntent(), sameInstance(intent));
+    }
+    
+    @Test
+    public void shouldSaveStartIntentSender() throws Exception {
+        MyActivity activity = new MyActivity();
+        ShadowActivity shadowActivity = shadowOf(activity);
+        IntentSender intentSender = newInstanceOf( IntentSender.class );
+        Intent intent = new Intent();
+        int flagsMask = 1;
+        int flagsValues = 2;
+        int extraFlags = 3;
+        
+        activity.startIntentSender(intentSender, intent, flagsMask, flagsValues, extraFlags);
+    	assertThat(shadowActivity.getStartIntentSenderIntent(), sameInstance(intentSender));
+    	assertThat(shadowActivity.getStartIntentSenderFillInIntent(), sameInstance(intent));
+       	assertThat(shadowActivity.getStartIntentSenderFlagsMask(), equalTo(flagsMask));
+       	assertThat(shadowActivity.getStartIntentSenderFlagsValues(), equalTo(flagsValues));
+       	assertThat(shadowActivity.getStartIntentSenderExtraFlags(), equalTo(extraFlags));
+   }
+    
+    @Test (expected=IntentSender.SendIntentException.class)
+    public void startIntentSender_shouldThrowException() throws IntentSender.SendIntentException {
+        MyActivity activity = new MyActivity();
+        ShadowActivity shadowActivity = shadowOf(activity);
+
+        shadowActivity.setStartIntentSenderShouldThrowException(true);
+        activity.startIntentSender(null, null, 0, 0, 0);    
     }
 
     private static class MyActivity extends Activity {
