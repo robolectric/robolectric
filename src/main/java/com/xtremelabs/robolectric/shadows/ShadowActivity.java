@@ -125,6 +125,11 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
 
     @Implementation
+    public void onBackPressed() {
+        finish();
+    }
+
+    @Implementation
     public void finish() {
         finishWasCalled = true;
     }

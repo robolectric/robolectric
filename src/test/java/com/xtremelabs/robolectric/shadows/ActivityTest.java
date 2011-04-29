@@ -172,6 +172,15 @@ public class ActivityTest {
         assertThat(ShadowDialog.getLatestDialog(), CoreMatchers.<Object>notNullValue());
     }
 
+    @Test
+    public void shouldCallFinishInOnBackPressed() {
+        Activity activity = new Activity();
+        activity.onBackPressed();
+
+        ShadowActivity shadowActivity = shadowOf(activity);
+        assertTrue(shadowActivity.isFinishing());
+    }
+
     private static class MyActivity extends Activity {
         @Override protected void onDestroy() {
             super.onDestroy();
