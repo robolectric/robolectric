@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -33,6 +34,7 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     private int resultCode;
     private Intent resultIntent;
+    private Intent startServiceIntent;
     private Activity parent;
     private boolean finishWasCalled;
     private TestWindow window;
@@ -272,5 +274,20 @@ public class ShadowActivity extends ShadowContextWrapper {
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    @Implementation
+    public ComponentName startService(Intent service) {
+    	startServiceIntent = service;
+    	return null;
+    }
+    
+    /**
+     * Non-Android accessor.
+     *
+     * @return the {@code Intent} set by {@link #startService(android.content.Intent)}
+     */
+    public Intent getStartServiceIntent() {
+    	return startServiceIntent;
     }
 }

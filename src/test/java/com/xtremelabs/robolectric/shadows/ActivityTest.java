@@ -164,6 +164,16 @@ public class ActivityTest {
         Robolectric.unPauseMainLooper();
         assertTrue(runnable.wasRun);
     }
+    
+    @Test
+    public void shouldSaveStartServiceIntent() {
+        MyActivity activity = new MyActivity();
+        ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
+        Intent intent = new Intent();
+    	
+        assertThat( activity.startService(intent), nullValue() );
+        assertThat( shadowActivity.getStartServiceIntent(), sameInstance(intent));
+    }
 
     private static class MyActivity extends Activity {
         @Override protected void onDestroy() {
