@@ -64,6 +64,29 @@ public class SQLiteDatabaseTest {
     }
 
     @Test
+    public void testInsertAndRawQuery() throws Exception {
+        String stringColumnValue = "column_value";
+        byte[] byteColumnValue = new byte[]{1, 2, 3};
+
+        ContentValues values = new ContentValues();
+
+        values.put("first_column", stringColumnValue);
+        values.put("second_column", byteColumnValue);
+
+        database.insert("table_name", null, values);
+
+        Cursor cursor = database.rawQuery("select second_column, first_column from table_name", null);
+
+        assertThat(cursor.moveToFirst(), equalTo(true));
+
+        byte[] byteValueFromDatabase = cursor.getBlob(0);
+        String stringValueFromDatabase = cursor.getString(1);
+
+        assertThat(stringValueFromDatabase, equalTo(stringColumnValue));
+        assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
+    }
+    
+    @Test
     public void testEmptyTable() throws Exception {
         Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);
 
