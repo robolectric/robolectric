@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.ContentResolver;
+import android.content.ContentValues;
 import android.net.Uri;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -22,5 +23,10 @@ public class ShadowContentResolver {
                 return "stream for " + uri;
             }
         };
+    }
+
+    @Implementation
+    public final Uri insert(Uri url, ContentValues values) {
+        return Uri.parse("content://foobar");
     }
 }
