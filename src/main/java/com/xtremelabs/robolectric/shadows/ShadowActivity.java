@@ -40,12 +40,13 @@ public class ShadowActivity extends ShadowContextWrapper {
     private Activity parent;
     private boolean finishWasCalled;
     private TestWindow window;
-    private boolean hasOverriddenTransition;
 
     private List<IntentForResult> startedActivitiesForResults = new ArrayList<IntentForResult>();
 
     private Map<Intent, Integer> intentRequestCodeMap = new HashMap<Intent, Integer>();
     private int requestedOrientation = -1;
+    private int pendingTransitionEnterAnimResId = -1;
+    private int pendingTransitionExitAnimResId = -1;
 
     @Implementation
     public final Application getApplication() {
@@ -329,12 +330,13 @@ public class ShadowActivity extends ShadowContextWrapper {
         return true;
     }
 
-    public boolean hasOverriddenTransition() {
-        return hasOverriddenTransition;
+    public boolean hasCancelledPendingTransitions() {
+        return pendingTransitionEnterAnimResId == 0 && pendingTransitionExitAnimResId == 0;
     }
 
     @Implementation
     public void overridePendingTransition(int enterAnim, int exitAnim) {
-        hasOverriddenTransition = true;
+        pendingTransitionEnterAnimResId = enterAnim;
+        pendingTransitionExitAnimResId = exitAnim;
     }
 }
