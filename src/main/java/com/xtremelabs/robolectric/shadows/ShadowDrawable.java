@@ -19,6 +19,7 @@ public class ShadowDrawable {
     private Rect bounds = new Rect(0, 0, 0, 0);
     private int intrinsicWidth = -1;
     private int intrinsicHeight = -1;
+    private int alpha;
 
     @Implementation
     public static Drawable createFromStream(InputStream is, String srcName) {
@@ -78,5 +79,14 @@ public class ShadowDrawable {
         result = 31 * result + intrinsicWidth;
         result = 31 * result + intrinsicHeight;
         return result;
+    }
+
+    @Implementation
+    public void setAlpha(int alpha) {
+        this.alpha = alpha;
+    }
+
+    public int getAlpha() {
+        return alpha;
     }
 }
