@@ -12,6 +12,7 @@ import javax.xml.ws.http.HTTPException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Pattern;
 
 public class FakeHttpLayer {
     List<HttpResponse> pendingHttpResponses = new ArrayList<HttpResponse>();
@@ -164,6 +165,22 @@ public class FakeHttpLayer {
 
         @Override public boolean matches(HttpRequest request) {
             return request.getRequestLine().getUri().equals(uri);
+        }
+    }
+
+    // TODO: test this
+    public static class UriRegexMatcher implements RequestMatcher {
+        private String method;
+        private final Pattern uriRegex;
+
+        public UriRegexMatcher(String method, String uriRegex) {
+            this.method = method;
+            this.uriRegex = Pattern.compile(uriRegex);
+        }
+
+        @Override public boolean matches(HttpRequest request) {
+            return request.getRequestLine().getMethod().equals(method) &&
+                    uriRegex.matcher(request.getRequestLine().getUri()).matches();
         }
     }
 }
