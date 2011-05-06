@@ -6,7 +6,11 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -36,6 +40,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     private Activity parent;
     private boolean finishWasCalled;
     private TestWindow window;
+    private boolean hasOverriddenTransition;
 
     private List<IntentForResult> startedActivitiesForResults = new ArrayList<IntentForResult>();
 
@@ -324,4 +329,12 @@ public class ShadowActivity extends ShadowContextWrapper {
         return true;
     }
 
+    public boolean hasOverriddenTransition() {
+        return hasOverriddenTransition;
+    }
+
+    @Implementation
+    public void overridePendingTransition(int enterAnim, int exitAnim) {
+        hasOverriddenTransition = true;
+    }
 }
