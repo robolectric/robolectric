@@ -329,6 +329,10 @@ public class ShadowApplication extends ShadowContextWrapper {
         return currentLooper;
     }
 
+    public void setCurrentLooper(Looper looper) {
+        currentLooper = looper;
+    }
+
     public Map<String, Hashtable<String, Object>> getSharedPreferenceMap() {
         return sharedPreferenceMap;
     }

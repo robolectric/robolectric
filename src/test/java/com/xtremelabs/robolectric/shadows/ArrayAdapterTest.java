@@ -2,7 +2,11 @@
 
 package com.xtremelabs.robolectric.shadows;
 
+import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
@@ -40,4 +44,12 @@ public class ArrayAdapterTest {
         assertEquals(new Integer(3), arrayAdapter.getItem(2));
     }
 
+    @Test
+    public void usesTextViewResourceIdToSetTextWithinListItemView() throws Exception {
+        ListView parent = new ListView(Robolectric.application);
+        ArrayAdapter<String> arrayAdapter = new ArrayAdapter<String>(Robolectric.application, R.layout.main, R.id.title, new String[] { "first value" });
+        View listItemView = arrayAdapter.getView(0, null, parent);
+        TextView titleTextView = (TextView) listItemView.findViewById(R.id.title);
+        assertEquals("first value", titleTextView.getText().toString());
+    }
 }

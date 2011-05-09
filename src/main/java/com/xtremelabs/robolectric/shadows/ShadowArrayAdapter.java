@@ -6,6 +6,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -85,7 +86,22 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     @Implementation
     public View getView(int position, View convertView, ViewGroup parent) {
         T item = list.get(position);
-        return getResourceLoader().inflateView(context, textViewResourceId, parent);
+        View view = getResourceLoader().inflateView(context, resource, parent);
+
+        TextView text;
+        if (textViewResourceId == 0) {
+            text = (TextView) view;
+        } else {
+            text = (TextView) view.findViewById(textViewResourceId);
+        }
+
+        if (item instanceof CharSequence) {
+            text.setText((CharSequence)item);
+        } else {
+            text.setText(item.toString());
+        }
+
+        return view;
     }
 
     private ResourceLoader getResourceLoader() {

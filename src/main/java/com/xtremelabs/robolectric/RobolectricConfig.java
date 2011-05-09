@@ -81,8 +81,8 @@ public class RobolectricConfig {
             packageName = getTagAttributeText(manifestDocument, "manifest", "package");
             rClassName = packageName + ".R";
             applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
-            minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion", 9);
-            sdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion", 9);
+            minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion", 10);
+            sdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion", 10);
 
             processName = getTagAttributeText(manifestDocument, "application", "android:process");
             if (processName == null) {
