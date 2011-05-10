@@ -23,7 +23,9 @@ public class ShadowDrawable {
 
     @Implementation
     public static Drawable createFromStream(InputStream is, String srcName) {
-        return new BitmapDrawable();
+        BitmapDrawable drawable = new BitmapDrawable();
+        shadowOf(drawable).setSource(srcName);
+        return drawable;
     }
 
     @Implementation
