@@ -11,6 +11,9 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.util.Join;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,7 +45,7 @@ public class ShadowBitmapFactory {
 
     @Implementation
     public static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
-        return create("file:" + pathName, options);
+        return doCreate("file:" + pathName, options, null);
     }
 
     @Implementation
@@ -52,14 +55,32 @@ public class ShadowBitmapFactory {
 
     @Implementation
     public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
-        return create(is.toString().replaceFirst("stream for ", ""), opts);
+        String name = is.toString().replaceFirst("stream for ", "");
+        Point hint = null;
+
+        if (widthAndHeightMap.get(name) == null) {
+            try {
+                BufferedImage img = ImageIO.read(is);
+                hint = new Point(img.getWidth(), img.getHeight());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (Exception x) {
+                hint = null;
+            }
+        }
+
+        return doCreate(name, opts, hint);
     }
 
     static Bitmap create(String name) {
-        return create(name, new BitmapFactory.Options());
+        return doCreate(name, new BitmapFactory.Options(), null);
     }
 
     public static Bitmap create(String name, BitmapFactory.Options options) {
+        return doCreate(name, options, null);
+    }
+
+    private static Bitmap doCreate(String name, BitmapFactory.Options options, Point widthAndHeight) {
         Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(bitmap);
         shadowBitmap.appendDescription("Bitmap for " + name);
@@ -70,9 +91,11 @@ public class ShadowBitmapFactory {
             shadowBitmap.appendDescription(optionsString);
         }
 
-        Point widthAndHeight = widthAndHeightMap.get(name);
         if (widthAndHeight == null) {
-            widthAndHeight = new Point(100, 100);
+            widthAndHeight = widthAndHeightMap.get(name);
+            if (widthAndHeight == null) {
+                widthAndHeight = new Point(100, 100);
+            }
         }
 
         shadowBitmap.setWidth(widthAndHeight.x);
