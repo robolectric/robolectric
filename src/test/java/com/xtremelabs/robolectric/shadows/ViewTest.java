@@ -232,6 +232,15 @@ public class ViewTest {
 
     @Test
     public void shouldAddOnClickListenerFromAttribute() throws Exception {
+      TestAttributeSet attrs = new TestAttributeSet();
+      attrs.put("android:onClick", "clickMe");
+
+      view = new View(null, attrs);
+      assertNotNull(shadowOf(view).getOnClickListener());
+    }
+
+    @Test
+    public void shouldCallOnClickWithAttribute() throws Exception {
       final AtomicBoolean called = new AtomicBoolean(false);
       Activity context = new Activity() {
         public void clickMe(View view) {
@@ -242,9 +251,23 @@ public class ViewTest {
       attrs.put("android:onClick", "clickMe");
 
       view = new View(context, attrs);
-      assertNotNull(shadowOf(view).getOnClickListener());
       view.performClick();
       assertTrue("Should have been called", called.get());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void shouldThrowExceptionWithBadMethodName() throws Exception {
+      final AtomicBoolean called = new AtomicBoolean(false);
+      Activity context = new Activity() {
+        public void clickMe(View view) {
+          called.set(true);
+        }
+      };
+      TestAttributeSet attrs = new TestAttributeSet();
+      attrs.put("android:onClick", "clickYou");
+
+      view = new View(context, attrs);
+      view.performClick();
     }
 
 }

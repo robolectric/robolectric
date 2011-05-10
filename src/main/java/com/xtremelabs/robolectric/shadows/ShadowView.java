@@ -692,7 +692,7 @@ public class ShadowView {
                     method.invoke(context, view);
                     
                   } catch (Exception ex) {
-                    ex.printStackTrace();
+                    throw new RuntimeException("failed to invoke onClick method " + methodName, ex);
                   }
                 }
             });
