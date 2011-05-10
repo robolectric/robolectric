@@ -6,7 +6,6 @@ import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.NotFoundException;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -89,7 +88,8 @@ public class ShadowWrangler implements ClassHandler {
             throw new RuntimeException(invocationPlan.getShadow().getClass().getName() + " is not assignable from " +
                     invocationPlan.getDeclaredShadowClass().getName(), e);
         } catch (InvocationTargetException e) {
-            throw stripStackTrace((Exception) e.getCause());
+            Throwable throwable = stripStackTrace(e.getCause());
+            throw throwable instanceof Exception ? (Exception) throwable : new Exception(throwable);
         }
     }
 

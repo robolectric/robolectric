@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
-import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -11,17 +10,25 @@ import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.TestOnClickListener;
 import com.xtremelabs.robolectric.util.TestRunnable;
 import com.xtremelabs.robolectric.util.Transcript;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.Robolectric.visualize;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewTest {
@@ -222,4 +229,22 @@ public class ViewTest {
         view.setPressed(false);
         assertFalse(view.isPressed());
     }
+
+    @Test
+    public void shouldAddOnClickListenerFromAttribute() throws Exception {
+      final AtomicBoolean called = new AtomicBoolean(false);
+      Activity context = new Activity() {
+        public void clickMe(View view) {
+          called.set(true);
+        }
+      };
+      TestAttributeSet attrs = new TestAttributeSet();
+      attrs.put("android:onClick", "clickMe");
+
+      view = new View(context, attrs);
+      assertNotNull(shadowOf(view).getOnClickListener());
+      view.performClick();
+      assertTrue("Should have been called", called.get());
+    }
+
 }
