@@ -14,8 +14,8 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.ReflectionUtil;
-
 import java.io.PrintStream;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -87,6 +87,11 @@ public class ShadowView {
         applyVisibilityAttribute();
         applyEnabledAttribute();
         applyBackgroundAttribute();
+        applyOnClickAttribute();
+    }
+
+    public View.OnClickListener getOnClickListener() {
+      return onClickListener;
     }
 
     @Implementation
@@ -321,8 +326,8 @@ public class ShadowView {
 
             realView.invalidate();
             ReflectionUtil.invoke(realView, "onLayout",
-                    new Class<?>[]{Boolean.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE},
-                    true, l, t, r, b);
+                new Class<?>[]{Boolean.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE},
+                true, l, t, r, b);
         }
     }
 
@@ -674,6 +679,23 @@ public class ShadowView {
             if (source.startsWith("@drawable/")) {
                 setBackgroundResource(attributeSet.getAttributeResourceValue("android", "background", 0));
             }
+        }
+    }
+
+    private void applyOnClickAttribute() {
+        final String methodName = attributeSet.getAttributeValue("android", "onClick");
+        if (methodName != null) {
+            setOnClickListener(new View.OnClickListener() {
+                @Override public void onClick(View view) {
+                  try {
+                    final Method method = context.getClass().getMethod(methodName, View.class);
+                    method.invoke(context, view);
+                    
+                  } catch (Exception ex) {
+                    throw new RuntimeException("failed to invoke onClick method " + methodName, ex);
+                  }
+                }
+            });
         }
     }
 
