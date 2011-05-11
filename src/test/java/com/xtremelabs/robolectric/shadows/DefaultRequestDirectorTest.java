@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.InputStream;
 import java.net.URI;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -116,6 +117,30 @@ public class DefaultRequestDirectorTest {
         assertNotNull(postResponse);
         assertThat(postResponse.getStatusLine().getStatusCode(), equalTo(200));
         assertThat(Strings.fromStream(postResponse.getEntity().getContent()), equalTo("a cheery response body"));
+    }
+
+    @Test
+    public void shouldReturnRequestsByRule_KeepsTrackOfOpenContentStreams() throws Exception {
+        TestHttpResponse testHttpResponse = new TestHttpResponse(200, "a cheery response body");
+        Robolectric.addHttpResponseRule("http://some.uri", testHttpResponse);
+
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(true));
+
+        HttpResponse getResponse = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+        InputStream getResponseStream = getResponse.getEntity().getContent();
+        assertThat(Strings.fromStream(getResponseStream), equalTo("a cheery response body"));
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(false));
+
+        HttpResponse postResponse = requestDirector.execute(null, new HttpPost("http://some.uri"), null);
+        InputStream postResponseStream = postResponse.getEntity().getContent();
+        assertThat(Strings.fromStream(postResponseStream), equalTo("a cheery response body"));
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(false));
+
+        getResponseStream.close();
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(false));
+
+        postResponseStream.close();
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(true));
     }
 
     @Test
