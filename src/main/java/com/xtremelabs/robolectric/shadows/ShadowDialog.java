@@ -97,6 +97,10 @@ public class ShadowDialog {
             Method onCreateMethod = Dialog.class.getDeclaredMethod("onCreate", Bundle.class);
             onCreateMethod.setAccessible(true);
             onCreateMethod.invoke(realDialog, (Bundle) null);
+
+            Method onStartMethod = Dialog.class.getDeclaredMethod("onStart");
+            onStartMethod.setAccessible(true);
+            onStartMethod.invoke(realDialog);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

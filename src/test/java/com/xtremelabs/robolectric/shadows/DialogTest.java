@@ -8,6 +8,7 @@ import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
@@ -36,5 +37,26 @@ public class DialogTest {
     public void shouldGetLayoutInflater() {
         Dialog dialog = new Dialog(Robolectric.application);
         assertNotNull(dialog.getLayoutInflater());
+    }
+
+    @Test
+    public void shouldCallOnStartFromShow() {
+        TestOnStartDialog dialog = new TestOnStartDialog();
+        dialog.show();
+
+        assertTrue(dialog.onStartCalled);
+    }
+
+    private static class TestOnStartDialog extends Dialog {
+        boolean onStartCalled = false;
+
+        public TestOnStartDialog() {
+            super(null);
+        }
+
+        @Override
+        protected void onStart() {
+            onStartCalled = true;
+        }
     }
 }
