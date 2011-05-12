@@ -65,6 +65,12 @@ public class ShadowViewGroup extends ShadowView {
     }
 
     @Implementation
+    public void removeView(View child) {
+        shadowOf(child).parent = null;
+        children.remove(child);
+    }
+
+    @Implementation
     public int indexOfChild(View child) {
         int count = getChildCount();
         for (int i = 0; i < count; i++) {
