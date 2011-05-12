@@ -58,6 +58,7 @@ public class ShadowView {
     private View.OnTouchListener onTouchListener;
     protected AttributeSet attributeSet;
     private boolean drawingCacheEnabled;
+    private boolean didRequestLayout;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -322,6 +323,15 @@ public class ShadowView {
     @Implementation
     public void setTag(int key, Object value) {
         tags.put(key, value);
+    }
+
+    @Implementation
+    public void requestLayout() {
+        didRequestLayout = true;
+    }
+
+    public boolean didRequestLayout() {
+        return didRequestLayout;
     }
 
     @Implementation
