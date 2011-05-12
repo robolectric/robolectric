@@ -29,6 +29,8 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)
 public class ShadowResources {
+    private float density = 1.0f;
+
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
         ShadowResources shadowResources = shadowOf(resources);
         if (shadowResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
@@ -86,9 +88,15 @@ public class ShadowResources {
         return getString(id);
     }
 
+    public void setDensity(float density) {
+        this.density = density;
+    }
+
     @Implementation
     public DisplayMetrics getDisplayMetrics() {
-        return new DisplayMetrics();
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        displayMetrics.density = this.density;
+        return displayMetrics;
     }
 
     @Implementation

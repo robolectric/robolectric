@@ -80,6 +80,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private ShadowAlertDialog latestAlertDialog;
     private ShadowDialog latestDialog;
     private Object bluetoothAdapter = Robolectric.newInstanceOf("android.bluetooth.BluetoothAdapter");
+    private Resources resources;
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -115,7 +116,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     @Override @Implementation
     public Resources getResources() {
-        return ShadowResources.bind(new Resources(null, null, null), resourceLoader);
+        if (resources == null) {
+            resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);
+        }
+        return resources;
     }
 
     @Implementation
