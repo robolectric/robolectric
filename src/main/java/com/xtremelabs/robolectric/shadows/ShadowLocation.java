@@ -18,6 +18,7 @@ public class ShadowLocation {
     private String provider;
     private double latitude;
     private double longitude;
+    private float accuracy;
 
     @Implementation
     public String getProvider() {
@@ -59,6 +60,21 @@ public class ShadowLocation {
         this.longitude = longitude;
     }
 
+    @Implementation
+    public void setAccuracy(float accuracy) {
+        this.accuracy = accuracy;
+    }
+
+    @Implementation
+    public float getAccuracy() {
+        return this.accuracy;
+    }
+
+    @Implementation
+    public boolean hasAccuracy() {
+        return this.accuracy > 0;
+    }
+
     @Override @Implementation
     public boolean equals(Object o) {
         if (o == null) return false;
@@ -97,6 +113,7 @@ public class ShadowLocation {
                 ", provider='" + provider + '\'' +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
+                ", accuracy=" + accuracy +
                 '}';
     }
 }
