@@ -21,6 +21,11 @@ public class TestHttpResponse extends HttpResponseStub {
     private TestHttpEntity httpEntity = new TestHttpEntity();
     private int openEntityContentStreamCount = 0;
 
+    public TestHttpResponse() {
+        this.statusCode = 200;
+        this.responseBody = "";
+    }
+
     public TestHttpResponse(int statusCode, String responseBody) {
         this.statusCode = statusCode;
         this.responseBody = responseBody;
@@ -29,6 +34,10 @@ public class TestHttpResponse extends HttpResponseStub {
     public TestHttpResponse(int statusCode, String responseBody, Header contentType) {
         this(statusCode, responseBody);
         this.contentType = contentType;
+    }
+
+    protected void setResponseBody(String responseBody) {
+        this.responseBody = responseBody;
     }
 
     @Override public StatusLine getStatusLine() {

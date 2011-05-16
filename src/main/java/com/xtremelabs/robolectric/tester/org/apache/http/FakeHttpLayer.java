@@ -10,8 +10,12 @@ import org.apache.http.protocol.HttpContext;
 
 import javax.xml.ws.http.HTTPException;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.StringTokenizer;
 import java.util.regex.Pattern;
 
 public class FakeHttpLayer {
@@ -165,6 +169,66 @@ public class FakeHttpLayer {
 
         @Override public boolean matches(HttpRequest request) {
             return request.getRequestLine().getUri().equals(uri);
+        }
+    }
+
+    public static class RequestMatcherBuilder implements RequestMatcher {
+        private String method;
+        private String hostname;
+        private String path;
+        private boolean noParams;
+        private Map<String, String> params = new HashMap<String, String>();
+
+        public RequestMatcherBuilder method(String method) {
+            this.method = method;
+            return this;
+        }
+
+        public RequestMatcherBuilder host(String hostname) {
+            this.hostname = hostname;
+            return this;
+        }
+
+        public RequestMatcherBuilder path(String path) {
+            this.path = "/" + path;
+            return this;
+        }
+
+        public RequestMatcherBuilder param(String name, String value) {
+            params.put(name, value);
+            return this;
+        }
+
+        public RequestMatcherBuilder noParams() {
+            noParams = true;
+            return this;
+        }
+
+        @Override public boolean matches(HttpRequest request) {
+            URI uri = URI.create(request.getRequestLine().getUri());
+            if (method != null && !method.equals(request.getRequestLine().getMethod())) return false;
+            if (hostname != null && !hostname.equals(uri.getHost())) return false;
+            if (path != null && !path.equals(uri.getRawPath())) return false;
+            if (noParams && !uri.getRawQuery().equals(null)) return false;
+            if (params.size() > 0) {
+                StringTokenizer tok = new StringTokenizer(uri.getRawQuery(), "&", false);
+                if (tok.countTokens() != params.size()) return false;
+                while (tok.hasMoreTokens()) {
+                    String name, value;
+                    String nextParam = tok.nextToken();
+                    if (nextParam.contains("=")) {
+                        String[] nameAndValue = nextParam.split("=");
+                        name = nameAndValue[0];
+                        value = nameAndValue[1];
+                    } else {
+                        name = nextParam;
+                        value = "";
+                    }
+                    if (!params.get(name).equals(value)) return false;
+                }
+            }
+
+            return true;
         }
     }
 
