@@ -47,6 +47,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     private int requestedOrientation = -1;
     private int pendingTransitionEnterAnimResId = -1;
     private int pendingTransitionExitAnimResId = -1;
+    private Object lastNonConfigurationInstance;
 
     @Implementation
     public final Application getApplication() {
@@ -259,6 +260,15 @@ public class ShadowActivity extends ShadowContextWrapper {
         } else {
             return startedActivitiesForResults.get(0);
         }
+    }
+
+    @Implementation
+    public Object getLastNonConfigurationInstance() {
+        return lastNonConfigurationInstance;
+    }
+
+    public void setLastNonConfigurationInstance(Object lastNonConfigurationInstance) {
+        this.lastNonConfigurationInstance = lastNonConfigurationInstance;
     }
 
     /**

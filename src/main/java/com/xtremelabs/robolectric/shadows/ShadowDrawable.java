@@ -14,11 +14,14 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)
 public class ShadowDrawable {
+    private static int defaultIntrinsicWidth = -1;
+    private static int defaultIntrinsicHeight = -1;
+
     @RealObject Drawable realObject;
 
     private Rect bounds = new Rect(0, 0, 0, 0);
-    private int intrinsicWidth = -1;
-    private int intrinsicHeight = -1;
+    private int intrinsicWidth = defaultIntrinsicWidth;
+    private int intrinsicHeight = defaultIntrinsicHeight;
     private int alpha;
 
     @Implementation
@@ -51,6 +54,14 @@ public class ShadowDrawable {
     @Implementation
     public int getIntrinsicHeight() {
         return intrinsicHeight;
+    }
+
+    public static void setDefaultIntrinsicWidth(int defaultIntrinsicWidth) {
+        ShadowDrawable.defaultIntrinsicWidth = defaultIntrinsicWidth;
+    }
+
+    public static void setDefaultIntrinsicHeight(int defaultIntrinsicHeight) {
+        ShadowDrawable.defaultIntrinsicHeight = defaultIntrinsicHeight;
     }
 
     public void setIntrinsicWidth(int intrinsicWidth) {
