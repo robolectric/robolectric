@@ -1,11 +1,10 @@
-// Copyright 2010 Google Inc. All Rights Reserved.
-
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -22,10 +21,22 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(ArrayAdapter.class)
 public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
 
+    private static final Filter STUB_FILTER = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            return null;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+        }
+    };
+
     private Context context;
     private List<T> list;
     private int resource;
     private int textViewResourceId;
+    private Filter filter;
 
     public void __constructor__(Context context, int textViewResourceId) {
         init(context, 0, textViewResourceId, new ArrayList<T>());
@@ -102,6 +113,11 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
         }
 
         return view;
+    }
+
+    @Implementation
+    public Filter getFilter() {
+        return STUB_FILTER;
     }
 
     private ResourceLoader getResourceLoader() {
