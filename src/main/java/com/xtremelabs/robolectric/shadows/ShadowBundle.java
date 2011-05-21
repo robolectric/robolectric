@@ -8,6 +8,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
@@ -65,6 +66,11 @@ public class ShadowBundle {
     @Implementation
     public boolean containsKey(String key) {
         return map.containsKey(key);
+    }
+
+    @Implementation
+    public Set<String> keySet() {
+        return map.keySet();
     }
 
     @Override @Implementation
