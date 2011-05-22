@@ -99,4 +99,21 @@ public class ShadowLocation {
                 ", longitude=" + longitude +
                 '}';
     }
+
+    private static float[] distanceBetween;
+
+    public static void setDistanceBetween(float[] distanceBetween) {
+        ShadowLocation.distanceBetween = distanceBetween;
+    }
+
+    @Implementation
+    public static void distanceBetween(double startLatitude,
+                                       double startLongitude,
+                                       double endLatitude,
+                                       double endLongitude,
+                                       float[] results){
+        if (distanceBetween != null && results.length == distanceBetween.length){
+            System.arraycopy(distanceBetween, 0, results, 0, results.length);
+        }
+    }
 }
