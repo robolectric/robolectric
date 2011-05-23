@@ -19,6 +19,7 @@ import java.util.Map;
 @Implements(LocationManager.class)
 public class ShadowLocationManager {
     private final Map<String, Boolean> providersEnabled = new HashMap<String, Boolean>();
+    private Location simulatedLocation = null;
 
     /** Location listeners along with metadata on when they should be fired. */
     private static final class ListenerRegistration {
@@ -64,6 +65,11 @@ public class ShadowLocationManager {
     }
 
     @Implementation
+    public Location getLastKnownLocation(String provider) {
+        return simulatedLocation;
+    }
+
+    @Implementation
     public void requestLocationUpdates(String provider,
             long minTime, float minDistance, LocationListener listener) {
         List<ListenerRegistration> providerListeners = locationListeners.get(provider);
@@ -74,8 +80,6 @@ public class ShadowLocationManager {
         providerListeners.add(new ListenerRegistration(
             minTime, minDistance, copyOf(simulatedLocation), listener));
     }
-
-    private Location simulatedLocation = null;
 
     public void simulateLocation(Location location) {
         simulatedLocation = location;
