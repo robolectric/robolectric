@@ -24,7 +24,7 @@ public class ShadowPreference {
 	protected Object defaultValue;
 	protected int order;
 	protected boolean enabled = true;
-
+	protected String dependencyKey;
 	protected boolean persistent = false;
 	protected int persistedInt;
 	protected Object callChangeListenerValue = null;
@@ -191,5 +191,15 @@ public class ShadowPreference {
 	public Intent getIntent() {
 		return this.intent;
 
+	}
+	
+	@Implementation
+	public void setDependency(String dependencyKey) {
+		this.dependencyKey = dependencyKey;
+	}
+	
+	@Implementation
+	public String getDependency() {
+		return this.dependencyKey;
 	}
 }

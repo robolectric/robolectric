@@ -226,6 +226,14 @@ public class PreferenceTest {
 		assertThat( preference.getIntent(), notNullValue() );
 	}
 	
+	@Test
+	public void shouldRememberDependency() {
+		assertThat( preference.getDependency(), nullValue() );
+		preference.setDependency( "TEST_PREF_KEY" );
+		assertThat( preference.getDependency(), notNullValue() );
+		assertThat( preference.getDependency(), equalTo("TEST_PREF_KEY") );
+	}
+	
 	////////////////////////////////////////////////////////////
 	// TestPreference
 	////////////////////////////////////////////////////////////
