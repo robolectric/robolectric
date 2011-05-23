@@ -46,6 +46,7 @@ import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.*;
+import android.telephony.TelephonyManager;
 
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
@@ -215,6 +216,7 @@ public class Robolectric {
                 ShadowSQLiteQueryBuilder.class,
                 ShadowSslErrorHandler.class,
                 ShadowSurfaceView.class,
+                ShadowTelephonyManager.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
@@ -577,7 +579,11 @@ public class Robolectric {
    
    public static ShadowVideoView shadowOf(VideoView instance) {
    	return (ShadowVideoView) shadowOf_(instance);
-   }   
+   }
+   
+	public static ShadowTelephonyManager shadowOf(TelephonyManager instance) {
+		return (ShadowTelephonyManager) shadowOf_(instance);
+	}
     
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
