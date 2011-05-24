@@ -236,6 +236,10 @@ public class Robolectric {
         return (ShadowDrawable) shadowOf_(instance);
     }
 
+    public static ShadowService shadowOf(Service instance) {
+        return (ShadowService) shadowOf_(instance);
+    }
+
     public static ShadowToast shadowOf(Toast instance) {
         return (ShadowToast) shadowOf_(instance);
     }
