@@ -4,6 +4,7 @@ import android.app.*;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -241,6 +242,10 @@ public class Robolectric {
 
     public static ShadowNetworkInfo shadowOf(NetworkInfo instance) {
         return (ShadowNetworkInfo) shadowOf_(instance);
+    }
+
+    public static ShadowContentResolver shadowOf(ContentResolver instance) {
+        return (ShadowContentResolver) shadowOf_(instance);
     }
 
     public static ShadowConnectivityManager shadowOf(ConnectivityManager instance) {

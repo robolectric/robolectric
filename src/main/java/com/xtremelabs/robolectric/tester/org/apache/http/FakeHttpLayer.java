@@ -109,6 +109,11 @@ public class FakeHttpLayer {
     public HttpRequestInfo getSentHttpRequestInfo(int index) {
         return httpRequestInfos.get(index);
     }
+
+    public List<HttpRequestInfo> getSentHttpRequestInfos() {
+        return new ArrayList<HttpRequestInfo>(httpRequestInfos);
+    }
+
     public void clearHttpResponseRules() {
         httpResponseRules.clear();
     }
