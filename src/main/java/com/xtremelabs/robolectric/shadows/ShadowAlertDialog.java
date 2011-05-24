@@ -217,8 +217,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         @Implementation
         public AlertDialog.Builder setTitle(int titleId) {
-            this.title = context.getResources().getString(titleId);
-            return realBuilder;
+            return setTitle(context.getResources().getString(titleId));
         }
 
         @Implementation
@@ -228,10 +227,20 @@ public class ShadowAlertDialog extends ShadowDialog {
         }
 
         @Implementation
+        public AlertDialog.Builder setMessage(int messageId) {
+            return setMessage(context.getResources().getString(messageId));
+        }
+
+        @Implementation
         public AlertDialog.Builder setPositiveButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.positiveText = text;
             this.positiveListener = listener;
             return realBuilder;
+        }
+
+        @Implementation
+        public AlertDialog.Builder setPositiveButton(int buttonTextId, final DialogInterface.OnClickListener listener) {
+            return setPositiveButton(context.getResources().getString(buttonTextId), listener);
         }
 
         @Implementation
