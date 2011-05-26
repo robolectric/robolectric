@@ -91,6 +91,11 @@ public class ShadowDialog {
     }
 
     @Implementation
+    public void onBackPressed() {
+        cancel();
+    }
+
+    @Implementation
     public void show() {
         isShowing = true;
         try {
