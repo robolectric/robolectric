@@ -98,6 +98,10 @@ public class FakeHttpLayer {
         return !httpRequestInfos.isEmpty();
     }
 
+    public void clearRequestInfos() {
+        httpRequestInfos.clear();
+    }
+
     public boolean hasResponseRules() {
         return !httpResponseRules.isEmpty();
     }
