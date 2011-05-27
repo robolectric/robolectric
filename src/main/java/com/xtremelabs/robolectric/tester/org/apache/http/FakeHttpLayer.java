@@ -6,13 +6,17 @@ import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.RequestDirector;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 
 import javax.xml.ws.http.HTTPException;
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -90,6 +94,7 @@ public class FakeHttpLayer {
 
         return httpResponse;
     }
+
     public boolean hasPendingResponses() {
         return !pendingHttpResponses.isEmpty();
     }
@@ -195,6 +200,9 @@ public class FakeHttpLayer {
         }
 
         public RequestMatcherBuilder path(String path) {
+            if (path.startsWith("/")) {
+                throw new RuntimeException("Path should not start with '/'");
+            }
             this.path = "/" + path;
             return this;
         }
@@ -211,13 +219,34 @@ public class FakeHttpLayer {
 
         @Override public boolean matches(HttpRequest request) {
             URI uri = URI.create(request.getRequestLine().getUri());
-            if (method != null && !method.equals(request.getRequestLine().getMethod())) return false;
-            if (hostname != null && !hostname.equals(uri.getHost())) return false;
-            if (path != null && !path.equals(uri.getRawPath())) return false;
-            if (noParams && !uri.getRawQuery().equals(null)) return false;
+            if (method != null && !method.equals(request.getRequestLine().getMethod())) {
+                return false;
+            }
+            if (hostname != null && !hostname.equals(uri.getHost())) {
+                return false;
+            }
+            if (path != null && !path.equals(uri.getRawPath())) {
+                return false;
+            }
+            if (noParams && !uri.getRawQuery().equals(null)) {
+                return false;
+            }
             if (params.size() > 0) {
-                StringTokenizer tok = new StringTokenizer(uri.getRawQuery(), "&", false);
-                if (tok.countTokens() != params.size()) return false;
+                Map<String, String> requestParams = parseParams(request);
+                return requestParams.equals(params);
+            }
+
+            return true;
+        }
+
+        private Map<String, String> parseParams(HttpRequest request) {
+            URI uri = URI.create(request.getRequestLine().getUri());
+            Map<String, String> params;
+            params = new LinkedHashMap<String, String>();
+            String rawQuery = uri.getRawQuery();
+            if (rawQuery != null) {
+                params = new LinkedHashMap<String, String>();
+                StringTokenizer tok = new StringTokenizer(rawQuery, "&", false);
                 while (tok.hasMoreTokens()) {
                     String name, value;
                     String nextParam = tok.nextToken();
@@ -229,11 +258,33 @@ public class FakeHttpLayer {
                         name = nextParam;
                         value = "";
                     }
-                    if (!params.get(name).equals(value)) return false;
+                    params.put(name, value);
                 }
+            } else {
+                HttpParams httpParams = request.getParams();
+                if (httpParams instanceof BasicHttpParams) {
+                    Map<String, String> parameters = getPrivateMember(httpParams, "parameters");
+                    params = new LinkedHashMap<String, String>(parameters);
+                }
+                else {
+                    throw new RuntimeException("Was expecting a "+BasicHttpParams.class.getName());
+                }
+                return params;
             }
+            return params;
+        }
 
-            return true;
+        private <T> T getPrivateMember(Object obj, String name) {
+            try {
+                Field f = obj.getClass().getDeclaredField(name);
+                f.setAccessible(true);
+                //noinspection unchecked
+                return (T) f.get(obj);
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
