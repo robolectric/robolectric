@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.nfc.NdefRecord;
+import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
@@ -15,7 +16,7 @@ public class ShadowNdefRecord {
         this.data = data;
     }
 
-
+    @Implementation
     public byte[] getPayload() {
         return data;
     }
