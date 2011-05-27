@@ -27,6 +27,7 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.nfc.NdefRecord;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
@@ -172,6 +173,7 @@ public class Robolectric {
                 ShadowMenuInflater.class,
                 ShadowMotionEvent.class,
                 ShadowNotification.class,
+                ShadowNdefRecord.class,
                 ShadowNotificationManager.class,
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
@@ -308,6 +310,10 @@ public class Robolectric {
 
     public static ShadowIntent shadowOf(Intent instance) {
         return (ShadowIntent) shadowOf_(instance);
+    }
+
+    public static ShadowNdefRecord shadowOf(NdefRecord instance) {
+        return (ShadowNdefRecord) shadowOf_(instance);
     }
 
     public static ShadowView shadowOf(View instance) {
