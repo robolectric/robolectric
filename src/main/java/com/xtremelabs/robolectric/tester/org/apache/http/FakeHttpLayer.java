@@ -12,8 +12,10 @@ import org.apache.http.protocol.HttpContext;
 
 import javax.xml.ws.http.HTTPException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -245,9 +247,8 @@ public class FakeHttpLayer {
 
         private Map<String, String> parseParams(HttpRequest request) {
             URI uri = URI.create(request.getRequestLine().getUri());
-            Map<String, String> params;
-            params = new LinkedHashMap<String, String>();
             String rawQuery = uri.getRawQuery();
+            Map<String, String> params;
             if (rawQuery != null) {
                 params = new LinkedHashMap<String, String>();
                 StringTokenizer tok = new StringTokenizer(rawQuery, "&", false);
@@ -257,7 +258,11 @@ public class FakeHttpLayer {
                     if (nextParam.contains("=")) {
                         String[] nameAndValue = nextParam.split("=");
                         name = nameAndValue[0];
-                        value = nameAndValue[1];
+                        try {
+                            value = URLDecoder.decode(nameAndValue[1], "UTF-8");
+                        } catch (UnsupportedEncodingException e) {
+                            throw new RuntimeException(e);
+                        }
                     } else {
                         name = nextParam;
                         value = "";
