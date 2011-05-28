@@ -99,6 +99,7 @@ public class Robolectric {
         return Arrays.asList(
                 ShadowAbsoluteLayout.class,
                 ShadowAbsSeekBar.class,
+                ShadowRatingBar.class,
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowActivity.class,
@@ -484,6 +485,10 @@ public class Robolectric {
 
     public static ShadowAbsSeekBar shadowOf(AbsSeekBar instance) {
         return (ShadowAbsSeekBar) shadowOf_(instance);
+    }
+    
+    public static ShadowRatingBar shadowOf(RatingBar instance) {
+        return (ShadowRatingBar) shadowOf_(instance);
     }
     
     public static ShadowSeekBar shadowOf(SeekBar instance) {
