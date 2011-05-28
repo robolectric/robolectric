@@ -115,6 +115,13 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Intent putExtras(Bundle src) {
+        ShadowBundle srcShadowBundle = Robolectric.shadowOf_(src);
+        extras = new HashMap<String, Object>(srcShadowBundle.map);
+        return realIntent;
+    }
+    
+    @Implementation
     public Intent putExtras(Intent src) {
         ShadowIntent srcShadowIntent = shadowOf(src);
         extras = new HashMap<String, Object>(srcShadowIntent.extras);
