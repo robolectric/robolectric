@@ -36,6 +36,7 @@ public class ShadowDialog {
     private DialogInterface.OnCancelListener onCancelListener;
     private Window window;
     private Activity ownerActivity;
+    private boolean hasShownBefore;
 
     public static void reset() {
         setLatestDialog(null);
@@ -98,13 +99,16 @@ public class ShadowDialog {
     @Implementation
     public void show() {
         isShowing = true;
-        try {
-            Method onCreateMethod = Dialog.class.getDeclaredMethod("onCreate", Bundle.class);
-            onCreateMethod.setAccessible(true);
-            onCreateMethod.invoke(realDialog, (Bundle) null);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
+        if (!hasShownBefore) {
+            try {
+                Method onCreateMethod = Dialog.class.getDeclaredMethod("onCreate", Bundle.class);
+                onCreateMethod.setAccessible(true);
+                onCreateMethod.invoke(realDialog, (Bundle) null);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
+        hasShownBefore = true;
     }
 
     @Implementation
