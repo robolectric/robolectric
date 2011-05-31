@@ -1,17 +1,23 @@
 package com.xtremelabs.robolectric.res;
 
-import android.content.ContextWrapper;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import com.xtremelabs.robolectric.RobolectricConfig;
-import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
-
 import java.util.ArrayList;
 import java.util.List;
 
+import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
+import android.content.pm.ResolveInfo;
+
+import com.xtremelabs.robolectric.RobolectricConfig;
+import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
+
 public class RobolectricPackageManager extends StubPackageManager {
+	
     public PackageInfo packageInfo;
     public ArrayList<PackageInfo> packageList;
+    private List<ResolveInfo> resolveList;
+    
     private ContextWrapper contextWrapper;
     private RobolectricConfig config;
     private ApplicationInfo applicationInfo;
@@ -54,6 +60,14 @@ public class RobolectricPackageManager extends StubPackageManager {
         return packageList;
     }
 
+    @Override 
+    public List<ResolveInfo> queryIntentActivities( Intent intent, int flags ) {
+    	if( resolveList == null ) {
+    		resolveList = new ArrayList<ResolveInfo>();
+    	}
+    	return resolveList;
+    }
+    
     private void ensurePackageInfo() {
         if (packageInfo == null) {
             packageInfo = new PackageInfo();
