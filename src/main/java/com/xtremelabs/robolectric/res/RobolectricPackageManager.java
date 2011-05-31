@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.res;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import android.content.ContextWrapper;
@@ -14,8 +15,7 @@ import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
 
 public class RobolectricPackageManager extends StubPackageManager {
 	
-    public PackageInfo packageInfo;
-    public ArrayList<PackageInfo> packageList;
+    private HashMap<String, PackageInfo> packageList;
     private List<ResolveInfo> resolveList;
     
     private ContextWrapper contextWrapper;
@@ -25,12 +25,16 @@ public class RobolectricPackageManager extends StubPackageManager {
     public RobolectricPackageManager(ContextWrapper contextWrapper, RobolectricConfig config) {
         this.contextWrapper = contextWrapper;
         this.config = config;
+        initializePackageInfo();
     }
 
     @Override
     public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
-        ensurePackageInfo();
-        return packageInfo;
+        if ( packageList.containsKey(packageName) ) {
+        	return packageList.get(packageName);
+        }
+        
+        throw new NameNotFoundException();
     }
 
     @Override
@@ -52,12 +56,7 @@ public class RobolectricPackageManager extends StubPackageManager {
 
     @Override
     public List<PackageInfo> getInstalledPackages(int flags) {
-        ensurePackageInfo();
-        if (packageList == null) {
-            packageList = new ArrayList<PackageInfo>();
-            packageList.add(packageInfo);
-        }
-        return packageList;
+        return new ArrayList<PackageInfo>(packageList.values());
     }
 
     @Override 
@@ -68,11 +67,24 @@ public class RobolectricPackageManager extends StubPackageManager {
     	return resolveList;
     }
     
-    private void ensurePackageInfo() {
-        if (packageInfo == null) {
-            packageInfo = new PackageInfo();
-            packageInfo.packageName = contextWrapper.getPackageName();
-            packageInfo.versionName = "1.0";
-        }
+    /**
+     * Non-Android accessor.  Used to add a package to the list of those
+     * already 'installed' on system.
+     * 
+     * @param packageInfo
+     */
+    public void addPackage( PackageInfo packageInfo ) {
+    	 packageList.put(packageInfo.packageName, packageInfo);
+    }
+    
+    private void initializePackageInfo() {
+    	if (packageList != null) { return; }
+
+        PackageInfo packageInfo = new PackageInfo();
+        packageInfo.packageName = contextWrapper.getPackageName();
+        packageInfo.versionName = "1.0";
+        
+        packageList = new HashMap<String, PackageInfo>();
+        addPackage( packageInfo );
     }
 }
