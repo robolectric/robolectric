@@ -26,26 +26,26 @@ public class VideoViewTest {
     
     @Test
     public void shouldSetOnPreparedListener() throws Exception {
-    	PreparedListenerTest l = new PreparedListenerTest();
+    	TestPreparedListener l = new TestPreparedListener();
     	view.setOnPreparedListener(l);
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat((PreparedListenerTest)(shadowVideoView.getOnPreparedListener()), sameInstance(l));
+    	assertThat((TestPreparedListener)(shadowVideoView.getOnPreparedListener()), sameInstance(l));
     }
     
     @Test
     public void shouldSetOnErrorListener() throws Exception {
-    	ErrorListenerTest l = new ErrorListenerTest();
+    	TestErrorListener l = new TestErrorListener();
     	view.setOnErrorListener(l);
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat((ErrorListenerTest)(shadowVideoView.getOnErrorListener()), sameInstance(l));
+    	assertThat((TestErrorListener)(shadowVideoView.getOnErrorListener()), sameInstance(l));
     }
     
     @Test
     public void shouldSetOnCompletionListener() throws Exception {
-    	CompletionListenerTest l = new CompletionListenerTest();
+    	TestCompletionListener l = new TestCompletionListener();
     	view.setOnCompletionListener(l);
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat((CompletionListenerTest)(shadowVideoView.getOnCompletionListener()), sameInstance(l));
+    	assertThat((TestCompletionListener)(shadowVideoView.getOnCompletionListener()), sameInstance(l));
     }
     
     @Test
@@ -122,26 +122,24 @@ public class VideoViewTest {
     	assertThat(view.canPause(), equalTo(false));
     	
     }
-        
-        
+         
     /**
-     * Helper class
-     * @author zoodles
+     * Helper classes
      */
     
-	private class PreparedListenerTest implements MediaPlayer.OnPreparedListener {		
+	private class TestPreparedListener implements MediaPlayer.OnPreparedListener {		
 		@Override
 		public void onPrepared(MediaPlayer mp) {}
 	}
 	
-	private class ErrorListenerTest implements MediaPlayer.OnErrorListener  {
+	private class TestErrorListener implements MediaPlayer.OnErrorListener  {
 		@Override
 		public boolean onError(MediaPlayer mp, int what, int extra) {			
 			return false;
 		}
 	}
 
-	private class CompletionListenerTest implements MediaPlayer.OnCompletionListener {
+	private class TestCompletionListener implements MediaPlayer.OnCompletionListener {
 		@Override
 		public void onCompletion(MediaPlayer mp) {}
 	}
