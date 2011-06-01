@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.res;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -15,8 +16,8 @@ import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
 
 public class RobolectricPackageManager extends StubPackageManager {
 	
-    private HashMap<String, PackageInfo> packageList;
-    private List<ResolveInfo> resolveList;
+    private Map<String, PackageInfo> packageList;
+    private Map<Intent, List<ResolveInfo>> resolveList;
     
     private ContextWrapper contextWrapper;
     private RobolectricConfig config;
@@ -62,9 +63,16 @@ public class RobolectricPackageManager extends StubPackageManager {
     @Override 
     public List<ResolveInfo> queryIntentActivities( Intent intent, int flags ) {
     	if( resolveList == null ) {
-    		resolveList = new ArrayList<ResolveInfo>();
+    		resolveList = new HashMap<Intent, List<ResolveInfo>>();
     	}
-    	return resolveList;
+    	return resolveList.get( intent );
+    }
+    
+    public void addResolveInfoForIntent( Intent intent, List<ResolveInfo> info ) {
+    	if( resolveList == null ) {
+    		resolveList = new HashMap<Intent, List<ResolveInfo>>();
+    	}
+    	resolveList.put( intent, info );
     }
     
     /**
@@ -76,6 +84,12 @@ public class RobolectricPackageManager extends StubPackageManager {
     public void addPackage( PackageInfo packageInfo ) {
     	 packageList.put(packageInfo.packageName, packageInfo);
     }
+    
+    public void addPackage( String packageName ) {
+    	PackageInfo info = new PackageInfo();
+    	info.packageName = packageName;
+    	addPackage( info );
+    }    
     
     private void initializePackageInfo() {
     	if (packageList != null) { return; }

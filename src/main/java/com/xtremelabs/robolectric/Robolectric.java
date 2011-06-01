@@ -16,6 +16,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -37,6 +38,7 @@ import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.*;
 import android.preference.*;
+import android.telephony.TelephonyManager;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -46,7 +48,6 @@ import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.*;
-import android.telephony.TelephonyManager;
 
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
@@ -201,6 +202,7 @@ public class Robolectric {
                 ShadowProgressBar.class,
                 ShadowProgressDialog.class,
                 ShadowRect.class,
+                ShadowResolveInfo.class,
                 ShadowRemoteViews.class,
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
@@ -397,6 +399,10 @@ public class Robolectric {
         return (ShadowImageView) shadowOf_(instance);
     }
 
+    public static ShadowResolveInfo shadowOf(ResolveInfo instance ) {
+    	return (ShadowResolveInfo) shadowOf_(instance);
+    }
+    
     public static ShadowRemoteViews shadowOf(RemoteViews instance) {
         return (ShadowRemoteViews) shadowOf_(instance);
     }
