@@ -71,11 +71,21 @@ public class SQLiteDatabaseTest {
     }
 
     @Test
+    public void testInsertRowIdGeneration() throws Exception {
+        ContentValues values = new ContentValues();
+        values.put("name", "Chuck");
+
+        long id = database.insert("table_name", null, values);
+
+        assertThat(id, not(equalTo(0L)));
+    }
+
+    @Test
     public void testInsertKeyGeneration() throws Exception {
         ContentValues values = new ContentValues();
         values.put("name", "Chuck");
 
-        long key = database.insert("table_name", null, values);
+        long key = database.insertWithOnConflict("table_name", null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
         assertThat(key, not(equalTo(0L)));
     }
