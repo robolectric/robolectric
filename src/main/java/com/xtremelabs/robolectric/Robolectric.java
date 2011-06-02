@@ -107,6 +107,7 @@ import com.xtremelabs.robolectric.shadows.ShadowFloatMath;
 import com.xtremelabs.robolectric.shadows.ShadowGeoPoint;
 import com.xtremelabs.robolectric.shadows.ShadowGeocoder;
 import com.xtremelabs.robolectric.shadows.ShadowHandler;
+import com.xtremelabs.robolectric.shadows.ShadowHtml;
 import com.xtremelabs.robolectric.shadows.ShadowImageView;
 import com.xtremelabs.robolectric.shadows.ShadowIntent;
 import com.xtremelabs.robolectric.shadows.ShadowIntentFilter;
@@ -151,6 +152,7 @@ import com.xtremelabs.robolectric.shadows.ShadowSQLiteQueryBuilder;
 import com.xtremelabs.robolectric.shadows.ShadowService;
 import com.xtremelabs.robolectric.shadows.ShadowSettings;
 import com.xtremelabs.robolectric.shadows.ShadowSpannableStringBuilder;
+import com.xtremelabs.robolectric.shadows.ShadowSpannedString;
 import com.xtremelabs.robolectric.shadows.ShadowSurfaceView;
 import com.xtremelabs.robolectric.shadows.ShadowTextUtils;
 import com.xtremelabs.robolectric.shadows.ShadowTextView;
@@ -273,6 +275,7 @@ public class Robolectric {
                 ShadowGeocoder.class,
                 ShadowGeoPoint.class,
                 ShadowHandler.class,
+                ShadowHtml.class,
                 ShadowImageView.class,
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
@@ -316,6 +319,7 @@ public class Robolectric {
                 ShadowSettings.ShadowSecure.class,
                 ShadowSettings.ShadowSystem.class,
                 ShadowSpannableStringBuilder.class,
+                ShadowSpannedString.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
