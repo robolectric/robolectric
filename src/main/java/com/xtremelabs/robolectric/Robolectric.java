@@ -146,6 +146,7 @@ public class Robolectric {
                 ShadowDialog.class,
                 ShadowDialogPreference.class,
                 ShadowEditText.class,
+                ShadowEnvironment.class,
                 ShadowExpandableListView.class,
                 ShadowFilter.class,
                 ShadowFloatMath.class,
