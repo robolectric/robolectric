@@ -547,6 +547,10 @@ public class Robolectric {
         getUiThreadScheduler().advanceBy(0);
     }
 
+    public static void runUiThreadTasksIncludingDelayedTasks() {
+        getUiThreadScheduler().advanceToLastPostedRunnable();
+    }
+
     /**
      * Sets up an HTTP response to be returned by calls to Apache's {@code HttpClient} implementers.
      *
