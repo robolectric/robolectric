@@ -4,13 +4,16 @@ import android.view.View;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.matchers.ViewVisibilityMatcher.isGone;
+import static com.xtremelabs.robolectric.matchers.ViewVisibilityMatcher.isInvisible;
+import static com.xtremelabs.robolectric.matchers.ViewVisibilityMatcher.isVisible;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewVisibilityMatcherTest {
@@ -30,31 +33,43 @@ public class ViewVisibilityMatcherTest {
 
     @Test
     public void visibleMatch() throws Exception {
-        Assert.assertThat(visibleView, ViewVisibilityMatcher.isVisible());
-        Assert.assertThat(invisibleView, not(ViewVisibilityMatcher.isVisible()));
-        Assert.assertThat(goneView, not(ViewVisibilityMatcher.isVisible()));
+        assertThat(visibleView, isVisible());
+        assertThat(invisibleView, not(isVisible()));
+        assertThat(goneView, not(isVisible()));
+        assertThat(null, not(isVisible()));
     }
 
     @Test
     public void invisibleMatch() throws Exception {
-        Assert.assertThat(visibleView, not(ViewVisibilityMatcher.isInvisible()));
-        Assert.assertThat(invisibleView, ViewVisibilityMatcher.isInvisible());
-        Assert.assertThat(goneView, not(ViewVisibilityMatcher.isInvisible()));
+        assertThat(visibleView, not(isInvisible()));
+        assertThat(invisibleView, isInvisible());
+        assertThat(goneView, not(isInvisible()));
+        assertThat(null, not(isInvisible()));
     }
 
     @Test
     public void goneMatch() throws Exception {
-        Assert.assertThat(visibleView, not(ViewVisibilityMatcher.isGone()));
-        Assert.assertThat(invisibleView, not(ViewVisibilityMatcher.isGone()));
-        Assert.assertThat(goneView, ViewVisibilityMatcher.isGone());
+        assertThat(visibleView, not(isGone()));
+        assertThat(invisibleView, not(isGone()));
+        assertThat(goneView, isGone());
+        assertThat(null, not(isGone()));
     }
 
     @Test
-    public void descriptionShouldIndicateExpectedAndActual() throws Exception {
-        Matcher<View> goneMatcher = ViewVisibilityMatcher.isGone();
+    public void descriptionShouldIndicateExpectedAndActual() {
+        Matcher<View> goneMatcher = isGone();
         goneMatcher.matches(visibleView);
         StringDescription description = new StringDescription();
         goneMatcher.describeTo(description);
         assertEquals("[0] visibility to be [8]", description.toString());
+    }
+
+    @Test
+    public void descriptionShouldIndicateNullView() {
+        Matcher<View> goneMatcher = isGone();
+        goneMatcher.matches(null);
+        StringDescription description = new StringDescription();
+        goneMatcher.describeTo(description);
+        assertEquals("View was null.", description.toString());
     }
 }

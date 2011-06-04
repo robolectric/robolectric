@@ -8,7 +8,7 @@ import org.junit.internal.matchers.TypeSafeMatcher;
 
 public class ViewVisibilityMatcher<T extends View> extends TypeSafeMatcher<T> {
     private final int expectedVisibility;
-    private int actualVisibility;
+    private int actualVisibility = -1;
 
     public ViewVisibilityMatcher(int expectedVisibility) {
         this.expectedVisibility = expectedVisibility;
@@ -16,15 +16,22 @@ public class ViewVisibilityMatcher<T extends View> extends TypeSafeMatcher<T> {
 
     @Override
     public boolean matchesSafely(T t) {
+        if (t == null){
+            return false;
+        }
         actualVisibility = t.getVisibility();
         return expectedVisibility == actualVisibility;
     }
 
     @Override
     public void describeTo(Description description) {
-        description.appendText("[" + actualVisibility + "]");
-        description.appendText(" visibility to be ");
-        description.appendText("[" + expectedVisibility + "]");
+        if (actualVisibility >= 0){
+            description.appendText("[" + actualVisibility + "]");
+            description.appendText(" visibility to be ");
+            description.appendText("[" + expectedVisibility + "]");
+        } else {
+            description.appendText("View was null.");
+        }
     }
 
     @Factory
