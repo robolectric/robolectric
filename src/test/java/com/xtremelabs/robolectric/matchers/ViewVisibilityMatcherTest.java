@@ -61,7 +61,7 @@ public class ViewVisibilityMatcherTest {
         goneMatcher.matches(visibleView);
         StringDescription description = new StringDescription();
         goneMatcher.describeTo(description);
-        assertEquals("[0] visibility to be [8]", description.toString());
+        assertEquals("'Visible' to be 'Gone'", description.toString());
     }
 
     @Test
@@ -70,6 +70,6 @@ public class ViewVisibilityMatcherTest {
         goneMatcher.matches(null);
         StringDescription description = new StringDescription();
         goneMatcher.describeTo(description);
-        assertEquals("View was null.", description.toString());
+        assertEquals("View to be non-null.", description.toString());
     }
 }

@@ -6,7 +6,19 @@ import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.junit.internal.matchers.TypeSafeMatcher;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class ViewVisibilityMatcher<T extends View> extends TypeSafeMatcher<T> {
+
+    private static final Map<Integer, String> VISIBILITY_DESCRIPTIONS;
+    static {
+        VISIBILITY_DESCRIPTIONS = new HashMap<Integer, String>();
+        VISIBILITY_DESCRIPTIONS.put(View.VISIBLE, "'Visible'");
+        VISIBILITY_DESCRIPTIONS.put(View.INVISIBLE, "'Invisible'");
+        VISIBILITY_DESCRIPTIONS.put(View.GONE, "'Gone'");
+    }
+
     private final int expectedVisibility;
     private int actualVisibility = -1;
 
@@ -26,11 +38,11 @@ public class ViewVisibilityMatcher<T extends View> extends TypeSafeMatcher<T> {
     @Override
     public void describeTo(Description description) {
         if (actualVisibility >= 0){
-            description.appendText("[" + actualVisibility + "]");
-            description.appendText(" visibility to be ");
-            description.appendText("[" + expectedVisibility + "]");
+            description.appendText(VISIBILITY_DESCRIPTIONS.get(actualVisibility));
+            description.appendText(" to be ");
+            description.appendText(VISIBILITY_DESCRIPTIONS.get(expectedVisibility));
         } else {
-            description.appendText("View was null.");
+            description.appendText("View to be non-null.");
         }
     }
 
