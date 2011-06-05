@@ -97,6 +97,7 @@ import com.xtremelabs.robolectric.shadows.ShadowContext;
 import com.xtremelabs.robolectric.shadows.ShadowContextThemeWrapper;
 import com.xtremelabs.robolectric.shadows.ShadowContextWrapper;
 import com.xtremelabs.robolectric.shadows.ShadowCookieManager;
+import com.xtremelabs.robolectric.shadows.ShadowDateFormat;
 import com.xtremelabs.robolectric.shadows.ShadowDefaultRequestDirector;
 import com.xtremelabs.robolectric.shadows.ShadowDialog;
 import com.xtremelabs.robolectric.shadows.ShadowDisplay;
@@ -265,6 +266,7 @@ public class Robolectric {
                 ShadowContextWrapper.class,
                 ShadowContextThemeWrapper.class,
                 ShadowCookieManager.class,
+                ShadowDateFormat.class,
                 ShadowDefaultRequestDirector.class,
                 ShadowDisplay.class,
                 ShadowDrawable.class,
