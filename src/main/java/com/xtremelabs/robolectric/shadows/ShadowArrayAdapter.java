@@ -75,6 +75,11 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     }
 
     @Implementation
+    public void insert(T object, int index) {
+        list.add(index, object);
+    }
+
+    @Implementation
     public Context getContext() {
         return context;
     }
