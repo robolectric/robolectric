@@ -497,6 +497,10 @@ public class Robolectric {
     public static ShadowGridView shadowOf(GridView instance) {
     	return (ShadowGridView) shadowOf_(instance);
     }
+
+    public static ShadowRect shadowOf(Rect instance) {
+    	return (ShadowRect) shadowOf_(instance);
+    }
     
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
