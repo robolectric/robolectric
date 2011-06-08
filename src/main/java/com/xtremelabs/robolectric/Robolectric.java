@@ -686,6 +686,10 @@ public class Robolectric {
         return shadowOf(Robolectric.application);
     }
 
+    public static void setDisplayMetricsDensity(float densityMultiplier) {
+        shadowOf(getShadowApplication().getResources()).setDensity(densityMultiplier);
+    }
+
     /**
      * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
      * is enabled.

@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric;
 
+import android.app.Activity;
 import android.content.Context;
 import android.view.View;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -87,6 +88,13 @@ public class RobolectricTest {
     public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
         assertThat(Robolectric.getBackgroundScheduler().isPaused(), equalTo(false));
         Robolectric.getBackgroundScheduler().pause();
+    }
+
+    @Test
+    public void shouldUseSetDensityForContexts() throws Exception {
+        assertThat(new Activity().getResources().getDisplayMetrics().density, equalTo(1.0f));
+        Robolectric.setDisplayMetricsDensity(1.5f);
+        assertThat(new Activity().getResources().getDisplayMetrics().density, equalTo(1.5f));
     }
 
     public void clickOn_shouldCallClickListener() throws Exception {
