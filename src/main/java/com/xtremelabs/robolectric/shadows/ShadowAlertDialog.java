@@ -232,6 +232,11 @@ public class ShadowAlertDialog extends ShadowDialog {
         }
 
         @Implementation
+        public AlertDialog.Builder setIcon(int iconId) {
+            return realBuilder;
+        }
+
+        @Implementation
         public AlertDialog.Builder setPositiveButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.positiveText = text;
             this.positiveListener = listener;
