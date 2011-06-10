@@ -34,14 +34,16 @@ public class ClassCacheTest {
         TestThreadIsWriting attempt = new TestThreadIsWriting(classCache);
         
         try {
-            attempt.start();
             int timeToWait = 500;
+            locker.join(timeToWait, 0);
+
+            attempt.start();
             long before = System.currentTimeMillis();
             attempt.join(timeToWait, 0);
             long after = System.currentTimeMillis();
             Assert.assertEquals(false, attempt.ready);
             Assert.assertEquals(1, (after - before) / timeToWait);
-
+            locker.interrupt();
         } finally {
             
         }
@@ -72,13 +74,16 @@ public class ClassCacheTest {
         TestThreadSaveAllClassesToCache attempt = new TestThreadSaveAllClassesToCache(classCache);
         
         try {
-            attempt.start();
             int timeToWait = 500;
+            locker.join(timeToWait, 0);
+
+            attempt.start();
             long before = System.currentTimeMillis();
             attempt.join(timeToWait, 0);
             long after = System.currentTimeMillis();
             Assert.assertEquals(false, attempt.ready);
             Assert.assertEquals(1, (after - before) / timeToWait);
+            locker.interrupt();
                         
         } finally {
             
