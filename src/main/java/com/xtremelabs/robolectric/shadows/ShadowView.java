@@ -82,9 +82,7 @@ public class ShadowView {
         applyEnabledAttribute();
         applyBackgroundAttribute();
         applyTagAttribute();
-    }
-
-   
+    }  
 
 	@Implementation
     public void setId(int id) {
