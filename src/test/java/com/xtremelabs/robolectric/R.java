@@ -22,6 +22,8 @@ public final class R {
         public static final int false_checkbox = nextId++;
         public static final int default_checkbox = nextId++;
         public static final int image = nextId++;
+        public static final int button = nextId++;
+        public static final int invalid_onclick_button = nextId++;
         public static final int edit_text = nextId++;
         public static final int edit_text2 = nextId++;
         public static final int outer_merge = nextId++;
@@ -73,6 +75,7 @@ public final class R {
         public static final int media = nextId++;
         public static final int inner_merge = nextId++;
         public static final int included_linear_layout = nextId++;
+        public static final int with_invalid_onclick = nextId++;
     }
 
     public static final class raw {
