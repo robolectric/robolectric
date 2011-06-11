@@ -81,9 +81,12 @@ public class ShadowView {
         applyVisibilityAttribute();
         applyEnabledAttribute();
         applyBackgroundAttribute();
+        applyTagAttribute();
     }
 
-    @Implementation
+   
+
+	@Implementation
     public void setId(int id) {
         this.id = id;
     }
@@ -602,6 +605,13 @@ public class ShadowView {
             setId(id);
         }
     }
+    
+    private void applyTagAttribute() {
+    	 Object tag = attributeSet.getAttributeValue("android", "tag");
+         if (tag != null) {
+             setTag(tag);             
+         }
+	}
 
     private void applyVisibilityAttribute() {
         String visibility = attributeSet.getAttributeValue("android", "visibility");
