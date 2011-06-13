@@ -1,11 +1,16 @@
 package com.xtremelabs.robolectric;
 
 import android.app.Application;
+import com.xtremelabs.robolectric.shadows.ShadowApplication;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.List;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ApplicationResolverTest {
@@ -33,4 +38,11 @@ public class ApplicationResolverTest {
         assertEquals("com.wacka.wa", application.getPackageName());
     }
 
+    @Test
+    public void shouldRegisterReceiversFromTheManifest() throws Exception {
+        Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithReceivers.xml")).resolveApplication();
+        List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
+        assertEquals(2, receivers.size());
+        assertTrue(receivers.get(0).intentFilter.matchAction("com.xtremelabs.robolectric.ACTION1"));
+    }
 }

@@ -362,9 +362,9 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     public class Wrapper {
-        private BroadcastReceiver broadcastReceiver;
-        private IntentFilter intentFilter;
-        private Context context;
+        public BroadcastReceiver broadcastReceiver;
+        public IntentFilter intentFilter;
+        public Context context;
         public Throwable exception;
 
         public Wrapper(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter, Context context) {
