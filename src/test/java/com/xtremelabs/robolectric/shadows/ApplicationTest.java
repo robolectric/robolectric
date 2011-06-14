@@ -2,8 +2,12 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
-import android.content.ContextWrapper;
+import android.app.Service;
+import android.content.*;
+import android.os.IBinder;
+import android.os.IInterface;
+import android.os.Parcel;
+import android.os.RemoteException;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -13,6 +17,8 @@ import com.xtremelabs.robolectric.res.StringResourceLoader;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.FileDescriptor;
 
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -83,5 +89,78 @@ public class ApplicationTest {
     public void packageManager_shouldKnowPackageName() throws Exception {
         Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
         assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo(null, 0).packageName);
+    }
+
+    @Test
+    public void bindServiceShouldCallOnServiceConnected() {
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+
+        TestService service = new TestService();
+        Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+
+        assertEquals(expectedComponentName, service.name);
+        assertEquals(expectedBinder, service.service);
+    }
+
+    private static class TestService extends Service implements ServiceConnection {
+        private ComponentName name;
+        private IBinder service;
+
+        @Override
+        public IBinder onBind(Intent intent) {
+            return null;
+        }
+
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            this.name = name;
+            this.service = service;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+        }
+    }
+
+    private static class NullBinder implements IBinder {
+        @Override
+        public String getInterfaceDescriptor() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public boolean pingBinder() {
+            return false;
+        }
+
+        @Override
+        public boolean isBinderAlive() {
+            return false;
+        }
+
+        @Override
+        public IInterface queryLocalInterface(String descriptor) {
+            return null;
+        }
+
+        @Override
+        public void dump(FileDescriptor fd, String[] args) throws RemoteException {
+        }
+
+        @Override
+        public boolean transact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+            return false;
+        }
+
+        @Override
+        public void linkToDeath(DeathRecipient recipient, int flags) throws RemoteException {
+        }
+
+        @Override
+        public boolean unlinkToDeath(DeathRecipient recipient, int flags) {
+            return false;
+        }
     }
 }

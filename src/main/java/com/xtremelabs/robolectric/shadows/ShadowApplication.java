@@ -4,6 +4,7 @@ import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.content.*;
 import android.content.res.Resources;
+import android.os.IBinder;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.widget.Toast;
@@ -75,6 +76,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     LayoutInflater layoutInflater;
     AppWidgetManager appWidgetManager;
     private ServiceConnection serviceConnection;
+    private ComponentName componentNameForBindService;
+    private IBinder serviceForBindService;
 
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
@@ -150,9 +153,15 @@ public class ShadowApplication extends ShadowContextWrapper {
         return new ComponentName("some.service.package", "SomeServiceName-FIXME");
     }
 
+    public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
+        this.componentNameForBindService = name;
+        this.serviceForBindService = service;
+    }
+
     @Implementation
     public boolean bindService(Intent intent, ServiceConnection serviceConnection, int i) {
         startedServices.add(intent);
+        serviceConnection.onServiceConnected(componentNameForBindService, serviceForBindService);
         return true;
     }
 
