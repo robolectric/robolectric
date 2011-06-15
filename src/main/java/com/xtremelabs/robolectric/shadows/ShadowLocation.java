@@ -18,7 +18,10 @@ public class ShadowLocation {
     private String provider;
     private double latitude;
     private double longitude;
+    private double altitude;
     private float accuracy;
+    private float bearing;
+    private float speed;
 
     @Implementation
     public String getProvider() {
@@ -61,8 +64,38 @@ public class ShadowLocation {
     }
 
     @Implementation
+    public double getAltitude() {
+        return altitude;
+    }
+
+    @Implementation
+    public void setAltitude(double altitude) {
+        this.altitude = altitude;
+    }
+
+    @Implementation
     public void setAccuracy(float accuracy) {
         this.accuracy = accuracy;
+    }
+
+    @Implementation
+    public float getBearing() {
+        return this.bearing;
+    }
+
+    @Implementation
+    public void setBearing(float bearing) {
+        this.bearing = bearing;
+    }
+
+    @Implementation
+    public float getSpeed() {
+        return this.speed;
+    }
+
+    @Implementation
+    public void setSpeed(float speed) {
+        this.speed = speed;
     }
 
     @Implementation
