@@ -521,6 +521,10 @@ public class Robolectric {
     	return (ShadowGridView) shadowOf_(instance);
     }
     
+    public static PendingIntent shadowOf(PendingIntent instance) {
+    	return (PendingIntent) shadowOf_(instance);
+    }
+
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
