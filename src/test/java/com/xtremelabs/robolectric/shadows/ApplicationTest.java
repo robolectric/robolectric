@@ -24,6 +24,7 @@ import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -92,13 +93,19 @@ public class ApplicationTest {
     }
 
     @Test
-    public void bindServiceShouldCallOnServiceConnected() {
+    public void bindServiceShouldCallOnServiceConnectedWhenNotPaused() {
+        Robolectric.pauseMainLooper();
         ComponentName expectedComponentName = new ComponentName("", "");
         NullBinder expectedBinder = new NullBinder();
         Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
 
         TestService service = new TestService();
         Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+
+        assertNull(service.name);
+        assertNull(service.service);
+
+        Robolectric.unPauseMainLooper();
 
         assertEquals(expectedComponentName, service.name);
         assertEquals(expectedBinder, service.service);

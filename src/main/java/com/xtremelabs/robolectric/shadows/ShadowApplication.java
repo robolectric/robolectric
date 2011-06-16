@@ -4,6 +4,7 @@ import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.content.*;
 import android.content.res.Resources;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -159,9 +160,14 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     @Implementation
-    public boolean bindService(Intent intent, ServiceConnection serviceConnection, int i) {
+    public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
         startedServices.add(intent);
-        serviceConnection.onServiceConnected(componentNameForBindService, serviceForBindService);
+        shadowOf(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                serviceConnection.onServiceConnected(componentNameForBindService, serviceForBindService);
+            }
+        }, 0);
         return true;
     }
 
