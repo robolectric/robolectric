@@ -5,18 +5,23 @@ import android.view.View;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.util.TestOnClickListener;
+import org.apache.http.HttpException;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.conn.ConnectionKeepAliveStrategy;
+import org.apache.http.impl.client.DefaultRequestDirector;
+import org.apache.http.protocol.HttpContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.PrintStream;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class RobolectricTest {
@@ -87,6 +92,28 @@ public class RobolectricTest {
     public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
         assertThat(Robolectric.getBackgroundScheduler().isPaused(), equalTo(false));
         Robolectric.getBackgroundScheduler().pause();
+    }
+
+    @Test
+    public void httpRequestWasSent_ReturnsTrueIfRequestWasSent() throws IOException, HttpException {
+        Robolectric.addPendingHttpResponse(200, "a happy response body");
+
+        ConnectionKeepAliveStrategy connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
+            @Override
+            public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
+                return 0;
+            }
+
+        };
+        DefaultRequestDirector requestDirector = new DefaultRequestDirector(null, null, null, connectionKeepAliveStrategy, null, null, null, null, null, null, null, null);
+        requestDirector.execute(null, new HttpGet("http://example.com"), null);
+
+        assertTrue(Robolectric.httpRequestWasMade());
+    }
+
+    @Test
+    public void httpRequestWasMade_ReturnsFalseIfNoRequestWasMade() {
+        assertFalse(Robolectric.httpRequestWasMade());
     }
 
     public void clickOn_shouldCallClickListener() throws Exception {
