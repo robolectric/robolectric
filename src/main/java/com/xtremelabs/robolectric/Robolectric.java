@@ -565,6 +565,15 @@ public class Robolectric {
     }
 
     /**
+     * Accessor to find out if HTTP requests were made during the current test.
+     *
+     * @return whether a request was made.
+     */
+    public static boolean httpRequestWasMade() {
+        return getShadowApplication().getFakeHttpLayer().hasRequestInfos();
+    }
+
+    /**
      * Accessor to obtain metadata for an HTTP request made during the current test in the order in which they were made.
      *
      * @param index index of the request to retrieve.
