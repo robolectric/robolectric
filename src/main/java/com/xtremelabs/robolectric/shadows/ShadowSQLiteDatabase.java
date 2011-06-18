@@ -167,6 +167,25 @@ public class ShadowSQLiteDatabase {
     }
 
     @Implementation
+    public Cursor rawQuery (String sql, String[] selectionArgs){
+        String sqlBody = sql;
+        if (sql != null && selectionArgs != null) {
+        	sqlBody = buildWhereClause(sql, selectionArgs);
+        }
+        ResultSet resultSet;
+        try {
+            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            resultSet = statement.executeQuery(sqlBody);
+        } catch (SQLException e) {
+            throw new RuntimeException("SQL exception in query", e);
+        }
+
+        SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
+        shadowOf(cursor).setResultSet(resultSet);
+        return cursor;
+    }
+    
+    @Implementation
     public boolean isOpen() {
         return (connection != null);
     }
