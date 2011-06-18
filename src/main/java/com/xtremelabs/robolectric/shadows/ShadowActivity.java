@@ -315,7 +315,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
 
     @Implementation
-    public final boolean showDialog(int id, Bundle args) {
+    public final boolean showDialog(int id, Bundle bundle) {
         Dialog dialog = null;
 
         try {
@@ -323,9 +323,15 @@ public class ShadowActivity extends ShadowContextWrapper {
             method.setAccessible(true);
             dialog = (Dialog) method.invoke(realActivity, id);
 
+          if (bundle == null) {
+            method = Activity.class.getDeclaredMethod("onPrepareDialog", Integer.TYPE, Dialog.class);
+            method.setAccessible(true);
+            method.invoke(realActivity, id, dialog);
+          } else {
             method = Activity.class.getDeclaredMethod("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class);
             method.setAccessible(true);
-            method.invoke(realActivity, id, dialog, args);
+            method.invoke(realActivity, id, dialog, bundle);
+          }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {
