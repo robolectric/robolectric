@@ -178,6 +178,7 @@ public class Robolectric {
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
                 ShadowPaint.class,
+                ShadowPair.class,
                 ShadowPath.class,
                 ShadowPendingIntent.class,
                 ShadowPoint.class,
