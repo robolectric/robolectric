@@ -113,6 +113,11 @@ public class ShadowAlertDialog extends ShadowDialog {
         return message;
     }
 
+    @Implementation
+    public void setMessage(CharSequence message) {
+        this.message = (message == null ? null : message.toString());
+    }
+
     /**
      * Non-Android accessor.
      *
@@ -217,13 +222,19 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         @Implementation
         public AlertDialog.Builder setTitle(int titleId) {
-            this.title = context.getResources().getString(titleId);
+//            this.title = context.getResources().getString(titleId);
             return realBuilder;
         }
 
         @Implementation
         public AlertDialog.Builder setMessage(CharSequence message) {
             this.message = message.toString();
+            return realBuilder;
+        }
+
+        @Implementation
+        public AlertDialog.Builder setMessage(int messageId) {
+            setMessage(context.getResources().getString(messageId));
             return realBuilder;
         }
 

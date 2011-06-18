@@ -12,12 +12,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.Join;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -163,6 +158,28 @@ public class ShadowIntent {
     public Intent putExtra(String key, String value) {
         extras.put(key, value);
         return realIntent;
+    }
+
+    @Implementation
+    public Intent putExtra(String key, String[] value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
+    @Implementation
+    public Intent putExtra(String key, boolean value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
+    @Implementation
+    public boolean getBooleanExtra(String name, boolean defaultValue) {
+        return extras.containsKey(name) ? (Boolean) extras.get(name) : defaultValue;
+    }
+
+    @Implementation
+    public String[] getStringArrayExtra(String name) {
+        return (String[]) extras.get(name);
     }
 
     @Implementation
