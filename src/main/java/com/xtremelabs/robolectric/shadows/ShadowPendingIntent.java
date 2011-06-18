@@ -3,6 +3,8 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
+import android.content.TestIntentSender;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -33,6 +35,13 @@ public class ShadowPendingIntent {
         } else {
             context.startActivity(savedIntent);
         }
+    }
+
+    @Implementation
+    public IntentSender getIntentSender() {
+        TestIntentSender testIntentSender = new TestIntentSender();
+        testIntentSender.intent = savedIntent;
+        return testIntentSender;
     }
 
     private static PendingIntent create(Intent intent, boolean isService) {

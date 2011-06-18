@@ -2,13 +2,10 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
 import android.content.res.Resources;
+import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.widget.Toast;
@@ -20,12 +17,7 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.util.Scheduler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -84,6 +76,9 @@ public class ShadowApplication extends ShadowContextWrapper {
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
     AppWidgetManager appWidgetManager;
+    private ServiceConnection serviceConnection;
+    private ComponentName componentNameForBindService;
+    private IBinder serviceForBindService;
 
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
@@ -157,6 +152,23 @@ public class ShadowApplication extends ShadowContextWrapper {
     @Override public ComponentName startService(Intent intent) {
         startedServices.add(intent);
         return new ComponentName("some.service.package", "SomeServiceName-FIXME");
+    }
+
+    public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
+        this.componentNameForBindService = name;
+        this.serviceForBindService = service;
+    }
+
+    @Implementation
+    public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+        startedServices.add(intent);
+        shadowOf(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                serviceConnection.onServiceConnected(componentNameForBindService, serviceForBindService);
+            }
+        }, 0);
+        return true;
     }
 
     /**

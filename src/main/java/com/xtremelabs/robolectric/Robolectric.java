@@ -154,6 +154,7 @@ public class Robolectric {
                 ShadowHandler.class,
                 ShadowImageView.class,
                 ShadowIntent.class,
+                ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowItemizedOverlay.class,
                 ShadowLayoutInflater.class,
@@ -582,6 +583,15 @@ public class Robolectric {
      */
     public static HttpRequest getSentHttpRequest(int index) {
         return ShadowDefaultRequestDirector.getSentHttpRequest(index);
+    }
+
+    /**
+     * Accessor to find out if HTTP requests were made during the current test.
+     *
+     * @return whether a request was made.
+     */
+    public static boolean httpRequestWasMade() {
+        return getShadowApplication().getFakeHttpLayer().hasRequestInfos();
     }
 
     /**

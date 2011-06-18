@@ -16,7 +16,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper extends ShadowContext {
     @RealObject private ContextWrapper realContextWrapper;
-    private Context baseContext;
+    protected Context baseContext;
 
     private PackageManager packageManager;
 
