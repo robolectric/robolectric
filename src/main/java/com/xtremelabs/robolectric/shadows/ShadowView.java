@@ -14,14 +14,19 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
- * Shadow implementation of {@code View} that simulates the behavior of this class. Supports listeners, focusability
- * (but not focus order), resource loading, visibility, tags, and tracks the size and shape of the view.
+ * Shadow implementation of {@code View} that simulates the behavior of this
+ * class.
+ *
+ * Supports listeners, focusability (but not focus order), resource loading,
+ * visibility, onclick, tags, and tracks the size and shape of the view.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(View.class)
@@ -81,6 +86,8 @@ public class ShadowView {
         applyVisibilityAttribute();
         applyEnabledAttribute();
         applyBackgroundAttribute();
+        applyTagAttribute();
+        applyOnClickAttribute();
     }
 
     @Implementation
@@ -602,6 +609,13 @@ public class ShadowView {
             setId(id);
         }
     }
+    
+    private void applyTagAttribute() {
+    	 Object tag = attributeSet.getAttributeValue("android", "tag");
+         if (tag != null) {
+             setTag(tag);             
+         }
+	}
 
     private void applyVisibilityAttribute() {
         String visibility = attributeSet.getAttributeValue("android", "visibility");
@@ -625,6 +639,45 @@ public class ShadowView {
                 setBackgroundResource(attributeSet.getAttributeResourceValue("android", "background", 0));
             }
         }
+    }
+
+    private void applyOnClickAttribute() {
+        final String handlerName = attributeSet.getAttributeValue("android",
+                                                                  "onClick");
+        if (handlerName == null) {
+            return;
+        }
+
+        /* good part of following code has been directly copied from original
+         * android source */
+        setOnClickListener(new View.OnClickListener() {
+            public void onClick(View v) {
+                Method mHandler;
+                try {
+                    mHandler = getContext().getClass().getMethod(handlerName,
+                                                                 View.class);
+                } catch (NoSuchMethodException e) {
+                    int id = getId();
+                    String idText = id == View.NO_ID ? "" : " with id '"
+                            + shadowOf(context).getResourceLoader()
+                                               .getNameForId(id) + "'";
+                    throw new IllegalStateException("Could not find a method " +
+                            handlerName + "(View) in the activity "
+                            + getContext().getClass() + " for onClick handler"
+                            + " on view " + realView.getClass() + idText, e);
+                }
+
+                try {
+                    mHandler.invoke(getContext(), realView);
+                } catch (IllegalAccessException e) {
+                    throw new IllegalStateException("Could not execute non "
+                            + "public method of the activity", e);
+                } catch (InvocationTargetException e) {
+                    throw new IllegalStateException("Could not execute "
+                            + "method of the activity", e);
+                }
+            }
+        });
     }
 
     private boolean noParentHasFocus(View view) {
