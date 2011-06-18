@@ -102,6 +102,7 @@ public class Robolectric {
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowActivity.class,
+                ShadowActivityGroup.class,
                 ShadowAdapterView.class,
                 ShadowAddress.class,
                 ShadowAlarmManager.class,
@@ -199,6 +200,9 @@ public class Robolectric {
                 ShadowSQLiteOpenHelper.class,
                 ShadowSQLiteQueryBuilder.class,
                 ShadowSurfaceView.class,
+                ShadowTabActivity.class,
+                ShadowTabHost.class,
+                ShadowTabSpec.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
@@ -265,6 +269,10 @@ public class Robolectric {
     public static ShadowActivity shadowOf(Activity instance) {
         return (ShadowActivity) shadowOf_(instance);
     }
+    
+    public static ShadowActivityGroup shadowOf(ActivityGroup instance) {
+        return (ShadowActivityGroup) shadowOf_(instance);
+    }
 
     public static ShadowContextWrapper shadowOf(ContextWrapper instance) {
         return (ShadowContextWrapper) shadowOf_(instance);
@@ -329,6 +337,18 @@ public class Robolectric {
     public static ShadowAdapterView shadowOf(AdapterView instance) {
         return (ShadowAdapterView) shadowOf_(instance);
     }
+    
+    public static ShadowTabActivity shadowOf(TabActivity instance) {
+        return (ShadowTabActivity) shadowOf_(instance);
+    }
+    
+    public static ShadowTabHost shadowOf(TabHost instance) {
+        return (ShadowTabHost) shadowOf_(instance);
+    }
+    
+    public static  ShadowTabSpec shadowOf(TabHost.TabSpec instance) {
+        return (ShadowTabSpec) shadowOf_(instance);
+    }  
 
     public static ShadowTextView shadowOf(TextView instance) {
         return (ShadowTextView) shadowOf_(instance);
