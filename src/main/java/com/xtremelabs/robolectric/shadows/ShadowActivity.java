@@ -41,6 +41,7 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     private Map<Intent, Integer> intentRequestCodeMap = new HashMap<Intent, Integer>();
     private int requestedOrientation = -1;
+    private View currentFocus;
 
     @Implementation
     public final Application getApplication() {
@@ -256,6 +257,20 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
 
     /**
+     * Non-Android accessor Sets the {@code View} for this {@code Activity}
+     *
+     * @param view
+     */
+    public void setCurrentFocus(View view) {
+        currentFocus = view;
+    }
+
+    @Implementation
+    public View getCurrentFocus() {
+        return currentFocus;
+    }
+
+    /**
      * Container object to hold an Intent, together with the requestCode used
      * in a call to {@code Activity#startActivityForResult(Intent, int)}
      */
@@ -300,7 +315,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
 
     @Implementation
-    public final boolean showDialog(int id, Bundle args) {
+    public final boolean showDialog(int id, Bundle bundle) {
         Dialog dialog = null;
 
         try {
@@ -308,9 +323,15 @@ public class ShadowActivity extends ShadowContextWrapper {
             method.setAccessible(true);
             dialog = (Dialog) method.invoke(realActivity, id);
 
+          if (bundle == null) {
+            method = Activity.class.getDeclaredMethod("onPrepareDialog", Integer.TYPE, Dialog.class);
+            method.setAccessible(true);
+            method.invoke(realActivity, id, dialog);
+          } else {
             method = Activity.class.getDeclaredMethod("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class);
             method.setAccessible(true);
-            method.invoke(realActivity, id, dialog, args);
+            method.invoke(realActivity, id, dialog, bundle);
+          }
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         } catch (InvocationTargetException e) {

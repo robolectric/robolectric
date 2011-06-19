@@ -9,5 +9,5 @@ public interface ClassHandler {
 
     void afterTest();
 
-    Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Exception;
+    Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Throwable;
 }
