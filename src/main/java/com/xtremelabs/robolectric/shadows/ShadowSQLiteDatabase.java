@@ -15,6 +15,9 @@ import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.SQLite.*;
 
+//XXX: __CHRIS__ add support for db.compileStatement(String statement);
+//XXX: __CHRIS__ add support for anything that is called by ormlite.android.AndroidDatabaseConnection
+
 /**
  * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.
  * Implemented as a wrapper around an embedded SQL database, accessed via JDBC.  The JDBC connection is
