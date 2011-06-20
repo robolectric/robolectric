@@ -25,6 +25,7 @@ public class ShadowTextView extends ShadowView {
     private int autoLinkMask;
     private CharSequence hintText;
     private int compoundDrawablePadding;
+    private TextView.OnEditorActionListener onEditorActionListener;
 
     @Override public void applyAttributes() {
         super.applyAttributes();
@@ -200,6 +201,18 @@ public class ShadowTextView extends ShadowView {
                 attributeSet.getAttributeResourceValue("android", "drawableTop", 0),
                 attributeSet.getAttributeResourceValue("android", "drawableRight", 0),
                 attributeSet.getAttributeResourceValue("android", "drawableBottom", 0));
+    }
+
+
+
+    @Implementation
+    public void setOnEditorActionListener(android.widget.TextView.OnEditorActionListener onEditorActionListener) {
+        this.onEditorActionListener = onEditorActionListener;
+    }
+
+
+    public void triggerEditorAction(int imeAction) {
+        onEditorActionListener.onEditorAction((TextView) realView, imeAction, null);
     }
 
     public static class CompoundDrawables {
