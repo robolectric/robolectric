@@ -93,7 +93,7 @@ public class ShadowListView extends ShadowAdapterView {
     }
 
     private void ensureAdapterNotSet(String view) {
-        if (adapter != null) {
+        if (getAdapter() != null) {
             throw new IllegalStateException("Cannot add " + view + " view to list -- setAdapter has already been called");
         }
     }
