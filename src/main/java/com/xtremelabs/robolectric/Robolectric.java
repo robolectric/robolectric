@@ -17,6 +17,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.location.Geocoder;
@@ -126,6 +127,7 @@ public class Robolectric {
                 ShadowCameraParameters.class,
                 ShadowCameraSize.class,
                 ShadowCanvas.class,
+                ShadowColorDrawable.class,
                 ShadowColorMatrix.class,
                 ShadowColorMatrixColorFilter.class,
                 ShadowColorStateList.class,
@@ -318,6 +320,10 @@ public class Robolectric {
 
     public static ShadowView shadowOf(View instance) {
         return (ShadowView) shadowOf_(instance);
+    }
+
+    public static ShadowColorDrawable shadowOf(ColorDrawable instance) {
+        return (ShadowColorDrawable) shadowOf_(instance);
     }
 
     public static ShadowViewGroup shadowOf(ViewGroup instance) {

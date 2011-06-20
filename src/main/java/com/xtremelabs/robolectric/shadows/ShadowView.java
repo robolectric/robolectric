@@ -1,8 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.R;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
@@ -63,6 +66,7 @@ public class ShadowView {
     private View.OnTouchListener onTouchListener;
     protected AttributeSet attributeSet;
     private boolean drawingCacheEnabled;
+    private Drawable background = new ColorDrawable(R.color.transparent);
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -205,6 +209,7 @@ public class ShadowView {
 
     @Implementation
     public void setBackgroundResource(int backgroundResourceId) {
+        this.background = this.getResources().getDrawable(backgroundResourceId);
         this.backgroundResourceId = backgroundResourceId;
     }
 
@@ -464,6 +469,10 @@ public class ShadowView {
         return clickable;
     }
 
+    @Implementation
+    public Drawable getBackground() {
+        return background;
+    }
     /**
      * Non-Android accessor.
      *
@@ -475,6 +484,7 @@ public class ShadowView {
 
     @Implementation
     public void setBackgroundColor(int color) {
+        this.background = new ColorDrawable(getResources().getColor(color));
         backgroundColor = color;
     }
 
