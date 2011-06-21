@@ -33,6 +33,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.preference.DialogPreference;
 import android.preference.Preference;
+import android.telephony.TelephonyManager;
 import android.view.*;
 import android.view.animation.AnimationUtils;
 import android.webkit.WebSettings;
@@ -207,6 +208,7 @@ public class Robolectric {
                 ShadowSQLiteOpenHelper.class,
                 ShadowSQLiteQueryBuilder.class,
                 ShadowSurfaceView.class,
+                ShadowTelephonyManager.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
@@ -530,6 +532,10 @@ public class Robolectric {
     	return (ShadowSimpleCursorAdapter) shadowOf_(instance);
     }
     
+    public static ShadowTelephonyManager shadowOf(TelephonyManager instance) {
+    	return (ShadowTelephonyManager) shadowOf_(instance);
+    }
+
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
