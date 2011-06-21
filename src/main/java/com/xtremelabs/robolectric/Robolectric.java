@@ -101,7 +101,7 @@ public class Robolectric {
         return Arrays.asList(
                 ShadowAbsoluteLayout.class,
                 ShadowAbsSeekBar.class,
-                ShadowRatingBar.class,
+                ShadowActivityGroup.class,
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowActivity.class,
@@ -191,6 +191,7 @@ public class Robolectric {
                 ShadowPreference.class,
                 ShadowPreferenceManager.class,
                 ShadowProgressBar.class,
+                ShadowRatingBar.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
                 ShadowResourceCursorAdapter.class,
@@ -306,6 +307,10 @@ public class Robolectric {
     
     public static ShadowListActivity shadowOf(ListActivity instance) {
         return (ShadowListActivity) shadowOf_(instance);
+    }
+
+    public static ShadowActivityGroup shadowOf(ActivityGroup instance) {
+        return (ShadowActivityGroup) shadowOf_(instance);
     }
 
     public static ShadowHandler shadowOf(Handler instance) {
