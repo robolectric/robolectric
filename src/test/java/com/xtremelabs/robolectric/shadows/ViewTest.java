@@ -1,6 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -24,7 +26,7 @@ public class ViewTest {
     private View view;
 
     @Before public void setUp() throws Exception {
-        view = new View(null);
+        view = new View(new Activity());
     }
 
     @Test
@@ -127,6 +129,26 @@ public class ViewTest {
         shadowOf(view).checkedPerformClick();
     }
 
+    @Test
+    public void shouldReturnSomethingForABackground() throws Exception {
+        assertThat(view.getBackground(), notNullValue());
+    }
+
+    @Test
+    public void shouldSetBackgroundColor() {
+        Drawable origninalBackground = view.getBackground();
+        assertNotNull(origninalBackground);
+        view.setBackgroundColor(R.color.android_red);
+        int intColor = view.getResources().getColor(R.color.android_red);
+
+        assertThat((ColorDrawable) view.getBackground(), equalTo(new ColorDrawable(intColor)));
+    }
+
+    @Test
+    public void shouldSetBackgroundResource() throws Exception {
+        view.setBackgroundResource(R.drawable.an_image);
+        assertThat(view.getBackground(), equalTo(view.getResources().getDrawable(R.drawable.an_image)));
+    }
 
     @Test
     public void shouldRecordBackgroundColor() {
