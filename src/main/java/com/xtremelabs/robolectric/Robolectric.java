@@ -17,6 +17,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
 import android.location.Geocoder;
@@ -32,6 +33,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.preference.DialogPreference;
 import android.preference.Preference;
+import android.telephony.TelephonyManager;
 import android.view.*;
 import android.view.animation.AnimationUtils;
 import android.webkit.WebSettings;
@@ -99,11 +101,10 @@ public class Robolectric {
         return Arrays.asList(
                 ShadowAbsoluteLayout.class,
                 ShadowAbsSeekBar.class,
-                ShadowRatingBar.class,
+                ShadowActivityGroup.class,
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowActivity.class,
-                ShadowActivityGroup.class,
                 ShadowAdapterView.class,
                 ShadowAddress.class,
                 ShadowAlarmManager.class,
@@ -127,6 +128,7 @@ public class Robolectric {
                 ShadowCameraParameters.class,
                 ShadowCameraSize.class,
                 ShadowCanvas.class,
+                ShadowColorDrawable.class,
                 ShadowColorMatrix.class,
                 ShadowColorMatrixColorFilter.class,
                 ShadowColorStateList.class,
@@ -189,6 +191,7 @@ public class Robolectric {
                 ShadowPreference.class,
                 ShadowPreferenceManager.class,
                 ShadowProgressBar.class,
+                ShadowRatingBar.class,
                 ShadowRect.class,
                 ShadowRemoteViews.class,
                 ShadowResourceCursorAdapter.class,
@@ -209,6 +212,7 @@ public class Robolectric {
                 ShadowTabActivity.class,
                 ShadowTabHost.class,
                 ShadowTabSpec.class,
+                ShadowTelephonyManager.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
@@ -275,10 +279,6 @@ public class Robolectric {
     public static ShadowActivity shadowOf(Activity instance) {
         return (ShadowActivity) shadowOf_(instance);
     }
-    
-    public static ShadowActivityGroup shadowOf(ActivityGroup instance) {
-        return (ShadowActivityGroup) shadowOf_(instance);
-    }
 
     public static ShadowContextWrapper shadowOf(ContextWrapper instance) {
         return (ShadowContextWrapper) shadowOf_(instance);
@@ -312,6 +312,10 @@ public class Robolectric {
         return (ShadowListActivity) shadowOf_(instance);
     }
 
+    public static ShadowActivityGroup shadowOf(ActivityGroup instance) {
+        return (ShadowActivityGroup) shadowOf_(instance);
+    }
+
     public static ShadowHandler shadowOf(Handler instance) {
         return (ShadowHandler) shadowOf_(instance);
     }
@@ -326,6 +330,10 @@ public class Robolectric {
 
     public static ShadowView shadowOf(View instance) {
         return (ShadowView) shadowOf_(instance);
+    }
+
+    public static ShadowColorDrawable shadowOf(ColorDrawable instance) {
+        return (ShadowColorDrawable) shadowOf_(instance);
     }
 
     public static ShadowViewGroup shadowOf(ViewGroup instance) {
@@ -544,6 +552,10 @@ public class Robolectric {
     	return (ShadowSimpleCursorAdapter) shadowOf_(instance);
     }
     
+    public static ShadowTelephonyManager shadowOf(TelephonyManager instance) {
+    	return (ShadowTelephonyManager) shadowOf_(instance);
+    }
+
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
