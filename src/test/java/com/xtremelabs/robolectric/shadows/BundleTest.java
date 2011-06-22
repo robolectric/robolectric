@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.os.Bundle;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -57,5 +58,12 @@ public class BundleTest {
         assertEquals(true, bundle.getBoolean("foo"));
         assertEquals(false, bundle.getBoolean("bar"));
         assertEquals(true, bundle.getBoolean("bar", true));
+    }
+
+    @Test
+    public void testStringArray() {
+        bundle.putStringArray("foo", new String[] { "a" });
+        Assert.assertArrayEquals(new String[] { "a" }, bundle.getStringArray("foo"));
+        assertNull(bundle.getStringArray("bar"));
     }
 }
