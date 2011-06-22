@@ -69,14 +69,14 @@
         <dependency>
             <groupId>com.google.android</groupId>
             <artifactId>android</artifactId>
-            <version>${android.version}</version>
+            <version>2.3.1</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.google.android.maps</groupId>
             <artifactId>maps</artifactId>
-            <version>${android.version}</version>
+            <version>9_r1</version>
             <scope>provided</scope>
         </dependency>
 
