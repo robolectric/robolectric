@@ -120,6 +120,16 @@ public class ShadowBundle {
     }
 
     @Implementation
+    public void putStringArray(String key, String[] value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public String[] getStringArray(String key) {
+        return (String[]) map.get(key);
+    }
+
+    @Implementation
     public boolean containsKey(String key) {
         return map.containsKey(key);
     }
