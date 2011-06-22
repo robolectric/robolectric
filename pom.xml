@@ -2,12 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>5</version>
-    </parent>
-
+ <parent>
+    <groupId>com.redsoft.android</groupId>
+    <artifactId>redsoft-android</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+  </parent>
     <groupId>com.pivotallabs</groupId>
     <artifactId>robolectric</artifactId>
     <version>1.0-RC2-SNAPSHOT</version>
@@ -70,14 +69,14 @@
         <dependency>
             <groupId>com.google.android</groupId>
             <artifactId>android</artifactId>
-            <version>2.3.1</version>
+            <version>${android.version}</version>
             <scope>provided</scope>
         </dependency>
 
         <dependency>
             <groupId>com.google.android.maps</groupId>
             <artifactId>maps</artifactId>
-            <version>9_r2</version>
+            <version>${android.version}</version>
             <scope>provided</scope>
         </dependency>
 
@@ -179,6 +178,7 @@
         </profile>
     </profiles>
 
+<!-- 
     <scm>
         <url>git@github.com:pivotal/robolectric.git</url>
         <connection>scm:git:git://github.com/pivotal/robolectric.git</connection>
@@ -263,4 +263,5 @@
             </comments>
         </license>
     </licenses>
+    -->
 </project>
