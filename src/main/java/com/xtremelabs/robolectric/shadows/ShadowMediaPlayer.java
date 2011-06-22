@@ -4,10 +4,11 @@ import android.content.Context;
 import android.media.MediaPlayer;
 import android.net.Uri;
 
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadows the Android {@code MediaPlayer} class.
@@ -29,7 +30,7 @@ public class ShadowMediaPlayer {
 	@Implementation
 	public static MediaPlayer create(Context context, int resId) {
 		MediaPlayer mp = new MediaPlayer();
-		Robolectric.shadowOf(mp).sourceResId = resId;
+		shadowOf(mp).sourceResId = resId;
 		try {
 			mp.prepare();
 		} catch (Exception e) { return null; }
@@ -88,7 +89,7 @@ public class ShadowMediaPlayer {
 	}
 	
 	@Implementation
-	public void play() {
+	public void start() {
 		playing = true;
 	}
 	
