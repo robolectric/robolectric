@@ -152,6 +152,7 @@ public class Robolectric {
                 ShadowEditText.class,
                 ShadowExpandableListView.class,
                 ShadowFloatMath.class,
+                ShadowFrameLayout.class,
                 ShadowGeocoder.class,
                 ShadowGeoPoint.class,
                 ShadowGridView.class,
@@ -209,6 +210,8 @@ public class Robolectric {
                 ShadowSQLiteOpenHelper.class,
                 ShadowSQLiteQueryBuilder.class,
                 ShadowSurfaceView.class,
+                ShadowTabHost.class,
+                ShadowTabSpec.class,
                 ShadowTelephonyManager.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
@@ -519,6 +522,18 @@ public class Robolectric {
     
     public static ShadowGridView shadowOf(GridView instance) {
     	return (ShadowGridView) shadowOf_(instance);
+    }
+
+    public static ShadowTabHost shadowOf(TabHost instance) {
+    	return (ShadowTabHost) shadowOf_(instance);
+    }
+
+    public static ShadowTabSpec shadowOf(TabHost.TabSpec instance) {
+    	return (ShadowTabSpec) shadowOf_(instance);
+    }
+
+    public static ShadowFrameLayout shadowOf(FrameLayout instance) {
+    	return (ShadowFrameLayout) shadowOf_(instance);
     }
 
     public static ShadowRect shadowOf(Rect instance) {
