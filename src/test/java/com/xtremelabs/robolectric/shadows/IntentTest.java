@@ -59,6 +59,8 @@ public class IntentTest {
         Intent intent = new Intent();
         assertSame(intent, intent.putExtra("foo", 2L));
         assertEquals(2L, shadowOf(intent).getExtras().get("foo"));
+        assertEquals(2L, intent.getLongExtra("foo", -1));
+        assertEquals(-1L, intent.getLongExtra("bar", -1));
     }
 
     @Test
