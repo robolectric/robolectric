@@ -17,6 +17,8 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowService extends ShadowContextWrapper {
     @RealObject Service realService;
     
+    private boolean selfStopped = false;
+    
     private boolean unbindServiceShouldThrowIllegalArgument = false;
 
     @Implementation
@@ -41,6 +43,11 @@ public class ShadowService extends ShadowContextWrapper {
     	}
     }
     
+    @Implementation
+    public void stopSelf() {
+    	selfStopped = true;
+    }
+    
     public void setUnbindServiceShouldThrowIllegalArgument(boolean flag) {
     	unbindServiceShouldThrowIllegalArgument = flag;
     }
@@ -50,5 +57,13 @@ public class ShadowService extends ShadowContextWrapper {
      */
     public void assertNoBroadcastListenersRegistered() {
         ((ShadowApplication) shadowOf(getApplicationContext())).assertNoBroadcastListenersRegistered(realService, "Service");
+    }
+    
+    /**
+     * Non-Android accessor, to use in assertions. 
+     * @return
+     */
+    public boolean isStoppedBySelf() {
+    	return selfStopped;
     }
 }
