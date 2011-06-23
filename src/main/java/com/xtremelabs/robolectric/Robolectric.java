@@ -16,6 +16,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
@@ -107,6 +108,7 @@ public class Robolectric {
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowActivity.class,
+                ShadowActivityManager.class,
                 ShadowAdapterView.class,
                 ShadowAddress.class,
                 ShadowAlarmManager.class,
@@ -590,7 +592,11 @@ public class Robolectric {
 	public static ShadowTelephonyManager shadowOf(TelephonyManager instance) {
 		return (ShadowTelephonyManager) shadowOf_(instance);
 	}
-    
+	
+	public static ShadowActivityManager shadowOf(ActivityManager instance) {
+		return (ShadowActivityManager) shadowOf_(instance);
+	}
+
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
@@ -752,6 +758,7 @@ public class Robolectric {
         return shadowOf(Robolectric.application);
     }
 
+    
     /**
      * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
      * is enabled.

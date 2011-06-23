@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import android.content.Context;
@@ -16,7 +17,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 public class ShadowCursorAdapter {
 
 	private Cursor cursor;
-	private List<View> views;
+	private List<View> views = new ArrayList<View>();
 	
     public void __constructor__( Context ctx, Cursor curs, boolean autoRequery ) {
     	cursor = curs;

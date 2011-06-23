@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.content.ComponentName;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
@@ -12,6 +13,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 
 import com.xtremelabs.robolectric.RobolectricConfig;
+import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
 
 public class RobolectricPackageManager extends StubPackageManager {
@@ -74,6 +76,13 @@ public class RobolectricPackageManager extends StubPackageManager {
     	}
     	resolveList.put( intent, info );
     }
+    
+	@Override
+	public Intent getLaunchIntentForPackage(String packageName) {
+		Intent i = new Intent();
+		i.setComponent( new ComponentName(packageName, "") );
+		return i;
+	}
     
     /**
      * Non-Android accessor.  Used to add a package to the list of those
