@@ -1,10 +1,12 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.view.View;
 import android.widget.TabHost;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -16,6 +18,21 @@ public class TabHostTest {
         TabHost tabHost = new TabHost(null);
         TabHost.TabSpec tabSpec = tabHost.newTabSpec("Foo");
         assertThat(tabSpec.getTag(), equalTo("Foo"));
+    }
+
+    @Test
+    public void shouldAddTabsToLayoutWhenAddedToHost() {
+        TabHost tabHost = new TabHost(null);
+        View fooView = new View(null);
+        TabHost.TabSpec foo = tabHost.newTabSpec("Foo").setIndicator(fooView);
+        View barView = new View(null);
+        TabHost.TabSpec bar = tabHost.newTabSpec("Bar").setIndicator(barView);
+
+        tabHost.addTab(foo);
+        tabHost.addTab(bar);
+
+        assertThat(tabHost.getChildAt(0), is(fooView));
+        assertThat(tabHost.getChildAt(1), is(barView));
     }
 
     @Test

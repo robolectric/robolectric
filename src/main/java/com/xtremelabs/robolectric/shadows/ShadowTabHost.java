@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.view.View;
 import android.widget.TabHost;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -33,6 +34,10 @@ public class ShadowTabHost extends ShadowFrameLayout {
     @Implementation
     public void addTab(android.widget.TabHost.TabSpec tabSpec) {
         tabSpecs.add(tabSpec);
+        View indicatorAsView = shadowOf(tabSpec).getIndicatorAsView();
+        if (indicatorAsView != null) {
+            addView(indicatorAsView);
+        }
     }
 
     @Implementation
