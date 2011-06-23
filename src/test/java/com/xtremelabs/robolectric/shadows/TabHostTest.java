@@ -23,8 +23,10 @@ public class TabHostTest {
     @Test
     public void shouldAddTabsToLayoutWhenAddedToHost() {
         TabHost tabHost = new TabHost(null);
+
         View fooView = new View(null);
         TabHost.TabSpec foo = tabHost.newTabSpec("Foo").setIndicator(fooView);
+
         View barView = new View(null);
         TabHost.TabSpec bar = tabHost.newTabSpec("Bar").setIndicator(barView);
 

@@ -4,6 +4,7 @@ import android.view.View;
 import android.widget.TabHost;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -16,6 +17,8 @@ public class ShadowTabHost extends ShadowFrameLayout {
     private List<TabHost.TabSpec> tabSpecs = new ArrayList<TabHost.TabSpec>();
     private TabHost.OnTabChangeListener listener;
     private TabHost.TabSpec currentTab;
+
+    @RealObject TabHost realObject;
 
     @Implementation
     public android.widget.TabHost.TabSpec newTabSpec(java.lang.String tag) {
@@ -36,7 +39,7 @@ public class ShadowTabHost extends ShadowFrameLayout {
         tabSpecs.add(tabSpec);
         View indicatorAsView = shadowOf(tabSpec).getIndicatorAsView();
         if (indicatorAsView != null) {
-            addView(indicatorAsView);
+            realObject.addView(indicatorAsView);
         }
     }
 
