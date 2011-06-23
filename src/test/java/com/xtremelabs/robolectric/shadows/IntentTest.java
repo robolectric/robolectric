@@ -109,8 +109,9 @@ public class IntentTest {
     @Test
     public void shouldSetFlags() throws Exception {
         Intent intent = new Intent();
-        intent.setFlags(1234);
+        Intent self = intent.setFlags(1234);
         assertEquals(1234, intent.getFlags());
+        assertSame(self, intent);
     }
 
     @Test

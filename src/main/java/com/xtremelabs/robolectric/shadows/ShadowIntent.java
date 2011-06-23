@@ -105,8 +105,9 @@ public class ShadowIntent {
     }
 
     @Implementation
-    public void setFlags(int flags) {
+    public Intent setFlags(int flags) {
         this.flags = flags;
+        return realIntent;
     }
 
     @Implementation
