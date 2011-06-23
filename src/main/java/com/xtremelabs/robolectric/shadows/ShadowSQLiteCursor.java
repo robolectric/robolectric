@@ -4,9 +4,11 @@ import android.database.sqlite.SQLiteCursor;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
 
 /**
  * Simulates an Android Cursor object, by wrapping a JDBC ResultSet.
@@ -15,26 +17,35 @@ import java.sql.SQLException;
 public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 
     private ResultSet resultSet;
+    String[] columnNames;
     private int rowCount;
 
     @Implementation
     public int getCount() {
+    	
         return rowCount;
     }
 
-    @Implementation
-    public String[] getColumnNames() {
-        try {
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            String[] columnNames = new String[metaData.getColumnCount()];
+    /**
+     * Stores the column names so they are retrievable after the resultSet has closed
+     */
+    private void cacheColumnNames(ResultSet rs) {
+    	try {
+            ResultSetMetaData metaData = rs.getMetaData();
+            String[] colNames = new String[metaData.getColumnCount()];
             int columnCount = metaData.getColumnCount();
             for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-                columnNames[columnIndex - 1] = metaData.getColumnName(columnIndex);
+            	colNames[columnIndex - 1] = metaData.getColumnName(columnIndex);
             }
-            return columnNames;
+            this.columnNames = colNames;
         } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in getColumnNames", e);
+            throw new RuntimeException("SQL exception in cacheColumnNames", e);
         }
+    }
+    
+    @Implementation
+    public String[] getColumnNames() {
+    	return columnNames;
     }
 
     @Implementation
@@ -65,17 +76,27 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     @Implementation
     @Override
     public final boolean moveToFirst() {
+    	boolean result = false;
+    	if (resultSet==null) return false;
         try {
-            resultSet.first();
+        	if(resultSet.isBeforeFirst()) {
+                result = resultSet.next();
+        	} else if (resultSet.isFirst()) {
+        		result = true;
+        	} else {
+        		result = false;
+        	}
         } catch (SQLException e) {
             throw new RuntimeException("SQL exception in moveToFirst", e);
         }
-        return super.moveToFirst();
+        if (result=true) super.moveToFirst();
+        return result;
     }
 
     @Implementation
     @Override
     public boolean moveToNext() {
+    	if (resultSet==null) return false;
         try {
             resultSet.next();
         } catch (SQLException e) {
@@ -176,21 +197,49 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     public ResultSet getResultSet() {
         return resultSet;
     }
+    
+    /**
+     * Allows test cases access to the underlying JDBC ResultSetMetaData, for use in
+     * assertions. Available even if cl
+     *
+     * @return the result set
+     */
+    public ResultSet getResultSetMetaData() {
+        return resultSet;
+    }
 
-    public void setResultSet(ResultSet result) {
+    private void setRowCount(String sql, Connection connection) throws SQLException {
+    	Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        ResultSet rs = statement.executeQuery(sql);
+        int count = 0;
+        
+         if (rs.next()) {  
+        	         // here you know that there is at least one record  
+        	    do {  
+        	    	count++;   // here you do whatever needs to be done for each record. Note that it will be called for the first record.  
+        	     } while (rs.next());  
+        	 } else {  
+        		 rs.close();
+        	   this.close();  // here you do whatever needs to be done when there is no record  
+        	 } 
+        
+        rowCount = count;
+        
+    }
+    
+    public void setResultSet(ResultSet result, String sql, Connection connection) {
         this.resultSet = result;
         rowCount = 0;
-
+        
         // Cache count up front, since computing result count in JDBC
         // is destructive to cursor position.
         if (resultSet != null) {
-            try {
-                resultSet.beforeFirst();
-                resultSet.last();
-                rowCount = resultSet.getRow();
-            } catch (SQLException e) {
-                throw new RuntimeException("SQL exception in setResultSet", e);
-            }
+        	cacheColumnNames(resultSet);
+        	try {
+        		setRowCount(sql,connection);
+			} catch (SQLException e) {
+			    throw new RuntimeException("SQL exception in setResultSet", e);
+			}
         }
     }
 }

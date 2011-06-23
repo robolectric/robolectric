@@ -271,10 +271,11 @@ public class SQLiteCursorTest {
     }
 
     private void setupCursor() throws Exception {
-        Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        String sql ="SELECT * FROM table_name;";
         resultSet = statement.executeQuery("SELECT * FROM table_name;");
         cursor = new SQLiteCursor(null, null, null, null);
-        Robolectric.shadowOf(cursor).setResultSet(resultSet);
+        Robolectric.shadowOf(cursor).setResultSet(resultSet, sql, connection);
     }
 
     private void setupEmptyResult() throws Exception {

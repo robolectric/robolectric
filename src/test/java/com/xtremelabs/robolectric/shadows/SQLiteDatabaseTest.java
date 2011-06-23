@@ -27,7 +27,7 @@ public class SQLiteDatabaseTest {
         database = SQLiteDatabase.openDatabase("path", null, 0);
 
         database.execSQL("CREATE TABLE table_name (\n" +
-                "  id INT PRIMARY KEY AUTOINCREMENT,\n" +
+                "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
                 "  first_column VARCHAR(255),\n" +
                 "  second_column BINARY,\n" +
                 "  name VARCHAR(255),\n" +
@@ -197,12 +197,13 @@ public class SQLiteDatabaseTest {
 
         statement = shadowOf(database).getConnection().createStatement();
         resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
-        assertThat(resultSet.first(), equalTo(true));
+        assertThat(resultSet.next(), equalTo(true));
         assertThat(resultSet.getInt(1), equalTo(1));
 
         statement = shadowOf(database).getConnection().createStatement();
         resultSet = statement.executeQuery("SELECT * FROM table_name");
-        assertThat(resultSet.first(), equalTo(true));
+     //   assertThat(resultSet.first(), equalTo(true));
+        assertThat(resultSet.next(), equalTo(true));
         assertThat(resultSet.getInt(1), equalTo(1234));
         assertThat(resultSet.getString(4), equalTo("Chuck"));
     }
@@ -214,7 +215,7 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testExecSQLAutoIncrementSQLite() throws Exception {
-        database.execSQL("CREATE TABLE auto_table (id INT PRIMARY KEY AUTOINCREMENT, name VARCHAR(255));");
+        database.execSQL("CREATE TABLE auto_table (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255));");
 
         ContentValues values = new ContentValues();
         values.put("name", "Chuck");
@@ -287,6 +288,7 @@ public class SQLiteDatabaseTest {
     private void assertEmptyDatabase() {
         Cursor cursor = database.query("table_name", new String[]{"id", "name"}, null, null, null, null, null);
         assertThat(cursor.moveToFirst(), equalTo(false));
+        assertThat(cursor.isClosed(), equalTo(true));
         assertThat(cursor.getCount(), equalTo(0));
     }
 

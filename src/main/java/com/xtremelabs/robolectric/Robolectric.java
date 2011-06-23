@@ -15,6 +15,7 @@ import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteStatement;
 import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -207,6 +208,7 @@ public class Robolectric {
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
+                ShadowSQLiteStatement.class,
                 ShadowSQLiteQueryBuilder.class,
                 ShadowSurfaceView.class,
                 ShadowTabActivity.class,
@@ -432,6 +434,10 @@ public class Robolectric {
         return (ShadowGeocoder) shadowOf_(instance);
     }
 
+    public static ShadowSQLiteStatement shadowOf(SQLiteStatement other) {
+        return (ShadowSQLiteStatement) Robolectric.shadowOf_(other);
+    }
+    
     public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
         return (ShadowSQLiteDatabase) Robolectric.shadowOf_(other);
     }

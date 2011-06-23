@@ -2,20 +2,28 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.sqlite.SQLiteClosable;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteStatement;
+import android.widget.TabHost;
+
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
+import java.lang.reflect.Constructor;
 import java.sql.*;
 import java.util.Iterator;
+import java.util.WeakHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.SQLite.*;
 
-//XXX: __CHRIS__ add support for db.compileStatement(String statement);
 //XXX: __CHRIS__ add support for anything that is called by ormlite.android.AndroidDatabaseConnection
 
 /**
@@ -24,14 +32,46 @@ import static com.xtremelabs.robolectric.util.SQLite.*;
  * made available to test cases for use in fixture setup and assertions.
  */
 @Implements(SQLiteDatabase.class)
-public class ShadowSQLiteDatabase {
+public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
+	@RealObject	SQLiteDatabase realSQLiteDatabase;
     private static Connection connection;
-
+    private final ReentrantLock mLock = new ReentrantLock(true);
+    private boolean mLockingEnabled = true;
+    private WeakHashMap<SQLiteClosable, Object> mPrograms;
+    
+    @Implementation
+    public void setLockingEnabled(boolean lockingEnabled) {
+        mLockingEnabled = lockingEnabled;
+    }
+    
+    public void lock() {
+        if (!mLockingEnabled) return;
+        mLock.lock();
+//        if (SQLiteDebug.DEBUG_LOCK_TIME_TRACKING) {
+//            if (mLock.getHoldCount() == 1) {
+//                // Use elapsed real-time since the CPU may sleep when waiting for IO
+//                mLockAcquiredWallTime = SystemClock.elapsedRealtime();
+//                mLockAcquiredThreadTime = Debug.threadCpuTimeNanos();
+//            }
+//        }
+    }
+    
+    public void unlock() {
+        if (!mLockingEnabled) return;
+//        if (SQLiteDebug.DEBUG_LOCK_TIME_TRACKING) {
+//            if (mLock.getHoldCount() == 1) {
+//                checkLockHoldTime();
+//            }
+//        }
+        mLock.unlock();
+    }
+    
+    
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
         try {
-            Class.forName("org.h2.Driver").newInstance();
-            connection = DriverManager.getConnection("jdbc:h2:mem:");
+     			Class.forName("org.sqlite.JDBC");
+     			connection = DriverManager.getConnection("jdbc:sqlite::memory:");
         } catch (Exception e) {
             throw new RuntimeException("SQL exception in openDatabase", e);
         }
@@ -52,9 +92,11 @@ public class ShadowSQLiteDatabase {
             statement.executeUpdate();
 
             ResultSet resultSet = statement.getGeneratedKeys();
-            if (resultSet.first()) {
+
+            if (resultSet.next()) {
                 return resultSet.getLong(1);
             }
+
         } catch (SQLException e) {
             throw new RuntimeException("SQL exception in insert", e);
         }
@@ -95,14 +137,14 @@ public class ShadowSQLiteDatabase {
 
         ResultSet resultSet;
         try {
-            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             resultSet = statement.executeQuery(sql);
         } catch (SQLException e) {
             throw new RuntimeException("SQL exception in query", e);
         }
 
         SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
-        shadowOf(cursor).setResultSet(resultSet);
+        shadowOf(cursor).setResultSet(resultSet,sql, connection);
         return cursor;
     }
 
@@ -156,12 +198,12 @@ public class ShadowSQLiteDatabase {
         }
 
         // Map 'autoincrement' (sqlite) to 'auto_increment' (h2).
-        String scrubbedSQL = sql.replaceAll("(?i:autoincrement)", "auto_increment");
+     //   String scrubbedSQL = sql.replaceAll("(?i:autoincrement)", "auto_increment");
         // Map 'integer' (sqlite) to 'bigint(19)' (h2).
-        scrubbedSQL = scrubbedSQL.replaceAll("(?i:integer)", "bigint(19)");
+       // scrubbedSQL = scrubbedSQL.replaceAll("(?i:integer)", "bigint(19)");
 
         try {
-            connection.createStatement().execute(scrubbedSQL);
+            connection.createStatement().execute(sql);
         } catch (java.sql.SQLException e) {
             android.database.SQLException ase = new android.database.SQLException();
             ase.initCause(e);
@@ -177,14 +219,14 @@ public class ShadowSQLiteDatabase {
         }
         ResultSet resultSet;
         try {
-            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
             resultSet = statement.executeQuery(sqlBody);
         } catch (SQLException e) {
             throw new RuntimeException("SQL exception in query", e);
         }
 
         SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
-        shadowOf(cursor).setResultSet(resultSet);
+        shadowOf(cursor).setResultSet(resultSet, sql, connection);
         return cursor;
     }
     
@@ -215,4 +257,48 @@ public class ShadowSQLiteDatabase {
     public Connection getConnection() {
         return connection;
     }
+    
+    @Implementation
+    public SQLiteStatement compileStatement(String sql) throws SQLException {
+        lock();
+        
+        try {
+        	SQLiteStatement stmt = Robolectric.newInstanceOf(SQLiteStatement.class);
+        	Robolectric.shadowOf(stmt).init(realSQLiteDatabase, sql);
+            return stmt;
+        } catch (Exception e){
+        	throw new RuntimeException(e);
+        } finally {
+            unlock();
+        }
+    }
+    
+    @Implementation
+	@Override
+	public void onAllReferencesReleased() {
+		if (isOpen()) {
+           // dbclose(); //native call
+        }
+	}
+	   /**
+     * @param closable
+     */
+    void addSQLiteClosable(SQLiteClosable closable) {
+        lock();
+        try {
+            mPrograms.put(closable, null);
+        } finally {
+            unlock();
+        }
+    }
+
+    void removeSQLiteClosable(SQLiteClosable closable) {
+        lock();
+        try {
+            mPrograms.remove(closable);
+        } finally {
+            unlock();
+        }
+    }
+	
 }

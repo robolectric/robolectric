@@ -86,6 +86,16 @@
             <version>1.8.5</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+        <!-- Need at least version 3.6.19 for 64 bit OS support,
+             if you change versions and can't open the DB, 
+             check that native\Windows\amd64 exists in the package.
+              Not all versions above 3.6.19 include it -->
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.7.2</version>
+        </dependency>
+        
     </dependencies>
 
     <build>
@@ -189,7 +199,7 @@
         <system>Hudson</system>
         <url>http://cibuilder.pivotallabs.com:8080/job/robolectric/</url>
     </ciManagement>
-
+-->
     <developers>
         <developer>
             <id>xian</id>
@@ -263,5 +273,5 @@
             </comments>
         </license>
     </licenses>
-    -->
+    
 </project>
