@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.Intent;
 import android.view.View;
 import android.widget.TabHost;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -20,5 +21,14 @@ public class TabSpecTest {
         TabHost.TabSpec self = spec.setIndicator(view);
         assertThat(self, is(spec));
         assertThat(shadowOf(spec).getIndicatorAsView(), is(view));
+    }
+
+    @Test
+    public void shouldGetAndSetTheIntentContent() throws Exception {
+        TabHost.TabSpec spec = new TabHost(null).newTabSpec("foo");
+        Intent intent = new Intent();
+        TabHost.TabSpec self = spec.setContent(intent);
+        assertThat(self, is(spec));
+        assertThat(shadowOf(spec).getContentAsIntent(), is(intent));
     }
 }
