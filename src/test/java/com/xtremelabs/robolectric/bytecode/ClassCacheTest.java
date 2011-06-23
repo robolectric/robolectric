@@ -3,9 +3,6 @@ package com.xtremelabs.robolectric.bytecode;
 import org.junit.Assert;
 import org.junit.Test;
 
-import com.xtremelabs.robolectric.bytecode.AndroidTranslator;
-import com.xtremelabs.robolectric.bytecode.ClassCache;
-
 public class ClassCacheTest {
 
 
@@ -22,7 +19,6 @@ public class ClassCacheTest {
                     try {
                         Thread.sleep(Long.MAX_VALUE);
                     } catch (InterruptedException e) {
-                        System.out.println("Interrupted.");
                         return;
                     }
                 }
@@ -62,7 +58,6 @@ public class ClassCacheTest {
                     try {
                         Thread.sleep(Long.MAX_VALUE);
                     } catch (InterruptedException e) {
-                        System.out.println("Interrupted.");
                         return;
                     }
                 }
