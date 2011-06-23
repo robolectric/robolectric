@@ -18,4 +18,52 @@ public class TabHostTest {
         assertThat(tabSpec.getTag(), equalTo("Foo"));
     }
 
+    @Test
+    public void shouldFireTheTabChangeListenerWhenCurrentTabIsSet() throws Exception {
+        TabHost tabHost = new TabHost(null);
+
+        TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
+        TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
+        TabHost.TabSpec baz = tabHost.newTabSpec("Baz");
+
+        tabHost.addTab(foo);
+        tabHost.addTab(bar);
+        tabHost.addTab(baz);
+
+        TestOnTabChangeListener listener = new TestOnTabChangeListener();
+        tabHost.setOnTabChangedListener(listener);
+
+        tabHost.setCurrentTab(2);
+
+        assertThat(listener.tag, equalTo("Baz"));
+    }
+
+    @Test
+    public void shouldFireTheTabChangeListenerWhenTheCurrentTabIsSetByTag() throws Exception {
+        TabHost tabHost = new TabHost(null);
+
+        TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
+        TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
+        TabHost.TabSpec baz = tabHost.newTabSpec("Baz");
+
+        tabHost.addTab(foo);
+        tabHost.addTab(bar);
+        tabHost.addTab(baz);
+
+        TestOnTabChangeListener listener = new TestOnTabChangeListener();
+        tabHost.setOnTabChangedListener(listener);
+
+        tabHost.setCurrentTabByTag("Bar");
+
+        assertThat(listener.tag, equalTo("Bar"));
+    }
+
+    private static class TestOnTabChangeListener implements TabHost.OnTabChangeListener {
+        private String tag;
+
+        @Override
+        public void onTabChanged(String tag) {
+            this.tag = tag;
+        }
+    }
 }
