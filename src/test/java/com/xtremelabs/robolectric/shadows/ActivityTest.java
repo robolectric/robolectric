@@ -1,22 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.app.Activity;
-import android.appwidget.AppWidgetProvider;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.IntentSender;
-import android.net.Uri;
-import com.xtremelabs.robolectric.ApplicationResolver;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.TestRunnable;
-import com.xtremelabs.robolectric.util.Transcript;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -24,6 +9,24 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import android.app.Activity;
+import android.appwidget.AppWidgetProvider;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.IntentSender;
+import android.content.pm.ActivityInfo;
+import android.net.Uri;
+
+import com.xtremelabs.robolectric.ApplicationResolver;
+import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.TestRunnable;
+import com.xtremelabs.robolectric.util.Transcript;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ActivityTest {
@@ -202,6 +205,13 @@ public class ActivityTest {
 
         shadowActivity.setStartIntentSenderShouldThrowException(true);
         activity.startIntentSender(null, null, 0, 0, 0);    
+    }
+
+    @Test
+    public void shouldSetOrientation() {
+        MyActivity activity = new MyActivity();
+        activity.setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT );
+        assertThat( activity.getRequestedOrientation(), equalTo( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT ) );
     }
 
     private static class MyActivity extends Activity {

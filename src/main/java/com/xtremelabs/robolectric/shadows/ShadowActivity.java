@@ -32,7 +32,7 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     private Intent intent;
     View contentView;
-
+    private int orientation;
     private int resultCode;
     private Intent resultIntent;
     private Intent startServiceIntent;
@@ -70,6 +70,17 @@ public class ShadowActivity extends ShadowContextWrapper {
     public Intent getIntent() {
         return intent;
     }
+    
+    @Implementation
+    public int getRequestedOrientation() {
+    	return orientation;
+    }
+    
+    @Implementation
+    public void setRequestedOrientation( int requestedOrientation ) {
+    	orientation = requestedOrientation;
+    }
+    
 
     /**
      * Sets the {@code contentView} for this {@code Activity} by invoking the
