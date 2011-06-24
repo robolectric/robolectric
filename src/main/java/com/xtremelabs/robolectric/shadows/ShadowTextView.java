@@ -26,13 +26,15 @@ public class ShadowTextView extends ShadowView {
     private CharSequence hintText;
     private int compoundDrawablePadding;
 
-    @Override public void applyAttributes() {
+    @Override
+    public void applyAttributes() {
         super.applyAttributes();
         applyTextAttribute();
+        applyTextColorAttribute();
         applyCompoundDrawablesWithIntrinsicBoundsAttributes();
     }
 
-  @Implementation
+    @Implementation
     public void setText(CharSequence text) {
         if (text == null) {
             text = "";
@@ -191,6 +193,19 @@ public class ShadowTextView extends ShadowView {
                 text = context.getResources().getString(textResId);
             }
             setText(text);
+        }
+    }
+
+    private void applyTextColorAttribute() {
+        String colorValue = attributeSet.getAttributeValue("android", "textColor");
+        if (colorValue != null) {
+            if (colorValue.startsWith("@color/") || colorValue.startsWith("@android:color/")) {
+                int colorResId = attributeSet.getAttributeResourceValue("android", "textColor", 0);
+                setTextColor(context.getResources().getColor(colorResId));
+            } else if (colorValue.startsWith("#")) {
+                int colorFromHex = (int) Long.valueOf(colorValue.replaceAll("#", ""), 16).longValue();
+                setTextColor(colorFromHex);
+            }
         }
     }
 
