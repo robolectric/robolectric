@@ -181,10 +181,10 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     @Implementation
     public boolean isNull(int columnIndex) {
         try {
-            resultSet.getObject(columnIndex + 1);
-            return resultSet.wasNull();
+          Object o =  resultSet.getObject(columnIndex + 1);
+            return o==null;
         } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in isNull", e);
+            throw new RuntimeException("SQL exception in isNull, column may be out of bounds", e);
         }
     }
 

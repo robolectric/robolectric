@@ -28,8 +28,10 @@ public class SQLiteCursorTest {
 
     @Before
     public void setUp() throws Exception {
-        Class.forName("org.h2.Driver").newInstance();
-        connection = DriverManager.getConnection("jdbc:h2:mem:");
+    	Class.forName("org.sqlite.JDBC");
+       // Class.forName("org.h2.Driver").newInstance();
+    	connection = DriverManager.getConnection("jdbc:sqlite::memory:");
+        //connection = DriverManager.getConnection("jdbc:h2:mem:");
 
         Statement statement = connection.createStatement();
         statement.execute("CREATE TABLE table_name(" +
@@ -250,6 +252,7 @@ public class SQLiteCursorTest {
         }
     }
 
+    //TODO: determine if Android returns an exception or a NULL vale when index is out of bounds.
     @Test
     public void testIsNullWhenIndexOutOfBounds() throws Exception {
         cursor.moveToFirst();
@@ -287,12 +290,12 @@ public class SQLiteCursorTest {
 
     private void assertColumnNames(String[] columnNames) {
         assertThat(columnNames.length, equalTo(6));
-        assertThat(columnNames[0], equalTo("ID"));
-        assertThat(columnNames[1], equalTo("NAME"));
-        assertThat(columnNames[2], equalTo("LONG_VALUE"));
-        assertThat(columnNames[3], equalTo("FLOAT_VALUE"));
-        assertThat(columnNames[4], equalTo("DOUBLE_VALUE"));
-        assertThat(columnNames[5], equalTo("BLOB_VALUE"));
+        assertThat(columnNames[0], equalTo("id"));
+        assertThat(columnNames[1], equalTo("name"));
+        assertThat(columnNames[2], equalTo("long_value"));
+        assertThat(columnNames[3], equalTo("float_value"));
+        assertThat(columnNames[4], equalTo("double_value"));
+        assertThat(columnNames[5], equalTo("blob_value"));
     }
 
 }
