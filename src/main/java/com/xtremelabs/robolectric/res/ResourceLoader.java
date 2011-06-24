@@ -8,13 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -127,10 +121,12 @@ public class ResourceLoader {
     }
 
     private void loadPreferenceResources(File xmlResourceDir) throws Exception {
-        DocumentLoader preferenceDocumentLoader = new DocumentLoader(preferenceLoader);
-        preferenceDocumentLoader.loadResourceXmlDir(xmlResourceDir);
+        if (xmlResourceDir.exists()) {
+            DocumentLoader preferenceDocumentLoader = new DocumentLoader(preferenceLoader);
+            preferenceDocumentLoader.loadResourceXmlDir(xmlResourceDir);
+        }
     }
-    
+
     private void loadLayoutResourceXmlSubDirs(DocumentLoader layoutDocumentLoader, File xmlResourceDir) throws Exception {
         if (xmlResourceDir != null) {
             layoutDocumentLoader.loadResourceXmlDirs(xmlResourceDir.listFiles(LAYOUT_DIR_FILE_FILTER));
@@ -167,7 +163,7 @@ public class ResourceLoader {
     private File getPreferenceResourceDir(File xmlResourceDir) {
         return xmlResourceDir != null ? new File(xmlResourceDir, "xml") : null;
     }
-    
+
     private String getPathToAndroidResources() {
         String resourcePath;
         if ((resourcePath = getAndroidResourcePathFromLocalProperties()) != null) {
@@ -276,7 +272,7 @@ public class ResourceLoader {
         init();
         return viewLoader.inflateView(context, resource, viewGroup);
     }
-    
+
     public int getColorValue(int id) {
         init();
         return colorResourceLoader.getValue(id);
@@ -301,11 +297,11 @@ public class ResourceLoader {
         init();
         menuLoader.inflateMenu(context, resource, root);
     }
-    
+
     public PreferenceScreen inflatePreferences(Context context, int resourceId) {
         init();
         return preferenceLoader.inflatePreferences(context, resourceId);
-    }    
+    }
 
     public File getAssetsBase() {
         return assetsDir;
