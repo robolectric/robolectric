@@ -7,14 +7,12 @@ import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
-import android.widget.TabHost;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
-import java.lang.reflect.Constructor;
 import java.sql.*;
 import java.util.Iterator;
 import java.util.WeakHashMap;
@@ -196,11 +194,6 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         if (!isOpen()) {
             throw new IllegalStateException("database not open");
         }
-
-        // Map 'autoincrement' (sqlite) to 'auto_increment' (h2).
-     //   String scrubbedSQL = sql.replaceAll("(?i:autoincrement)", "auto_increment");
-        // Map 'integer' (sqlite) to 'bigint(19)' (h2).
-       // scrubbedSQL = scrubbedSQL.replaceAll("(?i:integer)", "bigint(19)");
 
         try {
             connection.createStatement().execute(sql);

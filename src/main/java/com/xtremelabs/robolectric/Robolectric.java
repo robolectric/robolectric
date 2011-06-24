@@ -104,10 +104,10 @@ public class Robolectric {
         return Arrays.asList(
                 ShadowAbsoluteLayout.class,
                 ShadowAbsSeekBar.class,
+                ShadowActivityGroup.class,
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowActivity.class,
-                ShadowActivityGroup.class,
                 ShadowAdapterView.class,
                 ShadowAddress.class,
                 ShadowAlarmManager.class,

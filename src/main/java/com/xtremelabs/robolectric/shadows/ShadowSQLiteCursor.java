@@ -181,10 +181,10 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     @Implementation
     public boolean isNull(int columnIndex) {
         try {
-          Object o =  resultSet.getObject(columnIndex + 1);
-            return o==null;
+            Object o = resultSet.getObject(columnIndex + 1);
+            return o == null;
         } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in isNull, column may be out of bounds", e);
+            throw new RuntimeException("SQL exception in isNull", e);
         }
     }
 
@@ -230,7 +230,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     public void setResultSet(ResultSet result, String sql, Connection connection) {
         this.resultSet = result;
         rowCount = 0;
-        
+
         // Cache count up front, since computing result count in JDBC
         // is destructive to cursor position.
         if (resultSet != null) {

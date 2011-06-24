@@ -5,7 +5,6 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(AbstractCursor.class)
 public class ShadowAbstractCursor {
     @RealObject private AbstractCursor realAbstractCursor;
