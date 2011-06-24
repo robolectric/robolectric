@@ -22,8 +22,6 @@ import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.SQLite.*;
 
-//XXX: __CHRIS__ add support for anything that is called by ormlite.android.AndroidDatabaseConnection
-
 /**
  * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.
  * Implemented as a wrapper around an embedded SQL database, accessed via JDBC.  The JDBC connection is
@@ -45,22 +43,10 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     public void lock() {
         if (!mLockingEnabled) return;
         mLock.lock();
-//        if (SQLiteDebug.DEBUG_LOCK_TIME_TRACKING) {
-//            if (mLock.getHoldCount() == 1) {
-//                // Use elapsed real-time since the CPU may sleep when waiting for IO
-//                mLockAcquiredWallTime = SystemClock.elapsedRealtime();
-//                mLockAcquiredThreadTime = Debug.threadCpuTimeNanos();
-//            }
-//        }
     }
     
     public void unlock() {
         if (!mLockingEnabled) return;
-//        if (SQLiteDebug.DEBUG_LOCK_TIME_TRACKING) {
-//            if (mLock.getHoldCount() == 1) {
-//                checkLockHoldTime();
-//            }
-//        }
         mLock.unlock();
     }
     
@@ -269,9 +255,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     @Implementation
 	@Override
 	public void onAllReferencesReleased() {
-		if (isOpen()) {
-           // dbclose(); //native call
-        }
+		close();
 	}
 	   /**
      * @param closable

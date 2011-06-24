@@ -35,7 +35,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
             String[] colNames = new String[metaData.getColumnCount()];
             int columnCount = metaData.getColumnCount();
             for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-            	colNames[columnIndex - 1] = metaData.getColumnName(columnIndex);
+                colNames[columnIndex - 1] = metaData.getColumnName(columnIndex);
             }
             this.columnNames = colNames;
         } catch (SQLException e) {

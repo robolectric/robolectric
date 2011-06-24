@@ -202,7 +202,6 @@ public class SQLiteDatabaseTest {
 
         statement = shadowOf(database).getConnection().createStatement();
         resultSet = statement.executeQuery("SELECT * FROM table_name");
-     //   assertThat(resultSet.first(), equalTo(true));
         assertThat(resultSet.next(), equalTo(true));
         assertThat(resultSet.getInt(1), equalTo(1234));
         assertThat(resultSet.getString(4), equalTo("Chuck"));
