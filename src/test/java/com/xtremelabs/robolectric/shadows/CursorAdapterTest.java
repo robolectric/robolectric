@@ -29,6 +29,7 @@ import android.widget.CursorAdapter;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.DBConfig;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class CursorAdapterTest {
@@ -38,8 +39,7 @@ public class CursorAdapterTest {
 
 	@Before
 	public void setUp() throws Exception {
-        Class.forName("org.h2.Driver").newInstance();
-        Connection connection = DriverManager.getConnection("jdbc:h2:mem:");
+		Connection connection = DBConfig.OpenMemoryConnection();
 
         Statement statement = connection.createStatement();
         statement.execute("CREATE TABLE table_name(_id INT PRIMARY KEY, name VARCHAR(255));" );
@@ -55,10 +55,11 @@ public class CursorAdapterTest {
             connection.createStatement().executeUpdate(insert);
         }
 
-        statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM table_name;");
+        statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        String sql = "SELECT * FROM table_name;";
+        ResultSet resultSet = statement.executeQuery(sql);
         curs = new SQLiteCursor(null, null, null, null);
-        Robolectric.shadowOf((SQLiteCursor)curs).setResultSet(resultSet);
+        Robolectric.shadowOf((SQLiteCursor)curs).setResultSet(resultSet,sql);
 
 		adapter = new TestAdapter(curs);
 	}

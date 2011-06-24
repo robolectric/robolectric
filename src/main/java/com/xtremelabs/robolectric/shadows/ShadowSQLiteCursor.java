@@ -108,8 +108,11 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     @Implementation
     @Override
     public boolean moveToPosition(int pos) {
+    	int plusone = pos+1;
     	try {
-    		resultSet.absolute(pos + 1);
+    		if (plusone<resultSet.getRow()) throw new RuntimeException("Cannot moveToPosition(" + pos + "), cursor is TYPE_FORWARD_ONLY, and current position is beyond that.");
+    		while(plusone>resultSet.getRow())
+    		resultSet.next();
     	} catch (SQLException e) {
             throw new RuntimeException("SQL exception in moveToPosition", e);
         }
@@ -238,7 +241,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
         
     }
     
-    public void setResultSet(ResultSet result, String sql, Connection connection) {
+    public void setResultSet(ResultSet result, String sql) {
         this.resultSet = result;
         rowCount = 0;
 
@@ -247,7 +250,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
         if (resultSet != null) {
         	cacheColumnNames(resultSet);
         	try {
-        		setRowCount(sql,connection);
+        		setRowCount(sql,result.getStatement().getConnection());
 			} catch (SQLException e) {
 			    throw new RuntimeException("SQL exception in setResultSet", e);
 			}

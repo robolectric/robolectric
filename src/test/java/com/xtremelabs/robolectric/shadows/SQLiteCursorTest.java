@@ -4,6 +4,8 @@ package com.xtremelabs.robolectric.shadows;
 import android.database.sqlite.SQLiteCursor;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.DBConfig;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,10 +30,7 @@ public class SQLiteCursorTest {
 
     @Before
     public void setUp() throws Exception {
-    	Class.forName("org.sqlite.JDBC");
-       // Class.forName("org.h2.Driver").newInstance();
-    	connection = DriverManager.getConnection("jdbc:sqlite::memory:");
-        //connection = DriverManager.getConnection("jdbc:h2:mem:");
+    	connection = DBConfig.OpenMemoryConnection();
 
         Statement statement = connection.createStatement();
         statement.execute("CREATE TABLE table_name(" +
@@ -278,7 +277,7 @@ public class SQLiteCursorTest {
         String sql ="SELECT * FROM table_name;";
         resultSet = statement.executeQuery("SELECT * FROM table_name;");
         cursor = new SQLiteCursor(null, null, null, null);
-        Robolectric.shadowOf(cursor).setResultSet(resultSet, sql, connection);
+        Robolectric.shadowOf(cursor).setResultSet(resultSet, sql);
     }
 
     private void setupEmptyResult() throws Exception {

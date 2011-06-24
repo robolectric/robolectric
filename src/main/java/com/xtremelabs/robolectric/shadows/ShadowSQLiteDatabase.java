@@ -12,6 +12,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.util.DBConfig;
 
 import java.sql.*;
 import java.util.Iterator;
@@ -53,12 +54,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
-        try {
-     			Class.forName("org.sqlite.JDBC");
-     			connection = DriverManager.getConnection("jdbc:sqlite::memory:");
-        } catch (Exception e) {
-            throw new RuntimeException("SQL exception in openDatabase", e);
-        }
+     	connection = DBConfig.OpenMemoryConnection();
         return newInstanceOf(SQLiteDatabase.class);
     }
 
@@ -128,7 +124,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         }
 
         SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
-        shadowOf(cursor).setResultSet(resultSet,sql, connection);
+        shadowOf(cursor).setResultSet(resultSet,sql);
         return cursor;
     }
 
@@ -205,7 +201,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         }
 
         SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
-        shadowOf(cursor).setResultSet(resultSet, sql, connection);
+        shadowOf(cursor).setResultSet(resultSet, sql);
         return cursor;
     }
     
