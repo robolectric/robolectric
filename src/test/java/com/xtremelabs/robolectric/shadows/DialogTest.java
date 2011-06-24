@@ -10,12 +10,13 @@ import org.junit.runner.RunWith;
 
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class DialogTest {
-    @Test
+	@Test
     public void shouldCallOnDismissListener() throws Exception {
         final Transcript transcript = new Transcript();
 
@@ -45,6 +46,20 @@ public class DialogTest {
         dialog.show();
 
         assertTrue(dialog.onStartCalled);
+    }
+
+    @Test
+    public void shouldSetCancelable() {
+        Dialog dialog = new Dialog(null);
+        ShadowDialog shadow = Robolectric.shadowOf(dialog);
+
+        assertThat(shadow.isCancelable(), equalTo(false));
+
+        dialog.setCancelable(true);
+        assertThat(shadow.isCancelable(), equalTo(true));
+
+        dialog.setCancelable(false);
+        assertThat(shadow.isCancelable(), equalTo(false));
     }
 
     private static class TestOnStartDialog extends Dialog {

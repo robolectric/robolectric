@@ -8,8 +8,15 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+
+import android.os.Bundle;
+import android.os.Parcelable;
+
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
@@ -119,6 +126,11 @@ public class ShadowBundle {
     @Implementation
     public Parcelable getParcelable(String key) {
         return (Parcelable) map.get(key);
+    }
+    
+    @Implementation
+    public ArrayList<Parcelable> getParcelableArrayList(String key) {
+    	return (ArrayList<Parcelable>)map.get(key);
     }
     
     @Implementation

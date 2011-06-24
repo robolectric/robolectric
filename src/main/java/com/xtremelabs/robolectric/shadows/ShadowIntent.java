@@ -1,5 +1,17 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -193,9 +205,20 @@ public class ShadowIntent {
     public void putExtra(String key, byte[] value) {
         extras.put(key, value);
     }
+    
+    @Implementation
+    public Intent putParcelableArrayListExtra(String key, ArrayList<Parcelable> value) {
+    	extras.put(key, value );
+    	return realIntent;
+    }
 
     @Implementation
-	public boolean hasExtra(String name) {
+    public ArrayList<Parcelable> getParcelableArrayListExtra(String key) {
+    	return (ArrayList<Parcelable>) extras.get(key);
+    }
+    
+    @Implementation
+    public boolean hasExtra(String name) {
 	    return extras.containsKey(name);
 	}
 
@@ -220,7 +243,7 @@ public class ShadowIntent {
         Long foundValue = (Long) extras.get(name);
         return foundValue == null ? defaultValue : foundValue;
     }
-
+    
     @Implementation
     public byte[] getByteArrayExtra(String name) {
         return (byte[]) extras.get(name);

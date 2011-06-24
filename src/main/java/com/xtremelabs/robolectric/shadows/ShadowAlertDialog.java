@@ -95,7 +95,7 @@ public class ShadowAlertDialog extends ShadowDialog {
     public CharSequence[] getItems() {
         return items;
     }
-
+    
     /**
      * Non-Android accessor.
      *
@@ -129,6 +129,15 @@ public class ShadowAlertDialog extends ShadowDialog {
         return checkedItems;
     }
 
+    /**
+     * Non-Android accessor.
+     *
+     * @return the message displayed in the dialog
+     */
+    public boolean isCancelable() {
+        return isCancelable;
+    }
+    
     /**
      * Shadows the {@code android.app.AlertDialog.Builder} class.
      */

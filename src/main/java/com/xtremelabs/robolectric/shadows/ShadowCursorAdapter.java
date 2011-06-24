@@ -24,11 +24,16 @@ import android.database.DataSetObserver;
 import android.os.Handler;
 import android.util.Config;
 import android.util.Log;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 import android.widget.FilterQueryProvider;
 
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Adapter that exposes data from a {@link android.database.Cursor Cursor} to a
@@ -37,6 +42,32 @@ import com.xtremelabs.robolectric.internal.Implements;
  */
 @Implements(CursorAdapter.class)
 public class ShadowCursorAdapter extends ShadowBaseAdapter {
+
+    private List<View> views = new ArrayList<View>();
+
+    @Implementation
+    public View getView(int position, View convertView, ViewGroup parent) {
+        if (this.mCursor == null) {
+            return null;
+        }
+
+        if (convertView != null) {
+            return convertView;
+        }
+
+        return views.get(position);
+    }
+
+    /**
+     * Non-Android API.  Set a list of views to be returned for successive
+     * calls to getView().
+     *
+     * @param views
+     */
+    public void setViews(List<View> views) {
+        this.views = views;
+    }
+
     /**
      * This field should be made private, so it is hidden from the SDK.
      * {@hide}
@@ -87,7 +118,7 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
      * Constructor. The adapter will call requery() on the cursor whenever
      * it changes so that the most recent data is always displayed.
      *
-     * @param c The cursor from which to get the data.
+     * @param c       The cursor from which to get the data.
      * @param context The context
      */
     public void __constructor__(Context context, Cursor c) {
@@ -96,8 +127,9 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
 
     /**
      * Constructor
-     * @param c The cursor from which to get the data.
-     * @param context The context
+     *
+     * @param c           The cursor from which to get the data.
+     * @param context     The context
      * @param autoRequery If true the adapter will call requery() on the
      *                    cursor whenever it changes so the most recent
      *                    data is always displayed.
@@ -123,6 +155,7 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
 
     /**
      * Returns the cursor.
+     *
      * @return the cursor.
      */
     @Implementation
@@ -161,6 +194,7 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
     @Implementation
     public long getItemId(int position) {
         if (mDataValid && mCursor != null) {
+            this.mCursor.getColumnIndexOrThrow("_id");
             if (mCursor.moveToPosition(position)) {
                 return mCursor.getLong(mRowIDColumn);
             } else {
@@ -295,24 +329,22 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
     /**
      * Runs a query with the specified constraint. This query is requested
      * by the filter attached to this adapter.
-     *
+     * <p/>
      * The query is provided by a
      * {@link android.widget.FilterQueryProvider}.
      * If no provider is specified, the current cursor is not filtered and returned.
-     *
+     * <p/>
      * After this method returns the resulting cursor is passed to {@link #changeCursor(Cursor)}
      * and the previous cursor is closed.
-     *
+     * <p/>
      * This method is always executed on a background thread, not on the
      * application's main thread (or UI thread.)
-     *
+     * <p/>
      * Contract: when constraint is null or empty, the original results,
      * prior to any filtering, must be returned.
      *
      * @param constraint the constraint with which the query must be filtered
-     *
      * @return a Cursor representing the results of the new query
-     *
      * @see #getFilter()
      * @see #getFilterQueryProvider()
      * @see #setFilterQueryProvider(android.widget.FilterQueryProvider)
@@ -339,7 +371,6 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
      * provider is null, no filtering occurs.
      *
      * @return the current filter query provider or null if it does not exist
-     *
      * @see #setFilterQueryProvider(android.widget.FilterQueryProvider)
      * @see #runQueryOnBackgroundThread(CharSequence)
      */
@@ -356,7 +387,6 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
      * this adapter.
      *
      * @param filterQueryProvider the filter query provider or null to remove it
-     *
      * @see #getFilterQueryProvider()
      * @see #runQueryOnBackgroundThread(CharSequence)
      */

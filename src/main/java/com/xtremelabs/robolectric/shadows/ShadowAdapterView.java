@@ -181,6 +181,11 @@ public class ShadowAdapterView extends ShadowViewGroup {
         }
         return false;
     }
+    
+    @Implementation
+    public View getEmptyView() {
+    	return mEmptyView;
+    }
 
     private void update() {
         removeAllViews();

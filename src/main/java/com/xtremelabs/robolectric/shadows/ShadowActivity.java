@@ -3,8 +3,10 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
 import android.os.Bundle;
 import android.view.*;
 import com.xtremelabs.robolectric.Robolectric;
@@ -37,7 +39,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     private Activity parent;
     private boolean finishWasCalled;
     private TestWindow window;
-
+    
     private List<IntentForResult> startedActivitiesForResults = new ArrayList<IntentForResult>();
 
     private Map<Intent, Integer> intentRequestCodeMap = new HashMap<Intent, Integer>();
@@ -119,6 +121,7 @@ public class ShadowActivity extends ShadowContextWrapper {
             return contentView.findViewById(id);
         } else {
             System.out.println("WARNING: you probably should have called setContentView() first");
+            Thread.dumpStack();
             return null;
         }
     }

@@ -89,7 +89,7 @@ public class ApplicationTest {
     @Test
     public void packageManager_shouldKnowPackageName() throws Exception {
         Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
-        assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo(null, 0).packageName);
+        assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo("com.wacka.wa", 0).packageName);
     }
 
     @Test

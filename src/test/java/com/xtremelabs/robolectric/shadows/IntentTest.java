@@ -1,21 +1,29 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
+
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.io.Serializable;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class IntentTest {
@@ -54,6 +62,22 @@ public class IntentTest {
         assertSame(parcelable, intent.getParcelableExtra("foo"));
     }
 
+    @Test
+    public void testParcelableArrayListExtra() {
+        Intent intent = new Intent();
+        Parcelable parcel1 = new TestParcelable();
+        Parcelable parcel2 = new TestParcelable();
+    	ArrayList<Parcelable> parcels = new ArrayList<Parcelable>();
+    	parcels.add(parcel1);
+    	parcels.add(parcel2);
+    	
+    	assertSame(intent, intent.putParcelableArrayListExtra("foo", parcels));
+    	assertSame(parcels, intent.getParcelableArrayListExtra("foo"));
+    	assertSame(parcel1, intent.getParcelableArrayListExtra("foo").get(0));
+    	assertSame(parcel2, intent.getParcelableArrayListExtra("foo").get(1));
+    	assertSame(parcels, intent.getExtras().getParcelableArrayList("foo"));
+    }
+    
     @Test
     public void testLongExtra() throws Exception {
         Intent intent = new Intent();
@@ -157,7 +181,7 @@ public class IntentTest {
 
     @Test
     public void equals_whenOtherObjectIsNotAnIntent_shouldReturnFalse() throws Exception {
-        assertThat(new Intent(), not(equalTo(new Object())));
+        assertThat((Object) new Intent(), not(equalTo(new Object())));
     }
 
     @Test
