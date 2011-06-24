@@ -646,6 +646,18 @@ public class Robolectric {
         getFakeHttpLayer().addHttpResponseRule(requestMatcher, response);
     }
 
+    /**
+     * Adds an HTTP response rule. For each time the rule is matched, responses will be shifted
+     * off the list and returned. When all responses have been given and the rule is matched again,
+     * an exception will be thrown.
+     *
+     * @param requestMatcher custom {@code RequestMatcher}.
+     * @param responses      responses to return in order when a match is found.
+     */
+    public static void addHttpResponseRule(RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
+        getFakeHttpLayer().addHttpResponseRule(requestMatcher, responses);
+    }
+
     public static FakeHttpLayer getFakeHttpLayer() {
         return getShadowApplication().getFakeHttpLayer();
     }

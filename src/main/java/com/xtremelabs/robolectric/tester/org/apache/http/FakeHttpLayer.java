@@ -61,6 +61,10 @@ public class FakeHttpLayer {
         addHttpResponseRule(new RequestMatcherResponseRule(requestMatcher, response));
     }
 
+    public void addHttpResponseRule(RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
+        addHttpResponseRule(new RequestMatcherResponseRule(requestMatcher, responses));
+    }
+
     public void addHttpResponseRule(HttpEntityStub.ResponseRule responseRule) {
         httpResponseRules.add(responseRule);
     }
@@ -136,6 +140,7 @@ public class FakeHttpLayer {
         private HttpResponse responseToGive;
         private IOException ioException;
         private HTTPException httpException;
+        private List<? extends HttpResponse> responses;
 
         public RequestMatcherResponseRule(RequestMatcher requestMatcher, HttpResponse responseToGive) {
             this.requestMatcher = requestMatcher;
@@ -152,6 +157,11 @@ public class FakeHttpLayer {
             this.httpException = httpException;
         }
 
+        public RequestMatcherResponseRule(RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
+            this.requestMatcher = requestMatcher;
+            this.responses = responses;
+        }
+
         @Override public boolean matches(HttpRequest request) {
             return requestMatcher.matches(request);
         }
@@ -159,7 +169,15 @@ public class FakeHttpLayer {
         @Override public HttpResponse getResponse() throws HttpException, IOException {
             if (httpException != null) throw httpException;
             if (ioException != null) throw ioException;
-            return responseToGive;
+            if (responseToGive != null) {
+                return responseToGive;
+            }
+            else {
+                if (responses.isEmpty()) {
+                    throw new RuntimeException("No more responses left to give");
+                }
+                return responses.remove(0);
+            }
         }
     }
 
