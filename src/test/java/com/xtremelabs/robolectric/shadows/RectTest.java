@@ -25,6 +25,17 @@ public class RectTest {
 		assertThat(r.right, is(3));
 		assertThat(r.bottom, is(4));
 	}
+
+	@Test
+	public void secondConstructorSetsCoordinates() {
+		Rect existingRect = new Rect(1, 2, 3, 4);
+    Rect r = new Rect(existingRect);
+		assertThat(r.left, is(1));
+		assertThat(r.top, is(2));
+		assertThat(r.right, is(3));
+		assertThat(r.bottom, is(4));
+	}
+
     
     @Test
     public void width() {
