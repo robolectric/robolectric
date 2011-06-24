@@ -11,6 +11,8 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
+import android.view.animation.Animation;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -67,6 +69,7 @@ public class ShadowView {
     protected AttributeSet attributeSet;
     private boolean drawingCacheEnabled;
     private Drawable background = new ColorDrawable(R.color.transparent);
+    private Animation animation;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -697,6 +700,24 @@ public class ShadowView {
         }
         return true;
     }
+    
+    /**
+     * Non-android accessor.  Returns touch listener, if set.
+     * 
+     * @return
+     */
+    public View.OnTouchListener getOnTouchListener() {
+    	return onTouchListener;
+    }
+    
+    /**
+     * Non-android accessor.  Returns click listener, if set.
+     * 
+     * @return
+     */
+    public View.OnClickListener getOnClickListener() {
+    	return onClickListener;
+    }
 
     @Implementation
     public void setDrawingCacheEnabled(boolean drawingCacheEnabled) {
@@ -721,5 +742,28 @@ public class ShadowView {
     @Implementation
     public void postDelayed(Runnable action, long delayMills) {
         Robolectric.getUiThreadScheduler().postDelayed(action, delayMills);
+    }
+    
+    @Implementation
+    public Animation getAnimation() {
+    	return animation;
+    }
+    
+    @Implementation
+    public void setAnimation(Animation anim) {
+    	animation = anim;
+    }
+    
+    @Implementation
+    public void startAnimation(Animation anim) {
+    	setAnimation(anim);
+    	animation.start();
+    }
+    
+    @Implementation
+    public void clearAnimation() {
+    	if ( animation != null ) {
+    		animation.cancel();
+    	}
     }
 }

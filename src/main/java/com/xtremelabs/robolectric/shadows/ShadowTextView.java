@@ -3,7 +3,9 @@ package com.xtremelabs.robolectric.shadows;
 import android.graphics.drawable.Drawable;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
+import android.text.method.MovementMethod;
 import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -25,7 +27,11 @@ public class ShadowTextView extends ShadowView {
     private int autoLinkMask;
     private CharSequence hintText;
     private int compoundDrawablePadding;
+    private MovementMethod movementMethod;
+    private boolean linksClickable;
+    private int gravity;
     private TextView.OnEditorActionListener onEditorActionListener;
+    private int imeOptions = EditorInfo.IME_NULL;
 
     @Override public void applyAttributes() {
         super.applyAttributes();
@@ -75,7 +81,27 @@ public class ShadowTextView extends ShadowView {
     public CharSequence getHint() {
         return hintText;
     }
+    
+    @Implementation
+    public final boolean getLinksClickable() {
+    	return linksClickable;
+    }
+    
+    @Implementation
+    public final void setLinksClickable(boolean whether) {
+    	linksClickable = whether;
+    }
+    
+    @Implementation
+    public final MovementMethod getMovementMethod() {
+    	return movementMethod;
+    }
 
+    @Implementation
+    public final void setMovementMethod(MovementMethod movement) {
+    	movementMethod = movement;
+    }
+    
     @Implementation
     public URLSpan[] getUrls() {
         String[] words = text.toString().split("\\s+");
@@ -142,7 +168,28 @@ public class ShadowTextView extends ShadowView {
             return false;
         }
     }
-
+    
+    @Implementation
+    public int getGravity() {
+    	return gravity;
+    }
+    
+    @Implementation
+    public void setGravity(int gravity) {
+    	this.gravity = gravity;
+    }
+    
+    
+    @Implementation
+    public int getImeOptions() {
+    	return imeOptions;
+    }
+    
+    @Implementation
+    public void setImeOptions(int imeOptions) {
+    	this.imeOptions = imeOptions;
+    }
+    
     /**
      * Returns the text string of this {@code TextView}.
      * <p/>
@@ -162,8 +209,8 @@ public class ShadowTextView extends ShadowView {
     public int hashCode() {
         return super.hashCode();
     }
-
-    public CompoundDrawables getCompoundDrawablesImpl() {
+    
+     public CompoundDrawables getCompoundDrawablesImpl() {
         return compoundDrawablesImpl;
     }
 
@@ -183,7 +230,7 @@ public class ShadowTextView extends ShadowView {
     public boolean isAutoLinkPhoneNumbers() {
         return autoLinkPhoneNumbers;
     }
-
+    
     private void applyTextAttribute() {
         String text = attributeSet.getAttributeValue("android", "text");
         if (text != null) {

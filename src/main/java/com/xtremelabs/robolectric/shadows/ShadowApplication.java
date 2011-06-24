@@ -377,5 +377,17 @@ public class ShadowApplication extends ShadowContextWrapper {
             this.context = context;
             exception = new Throwable();
         }
+
+        public BroadcastReceiver getBroadcastReceiver() {
+            return broadcastReceiver;
+        }
+
+        public IntentFilter getIntentFilter() {
+            return intentFilter;
+        }
+
+        public Context getContext() {
+            return context;
+        }
     }
 }

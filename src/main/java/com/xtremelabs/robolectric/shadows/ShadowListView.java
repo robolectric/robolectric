@@ -1,17 +1,18 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListAdapter;
+import android.widget.ListView;
+
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListView.class)
@@ -21,6 +22,32 @@ public class ShadowListView extends ShadowAdapterView {
     private boolean itemsCanFocus;
     private List<View> headerViews = new ArrayList<View>();
     private List<View> footerViews = new ArrayList<View>();
+
+    @Implementation
+    @Override
+    public View findViewById(int id) {
+        View child = super.findViewById(id);
+        if (child == null) {
+            child = findView(headerViews, id);
+
+            if (child == null) {
+                child = findView(footerViews, id);
+            }
+        }
+        return child;
+    }
+
+    private View findView(List<View> views, int viewId) {
+        View child = null;
+        for (View v : views) {
+            child = v.findViewById(viewId);
+            if (child != null) {
+                break;
+            }
+        }
+        return child;
+    }
+
 
     @Implementation
     public void setItemsCanFocus(boolean itemsCanFocus) {
@@ -47,6 +74,17 @@ public class ShadowListView extends ShadowAdapterView {
     public void addHeaderView(View headerView) {
         ensureAdapterNotSet("header");
         headerViews.add(headerView);
+    }
+
+    @Implementation
+    public void addHeaderView(View headerView, Object data, boolean isSelectable) {
+        ensureAdapterNotSet("header");
+        headerViews.add(headerView);
+    }
+
+    @Implementation
+    public int getHeaderViewsCount() {
+        return headerViews.size();
     }
 
     @Implementation

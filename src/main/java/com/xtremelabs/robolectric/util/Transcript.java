@@ -21,6 +21,10 @@ public class Transcript {
         assertEquals(Arrays.asList(expectedEvents), events);
         events.clear();
     }
+    
+    public void clear() {
+        events.clear();    	
+    }
 
     public List<String> getEvents() {
         return events;

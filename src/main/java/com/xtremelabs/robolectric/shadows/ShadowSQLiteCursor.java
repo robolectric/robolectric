@@ -104,6 +104,17 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
         }
         return super.moveToNext();
     }
+    
+    @Implementation
+    @Override
+    public boolean moveToPosition(int pos) {
+    	try {
+    		resultSet.absolute(pos + 1);
+    	} catch (SQLException e) {
+            throw new RuntimeException("SQL exception in moveToPosition", e);
+        }
+    	return super.moveToPosition(pos);
+    }
 
     @Implementation
     public byte[] getBlob(int columnIndex) {

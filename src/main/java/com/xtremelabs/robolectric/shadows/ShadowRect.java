@@ -18,6 +18,13 @@ public class ShadowRect {
         realRect.bottom = bottom;
     }
 
+    public void __constructor__(Rect otherRect) {
+        realRect.left = otherRect.left;
+        realRect.top = otherRect.top;
+        realRect.right = otherRect.right;
+        realRect.bottom = otherRect.bottom;
+    }
+
     @Implementation
     public int width() {
         return realRect.right - realRect.left;
