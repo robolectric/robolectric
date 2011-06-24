@@ -2,6 +2,8 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.os.Bundle;
 import android.os.Parcelable;
+
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -117,6 +119,11 @@ public class ShadowBundle {
     @Implementation
     public Parcelable getParcelable(String key) {
         return (Parcelable) map.get(key);
+    }
+    
+    @Implementation
+    public void putAll(Bundle bundle) {
+    	map.putAll(((ShadowBundle) Robolectric.shadowOf_(bundle)).map);
     }
 
     @Implementation

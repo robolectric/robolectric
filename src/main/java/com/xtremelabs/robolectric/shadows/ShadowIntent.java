@@ -130,7 +130,7 @@ public class ShadowIntent {
         ((ShadowBundle) Robolectric.shadowOf_(bundle)).map.putAll(extras);
         return bundle;
     }
-
+    
     @Implementation
     public Intent putExtra(String key, int value) {
         extras.put(key, value);
@@ -190,16 +190,16 @@ public class ShadowIntent {
     }
 
     @Implementation
-    public boolean hasExtra(String name) {
-        return extras.containsKey(name);
-    }
-
-    @Implementation
     public void putExtra(String key, byte[] value) {
         extras.put(key, value);
     }
 
     @Implementation
+	public boolean hasExtra(String name) {
+	    return extras.containsKey(name);
+	}
+
+	@Implementation
     public String getStringExtra(String name) {
         return (String) extras.get(name);
     }
@@ -229,6 +229,11 @@ public class ShadowIntent {
     @Implementation
     public Serializable getSerializableExtra(String name) {
         return (Serializable) extras.get(name);
+    }
+    
+    @Implementation
+    public void removeExtra(String name) {
+    	extras.remove(name);
     }
 
     @Implementation
