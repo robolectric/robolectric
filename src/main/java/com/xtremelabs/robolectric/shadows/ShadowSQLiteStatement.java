@@ -15,10 +15,9 @@ import com.xtremelabs.robolectric.internal.RealObject;
 @Implements(SQLiteStatement.class)
 public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
 	//@RealObject private SQLiteStatement realSQLiteStatement;
-	SQLiteDatabase mDb;
 	String mSql;
 	 public void init(SQLiteDatabase db,  String sql) {
-		 super.__constructor__(db,sql);
+		 super.init(db,sql);
 		 mSql = sql;
 	    }
 }

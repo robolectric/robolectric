@@ -2,15 +2,20 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.database.sqlite.SQLiteClosable;
 
+import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
 @Implements(SQLiteClosable.class)
 public abstract class ShadowSQLiteClosable {
 	private int mReferenceCount = 1;
     private Object mLock = new Object();
-    public abstract void onAllReferencesReleased();
-    protected void onAllReferencesReleasedFromContainer(){}
     
+    @Implementation
+    public abstract void onAllReferencesReleased();
+    @Implementation
+    public void onAllReferencesReleasedFromContainer(){}
+    
+    @Implementation
     public void acquireReference() {
         synchronized(mLock) {
             if (mReferenceCount <= 0) {
@@ -21,6 +26,7 @@ public abstract class ShadowSQLiteClosable {
         }
     }
     
+    @Implementation
     public void releaseReference() {
         synchronized(mLock) {
             mReferenceCount--;
@@ -30,6 +36,7 @@ public abstract class ShadowSQLiteClosable {
         }
     }
     
+    @Implementation
     public void releaseReferenceFromContainer() {
         synchronized(mLock) {
             mReferenceCount--;

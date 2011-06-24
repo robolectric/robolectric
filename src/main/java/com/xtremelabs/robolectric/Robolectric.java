@@ -11,9 +11,11 @@ import android.content.Intent;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteClosable;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteProgram;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
 import android.graphics.*;
@@ -159,7 +161,6 @@ public class Robolectric {
                 ShadowHandler.class,
                 ShadowImageView.class,
                 ShadowIntent.class,
-                ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowItemizedOverlay.class,
                 ShadowLayoutInflater.class,
@@ -205,6 +206,8 @@ public class Robolectric {
                 ShadowSettings.ShadowSystem.class,
                 ShadowSimpleCursorAdapter.class,
                 ShadowSpannableStringBuilder.class,
+                ShadowSQLiteProgram.class,
+                ShadowSQLiteClosable.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
@@ -421,6 +424,13 @@ public class Robolectric {
 
     public static ShadowSQLiteStatement shadowOf(SQLiteStatement other) {
         return (ShadowSQLiteStatement) Robolectric.shadowOf_(other);
+    }
+    
+    public static ShadowSQLiteProgram shadowOf(SQLiteProgram other) {
+        return (ShadowSQLiteProgram) Robolectric.shadowOf_(other);
+    }
+    public static ShadowSQLiteClosable shadowOf(SQLiteClosable other) {
+        return (ShadowSQLiteClosable) Robolectric.shadowOf_(other);
     }
     
     public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {

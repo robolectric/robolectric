@@ -11,9 +11,9 @@ import com.xtremelabs.robolectric.internal.RealObject;
 @Implements(SQLiteProgram.class)
 public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
 	@RealObject	SQLiteProgram realSQLiteProgram;
-	private SQLiteDatabase mDatabase;
+	protected SQLiteDatabase mDatabase;
 
-	public void __constructor__(SQLiteDatabase db, String sql) {
+	public void init(SQLiteDatabase db, String sql) {
 	    mDatabase = db;
        // db.acquireReference();
       //  db.addSQLiteClosable(this);
@@ -21,7 +21,8 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
         compile(sql, false);
 	}
 	
-	protected void compile(String sql, boolean forceCompilation) {
+	@Implementation
+	public void compile(String sql, boolean forceCompilation) {
         // Only compile if we don't have a valid statement already or the caller has
         // explicitly requested a recompile. 
        // if (nStatement == 0 || forceCompilation) {
