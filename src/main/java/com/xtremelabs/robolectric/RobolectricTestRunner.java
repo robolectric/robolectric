@@ -9,6 +9,9 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
+import com.xtremelabs.robolectric.util.DBConfig;
+import com.xtremelabs.robolectric.util.H2DatabaseMap;
+
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -74,6 +77,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
                 isInstrumented() ? null : ShadowWrangler.getInstance(),
                 isInstrumented() ? null : getDefaultLoader(),
                 robolectricConfig);
+        setupDatabaseDriver();
     }
 
     /**
@@ -327,5 +331,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         String projectPackage = doc.getElementsByTagName("manifest").item(0).getAttributes().getNamedItem("package").getTextContent();
 
         return projectPackage + ".R";
+    }
+    
+  
+    
+    /*
+     * Specifies what database to use for testing (ex: H2 or Sqlite),
+     * this will load H2 by default, the SQLite TestRunner version will override this.
+     */
+    protected void setupDatabaseDriver() {
+    	DBConfig.LoadSQLiteDriver(new H2DatabaseMap());
     }
 }

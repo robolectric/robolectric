@@ -26,6 +26,8 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
         return rowCount;
     }
 
+    //TODO: determine if SQLite always returns lowercase column names the way H2 always returns UPPERCASE ones
+    
     /**
      * Stores the column names so they are retrievable after the resultSet has closed
      */
@@ -35,7 +37,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
             String[] colNames = new String[metaData.getColumnCount()];
             int columnCount = metaData.getColumnCount();
             for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-                colNames[columnIndex - 1] = metaData.getColumnName(columnIndex);
+                colNames[columnIndex - 1] = metaData.getColumnName(columnIndex).toLowerCase();
             }
             this.columnNames = colNames;
         } catch (SQLException e) {

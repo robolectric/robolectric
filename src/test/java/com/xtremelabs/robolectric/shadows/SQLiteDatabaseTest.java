@@ -27,7 +27,7 @@ public class SQLiteDatabaseTest {
         database = SQLiteDatabase.openDatabase("path", null, 0);
 
         database.execSQL("CREATE TABLE table_name (\n" +
-                "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                "  id INT PRIMARY KEY AUTOINCREMENT,\n" +
                 "  first_column VARCHAR(255),\n" +
                 "  second_column BINARY,\n" +
                 "  name VARCHAR(255),\n" +
@@ -214,7 +214,7 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testExecSQLAutoIncrementSQLite() throws Exception {
-        database.execSQL("CREATE TABLE auto_table (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255));");
+        database.execSQL("CREATE TABLE auto_table (id INT PRIMARY KEY AUTOINCREMENT, name VARCHAR(255));");
 
         ContentValues values = new ContentValues();
         values.put("name", "Chuck");

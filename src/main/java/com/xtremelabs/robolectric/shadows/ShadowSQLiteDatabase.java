@@ -177,6 +177,8 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
             throw new IllegalStateException("database not open");
         }
 
+        sql = DBConfig.ScrubSQL(sql);
+        
         try {
             connection.createStatement().execute(sql);
         } catch (java.sql.SQLException e) {
@@ -272,6 +274,6 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         } finally {
             unlock();
         }
-    }
-	
+    }  
+    
 }
