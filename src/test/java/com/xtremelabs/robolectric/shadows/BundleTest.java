@@ -1,15 +1,18 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.os.Bundle;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import android.os.Bundle;
+
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 
 @RunWith(WithTestDefaultsRunner.class)

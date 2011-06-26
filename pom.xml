@@ -3,8 +3,8 @@
     <modelVersion>4.0.0</modelVersion>
 
  <parent>
-    <groupId>com.redsoft.android</groupId>
-    <artifactId>redsoft-android</artifactId>
+    <groupId>com.seventheye</groupId>
+    <artifactId>seventheye-android</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
     <groupId>com.pivotallabs</groupId>
