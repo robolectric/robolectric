@@ -117,9 +117,38 @@ public class ApplicationTest {
         assertEquals(expectedBinder, service.service);
     }
 
+    @Test
+    public void unbindServiceShouldCallOnServiceDisconnectedWhenNotPaused() {
+        TestService service = new TestService();
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+        Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+        Robolectric.pauseMainLooper();
+
+        Robolectric.application.unbindService(service);
+        assertNull(service.nameUnbound);
+        Robolectric.unPauseMainLooper();
+        assertEquals(expectedComponentName, service.nameUnbound);
+    }
+
+    @Test
+    public void unbindServiceAddsEntryToUnboundServicesCollection() {
+        TestService service = new TestService();
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        final ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+        shadowApplication.setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+        Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+        Robolectric.application.unbindService(service);
+        assertEquals(1, shadowApplication.getUnboundServiceConnections().size());
+        assertEquals(service, shadowApplication.getUnboundServiceConnections().get(0));
+    }
+
     private static class TestService extends Service implements ServiceConnection {
         private ComponentName name;
         private IBinder service;
+        private ComponentName nameUnbound;
 
         @Override
         public IBinder onBind(Intent intent) {
@@ -134,6 +163,7 @@ public class ApplicationTest {
 
         @Override
         public void onServiceDisconnected(ComponentName name) {
+            nameUnbound = name;
         }
     }
 

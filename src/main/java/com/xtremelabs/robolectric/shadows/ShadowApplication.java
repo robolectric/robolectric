@@ -62,6 +62,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private Map<String, Object> systemServices = new HashMap<String, Object>();
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
+    private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
     private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
     private final Looper mainLooper = newInstanceOf(Looper.class);
@@ -171,6 +172,20 @@ public class ShadowApplication extends ShadowContextWrapper {
         return true;
     }
 
+    @Implementation
+    public void unbindService(final ServiceConnection serviceConnection) {
+        unboundServiceConnections.add(serviceConnection);
+        shadowOf(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                serviceConnection.onServiceDisconnected(componentNameForBindService);
+            }
+        }, 0);
+    }
+
+    public List<ServiceConnection> getUnboundServiceConnections() {
+        return unboundServiceConnections;
+    }
     /**
      * Consumes the most recent {@code Intent} started by {@link #startActivity(android.content.Intent)} and returns it.
      *

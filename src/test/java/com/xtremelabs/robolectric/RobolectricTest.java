@@ -96,17 +96,7 @@ public class RobolectricTest {
 
     @Test
     public void httpRequestWasSent_ReturnsTrueIfRequestWasSent() throws IOException, HttpException {
-        Robolectric.addPendingHttpResponse(200, "a happy response body");
-
-        ConnectionKeepAliveStrategy connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
-            @Override
-            public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
-                return 0;
-            }
-
-        };
-        DefaultRequestDirector requestDirector = new DefaultRequestDirector(null, null, null, connectionKeepAliveStrategy, null, null, null, null, null, null, null, null);
-        requestDirector.execute(null, new HttpGet("http://example.com"), null);
+        makeRequest("http://example.com");
 
         assertTrue(Robolectric.httpRequestWasMade());
     }
@@ -115,6 +105,19 @@ public class RobolectricTest {
     public void httpRequestWasMade_ReturnsFalseIfNoRequestWasMade() {
         assertFalse(Robolectric.httpRequestWasMade());
     }
+
+    @Test
+    public void httpRequestWasMade_returnsTrueIfRequestMatchingGivenRuleWasMade() throws IOException, HttpException {
+        makeRequest("http://example.com");
+        assertTrue(Robolectric.httpRequestWasMade("http://example.com"));
+    }
+
+    @Test
+    public void httpRequestWasMade_returnsFalseIfNoRequestMatchingGivenRuleWasMAde() throws IOException, HttpException {
+        makeRequest("http://example.com");
+        assertFalse(Robolectric.httpRequestWasMade("http://example.org"));
+    }
+
 
     public void clickOn_shouldCallClickListener() throws Exception {
         View view = new View(null);
@@ -131,5 +134,20 @@ public class RobolectricTest {
         public Context getContext() {
             return null;
         }
+    }
+
+    private void makeRequest(String uri) throws HttpException, IOException {
+        Robolectric.addPendingHttpResponse(200, "a happy response body");
+
+        ConnectionKeepAliveStrategy connectionKeepAliveStrategy = new ConnectionKeepAliveStrategy() {
+            @Override
+            public long getKeepAliveDuration(HttpResponse httpResponse, HttpContext httpContext) {
+                return 0;
+            }
+
+        };
+        DefaultRequestDirector requestDirector = new DefaultRequestDirector(null, null, null, connectionKeepAliveStrategy, null, null, null, null, null, null, null, null);
+
+        requestDirector.execute(null, new HttpGet(uri), null);
     }
 }

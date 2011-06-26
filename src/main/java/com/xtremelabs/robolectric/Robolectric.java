@@ -741,6 +741,10 @@ public class Robolectric {
         return getShadowApplication().getFakeHttpLayer().hasRequestInfos();
     }
 
+    public static boolean httpRequestWasMade(String uri) {
+        return getShadowApplication().getFakeHttpLayer().hasRequestMatchingRule(new FakeHttpLayer.UriRequestMatcher(uri));
+    }
+
     /**
      * Accessor to obtain metadata for an HTTP request made during the current test in the order in which they were made.
      *
