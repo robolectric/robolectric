@@ -48,6 +48,7 @@ public abstract class TestUtil {
             File roboTestDir = file("robolectric", "src", "test", "resources");
             if (hasTestManifest(roboTestDir)) return testDirLocation = roboTestDir;
 
+            //required for robolectric-sqlite to find resources to test against
             File roboSiblingTestDir = file(new File(new File(".").getAbsolutePath()).getParentFile().getParentFile(),"robolectric", "src", "test", "resources");
             if (hasTestManifest(roboSiblingTestDir)) return testDirLocation = roboSiblingTestDir;
 
