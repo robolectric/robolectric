@@ -65,20 +65,6 @@ public class SQLiteDatabaseTest {
         assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
     }
          
-    
-//    @Test(expected = android.database.SQLException.class)
-//    public void intAutoincrementThrowsSQLException() throws Exception {
-//    	//In SQLite, INT is not allowed on AUTOINCREMENT, only INTEGER is
-//    	
-//    	   database.execSQL("CREATE TABLE table_name (\n" +
-//    	            "  id INT PRIMARY KEY AUTOINCREMENT,\n" +
-//    	            "  first_column VARCHAR(255),\n" +
-//    	            "  second_column BINARY,\n" +
-//    	            "  name VARCHAR(255),\n" +
-//    	            "  big_int INTEGER\n" +
-//    	            ");");
-//    }
-
     @Test
     public void testInsertAndRawQuery() throws Exception {
         String stringColumnValue = "column_value";

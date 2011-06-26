@@ -17,16 +17,13 @@ import java.sql.Statement;
 public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 
     private ResultSet resultSet;
-    String[] columnNames;
     private int rowCount;
+    String[] columnNames;
 
     @Implementation
-    public int getCount() {
-    	
+    public int getCount() {  	
         return rowCount;
     }
-
-    //TODO: determine if SQLite always returns lowercase column names the way H2 always returns UPPERCASE ones
     
     /**
      * Stores the column names so they are retrievable after the resultSet has closed

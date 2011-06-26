@@ -15,10 +15,7 @@ import java.sql.SQLException;
  *
  */
 public class DatabaseConfig {
-
-	//TODO: create a testrunner capable of switching the DB to native mode
-	
-	static DatabaseMap dbMap = null;//= new H2Map();
+	static DatabaseMap dbMap = null;
 	static boolean isLoaded = false;
 	
 	public static void setDatabaseMap(DatabaseMap map) {	

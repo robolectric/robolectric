@@ -1,34 +1,17 @@
 package com.xtremelabs.robolectric;
 
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
-import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
-import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
-import static android.content.pm.ApplicationInfo.FLAG_HAS_CODE;
-import static android.content.pm.ApplicationInfo.FLAG_KILL_AFTER_RESTORE;
-import static android.content.pm.ApplicationInfo.FLAG_PERSISTENT;
-import static android.content.pm.ApplicationInfo.FLAG_RESIZEABLE_FOR_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_RESTORE_ANY_VERSION;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
-import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
-import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
-import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
-
-import java.io.File;
-import java.io.FileNotFoundException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
+import android.app.Application;
+import com.xtremelabs.robolectric.internal.ClassNameResolver;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import android.app.Application;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.File;
+import java.io.FileNotFoundException;
 
-import com.xtremelabs.robolectric.internal.ClassNameResolver;
+import static android.content.pm.ApplicationInfo.*;
 
 public class RobolectricConfig {
     private File androidManifestFile;
@@ -42,8 +25,6 @@ public class RobolectricConfig {
     private int sdkVersion;
     private int minSdkVersion;
     private int applicationFlags;
-   
-    private String[] additionalResources;
     
 	/**
      * Creates a Robolectric configuration using default Android files relative to the specified base directory.
@@ -55,7 +36,7 @@ public class RobolectricConfig {
     public RobolectricConfig(File baseDir) {
         this(new File(baseDir, "AndroidManifest.xml"), new File(baseDir, "res"), new File(baseDir, "assets"));
     }
-    
+
     public RobolectricConfig(File androidManifestFile, File resourceDirectory) {
         this(androidManifestFile, resourceDirectory, new File(resourceDirectory.getParent(), "assets"));
     }
@@ -68,7 +49,7 @@ public class RobolectricConfig {
      * @param assetsDirectory     location of the assets directory
      */
     public RobolectricConfig(File androidManifestFile, File resourceDirectory, File assetsDirectory) {
-    	this.androidManifestFile = androidManifestFile;
+        this.androidManifestFile = androidManifestFile;
         this.resourceDirectory = resourceDirectory;
         this.assetsDirectory = assetsDirectory;
     }
@@ -96,7 +77,7 @@ public class RobolectricConfig {
         try {
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document manifestDocument = db.parse(androidManifestFile);
-            
+
             packageName = getTagAttributeText(manifestDocument, "manifest", "package");
             rClassName = packageName + ".R";
             applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
@@ -232,12 +213,4 @@ public class RobolectricConfig {
         result = 31 * result + (getAssetsDirectory() != null ? getAssetsDirectory().hashCode() : 0);
         return result;
     }
-
-	private void setAdditionalResources(String[] additionalResources) {
-		this.additionalResources = additionalResources;
-	}
-
-	public String[] getAdditionalResources() {
-		return additionalResources;
-	}
 }
