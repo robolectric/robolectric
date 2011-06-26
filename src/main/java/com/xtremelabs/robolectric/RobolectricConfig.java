@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric;
 
 import android.app.Application;
 import com.xtremelabs.robolectric.internal.ClassNameResolver;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -9,9 +10,14 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URISyntaxException;
 
 import static android.content.pm.ApplicationInfo.*;
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 
 public class RobolectricConfig {
     private File androidManifestFile;
@@ -25,6 +31,8 @@ public class RobolectricConfig {
     private int sdkVersion;
     private int minSdkVersion;
     private int applicationFlags;
+   
+    private String[] additionalResources;
     
 	/**
      * Creates a Robolectric configuration using default Android files relative to the specified base directory.
@@ -36,7 +44,7 @@ public class RobolectricConfig {
     public RobolectricConfig(File baseDir) {
         this(new File(baseDir, "AndroidManifest.xml"), new File(baseDir, "res"), new File(baseDir, "assets"));
     }
-
+    
     public RobolectricConfig(File androidManifestFile, File resourceDirectory) {
         this(androidManifestFile, resourceDirectory, new File(resourceDirectory.getParent(), "assets"));
     }
@@ -49,7 +57,7 @@ public class RobolectricConfig {
      * @param assetsDirectory     location of the assets directory
      */
     public RobolectricConfig(File androidManifestFile, File resourceDirectory, File assetsDirectory) {
-        this.androidManifestFile = androidManifestFile;
+    	this.androidManifestFile = androidManifestFile;
         this.resourceDirectory = resourceDirectory;
         this.assetsDirectory = assetsDirectory;
     }
@@ -77,7 +85,7 @@ public class RobolectricConfig {
         try {
             DocumentBuilder db = dbf.newDocumentBuilder();
             Document manifestDocument = db.parse(androidManifestFile);
-
+            
             packageName = getTagAttributeText(manifestDocument, "manifest", "package");
             rClassName = packageName + ".R";
             applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
@@ -213,4 +221,12 @@ public class RobolectricConfig {
         result = 31 * result + (getAssetsDirectory() != null ? getAssetsDirectory().hashCode() : 0);
         return result;
     }
+
+	private void setAdditionalResources(String[] additionalResources) {
+		this.additionalResources = additionalResources;
+	}
+
+	public String[] getAdditionalResources() {
+		return additionalResources;
+	}
 }

@@ -48,8 +48,12 @@ public abstract class TestUtil {
             File roboTestDir = file("robolectric", "src", "test", "resources");
             if (hasTestManifest(roboTestDir)) return testDirLocation = roboTestDir;
 
+            File roboSiblingTestDir = file(new File(new File(".").getAbsolutePath()).getParentFile().getParentFile(),"robolectric", "src", "test", "resources");
+            if (hasTestManifest(roboSiblingTestDir)) return testDirLocation = roboSiblingTestDir;
+
+            
             throw new RuntimeException("can't find your TestAndroidManifest.xml in "
-                    + testDir.getAbsolutePath() + " or " + roboTestDir.getAbsolutePath());
+                    + testDir.getAbsolutePath() + " or " + roboTestDir.getAbsolutePath() + "\n or " + roboSiblingTestDir.getAbsolutePath());
         } else {
             return testDirLocation;
         }

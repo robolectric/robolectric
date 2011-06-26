@@ -27,7 +27,7 @@ public class SQLiteDatabaseTest {
         database = SQLiteDatabase.openDatabase("path", null, 0);
 
         database.execSQL("CREATE TABLE table_name (\n" +
-                "  id INT PRIMARY KEY AUTOINCREMENT,\n" +
+                "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
                 "  first_column VARCHAR(255),\n" +
                 "  second_column BINARY,\n" +
                 "  name VARCHAR(255),\n" +
@@ -35,12 +35,14 @@ public class SQLiteDatabaseTest {
                 ");");
     }
 
+    
+    
     @After
     public void tearDown() throws Exception {
         database.close();
     }
 
-    @Test
+    @Test()
     public void testInsertAndQuery() throws Exception {
         String stringColumnValue = "column_value";
         byte[] byteColumnValue = new byte[]{1, 2, 3};
@@ -62,6 +64,20 @@ public class SQLiteDatabaseTest {
         assertThat(stringValueFromDatabase, equalTo(stringColumnValue));
         assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
     }
+         
+    
+//    @Test(expected = android.database.SQLException.class)
+//    public void intAutoincrementThrowsSQLException() throws Exception {
+//    	//In SQLite, INT is not allowed on AUTOINCREMENT, only INTEGER is
+//    	
+//    	   database.execSQL("CREATE TABLE table_name (\n" +
+//    	            "  id INT PRIMARY KEY AUTOINCREMENT,\n" +
+//    	            "  first_column VARCHAR(255),\n" +
+//    	            "  second_column BINARY,\n" +
+//    	            "  name VARCHAR(255),\n" +
+//    	            "  big_int INTEGER\n" +
+//    	            ");");
+//    }
 
     @Test
     public void testInsertAndRawQuery() throws Exception {
@@ -214,7 +230,7 @@ public class SQLiteDatabaseTest {
 
     @Test
     public void testExecSQLAutoIncrementSQLite() throws Exception {
-        database.execSQL("CREATE TABLE auto_table (id INT PRIMARY KEY AUTOINCREMENT, name VARCHAR(255));");
+        database.execSQL("CREATE TABLE auto_table (id INTEGER PRIMARY KEY AUTOINCREMENT, name VARCHAR(255));");
 
         ContentValues values = new ContentValues();
         values.put("name", "Chuck");
@@ -244,6 +260,7 @@ public class SQLiteDatabaseTest {
     public void shouldStoreGreatBigHonkinIntegersCorrectly() throws Exception {
         database.execSQL("INSERT INTO table_name(big_int) VALUES(1234567890123456789);");
         Cursor cursor = database.query("table_name", new String[]{"big_int"}, null, null, null, null, null);
+        cursor.moveToFirst();
         assertEquals(1234567890123456789L, cursor.getLong(0));
     }
 

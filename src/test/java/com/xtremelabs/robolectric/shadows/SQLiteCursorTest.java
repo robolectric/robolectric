@@ -4,7 +4,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.database.sqlite.SQLiteCursor;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.DBConfig;
+import com.xtremelabs.robolectric.util.DatabaseConfig;
 
 import org.junit.After;
 import org.junit.Before;
@@ -30,7 +30,7 @@ public class SQLiteCursorTest {
 
     @Before
     public void setUp() throws Exception {
-    	connection = DBConfig.OpenMemoryConnection();
+    	connection = DatabaseConfig.OpenMemoryConnection();
 
         Statement statement = connection.createStatement();
         statement.execute("CREATE TABLE table_name(" +

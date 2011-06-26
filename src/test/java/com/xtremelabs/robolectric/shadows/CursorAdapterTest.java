@@ -29,7 +29,7 @@ import android.widget.CursorAdapter;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.DBConfig;
+import com.xtremelabs.robolectric.util.DatabaseConfig;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class CursorAdapterTest {
@@ -39,7 +39,7 @@ public class CursorAdapterTest {
 
 	@Before
 	public void setUp() throws Exception {
-		Connection connection = DBConfig.OpenMemoryConnection();
+		Connection connection = DatabaseConfig.OpenMemoryConnection();
 
         Statement statement = connection.createStatement();
         statement.execute("CREATE TABLE table_name(_id INT PRIMARY KEY, name VARCHAR(255));" );

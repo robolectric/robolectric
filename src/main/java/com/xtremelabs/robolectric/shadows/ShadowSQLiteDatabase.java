@@ -12,7 +12,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.util.DBConfig;
+import com.xtremelabs.robolectric.util.DatabaseConfig;
 
 import java.sql.*;
 import java.util.Iterator;
@@ -54,7 +54,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
-     	connection = DBConfig.OpenMemoryConnection();
+     	connection = DatabaseConfig.OpenMemoryConnection();
         return newInstanceOf(SQLiteDatabase.class);
     }
 
@@ -90,13 +90,14 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         if (conflictAlgorithm == SQLiteDatabase.CONFLICT_IGNORE) {
             try {
                 final Statement statement = connection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT IDENTITY();");
+                
+                final ResultSet resultSet = statement.executeQuery(DatabaseConfig.SelectLastInsertIdentity());
                 if (resultSet.isBeforeFirst()) {
-                    resultSet.first();
+                    resultSet.next();
                 }
                 result = resultSet.getInt(1);
             } catch (SQLException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                throw new RuntimeException(e);
             }
         }
         return result;
@@ -177,9 +178,10 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
             throw new IllegalStateException("database not open");
         }
 
-        sql = DBConfig.ScrubSQL(sql);
+        
         
         try {
+        	sql = DatabaseConfig.ScrubSQL(sql);
             connection.createStatement().execute(sql);
         } catch (java.sql.SQLException e) {
             android.database.SQLException ase = new android.database.SQLException();
