@@ -23,6 +23,10 @@ public class DatabaseConfig {
 		isLoaded = false; //make sure to reset isLoaded or mixing databases in a test suite will fail.
 	}
 	
+	public static DatabaseMap getDatabaseMap() {	
+		return dbMap;
+	}
+	
 	/**
 	 * Sets what database will be used and loads the database driver, based on what DBmap is provided.
 	 */
