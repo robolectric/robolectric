@@ -15,8 +15,8 @@ import java.sql.SQLException;
  *
  */
 public class DatabaseConfig {
-	static DatabaseMap dbMap = null;
-	static boolean isLoaded = false;
+	private static DatabaseMap dbMap = null;
+	private static boolean isLoaded = false;
 	
 	public static void setDatabaseMap(DatabaseMap map) {	
 		dbMap = map;
@@ -25,6 +25,10 @@ public class DatabaseConfig {
 	
 	public static DatabaseMap getDatabaseMap() {	
 		return dbMap;
+	}
+	
+	public static boolean isMapLoaded() {
+		return isLoaded;
 	}
 	
 	/**
