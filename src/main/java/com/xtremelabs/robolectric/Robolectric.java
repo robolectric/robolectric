@@ -1,15 +1,5 @@
 package com.xtremelabs.robolectric;
 
-import java.util.Arrays;
-import java.util.List;
-
-import android.os.*;
-import android.preference.*;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultRequestDirector;
-
 import android.app.*;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
@@ -18,7 +8,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
@@ -31,6 +20,7 @@ import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.hardware.Camera;
 import android.location.Geocoder;
 import android.location.LocationManager;
@@ -40,6 +30,8 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.os.*;
+import android.preference.*;
 import android.telephony.TelephonyManager;
 import android.text.format.DateFormat;
 import android.view.*;
@@ -51,7 +43,6 @@ import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.*;
-
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
@@ -59,6 +50,13 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultRequestDirector;
+
+import java.util.Arrays;
+import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class Robolectric {
@@ -224,6 +222,7 @@ public class Robolectric {
                 ShadowSettings.ShadowSecure.class,
                 ShadowSettings.ShadowSystem.class,
                 ShadowSimpleCursorAdapter.class,
+                ShadowShapeDrawable.class,
                 ShadowSpannableStringBuilder.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
@@ -376,6 +375,10 @@ public class Robolectric {
 
     public static ShadowHandler shadowOf(Handler instance) {
         return (ShadowHandler) shadowOf_(instance);
+    }
+
+    public static ShadowShapeDrawable shadowOf(ShapeDrawable instance) {
+        return (ShadowShapeDrawable) shadowOf_(instance);
     }
 
     public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
