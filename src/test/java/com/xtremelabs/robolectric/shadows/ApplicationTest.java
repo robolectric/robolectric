@@ -111,24 +111,32 @@ public class ApplicationTest {
         assertEquals(expectedBinder, service.service);
     }
 
-    private static class TestService extends Service implements ServiceConnection {
-        private ComponentName name;
-        private IBinder service;
+    @Test
+    public void unbindServiceShouldCallOnServiceDisconnectedWhenNotPaused() {
+        TestService service = new TestService();
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+        Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+        Robolectric.pauseMainLooper();
 
-        @Override
-        public IBinder onBind(Intent intent) {
-            return null;
-        }
+        Robolectric.application.unbindService(service);
+        assertNull(service.nameUnbound);
+        Robolectric.unPauseMainLooper();
+        assertEquals(expectedComponentName, service.nameUnbound);
+    }
 
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            this.name = name;
-            this.service = service;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-        }
+    @Test
+    public void unbindServiceAddsEntryToUnboundServicesCollection() {
+        TestService service = new TestService();
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        final ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+        shadowApplication.setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+        Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+        Robolectric.application.unbindService(service);
+        assertEquals(1, shadowApplication.getUnboundServiceConnections().size());
+        assertEquals(service, shadowApplication.getUnboundServiceConnections().get(0));
     }
 
     private static class NullBinder implements IBinder {

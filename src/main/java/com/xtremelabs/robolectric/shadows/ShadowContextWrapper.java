@@ -178,4 +178,8 @@ public class ShadowContextWrapper extends ShadowContext {
         return ((ShadowApplication) shadowOf(getApplicationContext()));
     }
 
+    @Implementation
+    public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+        return getShadowApplication().bindService(intent, serviceConnection, i);
+    }
 }
