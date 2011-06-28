@@ -1,15 +1,17 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.view.View;
-import android.view.ViewGroup;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation.AnimationListener;
+
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 /**
  * Shadow for {@code ViewGroup} that simulates its implementation
@@ -18,6 +20,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(ViewGroup.class)
 public class ShadowViewGroup extends ShadowView {
     private List<View> children = new ArrayList<View>();
+	private AnimationListener animListener;
 
     @Implementation
     @Override
@@ -161,5 +164,15 @@ public class ShadowViewGroup extends ShadowView {
         } else {
             out.println("/>");
         }
+    }
+    
+    @Implementation
+    public void setLayoutAnimationListener( AnimationListener listener ) {
+    	animListener = listener;
+    }
+    
+    @Implementation
+    public AnimationListener getLayoutAnimationListener() {
+    	return animListener;
     }
 }
