@@ -20,6 +20,7 @@ public class ShadowSettings {
     @Implements(Settings.class)
     private static class SettingsImpl {
         private static final WeakHashMap<ContentResolver, Map<String, Integer>> dataMap = new WeakHashMap<ContentResolver, Map<String, Integer>>();
+        private static final WeakHashMap<ContentResolver, Map<String, String>> stringMap = new WeakHashMap<ContentResolver, Map<String, String>>();
 
         @Implementation
         public static boolean putInt(ContentResolver cr, String name, int value) {
@@ -33,14 +34,33 @@ public class ShadowSettings {
             return value == null ? def : value;
         }
 
-        @Implementation
         private static Map<String, Integer> get(ContentResolver cr) {
-            Map<String, Integer> map = dataMap.get(cr);
+            return doGet(cr, dataMap);
+        }
+
+        private static Map<String, String> getStringMap(ContentResolver cr) {
+            return doGet(cr, stringMap);
+        }
+
+        private static <T> Map<String, T> doGet(ContentResolver cr, Map<ContentResolver, Map<String, T>> dataMap) {
+            Map<String, T> map = dataMap.get(cr);
             if (map == null) {
-                map = new HashMap<String, Integer>();
+                map = new HashMap<String, T>();
                 dataMap.put(cr, map);
             }
             return map;
+        }
+
+        @Implementation
+        public static String getString(ContentResolver cr, String name) {
+            return getStringMap(cr).get(name);
+        }
+
+
+        @Implementation
+        public static boolean putString(ContentResolver cr, String name, String value) {
+            getStringMap(cr).put(name, value);
+            return true;
         }
     }
 
