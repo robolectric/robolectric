@@ -62,4 +62,16 @@ public class SettingsTest {
         Settings.Secure.putInt(contentResolver, "property", 1);
         assertThat(Settings.Secure.getInt(contentResolver, "property", 0), equalTo(1));
     }
+
+    @Test
+    public void testSystemGetAndPutString() {
+        Settings.System.putString(contentResolver, "property", "value");
+        assertThat(Settings.System.getString(contentResolver, "property"), equalTo("value"));
+    }
+
+    @Test
+    public void testSecureGetAndPutString() {
+        Settings.Secure.putString(contentResolver, "property", "value");
+        assertThat(Settings.Secure.getString(contentResolver, "property"), equalTo("value"));
+    }
 }
