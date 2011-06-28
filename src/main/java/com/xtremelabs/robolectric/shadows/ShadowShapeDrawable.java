@@ -6,7 +6,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
 @Implements(ShapeDrawable.class)
-public class ShadowShapeDrawable {
+public class ShadowShapeDrawable extends ShadowDrawable {
     
     private Paint paint = new Paint();
 
