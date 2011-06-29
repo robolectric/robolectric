@@ -18,7 +18,8 @@ public class ShadowTabHost extends ShadowFrameLayout {
     private TabHost.OnTabChangeListener listener;
     private TabHost.TabSpec currentTab;
 
-    @RealObject TabHost realObject;
+    @RealObject
+    TabHost realObject;
 
     @Implementation
     public android.widget.TabHost.TabSpec newTabSpec(java.lang.String tag) {
@@ -66,5 +67,14 @@ public class ShadowTabHost extends ShadowFrameLayout {
     @Implementation
     public void setOnTabChangedListener(android.widget.TabHost.OnTabChangeListener listener) {
         this.listener = listener;
+    }
+
+    public TabHost.TabSpec getSpecByTag(String tag) {
+        for (TabHost.TabSpec tabSpec : tabSpecs) {
+            if (tag.equals(tabSpec.getTag())) {
+                return tabSpec;
+            }
+        }
+        return null;
     }
 }
