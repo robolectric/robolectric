@@ -159,6 +159,7 @@ public class Robolectric {
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowItemizedOverlay.class,
+                ShadowKeyEvent.class,
                 ShadowLayoutInflater.class,
                 ShadowLayoutParams.class,
                 ShadowListActivity.class,

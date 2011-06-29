@@ -95,7 +95,8 @@ public class FakeHttpLayer {
         HttpResponse httpResponse = findResponse(httpRequest);
 
         if (httpResponse == null) {
-            throw new RuntimeException("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse().");
+            throw new RuntimeException("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse(). Request was: " +
+                    httpRequest.getRequestLine().getMethod() + " " + httpRequest.getRequestLine().getUri());
         }
 
         httpRequestInfos.add(new HttpRequestInfo(httpRequest, httpHost, httpContext, requestDirector));

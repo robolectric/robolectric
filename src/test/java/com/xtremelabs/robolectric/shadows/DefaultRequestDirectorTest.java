@@ -235,7 +235,7 @@ public class DefaultRequestDirectorTest {
             requestDirector.execute(null, new HttpGet("http://example.com"), null);
             fail();
         } catch (RuntimeException expected) {
-            assertThat(expected.getMessage(), equalTo("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse()."));
+            assertThat(expected.getMessage(), equalTo("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse(). Request was: GET http://example.com"));
         }
     }
 
