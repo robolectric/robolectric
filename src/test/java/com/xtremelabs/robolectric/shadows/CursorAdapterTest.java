@@ -32,10 +32,10 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class CursorAdapterTest {
-	
+
 	private Cursor curs;
 	private CursorAdapter adapter;
-	
+
 	@Before
 	public void setUp() throws Exception {
         Class.forName("org.h2.Driver").newInstance();
@@ -54,13 +54,13 @@ public class CursorAdapterTest {
         for (String insert : inserts) {
             connection.createStatement().executeUpdate(insert);
         }
-		
+
         statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
         ResultSet resultSet = statement.executeQuery("SELECT * FROM table_name;");
         curs = new SQLiteCursor(null, null, null, null);
         Robolectric.shadowOf((SQLiteCursor)curs).setResultSet(resultSet);
- 
-		adapter = new TestAdapter(curs);		
+
+		adapter = new TestAdapter(curs);
 	}
 
 	@Test
@@ -73,40 +73,35 @@ public class CursorAdapterTest {
 		assertThat(curs.isClosed(), equalTo( true ) );
 		assertThat(adapter.getCursor(), nullValue() );
 	}
-	
+
 	@Test
 	public void testCount() {
 		assertThat(adapter.getCount(), equalTo(curs.getCount()));
 		adapter.changeCursor( null );
 		assertThat(adapter.getCount(), equalTo(0) );
 	}
-	
-	@Test
-	public void testGetItem() {
-		assertThat(adapter.getItem( 122 ), equalTo( (Object) new Integer(122)));
-	}
-	
+
 	@Test
 	public void testGetItemId() {
 		for ( int i = 0; i < 5; i++ ) {
 			assertThat(adapter.getItemId(i), equalTo((long) 1234 + i));
 		}
 	}
-	
+
 	@Test
 	public void testGetView() {
 		List<View> views = new ArrayList<View>();
 		for (int i = 0; i < 5; i++) {
 			views.add(new View(Robolectric.application));
 		}
-		
+
 		Robolectric.shadowOf(adapter).setViews( views );
-		
+
 		for (int i = 0; i < 5; i++) {
 			assertThat(adapter.getView(i, null, null), sameInstance(views.get(i)));
 		}
 	}
-	
+
 	private class TestAdapter extends CursorAdapter {
 
 		public TestAdapter( Cursor curs ) {
@@ -119,6 +114,6 @@ public class CursorAdapterTest {
 		@Override
 		public View newView(Context context, Cursor cursor, ViewGroup parent) {
 			return null;
-		}		
+		}
 	}
 }

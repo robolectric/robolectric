@@ -1,8 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static android.content.Context.TELEPHONY_SERVICE;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
+import android.content.Context;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,10 +31,6 @@ public class TelephonyManagerTest {
 		listener = new MyPhoneStateListener(); 
 	}
 
-	@After
-	public void tearDown() throws Exception {
-	}
-
 	@Test
 	public void testListen() {
 		manager.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
@@ -41,8 +39,15 @@ public class TelephonyManagerTest {
 		assertThat(shadowManager.getEventFlags(), equalTo(PhoneStateListener.LISTEN_CALL_STATE));
 	}
 
+    @Test
+    public void shouldGiveDeviceId() {
+        String testId = "TESTING123";
+        ShadowTelephonyManager.setDeviceId(testId);
+        TelephonyManager telephonyManager = (TelephonyManager) Robolectric.application.getSystemService(TELEPHONY_SERVICE);
+        assertEquals(testId, telephonyManager.getDeviceId());
+    }
+
 	private class MyPhoneStateListener extends PhoneStateListener {
 		
 	}
-	
 }

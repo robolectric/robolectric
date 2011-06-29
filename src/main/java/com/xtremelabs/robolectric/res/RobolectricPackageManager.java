@@ -33,7 +33,7 @@ public class RobolectricPackageManager extends StubPackageManager {
 
     @Override
     public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
-        if ( packageList.containsKey(packageName) ) {
+        if (packageList.containsKey(packageName)) {
         	return packageList.get(packageName);
         }
         

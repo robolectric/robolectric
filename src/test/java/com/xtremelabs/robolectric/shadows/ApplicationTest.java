@@ -2,8 +2,12 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.Context;
-import android.content.ContextWrapper;
+import android.app.Service;
+import android.content.*;
+import android.os.IBinder;
+import android.os.IInterface;
+import android.os.Parcel;
+import android.os.RemoteException;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -14,10 +18,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.FileDescriptor;
+
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -83,5 +90,92 @@ public class ApplicationTest {
     public void packageManager_shouldKnowPackageName() throws Exception {
         Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
         assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo("com.wacka.wa", 0).packageName);
+    }
+
+    @Test
+    public void bindServiceShouldCallOnServiceConnectedWhenNotPaused() {
+        Robolectric.pauseMainLooper();
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+
+        TestService service = new TestService();
+        Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+
+        assertNull(service.name);
+        assertNull(service.service);
+
+        Robolectric.unPauseMainLooper();
+
+        assertEquals(expectedComponentName, service.name);
+        assertEquals(expectedBinder, service.service);
+    }
+
+    @Test
+    public void unbindServiceShouldCallOnServiceDisconnectedWhenNotPaused() {
+        TestService service = new TestService();
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+        Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+        Robolectric.pauseMainLooper();
+
+        Robolectric.application.unbindService(service);
+        assertNull(service.nameUnbound);
+        Robolectric.unPauseMainLooper();
+        assertEquals(expectedComponentName, service.nameUnbound);
+    }
+
+    @Test
+    public void unbindServiceAddsEntryToUnboundServicesCollection() {
+        TestService service = new TestService();
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        final ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+        shadowApplication.setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+        Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+        Robolectric.application.unbindService(service);
+        assertEquals(1, shadowApplication.getUnboundServiceConnections().size());
+        assertEquals(service, shadowApplication.getUnboundServiceConnections().get(0));
+    }
+
+    private static class NullBinder implements IBinder {
+        @Override
+        public String getInterfaceDescriptor() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public boolean pingBinder() {
+            return false;
+        }
+
+        @Override
+        public boolean isBinderAlive() {
+            return false;
+        }
+
+        @Override
+        public IInterface queryLocalInterface(String descriptor) {
+            return null;
+        }
+
+        @Override
+        public void dump(FileDescriptor fd, String[] args) throws RemoteException {
+        }
+
+        @Override
+        public boolean transact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+            return false;
+        }
+
+        @Override
+        public void linkToDeath(DeathRecipient recipient, int flags) throws RemoteException {
+        }
+
+        @Override
+        public boolean unlinkToDeath(DeathRecipient recipient, int flags) {
+            return false;
+        }
     }
 }

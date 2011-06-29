@@ -62,5 +62,9 @@
             android:background="@drawable/image_background"
             />
 
+    <Button
+            android:id="@+id/button"
+            android:onClick="onButtonClick"
+            />
 
 </LinearLayout>

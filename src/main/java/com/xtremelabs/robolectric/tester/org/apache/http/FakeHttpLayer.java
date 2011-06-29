@@ -97,6 +97,15 @@ public class FakeHttpLayer {
         return !httpResponseRules.isEmpty();
     }
 
+    public boolean hasRequestMatchingRule(RequestMatcher rule) {
+        for (HttpRequestInfo requestInfo : httpRequestInfos) {
+            if (rule.matches(requestInfo.httpRequest)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public HttpResponse getDefaultResponse() {
         return defaultResponse;
     }

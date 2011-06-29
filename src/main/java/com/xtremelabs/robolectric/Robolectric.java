@@ -1,13 +1,5 @@
 package com.xtremelabs.robolectric;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultRequestDirector;
-
 import android.app.*;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
@@ -16,7 +8,6 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
@@ -27,7 +18,9 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.hardware.Camera;
 import android.location.Geocoder;
 import android.location.LocationManager;
@@ -40,6 +33,7 @@ import android.net.wifi.WifiManager;
 import android.os.*;
 import android.preference.*;
 import android.telephony.TelephonyManager;
+import android.text.format.DateFormat;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -49,7 +43,6 @@ import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.*;
-
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
@@ -57,6 +50,13 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultRequestDirector;
+
+import java.util.Arrays;
+import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class Robolectric {
@@ -105,6 +105,7 @@ public class Robolectric {
         return Arrays.asList(
                 ShadowAbsoluteLayout.class,
                 ShadowAbsSeekBar.class,
+                ShadowActivityGroup.class,
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowActivity.class,
@@ -133,6 +134,7 @@ public class Robolectric {
                 ShadowCameraParameters.class,
                 ShadowCameraSize.class,
                 ShadowCanvas.class,
+                ShadowColorDrawable.class,
                 ShadowColorMatrix.class,
                 ShadowColorMatrixColorFilter.class,
                 ShadowColorStateList.class,
@@ -149,6 +151,7 @@ public class Robolectric {
                 ShadowCookieSyncManager.class,
                 ShadowCountDownTimer.class,
                 ShadowCursorAdapter.class,
+                ShadowDateFormat.class,
                 ShadowDefaultRequestDirector.class,
                 ShadowDisplay.class,
                 ShadowDrawable.class,
@@ -157,12 +160,14 @@ public class Robolectric {
                 ShadowEditText.class,
                 ShadowExpandableListView.class,
                 ShadowFloatMath.class,
+                ShadowFrameLayout.class,
                 ShadowGeocoder.class,
                 ShadowGeoPoint.class,
                 ShadowGridView.class,
                 ShadowHandler.class,
                 ShadowImageView.class,
                 ShadowInputMethodManager.class,
+                ShadowIntent.class,
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowItemizedOverlay.class,
@@ -189,6 +194,7 @@ public class Robolectric {
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
                 ShadowPaint.class,
+                ShadowPair.class,
                 ShadowParcel.class,
                 ShadowPath.class,
                 ShadowPendingIntent.class,
@@ -203,9 +209,11 @@ public class Robolectric {
                 ShadowPreferenceScreen.class,
                 ShadowProgressBar.class,
                 ShadowProgressDialog.class,
+                ShadowRatingBar.class,
                 ShadowRect.class,
                 ShadowResolveInfo.class,
                 ShadowRemoteViews.class,
+                ShadowResourceCursorAdapter.class,
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
                 ShadowSeekBar.class,
@@ -213,6 +221,8 @@ public class Robolectric {
                 ShadowSettings.class,
                 ShadowSettings.ShadowSecure.class,
                 ShadowSettings.ShadowSystem.class,
+                ShadowSimpleCursorAdapter.class,
+                ShadowShapeDrawable.class,
                 ShadowSpannableStringBuilder.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
@@ -220,6 +230,8 @@ public class Robolectric {
                 ShadowSQLiteQueryBuilder.class,
                 ShadowSslErrorHandler.class,
                 ShadowSurfaceView.class,
+                ShadowTabHost.class,
+                ShadowTabSpec.class,
                 ShadowTelephonyManager.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
@@ -353,12 +365,20 @@ public class Robolectric {
         return (ShadowListActivity) shadowOf_(instance);
     }
 
+    public static ShadowActivityGroup shadowOf(ActivityGroup instance) {
+        return (ShadowActivityGroup) shadowOf_(instance);
+    }
+
     public static ShadowListPreference shadowOf(ListPreference instance) {
         return (ShadowListPreference) shadowOf_(instance);
     }
 
     public static ShadowHandler shadowOf(Handler instance) {
         return (ShadowHandler) shadowOf_(instance);
+    }
+
+    public static ShadowShapeDrawable shadowOf(ShapeDrawable instance) {
+        return (ShadowShapeDrawable) shadowOf_(instance);
     }
 
     public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
@@ -375,6 +395,10 @@ public class Robolectric {
 
     public static ShadowView shadowOf(View instance) {
         return (ShadowView) shadowOf_(instance);
+    }
+
+    public static ShadowColorDrawable shadowOf(ColorDrawable instance) {
+        return (ShadowColorDrawable) shadowOf_(instance);
     }
 
     public static ShadowViewGroup shadowOf(ViewGroup instance) {
@@ -553,6 +577,10 @@ public class Robolectric {
         return (ShadowAbsSeekBar) shadowOf_(instance);
     }
     
+    public static ShadowRatingBar shadowOf(RatingBar instance) {
+        return (ShadowRatingBar) shadowOf_(instance);
+    }
+    
     public static ShadowSeekBar shadowOf(SeekBar instance) {
         return (ShadowSeekBar) shadowOf_(instance);
     }
@@ -567,6 +595,34 @@ public class Robolectric {
     
     public static ShadowGridView shadowOf(GridView instance) {
     	return (ShadowGridView) shadowOf_(instance);
+    }
+
+    public static ShadowTabHost shadowOf(TabHost instance) {
+    	return (ShadowTabHost) shadowOf_(instance);
+    }
+
+    public static ShadowTabSpec shadowOf(TabHost.TabSpec instance) {
+    	return (ShadowTabSpec) shadowOf_(instance);
+    }
+
+    public static ShadowFrameLayout shadowOf(FrameLayout instance) {
+    	return (ShadowFrameLayout) shadowOf_(instance);
+    }
+
+    public static ShadowRect shadowOf(Rect instance) {
+    	return (ShadowRect) shadowOf_(instance);
+    }
+    
+    public static ShadowDateFormat shadowOf(DateFormat instance) {
+		return (ShadowDateFormat) shadowOf_(instance);
+	}
+
+    public static ShadowResourceCursorAdapter shadowOf(ResourceCursorAdapter instance) {
+    	return (ShadowResourceCursorAdapter) shadowOf_(instance);
+    }
+    
+    public static ShadowSimpleCursorAdapter shadowOf(SimpleCursorAdapter instance) {
+    	return (ShadowSimpleCursorAdapter) shadowOf_(instance);
     }
     
     public static ShadowPowerManager shadowOf(PowerManager instance) {
@@ -596,7 +652,7 @@ public class Robolectric {
 	public static ShadowActivityManager shadowOf(ActivityManager instance) {
 		return (ShadowActivityManager) shadowOf_(instance);
 	}
-
+    
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
@@ -661,6 +717,19 @@ public class Robolectric {
      */
     public static HttpRequest getSentHttpRequest(int index) {
         return ShadowDefaultRequestDirector.getSentHttpRequest(index);
+    }
+
+    /**
+     * Accessor to find out if HTTP requests were made during the current test.
+     *
+     * @return whether a request was made.
+     */
+    public static boolean httpRequestWasMade() {
+        return getShadowApplication().getFakeHttpLayer().hasRequestInfos();
+    }
+
+    public static boolean httpRequestWasMade(String uri) {
+        return getShadowApplication().getFakeHttpLayer().hasRequestMatchingRule(new FakeHttpLayer.UriRequestMatcher(uri));
     }
 
     /**
@@ -758,7 +827,6 @@ public class Robolectric {
         return shadowOf(Robolectric.application);
     }
 
-    
     /**
      * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
      * is enabled.

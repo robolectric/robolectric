@@ -108,7 +108,7 @@ public class VideoViewTest {
     }
     
     @Test
-    public void shouldDetermineIfPausible() throws Exception {   	
+    public void shouldDetermineIfPausable() throws Exception {
     	view.start();
     	assertThat(view.canPause(), equalTo(true));
 
@@ -120,7 +120,6 @@ public class VideoViewTest {
     	
     	view.suspend();
     	assertThat(view.canPause(), equalTo(false));
-    	
     }
          
     /**
@@ -143,5 +142,4 @@ public class VideoViewTest {
 		@Override
 		public void onCompletion(MediaPlayer mp) {}
 	}
-    
 }

@@ -106,8 +106,12 @@ public class RobolectricInternals {
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
-    public static Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Exception {
-        return classHandler.methodInvoked(clazz, methodName, instance, paramTypes, params);
+    public static Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Throwable {
+        try {
+          return classHandler.methodInvoked(clazz, methodName, instance, paramTypes, params);
+        } catch(java.lang.LinkageError e) {
+          throw new Exception(e);
+        }
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
