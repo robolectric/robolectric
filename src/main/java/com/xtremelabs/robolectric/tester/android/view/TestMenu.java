@@ -65,6 +65,8 @@ public class TestMenu implements Menu {
     }
 
     @Override public void removeItem(int id) {
+        MenuItem menuItem = findItem(id);
+        menuItems.remove(menuItem);
     }
 
     @Override public void removeGroup(int groupId) {

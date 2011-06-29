@@ -12,7 +12,6 @@ import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 
 public class WithCustomClassListTestRunner extends RobolectricTestRunner {
 
-
 	public WithCustomClassListTestRunner(@SuppressWarnings("rawtypes") Class testClass) throws InitializationError {
 		this(testClass, new RobolectricConfig(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets")));
 	}
@@ -29,6 +28,4 @@ public class WithCustomClassListTestRunner extends RobolectricTestRunner {
 		testList.add("com.xtremelabs.robolectric.bytecode.AndroidTranslatorClassIntrumentedTest$CustomPaint");
 		return testList;
 	}
-	
-
 }

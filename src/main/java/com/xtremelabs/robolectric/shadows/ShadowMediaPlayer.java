@@ -16,9 +16,8 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(MediaPlayer.class)
 public class ShadowMediaPlayer {
 
-	@RealObject
-	private MediaPlayer player;
-    
+	@RealObject private MediaPlayer player;
+
 	private boolean playing;
 	private boolean prepared;
 	private int currentPosition;

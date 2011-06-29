@@ -8,12 +8,7 @@ import android.database.sqlite.SQLiteQueryBuilder;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 import java.util.Iterator;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
@@ -61,6 +56,25 @@ public class ShadowSQLiteDatabase {
             throw new RuntimeException("SQL exception in insert", e);
         }
         return -1;
+    }
+
+    @Implementation
+    public long insertWithOnConflict(String table, String nullColumnHack,
+            ContentValues initialValues, int conflictAlgorithm) {
+        long result = insert(table, nullColumnHack, initialValues);
+        if (conflictAlgorithm == SQLiteDatabase.CONFLICT_IGNORE) {
+            try {
+                final Statement statement = connection.createStatement();
+                final ResultSet resultSet = statement.executeQuery("SELECT IDENTITY();");
+                if (resultSet.isBeforeFirst()) {
+                    resultSet.first();
+                }
+                result = resultSet.getInt(1);
+            } catch (SQLException e) {
+                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+            }
+        }
+        return result;
     }
 
     @Implementation
@@ -152,6 +166,25 @@ public class ShadowSQLiteDatabase {
         }
     }
 
+    @Implementation
+    public Cursor rawQuery (String sql, String[] selectionArgs){
+        String sqlBody = sql;
+        if (sql != null && selectionArgs != null) {
+        	sqlBody = buildWhereClause(sql, selectionArgs);
+        }
+        ResultSet resultSet;
+        try {
+            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            resultSet = statement.executeQuery(sqlBody);
+        } catch (SQLException e) {
+            throw new RuntimeException("SQL exception in query", e);
+        }
+
+        SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
+        shadowOf(cursor).setResultSet(resultSet);
+        return cursor;
+    }
+    
     @Implementation
     public boolean isOpen() {
         return (connection != null);

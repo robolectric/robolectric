@@ -17,7 +17,6 @@ import com.xtremelabs.robolectric.internal.Implements;
 @RunWith(WithCustomClassListTestRunner.class)
 public class AndroidTranslatorClassIntrumentedTest {
 
-
     @Test
     public void testNativeMethodsAreDelegated() throws Exception {
         Robolectric.bindShadowClass(ShadowPaintForTests.class);
@@ -28,11 +27,11 @@ public class AndroidTranslatorClassIntrumentedTest {
         assertThat(paint.getColor(), is(1234));
     }
     
-    @Test
     /*
      * Test "foreign class" getting its methods shadowed whe it's
      * in the RobolectricClassLoader CustomClassNames arrayList
      */
+    @Test
     public void testCustomMethodShadowed() throws Exception {
     	Robolectric.bindShadowClass(ShadowCustomPaint.class);
     	
@@ -41,11 +40,11 @@ public class AndroidTranslatorClassIntrumentedTest {
     	assertThat(customPaint.getColorName(), equalTo("rainbow"));
     }
     
-    @Test
     /*
      * Test "foreign class" not getting its methods shadowed when it's
      * not in the RobolectricClassLoader CustomClassNames arrayList
      */
+    @Test
     public void testCustomMethodNotShadowed() throws Exception {
     	Robolectric.bindShadowClass(ShadowCustomXmasPaint.class);
     	
@@ -53,7 +52,6 @@ public class AndroidTranslatorClassIntrumentedTest {
     	assertThat(customXmasPaint.getColor(), equalTo(999));
     	assertThat(customXmasPaint.getColorName(), equalTo("XMAS"));   	
     }
-    
 
     @Implements(Paint.class)
     public static class ShadowPaintForTests {
@@ -98,7 +96,6 @@ public class AndroidTranslatorClassIntrumentedTest {
         }      
     }
     
-      
     @SuppressWarnings({"UnusedDeclaration"})
     public static class CustomXmasPaint extends Paint {
 
@@ -125,6 +122,4 @@ public class AndroidTranslatorClassIntrumentedTest {
         	return "XMAS Color Test";
         }      
     }
-    
-    
 }

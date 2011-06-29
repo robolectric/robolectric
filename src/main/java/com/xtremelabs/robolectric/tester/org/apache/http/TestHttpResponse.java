@@ -38,6 +38,10 @@ public class TestHttpResponse extends HttpResponseStub {
         return httpEntity;
     }
 
+    @Override public Header[] getAllHeaders() {
+        return new Header[] { contentType };
+    }
+
     public class TestHttpEntity extends HttpEntityStub {
         @Override public long getContentLength() {
             return responseBody.length();

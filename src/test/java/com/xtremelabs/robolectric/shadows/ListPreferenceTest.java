@@ -65,5 +65,4 @@ public class ListPreferenceTest {
 		listPreference.setEntryValues(R.array.greetings);
 		assertThat(listPreference.getEntryValues(), notNullValue());			
 	}
-	
 }

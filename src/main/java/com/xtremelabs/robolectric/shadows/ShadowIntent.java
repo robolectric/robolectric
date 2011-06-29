@@ -18,12 +18,17 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.Join;
+
+import java.io.*;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)
@@ -112,10 +117,18 @@ public class ShadowIntent {
     }
 
     @Implementation
-    public void setFlags(int flags) {
+    public Intent setFlags(int flags) {
         this.flags = flags;
+        return realIntent;
     }
 
+    @Implementation
+    public Intent putExtras(Bundle src) {
+        ShadowBundle srcShadowBundle = Robolectric.shadowOf_(src);
+        extras = new HashMap<String, Object>(srcShadowBundle.map);
+        return realIntent;
+    }
+    
     @Implementation
     public Intent putExtras(Intent src) {
         ShadowIntent srcShadowIntent = shadowOf(src);
@@ -129,7 +142,7 @@ public class ShadowIntent {
         ((ShadowBundle) Robolectric.shadowOf_(bundle)).map.putAll(extras);
         return bundle;
     }
-
+    
     @Implementation
     public Intent putExtra(String key, int value) {
         extras.put(key, value);
@@ -161,14 +174,31 @@ public class ShadowIntent {
     }
 
     @Implementation
-    public Intent putExtra(String key, CharSequence value) {
+    public Intent putExtra(String key, String[] value) {
         extras.put(key, value);
         return realIntent;
     }
 
     @Implementation
-    public boolean hasExtra(String name) {
-        return extras.containsKey(name);
+    public Intent putExtra(String key, boolean value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
+    @Implementation
+    public boolean getBooleanExtra(String name, boolean defaultValue) {
+        return extras.containsKey(name) ? (Boolean) extras.get(name) : defaultValue;
+    }
+
+    @Implementation
+    public String[] getStringArrayExtra(String name) {
+        return (String[]) extras.get(name);
+    }
+
+    @Implementation
+    public Intent putExtra(String key, CharSequence value) {
+        extras.put(key, value);
+        return realIntent;
     }
 
     @Implementation
@@ -188,6 +218,11 @@ public class ShadowIntent {
     }
     
     @Implementation
+    public boolean hasExtra(String name) {
+	    return extras.containsKey(name);
+	}
+
+	@Implementation
     public String getStringExtra(String name) {
         return (String) extras.get(name);
     }
@@ -217,6 +252,11 @@ public class ShadowIntent {
     @Implementation
     public Serializable getSerializableExtra(String name) {
         return (Serializable) extras.get(name);
+    }
+    
+    @Implementation
+    public void removeExtra(String name) {
+    	extras.remove(name);
     }
 
     @Implementation

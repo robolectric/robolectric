@@ -68,7 +68,6 @@ public class ShadowAnimation {
 		return interpolator;
 	}
 	
-	
 	/**
 	 * Non-Android accessor.  Returns most recently set animation listener.
 	 * 
@@ -95,6 +94,4 @@ public class ShadowAnimation {
 			listener.onAnimationEnd(realAnimation);
 		}
 	}
-	
-	
 }

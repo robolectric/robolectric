@@ -18,7 +18,6 @@ public class ShadowService extends ShadowContextWrapper {
     @RealObject Service realService;
     
     private boolean selfStopped = false;
-    
     private boolean unbindServiceShouldThrowIllegalArgument = false;
 
     @Implementation

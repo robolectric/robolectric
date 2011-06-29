@@ -2,13 +2,10 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
 import android.content.res.Resources;
+import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.widget.Toast;
@@ -20,12 +17,7 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.util.Scheduler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -70,6 +62,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private Map<String, Object> systemServices = new HashMap<String, Object>();
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
+    private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
     private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
     private final Looper mainLooper = newInstanceOf(Looper.class);
@@ -84,6 +77,9 @@ public class ShadowApplication extends ShadowContextWrapper {
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
     AppWidgetManager appWidgetManager;
+    private ServiceConnection serviceConnection;
+    private ComponentName componentNameForBindService;
+    private IBinder serviceForBindService;
 
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
@@ -159,6 +155,37 @@ public class ShadowApplication extends ShadowContextWrapper {
         return new ComponentName("some.service.package", "SomeServiceName-FIXME");
     }
 
+    public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
+        this.componentNameForBindService = name;
+        this.serviceForBindService = service;
+    }
+
+    @Implementation
+    public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+        startedServices.add(intent);
+        shadowOf(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                serviceConnection.onServiceConnected(componentNameForBindService, serviceForBindService);
+            }
+        }, 0);
+        return true;
+    }
+
+    @Implementation
+    public void unbindService(final ServiceConnection serviceConnection) {
+        unboundServiceConnections.add(serviceConnection);
+        shadowOf(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                serviceConnection.onServiceDisconnected(componentNameForBindService);
+            }
+        }, 0);
+    }
+
+    public List<ServiceConnection> getUnboundServiceConnections() {
+        return unboundServiceConnections;
+    }
     /**
      * Consumes the most recent {@code Intent} started by {@link #startActivity(android.content.Intent)} and returns it.
      *
@@ -364,6 +391,18 @@ public class ShadowApplication extends ShadowContextWrapper {
             this.intentFilter = intentFilter;
             this.context = context;
             exception = new Throwable();
+        }
+
+        public BroadcastReceiver getBroadcastReceiver() {
+            return broadcastReceiver;
+        }
+
+        public IntentFilter getIntentFilter() {
+            return intentFilter;
+        }
+
+        public Context getContext() {
+            return context;
         }
     }
 }

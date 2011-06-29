@@ -20,7 +20,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowHandler {
     @RealObject private Handler realHandler;
 
-    private Looper looper;
+    private Looper looper = Looper.myLooper();
 
     public void __constructor__() {
         this.looper = Looper.myLooper();

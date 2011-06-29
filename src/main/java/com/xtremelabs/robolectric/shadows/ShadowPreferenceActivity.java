@@ -12,9 +12,6 @@ public class ShadowPreferenceActivity extends ShadowListActivity {
 	
 	private int preferencesResId = -1;
 	private PreferenceScreen preferenceScreen;
-	
-	public ShadowPreferenceActivity() {
-	}
 
 	@Implementation
 	public void addPreferencesFromResource(int preferencesResId) {
