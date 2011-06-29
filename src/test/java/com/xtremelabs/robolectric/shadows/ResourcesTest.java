@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
-import android.content.res.Configuration;
 import android.content.res.Resources;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
@@ -20,9 +19,7 @@ public class ResourcesTest {
 
     @Test
     public void testConfiguration() {
-        Configuration configuration = new Activity().getResources().getConfiguration();
-        assertThat(configuration, notNullValue());
-        assertThat(configuration.locale, notNullValue());
+        assertThat(new Activity().getResources().getConfiguration(), notNullValue());
     }
 
     @Test

@@ -23,32 +23,34 @@ public class ShadowListView extends ShadowAdapterView {
     private List<View> headerViews = new ArrayList<View>();
     private List<View> footerViews = new ArrayList<View>();
 
+    
     @Implementation
     @Override
     public View findViewById(int id) {
-        View child = super.findViewById(id);
-        if (child == null) {
-            child = findView(headerViews, id);
-
-            if (child == null) {
-                child = findView(footerViews, id);
-            }
-        }
-        return child;
+    	View child = super.findViewById( id );
+    	if( child == null ) {
+    		child = findView( headerViews, id );
+    		
+    		if( child == null ) {
+    			child = findView( footerViews, id );
+    		}
+    	}
+    	return child;
     }
-
-    private View findView(List<View> views, int viewId) {
-        View child = null;
-        for (View v : views) {
-            child = v.findViewById(viewId);
-            if (child != null) {
-                break;
-            }
-        }
-        return child;
+    
+    private View findView( List<View> views, int viewId ) {
+    	
+    	View child = null;
+		for( View v : views ) {
+			child = v.findViewById( viewId );
+			if( child != null ) {
+				break;
+			}
+		}    	
+    	return child;
     }
-
-
+    
+    
     @Implementation
     public void setItemsCanFocus(boolean itemsCanFocus) {
         this.itemsCanFocus = itemsCanFocus;
@@ -77,16 +79,16 @@ public class ShadowListView extends ShadowAdapterView {
     }
 
     @Implementation
-    public void addHeaderView(View headerView, Object data, boolean isSelectable) {
+    public void addHeaderView(View headerView, Object data, boolean isSelectable ) {
         ensureAdapterNotSet("header");
         headerViews.add(headerView);
     }
-
+    
     @Implementation
     public int getHeaderViewsCount() {
-        return headerViews.size();
+    	return headerViews.size();
     }
-
+    
     @Implementation
     public void addFooterView(View footerView, Object data, boolean isSelectable) {
         ensureAdapterNotSet("footer");
@@ -131,7 +133,7 @@ public class ShadowListView extends ShadowAdapterView {
     }
 
     private void ensureAdapterNotSet(String view) {
-        if (getAdapter() != null) {
+        if (adapter != null) {
             throw new IllegalStateException("Cannot add " + view + " view to list -- setAdapter has already been called");
         }
     }

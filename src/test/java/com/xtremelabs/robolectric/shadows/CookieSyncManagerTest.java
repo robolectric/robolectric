@@ -17,6 +17,10 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 @RunWith(WithTestDefaultsRunner.class)
 public class CookieSyncManagerTest {
 
+	@Before
+	public void setup() {
+	}
+	
 	@Test
 	public void testCreateInstance() {
 		assertThat( CookieSyncManager.createInstance( new Activity() ) , notNullValue() );

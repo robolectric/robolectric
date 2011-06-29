@@ -14,31 +14,27 @@ import com.xtremelabs.robolectric.internal.Implements;
 public class ShadowCookieSyncManager {
 
     private static CookieSyncManager sRef;
-
+    
     private boolean synced = false;
 
     @Implementation
-    public static synchronized CookieSyncManager createInstance(Context ctx) {
-        if (sRef == null) {
-            sRef = Robolectric.newInstanceOf(CookieSyncManager.class);
-        }
-        return sRef;
+    public static synchronized CookieSyncManager createInstance( Context ctx ) {
+    	
+    	if( sRef == null ) {
+    		sRef = Robolectric.newInstanceOf( CookieSyncManager.class );
+    	}
+    	
+    	return sRef;
     }
-
+    
     @Implementation
     public static CookieSyncManager getInstance() {
-        if (sRef == null) {
-            throw new IllegalStateException("createInstance must be called first");
-        }
-        return sRef;
+    	if( sRef == null ) { throw new IllegalStateException( "createInstance must be called first" ); }
+    	return sRef;
     }
-
+    
     @Implementation
-    public void sync() {
-        synced = true;
-    }
-
-    public boolean synced() {
-        return synced;
-    }
+    public void sync() { synced = true; }
+    
+    public boolean synced() { return synced; }
 }

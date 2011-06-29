@@ -16,7 +16,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper extends ShadowContext {
     @RealObject private ContextWrapper realContextWrapper;
-    protected Context baseContext;
+    private Context baseContext;
 
     private PackageManager packageManager;
 
@@ -178,8 +178,4 @@ public class ShadowContextWrapper extends ShadowContext {
         return ((ShadowApplication) shadowOf(getApplicationContext()));
     }
 
-    @Implementation
-    public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
-        return getShadowApplication().bindService(intent, serviceConnection, i);
-    }
 }

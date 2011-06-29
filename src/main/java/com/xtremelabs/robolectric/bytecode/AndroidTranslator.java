@@ -94,8 +94,8 @@ public class AndroidTranslator implements Translator {
         }
         
         boolean wantsToBeInstrumented = ctClass.hasAnnotation(Instrument.class);
-        if (!wantsToBeInstrumented) {
-        	for (String klassName : instrumentingList) {
+        if ( !wantsToBeInstrumented ) {
+        	for ( String klassName : instrumentingList ) {
         		wantsToBeInstrumented = className.startsWith(klassName);
         		if (wantsToBeInstrumented) break;
         	}

@@ -71,4 +71,5 @@ public class CanvasTest {
         assertEquals( "draw color -1draw color -16711936draw color 0",
         		shadowOf(canvas).getDescription());
     }
+
 }

@@ -71,11 +71,12 @@ public class IntentTest {
     	parcels.add(parcel1);
     	parcels.add(parcel2);
     	
-    	assertSame(intent, intent.putParcelableArrayListExtra("foo", parcels));
-    	assertSame(parcels, intent.getParcelableArrayListExtra("foo"));
-    	assertSame(parcel1, intent.getParcelableArrayListExtra("foo").get(0));
-    	assertSame(parcel2, intent.getParcelableArrayListExtra("foo").get(1));
-    	assertSame(parcels, intent.getExtras().getParcelableArrayList("foo"));
+    	assertSame( intent, intent.putParcelableArrayListExtra("foo", parcels) );
+    	assertSame( parcels, intent.getParcelableArrayListExtra("foo") );
+    	assertSame( parcel1, intent.getParcelableArrayListExtra("foo").get( 0 ) );
+    	assertSame( parcel2, intent.getParcelableArrayListExtra("foo").get( 1 ) );
+    	assertSame( parcels, intent.getExtras().getParcelableArrayList("foo") );
+    	
     }
     
     @Test
@@ -84,7 +85,6 @@ public class IntentTest {
         assertSame(intent, intent.putExtra("foo", 2L));
         assertEquals(2L, shadowOf(intent).getExtras().get("foo"));
         assertEquals(2L, intent.getLongExtra("foo", -1));
-        assertEquals(-1L, intent.getLongExtra("bar", -1));
     }
 
     @Test
@@ -133,9 +133,8 @@ public class IntentTest {
     @Test
     public void shouldSetFlags() throws Exception {
         Intent intent = new Intent();
-        Intent self = intent.setFlags(1234);
+        intent.setFlags(1234);
         assertEquals(1234, intent.getFlags());
-        assertSame(self, intent);
     }
 
     @Test
@@ -181,7 +180,7 @@ public class IntentTest {
 
     @Test
     public void equals_whenOtherObjectIsNotAnIntent_shouldReturnFalse() throws Exception {
-        assertThat((Object) new Intent(), not(equalTo(new Object())));
+        assertThat(new Intent(), not(equalTo(new Object())));
     }
 
     @Test

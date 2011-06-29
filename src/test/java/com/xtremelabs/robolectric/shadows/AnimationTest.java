@@ -35,6 +35,10 @@ public class AnimationTest {
 		animation.setAnimationListener(listener);
 	}
 
+	@After
+	public void tearDown() throws Exception {
+	}
+	
 	@Test
 	public void startShouldInvokeStartCallback() throws Exception {
 		assertThat(listener.wasStartCalled, equalTo(false));
@@ -94,6 +98,10 @@ public class AnimationTest {
 		animation.setInterpolator(i);
 		assertThat((LinearInterpolator)animation.getInterpolator(), sameInstance(i));
 	}
-
-	private class TestAnimation extends Animation { }
+	
+	
+	
+	private class TestAnimation extends Animation {
+		
+	}
 }

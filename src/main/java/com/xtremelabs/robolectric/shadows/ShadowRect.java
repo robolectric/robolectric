@@ -7,6 +7,7 @@ import com.xtremelabs.robolectric.internal.RealObject;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Rect.class)
 public class ShadowRect {
     @RealObject Rect realRect;
@@ -16,13 +17,6 @@ public class ShadowRect {
         realRect.top = top;
         realRect.right = right;
         realRect.bottom = bottom;
-    }
-
-    public void __constructor__(Rect otherRect) {
-        realRect.left = otherRect.left;
-        realRect.top = otherRect.top;
-        realRect.right = otherRect.right;
-        realRect.bottom = otherRect.bottom;
     }
 
     @Implementation
@@ -44,8 +38,11 @@ public class ShadowRect {
         if (this == o) return true;
 
         Rect r = (Rect) obj;
-        return realRect.left == r.left && realRect.top == r.top && realRect.right == r.right
-                && realRect.bottom == r.bottom;
+        if (r != null) {
+            return realRect.left == r.left && realRect.top == r.top && realRect.right == r.right
+                    && realRect.bottom == r.bottom;
+        }
+        return false;
     }
 
     @Implementation
@@ -61,34 +58,5 @@ public class ShadowRect {
         sb.append(realRect.bottom);
         sb.append(")");
         return sb.toString();
-    }
-    
-    @Implementation
-    public boolean contains(int x, int y) {
-    	return x > realRect.left && x < realRect.right
-    			&& y >= realRect.top && y <= realRect.bottom;
-    } 
-
-    @Implementation
-    public boolean contains(Rect r) {
-    	return equals(r)
-    			|| (contains(r.left, r.top) && contains(r.right, r.top)
-    					&& contains(r.left, r.bottom) && contains(r.right, r.bottom));
-    }
-    
-    @Implementation
-	public static boolean intersects(Rect a, Rect b) {
-    	return a.left < b.right && b.left < a.right
-    			&& a.top < b.bottom && b.top < a.bottom;
-    }
-    
-    @Implementation
-    public boolean intersect(Rect r) {
-    	return intersects(realRect, r);
-    }
-    
-    @Implementation
-    public boolean intersect(int left, int top, int right, int bottom) {
-    	return intersect(new Rect(left, top, right, bottom));
     }
 }

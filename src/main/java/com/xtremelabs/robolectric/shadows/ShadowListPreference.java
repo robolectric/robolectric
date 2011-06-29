@@ -40,4 +40,5 @@ public class ShadowListPreference extends ShadowDialogPreference {
 	public void setEntryValues(int entryValuesResId) {
 		this.entryValues = context.getResources().getStringArray(entryValuesResId);
 	}
+	
 }

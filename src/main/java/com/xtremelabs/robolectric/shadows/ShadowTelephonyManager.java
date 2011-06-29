@@ -11,7 +11,6 @@ public class ShadowTelephonyManager {
 	
 	private PhoneStateListener listener;
 	private int eventFlags;
-    private static String deviceId;
 	
 	@Implementation
 	public void listen(PhoneStateListener listener, int events) {
@@ -38,12 +37,4 @@ public class ShadowTelephonyManager {
 		return eventFlags;
 	}
 
-    @Implementation
-    public String getDeviceId() {
-        return deviceId;
-    }
-
-    public static void setDeviceId(String newDeviceId) {
-        deviceId = newDeviceId;
-    }
 }

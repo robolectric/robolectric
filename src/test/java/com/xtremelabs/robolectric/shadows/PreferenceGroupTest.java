@@ -170,8 +170,16 @@ public class PreferenceGroupTest {
 			assertThat(pref2.isEnabled(), equalTo(enabled));
 		}		
 	}
+	
+	////////////////////////////////////////////////////////////
+	// TestPreferenceGroup
+	////////////////////////////////////////////////////////////
 
-	private static class TestPreferenceGroup extends PreferenceGroup {
+	private static class TestPreferenceGroup extends PreferenceGroup {		
+		public TestPreferenceGroup(Context context, AttributeSet attrs, int defStyle) {
+			super(context, attrs, defStyle);
+		}
+		   
 		public TestPreferenceGroup(Context context, AttributeSet attrs) {
 			super(context, attrs);
 		}		

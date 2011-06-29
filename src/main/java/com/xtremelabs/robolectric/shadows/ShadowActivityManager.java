@@ -61,4 +61,5 @@ public class ShadowActivityManager {
 	public String getBackgroundPackage() {
 		return backgroundPackage;
 	}
+	
 }

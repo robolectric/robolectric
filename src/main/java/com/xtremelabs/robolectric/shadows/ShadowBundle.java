@@ -1,11 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.os.Bundle;
-import android.os.Parcelable;
-
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -17,8 +12,6 @@ import android.os.Parcelable;
 
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bundle.class)
@@ -46,68 +39,22 @@ public class ShadowBundle {
     }
 
     @Implementation
+    public void putInt(String key, int value) {
+        map.put(key, value);
+    }
+    
+    @Implementation
     public long getLong(String key) {
         Object value = map.get(key);
         return value == null ? 0 : (Long) value;
     }
     
     @Implementation
-    public long getLong(String key,long defaultValue) {
-        Object value = map.get(key);
-        return value == null ? defaultValue : (Long) value;
-    }
-    
-    @Implementation
-    public void putInt(String key, int value) {
-        map.put(key, value);
-    }
-
-    @Implementation
     public int getInt(String key) {
         Object value = map.get(key);
         return value == null ? 0 : (Integer) value;
     }
-    
-    @Implementation
-    public int getInt(String key, int defaultValue) {
-        Object value = map.get(key);
-        return value == null ? defaultValue : (Integer) value;
-    }
-    
-    @Implementation
-    public void putDouble(String key, double value) {
-        map.put(key, value);
-    }
 
-    @Implementation
-    public double getDouble(String key) {
-        Object value = map.get(key);
-        return value == null ? 0 : (Double) value;
-    }
-    
-    @Implementation
-    public double getDouble(String key, double defaultValue) {
-        Object value = map.get(key);
-        return value == null ? defaultValue : (Double) value;
-    }
-    
-    @Implementation
-    public void putBoolean(String key, boolean value) {
-        map.put(key, value);
-    }
-
-    @Implementation
-    public boolean getBoolean(String key) {
-        Object value = map.get(key);
-        return value == null ? false : (Boolean) value;
-    }
-    
-    @Implementation
-    public boolean getBoolean(String key, boolean defaultValue) {
-        Object value = map.get(key);
-        return value == null ? defaultValue : (Boolean) value;
-    }
-    
     @Implementation
     public void putSerializable(String key, Serializable value) {
         map.put(key, value);
@@ -131,21 +78,6 @@ public class ShadowBundle {
     @Implementation
     public ArrayList<Parcelable> getParcelableArrayList(String key) {
     	return (ArrayList<Parcelable>)map.get(key);
-    }
-    
-    @Implementation
-    public void putAll(Bundle bundle) {
-    	map.putAll(((ShadowBundle) Robolectric.shadowOf_(bundle)).map);
-    }
-
-    @Implementation
-    public void putStringArray(String key, String[] value) {
-        map.put(key, value);
-    }
-
-    @Implementation
-    public String[] getStringArray(String key) {
-        return (String[]) map.get(key);
     }
 
     @Implementation

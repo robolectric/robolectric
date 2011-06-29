@@ -8,10 +8,8 @@ import android.widget.TextView;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Transcript;
 
-import static com.xtremelabs.robolectric.Robolectric.*;
 import static com.xtremelabs.robolectric.matchers.TextViewHasTextMatcher.hasText;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -25,11 +23,6 @@ public class AdapterViewBehavior {
         testSetAdapter_ShouldCauseViewsToBeRenderedAsynchronously(adapterView);
         testSetAdapter_ShouldSelectFirstItemAsynchronously(adapterView);
         shouldOnlyUpdateOnceIfInvalidatedMultipleTimes(adapterView);
-        
-        testSetEmptyView_ShouldHideAdapterViewIfAdapterIsNull(adapterView);
-        testSetEmptyView_ShouldHideAdapterViewIfAdapterViewIsEmpty(adapterView);
-        testSetEmptyView_ShouldHideEmptyViewIfAdapterViewIsNotEmpty(adapterView);
-        testSetEmptyView_ShouldHideEmptyViewWhenAdapterGetsNewItem(adapterView);
     }
 
     private static void testSetAdapter_ShouldCauseViewsToBeRenderedAsynchronously(AdapterView adapterView) throws Exception {
@@ -64,72 +57,6 @@ public class AdapterViewBehavior {
         transcript.assertNoEventsSoFar();
         ShadowHandler.idleMainLooper();
         transcript.assertEventsSoFar("selected item 0");
-    }
-    
-    private static void testSetEmptyView_ShouldHideAdapterViewIfAdapterIsNull(final AdapterView adapterView) throws Exception {
-    	adapterView.setAdapter(null);
-    	
-    	View emptyView = new View(adapterView.getContext());
-		adapterView.setEmptyView(emptyView);
-		
-		assertThat(adapterView.getVisibility(), is(View.GONE));
-		assertThat(emptyView.getVisibility(), is(View.VISIBLE));
-    }
-    
-    private static void testSetEmptyView_ShouldHideAdapterViewIfAdapterViewIsEmpty(final AdapterView adapterView) throws Exception {
-    	adapterView.setAdapter(new CountingAdapter(0));
-    	
-    	View emptyView = new View(adapterView.getContext());
-		adapterView.setEmptyView(emptyView);
-		
-		assertThat(adapterView.getVisibility(), is(View.GONE));
-		assertThat(emptyView.getVisibility(), is(View.VISIBLE));
-    }
-
-    private static void testSetEmptyView_ShouldHideEmptyViewIfAdapterViewIsNotEmpty(final AdapterView adapterView) throws Exception {
-    	adapterView.setAdapter(new CountingAdapter(1));
-    	
-    	View emptyView = new View(adapterView.getContext());
-		adapterView.setEmptyView(emptyView);
-		
-		assertThat(adapterView.getVisibility(), is(View.VISIBLE));
-		assertThat(emptyView.getVisibility(), is(View.GONE));
-    }
-    
-    private static void testSetEmptyView_ShouldHideEmptyViewWhenAdapterGetsNewItem(final AdapterView adapterView) throws Exception {
-    	CountingAdapter adapter = new CountingAdapter(0);
-		adapterView.setAdapter(adapter);
-    	
-    	View emptyView = new View(adapterView.getContext());
-		adapterView.setEmptyView(emptyView);
-		
-		assertThat(adapterView.getVisibility(), is(View.GONE));
-		assertThat(emptyView.getVisibility(), is(View.VISIBLE));
-		
-		adapter.setCount(1);
-		
-		ShadowHandler.idleMainLooper();
-		
-		assertThat(adapterView.getVisibility(), is(View.VISIBLE));
-		assertThat(emptyView.getVisibility(), is(View.GONE));
-    }
-    
-    private static void testSetEmptyView_ShouldHideAdapterViewWhenAdapterBecomesEmpty(final AdapterView adapterView) throws Exception {
-    	CountingAdapter adapter = new CountingAdapter(1);
-		adapterView.setAdapter(adapter);
-    	
-    	View emptyView = new View(adapterView.getContext());
-		adapterView.setEmptyView(emptyView);
-		
-		assertThat(adapterView.getVisibility(), is(View.GONE));
-		assertThat(emptyView.getVisibility(), is(View.VISIBLE));
-		
-		adapter.setCount(0);
-		
-		ShadowHandler.idleMainLooper();
-		
-		assertThat(adapterView.getVisibility(), is(View.VISIBLE));
-		assertThat(emptyView.getVisibility(), is(View.GONE));
     }
 
     private static void shouldOnlyUpdateOnceIfInvalidatedMultipleTimes(final AdapterView adapterView) {

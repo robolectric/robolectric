@@ -23,7 +23,7 @@ public class ShadowPowerManager {
     	return isScreenOn;
     }
     
-    public void setIsScreenOn(boolean screenOn) {
+    public void setIsScreenOn( boolean screenOn ) {
     	isScreenOn = screenOn;
     }
 }

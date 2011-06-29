@@ -9,6 +9,7 @@ import javassist.NotFoundException;
 public class RobolectricClassLoader extends javassist.Loader {
     private ClassCache classCache;
 
+    
     public RobolectricClassLoader(ClassHandler classHandler) {
     	this(classHandler, null);
     }
@@ -23,7 +24,6 @@ public class RobolectricClassLoader extends javassist.Loader {
         try {
             ClassPool classPool = new ClassPool();
             classPool.appendClassPath(new LoaderClassPath(RobolectricClassLoader.class.getClassLoader()));
-
             AndroidTranslator androidTranslator = new AndroidTranslator(classHandler, classCache, customClassNames);
             addTranslator(classPool, androidTranslator);
         } catch (NotFoundException e) {
@@ -32,6 +32,7 @@ public class RobolectricClassLoader extends javassist.Loader {
             throw new RuntimeException(e);
         }
     } 
+    
     
     @Override
     public Class loadClass(String name) throws ClassNotFoundException {
@@ -64,4 +65,6 @@ public class RobolectricClassLoader extends javassist.Loader {
         }
         return super.findClass(name);
     }
+    
+
 }

@@ -233,6 +233,10 @@ public class PreferenceTest {
 		assertThat( preference.getDependency(), notNullValue() );
 		assertThat( preference.getDependency(), equalTo("TEST_PREF_KEY") );
 	}
+	
+	////////////////////////////////////////////////////////////
+	// TestPreference
+	////////////////////////////////////////////////////////////
 
 	private static class TestPreference extends Preference {
 		public TestPreference(Context context) {

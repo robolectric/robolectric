@@ -6,7 +6,4 @@ import com.xtremelabs.robolectric.internal.Implements;
 
 @Implements(AbsSeekBar.class)
 public class ShadowAbsSeekBar extends ShadowProgressBar {
-    
-    boolean mIsUserSeekable = true;
-    
 }

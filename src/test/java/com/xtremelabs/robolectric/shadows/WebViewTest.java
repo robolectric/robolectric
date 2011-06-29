@@ -16,16 +16,16 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class WebViewTest {
-
-    private WebView webView;
-    private ShadowWebView shadowWebView;
+	
+	private WebView webView;
+	private ShadowWebView shadowWebView;
 
     @Before
     public void setUp() throws Exception {
-        webView = new WebView(null);
-        shadowWebView = Robolectric.shadowOf(webView);
+    	webView = new WebView(null);
+    	shadowWebView = Robolectric.shadowOf(webView);
     }
-
+    	
     @Test
     public void shouldRecordLastLoadedUrl() {
         webView.loadUrl("http://example.com");
@@ -60,63 +60,63 @@ public class WebViewTest {
             assertThat(shadowWebView.getJavascriptInterface(name), sameInstance(obj));
         }
     }
-
+    
     @Test
     public void shouldStartPostRun() {
-        Runnable testRun = new Runnable() {
-            public void run() {
-                //Do something...
-                return;
-            }
-        };
-        assertThat(shadowWebView.getRunFlag(), equalTo(false));
-        shadowWebView.post(testRun);
-        assertThat(shadowWebView.getRunFlag(), equalTo(true));
+    	Runnable testRun = new Runnable() {
+    		public void run() {
+    			//Do something...
+    			return;
+    		}
+    	};
+    	assertThat(shadowWebView.getRunFlag(), equalTo(false));
+    	shadowWebView.post(testRun);
+    	assertThat(shadowWebView.getRunFlag(), equalTo(true));
     }
-
+    
     @Test
     public void shouldRecordClearCacheWithoutDiskFiles() {
-        assertThat(shadowWebView.wasClearCacheCalled(), equalTo(false));
-
-        webView.clearCache(false);
-        assertThat(shadowWebView.wasClearCacheCalled(), equalTo(true));
-        assertThat(shadowWebView.didClearCacheIncludeDiskFiles(), equalTo(false));
+    	assertThat( shadowWebView.wasClearCacheCalled(), equalTo( false ) );
+ 
+    	webView.clearCache( false );
+    	assertThat( shadowWebView.wasClearCacheCalled(), equalTo( true ) );
+    	assertThat( shadowWebView.didClearCacheIncludeDiskFiles(), equalTo( false ) );    	
     }
-
+    
     @Test
     public void shouldRecordClearCacheWithDiskFiles() {
-        assertThat(shadowWebView.wasClearCacheCalled(), equalTo(false));
-
-        webView.clearCache(true);
-        assertThat(shadowWebView.wasClearCacheCalled(), equalTo(true));
-        assertThat(shadowWebView.didClearCacheIncludeDiskFiles(), equalTo(true));
+    	assertThat( shadowWebView.wasClearCacheCalled(), equalTo( false ) );
+ 
+    	webView.clearCache( true );
+    	assertThat( shadowWebView.wasClearCacheCalled(), equalTo( true ) );
+    	assertThat( shadowWebView.didClearCacheIncludeDiskFiles(), equalTo( true ) );    	
     }
-
+    
     @Test
     public void shouldRecordClearFormData() {
-        assertThat(shadowWebView.wasClearFormDataCalled(), equalTo(false));
-        webView.clearFormData();
-        assertThat(shadowWebView.wasClearFormDataCalled(), equalTo(true));
+    	assertThat( shadowWebView.wasClearFormDataCalled(), equalTo( false ) );
+    	webView.clearFormData();
+    	assertThat( shadowWebView.wasClearFormDataCalled(), equalTo( true ) );
     }
-
+    
     @Test
     public void shouldRecordClearHistory() {
-        assertThat(shadowWebView.wasClearHistoryCalled(), equalTo(false));
-        webView.clearHistory();
-        assertThat(shadowWebView.wasClearHistoryCalled(), equalTo(true));
+    	assertThat( shadowWebView.wasClearHistoryCalled(), equalTo( false ) );
+    	webView.clearHistory();
+    	assertThat( shadowWebView.wasClearHistoryCalled(), equalTo( true ) );
     }
-
+    
     @Test
     public void shouldRecordClearView() {
-        assertThat(shadowWebView.wasClearViewCalled(), equalTo(false));
-        webView.clearView();
-        assertThat(shadowWebView.wasClearViewCalled(), equalTo(true));
+    	assertThat( shadowWebView.wasClearViewCalled(), equalTo( false ) );
+    	webView.clearView();
+    	assertThat( shadowWebView.wasClearViewCalled(), equalTo( true ) );
     }
-
+    
     @Test
     public void shouldRecordDestroy() {
-        assertThat(shadowWebView.wasDestroyCalled(), equalTo(false));
-        webView.destroy();
-        assertThat(shadowWebView.wasDestroyCalled(), equalTo(true));
+    	assertThat( shadowWebView.wasDestroyCalled(), equalTo( false ) );
+    	webView.destroy();
+    	assertThat( shadowWebView.wasDestroyCalled(), equalTo( true ) );
     }
 }
