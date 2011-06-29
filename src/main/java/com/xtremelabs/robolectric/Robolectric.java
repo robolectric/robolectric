@@ -815,6 +815,10 @@ public class Robolectric {
         ShadowLooper.unPauseMainLooper();
     }
 
+    public static void idleMainLooper(int interval) {
+        ShadowLooper.idleMainLooper(interval);
+    }
+
     public static Scheduler getUiThreadScheduler() {
         return shadowOf(Looper.getMainLooper()).getScheduler();
     }
@@ -852,4 +856,5 @@ public class Robolectric {
     public static String visualize(Bitmap bitmap) {
         return shadowOf(bitmap).getDescription();
     }
+
 }
