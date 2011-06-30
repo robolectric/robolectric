@@ -30,11 +30,11 @@ public class SQLiteCursorTest {
 
     @Before
     public void setUp() throws Exception {
-    	connection = DatabaseConfig.OpenMemoryConnection();
+    	connection = DatabaseConfig.getMemoryConnection();
 
         Statement statement = connection.createStatement();
         statement.execute("CREATE TABLE table_name(" +
-                "id INT PRIMARY KEY, name VARCHAR(255), long_value BIGINT," +
+                "id INTEGER PRIMARY KEY, name VARCHAR(255), long_value BIGINT," +
                 "float_value REAL, double_value DOUBLE, blob_value BINARY );");
 
         addPeople();
@@ -138,6 +138,28 @@ public class SQLiteCursorTest {
         cursor.moveToNext();
 
         assertThat(cursor.moveToNext(), equalTo(false));
+    }
+    
+    @Test
+    public void testMoveBackwards() throws Exception {
+    	assertThat(cursor.getPosition(), equalTo(-1));
+    	
+        cursor.moveToFirst();
+        assertThat(cursor.getPosition(), equalTo(0));
+        cursor.moveToNext();
+        assertThat(cursor.getPosition(), equalTo(1));
+        cursor.moveToNext();
+        assertThat(cursor.getPosition(), equalTo(2));
+        
+        cursor.moveToFirst();
+        assertThat(cursor.getPosition(), equalTo(0));
+        cursor.moveToNext();
+        assertThat(cursor.getPosition(), equalTo(1));
+        cursor.moveToNext();
+        assertThat(cursor.getPosition(), equalTo(2));
+        
+        cursor.moveToPosition(1);
+        assertThat(cursor.getPosition(), equalTo(1));
     }
 
     @Test
@@ -272,7 +294,7 @@ public class SQLiteCursorTest {
     }
 
     private void setupCursor() throws Exception {
-        Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        Statement statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
         String sql ="SELECT * FROM table_name;";
         resultSet = statement.executeQuery("SELECT * FROM table_name;");
         cursor = new SQLiteCursor(null, null, null, null);

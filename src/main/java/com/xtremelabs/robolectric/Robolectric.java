@@ -23,6 +23,7 @@ import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.database.CursorWindow;
 import android.database.sqlite.SQLiteClosable;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
@@ -228,7 +229,6 @@ public class Robolectric {
                 ShadowSimpleCursorAdapter.class,
                 ShadowSpannableStringBuilder.class,
                 ShadowSQLiteProgram.class,
-                ShadowSQLiteClosable.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
@@ -498,10 +498,7 @@ public class Robolectric {
     public static ShadowSQLiteProgram shadowOf(SQLiteProgram other) {
         return (ShadowSQLiteProgram) Robolectric.shadowOf_(other);
     }
-    public static ShadowSQLiteClosable shadowOf(SQLiteClosable other) {
-        return (ShadowSQLiteClosable) Robolectric.shadowOf_(other);
-    }
-    
+
     public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
         return (ShadowSQLiteDatabase) Robolectric.shadowOf_(other);
     }

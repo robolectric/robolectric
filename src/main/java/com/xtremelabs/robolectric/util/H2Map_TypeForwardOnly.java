@@ -5,7 +5,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class H2Map implements DatabaseConfig.DatabaseMap {
+public class H2Map_TypeForwardOnly implements DatabaseConfig.DatabaseMap {
 
 	@Override
 	public String getDriverClassName() {
@@ -61,7 +61,7 @@ public class H2Map implements DatabaseConfig.DatabaseMap {
 
 	@Override
 	public int getResultSetType() {
-		return ResultSet.TYPE_SCROLL_INSENSITIVE;
+		return ResultSet.TYPE_FORWARD_ONLY;
 	}
 
 }

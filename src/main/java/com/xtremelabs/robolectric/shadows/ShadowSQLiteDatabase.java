@@ -1,5 +1,21 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.util.SQLite.buildDeleteString;
+import static com.xtremelabs.robolectric.util.SQLite.buildInsertString;
+import static com.xtremelabs.robolectric.util.SQLite.buildUpdateString;
+import static com.xtremelabs.robolectric.util.SQLite.buildWhereClause;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.Iterator;
+import java.util.WeakHashMap;
+import java.util.concurrent.locks.ReentrantLock;
+
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteClosable;
@@ -13,15 +29,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
-
-import java.sql.*;
-import java.util.Iterator;
-import java.util.WeakHashMap;
-import java.util.concurrent.locks.ReentrantLock;
-
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.SQLite.*;
+import com.xtremelabs.robolectric.util.SQLite.SQLStringAndBindings;
 
 /**
  * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.
@@ -29,7 +37,7 @@ import static com.xtremelabs.robolectric.util.SQLite.*;
  * made available to test cases for use in fixture setup and assertions.
  */
 @Implements(SQLiteDatabase.class)
-public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
+public class ShadowSQLiteDatabase  {
 	@RealObject	SQLiteDatabase realSQLiteDatabase;
     private static Connection connection;
     private final ReentrantLock mLock = new ReentrantLock(true);
@@ -54,7 +62,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
     
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
-     	connection = DatabaseConfig.OpenMemoryConnection();
+     	connection = DatabaseConfig.getMemoryConnection();
         return newInstanceOf(SQLiteDatabase.class);
     }
 
@@ -91,7 +99,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
             try {
                 final Statement statement = connection.createStatement();
                 
-                final ResultSet resultSet = statement.executeQuery(DatabaseConfig.SelectLastInsertIdentity());
+                final ResultSet resultSet = statement.executeQuery(DatabaseConfig.getSelectLastInsertIdentity());
                 if (resultSet.isBeforeFirst()) {
                     resultSet.next();
                 }
@@ -118,7 +126,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
 
         ResultSet resultSet;
         try {
-            Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            Statement statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
             resultSet = statement.executeQuery(sql);
         } catch (SQLException e) {
             throw new RuntimeException("SQL exception in query", e);
@@ -181,7 +189,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         
         
         try {
-        	sql = DatabaseConfig.ScrubSQL(sql);
+        	sql = DatabaseConfig.getScrubSQL(sql);
             connection.createStatement().execute(sql);
         } catch (java.sql.SQLException e) {
             android.database.SQLException ase = new android.database.SQLException();
@@ -198,7 +206,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         }
         ResultSet resultSet;
         try {
-            Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+            Statement statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
             resultSet = statement.executeQuery(sqlBody);
         } catch (SQLException e) {
             throw new RuntimeException("SQL exception in query", e);
@@ -252,11 +260,6 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
         }
     }
     
-    @Implementation
-	@Override
-	public void onAllReferencesReleased() {
-		close();
-	}
 	   /**
      * @param closable
      */

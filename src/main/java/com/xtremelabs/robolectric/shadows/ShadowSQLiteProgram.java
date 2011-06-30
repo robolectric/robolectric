@@ -3,13 +3,12 @@ package com.xtremelabs.robolectric.shadows;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteProgram;
 
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 @Implements(SQLiteProgram.class)
-public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
+public abstract class ShadowSQLiteProgram {
 	@RealObject	SQLiteProgram realSQLiteProgram;
 	protected SQLiteDatabase mDatabase;
 
@@ -48,12 +47,7 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
      */
 	@Implementation
     public void bindNull(int index) {
-        acquireReference();
-        try {
          //   native_bind_null(index);
-        } finally {
-            releaseReference();
-        }
     }
 
     /**
@@ -65,12 +59,7 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
      */
     @Implementation
     public void bindLong(int index, long value) {
-        acquireReference();
-        try {
           //  native_bind_long(index, value);
-        } finally {
-            releaseReference();
-        }
     }
 
     /**
@@ -82,12 +71,7 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
      */
     @Implementation
     public void bindDouble(int index, double value) {
-        acquireReference();
-        try {
         //    native_bind_double(index, value);
-        } finally {
-            releaseReference();
-        }
     }
 
     /**
@@ -102,12 +86,9 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
         if (value == null) {
             throw new IllegalArgumentException("the bind value at index " + index + " is null");
         }
-        acquireReference();
-        try {
+
         //    native_bind_string(index, value);
-        } finally {
-            releaseReference();
-        }
+
     }
 
     /**
@@ -122,12 +103,9 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
         if (value == null) {
             throw new IllegalArgumentException("the bind value at index " + index + " is null");
         }
-        acquireReference();
-        try {
+
          //   native_bind_blob(index, value);
-        } finally {
-            releaseReference();
-        }
+
     }
 
     /**
@@ -135,22 +113,6 @@ public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
      */
     @Implementation
     public void clearBindings() {
-        acquireReference();
-        try {
         //    native_clear_bindings();
-        } finally {
-            releaseReference();
-        }
     }
-    
-    @Implementation
-    @Override
-    public void onAllReferencesReleased() {
-        // Note that native_finalize() checks to make sure that nStatement is
-        // non-null before destroying it.
-       // native_finalize();
-        mDatabase.releaseReference();
-      Robolectric.shadowOf(mDatabase).removeSQLiteClosable(realSQLiteProgram);
-    }
-
 }

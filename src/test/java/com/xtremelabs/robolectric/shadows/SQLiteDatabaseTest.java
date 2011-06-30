@@ -290,7 +290,7 @@ public class SQLiteDatabaseTest {
     private void assertEmptyDatabase() {
         Cursor cursor = database.query("table_name", new String[]{"id", "name"}, null, null, null, null, null);
         assertThat(cursor.moveToFirst(), equalTo(false));
-        assertThat(cursor.isClosed(), equalTo(true));
+        assertThat(cursor.isClosed(), equalTo(false));
         assertThat(cursor.getCount(), equalTo(0));
     }
 

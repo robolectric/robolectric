@@ -35,7 +35,7 @@ public class CursorAdapterTest {
 
 	@Before
 	public void setUp() throws Exception {
-		Connection connection = DatabaseConfig.OpenMemoryConnection();
+		Connection connection = DatabaseConfig.getMemoryConnection();
 
         Statement statement = connection.createStatement();
         statement.execute("CREATE TABLE table_name(_id INT PRIMARY KEY, name VARCHAR(255));" );
@@ -51,7 +51,7 @@ public class CursorAdapterTest {
             connection.createStatement().executeUpdate(insert);
         }
 
-        statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
         String sql = "SELECT * FROM table_name;";
         ResultSet resultSet = statement.executeQuery(sql);
         curs = new SQLiteCursor(null, null, null, null);

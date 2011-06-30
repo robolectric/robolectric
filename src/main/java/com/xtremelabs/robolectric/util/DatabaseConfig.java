@@ -52,7 +52,7 @@ public class DatabaseConfig {
 	 * Gets an in memory DB connection.  Will load DB Driver if not already loaded.
 	 * @return Connection to In Memory Database.
 	 */
-	public static Connection OpenMemoryConnection() {
+	public static Connection getMemoryConnection() {
 		if (!isLoaded) LoadSQLiteDriver();
 		try {
 			return DriverManager.getConnection(dbMap.getConnectionString());
@@ -66,22 +66,29 @@ public class DatabaseConfig {
 	 * @return
 	 * @throws SQLException 
 	 */
-	public static String ScrubSQL(String sql) throws SQLException {
+	public static String getScrubSQL(String sql) throws SQLException {
 		if (!isLoaded) throw new RuntimeException("No database driver loaded!");
-		return dbMap.ScrubSQL(sql);
+		return dbMap.getScrubSQL(sql);
 	}
 	
-	public static String SelectLastInsertIdentity() {
+	public static String getSelectLastInsertIdentity() {
 		if (!isLoaded) throw new RuntimeException("No database driver loaded!");
-		return dbMap.SelectLastInsertIdentity();
+		return dbMap.getSelectLastInsertIdentity();
+	}
+	
+	public static int getResultSetType() {
+		if (!isLoaded) throw new RuntimeException("No database driver loaded!");
+		return dbMap.getResultSetType();
 	}
 	
 	public interface DatabaseMap {
 	   String getDriverClassName();
 	   String getConnectionString();
-       String ScrubSQL(String sql) throws SQLException;
-       String SelectLastInsertIdentity();
+       String getScrubSQL(String sql) throws SQLException;
+       String getSelectLastInsertIdentity();
+       int getResultSetType();
 	}
+
 	
 
 	@Retention(RetentionPolicy.RUNTIME)

@@ -20,7 +20,7 @@ public class DatabaseMapTest {
 				.equals(NullDatabaseMap.class.getName()));
 		Assert.assertTrue(DatabaseConfig.getDatabaseMap().getConnectionString() == null);
 		Assert.assertTrue(DatabaseConfig.getDatabaseMap()
-				.SelectLastInsertIdentity() == null);
+				.getSelectLastInsertIdentity() == null);
 		Assert.assertTrue(DatabaseConfig.getDatabaseMap().getDriverClassName() == "com.xtremelabs.robolectric.util.NullDatabaseMap");
 	}
 	@Test
@@ -33,13 +33,13 @@ public class DatabaseMapTest {
 
 	@Test(expected = RuntimeException.class)
 	public void ThrowsExceptionIfNotLoaded_SelectLastInsertIdentity() {
-		DatabaseConfig.SelectLastInsertIdentity();
+		DatabaseConfig.getSelectLastInsertIdentity();
 	}
 
 	@Test(expected = RuntimeException.class)
 	public void ThrowsExceptionIfNotLoaded_ScrubSQL() {
 		try {
-			DatabaseConfig.ScrubSQL("");
+			DatabaseConfig.getScrubSQL("");
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
@@ -50,7 +50,7 @@ public class DatabaseMapTest {
 		Assert.assertFalse(DatabaseConfig.isMapLoaded());
 		Connection connection = null;
 		try {
-			connection = DatabaseConfig.OpenMemoryConnection();
+			connection = DatabaseConfig.getMemoryConnection();
 			// we should never reach this,
 			//since the connection should not actually be made
 			Assert.assertTrue(false);
@@ -63,4 +63,6 @@ public class DatabaseMapTest {
 		Assert.assertTrue(DatabaseConfig.isMapLoaded());
 
 	}
+	//TODO: Assert setting the Map resets IsLoaded to false
+	//TODO: create a second H2 map that allows for a different resultset type.
 }
