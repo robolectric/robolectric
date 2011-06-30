@@ -6,8 +6,10 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -35,6 +37,22 @@ public class TabHostTest {
 
         assertThat(tabHost.getChildAt(0), is(fooView));
         assertThat(tabHost.getChildAt(1), is(barView));
+    }
+
+    @Test
+    public void shouldReturnTabSpecsByTag() throws Exception {
+        TabHost tabHost = new TabHost(null);
+        TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
+        TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
+        TabHost.TabSpec baz = tabHost.newTabSpec("Baz");
+
+        tabHost.addTab(foo);
+        tabHost.addTab(bar);
+        tabHost.addTab(baz);
+
+        assertThat(shadowOf(tabHost).getSpecByTag("Bar"), is(bar));
+        assertThat(shadowOf(tabHost).getSpecByTag("Baz"), is(baz));
+        assertNull(shadowOf(tabHost).getSpecByTag("Whammie"));
     }
 
     @Test

@@ -743,6 +743,16 @@ public class ShadowView {
     public void postDelayed(Runnable action, long delayMills) {
         Robolectric.getUiThreadScheduler().postDelayed(action, delayMills);
     }
+
+    @Implementation
+    public void postInvalidateDelayed(long delayMilliseconds) {
+        Robolectric.getUiThreadScheduler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                realView.invalidate();
+            }
+        }, delayMilliseconds);
+    }
     
     @Implementation
     public Animation getAnimation() {

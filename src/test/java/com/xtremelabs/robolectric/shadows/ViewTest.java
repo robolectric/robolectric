@@ -176,6 +176,18 @@ public class ViewTest {
     }
 
     @Test
+    public void shouldPostInvalidateDelayed() throws Exception {
+        Robolectric.pauseMainLooper();
+
+        view.postInvalidateDelayed(100);
+        ShadowView shadowView = shadowOf(view);
+        assertFalse(shadowView.wasInvalidated());
+
+        Robolectric.unPauseMainLooper();
+        assertTrue(shadowView.wasInvalidated());
+    }
+
+    @Test
     public void shouldPostActionsToTheMessageQueueWithDelay() throws Exception {
         Robolectric.pauseMainLooper();
 

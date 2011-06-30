@@ -1,26 +1,6 @@
 package com.xtremelabs.robolectric;
 
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultRequestDirector;
-
-import android.app.Activity;
-import android.app.ActivityGroup;
-import android.app.ActivityManager;
-import android.app.AlarmManager;
-import android.app.AlertDialog;
-import android.app.Application;
-import android.app.Dialog;
-import android.app.KeyguardManager;
-import android.app.ListActivity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.ProgressDialog;
-import android.app.Service;
+import android.app.*;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -48,6 +28,7 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.ShapeDrawable;
 import android.hardware.Camera;
 import android.location.Geocoder;
 import android.location.LocationManager;
@@ -57,18 +38,8 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Parcel;
-import android.os.PowerManager;
-import android.preference.DialogPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceActivity;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceGroup;
-import android.preference.PreferenceScreen;
+import android.os.*;
+import android.preference.*;
 import android.telephony.TelephonyManager;
 import android.text.format.DateFormat;
 import android.view.Display;
@@ -84,26 +55,7 @@ import android.webkit.CookieSyncManager;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
-import android.widget.AbsSeekBar;
-import android.widget.AdapterView;
-import android.widget.CursorAdapter;
-import android.widget.ExpandableListView;
-import android.widget.FrameLayout;
-import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.RatingBar;
-import android.widget.RemoteViews;
-import android.widget.ResourceCursorAdapter;
-import android.widget.SeekBar;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TabHost;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.VideoView;
-import android.widget.ZoomButtonsController;
-
+import android.widget.*;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
@@ -111,6 +63,13 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultRequestDirector;
+
+import java.util.Arrays;
+import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class Robolectric {
@@ -275,6 +234,7 @@ public class Robolectric {
                 ShadowSettings.ShadowSecure.class,
                 ShadowSettings.ShadowSystem.class,
                 ShadowSimpleCursorAdapter.class,
+                ShadowShapeDrawable.class,
                 ShadowSpannableStringBuilder.class,
                 ShadowSQLiteProgram.class,
                 ShadowSQLiteDatabase.class,
@@ -429,6 +389,10 @@ public class Robolectric {
 
     public static ShadowHandler shadowOf(Handler instance) {
         return (ShadowHandler) shadowOf_(instance);
+    }
+
+    public static ShadowShapeDrawable shadowOf(ShapeDrawable instance) {
+        return (ShadowShapeDrawable) shadowOf_(instance);
     }
 
     public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
@@ -871,6 +835,10 @@ public class Robolectric {
 
     public static void unPauseMainLooper() {
         ShadowLooper.unPauseMainLooper();
+    }
+
+    public static void idleMainLooper(int interval) {
+        ShadowLooper.idleMainLooper(interval);
     }
 
     public static Scheduler getUiThreadScheduler() {

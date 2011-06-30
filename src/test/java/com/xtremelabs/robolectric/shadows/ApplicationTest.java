@@ -139,28 +139,6 @@ public class ApplicationTest {
         assertEquals(service, shadowApplication.getUnboundServiceConnections().get(0));
     }
 
-    private static class TestService extends Service implements ServiceConnection {
-        private ComponentName name;
-        private IBinder service;
-        private ComponentName nameUnbound;
-
-        @Override
-        public IBinder onBind(Intent intent) {
-            return null;
-        }
-
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder service) {
-            this.name = name;
-            this.service = service;
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            nameUnbound = name;
-        }
-    }
-
     private static class NullBinder implements IBinder {
         @Override
         public String getInterfaceDescriptor() throws RemoteException {

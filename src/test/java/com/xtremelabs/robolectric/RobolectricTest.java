@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import android.content.Context;
+import android.os.Handler;
 import android.view.View;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -116,6 +117,23 @@ public class RobolectricTest {
     public void httpRequestWasMade_returnsFalseIfNoRequestMatchingGivenRuleWasMAde() throws IOException, HttpException {
         makeRequest("http://example.com");
         assertFalse(Robolectric.httpRequestWasMade("http://example.org"));
+    }
+
+    @Test
+    public void idleMainLooper_executesScheduledTasks() {
+        final boolean[] wasRun = new boolean[] {false};
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                wasRun[0] = true;
+            }
+        }, 2000);
+
+        assertFalse(wasRun[0]);
+        Robolectric.idleMainLooper(1999);
+        assertFalse(wasRun[0]);
+        Robolectric.idleMainLooper(1);
+        assertTrue(wasRun[0]);
     }
 
 
