@@ -2,18 +2,13 @@ package com.xtremelabs.robolectric.res;
 
 import android.R;
 import android.content.Context;
+import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -41,6 +36,7 @@ public class ResourceLoader {
     private final ResourceExtractor resourceExtractor;
     private ViewLoader viewLoader;
     private MenuLoader menuLoader;
+    private PreferenceLoader preferenceLoader;
     private final StringResourceLoader stringResourceLoader;
     private final StringArrayResourceLoader stringArrayResourceLoader;
     private final AttrResourceLoader attrResourceLoader;
@@ -76,18 +72,22 @@ public class ResourceLoader {
             if (resourceDir != null) {
                 viewLoader = new ViewLoader(resourceExtractor, attrResourceLoader);
                 menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
+                preferenceLoader = new PreferenceLoader(resourceExtractor);
 
                 File systemResourceDir = getSystemResourceDir(getPathToAndroidResources());
                 File localValueResourceDir = getValueResourceDir(resourceDir);
                 File systemValueResourceDir = getValueResourceDir(systemResourceDir);
+                File preferenceDir = getPreferenceResourceDir(resourceDir);
 
                 loadStringResources(localValueResourceDir, systemValueResourceDir);
                 loadValueResources(localValueResourceDir, systemValueResourceDir);
                 loadViewResources(systemResourceDir, resourceDir);
                 loadMenuResources(resourceDir);
+                loadPreferenceResources(preferenceDir);
             } else {
                 viewLoader = null;
                 menuLoader = null;
+                preferenceLoader = null;
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -118,6 +118,13 @@ public class ResourceLoader {
     private void loadMenuResources(File xmlResourceDir) throws Exception {
         DocumentLoader menuDocumentLoader = new DocumentLoader(menuLoader);
         loadMenuResourceXmlDirs(menuDocumentLoader, xmlResourceDir);
+    }
+
+    private void loadPreferenceResources(File xmlResourceDir) throws Exception {
+        if (xmlResourceDir.exists()) {
+            DocumentLoader preferenceDocumentLoader = new DocumentLoader(preferenceLoader);
+            preferenceDocumentLoader.loadResourceXmlDir(xmlResourceDir);
+        }
     }
 
     private void loadLayoutResourceXmlSubDirs(DocumentLoader layoutDocumentLoader, File xmlResourceDir) throws Exception {
@@ -151,6 +158,10 @@ public class ResourceLoader {
 
     private File getValueResourceDir(File xmlResourceDir) {
         return xmlResourceDir != null ? new File(xmlResourceDir, "values") : null;
+    }
+
+    private File getPreferenceResourceDir(File xmlResourceDir) {
+        return xmlResourceDir != null ? new File(xmlResourceDir, "xml") : null;
     }
 
     private String getPathToAndroidResources() {
@@ -285,6 +296,11 @@ public class ResourceLoader {
     public void inflateMenu(Context context, int resource, Menu root) {
         init();
         menuLoader.inflateMenu(context, resource, root);
+    }
+
+    public PreferenceScreen inflatePreferences(Context context, int resourceId) {
+        init();
+        return preferenceLoader.inflatePreferences(context, resourceId);
     }
 
     public File getAssetsBase() {

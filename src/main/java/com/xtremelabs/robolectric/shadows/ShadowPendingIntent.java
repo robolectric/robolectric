@@ -3,6 +3,8 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentSender;
+import android.content.TestIntentSender;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -14,16 +16,22 @@ import com.xtremelabs.robolectric.internal.Implements;
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {
     private Intent savedIntent;
+    private Context savedContext;
     private boolean isServiceIntent;
 
     @Implementation
     public static PendingIntent getActivity(Context context, int requestCode, Intent intent, int flags) {
-        return create(intent, false);
+        return create(context, intent, false);
     }
 
     @Implementation
     public static PendingIntent getService(Context context, int requestCode, Intent intent, int flags) {
-        return create(intent, true);
+        return create(context, intent, true);
+    }
+    
+    @Implementation
+    public void send() throws PendingIntent.CanceledException {
+    	send(savedContext, 0, savedIntent);
     }
 
     @Implementation
@@ -35,11 +43,19 @@ public class ShadowPendingIntent {
         }
     }
 
-    private static PendingIntent create(Intent intent, boolean isService) {
+    @Implementation
+    public IntentSender getIntentSender() {
+        TestIntentSender testIntentSender = new TestIntentSender();
+        testIntentSender.intent = savedIntent;
+        return testIntentSender;
+    }
+
+    private static PendingIntent create(Context context, Intent intent, boolean isService) {
         PendingIntent pendingIntent = Robolectric.newInstanceOf(PendingIntent.class);
         ShadowPendingIntent shadowPendingIntent = (ShadowPendingIntent) Robolectric.shadowOf_(pendingIntent);
         shadowPendingIntent.savedIntent = intent;
         shadowPendingIntent.isServiceIntent = isService;
+        shadowPendingIntent.savedContext = context;
         return pendingIntent;
     }
 }

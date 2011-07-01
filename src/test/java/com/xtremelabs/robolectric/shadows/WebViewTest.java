@@ -5,6 +5,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -15,16 +17,23 @@ import static org.junit.Assert.assertThat;
 @RunWith(WithTestDefaultsRunner.class)
 public class WebViewTest {
 
+    private WebView webView;
+    private ShadowWebView shadowWebView;
+
+    @Before
+    public void setUp() throws Exception {
+        webView = new WebView(null);
+        shadowWebView = Robolectric.shadowOf(webView);
+    }
+
     @Test
     public void shouldRecordLastLoadedUrl() {
-        WebView webView = new WebView(null);
         webView.loadUrl("http://example.com");
         assertThat(shadowOf(webView).getLastLoadedUrl(), equalTo("http://example.com"));
     }
 
     @Test
     public void shouldReturnSettings() {
-        WebView webView = new WebView(null);
         WebSettings webSettings = webView.getSettings();
         ShadowWebSettings shadowWebSettings = Robolectric.shadowOf(webSettings);
 
@@ -34,8 +43,6 @@ public class WebViewTest {
 
     @Test
     public void shouldRecordWebViewClient() {
-        WebView webView = new WebView(null);
-        ShadowWebView shadowWebView = Robolectric.shadowOf(webView);
         WebViewClient webViewClient = new WebViewClient();
 
         assertThat(shadowWebView.getWebViewClient(), nullValue());
@@ -45,9 +52,6 @@ public class WebViewTest {
 
     @Test
     public void shouldRecordJavascriptInteraces() {
-        WebView webView = new WebView(null);
-        ShadowWebView shadowWebView = Robolectric.shadowOf(webView);
-
         String[] names = {"name1", "name2"};
         for (String name : names) {
             Object obj = new Object();
@@ -56,20 +60,63 @@ public class WebViewTest {
             assertThat(shadowWebView.getJavascriptInterface(name), sameInstance(obj));
         }
     }
-    
+
     @Test
     public void shouldStartPostRun() {
-    	WebView webView = new WebView(null);
-    	ShadowWebView shadowWebView = Robolectric.shadowOf(webView);
-    	
-    	Runnable testRun = new Runnable() {
-    		public void run() {
-    			//Do something...
-    			return;
-    		}
-    	};
-    	assertThat(shadowWebView.getRunFlag(), equalTo(false));
-    	shadowWebView.post(testRun);
-    	assertThat(shadowWebView.getRunFlag(), equalTo(true));
+        Runnable testRun = new Runnable() {
+            public void run() {
+                //Do something...
+                return;
+            }
+        };
+        assertThat(shadowWebView.getRunFlag(), equalTo(false));
+        shadowWebView.post(testRun);
+        assertThat(shadowWebView.getRunFlag(), equalTo(true));
+    }
+
+    @Test
+    public void shouldRecordClearCacheWithoutDiskFiles() {
+        assertThat(shadowWebView.wasClearCacheCalled(), equalTo(false));
+
+        webView.clearCache(false);
+        assertThat(shadowWebView.wasClearCacheCalled(), equalTo(true));
+        assertThat(shadowWebView.didClearCacheIncludeDiskFiles(), equalTo(false));
+    }
+
+    @Test
+    public void shouldRecordClearCacheWithDiskFiles() {
+        assertThat(shadowWebView.wasClearCacheCalled(), equalTo(false));
+
+        webView.clearCache(true);
+        assertThat(shadowWebView.wasClearCacheCalled(), equalTo(true));
+        assertThat(shadowWebView.didClearCacheIncludeDiskFiles(), equalTo(true));
+    }
+
+    @Test
+    public void shouldRecordClearFormData() {
+        assertThat(shadowWebView.wasClearFormDataCalled(), equalTo(false));
+        webView.clearFormData();
+        assertThat(shadowWebView.wasClearFormDataCalled(), equalTo(true));
+    }
+
+    @Test
+    public void shouldRecordClearHistory() {
+        assertThat(shadowWebView.wasClearHistoryCalled(), equalTo(false));
+        webView.clearHistory();
+        assertThat(shadowWebView.wasClearHistoryCalled(), equalTo(true));
+    }
+
+    @Test
+    public void shouldRecordClearView() {
+        assertThat(shadowWebView.wasClearViewCalled(), equalTo(false));
+        webView.clearView();
+        assertThat(shadowWebView.wasClearViewCalled(), equalTo(true));
+    }
+
+    @Test
+    public void shouldRecordDestroy() {
+        assertThat(shadowWebView.wasDestroyCalled(), equalTo(false));
+        webView.destroy();
+        assertThat(shadowWebView.wasDestroyCalled(), equalTo(true));
     }
 }

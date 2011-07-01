@@ -1,12 +1,16 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.TestAnimationListener;
 import com.xtremelabs.robolectric.util.TestOnClickListener;
 import com.xtremelabs.robolectric.util.TestRunnable;
 import com.xtremelabs.robolectric.util.Transcript;
@@ -15,6 +19,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.*;
@@ -24,7 +29,7 @@ public class ViewTest {
     private View view;
 
     @Before public void setUp() throws Exception {
-        view = new View(null);
+        view = new View(new Activity());
     }
 
     @Test
@@ -127,6 +132,26 @@ public class ViewTest {
         shadowOf(view).checkedPerformClick();
     }
 
+    @Test
+    public void shouldReturnSomethingForABackground() throws Exception {
+        assertThat(view.getBackground(), notNullValue());
+    }
+
+    @Test
+    public void shouldSetBackgroundColor() {
+        Drawable origninalBackground = view.getBackground();
+        assertNotNull(origninalBackground);
+        view.setBackgroundColor(R.color.android_red);
+        int intColor = view.getResources().getColor(R.color.android_red);
+
+        assertThat((ColorDrawable) view.getBackground(), equalTo(new ColorDrawable(intColor)));
+    }
+
+    @Test
+    public void shouldSetBackgroundResource() throws Exception {
+        view.setBackgroundResource(R.drawable.an_image);
+        assertThat(view.getBackground(), equalTo(view.getResources().getDrawable(R.drawable.an_image)));
+    }
 
     @Test
     public void shouldRecordBackgroundColor() {
@@ -151,6 +176,18 @@ public class ViewTest {
     }
 
     @Test
+    public void shouldPostInvalidateDelayed() throws Exception {
+        Robolectric.pauseMainLooper();
+
+        view.postInvalidateDelayed(100);
+        ShadowView shadowView = shadowOf(view);
+        assertFalse(shadowView.wasInvalidated());
+
+        Robolectric.unPauseMainLooper();
+        assertTrue(shadowView.wasInvalidated());
+    }
+
+    @Test
     public void shouldPostActionsToTheMessageQueueWithDelay() throws Exception {
         Robolectric.pauseMainLooper();
 
@@ -168,4 +205,31 @@ public class ViewTest {
         new View(null, null);
         new View(null, null, 0);
     }
+    
+    @Test
+    public void shouldSetAnimation() throws Exception {
+    	Animation anim = new TestAnimation();
+    	view.setAnimation(anim);
+    	assertThat(view.getAnimation(), sameInstance(anim));
+    }
+        
+    @Test
+    public void shouldStartAndClearAnimation() throws Exception {
+    	Animation anim = new TestAnimation();
+    	TestAnimationListener listener = new TestAnimationListener();
+    	anim.setAnimationListener(listener);
+    	assertThat(listener.wasStartCalled, equalTo(false));
+    	assertThat(listener.wasRepeatCalled, equalTo(false));
+    	assertThat(listener.wasEndCalled, equalTo(false));
+    	view.startAnimation(anim);
+    	assertThat(listener.wasStartCalled, equalTo(true));
+    	assertThat(listener.wasRepeatCalled, equalTo(false));
+    	assertThat(listener.wasEndCalled, equalTo(false));
+    	view.clearAnimation();
+    	assertThat(listener.wasStartCalled, equalTo(true));	
+    	assertThat(listener.wasRepeatCalled, equalTo(false));
+    	assertThat(listener.wasEndCalled, equalTo(true));	
+    }
+    
+	private class TestAnimation extends Animation { }
 }

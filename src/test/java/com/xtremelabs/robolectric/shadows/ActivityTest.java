@@ -5,7 +5,10 @@ import android.app.Dialog;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.IntentSender;
 import android.net.Uri;
+import android.os.Bundle;
+import android.view.View;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -16,7 +19,10 @@ import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.StringStartsWith.startsWith;
@@ -54,7 +60,7 @@ public class ActivityTest {
         activity.startActivityForResult(new Intent().setType("image/*"), 456);
 
         shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
-                new Intent().setData(Uri.parse("content:foo")));
+            new Intent().setData(Uri.parse("content:foo")));
         transcript.assertEventsSoFar("onActivityResult called with requestCode 456, resultCode -1, intent data content:foo");
     }
 
@@ -165,6 +171,50 @@ public class ActivityTest {
     }
 
     @Test
+    public void showDialog_shouldCreatePrepareAndShowDialog() {
+        final MyActivity activity = new MyActivity();
+        final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
+
+        new Dialog(activity) {
+            {  activity.dialog = this; }
+
+            @Override
+            public void show() {
+                dialogWasShown.set(true);
+            }
+        };
+
+        ShadowActivity shadow = Robolectric.shadowOf(activity);
+        shadow.showDialog(1);
+
+        assertTrue(activity.createdDialog);
+        assertTrue(activity.preparedDialog);
+        assertTrue(dialogWasShown.get());
+    }
+
+    @Test
+    public void showDialog_shouldCreatePrepareAndShowDialogWithBundle() {
+        final MyActivity activity = new MyActivity();
+        final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
+
+        new Dialog(activity) {
+            {  activity.dialog = this; }
+
+            @Override
+            public void show() {
+                dialogWasShown.set(true);
+            }
+        };
+
+        ShadowActivity shadow = Robolectric.shadowOf(activity);
+        shadow.showDialog(1, new Bundle());
+
+        assertTrue(activity.createdDialog);
+        assertTrue(activity.preparedDialogWithBundle);
+        assertTrue(dialogWasShown.get());
+    }
+
+    @Test
     public void shouldCallOnCreateDialogFromShowDialog() {
         ActivityWithOnCreateDialog activity = new ActivityWithOnCreateDialog();
         activity.showDialog(123);
@@ -181,9 +231,41 @@ public class ActivityTest {
         assertTrue(shadowActivity.isFinishing());
     }
 
+   @Test
+    public void shouldSupportCurrentFocus() {
+        MyActivity activity = new MyActivity();
+        ShadowActivity shadow = shadowOf(activity);
+
+        assertNull(shadow.getCurrentFocus());
+        View view = new View(activity);
+        shadow.setCurrentFocus(view);
+        assertEquals(view, shadow.getCurrentFocus());
+    }
+
     private static class MyActivity extends Activity {
+        public boolean createdDialog = false;
+        public boolean preparedDialog = false;
+        public boolean preparedDialogWithBundle = false;
+        public Dialog dialog = null;
+
         @Override protected void onDestroy() {
             super.onDestroy();
+        }
+
+        @Override
+        protected Dialog onCreateDialog(int id) {
+            createdDialog = true;
+            return dialog;
+        }
+
+        @Override
+        protected void onPrepareDialog(int id, Dialog dialog) {
+            preparedDialog = true;
+        }
+
+        @Override
+        protected void onPrepareDialog(int id, Dialog dialog, Bundle bundle) {
+            preparedDialogWithBundle = true;
         }
     }
 

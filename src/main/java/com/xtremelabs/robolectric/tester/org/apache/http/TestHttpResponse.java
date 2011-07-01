@@ -48,10 +48,14 @@ public class TestHttpResponse extends HttpResponseStub {
         return httpEntity;
     }
 
+    @Override public Header[] getAllHeaders() {
+        return new Header[] { contentType };
+    }
+
     public boolean entityContentStreamsHaveBeenClosed() {
         return openEntityContentStreamCount == 0;
     }
-
+    
     public class TestHttpEntity extends HttpEntityStub {
 
         private ByteArrayInputStream inputStream;

@@ -13,6 +13,7 @@ public class TestMenuItem implements MenuItem {
     private boolean enabled = true;
     private OnMenuItemClickListener menuItemClickListener;
     public int iconRes;
+    private Intent intent;
 
     public TestMenuItem() {
         super();
@@ -74,11 +75,12 @@ public class TestMenuItem implements MenuItem {
     }
 
     @Override public MenuItem setIntent(Intent intent) {
-        return null;
+        this.intent = intent;
+        return this;
     }
 
     @Override public Intent getIntent() {
-        return null;
+        return this.intent;
     }
 
     @Override public MenuItem setShortcut(char numericChar, char alphaChar) {

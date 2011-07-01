@@ -8,7 +8,7 @@ import com.xtremelabs.robolectric.internal.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabActivity.class)
-public class ShadowTabActivity extends ShadowActivity {
+public class ShadowTabActivity extends ShadowActivityGroup {
 
     @RealObject TabActivity realTabActivity;
 

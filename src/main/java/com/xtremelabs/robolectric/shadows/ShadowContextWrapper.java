@@ -7,6 +7,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -26,7 +27,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(ContextWrapper.class)
 public class ShadowContextWrapper extends ShadowContext {
     @RealObject private ContextWrapper realContextWrapper;
-    private Context baseContext;
+    protected Context baseContext;
 
     private PackageManager packageManager;
 
@@ -180,8 +181,22 @@ public class ShadowContextWrapper extends ShadowContext {
         return getShadowApplication().getMainLooper();
     }
 
+    @Implementation
+    public Context getBaseContext() {
+    	return baseContext;
+    }
+    
+    @Implementation
+    public void attachBaseContext(Context context) {
+    	baseContext = context;
+    }
+    
     private ShadowApplication getShadowApplication() {
         return ((ShadowApplication) shadowOf(getApplicationContext()));
     }
 
+    @Implementation
+    public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+        return getShadowApplication().bindService(intent, serviceConnection, i);
+    }
 }

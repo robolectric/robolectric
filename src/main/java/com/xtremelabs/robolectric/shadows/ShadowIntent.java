@@ -1,5 +1,17 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -12,12 +24,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.Join;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -128,10 +135,18 @@ public class ShadowIntent {
     }
 
     @Implementation
-    public void setFlags(int flags) {
+    public Intent setFlags(int flags) {
         this.flags = flags;
+        return realIntent;
     }
 
+    @Implementation
+    public Intent putExtras(Bundle src) {
+        ShadowBundle srcShadowBundle = Robolectric.shadowOf_(src);
+        extras = new HashMap<String, Object>(srcShadowBundle.map);
+        return realIntent;
+    }
+    
     @Implementation
     public Intent putExtras(Intent src) {
         ShadowIntent srcShadowIntent = shadowOf(src);
@@ -145,7 +160,7 @@ public class ShadowIntent {
         ((ShadowBundle) Robolectric.shadowOf_(bundle)).map.putAll(extras);
         return bundle;
     }
-
+    
     @Implementation
     public Intent putExtra(String key, int value) {
         extras.put(key, value);
@@ -177,22 +192,55 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Intent putExtra(String key, String[] value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
+    @Implementation
+    public Intent putExtra(String key, boolean value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
+    @Implementation
+    public boolean getBooleanExtra(String name, boolean defaultValue) {
+        return extras.containsKey(name) ? (Boolean) extras.get(name) : defaultValue;
+    }
+
+    @Implementation
+    public String[] getStringArrayExtra(String name) {
+        return (String[]) extras.get(name);
+    }
+
+    @Implementation
     public Intent putExtra(String key, CharSequence value) {
         extras.put(key, value);
         return realIntent;
     }
 
     @Implementation
-    public boolean hasExtra(String name) {
-        return extras.containsKey(name);
-    }
-
-    @Implementation
     public void putExtra(String key, byte[] value) {
         extras.put(key, value);
     }
+    
+    @Implementation
+    public Intent putParcelableArrayListExtra(String key, ArrayList<Parcelable> value) {
+    	extras.put(key, value );
+    	return realIntent;
+    }
 
     @Implementation
+    public ArrayList<Parcelable> getParcelableArrayListExtra(String key) {
+    	return (ArrayList<Parcelable>) extras.get(key);
+    }
+    
+    @Implementation
+    public boolean hasExtra(String name) {
+	    return extras.containsKey(name);
+	}
+
+	@Implementation
     public String getStringExtra(String name) {
         return (String) extras.get(name);
     }
@@ -209,6 +257,12 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public long getLongExtra(String name, long defaultValue) {
+        Long foundValue = (Long) extras.get(name);
+        return foundValue == null ? defaultValue : foundValue;
+    }
+    
+    @Implementation
     public byte[] getByteArrayExtra(String name) {
         return (byte[]) extras.get(name);
     }
@@ -216,6 +270,11 @@ public class ShadowIntent {
     @Implementation
     public Serializable getSerializableExtra(String name) {
         return (Serializable) extras.get(name);
+    }
+    
+    @Implementation
+    public void removeExtra(String name) {
+    	extras.remove(name);
     }
 
     @Implementation

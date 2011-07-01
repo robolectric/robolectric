@@ -22,6 +22,15 @@ public class ShadowAbstractCursor {
     public int getPosition() {
         return currentRowNumber;
     }
+    
+    @Implementation
+    public boolean moveToPosition( int pos ) {
+        if (pos >= realAbstractCursor.getCount()) {
+            return false;
+        }
+    	currentRowNumber = pos;
+        return true;
+    }
 
     @Implementation
     public boolean moveToNext() {

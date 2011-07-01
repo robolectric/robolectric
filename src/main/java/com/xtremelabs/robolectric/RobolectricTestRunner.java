@@ -40,7 +40,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     private RobolectricTestRunnerInterface delegate;
 
     // fields in the RobolectricTestRunner in the instrumented ClassLoader
-    private RobolectricConfig robolectricConfig;
+    protected RobolectricConfig robolectricConfig;
 
     private static RobolectricClassLoader getDefaultLoader() {
         if (defaultLoader == null) {
@@ -156,6 +156,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             this.classLoader = classLoader;
             this.robolectricConfig = robolectricConfig;
 
+            Thread.currentThread().setContextClassLoader(classLoader);
+            
             delegateLoadingOf(Uri__FromAndroid.class.getName());
             delegateLoadingOf(RobolectricTestRunnerInterface.class.getName());
             delegateLoadingOf(RealObject.class.getName());
@@ -174,7 +176,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         }
     }
 
-    private static boolean isInstrumented() {
+    protected static boolean isInstrumented() {
         return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(RobolectricClassLoader.class.getName());
     }
 
