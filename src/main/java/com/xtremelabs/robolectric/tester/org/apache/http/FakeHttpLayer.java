@@ -61,6 +61,11 @@ public class FakeHttpLayer {
         addHttpResponseRule(new RequestMatcherResponseRule(requestMatcher, response));
     }
 
+    /**
+     * Add a response rule.
+     * @param requestMatcher Request matcher
+     * @param responses A list of responses that are returned to matching requests in order from first to last.
+     */
     public void addHttpResponseRule(RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
         addHttpResponseRule(new RequestMatcherResponseRule(requestMatcher, responses));
     }
@@ -277,7 +282,6 @@ public class FakeHttpLayer {
 
     }
 
-    // TODO: test this
     public static class UriRegexMatcher implements RequestMatcher {
         private String method;
         private final Pattern uriRegex;
