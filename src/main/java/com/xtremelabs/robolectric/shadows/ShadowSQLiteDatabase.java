@@ -89,7 +89,7 @@ public class ShadowSQLiteDatabase  {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in insert", e);
+            return -1; // this is how SQLite behaves, unlike H2 which throws exceptions
         }
         return -1;
     }
