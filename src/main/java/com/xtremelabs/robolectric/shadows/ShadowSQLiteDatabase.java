@@ -18,11 +18,14 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteClosable;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
+import android.os.SystemClock;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -65,7 +68,7 @@ public class ShadowSQLiteDatabase  {
      	connection = DatabaseConfig.getMemoryConnection();
         return newInstanceOf(SQLiteDatabase.class);
     }
-
+    
     @Implementation
     public long insert(String table, String nullColumnHack, ContentValues values) {
         SQLStringAndBindings sqlInsertString = buildInsertString(table, values);
@@ -189,14 +192,42 @@ public class ShadowSQLiteDatabase  {
         
         
         try {
-        	sql = DatabaseConfig.getScrubSQL(sql);
-            connection.createStatement().execute(sql);
+        	String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
+            connection.createStatement().execute(scrubbedSql);
         } catch (java.sql.SQLException e) {
             android.database.SQLException ase = new android.database.SQLException();
             ase.initCause(e);
             throw ase;
         }
     }
+    
+    @Implementation
+    public void execSQL(String sql, Object[] bindArgs) throws SQLException {
+        if (bindArgs == null) {
+            throw new IllegalArgumentException("Empty bindArgs");
+        }
+        String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
+        
+        
+        SQLiteStatement statement = null;
+        	try {
+        		statement =compileStatement(scrubbedSql);
+            if (bindArgs != null) {
+                int numArgs = bindArgs.length;
+                for (int i = 0; i < numArgs; i++) {
+                    ShadowDatabaseUtils.bindObjectToProgram(statement, i + 1, bindArgs[i]);
+                }
+            }
+            statement.execute();
+        } catch (SQLiteDatabaseCorruptException e) {
+            throw e;
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+    }
+
 
     @Implementation
     public Cursor rawQuery (String sql, String[] selectionArgs){
@@ -248,10 +279,10 @@ public class ShadowSQLiteDatabase  {
     @Implementation
     public SQLiteStatement compileStatement(String sql) throws SQLException {
         lock();
-        
+        String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
         try {
         	SQLiteStatement stmt = Robolectric.newInstanceOf(SQLiteStatement.class);
-        	Robolectric.shadowOf(stmt).init(realSQLiteDatabase, sql);
+        	Robolectric.shadowOf(stmt).init(realSQLiteDatabase, scrubbedSql);
             return stmt;
         } catch (Exception e){
         	throw new RuntimeException(e);

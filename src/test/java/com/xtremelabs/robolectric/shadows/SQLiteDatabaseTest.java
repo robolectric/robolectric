@@ -208,6 +208,32 @@ public class SQLiteDatabaseTest {
         assertThat(resultSet.getInt(1), equalTo(1234));
         assertThat(resultSet.getString(4), equalTo("Chuck"));
     }
+    
+    @Test
+    public void testExecSQLParams() throws Exception {
+        Statement statement;
+        ResultSet resultSet;
+
+        database.execSQL("CREATE TABLE `routine` (`id` INTEGER PRIMARY KEY AUTOINCREMENT , `name` VARCHAR , `lastUsed` INTEGER DEFAULT 0 ,  UNIQUE (`name`)) ", new Object[]{});
+        database.execSQL("INSERT INTO `routine` (`name` ,`lastUsed` ) VALUES (?,?)", new Object[] {"Leg Press", 0});
+        database.execSQL("INSERT INTO `routine` (`name` ,`lastUsed` ) VALUES (?,?)", new Object[] {"Bench Press", 1});
+        
+        statement = shadowOf(database).getConnection().createStatement();
+        resultSet = statement.executeQuery("SELECT COUNT(*) FROM `routine`");
+        assertThat(resultSet.next(), equalTo(true));
+        assertThat(resultSet.getInt(1), equalTo(2));
+
+        statement = shadowOf(database).getConnection().createStatement();
+        resultSet = statement.executeQuery("SELECT `id`, `name` ,`lastUsed` FROM `routine`");
+        assertThat(resultSet.next(), equalTo(true));
+        assertThat(resultSet.getInt(1), equalTo(1));
+        assertThat(resultSet.getString(2), equalTo("Leg Press"));
+        assertThat(resultSet.getInt(3), equalTo(0));
+        assertThat(resultSet.next(), equalTo(true));
+        assertThat(resultSet.getLong(1), equalTo(2L));
+        assertThat(resultSet.getString(2), equalTo("Bench Press"));
+        assertThat(resultSet.getInt(3), equalTo(1));
+    }
 
     @Test(expected = android.database.SQLException.class)
     public void testExecSQLException() throws Exception {

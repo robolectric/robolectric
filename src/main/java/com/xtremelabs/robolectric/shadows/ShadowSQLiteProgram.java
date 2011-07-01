@@ -1,8 +1,17 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteProgram;
 
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -11,12 +20,23 @@ import com.xtremelabs.robolectric.internal.RealObject;
 public abstract class ShadowSQLiteProgram {
 	@RealObject	SQLiteProgram realSQLiteProgram;
 	protected SQLiteDatabase mDatabase;
-
+	Connection connection;
+	//Map<Integer,Object> parameterMap = new HashMap<Integer,Object>();
+	PreparedStatement actualDBstatement;
 	public void init(SQLiteDatabase db, String sql) {
-	    mDatabase = db;
+	 mDatabase = db;
+	 connection = Robolectric.shadowOf(db).getConnection();
        // db.acquireReference();
       //  db.addSQLiteClosable(this);
      //   this.nHandle = db.mNativeHandle;
+	 
+	 try {
+			actualDBstatement = connection.prepareStatement(sql,
+					Statement.RETURN_GENERATED_KEYS);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
+	 
         compile(sql, false);
 	}
 	
@@ -47,7 +67,14 @@ public abstract class ShadowSQLiteProgram {
      */
 	@Implementation
     public void bindNull(int index) {
-         //   native_bind_null(index);
+	//	parameterMap.put(index, null);
+		try {
+			// SQLite ignores typecode
+			// typecode is also ignored in H2 when using the two parameter setNUll()
+			actualDBstatement.setNull(index,java.sql.Types.NULL); 
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
     }
 
     /**
@@ -59,7 +86,12 @@ public abstract class ShadowSQLiteProgram {
      */
     @Implementation
     public void bindLong(int index, long value) {
-          //  native_bind_long(index, value);
+    //	parameterMap.put(index, value);
+    	try {
+			actualDBstatement.setLong(index,value);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
     }
 
     /**
@@ -71,7 +103,12 @@ public abstract class ShadowSQLiteProgram {
      */
     @Implementation
     public void bindDouble(int index, double value) {
-        //    native_bind_double(index, value);
+    	//parameterMap.put(index, value);
+    	try {
+			actualDBstatement.setDouble(index,value);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
     }
 
     /**
@@ -86,9 +123,12 @@ public abstract class ShadowSQLiteProgram {
         if (value == null) {
             throw new IllegalArgumentException("the bind value at index " + index + " is null");
         }
-
-        //    native_bind_string(index, value);
-
+      //  parameterMap.put(index, value);
+        try {
+			actualDBstatement.setString(index,value);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
     }
 
     /**
@@ -103,8 +143,12 @@ public abstract class ShadowSQLiteProgram {
         if (value == null) {
             throw new IllegalArgumentException("the bind value at index " + index + " is null");
         }
-
-         //   native_bind_blob(index, value);
+      //  parameterMap.put(index, value);
+        try {
+			actualDBstatement.setBytes(index,value);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
 
     }
 
@@ -113,6 +157,11 @@ public abstract class ShadowSQLiteProgram {
      */
     @Implementation
     public void clearBindings() {
-        //    native_clear_bindings();
+       //     parameterMap = new HashMap<Integer,Object>();
+    	try {
+			actualDBstatement.clearParameters();
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		}
     }
 }
