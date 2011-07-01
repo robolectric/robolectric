@@ -8,7 +8,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.os.Bundle;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -46,6 +50,9 @@ public class ShadowActivity extends ShadowContextWrapper {
     private int requestedOrientation = -1;
     private View currentFocus;
     private Integer lastShownDialogId = null;
+    private int pendingTransitionEnterAnimResId = -1;
+    private int pendingTransitionExitAnimResId = -1;
+    private Object lastNonConfigurationInstance;
 
     @Implementation
     public final Application getApplication() {
@@ -262,6 +269,15 @@ public class ShadowActivity extends ShadowContextWrapper {
         }
     }
 
+    @Implementation
+    public Object getLastNonConfigurationInstance() {
+        return lastNonConfigurationInstance;
+    }
+
+    public void setLastNonConfigurationInstance(Object lastNonConfigurationInstance) {
+        this.lastNonConfigurationInstance = lastNonConfigurationInstance;
+    }
+
     /**
      * Non-Android accessor Sets the {@code View} for this {@code Activity}
      *
@@ -359,5 +375,15 @@ public class ShadowActivity extends ShadowContextWrapper {
      */
     public Integer getLastShownDialogId() {
         return lastShownDialogId;
+    }
+    
+    public boolean hasCancelledPendingTransitions() {
+        return pendingTransitionEnterAnimResId == 0 && pendingTransitionExitAnimResId == 0;
+    }
+
+    @Implementation
+    public void overridePendingTransition(int enterAnim, int exitAnim) {
+        pendingTransitionEnterAnimResId = enterAnim;
+        pendingTransitionExitAnimResId = exitAnim;
     }
 }

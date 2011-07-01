@@ -1,8 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.graphics.Bitmap;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -14,15 +16,21 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)
 public class ShadowDrawable {
+    private static int defaultIntrinsicWidth = -1;
+    private static int defaultIntrinsicHeight = -1;
+
     @RealObject Drawable realObject;
 
     private Rect bounds = new Rect(0, 0, 0, 0);
-    private int intrinsicWidth = -1;
-    private int intrinsicHeight = -1;
+    private int intrinsicWidth = defaultIntrinsicWidth;
+    private int intrinsicHeight = defaultIntrinsicHeight;
+    private int alpha;
 
     @Implementation
     public static Drawable createFromStream(InputStream is, String srcName) {
-        return new BitmapDrawable();
+        BitmapDrawable drawable = new BitmapDrawable(Robolectric.newInstanceOf(Bitmap.class));
+        shadowOf(drawable).setSource(srcName);
+        return drawable;
     }
 
     @Implementation
@@ -48,6 +56,14 @@ public class ShadowDrawable {
     @Implementation
     public int getIntrinsicHeight() {
         return intrinsicHeight;
+    }
+
+    public static void setDefaultIntrinsicWidth(int defaultIntrinsicWidth) {
+        ShadowDrawable.defaultIntrinsicWidth = defaultIntrinsicWidth;
+    }
+
+    public static void setDefaultIntrinsicHeight(int defaultIntrinsicHeight) {
+        ShadowDrawable.defaultIntrinsicHeight = defaultIntrinsicHeight;
     }
 
     public void setIntrinsicWidth(int intrinsicWidth) {
@@ -78,5 +94,14 @@ public class ShadowDrawable {
         result = 31 * result + intrinsicWidth;
         result = 31 * result + intrinsicHeight;
         return result;
+    }
+
+    @Implementation
+    public void setAlpha(int alpha) {
+        this.alpha = alpha;
+    }
+
+    public int getAlpha() {
+        return alpha;
     }
 }

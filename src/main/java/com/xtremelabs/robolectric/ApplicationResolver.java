@@ -1,6 +1,8 @@
 package com.xtremelabs.robolectric;
 
 import android.app.Application;
+import android.content.BroadcastReceiver;
+import android.content.IntentFilter;
 import com.xtremelabs.robolectric.internal.ClassNameResolver;
 import com.xtremelabs.robolectric.res.RobolectricPackageManager;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
@@ -29,7 +31,19 @@ public class ApplicationResolver {
         ShadowApplication shadowApplication = shadowOf(application);
         shadowApplication.setPackageName(packageName);
         shadowApplication.setPackageManager(new RobolectricPackageManager(application, config));
+        registerBroadcastReceivers(shadowApplication);
+
         return application;
+    }
+
+    private void registerBroadcastReceivers(ShadowApplication shadowApplication) {
+        for (int i = 0; i < config.getReceiverCount(); i++) {
+            IntentFilter filter = new IntentFilter();
+            for (String action : config.getReceiverIntentFilterActions(i)) {
+                filter.addAction(action);
+            }
+            shadowApplication.registerReceiver((BroadcastReceiver) Robolectric.newInstanceOf(config.getReceiverClassName(i)), filter);
+        }
     }
 
     private String getTagAttributeText(Document doc, String tag, String attribute) {

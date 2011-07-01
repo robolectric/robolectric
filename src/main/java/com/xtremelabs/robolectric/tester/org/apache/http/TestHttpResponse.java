@@ -19,6 +19,12 @@ public class TestHttpResponse extends HttpResponseStub {
     private Header contentType;
     private TestStatusLine statusLine = new TestStatusLine();
     private TestHttpEntity httpEntity = new TestHttpEntity();
+    private int openEntityContentStreamCount = 0;
+
+    public TestHttpResponse() {
+        this.statusCode = 200;
+        this.responseBody = "";
+    }
 
     public TestHttpResponse(int statusCode, String responseBody) {
         this.statusCode = statusCode;
@@ -28,6 +34,10 @@ public class TestHttpResponse extends HttpResponseStub {
     public TestHttpResponse(int statusCode, String responseBody, Header contentType) {
         this(statusCode, responseBody);
         this.contentType = contentType;
+    }
+
+    protected void setResponseBody(String responseBody) {
+        this.responseBody = responseBody;
     }
 
     @Override public StatusLine getStatusLine() {
@@ -42,7 +52,14 @@ public class TestHttpResponse extends HttpResponseStub {
         return new Header[] { contentType };
     }
 
+    public boolean entityContentStreamsHaveBeenClosed() {
+        return openEntityContentStreamCount == 0;
+    }
+    
     public class TestHttpEntity extends HttpEntityStub {
+
+        private ByteArrayInputStream inputStream;
+
         @Override public long getContentLength() {
             return responseBody.length();
         }
@@ -60,7 +77,15 @@ public class TestHttpResponse extends HttpResponseStub {
         }
 
         @Override public InputStream getContent() throws IOException, IllegalStateException {
-            return new ByteArrayInputStream(responseBody.getBytes());
+            openEntityContentStreamCount++;
+            inputStream = new ByteArrayInputStream(responseBody.getBytes()) {
+                @Override
+                public void close() throws IOException {
+                    openEntityContentStreamCount--;
+                    super.close();
+                }
+            };
+            return inputStream;
         }
 
         @Override public void writeTo(OutputStream outputStream) throws IOException {

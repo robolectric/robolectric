@@ -120,7 +120,8 @@ public class ShadowToast {
      * @return the text of the most recently shown {@code Toast}
      */
     public static String getTextOfLatestToast() {
-        return shadowOf(Robolectric.getShadowApplication().getShownToasts().get(0)).text;
+        List<Toast> shownToasts = Robolectric.getShadowApplication().getShownToasts();
+        return shadowOf(shownToasts.get(shownToasts.size() - 1)).text;
     }
 
     /**

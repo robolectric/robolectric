@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric;
 
+import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.view.View;
@@ -136,6 +137,12 @@ public class RobolectricTest {
         assertTrue(wasRun[0]);
     }
 
+    @Test
+    public void shouldUseSetDensityForContexts() throws Exception {
+        assertThat(new Activity().getResources().getDisplayMetrics().density, equalTo(1.0f));
+        Robolectric.setDisplayMetricsDensity(1.5f);
+        assertThat(new Activity().getResources().getDisplayMetrics().density, equalTo(1.5f));
+    }
 
     public void clickOn_shouldCallClickListener() throws Exception {
         View view = new View(null);

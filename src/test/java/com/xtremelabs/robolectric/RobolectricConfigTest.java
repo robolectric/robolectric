@@ -1,7 +1,13 @@
 package com.xtremelabs.robolectric;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import com.xtremelabs.robolectric.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.List;
 
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.junit.Assert.assertEquals;
@@ -10,6 +16,24 @@ import static android.content.pm.ApplicationInfo.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class RobolectricConfigTest {
+    @Test
+    public void shouldReadBroadcastReceivers() throws Exception {
+        RobolectricConfig config = newConfig("TestAndroidManifestWithReceivers.xml");
+
+        assertEquals(2, config.getReceiverCount());
+
+        assertEquals("com.xtremelabs.robolectric.RobolectricConfigTest.ConfigTestReceiver", config.getReceiverClassName(0));
+        assertEquals("com.xtremelabs.robolectric.ACTION1", config.getReceiverIntentFilterActions(0).get(0));
+
+        assertEquals("com.xtremelabs.robolectric.RobolectricConfigTest.ConfigTestReceiver", config.getReceiverClassName(1));
+        assertEquals("com.xtremelabs.robolectric.ACTION2", config.getReceiverIntentFilterActions(1).get(0));
+    }
+
+    public static class ConfigTestReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) { }
+    }
+
     @Test
     public void shouldReadSdkVersionFromAndroidManifest() throws Exception {
         assertEquals(42, newConfig("TestAndroidManifestWithSdkVersion.xml").getSdkVersion());
