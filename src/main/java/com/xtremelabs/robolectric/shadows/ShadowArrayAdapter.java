@@ -1,11 +1,11 @@
-// Copyright 2010 Google Inc. All Rights Reserved.
-
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Filter;
+import android.widget.TextView;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -21,10 +21,22 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(ArrayAdapter.class)
 public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
 
+    private static final Filter STUB_FILTER = new Filter() {
+        @Override
+        protected FilterResults performFiltering(CharSequence constraint) {
+            return null;
+        }
+
+        @Override
+        protected void publishResults(CharSequence constraint, FilterResults results) {
+        }
+    };
+
     private Context context;
     private List<T> list;
     private int resource;
     private int textViewResourceId;
+    private Filter filter;
 
     public void __constructor__(Context context, int textViewResourceId) {
         init(context, 0, textViewResourceId, new ArrayList<T>());
@@ -63,6 +75,11 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     }
 
     @Implementation
+    public void insert(T object, int index) {
+        list.add(index, object);
+    }
+
+    @Implementation
     public Context getContext() {
         return context;
     }
@@ -85,7 +102,27 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     @Implementation
     public View getView(int position, View convertView, ViewGroup parent) {
         T item = list.get(position);
-        return getResourceLoader().inflateView(context, textViewResourceId, parent);
+        View view = getResourceLoader().inflateView(context, resource, parent);
+
+        TextView text;
+        if (textViewResourceId == 0) {
+            text = (TextView) view;
+        } else {
+            text = (TextView) view.findViewById(textViewResourceId);
+        }
+
+        if (item instanceof CharSequence) {
+            text.setText((CharSequence)item);
+        } else {
+            text.setText(item.toString());
+        }
+
+        return view;
+    }
+
+    @Implementation
+    public Filter getFilter() {
+        return STUB_FILTER;
     }
 
     private ResourceLoader getResourceLoader() {

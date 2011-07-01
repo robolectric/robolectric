@@ -4,6 +4,7 @@ import android.app.*;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -158,19 +159,23 @@ public class Robolectric {
                 ShadowDialog.class,
                 ShadowDialogPreference.class,
                 ShadowEditText.class,
+                ShadowEnvironment.class,
                 ShadowExpandableListView.class,
+                ShadowFilter.class,
                 ShadowFloatMath.class,
                 ShadowFrameLayout.class,
                 ShadowGeocoder.class,
                 ShadowGeoPoint.class,
                 ShadowGridView.class,
                 ShadowHandler.class,
+                ShadowHtml.class,
                 ShadowImageView.class,
                 ShadowInputMethodManager.class,
                 ShadowIntent.class,
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowItemizedOverlay.class,
+                ShadowKeyEvent.class,
                 ShadowKeyguardManager.class,
                 ShadowLayoutInflater.class,
                 ShadowLayoutParams.class,
@@ -230,6 +235,7 @@ public class Robolectric {
                 ShadowSQLiteQueryBuilder.class,
                 ShadowSslErrorHandler.class,
                 ShadowSurfaceView.class,
+                ShadowTabActivity.class,
                 ShadowTabHost.class,
                 ShadowTabSpec.class,
                 ShadowTelephonyManager.class,
@@ -269,12 +275,20 @@ public class Robolectric {
         return (ShadowDrawable) shadowOf_(instance);
     }
 
+    public static ShadowService shadowOf(Service instance) {
+        return (ShadowService) shadowOf_(instance);
+    }
+
     public static ShadowToast shadowOf(Toast instance) {
         return (ShadowToast) shadowOf_(instance);
     }
 
     public static ShadowNetworkInfo shadowOf(NetworkInfo instance) {
         return (ShadowNetworkInfo) shadowOf_(instance);
+    }
+
+    public static ShadowContentResolver shadowOf(ContentResolver instance) {
+        return (ShadowContentResolver) shadowOf_(instance);
     }
 
     public static ShadowConnectivityManager shadowOf(ConnectivityManager instance) {
@@ -305,6 +319,14 @@ public class Robolectric {
         return (ShadowActivity) shadowOf_(instance);
     }
 
+    public static ShadowArrayAdapter shadowOf(ArrayAdapter instance) {
+        return (ShadowArrayAdapter) shadowOf_(instance);
+    }
+
+    public static ShadowFilter shadowOf(Filter instance) {
+        return (ShadowFilter) shadowOf_(instance);
+    }
+
     public static ShadowContextWrapper shadowOf(ContextWrapper instance) {
         return (ShadowContextWrapper) shadowOf_(instance);
     }
@@ -313,10 +335,6 @@ public class Robolectric {
         return (ShadowApplication) shadowOf_(instance);
     }
  
-    public static ShadowService shadowOf(Service instance) {
-        return (ShadowService) shadowOf_(instance);
-    }
-    
     public static ShadowContext shadowOf(Context instance) {
         return (ShadowContext) shadowOf_(instance);
     }
@@ -613,6 +631,10 @@ public class Robolectric {
     	return (ShadowRect) shadowOf_(instance);
     }
     
+    public static PendingIntent shadowOf(PendingIntent instance) {
+    	return (PendingIntent) shadowOf_(instance);
+    }
+    
     public static ShadowDateFormat shadowOf(DateFormat instance) {
 		return (ShadowDateFormat) shadowOf_(instance);
 	}
@@ -677,6 +699,10 @@ public class Robolectric {
      */
     public static void runUiThreadTasks() {
         getUiThreadScheduler().advanceBy(0);
+    }
+
+    public static void runUiThreadTasksIncludingDelayedTasks() {
+        getUiThreadScheduler().advanceToLastPostedRunnable();
     }
 
     /**
@@ -783,6 +809,18 @@ public class Robolectric {
         getFakeHttpLayer().addHttpResponseRule(requestMatcher, response);
     }
 
+    /**
+     * Adds an HTTP response rule. For each time the rule is matched, responses will be shifted
+     * off the list and returned. When all responses have been given and the rule is matched again,
+     * an exception will be thrown.
+     *
+     * @param requestMatcher custom {@code RequestMatcher}.
+     * @param responses      responses to return in order when a match is found.
+     */
+    public static void addHttpResponseRule(RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
+        getFakeHttpLayer().addHttpResponseRule(requestMatcher, responses);
+    }
+
     public static FakeHttpLayer getFakeHttpLayer() {
         return getShadowApplication().getFakeHttpLayer();
     }
@@ -829,6 +867,10 @@ public class Robolectric {
 
     public static ShadowApplication getShadowApplication() {
         return shadowOf(Robolectric.application);
+    }
+
+    public static void setDisplayMetricsDensity(float densityMultiplier) {
+        shadowOf(getShadowApplication().getResources()).setDensity(densityMultiplier);
     }
 
     /**

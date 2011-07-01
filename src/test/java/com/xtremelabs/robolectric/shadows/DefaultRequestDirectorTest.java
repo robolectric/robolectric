@@ -23,6 +23,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.InputStream;
 import java.net.URI;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -119,6 +120,30 @@ public class DefaultRequestDirectorTest {
     }
 
     @Test
+    public void shouldReturnRequestsByRule_KeepsTrackOfOpenContentStreams() throws Exception {
+        TestHttpResponse testHttpResponse = new TestHttpResponse(200, "a cheery response body");
+        Robolectric.addHttpResponseRule("http://some.uri", testHttpResponse);
+
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(true));
+
+        HttpResponse getResponse = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+        InputStream getResponseStream = getResponse.getEntity().getContent();
+        assertThat(Strings.fromStream(getResponseStream), equalTo("a cheery response body"));
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(false));
+
+        HttpResponse postResponse = requestDirector.execute(null, new HttpPost("http://some.uri"), null);
+        InputStream postResponseStream = postResponse.getEntity().getContent();
+        assertThat(Strings.fromStream(postResponseStream), equalTo("a cheery response body"));
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(false));
+
+        getResponseStream.close();
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(false));
+
+        postResponseStream.close();
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(true));
+    }
+
+    @Test
     public void shouldReturnRequestsByRule_WithTextResponse() throws Exception {
         Robolectric.addHttpResponseRule("http://some.uri", "a cheery response body");
 
@@ -210,7 +235,7 @@ public class DefaultRequestDirectorTest {
             requestDirector.execute(null, new HttpGet("http://example.com"), null);
             fail();
         } catch (RuntimeException expected) {
-            assertThat(expected.getMessage(), equalTo("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse()."));
+            assertThat(expected.getMessage(), equalTo("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse(). Request was: GET http://example.com"));
         }
     }
 

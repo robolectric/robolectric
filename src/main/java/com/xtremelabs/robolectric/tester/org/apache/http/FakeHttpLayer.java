@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
+import com.xtremelabs.robolectric.Robolectric;
 import org.apache.http.Header;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
@@ -10,8 +11,12 @@ import org.apache.http.protocol.HttpContext;
 
 import javax.xml.ws.http.HTTPException;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 public class FakeHttpLayer {
     List<HttpResponse> pendingHttpResponses = new ArrayList<HttpResponse>();
@@ -19,6 +24,14 @@ public class FakeHttpLayer {
     List<HttpEntityStub.ResponseRule> httpResponseRules = new ArrayList<HttpEntityStub.ResponseRule>();
     HttpResponse defaultHttpResponse;
     private HttpResponse defaultResponse;
+
+    public HttpRequestInfo getLastSentHttpRequestInfo() {
+        List<HttpRequestInfo> requestInfos = Robolectric.getFakeHttpLayer().getSentHttpRequestInfos();
+        if (requestInfos.isEmpty()) {
+            return null;
+        }
+        return requestInfos.get(requestInfos.size() - 1);
+    }
 
     public void addPendingHttpResponse(int statusCode, String responseBody) {
         addPendingHttpResponse(new TestHttpResponse(statusCode, responseBody));
@@ -46,6 +59,15 @@ public class FakeHttpLayer {
 
     public void addHttpResponseRule(RequestMatcher requestMatcher, HttpResponse response) {
         addHttpResponseRule(new RequestMatcherResponseRule(requestMatcher, response));
+    }
+
+    /**
+     * Add a response rule.
+     * @param requestMatcher Request matcher
+     * @param responses A list of responses that are returned to matching requests in order from first to last.
+     */
+    public void addHttpResponseRule(RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
+        addHttpResponseRule(new RequestMatcherResponseRule(requestMatcher, responses));
     }
 
     public void addHttpResponseRule(HttpEntityStub.ResponseRule responseRule) {
@@ -78,19 +100,25 @@ public class FakeHttpLayer {
         HttpResponse httpResponse = findResponse(httpRequest);
 
         if (httpResponse == null) {
-            throw new RuntimeException("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse().");
+            throw new RuntimeException("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse(). Request was: " +
+                    httpRequest.getRequestLine().getMethod() + " " + httpRequest.getRequestLine().getUri());
         }
 
         httpRequestInfos.add(new HttpRequestInfo(httpRequest, httpHost, httpContext, requestDirector));
 
         return httpResponse;
     }
+
     public boolean hasPendingResponses() {
         return !pendingHttpResponses.isEmpty();
     }
 
     public boolean hasRequestInfos() {
         return !httpRequestInfos.isEmpty();
+    }
+
+    public void clearRequestInfos() {
+        httpRequestInfos.clear();
     }
 
     public boolean hasResponseRules() {
@@ -113,6 +141,11 @@ public class FakeHttpLayer {
     public HttpRequestInfo getSentHttpRequestInfo(int index) {
         return httpRequestInfos.get(index);
     }
+
+    public List<HttpRequestInfo> getSentHttpRequestInfos() {
+        return new ArrayList<HttpRequestInfo>(httpRequestInfos);
+    }
+
     public void clearHttpResponseRules() {
         httpResponseRules.clear();
     }
@@ -122,6 +155,7 @@ public class FakeHttpLayer {
         private HttpResponse responseToGive;
         private IOException ioException;
         private HTTPException httpException;
+        private List<? extends HttpResponse> responses;
 
         public RequestMatcherResponseRule(RequestMatcher requestMatcher, HttpResponse responseToGive) {
             this.requestMatcher = requestMatcher;
@@ -138,6 +172,11 @@ public class FakeHttpLayer {
             this.httpException = httpException;
         }
 
+        public RequestMatcherResponseRule(RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
+            this.requestMatcher = requestMatcher;
+            this.responses = responses;
+        }
+
         @Override public boolean matches(HttpRequest request) {
             return requestMatcher.matches(request);
         }
@@ -145,7 +184,15 @@ public class FakeHttpLayer {
         @Override public HttpResponse getResponse() throws HttpException, IOException {
             if (httpException != null) throw httpException;
             if (ioException != null) throw ioException;
-            return responseToGive;
+            if (responseToGive != null) {
+                return responseToGive;
+            }
+            else {
+                if (responses.isEmpty()) {
+                    throw new RuntimeException("No more responses left to give");
+                }
+                return responses.remove(0);
+            }
         }
     }
 
@@ -173,6 +220,80 @@ public class FakeHttpLayer {
 
         @Override public boolean matches(HttpRequest request) {
             return request.getRequestLine().getUri().equals(uri);
+        }
+    }
+
+    public static class RequestMatcherBuilder implements RequestMatcher {
+        private String method;
+        private String hostname;
+        private String path;
+        private boolean noParams;
+        private Map<String, String> params = new HashMap<String, String>();
+
+        public RequestMatcherBuilder method(String method) {
+            this.method = method;
+            return this;
+        }
+
+        public RequestMatcherBuilder host(String hostname) {
+            this.hostname = hostname;
+            return this;
+        }
+
+        public RequestMatcherBuilder path(String path) {
+            if (path.startsWith("/")) {
+                throw new RuntimeException("Path should not start with '/'");
+            }
+            this.path = "/" + path;
+            return this;
+        }
+
+        public RequestMatcherBuilder param(String name, String value) {
+            params.put(name, value);
+            return this;
+        }
+
+        public RequestMatcherBuilder noParams() {
+            noParams = true;
+            return this;
+        }
+
+        @Override public boolean matches(HttpRequest request) {
+            URI uri = URI.create(request.getRequestLine().getUri());
+            if (method != null && !method.equals(request.getRequestLine().getMethod())) {
+                return false;
+            }
+            if (hostname != null && !hostname.equals(uri.getHost())) {
+                return false;
+            }
+            if (path != null && !path.equals(uri.getRawPath())) {
+                return false;
+            }
+            if (noParams && !uri.getRawQuery().equals(null)) {
+                return false;
+            }
+            if (params.size() > 0) {
+                Map<String, String> requestParams = ParamsParser.parseParams(request);
+                return requestParams.equals(params);
+            }
+
+            return true;
+        }
+
+    }
+
+    public static class UriRegexMatcher implements RequestMatcher {
+        private String method;
+        private final Pattern uriRegex;
+
+        public UriRegexMatcher(String method, String uriRegex) {
+            this.method = method;
+            this.uriRegex = Pattern.compile(uriRegex);
+        }
+
+        @Override public boolean matches(HttpRequest request) {
+            return request.getRequestLine().getMethod().equals(method) &&
+                    uriRegex.matcher(request.getRequestLine().getUri()).matches();
         }
     }
 }

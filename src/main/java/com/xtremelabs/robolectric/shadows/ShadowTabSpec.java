@@ -7,6 +7,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabHost.TabSpec.class)
 public class ShadowTabSpec {
 
@@ -38,7 +39,7 @@ public class ShadowTabSpec {
     }
 
     @Implementation
-    public TabHost.TabSpec setIndicator(android.view.View view) {
+    public TabHost.TabSpec setIndicator(View view) {
         this.indicatorView = view;
         return realObject;
     }
@@ -53,7 +54,7 @@ public class ShadowTabSpec {
     }
 
     @Implementation
-    public android.widget.TabHost.TabSpec setContent(android.content.Intent intent) {
+    public android.widget.TabHost.TabSpec setContent(Intent intent) {
         this.intent = intent;
         return realObject;
     }

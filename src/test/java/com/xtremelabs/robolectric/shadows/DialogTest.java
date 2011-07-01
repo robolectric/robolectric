@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.os.Bundle;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Transcript;
@@ -62,6 +63,26 @@ public class DialogTest {
         assertThat(shadow.isCancelable(), equalTo(false));
     }
 
+    @Test
+    public void shouldOnlyCallOnCreateOnce() {
+        final Transcript transcript = new Transcript();
+
+        Dialog dialog = new Dialog(Robolectric.application) {
+            @Override
+            protected void onCreate(Bundle savedInstanceState) {
+                super.onCreate(savedInstanceState);
+                transcript.add("onCreate called");
+            }
+        };
+
+        dialog.show();
+        transcript.assertEventsSoFar("onCreate called");
+
+        dialog.dismiss();
+        dialog.show();
+        transcript.assertNoEventsSoFar();
+    }
+    
     private static class TestOnStartDialog extends Dialog {
         boolean onStartCalled = false;
 

@@ -11,6 +11,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -151,6 +152,11 @@ public class ShadowBundle {
     @Implementation
     public boolean containsKey(String key) {
         return map.containsKey(key);
+    }
+
+    @Implementation
+    public Set<String> keySet() {
+        return map.keySet();
     }
 
     @Override @Implementation

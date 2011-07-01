@@ -1,15 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import static org.junit.Assert.assertThat;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-
+import android.view.MotionEvent;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
-import android.view.MotionEvent;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class MotionEventTest {

@@ -42,6 +42,7 @@ public class ShadowIntent {
     private Uri data;
     private int flags;
     private Class<?> intentClass;
+    private String packageName;
 
     @Implementation
     public static Intent createChooser(Intent target, CharSequence title) {
@@ -89,6 +90,17 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Intent setPackage(String packageName) {
+        this.packageName = packageName;
+        return realIntent;
+    }
+
+    @Implementation
+    public String getPackage() {
+        return packageName;
+    }
+
+    @Implementation
     public Uri getData() {
         return data;
     }
@@ -102,6 +114,12 @@ public class ShadowIntent {
     @Implementation
     public Intent setClassName(String packageName, String className) {
         componentName = new ComponentName(packageName, className);
+        return realIntent;
+    }
+
+    @Implementation
+    public Intent setClassName(Context packageContext, String className) {
+        componentName = new ComponentName(packageContext.getPackageName(), className);
         return realIntent;
     }
 

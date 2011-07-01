@@ -83,6 +83,20 @@ public class Scheduler {
         return true;
     }
 
+    public boolean runTasks(int howMany) {
+        if (enqueuedTaskCount() < howMany) {
+            return false;
+        }
+
+        while (howMany > 0) {
+            PostedRunnable postedRunnable = postedRunnables.remove(0);
+            currentTime = postedRunnable.scheduledTime;
+            postedRunnable.run();
+            howMany--;
+        }
+        return true;
+    }
+
     public int enqueuedTaskCount() {
         return postedRunnables.size();
     }
