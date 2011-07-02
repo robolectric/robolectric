@@ -76,37 +76,49 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     @Implementation
     public String getString(int columnIndex) {
     	checkPosition();
-        return this.currentRow.get(getColumnNames()[columnIndex]).toString();
+    	return (String) this.currentRow.get(getColumnNames()[columnIndex]);
     }
 	
 	@Implementation
 	public short getShort(int columnIndex) {
 		checkPosition();
-		return new Short(this.currentRow.get(getColumnNames()[columnIndex]).toString());
+		Object o =this.currentRow.get(getColumnNames()[columnIndex]);
+    	if (o==null) return 0;
+        return new Short(o.toString());
 	}
 	
     @Implementation
     public int getInt(int columnIndex) {
     	checkPosition();
-        return new Integer(this.currentRow.get(getColumnNames()[columnIndex]).toString());
+    	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
+    	if (o==null) return 0;
+        return new Integer(o.toString());
     }
 
     @Implementation
     public long getLong(int columnIndex) {
     	checkPosition();
-        return new Long(this.currentRow.get(getColumnNames()[columnIndex]).toString());
+    	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
+    	if (o==null) return 0;
+        return new Long(o.toString());
     }
 
     @Implementation
     public float getFloat(int columnIndex) {
     	checkPosition();
-        return new Float(this.currentRow.get(getColumnNames()[columnIndex]).toString());
+    	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
+    	if (o==null) return 0;
+        return new Float(o.toString());
+        
     }
 
     @Implementation
     public double getDouble(int columnIndex) {
     	checkPosition();
-        return new Double(this.currentRow.get(getColumnNames()[columnIndex]).toString());
+    	checkPosition();
+    	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
+    	if (o==null) return 0;
+    	return new Double(o.toString());
     }
     
     private void checkPosition() {
