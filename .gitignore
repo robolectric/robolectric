@@ -16,5 +16,6 @@ local.properties
 *.iws
 *.iml
 *.ipr
+*.orig
 *~
 \#*\#
