@@ -44,8 +44,8 @@
     </path>
 
     <path id="android.target.classpath">
-        <pathelement path="${sdk.dir}/platforms/android-9/android.jar"/>
-        <pathelement path="${sdk.dir}/add-ons/addon_google_apis_google_inc_9/libs/maps.jar"/>
+        <pathelement path="${sdk.dir}/platforms/android-10/android.jar"/>
+        <pathelement path="${sdk.dir}/add-ons/addon_google_apis_google_inc_10/libs/maps.jar"/>
     </path>
 
     <property name="main.absolute.dir" location="${main.dir}"/>
@@ -204,7 +204,7 @@
 
     <target name="maven-install-jars" description="Install the jar files that Maven can't find for itself">
         <exec executable="mvn">
-            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=9_r2 -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon_google_apis_google_inc_9/libs/maps.jar" />
+            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r1 -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon_google_apis_google_inc_10/libs/maps.jar" />
         </exec>
     </target>
 </project>

@@ -1,21 +1,19 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Activity;
+import android.preference.ListPreference;
+import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
-import android.app.Activity;
-import android.preference.ListPreference;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ListPreferenceTest {

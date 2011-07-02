@@ -7,6 +7,8 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
@@ -28,5 +30,17 @@ public class ResourcesTest {
     @Test
     public void testNewTheme() {
         assertThat(new Activity().getResources().newTheme(), notNullValue());
+    }
+
+    @Test
+    public void testDensity() {
+        Activity activity = new Activity();
+        assertThat(activity.getResources().getDisplayMetrics().density, equalTo(1f));
+
+        shadowOf(activity.getResources()).setDensity(1.5f);
+        assertThat(activity.getResources().getDisplayMetrics().density, equalTo(1.5f));
+
+        Activity anotherActivity = new Activity();
+        assertThat(anotherActivity.getResources().getDisplayMetrics().density, equalTo(1.5f));
     }
 }

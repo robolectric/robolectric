@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import android.app.Application;
+import android.content.BroadcastReceiver;
 import com.xtremelabs.robolectric.internal.ClassNameResolver;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -10,6 +11,8 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 
 import static android.content.pm.ApplicationInfo.*;
 
@@ -25,8 +28,9 @@ public class RobolectricConfig {
     private int sdkVersion;
     private int minSdkVersion;
     private int applicationFlags;
-    
-	/**
+    private List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
+
+    /**
      * Creates a Robolectric configuration using default Android files relative to the specified base directory.
      * <p/>
      * The manifest will be baseDir/AndroidManifest.xml, res will be baseDir/res, and assets in baseDir/assets.
@@ -81,8 +85,8 @@ public class RobolectricConfig {
             packageName = getTagAttributeText(manifestDocument, "manifest", "package");
             rClassName = packageName + ".R";
             applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
-            minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion", 9);
-            sdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion", 9);
+            minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion", 10);
+            sdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion", 10);
 
             processName = getTagAttributeText(manifestDocument, "application", "android:process");
             if (processName == null) {
@@ -90,10 +94,45 @@ public class RobolectricConfig {
             }
 
             parseApplicationFlags(manifestDocument);
-            
+            parseReceivers(manifestDocument);
         } catch (Exception ignored) {
         }
         manifestIsParsed = true;
+    }
+
+    private void parseReceivers(Document manifestDocument) {
+        Node application = manifestDocument.getElementsByTagName("application").item(0);
+        if (application == null) {
+            return;
+        }
+        for (Node receiverNode : getChildrenTags(application, "receiver")) {
+            Node namedItem = receiverNode.getAttributes().getNamedItem("android:name");
+            if (namedItem == null) {
+                continue;
+            }
+            String receiverName = namedItem.getTextContent();
+            for (Node intentFilterNode : getChildrenTags(receiverNode, "intent-filter")) {
+                List<String> actions = new ArrayList<String>();
+                for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
+                    Node nameNode = actionNode.getAttributes().getNamedItem("android:name");
+                    if (nameNode != null) {
+                        actions.add(nameNode.getTextContent());
+                    }
+                }
+                receivers.add(new ReceiverAndIntentFilter(receiverName, actions));
+            }
+        }
+    }
+
+    private List<Node> getChildrenTags(Node node, String tagName) {
+        List<Node> children = new ArrayList<Node>();
+        for (int i = 0; i < node.getChildNodes().getLength(); i++) {
+            Node childNode = node.getChildNodes().item(i);
+            if (childNode.getNodeName().equalsIgnoreCase(tagName)) {
+                children.add(childNode);
+            }
+        }
+        return children;
     }
 
     private void parseApplicationFlags(Document manifestDocument) {
@@ -165,6 +204,21 @@ public class RobolectricConfig {
         return assetsDirectory;
     }
 
+    public int getReceiverCount() {
+        parseAndroidManifest();
+        return receivers.size();
+    }
+
+    public String getReceiverClassName(int receiverIndex) {
+        parseAndroidManifest();
+        return receivers.get(receiverIndex).getBroadcastReceiverClassName();
+    }
+
+    public List<String> getReceiverIntentFilterActions(int receiverIndex) {
+        parseAndroidManifest();
+        return receivers.get(receiverIndex).getIntentFilterActions();
+    }
+
     private static String getTagAttributeText(Document doc, String tag, String attribute) {
         NodeList elementsByTagName = doc.getElementsByTagName(tag);
         for (int i = 0; i < elementsByTagName.getLength(); ++i) {
@@ -212,5 +266,23 @@ public class RobolectricConfig {
         result = 31 * result + (getResourceDirectory() != null ? getResourceDirectory().hashCode() : 0);
         result = 31 * result + (getAssetsDirectory() != null ? getAssetsDirectory().hashCode() : 0);
         return result;
+    }
+
+    private static class ReceiverAndIntentFilter {
+        private List<String> intentFilterActions;
+        private String broadcastReceiverClassName;
+
+        public ReceiverAndIntentFilter(String broadcastReceiverClassName, List<String> intentFilterActions) {
+            this.broadcastReceiverClassName = broadcastReceiverClassName;
+            this.intentFilterActions = intentFilterActions;
+        }
+
+        public String getBroadcastReceiverClassName() {
+            return broadcastReceiverClassName;
+        }
+
+        public List<String> getIntentFilterActions() {
+            return intentFilterActions;
+        }
     }
 }

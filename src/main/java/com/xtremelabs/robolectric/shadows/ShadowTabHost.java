@@ -2,16 +2,17 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.view.View;
 import android.widget.TabHost;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
-import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabHost.class)
 public class ShadowTabHost extends ShadowFrameLayout {
     private List<TabHost.TabSpec> tabSpecs = new ArrayList<TabHost.TabSpec>();
@@ -23,14 +24,7 @@ public class ShadowTabHost extends ShadowFrameLayout {
 
     @Implementation
     public android.widget.TabHost.TabSpec newTabSpec(java.lang.String tag) {
-        TabHost.TabSpec realTabSpec = null;
-        try {
-            Constructor<TabHost.TabSpec> c = TabHost.TabSpec.class.getDeclaredConstructor();
-            c.setAccessible(true);
-            realTabSpec = c.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        TabHost.TabSpec realTabSpec = Robolectric.newInstanceOf(TabHost.TabSpec.class);
         shadowOf(realTabSpec).setTag(tag);
         return realTabSpec;
     }

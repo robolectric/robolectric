@@ -37,6 +37,7 @@ public class ShadowDialog {
     private Window window;
     private Activity ownerActivity;
     private boolean isCancelable;
+    private boolean hasShownBefore;
     
     public static void reset() {
         setLatestDialog(null);
@@ -92,12 +93,19 @@ public class ShadowDialog {
     }
 
     @Implementation
+    public void onBackPressed() {
+        cancel();
+    }
+
+    @Implementation
     public void show() {
         isShowing = true;
         try {
-            Method onCreateMethod = Dialog.class.getDeclaredMethod("onCreate", Bundle.class);
-            onCreateMethod.setAccessible(true);
-            onCreateMethod.invoke(realDialog, (Bundle) null);
+            if (!hasShownBefore) {
+                Method onCreateMethod = Dialog.class.getDeclaredMethod("onCreate", Bundle.class);
+                onCreateMethod.setAccessible(true);
+                onCreateMethod.invoke(realDialog, (Bundle) null);
+            }                
 
             Method onStartMethod = Dialog.class.getDeclaredMethod("onStart");
             onStartMethod.setAccessible(true);
@@ -105,6 +113,7 @@ public class ShadowDialog {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        hasShownBefore = true;
     }
 
     @Implementation

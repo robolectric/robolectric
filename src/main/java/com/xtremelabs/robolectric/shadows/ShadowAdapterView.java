@@ -22,6 +22,7 @@ public class ShadowAdapterView extends ShadowViewGroup {
     private AdapterView.OnItemSelectedListener onItemSelectedListener;
     private AdapterView.OnItemClickListener onItemClickListener;
     private boolean valid = false;
+    private static int ignoreRowsAtEndOfList = 0;
     private int selectedPosition;
     private int itemCount = 0;
 
@@ -100,6 +101,18 @@ public class ShadowAdapterView extends ShadowViewGroup {
     public boolean checkValidity() {
         update();
         return valid;
+    }
+
+    /**
+     * Set to avoid calling getView() on the last row(s) during validation. Useful if you are using a special
+     * last row, e.g. one that goes and fetches more list data as soon as it comes into view. This sets a static
+     * on the class, so be sure to call it again and set it back to 0 at the end of your test.
+     *
+     * @param countOfRows The number of rows to ignore at the end of the list.
+     * @see com.xtremelabs.robolectric.shadows.ShadowAdapterView#checkValidity()
+     */
+    public static void ignoreRowsAtEndOfListDuringValidation(int countOfRows) {
+        ignoreRowsAtEndOfList = countOfRows;
     }
 
     /**
@@ -192,12 +205,12 @@ public class ShadowAdapterView extends ShadowViewGroup {
 
         Adapter adapter = getAdapter();
         if (adapter != null) {
-            if (valid && previousItems.size() != adapter.getCount()) {
+            if (valid && (previousItems.size() - ignoreRowsAtEndOfList != adapter.getCount() - ignoreRowsAtEndOfList)) {
                 throw new ArrayIndexOutOfBoundsException("view is valid but adapter.getCount() has changed from " + previousItems.size() + " to " + adapter.getCount());
             }
 
             List<Object> newItems = new ArrayList<Object>();
-            for (int i = 0; i < adapter.getCount(); i++) {
+            for (int i = 0; i < adapter.getCount() - ignoreRowsAtEndOfList; i++) {
                 newItems.add(adapter.getItem(i));
                 addView(adapter.getView(i, null, realAdapterView));
             }
