@@ -27,15 +27,27 @@ public class DatabaseConfig {
 		return dbMap;
 	}
 	
+	/**
+	 * check if the map has been loaded
+	 * @return
+	 */
 	public static boolean isMapLoaded() {
 		return isLoaded;
+	}
+	
+	/**
+	 * Check if the map has been set at all.
+	 * @return
+	 */
+	public static boolean isMapNull() {
+		return dbMap==null;
 	}
 	
 	/**
 	 * Sets what database will be used and loads the database driver, based on what DBmap is provided.
 	 */
 	private static void LoadSQLiteDriver() {
-		if (dbMap==null) throw new RuntimeException("Error in SQLiteConfig: DatabaseMap has not been set.");
+		if (isMapNull()) throw new RuntimeException("Error in SQLiteConfig: DatabaseMap has not been set.");
 	  try {
 		  Class.forName(dbMap.getDriverClassName()).newInstance();
 	} catch (InstantiationException e) {
@@ -53,7 +65,7 @@ public class DatabaseConfig {
 	 * @return Connection to In Memory Database.
 	 */
 	public static Connection getMemoryConnection() {
-		if (!isLoaded) LoadSQLiteDriver();
+		if (!isMapLoaded()) LoadSQLiteDriver();
 		try {
 			return DriverManager.getConnection(dbMap.getConnectionString());
 		} catch (SQLException e) {
@@ -67,17 +79,17 @@ public class DatabaseConfig {
 	 * @throws SQLException 
 	 */
 	public static String getScrubSQL(String sql) throws SQLException {
-		if (!isLoaded) throw new RuntimeException("No database driver loaded!");
+		if (isMapNull()) throw new RuntimeException("No database driver loaded!");
 		return dbMap.getScrubSQL(sql);
 	}
 	
 	public static String getSelectLastInsertIdentity() {
-		if (!isLoaded) throw new RuntimeException("No database driver loaded!");
+		if (isMapNull()) throw new RuntimeException("No database driver loaded!");
 		return dbMap.getSelectLastInsertIdentity();
 	}
 	
 	public static int getResultSetType() {
-		if (!isLoaded) throw new RuntimeException("No database driver loaded!");
+		if (isMapNull()) throw new RuntimeException("No database driver loaded!");
 		return dbMap.getResultSetType();
 	}
 	

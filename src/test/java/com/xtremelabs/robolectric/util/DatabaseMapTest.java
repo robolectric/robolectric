@@ -31,20 +31,6 @@ public class DatabaseMapTest {
 		Assert.assertFalse(DatabaseConfig.isMapLoaded());
 	}
 
-	@Test(expected = RuntimeException.class)
-	public void ThrowsExceptionIfNotLoaded_SelectLastInsertIdentity() {
-		DatabaseConfig.getSelectLastInsertIdentity();
-	}
-
-	@Test(expected = RuntimeException.class)
-	public void ThrowsExceptionIfNotLoaded_ScrubSQL() {
-		try {
-			DatabaseConfig.getScrubSQL("");
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
 	@Test
 	public void MapLoadsButConnectionFails() {
 		Assert.assertFalse(DatabaseConfig.isMapLoaded());
