@@ -1,21 +1,22 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.TextView;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings( { "UnusedDeclaration" })
 @Implements(ArrayAdapter.class)
@@ -38,8 +39,16 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     private int textViewResourceId;
     private Filter filter;
 
+    public int getTextViewResourceId() {
+        return textViewResourceId;
+    }
+    
+    public int getResourceId() {
+        return resource;
+    }
+    
     public void __constructor__(Context context, int textViewResourceId) {
-        init(context, 0, textViewResourceId, new ArrayList<T>());
+        init(context, textViewResourceId, 0, new ArrayList<T>());
     }
 
     public void __constructor__(Context context, int resource, int textViewResourceId) {
@@ -47,7 +56,7 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     }
 
     public void __constructor__(Context context, int textViewResourceId, T[] objects) {
-        init(context, 0, textViewResourceId, Arrays.asList(objects));
+        init(context, textViewResourceId, 0, Arrays.asList(objects));
     }
 
     public void __constructor__(Context context, int resource, int textViewResourceId, T[] objects) {
@@ -55,7 +64,7 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     }
 
     public void __constructor__(Context context, int textViewResourceId, List<T> objects) {
-        init(context, 0, textViewResourceId, objects);
+        init(context, textViewResourceId, 0, objects);
     }
 
     public void __constructor__(Context context, int resource, int textViewResourceId, List<T> objects) {
@@ -103,6 +112,12 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     public View getView(int position, View convertView, ViewGroup parent) {
         T item = list.get(position);
         View view = getResourceLoader().inflateView(context, resource, parent);
+
+        if (convertView == null) {
+            view = getResourceLoader().inflateView(context,resource, parent);
+        } else {
+            view = convertView;
+        }
 
         TextView text;
         if (textViewResourceId == 0) {
