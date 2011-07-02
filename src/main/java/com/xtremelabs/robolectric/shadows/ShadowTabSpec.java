@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TabHost;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -16,6 +17,9 @@ public class ShadowTabSpec {
     private String tag;
     private View indicatorView;
     private Intent intent;
+	private int viewId;
+	private CharSequence label;
+	private Drawable icon;
 
     /**
      * Non-Android accessor, sets the tag on the TabSpec
@@ -43,6 +47,19 @@ public class ShadowTabSpec {
         this.indicatorView = view;
         return realObject;
     }
+    
+    @Implementation
+    public TabHost.TabSpec setIndicator(CharSequence label) {
+    	this.label = label;
+        return realObject;
+    }
+
+    @Implementation
+    public TabHost.TabSpec setIndicator(CharSequence label, Drawable icon) {
+    	this.label = label;
+    	this.icon = icon;
+        return realObject;
+    }
 
     /**
      * Non-Android accessor
@@ -56,6 +73,13 @@ public class ShadowTabSpec {
     @Implementation
     public android.widget.TabHost.TabSpec setContent(Intent intent) {
         this.intent = intent;
+        return realObject;
+    }
+    
+
+    @Implementation
+    public android.widget.TabHost.TabSpec setContent(int viewId) {
+    	this.viewId = viewId;
         return realObject;
     }
 }
