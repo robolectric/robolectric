@@ -9,11 +9,16 @@ import com.xtremelabs.robolectric.internal.Implements;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContentResolver.class)
 public class ShadowContentResolver {
+    private static int nextDatabaseIdForInserts;
+
     private Cursor cursor;
+    private List<Uri> deletedUris = new ArrayList<Uri>();
 
     @Implementation
     public final InputStream openInputStream(final Uri uri) {
@@ -30,7 +35,7 @@ public class ShadowContentResolver {
 
     @Implementation
     public final Uri insert(Uri url, ContentValues values) {
-        return Uri.parse("content://foobar");
+        return Uri.parse(url.toString() + "/" + nextDatabaseIdForInserts++);
     }
 
     @Implementation
@@ -39,8 +44,25 @@ public class ShadowContentResolver {
         return cursor;
     }
 
+    @Implementation
+    public final int delete(Uri url, String where, String[] selectionArgs) {
+        deletedUris.add(url);
+        return 1;
+    }
+
     public void setCursor(Cursor cursor) {
         this.cursor = cursor;
     }
 
+    public static void setNextDatabaseIdForInserts(int nextId) {
+        nextDatabaseIdForInserts = nextId;
+    }
+
+    public List<Uri> getDeletedUris() {
+        return deletedUris;
+    }
+
+    public static void reset() {
+        setNextDatabaseIdForInserts(0);
+    }
 }
