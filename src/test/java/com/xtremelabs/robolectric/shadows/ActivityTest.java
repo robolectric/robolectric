@@ -181,6 +181,30 @@ public class ActivityTest {
         assertTrue(shadowActivity.isFinishing());
     }
 
+    @Test
+    public void retrieveIdOfResource() {
+        Activity activity = new Activity();
+
+        int id1 = R.string.hello;
+        String string = activity.getString(id1);
+        assertEquals("Hello", string);
+
+        int id = activity.getResources().getIdentifier("hello", "string", "com.xtremelabs.robolectric");
+        assertTrue(id > 0);
+        
+        String hello = activity.getResources().getString(id);
+        assertEquals("Hello", hello);
+    }
+
+    @Test
+    public void retrieveIdOfNonExistingResource() {
+        Activity activity = new Activity();
+
+        int id = activity.getResources().getIdentifier("just_alot_of_crap", "string", "com.xtremelabs.robolectric");
+        assertTrue(id == 0);
+        
+    }
+
     private static class MyActivity extends Activity {
         @Override protected void onDestroy() {
             super.onDestroy();
