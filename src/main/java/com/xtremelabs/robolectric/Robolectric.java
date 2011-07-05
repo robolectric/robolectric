@@ -318,7 +318,6 @@ public class Robolectric {
         Robolectric.application = new Application();
         ShadowBitmapFactory.reset();
         ShadowMediaStore.reset();
-        ShadowContentResolver.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {

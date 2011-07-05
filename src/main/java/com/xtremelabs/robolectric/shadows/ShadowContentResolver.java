@@ -15,7 +15,7 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContentResolver.class)
 public class ShadowContentResolver {
-    private static int nextDatabaseIdForInserts;
+    private int nextDatabaseIdForInserts;
 
     private Cursor cursor;
     private List<Uri> deletedUris = new ArrayList<Uri>();
@@ -54,15 +54,11 @@ public class ShadowContentResolver {
         this.cursor = cursor;
     }
 
-    public static void setNextDatabaseIdForInserts(int nextId) {
+    public void setNextDatabaseIdForInserts(int nextId) {
         nextDatabaseIdForInserts = nextId;
     }
 
     public List<Uri> getDeletedUris() {
         return deletedUris;
-    }
-
-    public static void reset() {
-        setNextDatabaseIdForInserts(0);
     }
 }
