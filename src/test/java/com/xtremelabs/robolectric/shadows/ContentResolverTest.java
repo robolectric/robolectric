@@ -68,6 +68,22 @@ public class ContentResolverTest {
     }
 
     @Test
+    public void query__shouldReturnSpecificCursorsForSpecificUris() throws Exception {
+        assertNull(shadowContentResolver.query(uri21, null, null, null, null));
+        assertNull(shadowContentResolver.query(uri22, null, null, null, null));
+
+        TestCursor cursor21 = new TestCursor();
+        TestCursor cursor22 = new TestCursor();
+        shadowContentResolver.setCursor(uri21, cursor21);
+        shadowContentResolver.setCursor(uri22, cursor22);
+
+        assertThat((TestCursor) shadowContentResolver.query(uri21, null, null, null, null),
+                sameInstance(cursor21));
+        assertThat((TestCursor) shadowContentResolver.query(uri22, null, null, null, null),
+                sameInstance(cursor22));
+    }
+
+    @Test
     public void openInputStream_shouldReturnAnInputStream() throws Exception {
         assertThat(contentResolver.openInputStream(uri21), CoreMatchers.instanceOf(InputStream.class));
     }

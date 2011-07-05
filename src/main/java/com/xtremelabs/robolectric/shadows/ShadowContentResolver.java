@@ -10,6 +10,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -19,6 +20,8 @@ public class ShadowContentResolver {
 
     private Cursor cursor;
     private List<Uri> deletedUris = new ArrayList<Uri>();
+    private HashMap<Uri,Cursor> uriCursorMap = new HashMap<Uri, Cursor>();
+
 
     @Implementation
     public final InputStream openInputStream(final Uri uri) {
@@ -41,6 +44,9 @@ public class ShadowContentResolver {
     @Implementation
     public final Cursor query(Uri uri, String[] projection,
             String selection, String[] selectionArgs, String sortOrder) {
+        if (uriCursorMap.get(uri) != null) {
+            return uriCursorMap.get(uri);
+        }
         return cursor;
     }
 
@@ -52,6 +58,10 @@ public class ShadowContentResolver {
 
     public void setCursor(Cursor cursor) {
         this.cursor = cursor;
+    }
+
+    public void setCursor(Uri uri, Cursor cursorForUri) {
+        this.uriCursorMap.put(uri, cursorForUri);
     }
 
     public void setNextDatabaseIdForInserts(int nextId) {
