@@ -11,6 +11,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -24,11 +26,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.Join;
 
-import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)
@@ -42,6 +40,7 @@ public class ShadowIntent {
     private Uri data;
     private int flags;
     private Class<?> intentClass;
+    private Set<String> categories = new HashSet<String>();
 
     @Implementation
     public static Intent createChooser(Intent target, CharSequence title) {
@@ -87,6 +86,27 @@ public class ShadowIntent {
     public String getType() {
         return type;
     }
+    
+    @Implementation
+    public Intent addCategory(String category) {
+    	categories.add(category);
+    	return realIntent;
+    }
+    
+    @Implementation
+    public void removeCategory(String category) {
+    	categories.remove(category);
+    }
+    
+    @Implementation
+    public boolean hasCategory(String category) {
+    	return categories.contains(category);
+    }
+    
+    @Implementation
+    public Set<String> getCategories() {
+    	return categories;
+    }
 
     @Implementation
     public Uri getData() {
@@ -120,6 +140,12 @@ public class ShadowIntent {
     public Intent setFlags(int flags) {
         this.flags = flags;
         return realIntent;
+    }
+    
+    @Implementation
+    public Intent addFlags(int flags) {
+    	this.flags |= flags;
+    	return realIntent;
     }
 
     @Implementation

@@ -12,6 +12,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.Set;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -137,6 +138,40 @@ public class IntentTest {
         assertEquals(1234, intent.getFlags());
         assertSame(self, intent);
     }
+    
+    @Test
+    public void shouldAddFlags() throws Exception {
+        Intent intent = new Intent();
+        Intent self = intent.addFlags(1234);
+        assertEquals(1234, intent.getFlags());
+        assertSame(self, intent);    	
+    }
+    
+    @Test
+    public void shouldSupportCategories() throws Exception {
+        Intent intent = new Intent();
+        Intent self = intent.addCategory("category.name.1");
+        intent.addCategory("category.name.2");
+        
+        assertTrue(intent.hasCategory("category.name.1"));
+        assertTrue(intent.hasCategory("category.name.2"));
+        
+        Set<String> categories = intent.getCategories();
+        assertTrue( categories.contains("category.name.1") );
+        assertTrue( categories.contains("category.name.2") );
+        
+        intent.removeCategory("category.name.1");
+        assertFalse(intent.hasCategory("category.name.1"));
+        assertTrue(intent.hasCategory("category.name.2"));
+
+        intent.removeCategory("category.name.2");
+        assertFalse(intent.hasCategory("category.name.2"));
+        
+        assertEquals(0, intent.getCategories().size() );
+        
+        assertSame(self, intent);
+    }
+    
 
     @Test
     public void equals_shouldTestActionComponentNameDataAndExtras() throws Exception {
