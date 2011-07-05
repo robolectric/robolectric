@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.app.Application;
 import android.content.Context;
 import android.location.LocationManager;
 import android.location.GpsStatus.Listener;
@@ -23,6 +22,21 @@ public class LocationManagerTest {
 	@Before
 	public void setUp() {
 		locationManager = (LocationManager) Robolectric.application.getSystemService(Context.LOCATION_SERVICE);
+	}
+	
+	@Test
+	public void shouldReturnProviderEnabledAsDefault() {
+		Boolean enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+		Assert.assertTrue(enabled);
+	}
+	
+	@Test
+	public void shouldDisableProvider() {
+		ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
+		shadowLocationManager.setProviderEnabled(LocationManager.GPS_PROVIDER, false);
+		
+		Boolean enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+		Assert.assertFalse(enabled);
 	}
 	
 	@Test
