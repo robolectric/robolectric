@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.*;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -20,6 +21,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     private PackageManager packageManager;
 
+    private String appName;
     private String packageName;
 
     public void __constructor__(Context baseContext) {
@@ -69,6 +71,23 @@ public class ShadowContextWrapper extends ShadowContext {
     @Implementation
     public String getPackageName() {
         return realContextWrapper == getApplicationContext() ? packageName : getApplicationContext().getPackageName();
+    }
+    
+    @Implementation
+    public ApplicationInfo getApplicationInfo() {
+    	ApplicationInfo appInfo = new ApplicationInfo();
+    	appInfo.name = appName;
+    	appInfo.packageName = packageName;
+    	appInfo.processName = packageName;
+    	return appInfo;
+    }
+
+    /**
+     * Non-Android accessor to set the application name.
+     * @param name
+     */
+    public void setApplicationName(String name) {
+    	appName=name;
     }
 
     /**

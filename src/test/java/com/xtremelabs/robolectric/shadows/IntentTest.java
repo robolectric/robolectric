@@ -180,14 +180,16 @@ public class IntentTest {
                 .setData(Uri.parse("content:1"))
                 .setComponent(new ComponentName("pkg", "cls"))
                 .putExtra("extra", "blah")
-                .setType("image/*");
+                .setType("image/*")
+                .addCategory("category.name");
 
         Intent intentB = new Intent()
                 .setAction("action")
                 .setData(Uri.parse("content:1"))
                 .setComponent(new ComponentName("pkg", "cls"))
                 .putExtra("extra", "blah")
-                .setType("image/*");
+                .setType("image/*")
+                .addCategory("category.name");
 
         assertThat(intentA, equalTo(intentB));
 
@@ -212,6 +214,9 @@ public class IntentTest {
 
         intentB.setType("image/*");
         assertThat(intentA, equalTo(intentB));
+        
+        intentB.removeCategory("category.name");
+        assertThat(intentA, not(equalTo(intentB)));
     }
 
     @Test

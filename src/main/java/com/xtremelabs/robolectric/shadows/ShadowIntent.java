@@ -314,6 +314,7 @@ public class ShadowIntent {
         if (data != null ? !data.equals(o.data) : o.data != null) return false;
         if (extras != null ? !extras.equals(o.extras) : o.extras != null) return false;
         if (type != null ? !type.equals(o.type) : o.type != null) return false;
+        if (categories != null ? !categories.equals(o.categories) : o.categories != null) return false;
 
         return true;
     }
