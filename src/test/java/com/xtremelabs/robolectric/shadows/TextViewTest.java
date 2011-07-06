@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Activity;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.style.URLSpan;
@@ -7,8 +8,8 @@ import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +19,10 @@ import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
@@ -79,6 +83,24 @@ public class TextViewTest {
 
         textView.setLinksClickable(false);
         assertThat(textView.getLinksClickable(), equalTo(false));
+    }
+
+    @Test
+    public void shouldSetTextAndTextColorWhileInflatingXmlLayout() throws Exception {
+        Activity activity = new Activity();
+        activity.setContentView(R.layout.text_views);
+
+        TextView black = (TextView) activity.findViewById(R.id.black_text_view);
+        assertThat(black.getText().toString(), equalTo("Black Text"));
+        assertThat(shadowOf(black).getTextColorHexValue(), equalTo(0));
+
+        TextView white = (TextView) activity.findViewById(R.id.white_text_view);
+        assertThat(white.getText().toString(), equalTo("White Text"));
+        assertThat(shadowOf(white).getTextColorHexValue(), equalTo(activity.getResources().getColor(android.R.color.white)));
+
+        TextView grey = (TextView) activity.findViewById(R.id.grey_text_view);
+        assertThat(grey.getText().toString(), equalTo("Grey Text"));
+        assertThat(shadowOf(grey).getTextColorHexValue(), equalTo(activity.getResources().getColor(R.color.grey42)));
     }
 
     private List<String> urlStringsFrom(URLSpan[] urlSpans) {
