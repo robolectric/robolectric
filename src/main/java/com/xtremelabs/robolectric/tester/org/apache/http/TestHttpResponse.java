@@ -16,10 +16,10 @@ public class TestHttpResponse extends HttpResponseStub {
 
     private int statusCode;
     private String responseBody;
-    private Header contentType;
     private TestStatusLine statusLine = new TestStatusLine();
     private TestHttpEntity httpEntity = new TestHttpEntity();
     private int openEntityContentStreamCount = 0;
+    private Header[] headers;
 
     public TestHttpResponse() {
         this.statusCode = 200;
@@ -31,9 +31,9 @@ public class TestHttpResponse extends HttpResponseStub {
         this.responseBody = responseBody;
     }
 
-    public TestHttpResponse(int statusCode, String responseBody, Header contentType) {
+    public TestHttpResponse(int statusCode, String responseBody, Header[] headers) {
         this(statusCode, responseBody);
-        this.contentType = contentType;
+        this.headers = headers;
     }
 
     protected void setResponseBody(String responseBody) {
@@ -49,7 +49,7 @@ public class TestHttpResponse extends HttpResponseStub {
     }
 
     @Override public Header[] getAllHeaders() {
-        return new Header[] { contentType };
+        return headers;
     }
 
     public boolean entityContentStreamsHaveBeenClosed() {
@@ -65,7 +65,13 @@ public class TestHttpResponse extends HttpResponseStub {
         }
         
         @Override public Header getContentType() {
-            return contentType;
+            for (int i = 0; i < headers.length; i++) {
+                Header header = headers[i];
+                if (header.getName().equals("Content-Type")) {
+                    return header;
+                }
+            }
+            return null;
         }
         
         @Override public boolean isStreaming() {
