@@ -15,6 +15,9 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
 public class ShadowAdapterView extends ShadowViewGroup {
+    private static int ignoreRowsAtEndOfList = 0;
+    private static boolean automaticallyUpdateRowViews = true;
+
     @RealObject private AdapterView realAdapterView;
 
     private Adapter adapter;
@@ -22,7 +25,6 @@ public class ShadowAdapterView extends ShadowViewGroup {
     private AdapterView.OnItemSelectedListener onItemSelectedListener;
     private AdapterView.OnItemClickListener onItemClickListener;
     private boolean valid = false;
-    private static int ignoreRowsAtEndOfList = 0;
     private int selectedPosition;
     private int itemCount = 0;
 
@@ -116,6 +118,18 @@ public class ShadowAdapterView extends ShadowViewGroup {
     }
 
     /**
+     * Use this static method to turn off the feature of this class which calls getView() on all of the
+     * adapter's rows in setAdapter() and after notifyDataSetChanged() or notifyDataSetInvalidated() is
+     * called on the adapter. This feature is turned on by default. This sets a static on the class, so
+     * set it back to true at the end of your test to avoid test pollution.
+     *
+     * @param shouldUpdate false to turn off the feature, true to turn it back on
+     */
+    public static void automaticallyUpdateRowViews(boolean shouldUpdate) {
+        automaticallyUpdateRowViews = shouldUpdate;
+    }
+
+    /**
      * Non-Android accessor.
      *
      * @return the index of the selected item
@@ -201,6 +215,10 @@ public class ShadowAdapterView extends ShadowViewGroup {
     }
 
     private void update() {
+        if (!automaticallyUpdateRowViews) {
+            return;
+        }
+        
         removeAllViews();
 
         Adapter adapter = getAdapter();
