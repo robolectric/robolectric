@@ -1,18 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertNotNull;
-
+import android.webkit.CookieManager;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.app.Activity;
-import android.webkit.CookieManager;
-
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class CookieManagerTest {
@@ -47,5 +42,12 @@ public class CookieManagerTest {
       assertThat(cookieManager.getCookie(url2), is(value2));
   }
 
+  @Test
+  public void shouldRecordAcceptCookie() {
+      CookieManager cookieManager = CookieManager.getInstance();
+      assertThat(cookieManager.acceptCookie(), is(false));
+      cookieManager.setAcceptCookie(true);
+      assertThat(cookieManager.acceptCookie(), is(true));
+    }
 }
 
