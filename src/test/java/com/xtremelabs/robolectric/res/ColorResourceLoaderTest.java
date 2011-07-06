@@ -51,6 +51,11 @@ public class ColorResourceLoaderTest {
     }
 
     @Test
+    public void shouldReturnAndroidTransparent() throws Exception {
+        assertThat(colorResourceLoader.getValue(android.R.color.transparent), equalTo(Color.TRANSPARENT));
+    }
+
+    @Test
     public void shouldNotSupportCarrierDefinedColors() throws Exception {
         assertThat(colorResourceLoader.getValue(android.R.color.background_dark), equalTo(-1));
     }
