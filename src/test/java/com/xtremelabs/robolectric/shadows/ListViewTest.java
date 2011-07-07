@@ -17,10 +17,7 @@ import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -101,6 +98,16 @@ public class ListViewTest {
     }
 
     @Test
+    public void addHeaderView_shouldAttachTheViewToTheList() throws Exception {
+        View view = new View(null);
+        view.setId(42);
+
+        listView.addHeaderView(view);
+
+        assertThat(listView.findViewById(42), is(view));
+    }
+
+    @Test
     public void addFooterView_ShouldThrowIfAdapterIsAlreadySet() throws Exception {
         listView.setAdapter(new CountingAdapter(1));
         try {
@@ -113,13 +120,37 @@ public class ListViewTest {
     }
 
     @Test
-    public void addFooterView_ShouldRecordHeaders() throws Exception {
+    public void addFooterView_ShouldRecordFooters() throws Exception {
         View view0 = new View(null);
         View view1 = new View(null);
         listView.addFooterView(view0);
         listView.addFooterView(view1);
         assertThat(shadowOf(listView).getFooterViews().get(0), sameInstance(view0));
         assertThat(shadowOf(listView).getFooterViews().get(1), sameInstance(view1));
+    }
+
+    @Test
+    public void addFooterView_shouldAttachTheViewToTheList() throws Exception {
+        View view = new View(null);
+        view.setId(42);
+
+        listView.addFooterView(view);
+
+        assertThat(listView.findViewById(42), is(view));
+    }
+
+    @Test
+    public void setAdapter_shouldNotClearHeaderOrFooterViews() throws Exception {
+        View header = new View(null);
+        listView.addHeaderView(header);
+        View footer = new View(null);
+        listView.addFooterView(footer);
+
+        prepareListWithThreeItems();
+
+        assertThat(listView.getChildCount(), equalTo(5));
+        assertThat(listView.getChildAt(0), is(header));
+        assertThat(listView.getChildAt(4), is(footer));
     }
 
     @Test
@@ -205,6 +236,21 @@ public class ListViewTest {
         shadowOf(listView).checkValidity(); // should 'splode!
     }
 
+    @Test(expected = UnsupportedOperationException.class)
+    public void removeAllViews_shouldThrowAnException() throws Exception {
+        listView.removeAllViews();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void removeView_shouldThrowAnException() throws Exception {
+        listView.removeView(new View(null));
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void removeViewAt_shouldThrowAnException() throws Exception {
+        listView.removeViewAt(0);
+    }
+
     @Test
     public void getPositionForView_shouldReturnThePositionInTheListForTheView() throws Exception {
         prepareWithListAdapter();
@@ -239,15 +285,18 @@ public class ListViewTest {
             this.items.addAll(asList(items));
         }
 
-        @Override public int getCount() {
+        @Override
+        public int getCount() {
             return items.size();
         }
 
-        @Override public Object getItem(int position) {
+        @Override
+        public Object getItem(int position) {
             return items.get(position);
         }
 
-        @Override public long getItemId(int position) {
+        @Override
+        public long getItemId(int position) {
             return 0;
         }
 

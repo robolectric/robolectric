@@ -1,9 +1,9 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.R;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
@@ -12,7 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.animation.Animation;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -68,8 +67,9 @@ public class ShadowView {
     private View.OnTouchListener onTouchListener;
     protected AttributeSet attributeSet;
     private boolean drawingCacheEnabled;
+    public Point scrollToCoordinates;
     private boolean didRequestLayout;
-    private Drawable background = new ColorDrawable(R.color.transparent);
+    private Drawable background;
     private Animation animation;
 
     public void __constructor__(Context context) {
@@ -215,6 +215,41 @@ public class ShadowView {
     public void setBackgroundResource(int backgroundResourceId) {
         this.background = this.getResources().getDrawable(backgroundResourceId);
         this.backgroundResourceId = backgroundResourceId;
+        setBackgroundDrawable(getResources().getDrawable(backgroundResourceId));
+    }
+
+    /**
+     * Non-Android accessor.
+     *
+     * @return the resource ID of this views background
+     */
+    public int getBackgroundResourceId() {
+        return backgroundResourceId;
+    }
+
+    @Implementation
+    public void setBackgroundColor(int color) {
+        backgroundColor = color;
+        setBackgroundDrawable(new ColorDrawable(getResources().getColor(color)));
+    }
+
+    /**
+     * Non-Android accessor.
+     *
+     * @return the resource color ID of this views background
+     */
+    public int getBackgroundColor() {
+        return backgroundColor;
+    }
+
+    @Implementation
+    public void setBackgroundDrawable(Drawable d) {
+        this.background = d;
+    }
+
+    @Implementation
+    public Drawable getBackground() {
+        return background;
     }
 
     @Implementation
@@ -480,29 +515,6 @@ public class ShadowView {
     @Implementation
     public boolean isClickable() {
         return clickable;
-    }
-
-    @Implementation
-    public Drawable getBackground() {
-        return background;
-    }
-    /**
-     * Non-Android accessor.
-     *
-     * @return the resource ID of this views background
-     */
-    public int getBackgroundResourceId() {
-        return backgroundResourceId;
-    }
-
-    @Implementation
-    public void setBackgroundColor(int color) {
-        this.background = new ColorDrawable(getResources().getColor(color));
-        backgroundColor = color;
-    }
-
-    public int getBackgroundColor() {
-        return backgroundColor;
     }
 
     /**
@@ -785,5 +797,10 @@ public class ShadowView {
     	if ( animation != null ) {
     		animation.cancel();
     	}
+    }
+
+    @Implementation
+    public void scrollTo(int x, int y) {
+        this.scrollToCoordinates = new Point(x, y);
     }
 }

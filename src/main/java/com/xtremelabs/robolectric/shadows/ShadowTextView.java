@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
@@ -32,6 +33,7 @@ public class ShadowTextView extends ShadowView {
     private int gravity;
     private TextView.OnEditorActionListener onEditorActionListener;
     private int imeOptions = EditorInfo.IME_NULL;
+    private int textAppearanceId;
 
     @Override
     public void applyAttributes() {
@@ -77,6 +79,11 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public final void setHint(int resId) {
         this.hintText = getResources().getText(resId);
+    }
+
+    @Implementation
+    public void setTextAppearance(Context context, int resid) {
+        textAppearanceId = resid;
     }
 
     @Implementation
@@ -224,6 +231,10 @@ public class ShadowTextView extends ShadowView {
         return textColorHexValue;
     }
 
+    public int getTextAppearanceId() {
+        return textAppearanceId;
+    }
+
     @Implementation
     public float getTextSize() {
         return textSize;
@@ -265,13 +276,10 @@ public class ShadowTextView extends ShadowView {
                 attributeSet.getAttributeResourceValue("android", "drawableBottom", 0));
     }
 
-
-
     @Implementation
     public void setOnEditorActionListener(android.widget.TextView.OnEditorActionListener onEditorActionListener) {
         this.onEditorActionListener = onEditorActionListener;
     }
-
 
     public void triggerEditorAction(int imeAction) {
         onEditorActionListener.onEditorAction((TextView) realView, imeAction, null);

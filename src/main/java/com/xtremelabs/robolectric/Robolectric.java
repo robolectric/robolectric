@@ -27,6 +27,9 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
+import android.nfc.NdefMessage;
+import android.nfc.NdefRecord;
+import android.nfc.NfcAdapter;
 import android.os.*;
 import android.preference.*;
 import android.telephony.TelephonyManager;
@@ -97,6 +100,7 @@ public class Robolectric {
 
     public static List<Class<?>> getDefaultShadowClasses() {
         return Arrays.asList(
+                ShadowAbsListView.class,
                 ShadowAbsoluteLayout.class,
                 ShadowAbsSeekBar.class,
                 ShadowActivityGroup.class,
@@ -167,11 +171,13 @@ public class Robolectric {
                 ShadowIntent.class,
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
+                ShadowIntentFilterAuthorityEntry.class,
                 ShadowItemizedOverlay.class,
                 ShadowKeyEvent.class,
                 ShadowKeyguardManager.class,
                 ShadowLayoutInflater.class,
                 ShadowLayoutParams.class,
+                ShadowLinearLayout.class,
                 ShadowListActivity.class,
                 ShadowListPreference.class,
                 ShadowListView.class,
@@ -188,6 +194,9 @@ public class Robolectric {
                 ShadowMenuInflater.class,
                 ShadowMotionEvent.class,
                 ShadowNotification.class,
+                ShadowNdefMessage.class,
+                ShadowNdefRecord.class,
+                ShadowNfcAdapter.class,
                 ShadowNotificationManager.class,
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
@@ -211,6 +220,7 @@ public class Robolectric {
                 ShadowRect.class,
                 ShadowResolveInfo.class,
                 ShadowRemoteViews.class,
+                ShadowResultReceiver.class,
                 ShadowResourceCursorAdapter.class,
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
@@ -258,6 +268,10 @@ public class Robolectric {
 
     public static <T> T directlyOn(T shadowedObject) {
         return RobolectricInternals.directlyOn(shadowedObject);
+    }
+
+    public static ShadowAbsListView shadowOf(AbsListView instance) {
+        return (ShadowAbsListView) shadowOf_(instance);
     }
 
     public static ShadowCursorAdapter shadowOf(CursorAdapter instance) {
@@ -408,6 +422,18 @@ public class Robolectric {
         return (ShadowIntent) shadowOf_(instance);
     }
 
+    public static ShadowNdefMessage shadowOf(NdefMessage instance) {
+        return (ShadowNdefMessage) shadowOf_(instance);
+    }
+
+    public static ShadowNdefRecord shadowOf(NdefRecord instance) {
+        return (ShadowNdefRecord) shadowOf_(instance);
+    }
+
+    public static ShadowNfcAdapter shadowOf(NfcAdapter instance) {
+        return (ShadowNfcAdapter) shadowOf_(instance);
+    }
+
     public static ShadowView shadowOf(View instance) {
         return (ShadowView) shadowOf_(instance);
     }
@@ -482,6 +508,10 @@ public class Robolectric {
 
     public static ShadowResources shadowOf(Resources instance) {
         return (ShadowResources) shadowOf_(instance);
+    }
+
+    public static ShadowResultReceiver shadowOf(ResultReceiver instance) {
+        return (ShadowResultReceiver) shadowOf_(instance);
     }
 
     public static ShadowLayoutInflater shadowOf(LayoutInflater instance) {
