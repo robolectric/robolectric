@@ -4,6 +4,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Transcript;
@@ -204,6 +205,19 @@ public class ListViewTest {
         shadowOf(listView).checkValidity(); // should 'splode!
     }
 
+    @Test
+    public void getPositionForView_shouldReturnThePositionInTheListForTheView() throws Exception {
+        prepareWithListAdapter();
+        View childViewOfListItem = ((ViewGroup) listView.getChildAt(1)).getChildAt(0);
+        assertThat(listView.getPositionForView(childViewOfListItem), equalTo(1));
+    }
+
+    @Test
+    public void getPositionForView_shouldReturnInvalidPostionForViewThatIsNotFound() throws Exception {
+        prepareWithListAdapter();
+        assertThat(listView.getPositionForView(new View(null)), equalTo(AdapterView.INVALID_POSITION));
+    }
+
     private ListAdapter prepareWithListAdapter() {
         ListAdapter adapter = new ListAdapter("a", "b", "c");
         listView.setAdapter(adapter);
@@ -238,7 +252,9 @@ public class ListViewTest {
         }
 
         @Override public View getView(int position, View convertView, ViewGroup parent) {
-            return new View(null);
+            LinearLayout linearLayout = new LinearLayout(null);
+            linearLayout.addView(new View(null));
+            return linearLayout;
         }
     }
 }
