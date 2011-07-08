@@ -75,6 +75,11 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     }
 
     @Implementation
+    public void remove(T object) {
+        list.remove(object);
+    }
+
+    @Implementation
     public void insert(T object, int index) {
         list.add(index, object);
     }
