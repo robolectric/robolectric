@@ -10,6 +10,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.io.InputStream;
+import java.util.ArrayList;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -18,6 +19,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowDrawable {
     private static int defaultIntrinsicWidth = -1;
     private static int defaultIntrinsicHeight = -1;
+    static ArrayList<String> corruptStreamSources = new ArrayList<String>();
 
     @RealObject Drawable realObject;
 
@@ -28,6 +30,9 @@ public class ShadowDrawable {
 
     @Implementation
     public static Drawable createFromStream(InputStream is, String srcName) {
+        if (corruptStreamSources.contains(srcName)) {
+            return null;
+        }
         BitmapDrawable drawable = new BitmapDrawable(Robolectric.newInstanceOf(Bitmap.class));
         shadowOf(drawable).setSource(srcName);
         return drawable;
@@ -56,6 +61,10 @@ public class ShadowDrawable {
     @Implementation
     public int getIntrinsicHeight() {
         return intrinsicHeight;
+    }
+
+    public static void addCorruptStreamSource(String src) {
+        corruptStreamSources.add(src);
     }
 
     public static void setDefaultIntrinsicWidth(int defaultIntrinsicWidth) {
@@ -103,5 +112,9 @@ public class ShadowDrawable {
 
     public int getAlpha() {
         return alpha;
+    }
+
+    public static void reset() {
+        corruptStreamSources.clear();
     }
 }

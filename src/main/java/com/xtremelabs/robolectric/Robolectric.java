@@ -320,6 +320,7 @@ public class Robolectric {
         ShadowWrangler.getInstance().silence();
         Robolectric.application = new Application();
         ShadowBitmapFactory.reset();
+        ShadowDrawable.reset();
         ShadowMediaStore.reset();
     }
 
