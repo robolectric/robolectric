@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import junit.framework.Assert;
 import android.app.Service;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
@@ -50,6 +51,17 @@ public class ServiceTest {
         
         ServiceConnection conn = newInstanceOf(MediaScannerConnection.class);
         service.unbindService(conn);
+    }
+    
+    @Test
+    public void shouldRecordOnStartCommandCalls() {
+    	MyService service = new MyService();
+    	Assert.assertFalse(shadowOf(service).hasOnStartCommandBeenCalled());	
+    	
+    	service.onStartCommand(new Intent(), 0, 0);
+    	Assert.assertTrue(shadowOf(service).hasOnStartCommandBeenCalled());
+    	
+    	service.onDestroy();
     }
 
     private static class MyService extends Service {
