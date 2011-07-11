@@ -2,10 +2,7 @@ package com.xtremelabs.robolectric.tester.android.content;
 
 import android.content.SharedPreferences;
 
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class TestSharedPreferences implements SharedPreferences {
 
@@ -24,7 +21,7 @@ public class TestSharedPreferences implements SharedPreferences {
 
     @Override
     public Map<String, ?> getAll() {
-        return null;
+        return new HashMap<String, Object>(content.get(filename));
     }
 
     @Override
@@ -150,7 +147,8 @@ public class TestSharedPreferences implements SharedPreferences {
             return true;
         }
 
-        @Override public void apply() {
+        @Override
+        public void apply() {
             commit();
         }
     }
