@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
@@ -77,7 +78,7 @@
         <dependency>
             <groupId>com.google.android.maps</groupId>
             <artifactId>maps</artifactId>
-            <version>10_r1</version>
+            <version>10_r2</version>
             <scope>provided</scope>
         </dependency>
 
@@ -109,7 +110,7 @@
                     </excludes>
                 </configuration>
             </plugin>
-
+            
             <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>2.2</version>
@@ -128,6 +129,22 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>2.4.1</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>tmp</directory>
+                            <includes>
+                                <include>*</include>
+                            </includes>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+            
         </plugins>
     </build>
 
@@ -148,8 +165,8 @@
                                 </goals>
                                 <configuration>
                                     <target>
-                                        <delete dir="${project.basedir}/lib/main" />
-                                        <mkdir dir="${project.basedir}/lib/main" />
+                                        <delete dir="${project.basedir}/lib/main"/>
+                                        <mkdir dir="${project.basedir}/lib/main"/>
                                     </target>
                                 </configuration>
                             </execution>

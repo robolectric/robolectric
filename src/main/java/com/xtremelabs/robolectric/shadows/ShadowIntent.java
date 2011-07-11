@@ -56,6 +56,7 @@ public class ShadowIntent {
 
     public void __constructor__(Context packageContext, Class cls) {
         componentName = new ComponentName(packageContext, cls);
+        intentClass = cls;
     }
 
     public void __constructor__(String action, Uri uri) {
@@ -186,6 +187,12 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Intent putExtra(String key, Parcelable[] value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
+    @Implementation
     public Intent putExtra(String key, String value) {
         extras.put(key, value);
         return realIntent;
@@ -251,6 +258,14 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Parcelable[] getParcelableArrayExtra(String name) {
+        if (extras.get(name) instanceof Parcelable[]) {
+            return (Parcelable[]) extras.get(name);
+        }
+        return null;
+    }
+
+    @Implementation
     public int getIntExtra(String name, int defaultValue) {
         Integer foundValue = (Integer) extras.get(name);
         return foundValue == null ? defaultValue : foundValue;
@@ -310,7 +325,8 @@ public class ShadowIntent {
         return true;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public int hashCode() {
         int result = extras != null ? extras.hashCode() : 0;
         result = 31 * result + (action != null ? action.hashCode() : 0);
@@ -321,7 +337,8 @@ public class ShadowIntent {
         return result;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public boolean equals(Object o) {
         if (!(o instanceof Intent)) return false;
         return realIntentEquals(shadowOf((Intent) o));
@@ -338,7 +355,8 @@ public class ShadowIntent {
         return intentClass;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public String toString() {
         return "Intent{" +
                 Join.join(

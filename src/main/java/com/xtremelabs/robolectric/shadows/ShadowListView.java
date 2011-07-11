@@ -1,22 +1,21 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListView.class)
-public class ShadowListView extends ShadowAdapterView {
+public class ShadowListView extends ShadowAbsListView {
     @RealObject private ListView realListView;
 
     private boolean itemsCanFocus;
@@ -72,14 +71,14 @@ public class ShadowListView extends ShadowAdapterView {
 
     @Implementation
     public void addHeaderView(View headerView) {
-        ensureAdapterNotSet("header");
-        headerViews.add(headerView);
+        addHeaderView(headerView, null, true);
     }
 
     @Implementation
     public void addHeaderView(View headerView, Object data, boolean isSelectable) {
         ensureAdapterNotSet("header");
         headerViews.add(headerView);
+        realListView.addView(headerView);
     }
 
     @Implementation
@@ -91,6 +90,7 @@ public class ShadowListView extends ShadowAdapterView {
     public void addFooterView(View footerView, Object data, boolean isSelectable) {
         ensureAdapterNotSet("footer");
         footerViews.add(footerView);
+        realListView.addView(footerView);
     }
 
     @Implementation
@@ -98,6 +98,20 @@ public class ShadowListView extends ShadowAdapterView {
         addFooterView(footerView, null, false);
     }
 
+    @Implementation
+    public void removeAllViews() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Implementation
+    public void removeView(View view) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Implementation
+    public void removeViewAt(int index) {
+        throw new UnsupportedOperationException();
+    }
 
     public boolean performItemClick(int position) {
         return realListView.performItemClick(realListView.getChildAt(position), position, realListView.getItemIdAtPosition(position));
@@ -154,5 +168,18 @@ public class ShadowListView extends ShadowAdapterView {
 
     public void setFooterViews(List<View> footerViews) {
         this.footerViews = footerViews;
+    }
+
+    @Override
+    protected void addViews() {
+        for (View headerView : headerViews) {
+            addView(headerView);
+        }
+
+        super.addViews();
+
+        for (View footerView : footerViews) {
+            addView(footerView);
+        }
     }
 }

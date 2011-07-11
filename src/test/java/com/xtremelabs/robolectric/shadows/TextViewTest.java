@@ -81,6 +81,14 @@ public class TextViewTest {
         assertThat(textView.getLinksClickable(), equalTo(false));
     }
 
+    @Test
+    public void testGetTextAppearanceId() throws Exception {
+        TextView textView = new TextView(null);
+        textView.setTextAppearance(null, 5);
+
+        assertThat(shadowOf(textView).getTextAppearanceId(), equalTo(5));
+    }
+
     private List<String> urlStringsFrom(URLSpan[] urlSpans) {
         List<String> urls = new ArrayList<String>();
         for (URLSpan urlSpan : urlSpans) {
