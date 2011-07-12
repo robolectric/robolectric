@@ -45,4 +45,9 @@ public class ShadowCookieManager {
     public boolean acceptCookie() {
         return this.accept;
     }
+
+    @Implementation
+    public void removeAllCookie() {
+        cookies.clear();
+    }
 }

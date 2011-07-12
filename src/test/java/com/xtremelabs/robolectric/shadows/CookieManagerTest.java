@@ -6,8 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class CookieManagerTest {
@@ -45,9 +44,12 @@ public class CookieManagerTest {
   @Test
   public void shouldRecordAcceptCookie() {
       CookieManager cookieManager = CookieManager.getInstance();
-      assertThat(cookieManager.acceptCookie(), is(false));
-      cookieManager.setAcceptCookie(true);
-      assertThat(cookieManager.acceptCookie(), is(true));
-    }
+      cookieManager.setCookie("foo", "bar");
+      cookieManager.setCookie("baz", "qux");
+      assertNotNull(cookieManager.getCookie("foo"));
+      cookieManager.removeAllCookie();
+      assertNull(cookieManager.getCookie("foo"));
+      assertNull(cookieManager.getCookie("baz"));
+  }
 }
 
