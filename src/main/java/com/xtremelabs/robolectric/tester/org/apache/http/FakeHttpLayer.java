@@ -1,12 +1,11 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
 import com.xtremelabs.robolectric.Robolectric;
-import org.apache.http.Header;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
+import org.apache.http.*;
 import org.apache.http.client.RequestDirector;
+import org.apache.http.conn.ConnectTimeoutException;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 
 import javax.xml.ws.http.HTTPException;
@@ -102,6 +101,14 @@ public class FakeHttpLayer {
         if (httpResponse == null) {
             throw new RuntimeException("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse(). Request was: " +
                     httpRequest.getRequestLine().getMethod() + " " + httpRequest.getRequestLine().getUri());
+        } else {
+            HttpParams params = httpResponse.getParams();
+
+            if (HttpConnectionParams.getConnectionTimeout(params) < 0) {
+                throw new ConnectTimeoutException("Socket is not connected");
+            } else if (HttpConnectionParams.getSoTimeout(params) < 0) {
+                throw new ConnectTimeoutException("The operation timed out");
+            }
         }
 
         httpRequestInfos.add(new HttpRequestInfo(httpRequest, httpHost, httpContext, requestDirector));
