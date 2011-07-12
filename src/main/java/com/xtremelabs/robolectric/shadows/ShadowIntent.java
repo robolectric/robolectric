@@ -10,6 +10,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Map;
 
 import android.content.ComponentName;
@@ -43,6 +45,7 @@ public class ShadowIntent {
     private int flags;
     private Class<?> intentClass;
     private String packageName;
+    private Set<String> categories = new HashSet<String>();
 
     @Implementation
     public static Intent createChooser(Intent target, CharSequence title) {
@@ -139,6 +142,23 @@ public class ShadowIntent {
     public Intent setFlags(int flags) {
         this.flags = flags;
         return realIntent;
+    }
+
+    @Implementation
+    public Intent addFlags(int flags) {
+        this.flags = this.flags | flags;
+        return realIntent;
+    }
+
+    @Implementation
+    public Intent addCategory(String category) {
+        this.categories.add(category);
+        return realIntent;
+    }
+
+    @Implementation
+    public Set<String> getCategories() {
+        return this.categories;
     }
 
     @Implementation
