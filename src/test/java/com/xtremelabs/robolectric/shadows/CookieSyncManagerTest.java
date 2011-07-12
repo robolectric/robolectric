@@ -29,7 +29,7 @@ public class CookieSyncManagerTest {
 	}
 	
 	@Test
-	public void testSync() {
+	public void testSyncAndReset() {
 		CookieSyncManager.createInstance( new Activity() );
 		CookieSyncManager mgr = CookieSyncManager.getInstance();
 		
@@ -37,5 +37,7 @@ public class CookieSyncManagerTest {
 		assertThat( shadowMgr.synced(), equalTo( false ) );
 		mgr.sync();
 		assertThat( shadowMgr.synced(), equalTo( true ) );
+        shadowMgr.reset();
+        assertThat( shadowMgr.synced(), equalTo( false ) );
 	}
 }
