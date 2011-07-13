@@ -157,6 +157,10 @@ public class FakeHttpLayer {
         httpResponseRules.clear();
     }
 
+    public void clearPendingHttpResponses() {
+        pendingHttpResponses.clear();
+    }
+
     public static class RequestMatcherResponseRule implements HttpEntityStub.ResponseRule {
         private RequestMatcher requestMatcher;
         private HttpResponse responseToGive;

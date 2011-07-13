@@ -865,6 +865,10 @@ public class Robolectric {
         getFakeHttpLayer().clearHttpResponseRules();
     }
 
+    public static void clearPendingHttpResponses() {
+        getFakeHttpLayer().clearPendingHttpResponses();
+    }
+
     public static void pauseLooper(Looper looper) {
         ShadowLooper.pauseLooper(looper);
     }
@@ -926,5 +930,4 @@ public class Robolectric {
     public static String visualize(Bitmap bitmap) {
         return shadowOf(bitmap).getDescription();
     }
-
 }

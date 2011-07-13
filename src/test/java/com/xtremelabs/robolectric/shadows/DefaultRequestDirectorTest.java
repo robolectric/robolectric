@@ -171,6 +171,19 @@ public class DefaultRequestDirectorTest {
     }
 
     @Test
+    public void clearPendingHttpResponses() throws Exception {
+        Robolectric.addPendingHttpResponse(200, "earlier");
+        Robolectric.clearPendingHttpResponses();
+        Robolectric.addPendingHttpResponse(500, "later");
+
+        HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+
+        assertNotNull(response);
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(500));
+        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("later"));
+    }
+    
+    @Test
     public void shouldReturnRequestsByRule_WithCustomRequestMatcher() throws Exception {
         Robolectric.setDefaultHttpResponse(404, "no such page");
 
