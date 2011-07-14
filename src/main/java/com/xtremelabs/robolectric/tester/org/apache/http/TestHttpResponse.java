@@ -17,7 +17,7 @@ public class TestHttpResponse extends HttpResponseStub {
     private TestStatusLine statusLine = new TestStatusLine();
     private TestHttpEntity httpEntity = new TestHttpEntity();
     private int openEntityContentStreamCount = 0;
-    private Header[] headers;
+    private Header[] headers = new Header[0];
     private HttpParams params = new BasicHttpParams();
 
     public TestHttpResponse() {
@@ -72,8 +72,7 @@ public class TestHttpResponse extends HttpResponseStub {
         }
         
         @Override public Header getContentType() {
-            for (int i = 0; i < headers.length; i++) {
-                Header header = headers[i];
+            for (Header header : headers) {
                 if (header.getName().equals("Content-Type")) {
                     return header;
                 }

@@ -83,4 +83,17 @@ public class ArrayAdapterTest {
         Assert.assertTrue(Robolectric.shadowOf(arrayAdapter3).getTextViewResourceId()!=R.id.title);
         Assert.assertTrue(Robolectric.shadowOf(arrayAdapter3).getTextViewResourceId()==0);
     }
+    
+    @Test
+    public void test_remove() throws Exception {
+        Integer firstItem = arrayAdapter.getItem(0);
+        assertEquals(3, arrayAdapter.getCount());
+        assertEquals(new Integer(1), firstItem);
+
+        arrayAdapter.remove(firstItem);
+
+        assertEquals(2, arrayAdapter.getCount());
+        assertEquals(new Integer(2), arrayAdapter.getItem(0));
+        assertEquals(new Integer(3), arrayAdapter.getItem(1));
+    }
 }
