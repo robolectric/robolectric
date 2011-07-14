@@ -1,11 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,6 +48,14 @@ public class WebViewTest {
         assertThat(shadowWebView.getWebViewClient(), nullValue());
         webView.setWebViewClient(webViewClient);
         assertThat(shadowWebView.getWebViewClient(), sameInstance(webViewClient));
+    }
+
+    @Test
+    public void shouldRecordWebChromeClient() {
+        WebChromeClient webChromeClient = new WebChromeClient();
+        assertThat(shadowWebView.getWebChromeClient(), nullValue());
+        webView.setWebChromeClient(webChromeClient);
+        assertThat(shadowWebView.getWebChromeClient(), sameInstance(webChromeClient));
     }
 
     @Test

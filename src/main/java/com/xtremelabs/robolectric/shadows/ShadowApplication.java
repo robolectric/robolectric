@@ -81,6 +81,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private ServiceConnection serviceConnection;
     private ComponentName componentNameForBindService;
     private IBinder serviceForBindService;
+    private List<String> unbindableActions = new ArrayList<String>();
 
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
@@ -166,6 +167,9 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     @Implementation
     public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+        if (unbindableActions.contains(intent.getAction())) {
+            return false;
+        }
         startedServices.add(intent);
         shadowOf(Looper.getMainLooper()).post(new Runnable() {
             @Override
@@ -386,6 +390,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     public Object getBluetoothAdapter() {
         return bluetoothAdapter;
+    }
+
+    public void declareActionUnbindable(String action) {
+        unbindableActions.add(action);
     }
 
     public class Wrapper {

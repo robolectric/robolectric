@@ -86,6 +86,14 @@ public class TextViewTest {
     }
 
     @Test
+    public void testGetTextAppearanceId() throws Exception {
+        TextView textView = new TextView(null);
+        textView.setTextAppearance(null, 5);
+
+        assertThat(shadowOf(textView).getTextAppearanceId(), equalTo(5));
+    }
+
+    @Test
     public void shouldSetTextAndTextColorWhileInflatingXmlLayout() throws Exception {
         Activity activity = new Activity();
         activity.setContentView(R.layout.text_views);
@@ -102,7 +110,7 @@ public class TextViewTest {
         assertThat(grey.getText().toString(), equalTo("Grey Text"));
         assertThat(shadowOf(grey).getTextColorHexValue(), equalTo(activity.getResources().getColor(R.color.grey42)));
     }
-
+    
     private List<String> urlStringsFrom(URLSpan[] urlSpans) {
         List<String> urls = new ArrayList<String>();
         for (URLSpan urlSpan : urlSpans) {

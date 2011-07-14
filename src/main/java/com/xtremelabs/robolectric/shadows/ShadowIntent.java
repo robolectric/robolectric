@@ -10,6 +10,8 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Map;
 
 import android.content.ComponentName;
@@ -43,6 +45,7 @@ public class ShadowIntent {
     private int flags;
     private Class<?> intentClass;
     private String packageName;
+    private Set<String> categories = new HashSet<String>();
 
     @Implementation
     public static Intent createChooser(Intent target, CharSequence title) {
@@ -56,6 +59,7 @@ public class ShadowIntent {
 
     public void __constructor__(Context packageContext, Class cls) {
         componentName = new ComponentName(packageContext, cls);
+        intentClass = cls;
     }
 
     public void __constructor__(String action, Uri uri) {
@@ -141,6 +145,23 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Intent addFlags(int flags) {
+        this.flags = this.flags | flags;
+        return realIntent;
+    }
+
+    @Implementation
+    public Intent addCategory(String category) {
+        this.categories.add(category);
+        return realIntent;
+    }
+
+    @Implementation
+    public Set<String> getCategories() {
+        return this.categories;
+    }
+
+    @Implementation
     public Intent putExtras(Bundle src) {
         ShadowBundle srcShadowBundle = Robolectric.shadowOf_(src);
         extras = new HashMap<String, Object>(srcShadowBundle.map);
@@ -181,6 +202,12 @@ public class ShadowIntent {
 
     @Implementation
     public Intent putExtra(String key, Parcelable value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
+    @Implementation
+    public Intent putExtra(String key, Parcelable[] value) {
         extras.put(key, value);
         return realIntent;
     }
@@ -251,6 +278,14 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Parcelable[] getParcelableArrayExtra(String name) {
+        if (extras.get(name) instanceof Parcelable[]) {
+            return (Parcelable[]) extras.get(name);
+        }
+        return null;
+    }
+
+    @Implementation
     public int getIntExtra(String name, int defaultValue) {
         Integer foundValue = (Integer) extras.get(name);
         return foundValue == null ? defaultValue : foundValue;
@@ -310,7 +345,8 @@ public class ShadowIntent {
         return true;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public int hashCode() {
         int result = extras != null ? extras.hashCode() : 0;
         result = 31 * result + (action != null ? action.hashCode() : 0);
@@ -321,7 +357,8 @@ public class ShadowIntent {
         return result;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public boolean equals(Object o) {
         if (!(o instanceof Intent)) return false;
         return realIntentEquals(shadowOf((Intent) o));
@@ -338,7 +375,8 @@ public class ShadowIntent {
         return intentClass;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public String toString() {
         return "Intent{" +
                 Join.join(

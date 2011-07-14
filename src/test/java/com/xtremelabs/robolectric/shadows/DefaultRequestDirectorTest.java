@@ -12,11 +12,14 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultRequestDirector;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.junit.After;
 import org.junit.Before;
@@ -168,6 +171,19 @@ public class DefaultRequestDirectorTest {
     }
 
     @Test
+    public void clearPendingHttpResponses() throws Exception {
+        Robolectric.addPendingHttpResponse(200, "earlier");
+        Robolectric.clearPendingHttpResponses();
+        Robolectric.addPendingHttpResponse(500, "later");
+
+        HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+
+        assertNotNull(response);
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(500));
+        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("later"));
+    }
+    
+    @Test
     public void shouldReturnRequestsByRule_WithCustomRequestMatcher() throws Exception {
         Robolectric.setDefaultHttpResponse(404, "no such page");
 
@@ -263,5 +279,47 @@ public class DefaultRequestDirectorTest {
         Assert.assertNotNull(response);
         String responseStr = new BasicResponseHandler().handleResponse(response);
         Assert.assertEquals("OK", responseStr);
+    }
+
+    @Test
+    public void shouldSupportConnectionTimeoutWithExceptions() throws Exception {
+        Robolectric.setDefaultHttpResponse(new TestHttpResponse() {
+            @Override
+            public HttpParams getParams() {
+                HttpParams httpParams = super.getParams();
+                HttpConnectionParams.setConnectionTimeout(httpParams, -1);
+                return httpParams;
+            }
+        });
+
+        DefaultHttpClient client = new DefaultHttpClient();
+        try {
+            client.execute(new HttpGet("http://www.nowhere.org"));
+        } catch (ConnectTimeoutException x) {
+            return;
+        }
+
+        fail("Exception should have been thrown");
+    }
+
+    @Test
+    public void shouldSupportSocketTimeoutWithExceptions() throws Exception {
+        Robolectric.setDefaultHttpResponse(new TestHttpResponse() {
+            @Override
+            public HttpParams getParams() {
+                HttpParams httpParams = super.getParams();
+                HttpConnectionParams.setSoTimeout(httpParams, -1);
+                return httpParams;
+            }
+        });
+
+        DefaultHttpClient client = new DefaultHttpClient();
+        try {
+            client.execute(new HttpGet("http://www.nowhere.org"));
+        } catch (ConnectTimeoutException x) {
+            return;
+        }
+
+        fail("Exception should have been thrown");
     }
 }

@@ -48,6 +48,21 @@ public class ShadowAdapterView extends ShadowViewGroup {
 		updateEmptyStatus(adapter == null || adapter.isEmpty());
     }
 
+    @Implementation
+    public int getPositionForView(android.view.View view) {
+        while(view.getParent() != null && view.getParent() != realView) {
+            view = (View) view.getParent();
+        }
+
+        for (int i = 0; i < getChildCount(); i++) {
+            if (view == getChildAt(i)) {
+                return i;
+            }
+        }
+
+        return AdapterView.INVALID_POSITION;
+    }
+
     private void invalidateAndScheduleUpdate() {
         valid = false;
         itemCount = adapter == null ? 0 : adapter.getCount();
@@ -219,8 +234,11 @@ public class ShadowAdapterView extends ShadowViewGroup {
             return;
         }
         
-        removeAllViews();
+        super.removeAllViews();
+        addViews();
+    }
 
+    protected void addViews() {
         Adapter adapter = getAdapter();
         if (adapter != null) {
             if (valid && (previousItems.size() - ignoreRowsAtEndOfList != adapter.getCount() - ignoreRowsAtEndOfList)) {
