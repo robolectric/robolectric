@@ -18,7 +18,7 @@ public class ShadowWebSettings {
     private boolean loadWithOverviewMode = false;
     private boolean needInitialFocus = false;
     private boolean pluginsEnabled = false;
-    private WebSettings.PluginState pluginState = WebSettings.PluginState.OFF;
+//    private WebSettings.PluginState pluginState = WebSettings.PluginState.OFF;
     private boolean supportMultipleWindows = false;
     private boolean supportZoom = true;
 
@@ -131,15 +131,15 @@ public class ShadowWebSettings {
         pluginsEnabled = flag;
     }
 
-    @Implementation
-    public synchronized WebSettings.PluginState getPluginState() {
-        return pluginState;
-    }
-
-    @Implementation
-    public synchronized void setPluginState(WebSettings.PluginState state) {
-        pluginState = state;
-    }
+//    @Implementation
+//    public synchronized WebSettings.PluginState getPluginState() {
+//        return pluginState;
+//    }
+//
+//    @Implementation
+//    public synchronized void setPluginState(WebSettings.PluginState state) {
+//        pluginState = state;
+//    }
 
     public boolean getSupportMultipleWindows() {
         return supportMultipleWindows;

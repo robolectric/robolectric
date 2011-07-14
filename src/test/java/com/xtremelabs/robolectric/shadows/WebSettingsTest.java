@@ -38,7 +38,7 @@ public class WebSettingsTest {
         assertThat(webSettings.getLoadWithOverviewMode(), equalTo(false));
         assertThat(shadowWebSettings.getNeedInitialFocus(), equalTo(false));
         assertThat(webSettings.getPluginsEnabled(), equalTo(false));
-        assertThat(webSettings.getPluginState(), equalTo(WebSettings.PluginState.OFF));
+//        assertThat(webSettings.getPluginState(), equalTo(WebSettings.PluginState.OFF));
         assertThat(shadowWebSettings.getSupportMultipleWindows(), equalTo(false));
         assertThat(shadowWebSettings.getSupportZoom(), equalTo(true));
     }
@@ -131,19 +131,19 @@ public class WebSettingsTest {
         }
     }
 
-    @Test
-    public void testPluginState() {
-        WebSettings.PluginState[] states = {
-                WebSettings.PluginState.OFF,
-                WebSettings.PluginState.ON,
-                WebSettings.PluginState.ON_DEMAND
-        };
-
-        for (WebSettings.PluginState state : states) {
-            webSettings.setPluginState(state);
-            assertThat(webSettings.getPluginState(), equalTo(state));
-        }
-    }
+//    @Test
+//    public void testPluginState() {
+//        WebSettings.PluginState[] states = {
+//                WebSettings.PluginState.OFF,
+//                WebSettings.PluginState.ON,
+//                WebSettings.PluginState.ON_DEMAND
+//        };
+//
+//        for (WebSettings.PluginState state : states) {
+//            webSettings.setPluginState(state);
+//            assertThat(webSettings.getPluginState(), equalTo(state));
+//        }
+//    }
 
     @Test
     public void testSupportMultipleWindows() {
