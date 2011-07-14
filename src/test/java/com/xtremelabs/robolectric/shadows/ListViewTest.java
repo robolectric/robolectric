@@ -236,6 +236,31 @@ public class ListViewTest {
         shadowOf(listView).checkValidity(); // should 'splode!
     }
 
+    @Test
+    public void testShouldBeAbleToTurnOffAutomaticRowUpdates() throws Exception {
+        try {
+            TranscriptAdapter adapter1 = new TranscriptAdapter();
+            assertThat(adapter1.getCount(), equalTo(1));
+            listView.setAdapter(adapter1);
+            transcript.assertEventsSoFar("called getView");
+            transcript.clear();
+            adapter1.notifyDataSetChanged();
+            transcript.assertEventsSoFar("called getView");
+
+            transcript.clear();
+            ShadowAdapterView.automaticallyUpdateRowViews(false);
+
+            TranscriptAdapter adapter2 = new TranscriptAdapter();
+            assertThat(adapter2.getCount(), equalTo(1));
+            listView.setAdapter(adapter2);
+            adapter2.notifyDataSetChanged();
+            transcript.assertNoEventsSoFar();
+
+        } finally {
+            ShadowAdapterView.automaticallyUpdateRowViews(true);
+        }
+    }
+    
     @Test(expected = UnsupportedOperationException.class)
     public void removeAllViews_shouldThrowAnException() throws Exception {
         listView.removeAllViews();
@@ -304,6 +329,29 @@ public class ListViewTest {
             LinearLayout linearLayout = new LinearLayout(null);
             linearLayout.addView(new View(null));
             return linearLayout;
+        }
+    }
+
+    private class TranscriptAdapter extends BaseAdapter {
+        @Override
+        public int getCount() {
+            return 1;
+        }
+
+        @Override
+        public Object getItem(int position) {
+            return null;
+        }
+
+        @Override
+        public long getItemId(int position) {
+            return position;
+        }
+
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
+            transcript.add("called getView");
+            return new View(parent.getContext());
         }
     }
 }

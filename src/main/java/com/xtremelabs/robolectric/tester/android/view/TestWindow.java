@@ -13,6 +13,7 @@ import android.view.SurfaceHolder;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.view.WindowManager;
 import com.xtremelabs.robolectric.Robolectric;
 
 public class TestWindow extends Window {
@@ -21,9 +22,11 @@ public class TestWindow extends Window {
     public int featureDrawableResourceFeatureId;
     public int featureDrawableResourceResId;
     public int softInputMode;
+    private TestWindowManager windowManager;
 
     public TestWindow(Context context) {
         super(context);
+        windowManager = new TestWindowManager();
     }
 
     @Override public boolean requestFeature(int featureId) {
@@ -37,6 +40,11 @@ public class TestWindow extends Window {
 
     @Override public void addFlags(int flags) {
         setFlags(flags, flags);
+    }
+
+    @Override
+    public WindowManager getWindowManager() {
+        return windowManager;
     }
 
     @Override public boolean isFloating() {

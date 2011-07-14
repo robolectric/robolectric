@@ -1,10 +1,27 @@
 package com.xtremelabs.robolectric;
 
-import android.app.*;
+import android.app.Activity;
+import android.app.ActivityGroup;
+import android.app.ActivityManager;
+import android.app.AlarmManager;
+import android.app.AlertDialog;
+import android.app.Application;
+import android.app.Dialog;
+import android.app.KeyguardManager;
+import android.app.ListActivity;
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.ProgressDialog;
+import android.app.Service;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.*;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
 import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
@@ -13,7 +30,13 @@ import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.graphics.*;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.ColorMatrix;
+import android.graphics.Matrix;
+import android.graphics.Paint;
+import android.graphics.Path;
+import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -30,16 +53,57 @@ import android.net.wifi.WifiManager;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
-import android.os.*;
-import android.preference.*;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Parcel;
+import android.os.PowerManager;
+import android.os.ResultReceiver;
+import android.preference.DialogPreference;
+import android.preference.ListPreference;
+import android.preference.Preference;
+import android.preference.PreferenceActivity;
+import android.preference.PreferenceCategory;
+import android.preference.PreferenceGroup;
+import android.preference.PreferenceScreen;
 import android.telephony.TelephonyManager;
 import android.text.format.DateFormat;
-import android.view.*;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.*;
-import android.widget.*;
+import android.webkit.CookieManager;
+import android.webkit.CookieSyncManager;
+import android.webkit.SslErrorHandler;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.widget.AbsListView;
+import android.widget.AbsSeekBar;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.CursorAdapter;
+import android.widget.ExpandableListView;
+import android.widget.Filter;
+import android.widget.FrameLayout;
+import android.widget.GridView;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.ProgressBar;
+import android.widget.RatingBar;
+import android.widget.RemoteViews;
+import android.widget.ResourceCursorAdapter;
+import android.widget.SeekBar;
+import android.widget.SimpleCursorAdapter;
+import android.widget.TabHost;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.VideoView;
+import android.widget.ZoomButtonsController;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
@@ -52,6 +116,8 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 
@@ -217,6 +283,8 @@ public class Robolectric {
                 ShadowPreferenceScreen.class,
                 ShadowProgressBar.class,
                 ShadowProgressDialog.class,
+                ShadowRadioButton.class,
+                ShadowRadioGroup.class,
                 ShadowRatingBar.class,
                 ShadowRect.class,
                 ShadowResolveInfo.class,
@@ -265,6 +333,8 @@ public class Robolectric {
         ShadowWrangler.getInstance().silence();
         Robolectric.application = new Application();
         ShadowBitmapFactory.reset();
+        ShadowDrawable.reset();
+        ShadowMediaStore.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -421,18 +491,6 @@ public class Robolectric {
 
     public static ShadowIntent shadowOf(Intent instance) {
         return (ShadowIntent) shadowOf_(instance);
-    }
-
-    public static ShadowNdefMessage shadowOf(NdefMessage instance) {
-        return (ShadowNdefMessage) shadowOf_(instance);
-    }
-
-    public static ShadowNdefRecord shadowOf(NdefRecord instance) {
-        return (ShadowNdefRecord) shadowOf_(instance);
-    }
-
-    public static ShadowNfcAdapter shadowOf(NfcAdapter instance) {
-        return (ShadowNfcAdapter) shadowOf_(instance);
     }
 
     public static ShadowView shadowOf(View instance) {
@@ -930,4 +988,35 @@ public class Robolectric {
     public static String visualize(Bitmap bitmap) {
         return shadowOf(bitmap).getDescription();
     }
+
+    /**
+     * Reflection helper methods.
+     */
+    public static class Reflection {
+        public static <T> T newInstanceOf(Class<T> clazz) {
+            return Robolectric.newInstanceOf(clazz);
+        }
+
+        public static Object newInstanceOf(String className) {
+            return Robolectric.newInstanceOf(className);
+        }
+
+        public static void setFinalStaticField(Class classWhichContainsField, String fieldName, Object newValue) {
+            try {
+                Field field = classWhichContainsField.getField(fieldName);
+                field.setAccessible(true);
+
+                Field modifiersField = Field.class.getDeclaredField("modifiers");
+                modifiersField.setAccessible(true);
+                modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
+
+                field.set(null, newValue);
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
 }

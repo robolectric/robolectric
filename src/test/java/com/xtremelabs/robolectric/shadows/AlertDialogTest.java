@@ -36,6 +36,15 @@ public class AlertDialogTest {
     }
 
     @Test
+    public void shouldAllowNullButtonListeners() throws Exception {
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));
+        builder.setPositiveButton("OK", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        Robolectric.clickOn(dialog.getButton(AlertDialog.BUTTON_POSITIVE));
+    }
+
+    @Test
     public void testSetMessageAfterCreation() {
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));
         builder.setTitle("title").setMessage("message");
