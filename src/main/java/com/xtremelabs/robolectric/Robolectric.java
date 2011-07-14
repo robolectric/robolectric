@@ -493,18 +493,6 @@ public class Robolectric {
         return (ShadowIntent) shadowOf_(instance);
     }
 
-    public static ShadowNdefMessage shadowOf(NdefMessage instance) {
-        return (ShadowNdefMessage) shadowOf_(instance);
-    }
-
-    public static ShadowNdefRecord shadowOf(NdefRecord instance) {
-        return (ShadowNdefRecord) shadowOf_(instance);
-    }
-
-    public static ShadowNfcAdapter shadowOf(NfcAdapter instance) {
-        return (ShadowNfcAdapter) shadowOf_(instance);
-    }
-
     public static ShadowView shadowOf(View instance) {
         return (ShadowView) shadowOf_(instance);
     }
