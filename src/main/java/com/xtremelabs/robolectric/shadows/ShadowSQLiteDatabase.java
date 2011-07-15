@@ -243,8 +243,9 @@ public class ShadowSQLiteDatabase  {
             throw new RuntimeException("SQL exception in query", e);
         }
 
+      //TODO: ASSERT rawquery with args returns actual values (we want to test that sqlBody is passed to setResultSet and not sql)
         SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
-        shadowOf(cursor).setResultSet(resultSet, sql);
+        shadowOf(cursor).setResultSet(resultSet, sqlBody);
         return cursor;
     }
     
