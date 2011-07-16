@@ -22,49 +22,10 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 @RunWith(WithTestDefaultsRunner.class)
 public class TabSpecTest {
 	Drawable icon1;
-	Drawable icon2;
+		
 	@Before
 	public void init() {
-		 icon1 = new Drawable() {
-
-				@Override
-				public void draw(Canvas canvas) {
-				}
-
-				@Override
-				public void setAlpha(int alpha) {
-				}
-
-				@Override
-				public void setColorFilter(ColorFilter cf) {
-				}
-
-				@Override
-				public int getOpacity() {
-					return 1;
-				}
-	        
-	        };
-		 icon2 = new Drawable() {
-
-			@Override
-			public void draw(Canvas canvas) {
-			}
-
-			@Override
-			public void setAlpha(int alpha) {
-			}
-
-			@Override
-			public void setColorFilter(ColorFilter cf) {
-			}
-
-			@Override
-			public int getOpacity() {
-				return 2;
-			}
-		 
-		 };
+		 icon1 = new TestIcon();		 
 	}
 	
     @Test
@@ -101,6 +62,27 @@ public class TabSpecTest {
         assertThat(shadowOf(spec).getIndicatorLabel(), is("labelText"));
         assertThat(shadowOf(spec).getText(), is("labelText"));
         assertThat(shadowOf(spec).getIndicatorIcon(), is(icon1));
-        assertThat(shadowOf(spec).getIndicatorIcon(), is(not(icon2)));
     }
+    
+    private class TestIcon extends Drawable {
+
+		@Override
+		public void draw(Canvas canvas) {
+		}
+
+		@Override
+		public void setAlpha(int alpha) {
+		}
+
+		@Override
+		public void setColorFilter(ColorFilter cf) {
+		}
+
+		@Override
+		public int getOpacity() {
+			return 0;
+		}
+		
+	}
+
 }
