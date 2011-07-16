@@ -13,6 +13,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 
 import java.io.InputStream;
@@ -41,6 +42,19 @@ public class ShadowResources {
     @RealObject Resources realResources;
     private ResourceLoader resourceLoader;
 
+    @Implementation
+    public  int getIdentifier(String name, String defType, String defPackage) {
+        Integer index = 0;
+        
+        ResourceExtractor resourceExtractor = resourceLoader.getResourceExtractor();
+        
+        index = resourceExtractor.getResourceId(defType + "/" + name);
+        if (index == null) {
+            return 0;
+        }
+        return index;
+    }
+    
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
         return resourceLoader.getColorValue(id);
