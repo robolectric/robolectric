@@ -41,7 +41,22 @@ public class ShadowTabSpec {
     public View getIndicatorAsView() {
         return this.indicatorView;
     }
-
+    
+    public String getIndicatorLabel() {
+        return this.label.toString();
+    }
+    
+    public Drawable getIndicatorIcon() {
+        return this.icon;
+    }
+    
+	/**
+	 * Same as GetIndicatorLabel()
+	 * @return
+	 */
+	public String getText() {
+		return label.toString();
+	}
     @Implementation
     public TabHost.TabSpec setIndicator(View view) {
         this.indicatorView = view;

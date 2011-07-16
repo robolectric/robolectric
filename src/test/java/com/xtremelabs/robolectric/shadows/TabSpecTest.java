@@ -1,19 +1,33 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.Intent;
-import android.view.View;
-import android.widget.TabHost;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.assertThat;
+
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import android.content.Intent;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
+import android.graphics.drawable.Drawable;
+import android.view.View;
+import android.widget.TabHost;
+
+import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class TabSpecTest {
-
+	Drawable icon1;
+		
+	@Before
+	public void init() {
+		 icon1 = new TestIcon();		 
+	}
+	
     @Test
     public void shouldGetAndSetTheIndicator() throws Exception {
         TabHost.TabSpec spec = new TabHost(null).newTabSpec("foo");
@@ -31,4 +45,44 @@ public class TabSpecTest {
         assertThat(self, is(spec));
         assertThat(shadowOf(spec).getContentAsIntent(), is(intent));
     }
+    
+    @Test
+    public void shouldGetAndSetTheIndicatorLabel() throws Exception {
+        TabHost.TabSpec spec = new TabHost(null).newTabSpec("foo")
+        .setContent(R.layout.main).setIndicator("labelText");
+
+        assertThat(shadowOf(spec).getIndicatorLabel(), is("labelText"));
+        assertThat(shadowOf(spec).getText(), is("labelText"));
+    }
+    @Test
+    public void shouldGetAndSetTheIndicatorLabelAndIcon() throws Exception {
+        TabHost.TabSpec spec = new TabHost(null).newTabSpec("foo")
+        .setContent(R.layout.main).setIndicator("labelText",icon1);
+
+        assertThat(shadowOf(spec).getIndicatorLabel(), is("labelText"));
+        assertThat(shadowOf(spec).getText(), is("labelText"));
+        assertThat(shadowOf(spec).getIndicatorIcon(), is(icon1));
+    }
+    
+    private class TestIcon extends Drawable {
+
+		@Override
+		public void draw(Canvas canvas) {
+		}
+
+		@Override
+		public void setAlpha(int alpha) {
+		}
+
+		@Override
+		public void setColorFilter(ColorFilter cf) {
+		}
+
+		@Override
+		public int getOpacity() {
+			return 0;
+		}
+		
+	}
+
 }
