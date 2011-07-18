@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.core.Is.is;
-import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
@@ -15,6 +15,8 @@ import android.graphics.ColorFilter;
 import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TabHost;
+import android.widget.TextView;
+import android.widget.TabHost.TabContentFactory;
 
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -46,6 +48,8 @@ public class TabSpecTest {
         assertThat(shadowOf(spec).getContentAsIntent(), is(intent));
     }
     
+   
+    
     @Test
     public void shouldGetAndSetTheIndicatorLabel() throws Exception {
         TabHost.TabSpec spec = new TabHost(null).newTabSpec("foo")
@@ -63,6 +67,35 @@ public class TabSpecTest {
         assertThat(shadowOf(spec).getText(), is("labelText"));
         assertThat(shadowOf(spec).getIndicatorIcon(), is(icon1));
     }
+    
+    @Test
+    public void shouldSetTheContentView() throws Exception {
+    	TabHost.TabSpec foo = new TabHost(null).newTabSpec("Foo").setContent(
+			new TabContentFactory() {
+				public View createTabContent(String tag) {
+					TextView tv = new TextView(null);
+					tv.setText("The Text of " + tag);
+					return tv;
+				}
+			});
+	        
+		ShadowTabSpec shadowFoo = shadowOf(foo);
+        TextView textView = (TextView) shadowFoo.getContentView();
+
+
+        assertThat(textView.getText().toString(), equalTo("The Text of Foo"));
+    }
+    
+    @Test
+    public void shouldSetTheContentViewId() throws Exception {
+    	TabHost.TabSpec foo = new TabHost(null).newTabSpec("Foo")
+    	.setContent(R.id.title);
+    				
+		ShadowTabSpec shadowFoo = shadowOf(foo);
+        int viewId = shadowFoo.getContentViewId();
+
+        assertThat(viewId, equalTo(R.id.title));
+}
     
     private class TestIcon extends Drawable {
 
