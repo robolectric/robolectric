@@ -4,7 +4,6 @@ import android.app.Application;
 import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
-import android.content.Intent;
 import android.content.ServiceConnection;
 
 import com.xtremelabs.robolectric.Robolectric;
@@ -22,8 +21,7 @@ public class ShadowService extends ShadowContextWrapper {
     private Notification lastForegroundNotification;    
     private boolean selfStopped = false;
     private boolean unbindServiceShouldThrowIllegalArgument = false;
-    private boolean onStartCommandCalled = false;
-    
+
     @Implementation
     public final Application getApplication() {
         return Robolectric.application;
@@ -77,15 +75,5 @@ public class ShadowService extends ShadowContextWrapper {
      */
     public boolean isStoppedBySelf() {
     	return selfStopped;
-    }
-    
-    @Implementation 
-    public int onStartCommand(Intent intent, int flags, int startId) {
-    	onStartCommandCalled = true;
-    	return Service.START_STICKY;
-    }
-    
-    public boolean hasOnStartCommandBeenCalled() {
-    	return onStartCommandCalled;
     }
 }

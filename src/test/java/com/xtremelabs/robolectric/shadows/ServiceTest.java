@@ -53,17 +53,6 @@ public class ServiceTest {
         service.unbindService(conn);
     }
     
-    @Test
-    public void shouldRecordOnStartCommandCalls() {
-    	MyService service = new MyService();
-    	Assert.assertFalse(shadowOf(service).hasOnStartCommandBeenCalled());	
-    	
-    	service.onStartCommand(new Intent(), 0, 0);
-    	Assert.assertTrue(shadowOf(service).hasOnStartCommandBeenCalled());
-    	
-    	service.onDestroy();
-    }
-
     private static class MyService extends Service {
         @Override public void onDestroy() {
             super.onDestroy();
