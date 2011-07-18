@@ -1,12 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import android.app.ListActivity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
+
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow of {@code ListActivity} that supports the retrieval of {@code ListViews}
@@ -26,14 +27,27 @@ public class ShadowListActivity extends ShadowActivity {
         }
         return listView;
     }
+    
+    @Implementation
+    public  void setListAdapter(final android.widget.ListAdapter adapter) {
+        synchronized (this) {
+            getListView();
+            listView.setAdapter(adapter);
+        }
+        
+    }
 
-    public void setListView(ListView view) {
+    public void setListView(final ListView view) {
     	listView = view;
     }
     
-    private ListView findListView(View parent) {
+    private ListView findListView(final View parent) {
         if (parent instanceof ListView) {
             return (ListView) parent;
+        }
+        //If the parent isn't a ViewGroup we should check other elements
+        if (!(parent instanceof ViewGroup)) {
+            return null;
         }
         ShadowViewGroup shadowViewGroup = (ShadowViewGroup) shadowOf(parent);
         for (int i = 0; i < shadowViewGroup.getChildCount(); i++) {
