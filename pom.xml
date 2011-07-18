@@ -11,11 +11,41 @@
 
     <groupId>com.pivotallabs</groupId>
     <artifactId>robolectric</artifactId>
-    <version>1.0-RC2-SNAPSHOT</version>
+    <version>1.0-RC2-ZAUBER-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Robolectric</name>
     <description>An alternative Android testing framework.</description>
     <url>http://pivotal.github.com/robolectric/</url>
+
+   <distributionManagement> 
+           <repository> 
+			   <id>zauber-whosaround-releases</id>
+			   <name>Zauber Who's Around Releases</name>
+			   <url>https://repo1.zaubersoftware.com/zauber/whosearound/releases</url>
+           </repository> 
+   </distributionManagement> 
+<repositories>
+	 <repository>
+       <releases><enabled>false</enabled></releases>
+       <snapshots><enabled>true</enabled></snapshots>
+       <id>zauber-code-snapshots</id>
+       <name>Zauber Code Snapshots</name>
+       <url>https://repo1.zaubersoftware.com/zauber/code/snapshots</url>
+     </repository>
+     <repository>
+       <releases><enabled>true</enabled></releases>
+       <snapshots><enabled>false</enabled></snapshots>
+       <id>zauber-whosaround-releases</id>
+       <name>Zauber Who's Around Releases</name>
+       <url>https://repo1.zaubersoftware.com/zauber/whosearound/releases</url>
+     </repository>
+</repositories>
+
+  <scm>
+        <connection>scm:git:https://github.com/zaubersoftware/robolectric.git</connection>
+        <url>scm:git:https://github.com/zaubersoftware/robolectric.git</url>
+        <developerConnection>scm:git:https://github.com/zaubersoftware/robolectric.git</developerConnection>
+  </scm>
 
     <dependencies>
         <dependency>
@@ -92,6 +122,17 @@
 
     <build>
         <plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+				        <autoVersionSubmodules>true</autoVersionSubmodules>
+				        <pushChanges>false</pushChanges>
+				</configuration>
+				<version>2.1</version>
+			  </plugin>
+
+
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>2.3.2</version>
@@ -149,6 +190,79 @@
     </build>
 
     <profiles>
+
+      <profile>
+        <id>release-sign-artifacts</id>
+        <activation>
+          <property>
+            <name>performRelease</name>
+            <value>true</value>
+          </property>
+        </activation>
+        <build>
+          <plugins>
+            <plugin>
+              <groupId>org.apache.maven.plugins</groupId>
+              <artifactId>maven-gpg-plugin</artifactId>
+              <version>1.2</version>
+              <inherited>true</inherited>
+              <executions>
+                <execution>
+                  <id>sign-artifacts</id>
+                  <phase>verify</phase>
+                  <goals>
+                    <goal>sign</goal>
+                  </goals>
+                </execution>
+              </executions>
+              <configuration>
+                 <useAgent>true</useAgent>
+              </configuration>
+            </plugin>
+            <plugin> 
+                <groupId>org.apache.maven.plugins</groupId> 
+                <artifactId>maven-javadoc-plugin</artifactId> 
+                <version>2.7</version> 
+                <configuration>
+                   <charset>ISO-8859-1</charset>
+                   <encoding>ISO-8859-1</encoding>
+                </configuration>
+                <executions> 
+                     <execution> 
+                         <id>attach-javadocs</id> 
+                         <goals> 
+                             <goal>jar</goal> 
+                         </goals> 
+                     </execution> 
+                </executions> 
+                <inherited>true</inherited>
+            </plugin> 
+            <plugin> 
+                <groupId>org.apache.maven.plugins</groupId> 
+                <artifactId>maven-enforcer-plugin</artifactId> 
+                <version>1.0</version> 
+                <inherited>true</inherited>
+                <executions> 
+                    <execution> 
+                       <id>enforce-maven</id> 
+                       <goals> 
+                           <goal>enforce</goal> 
+                       </goals> 
+                       <configuration> 
+                           <rules> 
+                               <requireMavenVersion> 
+                                   <version>(,2.1.0),(2.1.0,2.2.0),(2.2.0,)</version> 
+                                   <message>Maven 2.1.0 produce incorrect GPG signatures and checksums respectively.</message>
+                                </requireMavenVersion> 
+                            </rules> 
+                        </configuration> 
+                    </execution> 
+                </executions> 
+              </plugin> 
+            </plugins>
+        </build>
+      </profile>
+
         <profile>
             <id>ant-deps</id>
             <build>
@@ -196,11 +310,7 @@
         </profile>
     </profiles>
 
-    <scm>
-        <url>git@github.com:pivotal/robolectric.git</url>
-        <connection>scm:git:git://github.com/pivotal/robolectric.git</connection>
-        <developerConnection>scm:git:git@github.com:pivotal/robolectric.git</developerConnection>
-    </scm>
+
 
     <ciManagement>
         <system>Hudson</system>
