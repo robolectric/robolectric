@@ -1,5 +1,14 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -8,14 +17,6 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestRunnable;
 import com.xtremelabs.robolectric.util.Transcript;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class HandlerTest {
@@ -53,6 +54,20 @@ public class HandlerTest {
         shadowOf(Looper.myLooper()).idle();
 
         transcript.assertEventsSoFar("first thing", "second thing");
+    }
+    
+    @Test
+    public void testCallbackConstructorUsesCallback() throws Exception {
+        String event1 = "first thing";
+        String event2 = "second thing";
+        
+        Handler handler1 = new Handler(new SayCallback(event1));
+        handler1.sendEmptyMessage(0);
+        Handler handler2 = new Handler(new SayCallback(event2));
+        handler2.sendEmptyMessage(0);
+        shadowOf(Looper.myLooper()).idle();
+
+        transcript.assertEventsSoFar(event1, event2);
     }
 
     @Test
@@ -144,30 +159,30 @@ public class HandlerTest {
         assertThat(task3.wasRun, equalTo(true));
     }
 
-    @Test
-    public void sendEmptyMessageHandler() {
-        
-        final Handler handler = new Handler(new Handler.Callback() {
-            
-            @Override
-            public boolean handleMessage(Message message) {
-                throw new UnsupportedOperationException("Method not implemented");
-            }
-
-        });
-        handler.sendEmptyMessage(0);
-    }
-
     private class Say implements Runnable {
-        private String event;
+        private final String event;
 
-        public Say(String event) {
+        public Say(final String event) {
             this.event = event;
         }
 
         @Override
         public void run() {
             transcript.add(event);
+        }
+    }
+    
+    private class SayCallback implements Handler.Callback {
+        private final String event;
+
+        public SayCallback(final String event) {
+            this.event = event;
+        }
+
+        @Override
+        public boolean handleMessage(final Message arg0) {
+            transcript.add(event);
+            return true;
         }
     }
 }
