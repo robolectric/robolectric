@@ -29,6 +29,10 @@ public final class R {
         public static final int outer_merge = nextId++;
         public static final int web_view = nextId++;
 
+        public static final int black_text_view = nextId++;
+        public static final int white_text_view = nextId++;
+        public static final int grey_text_view = nextId++;
+
         public static final int textStyle = nextId++;
         public static final int textStyle2 = nextId++;
         public static final int textStyle3 = nextId++;
@@ -76,6 +80,7 @@ public final class R {
         public static final int inner_merge = nextId++;
         public static final int included_linear_layout = nextId++;
         public static final int with_invalid_onclick = nextId++;
+        public static final int text_views = nextId++;
     }
 
     public static final class raw {

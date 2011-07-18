@@ -1,11 +1,9 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
 import com.xtremelabs.robolectric.shadows.StatusLineStub;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpVersion;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.StatusLine;
+import org.apache.http.*;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -19,7 +17,8 @@ public class TestHttpResponse extends HttpResponseStub {
     private TestStatusLine statusLine = new TestStatusLine();
     private TestHttpEntity httpEntity = new TestHttpEntity();
     private int openEntityContentStreamCount = 0;
-    private Header[] headers;
+    private Header[] headers = new Header[0];
+    private HttpParams params = new BasicHttpParams();
 
     public TestHttpResponse() {
         this.statusCode = 200;
@@ -52,6 +51,14 @@ public class TestHttpResponse extends HttpResponseStub {
         return headers;
     }
 
+    @Override public HttpParams getParams() {
+        return params;
+    }
+
+    @Override public void setParams(HttpParams httpParams) {
+        this.params = httpParams;
+    }
+
     public boolean entityContentStreamsHaveBeenClosed() {
         return openEntityContentStreamCount == 0;
     }
@@ -65,8 +72,7 @@ public class TestHttpResponse extends HttpResponseStub {
         }
         
         @Override public Header getContentType() {
-            for (int i = 0; i < headers.length; i++) {
-                Header header = headers[i];
+            for (Header header : headers) {
                 if (header.getName().equals("Content-Type")) {
                     return header;
                 }

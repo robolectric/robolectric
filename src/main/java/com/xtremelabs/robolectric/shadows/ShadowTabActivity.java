@@ -11,9 +11,12 @@ import com.xtremelabs.robolectric.internal.RealObject;
 public class ShadowTabActivity extends ShadowActivityGroup {
 
     @RealObject TabActivity realTabActivity;
-
+    TabHost tabhost;
     @Implementation
     public TabHost getTabHost() {
-        return new TabHost(realTabActivity);
+    	if (tabhost==null) {
+    		tabhost = new TabHost(realTabActivity);
+    	}
+        return tabhost;
     }
 }

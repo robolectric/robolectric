@@ -149,6 +149,23 @@ public class IntentTest {
     }
 
     @Test
+    public void shouldAddFlags() throws Exception {
+        Intent intent = new Intent();
+        Intent self = intent.addFlags(4);
+        self.addFlags(8);
+        assertEquals(12, intent.getFlags());
+        assertSame(self, intent);
+    }
+
+    @Test
+    public void shouldAddCategories() throws Exception {
+        Intent intent = new Intent();
+        Intent self = intent.addCategory("foo");
+        assertTrue(intent.getCategories().contains("foo"));
+        assertSame(self, intent);
+    }
+
+    @Test
     public void equals_shouldTestActionComponentNameDataAndExtras() throws Exception {
         Intent intentA = new Intent()
                 .setAction("action")

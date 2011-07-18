@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        >
+
+    <TextView
+            android:id="@+id/black_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Black Text"
+            android:textColor="#000000"
+            />
+
+    <TextView
+            android:id="@+id/white_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="White Text"
+            android:textColor="@android:color/white"
+            />
+
+    <TextView
+            android:id="@+id/grey_text_view"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Grey Text"
+            android:textColor="@color/grey42"
+            />
+</LinearLayout>
