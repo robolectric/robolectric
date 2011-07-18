@@ -45,6 +45,7 @@ public class ShadowListActivity extends ShadowActivity {
         if (parent instanceof ListView) {
             return (ListView) parent;
         }
+        //If the parent isn't a ViewGroup we should check other elements
         if (!(parent instanceof ViewGroup)) {
             return null;
         }
