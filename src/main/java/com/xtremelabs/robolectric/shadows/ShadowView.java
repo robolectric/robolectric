@@ -28,20 +28,22 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this
  * class.
- *
+ * <p/>
  * Supports listeners, focusability (but not focus order), resource loading,
  * visibility, onclick, tags, and tracks the size and shape of the view.
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(View.class)
 public class ShadowView {
-    @RealObject protected View realView;
+    @RealObject
+    protected View realView;
 
     private int id;
     ShadowView parent;
     protected Context context;
     private boolean selected;
     private View.OnClickListener onClickListener;
+    private View.OnLongClickListener onLongClickListener;
     private Object tag;
     private boolean enabled = true;
     private int visibility = View.VISIBLE;
@@ -291,6 +293,21 @@ public class ShadowView {
     public boolean performClick() {
         if (onClickListener != null) {
             onClickListener.onClick(realView);
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    @Implementation
+    public void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
+        this.onLongClickListener = onLongClickListener;
+    }
+
+    @Implementation
+    public boolean performLongClick() {
+        if (onLongClickListener != null) {
+            onLongClickListener.onLongClick(realView);
             return true;
         } else {
             return false;
@@ -644,13 +661,13 @@ public class ShadowView {
             setId(id);
         }
     }
-    
+
     private void applyTagAttribute() {
-    	 Object tag = attributeSet.getAttributeValue("android", "tag");
-         if (tag != null) {
-             setTag(tag);             
-         }
-	}
+        Object tag = attributeSet.getAttributeValue("android", "tag");
+        if (tag != null) {
+            setTag(tag);
+        }
+    }
 
     private void applyVisibilityAttribute() {
         String visibility = attributeSet.getAttributeValue("android", "visibility");
@@ -678,7 +695,7 @@ public class ShadowView {
 
     private void applyOnClickAttribute() {
         final String handlerName = attributeSet.getAttributeValue("android",
-                                                                  "onClick");
+                "onClick");
         if (handlerName == null) {
             return;
         }
@@ -690,12 +707,12 @@ public class ShadowView {
                 Method mHandler;
                 try {
                     mHandler = getContext().getClass().getMethod(handlerName,
-                                                                 View.class);
+                            View.class);
                 } catch (NoSuchMethodException e) {
                     int id = getId();
                     String idText = id == View.NO_ID ? "" : " with id '"
                             + shadowOf(context).getResourceLoader()
-                                               .getNameForId(id) + "'";
+                            .getNameForId(id) + "'";
                     throw new IllegalStateException("Could not find a method " +
                             handlerName + "(View) in the activity "
                             + getContext().getClass() + " for onClick handler"
@@ -722,23 +739,23 @@ public class ShadowView {
         }
         return true;
     }
-    
+
     /**
      * Non-android accessor.  Returns touch listener, if set.
-     * 
+     *
      * @return
      */
     public View.OnTouchListener getOnTouchListener() {
-    	return onTouchListener;
+        return onTouchListener;
     }
-    
+
     /**
      * Non-android accessor.  Returns click listener, if set.
-     * 
+     *
      * @return
      */
     public View.OnClickListener getOnClickListener() {
-    	return onClickListener;
+        return onClickListener;
     }
 
     @Implementation
@@ -775,28 +792,28 @@ public class ShadowView {
             }
         }, delayMilliseconds);
     }
-    
+
     @Implementation
     public Animation getAnimation() {
-    	return animation;
+        return animation;
     }
-    
+
     @Implementation
     public void setAnimation(Animation anim) {
-    	animation = anim;
+        animation = anim;
     }
-    
+
     @Implementation
     public void startAnimation(Animation anim) {
-    	setAnimation(anim);
-    	animation.start();
+        setAnimation(anim);
+        animation.start();
     }
-    
+
     @Implementation
     public void clearAnimation() {
-    	if ( animation != null ) {
-    		animation.cancel();
-    	}
+        if (animation != null) {
+            animation.cancel();
+        }
     }
 
     @Implementation
