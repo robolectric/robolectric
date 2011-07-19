@@ -831,6 +831,10 @@ public class Robolectric {
         return ShadowDefaultRequestDirector.getSentHttpRequest(index);
     }
 
+    public static HttpRequest getLatestSentHttpRequest() {
+        return ShadowDefaultRequestDirector.getLatestSentHttpRequest();
+    }
+
     /**
      * Accessor to find out if HTTP requests were made during the current test.
      *

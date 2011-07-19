@@ -282,6 +282,22 @@ public class DefaultRequestDirectorTest {
     }
 
     @Test
+    public void shouldFindLastRequestMade() throws Exception {
+        Robolectric.addPendingHttpResponse(200, "a happy response body");
+        Robolectric.addPendingHttpResponse(200, "a happy response body");
+        Robolectric.addPendingHttpResponse(200, "a happy response body");
+
+        DefaultHttpClient client = new DefaultHttpClient();
+        client.execute(new HttpGet("http://www.first.org"));
+        client.execute(new HttpGet("http://www.second.org"));
+        client.execute(new HttpGet("http://www.third.org"));
+
+        assertThat(((HttpUriRequest) Robolectric.getLatestSentHttpRequest()).getURI(),
+                equalTo(URI.create("http://www.third.org")));
+    }
+
+
+    @Test
     public void shouldSupportConnectionTimeoutWithExceptions() throws Exception {
         Robolectric.setDefaultHttpResponse(new TestHttpResponse() {
             @Override
