@@ -193,6 +193,11 @@ public class ShadowAdapterView extends ShadowViewGroup {
     }
 
     @Implementation
+    public void setOnItemLongClickListener(AdapterView.OnItemLongClickListener listener) {
+        this.onItemLongClickListener = listener;
+    }
+
+    @Implementation
     public Object getItemAtPosition(int position) {
         Adapter adapter = getAdapter();
         return (adapter == null || position < 0) ? null : adapter.getItem(position);
