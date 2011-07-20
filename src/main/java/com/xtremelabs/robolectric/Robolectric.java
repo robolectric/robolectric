@@ -25,6 +25,7 @@ import android.graphics.Path;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
+import android.hardware.SensorManager;
 import android.location.Geocoder;
 import android.location.Location;
 import android.location.LocationManager;
@@ -196,6 +197,7 @@ public class Robolectric {
                 ShadowRemoteViews.class,
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
+                ShadowSensorManager.class,
                 ShadowService.class,
                 ShadowSettings.class,
                 ShadowSettings.ShadowSecure.class,
@@ -495,6 +497,10 @@ public class Robolectric {
 
     public static ShadowTelephonyManager shadowOf(TelephonyManager other) {
         return (ShadowTelephonyManager) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowSensorManager shadowOf(SensorManager other) {
+        return (ShadowSensorManager) Robolectric.shadowOf_(other);
     }
 
     @SuppressWarnings({"unchecked"})
