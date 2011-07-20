@@ -1,11 +1,18 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.IOException;
 
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -59,6 +66,28 @@ public class FakeHttpLayerTest {
         HttpGet noMatch = new HttpGet("example.com");
         match.setHeader(new BasicHeader("header1", "header one"));
         noMatch.setHeader(new BasicHeader("header1", "header not a match"));
+
+        assertFalse(requestMatcherBuilder.matches(new HttpGet("example.com")));
+        assertFalse(requestMatcherBuilder.matches(noMatch));
+        assertTrue(requestMatcherBuilder.matches(match));
+    }
+
+    @Test
+    public void matches__shouldMatchPostBody() throws Exception {
+        final String expectedText = "some post body text";
+
+        requestMatcherBuilder.postBody(new FakeHttpLayer.RequestMatcherBuilder.PostBodyMatcher() {
+            @Override
+            public boolean matches(HttpEntity actualPostBody) throws IOException {
+                return EntityUtils.toString(actualPostBody).equals(expectedText);
+            }
+        });
+
+        HttpPut match = new HttpPut("example.com");
+        match.setEntity(new StringEntity(expectedText));
+
+        HttpPost noMatch = new HttpPost("example.com");
+        noMatch.setEntity(new StringEntity("some text that does not match"));
 
         assertFalse(requestMatcherBuilder.matches(new HttpGet("example.com")));
         assertFalse(requestMatcherBuilder.matches(noMatch));

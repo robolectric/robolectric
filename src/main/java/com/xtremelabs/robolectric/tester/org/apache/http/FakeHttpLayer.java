@@ -2,11 +2,13 @@ package com.xtremelabs.robolectric.tester.org.apache.http;
 
 import com.xtremelabs.robolectric.Robolectric;
 import org.apache.http.Header;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.RequestDirector;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
@@ -247,6 +249,18 @@ public class FakeHttpLayer {
         private boolean noParams;
         private Map<String, String> params = new HashMap<String, String>();
         private Map<String, String> headers = new HashMap<String, String>();
+        private PostBodyMatcher postBodyMatcher;
+
+        public interface PostBodyMatcher {
+            /**
+             * Hint: you can use EntityUtils.toString(actualPostBody) to help you implement your matches method.
+             *
+             * @param actualPostBody The post body of the actual request that we are matching against.
+             * @return true if you consider the body to match
+             * @throws IOException Get turned into a RuntimeException to cause your test to fail.
+             */
+            boolean matches(HttpEntity actualPostBody) throws IOException;
+        }
 
         public RequestMatcherBuilder method(String method) {
             this.method = method;
@@ -273,6 +287,11 @@ public class FakeHttpLayer {
 
         public RequestMatcherBuilder noParams() {
             noParams = true;
+            return this;
+        }
+
+        public RequestMatcherBuilder postBody(PostBodyMatcher postBodyMatcher) {
+            this.postBodyMatcher = postBodyMatcher;
             return this;
         }
 
@@ -309,6 +328,19 @@ public class FakeHttpLayer {
                 }
                 if (!headers.equals(actualRequestHeaders)) {
                     return false;
+                }
+            }
+            if (postBodyMatcher != null) {
+                if(! (request instanceof HttpEntityEnclosingRequestBase)) {
+                    return false;
+                }
+                HttpEntityEnclosingRequestBase postOrPut = (HttpEntityEnclosingRequestBase) request;
+                try {
+                    if (!postBodyMatcher.matches(postOrPut.getEntity())) {
+                        return false;
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
             return true;
