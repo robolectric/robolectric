@@ -40,12 +40,6 @@ public class ShadowAlertDialog extends ShadowDialog {
         return Robolectric.getShadowApplication().getLatestAlertDialog();
     }
 
-    @Override
-    @Implementation
-    public View findViewById(int viewId) {
-        return null;
-    }
-
     /**
      * Resets the tracking of the most recently created {@code AlertDialog}
      */
