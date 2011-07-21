@@ -10,10 +10,7 @@ import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.TestAnimationListener;
-import com.xtremelabs.robolectric.util.TestOnClickListener;
-import com.xtremelabs.robolectric.util.TestRunnable;
-import com.xtremelabs.robolectric.util.Transcript;
+import com.xtremelabs.robolectric.util.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,7 +23,8 @@ import static org.junit.Assert.*;
 public class ViewTest {
     private View view;
 
-    @Before public void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         view = new View(new Activity());
     }
 
@@ -103,6 +101,16 @@ public class ViewTest {
             assertNotSame(root, child);
         }
     }
+
+    @Test
+    public void performLongClick_shouldClickOnView() throws Exception {
+        TestOnLongClickListener clickListener = new TestOnLongClickListener();
+        view.setOnLongClickListener(clickListener);
+        shadowOf(view).performLongClick();
+
+        assertTrue(clickListener.clicked);
+    }
+
 
     @Test
     public void checkedClick_shouldClickOnView() throws Exception {
@@ -201,30 +209,30 @@ public class ViewTest {
         new View(null, null);
         new View(null, null, 0);
     }
-    
+
     @Test
     public void shouldSetAnimation() throws Exception {
-    	Animation anim = new TestAnimation();
-    	view.setAnimation(anim);
-    	assertThat(view.getAnimation(), sameInstance(anim));
+        Animation anim = new TestAnimation();
+        view.setAnimation(anim);
+        assertThat(view.getAnimation(), sameInstance(anim));
     }
-        
+
     @Test
     public void shouldStartAndClearAnimation() throws Exception {
-    	Animation anim = new TestAnimation();
-    	TestAnimationListener listener = new TestAnimationListener();
-    	anim.setAnimationListener(listener);
-    	assertThat(listener.wasStartCalled, equalTo(false));
-    	assertThat(listener.wasRepeatCalled, equalTo(false));
-    	assertThat(listener.wasEndCalled, equalTo(false));
-    	view.startAnimation(anim);
-    	assertThat(listener.wasStartCalled, equalTo(true));
-    	assertThat(listener.wasRepeatCalled, equalTo(false));
-    	assertThat(listener.wasEndCalled, equalTo(false));
-    	view.clearAnimation();
-    	assertThat(listener.wasStartCalled, equalTo(true));	
-    	assertThat(listener.wasRepeatCalled, equalTo(false));
-    	assertThat(listener.wasEndCalled, equalTo(true));	
+        Animation anim = new TestAnimation();
+        TestAnimationListener listener = new TestAnimationListener();
+        anim.setAnimationListener(listener);
+        assertThat(listener.wasStartCalled, equalTo(false));
+        assertThat(listener.wasRepeatCalled, equalTo(false));
+        assertThat(listener.wasEndCalled, equalTo(false));
+        view.startAnimation(anim);
+        assertThat(listener.wasStartCalled, equalTo(true));
+        assertThat(listener.wasRepeatCalled, equalTo(false));
+        assertThat(listener.wasEndCalled, equalTo(false));
+        view.clearAnimation();
+        assertThat(listener.wasStartCalled, equalTo(true));
+        assertThat(listener.wasRepeatCalled, equalTo(false));
+        assertThat(listener.wasEndCalled, equalTo(true));
     }
 
     @Test
@@ -232,6 +240,7 @@ public class ViewTest {
         view.scrollTo(1, 2);
         assertThat(shadowOf(view).scrollToCoordinates, equalTo(new Point(1, 2)));
     }
-    
-	private class TestAnimation extends Animation { }
+
+    private class TestAnimation extends Animation {
+    }
 }

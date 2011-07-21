@@ -2,15 +2,18 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static junit.framework.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -29,7 +32,7 @@ public class AlertDialogTest {
         assertThat(alert.isShowing(), equalTo(true));
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-        assertThat(shadowAlertDialog.getTitle(), equalTo((CharSequence)"title"));
+        assertEquals("title", shadowAlertDialog.getTitle());
         assertThat(shadowAlertDialog.getMessage(), equalTo("message"));
         assertThat(shadowAlertDialog.isCancelable(), equalTo(true));
         assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
@@ -96,4 +99,18 @@ public class AlertDialogTest {
         assertEquals(shadowAlertDialog.getItems()[0], "Aloha");
         assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
     }
+
+    @Test
+    public void show_setsLatestAlertDialogAndLatestDialog() {
+        AlertDialog alertDialog = new AlertDialog(Robolectric.application) {
+            // protected constructor
+        };
+        assertNull(ShadowDialog.getLatestDialog());
+        
+        alertDialog.show();
+
+        assertEquals(Robolectric.shadowOf(alertDialog), ShadowDialog.getLatestDialog());
+        assertEquals(Robolectric.shadowOf(alertDialog), ShadowAlertDialog.getLatestAlertDialog());
+    }
+
 }

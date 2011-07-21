@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import static android.content.Context.TELEPHONY_SERVICE;
+import static com.xtremelabs.robolectric.Robolectric.*;
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 
@@ -25,8 +26,8 @@ public class TelephonyManagerTest {
 
 	@Before
 	public void setUp() throws Exception {
-		manager = Robolectric.newInstanceOf(TelephonyManager.class);
-		shadowManager = Robolectric.shadowOf(manager);
+		manager = newInstanceOf(TelephonyManager.class);
+		shadowManager = shadowOf(manager);
 
 		listener = new MyPhoneStateListener(); 
 	}
@@ -43,8 +44,32 @@ public class TelephonyManagerTest {
     public void shouldGiveDeviceId() {
         String testId = "TESTING123";
         ShadowTelephonyManager.setDeviceId(testId);
-        TelephonyManager telephonyManager = (TelephonyManager) Robolectric.application.getSystemService(TELEPHONY_SERVICE);
+        TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
         assertEquals(testId, telephonyManager.getDeviceId());
+    }
+
+    @Test
+    public void shouldGiveNetworkOperatorName() {
+        TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+        ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
+        shadowTelephonyManager.setNetworkOperatorName("SomeOperatorName");
+        assertEquals("SomeOperatorName", telephonyManager.getNetworkOperatorName());
+    }
+
+    @Test
+    public void shouldGiveNetworkCountryIso() {
+        TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+        ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
+        shadowTelephonyManager.setNetworkCountryIso("SomeIso");
+        assertEquals("SomeIso", telephonyManager.getNetworkCountryIso());
+    }
+
+    @Test
+    public void shouldGiveNetworkOperator() {
+        TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+        ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
+        shadowTelephonyManager.setNetworkOperator("SomeOperator");
+        assertEquals("SomeOperator", telephonyManager.getNetworkOperator());
     }
 
 	private class MyPhoneStateListener extends PhoneStateListener {
