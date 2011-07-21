@@ -12,6 +12,7 @@ import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.lang.reflect.Constructor;
 
+import static com.xtremelabs.robolectric.Robolectric.getShadowApplication;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -37,14 +38,14 @@ public class ShadowAlertDialog extends ShadowDialog {
      * @return the most recently created {@code AlertDialog}, or null if none has been created during this test run
      */
     public static ShadowAlertDialog getLatestAlertDialog() {
-        return Robolectric.getShadowApplication().getLatestAlertDialog();
+        return getShadowApplication().getLatestAlertDialog();
     }
 
     /**
      * Resets the tracking of the most recently created {@code AlertDialog}
      */
     public static void reset() {
-        Robolectric.getShadowApplication().setLatestAlertDialog(null);
+        getShadowApplication().setLatestAlertDialog(null);
     }
 
     /**
@@ -118,6 +119,12 @@ public class ShadowAlertDialog extends ShadowDialog {
      */
     public boolean[] getCheckedItems() {
         return checkedItems;
+    }
+
+    @Implementation
+    public void show() {
+        super.show();
+        getShadowApplication().setLatestAlertDialog(this);
     }
 
     /**
@@ -311,8 +318,6 @@ public class ShadowAlertDialog extends ShadowDialog {
             latestAlertDialog.negativeButton = createButton(realDialog, AlertDialog.BUTTON_NEGATIVE, negativeText, negativeListener);
             latestAlertDialog.neutralButton = createButton(realDialog, AlertDialog.BUTTON_NEUTRAL, neutralText, neutralListener);
             latestAlertDialog.setCancelable(isCancelable);
-
-            Robolectric.getShadowApplication().setLatestAlertDialog(latestAlertDialog);
 
             return realDialog;
         }
