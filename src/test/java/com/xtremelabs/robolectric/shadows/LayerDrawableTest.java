@@ -1,6 +1,3 @@
-/* $Id$
- * Copyright Spindance (2011)
- */
 package com.xtremelabs.robolectric.shadows;
 
 import android.graphics.BitmapFactory;
