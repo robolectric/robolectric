@@ -142,4 +142,21 @@ public class TabHostTest {
             this.tag = tag;
         }
     }
+    
+    @Test
+    public void canGetCurrentTabTag() throws Exception {
+        TabHost tabHost = new TabHost(null);
+
+        TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
+        TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
+        TabHost.TabSpec baz = tabHost.newTabSpec("Baz");
+
+        tabHost.addTab(foo);
+        tabHost.addTab(bar);
+        tabHost.addTab(baz);
+
+        tabHost.setCurrentTabByTag("Bar");
+
+        assertThat(tabHost.getCurrentTabTag(), equalTo("Bar"));
+    }
 }

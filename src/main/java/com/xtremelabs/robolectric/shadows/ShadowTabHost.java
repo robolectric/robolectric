@@ -60,6 +60,11 @@ public class ShadowTabHost extends ShadowFrameLayout {
     }
 
     @Implementation
+    public String getCurrentTabTag() {
+    	return currentTab.getTag();
+    }
+    
+    @Implementation
     public void setOnTabChangedListener(android.widget.TabHost.OnTabChangeListener listener) {
         this.listener = listener;
     }
