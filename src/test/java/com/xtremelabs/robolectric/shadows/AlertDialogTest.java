@@ -2,13 +2,11 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Dialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -106,11 +104,57 @@ public class AlertDialogTest {
             // protected constructor
         };
         assertNull(ShadowDialog.getLatestDialog());
-        
+
         alertDialog.show();
 
         assertEquals(Robolectric.shadowOf(alertDialog), ShadowDialog.getLatestDialog());
         assertEquals(Robolectric.shadowOf(alertDialog), ShadowAlertDialog.getLatestAlertDialog());
     }
 
+    @Test
+    public void shouldReturnTheIndexOfTheCheckedItemInASingleChoiceDialog() throws Exception {
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(Robolectric.application));
+
+        builder.setSingleChoiceItems(new String[]{"foo", "bar"}, 1, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int item) {
+
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
+
+        assertThat(alert.isShowing(), equalTo(true));
+
+        ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
+        assertEquals(shadowAlertDialog.getCheckedItemIndex(), 1);
+        assertEquals(shadowAlertDialog.getItems()[0], "foo");
+        assertThat(shadowAlertDialog.getItems().length, equalTo(2));
+        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
+    }
+
+    @Test
+    public void shouldCallTheClickListenerOfTheCheckedItemInASingleChoiceDialog() throws Exception {
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(Robolectric.application));
+
+        TestDialogOnClickListener listener = new TestDialogOnClickListener();
+        builder.setSingleChoiceItems(new String[]{"foo", "bar"}, 1, listener);
+
+        AlertDialog alert = builder.create();
+        alert.show();
+
+        ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
+        shadowAlertDialog.clickOnItem(0);
+        assertThat(listener.clickedItem, equalTo(0));
+        assertThat(shadowAlertDialog.getCheckedItemIndex(), equalTo(0));
+    }
+
+    private static class TestDialogOnClickListener implements DialogInterface.OnClickListener {
+        private DialogInterface dialog;
+        private int clickedItem;
+
+        public void onClick(DialogInterface dialog, int item) {
+            this.dialog = dialog;
+            this.clickedItem = item;
+        }
+    }
 }
