@@ -93,6 +93,6 @@ public class ContextTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void openFileOutput_shouldNotAcceptPathsWithSeparatorCharacters() throws Exception {
-        context.openFileOutput("/data/test/hi", 0);
+        context.openFileOutput(File.separator + "data" + File.separator + "test" + File.separator + "hi", 0);
     }
 }
