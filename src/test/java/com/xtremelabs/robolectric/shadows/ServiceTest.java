@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import junit.framework.Assert;
 import android.app.Service;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
@@ -51,7 +52,7 @@ public class ServiceTest {
         ServiceConnection conn = newInstanceOf(MediaScannerConnection.class);
         service.unbindService(conn);
     }
-
+    
     private static class MyService extends Service {
         @Override public void onDestroy() {
             super.onDestroy();

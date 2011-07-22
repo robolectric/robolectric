@@ -40,8 +40,10 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.hardware.Camera;
+import android.hardware.SensorManager;
 import android.location.Geocoder;
 import android.location.LocationManager;
 import android.media.AudioManager;
@@ -50,9 +52,6 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
-import android.nfc.NfcAdapter;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
@@ -121,7 +120,6 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 
-@SuppressWarnings({"UnusedDeclaration"})
 public class Robolectric {
     public static Application application;
 
@@ -242,6 +240,7 @@ public class Robolectric {
                 ShadowItemizedOverlay.class,
                 ShadowKeyEvent.class,
                 ShadowKeyguardManager.class,
+                ShadowLayerDrawable.class,
                 ShadowLayoutInflater.class,
                 ShadowLayoutParams.class,
                 ShadowLinearLayout.class,
@@ -294,6 +293,7 @@ public class Robolectric {
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
                 ShadowSeekBar.class,
+                ShadowSensorManager.class,
                 ShadowService.class,
                 ShadowSettings.class,
                 ShadowSettings.ShadowSecure.class,
@@ -351,6 +351,10 @@ public class Robolectric {
 
     public static ShadowDrawable shadowOf(Drawable instance) {
         return (ShadowDrawable) shadowOf_(instance);
+    }
+
+    public static ShadowLayerDrawable shadowOf(LayerDrawable instance) {
+        return (ShadowLayerDrawable) shadowOf_(instance);
     }
 
     public static ShadowService shadowOf(Service instance) {
@@ -759,6 +763,10 @@ public class Robolectric {
 
     public static ShadowActivityManager shadowOf(ActivityManager instance) {
         return (ShadowActivityManager) shadowOf_(instance);
+    }
+    
+    public static ShadowSensorManager shadowOf(SensorManager instance) {
+    	return (ShadowSensorManager) shadowOf_(instance);
     }
 
     @SuppressWarnings({"unchecked"})
