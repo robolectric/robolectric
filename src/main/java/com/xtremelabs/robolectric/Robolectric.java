@@ -42,6 +42,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.hardware.Camera;
+import android.hardware.SensorManager;
 import android.location.Geocoder;
 import android.location.LocationManager;
 import android.media.AudioManager;
@@ -294,6 +295,7 @@ public class Robolectric {
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
                 ShadowSeekBar.class,
+                ShadowSensorManager.class,
                 ShadowService.class,
                 ShadowSettings.class,
                 ShadowSettings.ShadowSecure.class,
@@ -759,6 +761,10 @@ public class Robolectric {
 
     public static ShadowActivityManager shadowOf(ActivityManager instance) {
         return (ShadowActivityManager) shadowOf_(instance);
+    }
+    
+    public static ShadowSensorManager shadowOf(SensorManager instance) {
+    	return (ShadowSensorManager) shadowOf_(instance);
     }
 
     @SuppressWarnings({"unchecked"})
