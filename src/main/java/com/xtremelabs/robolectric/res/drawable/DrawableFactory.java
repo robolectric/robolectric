@@ -1,9 +1,11 @@
-package com.xtremelabs.robolectric.res;
+package com.xtremelabs.robolectric.res.drawable;
 
 import java.util.HashMap;
 import java.util.Map;
 
 import android.graphics.drawable.Drawable;
+
+import com.xtremelabs.robolectric.res.ResourceExtractor;
 
 /**
  * DrawableFactory

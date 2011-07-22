@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package com.xtremelabs.robolectric.res.drawable;
 
 import java.io.File;
 
@@ -9,6 +9,10 @@ import static org.junit.Assert.*;
 
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.res.DocumentLoader;
+import com.xtremelabs.robolectric.res.ResourceExtractor;
+import com.xtremelabs.robolectric.res.drawable.DrawableResourceLoader;
+
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 
 /**

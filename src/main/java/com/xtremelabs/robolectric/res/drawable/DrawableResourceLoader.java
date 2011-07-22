@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package com.xtremelabs.robolectric.res.drawable;
 
 import java.io.File;
 import java.io.IOException;
@@ -8,6 +8,9 @@ import java.util.Map;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import com.xtremelabs.robolectric.res.ResourceExtractor;
+import com.xtremelabs.robolectric.res.XmlLoader;
 
 /**
  * DrawableResourceLoader
@@ -21,11 +24,8 @@ public class DrawableResourceLoader extends XmlLoader {
 
     /**
      * DrawableResourceLoader constructor.
-     * 
-     * @param extractor
-     *            Extractor
-     * @param resourceDirectory
-     *            Resource directory
+     * @param extractor Extractor
+     * @param resourceDirectory Resource directory
      */
     public DrawableResourceLoader(ResourceExtractor extractor,
             File resourceDirectory) {
@@ -35,9 +35,7 @@ public class DrawableResourceLoader extends XmlLoader {
 
     /**
      * Check if resource is xml.
-     * 
-     * @param resourceId
-     *            Resource id
+     * @param resourceId Resource id
      * @return Boolean
      */
     public boolean isXml(int resourceId) {
@@ -47,16 +45,11 @@ public class DrawableResourceLoader extends XmlLoader {
 
     /**
      * Store document locally keyed by resource name.
-     * 
-     * @param xmlFile
-     *            Xml file
-     * @param document
-     *            Document
-     * @param isSystem
-     *            System resource
+     * @param xmlFile Xml file
+     * @param document  Document
+     * @param isSystem System resource
      * @throws Exception
-     * @see com.xtremelabs.robolectric.res.XmlLoader#processResourceXml(java.io.File,
-     *      org.w3c.dom.Document, boolean)
+     * @see XmlLoader#processResourceXml(File,Document,boolean)
      */
     @Override
     protected void processResourceXml(File xmlFile, Document document,
@@ -69,9 +62,7 @@ public class DrawableResourceLoader extends XmlLoader {
 
     /**
      * Convert file name to resource name.
-     * 
-     * @param xmlFile
-     *            Xml File
+     * @param xmlFile Xml File
      * @return Resource name
      */
     private String toResourceName(File xmlFile) {
@@ -85,12 +76,10 @@ public class DrawableResourceLoader extends XmlLoader {
 
     /**
      * Get drawables by resource id.
-     * 
-     * @param resourceId
-     *            Resource id
+     * @param resourceId Resource id
      * @return Drawables
      */
-    protected int[] getDrawableIds(int resourceId) {
+    public int[] getDrawableIds(int resourceId) {
         Document document = documents.get(resourceExtractor
                 .getResourceName(resourceId));
 

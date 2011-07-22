@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package com.xtremelabs.robolectric.res.drawable;
 
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -10,6 +10,8 @@ import static org.junit.Assert.*;
 
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.res.ResourceExtractor;
+import com.xtremelabs.robolectric.res.drawable.DrawableFactory;
 
 /**
  * DrawableFactoryTest

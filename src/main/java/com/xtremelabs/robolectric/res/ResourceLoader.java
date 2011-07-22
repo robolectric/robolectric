@@ -6,6 +6,8 @@ import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.xtremelabs.robolectric.res.drawable.DrawableResourceLoader;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
 
 import java.io.*;
