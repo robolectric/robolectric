@@ -19,12 +19,16 @@ public class DrawableFactory {
     /** resource extractor */
     protected ResourceExtractor resourceExtractor;
 
+    /** drawable builder */
+    protected DrawableBuilder drawableBuilder;
+
     /**
      * DrawableFactory constructor.
      * @param resourceExtractor Resource extractor
      */
     public DrawableFactory(ResourceExtractor resourceExtractor) {
         this.resourceExtractor = resourceExtractor;
+        drawableBuilder = new DrawableBuilder(this);
     }
 
     /**
@@ -84,7 +88,18 @@ public class DrawableFactory {
                     + resourceId);
         }
 
-        // TODO: build drawable
-        return null;
+        Drawable drawable = drawableBuilder.build(resourceId);
+        cache(resourceId, drawable);
+
+        return drawable;
+    }
+
+    /**
+     * Cache drawable.
+     * @param resourceId Resource id
+     * @param drawable Drawable
+     */
+    protected void cache(int resourceId, Drawable drawable) {
+        cacheById.put(resourceId, drawable);
     }
 }

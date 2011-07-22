@@ -54,9 +54,7 @@ public class ShadowImageView extends ShadowView {
 
     /**
      * Build drawable, either LayerDrawable or BitmapDrawable.
-     * 
-     * @param resourceId
-     *            Resource id
+     * @param resourceId Resource id
      * @return Drawable
      */
     protected Drawable buildDrawable(int resourceId) {

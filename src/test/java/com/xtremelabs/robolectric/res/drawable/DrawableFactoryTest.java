@@ -41,17 +41,33 @@ public class DrawableFactoryTest {
         factory.getDrawable("fake/key");
     }
 
+    @Test
+    public void testGetDrawable_String_build() {
+        Drawable result = factory.getDrawable("drawable/l1_orange");
+        assertNotNull("result", result);
+        assertEquals("cached", true,
+                factory.cacheById.containsKey(R.drawable.l1_orange));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void testGetDrawable_int_invalid() {
         factory.getDrawable(-KEY);
     }
 
     @Test
-    public void testGetDrawable_cached() {
+    public void testGetDrawable_int_cached() {
         Drawable value = new LayerDrawable(new Drawable[0]);
         factory.cacheById.put(KEY, value);
         Drawable result = factory.getDrawable(KEY);
         assertSame("result", value, result);
+    }
+
+    @Test
+    public void testGetDrawable_int_build() {
+        Drawable result = factory.getDrawable(R.drawable.l0_red);
+        assertNotNull("result", result);
+        assertEquals("cached", true,
+                factory.cacheById.containsKey(R.drawable.l0_red));
     }
 
     @Test
