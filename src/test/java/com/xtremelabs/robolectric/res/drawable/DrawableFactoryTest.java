@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.res.drawable;
 
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 
@@ -34,7 +35,7 @@ public class DrawableFactoryTest {
         factory = new DrawableFactory(resourceExtractor);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = Resources.NotFoundException.class)
     public void testGetDrawable_String_invalid() {
         factory.getDrawable("fake/key");
     }
@@ -47,7 +48,7 @@ public class DrawableFactoryTest {
                 factory.cacheById.containsKey(R.drawable.l1_orange));
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = Resources.NotFoundException.class)
     public void testGetDrawable_int_invalid() {
         factory.getDrawable(-KEY);
     }
@@ -89,7 +90,7 @@ public class DrawableFactoryTest {
         assertSame("result", result, value);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test(expected = Resources.NotFoundException.class)
     public void testMiss_bad_id() {
         factory.getDrawable(-KEY);
     }

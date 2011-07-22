@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.res.drawable;
 import java.util.HashMap;
 import java.util.Map;
 
+import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
 
 import com.xtremelabs.robolectric.res.ResourceExtractor;
@@ -39,7 +40,7 @@ public class DrawableFactory {
     public Drawable getDrawable(String key) {
         Integer resourceId = resourceExtractor.getResourceId(key);
         if (resourceId == null) {
-            throw new IllegalArgumentException("Unknown resource: " + key);
+            throw new Resources.NotFoundException("Unknown resource: " + key);
         } else {
             return getDrawable(resourceId);
         }
@@ -84,7 +85,7 @@ public class DrawableFactory {
     protected Drawable miss(int resourceId) {
         String key = resourceExtractor.getResourceName(resourceId);
         if (key == null) {
-            throw new IllegalArgumentException("Unknown resource: "
+            throw new Resources.NotFoundException("Unknown resource: "
                     + resourceId);
         }
 
