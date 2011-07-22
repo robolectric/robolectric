@@ -27,10 +27,9 @@ public class DrawableBuilderTest {
      */
     @Before
     public void setup() throws Exception {
-        ResourceExtractor extractor = new ResourceExtractor();
-        extractor.addLocalRClass(R.class);
-        DrawableFactory drawableFactory = new DrawableFactory(extractor);
-        builder = new DrawableBuilder(drawableFactory);
+        ResourceExtractor resourceExtractor = new ResourceExtractor();
+        resourceExtractor.addLocalRClass(R.class);
+        builder = new DrawableBuilder(new DrawableFactory(resourceExtractor));
     }
 
     @Test

@@ -7,6 +7,7 @@ import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.xtremelabs.robolectric.res.drawable.DrawableFactory;
 import com.xtremelabs.robolectric.res.drawable.DrawableResourceLoader;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
 
@@ -53,6 +54,8 @@ public class ResourceLoader {
     private final RawResourceLoader rawResourceLoader;
     private boolean isInitialized = false;
 
+    private DrawableFactory drawableFactory;
+
     // TODO: get these value from the xml resources instead [xw 20101011]
     public final Map<Integer, Integer> dimensions = new HashMap<Integer, Integer>();
 
@@ -75,6 +78,7 @@ public class ResourceLoader {
                 resourceDir);
 
         this.resourceDir = resourceDir;
+        drawableFactory = new DrawableFactory(resourceExtractor);
     }
 
     private void init() {
@@ -309,9 +313,7 @@ public class ResourceLoader {
         return path.contains(File.separator + "menu");
     }
 
-    /*
-     * For tests only...
-     */
+    /* For tests only... */
     protected ResourceLoader(StringResourceLoader stringResourceLoader) {
         resourceExtractor = new ResourceExtractor();
         this.stringResourceLoader = stringResourceLoader;
@@ -386,5 +388,9 @@ public class ResourceLoader {
 
     public ResourceExtractor getResourceExtractor() {
         return resourceExtractor;
+    }
+
+    public DrawableFactory getDrawableFactory() {
+        return drawableFactory;
     }
 }

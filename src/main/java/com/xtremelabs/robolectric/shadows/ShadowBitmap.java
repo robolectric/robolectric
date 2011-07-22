@@ -11,7 +11,6 @@ import java.io.OutputStream;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Bitmap.class)
 public class ShadowBitmap {
     @RealObject private Bitmap realBitmap;

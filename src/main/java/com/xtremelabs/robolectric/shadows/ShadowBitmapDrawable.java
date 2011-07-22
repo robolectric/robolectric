@@ -11,7 +11,6 @@ import com.xtremelabs.robolectric.internal.RealObject;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapDrawable.class)
 public class ShadowBitmapDrawable extends ShadowDrawable {
     private Bitmap bitmap;

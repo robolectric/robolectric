@@ -11,7 +11,6 @@ import static org.junit.Assert.*;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
-import com.xtremelabs.robolectric.res.drawable.DrawableFactory;
 
 /**
  * DrawableFactoryTest
@@ -30,10 +29,9 @@ public class DrawableFactoryTest {
      */
     @Before
     public void setup() throws Exception {
-        ResourceExtractor extractor = new ResourceExtractor();
-        extractor.addLocalRClass(R.class);
-
-        factory = new DrawableFactory(extractor);
+        ResourceExtractor resourceExtractor = new ResourceExtractor();
+        resourceExtractor.addLocalRClass(R.class);
+        factory = new DrawableFactory(resourceExtractor);
     }
 
     @Test(expected = IllegalArgumentException.class)

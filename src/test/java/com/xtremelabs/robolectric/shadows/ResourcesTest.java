@@ -3,6 +3,9 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.graphics.drawable.Drawable;
+
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,7 +13,7 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ResourcesTest {
@@ -42,5 +45,12 @@ public class ResourcesTest {
 
         Activity anotherActivity = new Activity();
         assertThat(anotherActivity.getResources().getDisplayMetrics().density, equalTo(1.5f));
+    }
+    
+    @Test
+    public void testGetDrawable()
+    {
+        Drawable result = new Activity().getResources().getDrawable(R.drawable.l0_red);
+        assertNotNull("result", result);
     }
 }

@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.res.Resources;
+import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
@@ -31,34 +32,43 @@ public class BitmapDrawableTest {
 
     @Test
     public void getBitmap_shouldReturnBitmapUsedToDraw() throws Exception {
-        BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
-        assertEquals("Bitmap for resource:drawable/an_image", shadowOf(drawable.getBitmap()).getDescription());
+        BitmapDrawable drawable = (BitmapDrawable) resources
+                .getDrawable(R.drawable.an_image);
+        assertEquals("Bitmap for resource:drawable/an_image",
+                shadowOf(drawable.getBitmap()).getDescription());
     }
 
     @Test
     public void draw_shouldCopyDescriptionToCanvas() throws Exception {
-        BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
+        BitmapDrawable drawable = (BitmapDrawable) resources
+                .getDrawable(R.drawable.an_image);
         Canvas canvas = new Canvas();
         drawable.draw(canvas);
 
-        assertEquals("Bitmap for resource:drawable/an_image", shadowOf(canvas).getDescription());
+        assertEquals("Bitmap for resource:drawable/an_image", shadowOf(canvas)
+                .getDescription());
     }
 
     @Test
-    public void shouldInheritSourceStringFromDrawableDotCreateFromStream() throws Exception {
+    public void shouldInheritSourceStringFromDrawableDotCreateFromStream()
+            throws Exception {
         InputStream emptyInputStream = new ByteArrayInputStream("".getBytes());
-        BitmapDrawable drawable = (BitmapDrawable) Drawable.createFromStream(emptyInputStream, "source string value");
+        BitmapDrawable drawable = (BitmapDrawable) Drawable.createFromStream(
+                emptyInputStream, "source string value");
         assertEquals("source string value", shadowOf(drawable).getSource());
     }
 
     @Test
-    public void withColorFilterSet_draw_shouldCopyDescriptionToCanvas() throws Exception {
-        BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
+    public void withColorFilterSet_draw_shouldCopyDescriptionToCanvas()
+            throws Exception {
+        BitmapDrawable drawable = (BitmapDrawable) resources
+                .getDrawable(R.drawable.an_image);
         drawable.setColorFilter(new ColorMatrixColorFilter(new ColorMatrix()));
         Canvas canvas = new Canvas();
         drawable.draw(canvas);
 
-        assertEquals("Bitmap for resource:drawable/an_image with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>",
+        assertEquals(
+                "Bitmap for resource:drawable/an_image with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>",
                 shadowOf(canvas).getDescription());
     }
 
@@ -74,8 +84,10 @@ public class BitmapDrawableTest {
 
     @Test
     public void equals_shouldTestBounds() throws Exception {
-        Drawable drawable1a = resources.getDrawable(R.drawable.an_image);
-        Drawable drawable1b = resources.getDrawable(R.drawable.an_image);
+        Drawable drawable1a = new BitmapDrawable(
+                BitmapFactory.decodeResource(resources, R.drawable.an_image));
+        Drawable drawable1b = new BitmapDrawable(
+                BitmapFactory.decodeResource(resources, R.drawable.an_image));
 
         drawable1a.setBounds(1, 2, 3, 4);
         drawable1b.setBounds(1, 2, 3, 4);
@@ -89,6 +101,8 @@ public class BitmapDrawableTest {
     @Test
     public void shouldStillHaveShadow() throws Exception {
         Drawable drawable = resources.getDrawable(R.drawable.an_image);
-        assertEquals(R.drawable.an_image, ((ShadowBitmapDrawable) Robolectric.shadowOf(drawable)).getLoadedFromResourceId());
+        assertEquals(R.drawable.an_image,
+                ((ShadowBitmapDrawable) Robolectric.shadowOf(drawable))
+                        .getLoadedFromResourceId());
     }
 }

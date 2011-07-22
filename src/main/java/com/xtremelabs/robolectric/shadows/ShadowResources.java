@@ -4,8 +4,6 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -27,7 +25,6 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
  *
  * @see com.xtremelabs.robolectric.RobolectricTestRunner#RobolectricTestRunner(Class, String, String)
  */
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)
 public class ShadowResources {
     private float density = 1.0f;
@@ -118,7 +115,8 @@ public class ShadowResources {
 
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
-        return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
+        return shadowOf(Robolectric.application).getResourceLoader()
+                .getDrawableFactory().getDrawable(drawableResourceId);
     }
 
     @Implementation

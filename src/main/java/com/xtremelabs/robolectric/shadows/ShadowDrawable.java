@@ -14,7 +14,6 @@ import java.util.ArrayList;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Drawable.class)
 public class ShadowDrawable {
     private static int defaultIntrinsicWidth = -1;
