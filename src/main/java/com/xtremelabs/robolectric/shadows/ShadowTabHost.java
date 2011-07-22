@@ -74,8 +74,9 @@ public class ShadowTabHost extends ShadowFrameLayout {
 
     @Implementation
     public String getCurrentTabTag() {
-        if (getCurrentTab() >= 0 && getCurrentTab() < tabSpecs.size()) {
-            return tabSpecs.get(getCurrentTab()).getTag();
+    	int i = getCurrentTab();
+        if (i >= 0 && i < tabSpecs.size()) {
+            return tabSpecs.get(i).getTag();
         }
         return null;
     }
