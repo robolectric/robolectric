@@ -40,4 +40,13 @@ public class ShadowAbstractCursor {
         currentRowNumber++;
         return true;
     }
+    
+    @Implementation
+    public boolean moveToPrevious() {
+        if (currentRowNumber < 0 || realAbstractCursor.getCount() == 0) {
+            return false;
+        }
+        currentRowNumber--;
+        return true;
+    }
 }
