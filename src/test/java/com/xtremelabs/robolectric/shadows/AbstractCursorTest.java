@@ -80,8 +80,9 @@ public class AbstractCursorTest {
         assertThat(cursor.moveToFirst(), equalTo(true));
         assertThat(cursor.getCount(), equalTo(2));
         assertThat(cursor.moveToNext(), equalTo(true));
+        assertThat(cursor.moveToNext(), equalTo(true));
         assertThat(cursor.moveToNext(), equalTo(false));
-        assertThat(cursor.getPosition(), equalTo(1));
+        assertThat(cursor.getPosition(), equalTo(2));
     }
 
     @Test
@@ -90,8 +91,9 @@ public class AbstractCursorTest {
 
         assertThat(cursor.moveToFirst(), equalTo(true));
         assertThat(cursor.getCount(), equalTo(1));
+        assertThat(cursor.moveToNext(), equalTo(true));
         assertThat(cursor.moveToNext(), equalTo(false));
-        assertThat(cursor.getPosition(), equalTo(0));
+        assertThat(cursor.getPosition(), equalTo(1));
     }
 
     @Test
@@ -101,7 +103,58 @@ public class AbstractCursorTest {
         assertThat(cursor.moveToNext(), equalTo(false));
         assertThat(cursor.getPosition(), equalTo(0));
     }
+    
+    @Test
+    public void testMoveToPrevious() {
+        cursor.theTable.add("Foobar");
+        cursor.theTable.add("Bletch");
+        assertThat(cursor.moveToFirst(), equalTo(true));
+        assertThat(cursor.moveToNext(), equalTo(true));
+        assertThat(cursor.getPosition(), equalTo(1));
+        assertThat(cursor.moveToPrevious(), equalTo(true));
+        assertThat(cursor.getPosition(), equalTo(0));
+    }
+    
+    @Test
+    public void testAttemptToMovePastStart() {
+        cursor.theTable.add("Foobar");
+        cursor.theTable.add("Bletch");
+        assertThat(cursor.moveToFirst(), equalTo(true));
+        assertThat(cursor.moveToPrevious(), equalTo(true));
+        assertThat(cursor.getPosition(), equalTo(-1));
+        assertThat(cursor.moveToPrevious(), equalTo(false));
+        assertThat(cursor.getPosition(), equalTo(-1));
+    }
 
+    @Test
+    public void testIsFirst() {
+        cursor.theTable.add("Foobar");
+        cursor.theTable.add("Bletch");
+        assertThat(cursor.moveToFirst(), equalTo(true));
+        assertThat(cursor.isFirst(), equalTo(true));
+        cursor.moveToNext();
+        assertThat(cursor.isFirst(), equalTo(false));     
+        cursor.moveToFirst();
+        cursor.moveToPrevious();
+        assertThat(cursor.isFirst(), equalTo(false));
+    }
+
+    @Test
+    public void testIsLast() {
+        cursor.theTable.add("Foobar");
+        cursor.theTable.add("Bletch");
+        assertThat(cursor.moveToFirst(), equalTo(true));
+        cursor.moveToNext();
+        assertThat(cursor.isLast(), equalTo(true));
+        cursor.moveToPrevious();
+        assertThat(cursor.isLast(), equalTo(false));     
+        cursor.moveToFirst();
+        cursor.moveToNext();
+        cursor.moveToNext();
+        assertThat(cursor.isLast(), equalTo(false));   	
+    }
+    
+    
     private class TestCursor extends AbstractCursor {
 
         public List<Object> theTable = new ArrayList<Object>();

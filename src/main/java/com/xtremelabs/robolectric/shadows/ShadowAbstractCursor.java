@@ -34,7 +34,7 @@ public class ShadowAbstractCursor {
 
     @Implementation
     public boolean moveToNext() {
-        if (currentRowNumber >= realAbstractCursor.getCount() - 1) {
+        if (currentRowNumber >= realAbstractCursor.getCount()) {
             return false;
         }
         currentRowNumber++;
@@ -48,5 +48,25 @@ public class ShadowAbstractCursor {
         }
         currentRowNumber--;
         return true;
+    }
+    
+    @Implementation
+    public boolean isFirst() {
+    	return currentRowNumber == 0;
+    }
+    
+    @Implementation
+    public boolean isLast() {
+    	return currentRowNumber == realAbstractCursor.getCount() - 1;
+    }
+    
+    @Implementation
+    public boolean isBeforeFirst() {
+    	return currentRowNumber < 0;
+    }
+    
+    @Implementation
+    public boolean isAfterLast() {
+    	return currentRowNumber >= realAbstractCursor.getCount();
     }
 }

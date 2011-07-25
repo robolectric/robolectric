@@ -135,6 +135,7 @@ public class SQLiteCursorTest {
 
         cursor.moveToNext();
         cursor.moveToNext();
+        cursor.moveToNext();
 
         assertThat(cursor.moveToNext(), equalTo(false));
     }
