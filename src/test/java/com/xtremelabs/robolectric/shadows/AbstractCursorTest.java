@@ -80,9 +80,8 @@ public class AbstractCursorTest {
         assertThat(cursor.moveToFirst(), equalTo(true));
         assertThat(cursor.getCount(), equalTo(2));
         assertThat(cursor.moveToNext(), equalTo(true));
-        assertThat(cursor.moveToNext(), equalTo(true));
         assertThat(cursor.moveToNext(), equalTo(false));
-        assertThat(cursor.getPosition(), equalTo(2));
+        assertThat(cursor.getPosition(), equalTo(1));
     }
 
     @Test
@@ -91,9 +90,8 @@ public class AbstractCursorTest {
 
         assertThat(cursor.moveToFirst(), equalTo(true));
         assertThat(cursor.getCount(), equalTo(1));
-        assertThat(cursor.moveToNext(), equalTo(true));
         assertThat(cursor.moveToNext(), equalTo(false));
-        assertThat(cursor.getPosition(), equalTo(1));
+        assertThat(cursor.getPosition(), equalTo(0));
     }
 
     @Test
@@ -151,7 +149,7 @@ public class AbstractCursorTest {
         cursor.moveToFirst();
         cursor.moveToNext();
         cursor.moveToNext();
-        assertThat(cursor.isLast(), equalTo(false));   	
+        assertThat(cursor.isLast(), equalTo(true));   	
     }
     
     

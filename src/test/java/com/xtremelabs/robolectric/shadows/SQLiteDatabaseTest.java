@@ -154,9 +154,7 @@ public class SQLiteDatabaseTest {
         assertThat(cursor.moveToNext(), equalTo(true));
 
         assertIdAndName(cursor, 1235L, "Belvedere");
-        assertThat(cursor.moveToNext(), equalTo(true));
-        
-        assertThat(cursor.moveToNext(), equalTo(false));	// past end
+        assertThat(cursor.moveToNext(), equalTo(false));
     }
 
     @Test
