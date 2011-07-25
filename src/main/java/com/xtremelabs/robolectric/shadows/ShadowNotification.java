@@ -26,6 +26,7 @@ public class ShadowNotification {
     public void setLatestEventInfo(Context context, CharSequence contentTitle,
                                    CharSequence contentText, PendingIntent contentIntent) {
         latestEventInfo = new LatestEventInfo(contentTitle, contentText, contentIntent);
+        realNotification.contentIntent = contentIntent;
     }
 
     public LatestEventInfo getLatestEventInfo() {
