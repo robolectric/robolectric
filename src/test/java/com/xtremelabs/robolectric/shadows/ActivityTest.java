@@ -5,7 +5,6 @@ import android.app.Dialog;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.IntentSender;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
@@ -33,16 +32,16 @@ public class ActivityTest {
 
     @Test(expected = IllegalStateException.class)
     public void shouldComplainIfActivityIsDestroyedWithRegisteredBroadcastReceivers() throws Exception {
-        MyActivity activity = new MyActivity();
+        DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
         activity.registerReceiver(new AppWidgetProvider(), new IntentFilter());
         activity.onDestroy();
     }
 
     @Test
     public void shouldNotComplainIfActivityIsDestroyedWhileAnotherActivityHasRegisteredBroadcastReceivers() throws Exception {
-        MyActivity activity = new MyActivity();
+        DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
 
-        MyActivity activity2 = new MyActivity();
+        DialogLifeCycleActivity activity2 = new DialogLifeCycleActivity();
         activity2.registerReceiver(new AppWidgetProvider(), new IntentFilter());
 
         activity.onDestroy(); // should not throw exception
@@ -86,9 +85,9 @@ public class ActivityTest {
 
     @Test
     public void shouldSupportStartActivityForResult() throws Exception {
-        MyActivity activity = new MyActivity();
+        DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
         ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
-        Intent intent = new Intent().setClass(activity, MyActivity.class);
+        Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
         assertThat(shadowActivity.getNextStartedActivity(), nullValue());
 
         activity.startActivityForResult(intent, 142);
@@ -100,9 +99,9 @@ public class ActivityTest {
 
     @Test
     public void shouldSupportGetStartedActitivitesForResult() throws Exception {
-        MyActivity activity = new MyActivity();
+        DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
         ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
-        Intent intent = new Intent().setClass(activity, MyActivity.class);
+        Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
         activity.startActivityForResult(intent, 142);
 
@@ -116,9 +115,9 @@ public class ActivityTest {
 
     @Test
     public void shouldSupportPeekStartedActitivitesForResult() throws Exception {
-        MyActivity activity = new MyActivity();
+        DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
         ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
-        Intent intent = new Intent().setClass(activity, MyActivity.class);
+        Intent intent = new Intent().setClass(activity, DialogLifeCycleActivity.class);
 
         activity.startActivityForResult(intent, 142);
 
@@ -152,7 +151,7 @@ public class ActivityTest {
     @Test
     public void shouldRunUiTasksImmediatelyByDefault() throws Exception {
         TestRunnable runnable = new TestRunnable();
-        MyActivity activity = new MyActivity();
+        DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
         activity.runOnUiThread(runnable);
         assertTrue(runnable.wasRun);
     }
@@ -161,7 +160,7 @@ public class ActivityTest {
     public void shouldQueueUiTasksWhenUiThreadIsPaused() throws Exception {
         Robolectric.pauseMainLooper();
 
-        MyActivity activity = new MyActivity();
+        DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
         TestRunnable runnable = new TestRunnable();
         activity.runOnUiThread(runnable);
         assertFalse(runnable.wasRun);
@@ -172,7 +171,7 @@ public class ActivityTest {
 
     @Test
     public void showDialog_shouldCreatePrepareAndShowDialog() {
-        final MyActivity activity = new MyActivity();
+        final DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
         final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
 
         new Dialog(activity) {
@@ -184,8 +183,7 @@ public class ActivityTest {
             }
         };
 
-        ShadowActivity shadow = Robolectric.shadowOf(activity);
-        shadow.showDialog(1);
+        activity.showDialog(1);
 
         assertTrue(activity.createdDialog);
         assertTrue(activity.preparedDialog);
@@ -194,7 +192,7 @@ public class ActivityTest {
 
     @Test
     public void showDialog_shouldCreatePrepareAndShowDialogWithBundle() {
-        final MyActivity activity = new MyActivity();
+        final DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
         final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
 
         new Dialog(activity) {
@@ -206,13 +204,28 @@ public class ActivityTest {
             }
         };
 
-        ShadowActivity shadow = Robolectric.shadowOf(activity);
-        shadow.showDialog(1, new Bundle());
+        activity.showDialog(1, new Bundle());
 
         assertTrue(activity.createdDialog);
         assertTrue(activity.preparedDialogWithBundle);
         assertTrue(dialogWasShown.get());
     }
+
+    @Test
+    public void showDialog_shouldReuseDialogs() {
+        final DialogCreatingActivity activity = new DialogCreatingActivity();
+
+        activity.showDialog(1);
+
+        ShadowDialog firstDialog = ShadowDialog.getLatestDialog();
+
+        activity.showDialog(1);
+
+        final ShadowDialog secondDialog = ShadowDialog.getLatestDialog();
+
+        assertSame("dialogs should be the same instance", firstDialog, secondDialog);
+    }
+
 
     @Test
     public void shouldCallOnCreateDialogFromShowDialog() {
@@ -233,7 +246,7 @@ public class ActivityTest {
 
    @Test
     public void shouldSupportCurrentFocus() {
-        MyActivity activity = new MyActivity();
+        DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
         ShadowActivity shadow = shadowOf(activity);
 
         assertNull(shadow.getCurrentFocus());
@@ -265,7 +278,14 @@ public class ActivityTest {
         assertTrue(id == 0);
     }
 
-    private static class MyActivity extends Activity {
+    private static class DialogCreatingActivity extends Activity {
+        @Override
+        protected Dialog onCreateDialog(int id) {
+            return new Dialog(this);
+        }
+    }
+
+    private static class DialogLifeCycleActivity extends Activity {
         public boolean createdDialog = false;
         public boolean preparedDialog = false;
         public boolean preparedDialogWithBundle = false;
