@@ -23,6 +23,8 @@ public class ShadowImageView extends ShadowView {
     private Bitmap imageBitmap;
     private ImageView.ScaleType scaleType;
     private Matrix matrix;
+    private int maxWidth;
+    private int maxHeight;
 
     @Override
     public void applyAttributes() {
@@ -149,5 +151,23 @@ public class ShadowImageView extends ShadowView {
                         "android", "src", 0));
             }
         }
+    }
+
+    @Implementation
+    public void setMaxWidth(int maxWidth) {
+        this.maxWidth = maxWidth;
+    }
+
+    public int getMaxWidth() {
+        return maxWidth;
+    }
+
+    @Implementation
+    public void setMaxHeight(int maxHeight) {
+        this.maxHeight = maxHeight;
+    }
+
+    public int getMaxHeight() {
+        return maxHeight;
     }
 }

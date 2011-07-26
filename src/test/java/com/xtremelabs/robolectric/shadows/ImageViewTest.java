@@ -75,4 +75,18 @@ public class ImageViewTest {
         assertTrue("LayerDrawable",
                 imageView.getDrawable() instanceof LayerDrawable);
     }
+
+    @Test
+    public void testSetMaxWidth() {
+        imageView.setMaxWidth(1337);
+        assertEquals("maxWidth", 1337, Robolectric.shadowOf(imageView)
+                .getMaxWidth());
+    }
+
+    @Test
+    public void testSetMaxHeight() {
+        imageView.setMaxHeight(1337);
+        assertEquals("maxHeight", 1337, Robolectric.shadowOf(imageView)
+                .getMaxHeight());
+    }
 }
