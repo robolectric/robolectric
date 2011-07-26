@@ -15,6 +15,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(PendingIntent.class)
 public class ShadowPendingIntent {
+
     private Intent savedIntent;
     private Context savedContext;
     private boolean isServiceIntent;
@@ -25,10 +26,15 @@ public class ShadowPendingIntent {
     }
 
     @Implementation
+    public static PendingIntent getBroadcast(Context context, int requestCode, Intent intent, int flags) {
+        return create(context, intent, false);
+    }
+
+    @Implementation
     public static PendingIntent getService(Context context, int requestCode, Intent intent, int flags) {
         return create(context, intent, true);
     }
-    
+
     @Implementation
     public void send() throws PendingIntent.CanceledException {
     	send(savedContext, 0, savedIntent);
@@ -48,6 +54,18 @@ public class ShadowPendingIntent {
         TestIntentSender testIntentSender = new TestIntentSender();
         testIntentSender.intent = savedIntent;
         return testIntentSender;
+    }
+
+    public boolean isServiceIntent() {
+        return isServiceIntent;
+    }
+
+    public Context getSavedContext() {
+        return savedContext;
+    }
+
+    public Intent getSavedIntent() {
+        return savedIntent;
     }
 
     private static PendingIntent create(Context context, Intent intent, boolean isService) {

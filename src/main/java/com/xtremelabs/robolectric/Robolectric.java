@@ -50,9 +50,6 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-import android.nfc.NdefMessage;
-import android.nfc.NdefRecord;
-import android.nfc.NfcAdapter;
 import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Looper;
@@ -717,8 +714,8 @@ public class Robolectric {
         return (ShadowRect) shadowOf_(instance);
     }
 
-    public static PendingIntent shadowOf(PendingIntent instance) {
-        return (PendingIntent) shadowOf_(instance);
+    public static ShadowPendingIntent shadowOf(PendingIntent instance) {
+        return (ShadowPendingIntent) shadowOf_(instance);
     }
 
     public static ShadowDateFormat shadowOf(DateFormat instance) {
