@@ -11,6 +11,10 @@ import com.xtremelabs.robolectric.internal.RealObject;
 @Implements(Notification.class)
 public class ShadowNotification {
 
+    public Notification getRealNotification() {
+        return realNotification;
+    }
+
     @RealObject
     Notification realNotification;
 
