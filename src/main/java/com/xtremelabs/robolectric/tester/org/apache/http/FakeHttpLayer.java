@@ -14,7 +14,6 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 
-import javax.xml.ws.http.HTTPException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -172,7 +171,7 @@ public class FakeHttpLayer {
         private RequestMatcher requestMatcher;
         private HttpResponse responseToGive;
         private IOException ioException;
-        private HTTPException httpException;
+        private HttpException httpException;
         private List<? extends HttpResponse> responses;
 
         public RequestMatcherResponseRule(RequestMatcher requestMatcher, HttpResponse responseToGive) {
@@ -185,7 +184,7 @@ public class FakeHttpLayer {
             this.ioException = ioException;
         }
 
-        public RequestMatcherResponseRule(RequestMatcher requestMatcher, HTTPException httpException) {
+        public RequestMatcherResponseRule(RequestMatcher requestMatcher, HttpException httpException) {
             this.requestMatcher = requestMatcher;
             this.httpException = httpException;
         }
