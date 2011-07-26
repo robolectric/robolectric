@@ -115,10 +115,18 @@ public class ShadowAlertDialog extends ShadowDialog {
      * Non-Android accessor.
      *
      * @return an array indicating which items are and are not clicked on a multi-choice dialog
-     *         todo: support single choice dialogs
      */
     public boolean[] getCheckedItems() {
         return checkedItems;
+    }
+
+    /**
+     * Non-Android accessor.
+     *
+     * @return return the index of the checked item clicked on a single-choice dialog
+     */
+    public int getCheckedItemIndex() {
+        return checkedItemIndex;
     }
 
     @Implementation
