@@ -31,6 +31,7 @@ public class ShadowAlertDialog extends ShadowDialog {
     private Button negativeButton;
     private Button neutralButton;
     private boolean isCancelable;
+    private View view;
 
     /**
      * Non-Android accessor.
@@ -44,7 +45,16 @@ public class ShadowAlertDialog extends ShadowDialog {
     @Override
     @Implementation
     public View findViewById(int viewId) {
-        return null;
+        if(view == null) {
+            return null;
+        }
+
+        return view.findViewById(viewId);
+    }
+
+    @Implementation
+    public void setView(View view) {
+        this.view = view;
     }
 
     /**
@@ -133,6 +143,7 @@ public class ShadowAlertDialog extends ShadowDialog {
      *
      * @return the message displayed in the dialog
      */
+    @Override
     public boolean isCancelable() {
         return isCancelable;
     }
