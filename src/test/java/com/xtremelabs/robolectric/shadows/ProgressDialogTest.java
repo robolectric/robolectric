@@ -17,6 +17,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -69,7 +70,29 @@ public class ProgressDialogTest {
         assertTrue(shadowProgressDialog.isCancelable());
 
         progressDialog.cancel();
-        assertThat((DialogInterface) cancelListener.onCancelDialogInterface, is((DialogInterface) progressDialog));
+        assertThat(cancelListener.onCancelDialogInterface, is((DialogInterface) progressDialog));
+    }
+
+    @Test
+    public void showWithoutCancellableAndCancellableListener_shouldCreateAProgressDialog() {
+        Context context = new Activity();
+        ProgressDialog progressDialog = ProgressDialog.show(context, "Title", "Message", true);
+        ShadowProgressDialog shadowProgressDialog = shadowOf(progressDialog);
+        assertThat(shadowProgressDialog.getContext(), is(context));
+        assertThat(shadowProgressDialog.getMessage(), equalTo("Message"));
+        assertTrue(shadowProgressDialog.isIndeterminate());
+        assertFalse(shadowProgressDialog.isCancelable());
+    }
+
+    @Test
+    public void showWithoutIndeterminateAndCancellableAndCancellableListener_shouldCreateAProgressDialog() {
+        Context context = new Activity();
+        ProgressDialog progressDialog = ProgressDialog.show(context, "Title", "Message");
+        ShadowProgressDialog shadowProgressDialog = shadowOf(progressDialog);
+        assertThat(shadowProgressDialog.getContext(), is(context));
+        assertThat(shadowProgressDialog.getMessage(), equalTo("Message"));
+        assertFalse(shadowProgressDialog.isIndeterminate());
+        assertFalse(shadowProgressDialog.isCancelable());
     }
 
     private static class TestOnCancelListener implements DialogInterface.OnCancelListener {
