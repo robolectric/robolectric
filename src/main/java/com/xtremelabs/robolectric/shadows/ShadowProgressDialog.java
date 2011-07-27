@@ -44,7 +44,6 @@ public class ShadowProgressDialog extends ShadowAlertDialog {
         return progressDialog;
     }
 
-
     @Implementation
     public void setIndeterminate(boolean indeterminate) {
         this.indeterminate = indeterminate;

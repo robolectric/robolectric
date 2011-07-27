@@ -97,6 +97,11 @@ public class ShadowAlertDialog extends ShadowDialog {
         return title;
     }
 
+    @Implementation
+    public void setTitle(CharSequence title) {
+        this.title = nullOrString(title);
+    }
+
     /**
      * Non-Android accessor.
      *
@@ -108,7 +113,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
     @Implementation
     public void setMessage(CharSequence message) {
-        this.message = (message == null ? null : message.toString());
+        this.message = nullOrString(message);
     }
 
     /**
@@ -133,6 +138,10 @@ public class ShadowAlertDialog extends ShadowDialog {
     public void show() {
         super.show();
         getShadowApplication().setLatestAlertDialog(this);
+    }
+
+    private String nullOrString(CharSequence title) {
+        return (title == null ? null : title.toString());
     }
 
     /**
