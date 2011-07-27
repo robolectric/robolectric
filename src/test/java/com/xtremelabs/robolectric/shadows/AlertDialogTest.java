@@ -4,9 +4,12 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
+import android.view.View;
+import android.view.ViewGroup;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -95,5 +98,20 @@ public class AlertDialogTest {
         assertThat(shadowAlertDialog.getItems().length, equalTo(2));
         assertEquals(shadowAlertDialog.getItems()[0], "Aloha");
         assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
+    }
+
+    @Test
+    public void shouldFindViewsByIdIfAViewIsSet() throws Exception {
+        ContextWrapper context = new ContextWrapper(null);
+        AlertDialog dialog = new AlertDialog.Builder(context).create();
+        
+        assertThat(dialog.findViewById(99), nullValue());
+
+        View view = new View(context);
+        view.setId(99);
+        dialog.setView(view);
+        assertThat(dialog.findViewById(99), sameInstance(view));
+        
+        assertThat(dialog.findViewById(66), nullValue());
     }
 }
