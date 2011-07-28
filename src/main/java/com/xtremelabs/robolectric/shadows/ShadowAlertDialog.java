@@ -18,7 +18,6 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(AlertDialog.class)
 public class ShadowAlertDialog extends ShadowDialog {
     private CharSequence[] items;
-    private String title;
     private String message;
     private DialogInterface.OnClickListener clickListener;
     private AlertDialog realDialog;
@@ -38,8 +37,9 @@ public class ShadowAlertDialog extends ShadowDialog {
      *
      * @return the most recently created {@code AlertDialog}, or null if none has been created during this test run
      */
-    public static ShadowAlertDialog getLatestAlertDialog() {
-        return Robolectric.getShadowApplication().getLatestAlertDialog();
+    public static AlertDialog getLatestAlertDialog() {
+        ShadowAlertDialog dialog = Robolectric.getShadowApplication().getLatestAlertDialog();
+        return dialog == null ? null : dialog.realDialog;
     }
 
     @Override
@@ -105,15 +105,6 @@ public class ShadowAlertDialog extends ShadowDialog {
         return items;
     }
     
-    /**
-     * Non-Android accessor.
-     *
-     * @return the title of the dialog
-     */
-    public String getTitle() {
-        return title;
-    }
-
     /**
      * Non-Android accessor.
      *
@@ -326,7 +317,7 @@ public class ShadowAlertDialog extends ShadowDialog {
             latestAlertDialog.context = context;
             latestAlertDialog.realDialog = realDialog;
             latestAlertDialog.items = items;
-            latestAlertDialog.title = title;
+            latestAlertDialog.setTitle(title);
             latestAlertDialog.message = message;
             latestAlertDialog.clickListener = clickListener;
             latestAlertDialog.setOnCancelListener(cancelListener);
