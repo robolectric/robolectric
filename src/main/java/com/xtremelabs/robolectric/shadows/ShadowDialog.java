@@ -174,8 +174,12 @@ public class ShadowDialog {
     }
 
     @Implementation
-    public void setOnCancelListener(final DialogInterface.OnCancelListener listener) {
+    public void setOnCancelListener(DialogInterface.OnCancelListener listener) {
         this.onCancelListener = listener;
+    }
+
+    public DialogInterface.OnCancelListener getOnCancelListener() {
+        return onCancelListener;
     }
 
     @Implementation

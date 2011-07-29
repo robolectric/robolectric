@@ -18,10 +18,12 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
 public class ShadowAlertDialog extends ShadowDialog {
+    @RealObject
+    private AlertDialog realAlertDialog;
+
     private CharSequence[] items;
     private String message;
     private DialogInterface.OnClickListener clickListener;
-    private AlertDialog realAlertDialog;
     private boolean isMultiItem;
     private boolean isSingleItem;
     private DialogInterface.OnMultiChoiceClickListener multiChoiceClickListener;
@@ -318,7 +320,6 @@ public class ShadowAlertDialog extends ShadowDialog {
 
             ShadowAlertDialog latestAlertDialog = shadowOf(realDialog);
             latestAlertDialog.context = context;
-            latestAlertDialog.realAlertDialog = realDialog;
             latestAlertDialog.items = items;
             latestAlertDialog.setTitle(title);
             latestAlertDialog.message = message;
