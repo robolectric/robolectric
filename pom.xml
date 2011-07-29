@@ -17,6 +17,10 @@
     <description>An alternative Android testing framework.</description>
     <url>http://pivotal.github.com/robolectric/</url>
 
+    <properties>
+        <android.sdk.version>2.3.3</android.sdk.version>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -71,8 +75,15 @@
         <dependency>
             <groupId>com.google.android</groupId>
             <artifactId>android</artifactId>
-            <version>2.3.3</version>
+            <version>${android.sdk.version}</version>
             <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.android</groupId>
+            <artifactId>android-test</artifactId>
+            <version>${android.sdk.version}</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
