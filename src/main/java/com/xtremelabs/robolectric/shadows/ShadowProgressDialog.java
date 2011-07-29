@@ -17,6 +17,16 @@ public class ShadowProgressDialog extends ShadowAlertDialog {
     private boolean indeterminate;
 
     @Implementation
+    public static ProgressDialog show(Context context, CharSequence title, CharSequence message) {
+        return show(context, title, message, false, false, null);
+    }
+
+    @Implementation
+    public static ProgressDialog show(Context context, CharSequence title, CharSequence message, boolean indeterminate) {
+        return show(context, title, message, indeterminate, false, null);
+    }
+
+    @Implementation
     public static ProgressDialog show(Context context, CharSequence title, CharSequence message, boolean indeterminate, boolean cancelable) {
         return show(context, title, message, indeterminate, cancelable, null);
     }
@@ -33,7 +43,6 @@ public class ShadowProgressDialog extends ShadowAlertDialog {
         Robolectric.getShadowApplication().setLatestAlertDialog(shadowOf(progressDialog));
         return progressDialog;
     }
-
 
     @Implementation
     public void setIndeterminate(boolean indeterminate) {
