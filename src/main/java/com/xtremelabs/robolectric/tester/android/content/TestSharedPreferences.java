@@ -6,16 +6,16 @@ import java.util.*;
 
 public class TestSharedPreferences implements SharedPreferences {
 
-    public Map<String, Hashtable<String, Object>> content;
+    public Map<String, Map<String, Object>> content;
     private String filename;
     public int mode;
 
-    public TestSharedPreferences(Map<String, Hashtable<String, Object>> content, String name, int mode) {
+    public TestSharedPreferences(Map<String, Map<String, Object>> content, String name, int mode) {
         this.content = content;
         this.filename = name;
         this.mode = mode;
         if (!content.containsKey(name)) {
-            content.put(name, new Hashtable<String, Object>());
+            content.put(name, new HashMap<String, Object>());
         }
     }
 
@@ -30,7 +30,7 @@ public class TestSharedPreferences implements SharedPreferences {
     }
 
     private Object getValue(String key, Object defValue) {
-        Hashtable<String, Object> fileHash = content.get(filename);
+        Map<String, Object> fileHash = content.get(filename);
         if (fileHash != null) {
             Object value = fileHash.get(key);
             if (value != null) {
@@ -80,7 +80,7 @@ public class TestSharedPreferences implements SharedPreferences {
 
     private class TestSharedPreferencesEditor implements Editor {
 
-        Hashtable<String, Object> editsThatNeedCommit = new Hashtable<String, Object>();
+        Map<String, Object> editsThatNeedCommit = new HashMap<String, Object>();
         Set<String> editsThatNeedRemove = new HashSet<String>();
         private boolean shouldClearOnCommit = false;
 

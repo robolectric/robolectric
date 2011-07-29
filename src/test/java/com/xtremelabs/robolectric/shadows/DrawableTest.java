@@ -6,12 +6,15 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertFalse;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -37,5 +40,12 @@ public class DrawableTest {
         assertTrue(ShadowDrawable.corruptStreamSources.contains(src));
         ShadowDrawable.reset();
         assertFalse(ShadowDrawable.corruptStreamSources.contains(src));
+    }
+
+    @Test
+    public void testCreateFromStream_shouldSetTheInputStreamOnTheReturnedDrawable() throws Exception {
+        ByteArrayInputStream byteInputStream = new ByteArrayInputStream(new byte[0]);
+        Drawable drawable = Drawable.createFromStream(byteInputStream, "src name");
+        assertThat(shadowOf(drawable).getInputStream(), equalTo((InputStream) byteInputStream));
     }
 }

@@ -6,7 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -15,13 +14,13 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class TestSharedPreferencesTest {
-    private HashMap<String, Hashtable<String, Object>> content;
+    private HashMap<String, Map<String, Object>> content;
     private SharedPreferences.Editor editor;
     TestSharedPreferences sharedPreferences;
 
     @Before
     public void setUp() {
-        content = new HashMap<String, Hashtable<String, Object>>();
+        content = new HashMap<String, Map<String, Object>>();
 
         sharedPreferences = new TestSharedPreferences(content, "prefsName", 3);
         editor = sharedPreferences.edit();

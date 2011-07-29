@@ -721,8 +721,8 @@ public class Robolectric {
         return (ShadowRect) shadowOf_(instance);
     }
 
-    public static PendingIntent shadowOf(PendingIntent instance) {
-        return (PendingIntent) shadowOf_(instance);
+    public static ShadowPendingIntent shadowOf(PendingIntent instance) {
+        return (ShadowPendingIntent) shadowOf_(instance);
     }
 
     public static ShadowDateFormat shadowOf(DateFormat instance) {

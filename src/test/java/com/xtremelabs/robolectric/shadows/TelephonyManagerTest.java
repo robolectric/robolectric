@@ -1,21 +1,21 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static android.content.Context.TELEPHONY_SERVICE;
-import static com.xtremelabs.robolectric.Robolectric.*;
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
-
-import android.content.Context;
-import org.junit.After;
+import android.telephony.PhoneStateListener;
+import android.telephony.TelephonyManager;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
-import android.telephony.PhoneStateListener;
-import android.telephony.TelephonyManager;
+import static android.content.Context.TELEPHONY_SERVICE;
+import static com.xtremelabs.robolectric.Robolectric.application;
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class TelephonyManagerTest {

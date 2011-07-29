@@ -1,12 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.R;
 import android.app.Activity;
 import android.view.View;
 import android.widget.TabHost;
 import android.widget.TabHost.TabContentFactory;
 import android.widget.TextView;
-
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;

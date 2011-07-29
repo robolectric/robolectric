@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
@@ -92,9 +93,18 @@ public class DialogTest {
         
         dialog.show();
 
-        assertEquals(Robolectric.shadowOf(dialog), ShadowDialog.getLatestDialog());
+        assertEquals(dialog, ShadowDialog.getLatestDialog());
+        assertNull(ShadowAlertDialog.getLatestAlertDialog());
     }
 
+    @Test
+    public void getLatestDialog_shouldReturnARealDialog() throws Exception {
+        assertThat(ShadowDialog.getLatestDialog(), nullValue());
+
+        Dialog dialog = new Dialog(null);
+        dialog.show();
+        assertThat(ShadowDialog.getLatestDialog(), sameInstance(dialog));
+    }
 
     private static class TestOnStartDialog extends Dialog {
         boolean onStartCalled = false;

@@ -1,14 +1,19 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
 import com.xtremelabs.robolectric.Robolectric;
-import org.apache.http.*;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.RequestDirector;
+import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 
-import javax.xml.ws.http.HTTPException;
 import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
@@ -37,7 +42,7 @@ public class FakeHttpLayer {
     }
 
     public void addPendingHttpResponseWithContentType(int statusCode, String responseBody, Header contentType) {
-        addPendingHttpResponse(new TestHttpResponse(statusCode, responseBody, new Header[] {contentType}));
+        addPendingHttpResponse(new TestHttpResponse(statusCode, responseBody, new Header[]{contentType}));
     }
 
     public void addPendingHttpResponse(HttpResponse httpResponse) {
@@ -62,8 +67,9 @@ public class FakeHttpLayer {
 
     /**
      * Add a response rule.
+     *
      * @param requestMatcher Request matcher
-     * @param responses A list of responses that are returned to matching requests in order from first to last.
+     * @param responses      A list of responses that are returned to matching requests in order from first to last.
      */
     public void addHttpResponseRule(RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
         addHttpResponseRule(new RequestMatcherResponseRule(requestMatcher, responses));
@@ -165,7 +171,7 @@ public class FakeHttpLayer {
         private RequestMatcher requestMatcher;
         private HttpResponse responseToGive;
         private IOException ioException;
-        private HTTPException httpException;
+        private HttpException httpException;
         private List<? extends HttpResponse> responses;
 
         public RequestMatcherResponseRule(RequestMatcher requestMatcher, HttpResponse responseToGive) {
@@ -178,7 +184,7 @@ public class FakeHttpLayer {
             this.ioException = ioException;
         }
 
-        public RequestMatcherResponseRule(RequestMatcher requestMatcher, HTTPException httpException) {
+        public RequestMatcherResponseRule(RequestMatcher requestMatcher, HttpException httpException) {
             this.requestMatcher = requestMatcher;
             this.httpException = httpException;
         }
@@ -188,17 +194,18 @@ public class FakeHttpLayer {
             this.responses = responses;
         }
 
-        @Override public boolean matches(HttpRequest request) {
+        @Override
+        public boolean matches(HttpRequest request) {
             return requestMatcher.matches(request);
         }
 
-        @Override public HttpResponse getResponse() throws HttpException, IOException {
+        @Override
+        public HttpResponse getResponse() throws HttpException, IOException {
             if (httpException != null) throw httpException;
             if (ioException != null) throw ioException;
             if (responseToGive != null) {
                 return responseToGive;
-            }
-            else {
+            } else {
                 if (responses.isEmpty()) {
                     throw new RuntimeException("No more responses left to give");
                 }
@@ -216,7 +223,8 @@ public class FakeHttpLayer {
             this.uri = uri;
         }
 
-        @Override public boolean matches(HttpRequest request) {
+        @Override
+        public boolean matches(HttpRequest request) {
             return request.getRequestLine().getMethod().equals(method) &&
                     request.getRequestLine().getUri().equals(uri);
         }
@@ -229,17 +237,29 @@ public class FakeHttpLayer {
             this.uri = uri;
         }
 
-        @Override public boolean matches(HttpRequest request) {
+        @Override
+        public boolean matches(HttpRequest request) {
             return request.getRequestLine().getUri().equals(uri);
         }
     }
 
     public static class RequestMatcherBuilder implements RequestMatcher {
-        private String method;
-        private String hostname;
-        private String path;
+        private String method, hostname, path;
         private boolean noParams;
         private Map<String, String> params = new HashMap<String, String>();
+        private Map<String, String> headers = new HashMap<String, String>();
+        private PostBodyMatcher postBodyMatcher;
+
+        public interface PostBodyMatcher {
+            /**
+             * Hint: you can use EntityUtils.toString(actualPostBody) to help you implement your matches method.
+             *
+             * @param actualPostBody The post body of the actual request that we are matching against.
+             * @return true if you consider the body to match
+             * @throws IOException Get turned into a RuntimeException to cause your test to fail.
+             */
+            boolean matches(HttpEntity actualPostBody) throws IOException;
+        }
 
         public RequestMatcherBuilder method(String method) {
             this.method = method;
@@ -269,7 +289,18 @@ public class FakeHttpLayer {
             return this;
         }
 
-        @Override public boolean matches(HttpRequest request) {
+        public RequestMatcherBuilder postBody(PostBodyMatcher postBodyMatcher) {
+            this.postBodyMatcher = postBodyMatcher;
+            return this;
+        }
+
+        public RequestMatcherBuilder header(String name, String value) {
+            headers.put(name, value);
+            return this;
+        }
+
+        @Override
+        public boolean matches(HttpRequest request) {
             URI uri = URI.create(request.getRequestLine().getUri());
             if (method != null && !method.equals(request.getRequestLine().getMethod())) {
                 return false;
@@ -285,12 +316,58 @@ public class FakeHttpLayer {
             }
             if (params.size() > 0) {
                 Map<String, String> requestParams = ParamsParser.parseParams(request);
-                return requestParams.equals(params);
+                if (!requestParams.equals(params)) {
+                    return false;
+                }
             }
-
+            if (headers.size() > 0) {
+                Map<String, String> actualRequestHeaders = new HashMap<String, String>();
+                for (Header header : request.getAllHeaders()) {
+                    actualRequestHeaders.put(header.getName(), header.getValue());
+                }
+                if (!headers.equals(actualRequestHeaders)) {
+                    return false;
+                }
+            }
+            if (postBodyMatcher != null) {
+                if(! (request instanceof HttpEntityEnclosingRequestBase)) {
+                    return false;
+                }
+                HttpEntityEnclosingRequestBase postOrPut = (HttpEntityEnclosingRequestBase) request;
+                try {
+                    if (!postBodyMatcher.matches(postOrPut.getEntity())) {
+                        return false;
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            }
             return true;
         }
 
+        String getHostname() {
+            return hostname;
+        }
+
+        String getPath() {
+            return path;
+        }
+
+        String getParam(String key) {
+            return params.get(key);
+        }
+
+        String getHeader(String key) {
+            return headers.get(key);
+        }
+
+        boolean isNoParams() {
+            return noParams;
+        }
+
+        String getMethod() {
+            return method;
+        }
     }
 
     public static class UriRegexMatcher implements RequestMatcher {
@@ -302,7 +379,8 @@ public class FakeHttpLayer {
             this.uriRegex = Pattern.compile(uriRegex);
         }
 
-        @Override public boolean matches(HttpRequest request) {
+        @Override
+        public boolean matches(HttpRequest request) {
             return request.getRequestLine().getMethod().equals(method) &&
                     uriRegex.matcher(request.getRequestLine().getUri()).matches();
         }

@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.net.Uri;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.tester.android.database.TestCursor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -18,9 +19,9 @@ import java.util.List;
 public class ShadowContentResolver {
     private int nextDatabaseIdForInserts;
 
-    private Cursor cursor;
+    private TestCursor cursor;
     private List<Uri> deletedUris = new ArrayList<Uri>();
-    private HashMap<Uri,Cursor> uriCursorMap = new HashMap<Uri, Cursor>();
+    private HashMap<Uri,TestCursor> uriCursorMap = new HashMap<Uri, TestCursor>();
 
 
     @Implementation
@@ -44,10 +45,14 @@ public class ShadowContentResolver {
     @Implementation
     public final Cursor query(Uri uri, String[] projection,
             String selection, String[] selectionArgs, String sortOrder) {
-        if (uriCursorMap.get(uri) != null) {
-            return uriCursorMap.get(uri);
+
+        TestCursor returnCursor = getCursor(uri);
+        if (returnCursor == null) {
+            return null;
         }
-        return cursor;
+
+        returnCursor.setQuery(uri, projection, selection, selectionArgs, sortOrder);
+        return returnCursor;
     }
 
     @Implementation
@@ -56,11 +61,11 @@ public class ShadowContentResolver {
         return 1;
     }
 
-    public void setCursor(Cursor cursor) {
+    public void setCursor(TestCursor cursor) {
         this.cursor = cursor;
     }
 
-    public void setCursor(Uri uri, Cursor cursorForUri) {
+    public void setCursor(Uri uri, TestCursor cursorForUri) {
         this.uriCursorMap.put(uri, cursorForUri);
     }
 
@@ -70,5 +75,15 @@ public class ShadowContentResolver {
 
     public List<Uri> getDeletedUris() {
         return deletedUris;
+    }
+
+    private TestCursor getCursor(Uri uri) {
+        if (uriCursorMap.get(uri) != null) {
+            return uriCursorMap.get(uri);
+        } else if (cursor != null) {
+            return cursor;
+        } else {
+            return null;
+        }
     }
 }

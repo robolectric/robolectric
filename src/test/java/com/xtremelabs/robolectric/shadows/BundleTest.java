@@ -61,6 +61,13 @@ public class BundleTest {
     }
 
     @Test
+    public void testIsEmpty() {
+        assertTrue(bundle.isEmpty());
+        bundle.putBoolean("foo", true);
+        assertFalse(bundle.isEmpty());
+    }
+
+    @Test
     public void testStringArray() {
         bundle.putStringArray("foo", new String[] { "a" });
         Assert.assertArrayEquals(new String[] { "a" }, bundle.getStringArray("foo"));
