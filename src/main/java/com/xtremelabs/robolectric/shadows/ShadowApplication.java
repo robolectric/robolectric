@@ -24,7 +24,6 @@ import com.xtremelabs.robolectric.util.Scheduler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -78,7 +77,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private final Looper mainLooper = newInstanceOf(Looper.class);
     private Looper currentLooper = mainLooper;
     private Scheduler backgroundScheduler = new Scheduler();
-    private Map<String, Hashtable<String, Object>> sharedPreferenceMap = new HashMap<String, Hashtable<String, Object>>();
+    private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<String, Map<String, Object>>();
     private ArrayList<Toast> shownToasts = new ArrayList<Toast>();
     private ShadowAlertDialog latestAlertDialog;
     private ShadowDialog latestDialog;
@@ -378,7 +377,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         currentLooper = looper;
     }
 
-    public Map<String, Hashtable<String, Object>> getSharedPreferenceMap() {
+    public Map<String, Map<String, Object>> getSharedPreferenceMap() {
         return sharedPreferenceMap;
     }
 
