@@ -1,10 +1,9 @@
 package com.xtremelabs.robolectric.shadows;
 
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.Implementation;
-
 import android.telephony.PhoneStateListener;
 import android.telephony.TelephonyManager;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 @Implements(TelephonyManager.class)
 public class ShadowTelephonyManager {

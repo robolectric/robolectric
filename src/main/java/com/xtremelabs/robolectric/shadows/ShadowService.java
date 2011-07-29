@@ -5,7 +5,6 @@ import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
 import android.content.ServiceConnection;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;

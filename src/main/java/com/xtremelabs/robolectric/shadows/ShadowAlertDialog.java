@@ -18,11 +18,12 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
 public class ShadowAlertDialog extends ShadowDialog {
+    @RealObject
+    private AlertDialog realAlertDialog;
+
     private CharSequence[] items;
-    private String title;
     private String message;
     private DialogInterface.OnClickListener clickListener;
-    private AlertDialog realDialog;
     private boolean isMultiItem;
     private boolean isSingleItem;
     private DialogInterface.OnMultiChoiceClickListener multiChoiceClickListener;
@@ -31,14 +32,31 @@ public class ShadowAlertDialog extends ShadowDialog {
     private Button positiveButton;
     private Button negativeButton;
     private Button neutralButton;
+    private View view;
 
     /**
      * Non-Android accessor.
      *
      * @return the most recently created {@code AlertDialog}, or null if none has been created during this test run
      */
-    public static ShadowAlertDialog getLatestAlertDialog() {
-        return getShadowApplication().getLatestAlertDialog();
+    public static AlertDialog getLatestAlertDialog() {
+        ShadowAlertDialog dialog = Robolectric.getShadowApplication().getLatestAlertDialog();
+        return dialog == null ? null : dialog.realAlertDialog;
+    }
+
+    @Override
+    @Implementation
+    public View findViewById(int viewId) {
+        if(view == null) {
+            return null;
+        }
+
+        return view.findViewById(viewId);
+    }
+
+    @Implementation
+    public void setView(View view) {
+        this.view = view;
     }
 
     /**
@@ -57,12 +75,12 @@ public class ShadowAlertDialog extends ShadowDialog {
     public void clickOnItem(int index) {
         if (isMultiItem) {
             checkedItems[index] = !checkedItems[index];
-            multiChoiceClickListener.onClick(realDialog, index, checkedItems[index]);
+            multiChoiceClickListener.onClick(realAlertDialog, index, checkedItems[index]);
         } else {
             if (isSingleItem) {
                 checkedItemIndex = index;
             }
-            clickListener.onClick(realDialog, index);
+            clickListener.onClick(realAlertDialog, index);
         }
     }
 
@@ -86,15 +104,6 @@ public class ShadowAlertDialog extends ShadowDialog {
      */
     public CharSequence[] getItems() {
         return items;
-    }
-
-    /**
-     * Non-Android accessor.
-     *
-     * @return the title of the dialog
-     */
-    public String getTitle() {
-        return title;
     }
 
     /**
@@ -311,9 +320,8 @@ public class ShadowAlertDialog extends ShadowDialog {
 
             ShadowAlertDialog latestAlertDialog = shadowOf(realDialog);
             latestAlertDialog.context = context;
-            latestAlertDialog.realDialog = realDialog;
             latestAlertDialog.items = items;
-            latestAlertDialog.title = title;
+            latestAlertDialog.setTitle(title);
             latestAlertDialog.message = message;
             latestAlertDialog.clickListener = clickListener;
             latestAlertDialog.setOnCancelListener(cancelListener);

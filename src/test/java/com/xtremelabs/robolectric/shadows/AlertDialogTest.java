@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
+import android.view.View;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -12,7 +13,9 @@ import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertNull;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -33,7 +36,16 @@ public class AlertDialogTest {
         assertEquals("title", shadowAlertDialog.getTitle());
         assertThat(shadowAlertDialog.getMessage(), equalTo("message"));
         assertThat(shadowAlertDialog.isCancelable(), equalTo(true));
-        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
+        assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog()), sameInstance(shadowAlertDialog));
+        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(alert));
+    }
+
+    @Test
+    public void getLatestAlertDialog_shouldReturnARealAlertDialog() throws Exception {
+        assertThat(ShadowAlertDialog.getLatestAlertDialog(), nullValue());
+
+        AlertDialog dialog = new AlertDialog.Builder(new ContextWrapper(null)).show();
+        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(dialog));
     }
 
     @Test
@@ -77,6 +89,7 @@ public class AlertDialogTest {
 
         builder.setTitle("title");
         builder.setItems(R.array.alertDialogTestItems, new DialogInterface.OnClickListener() {
+            @Override
             public void onClick(DialogInterface dialog, int item) {
                 if (item == 0) {
 
@@ -92,23 +105,23 @@ public class AlertDialogTest {
         assertThat(alert.isShowing(), equalTo(true));
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-        assertThat(shadowAlertDialog.getTitle(), equalTo("title"));
+        assertThat(shadowAlertDialog.getTitle().toString(), equalTo("title"));
         assertThat(shadowAlertDialog.getItems().length, equalTo(2));
         assertEquals(shadowAlertDialog.getItems()[0], "Aloha");
-        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
+        assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog()), sameInstance(shadowAlertDialog));
+        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(alert));
     }
 
     @Test
     public void show_setsLatestAlertDialogAndLatestDialog() {
-        AlertDialog alertDialog = new AlertDialog(Robolectric.application) {
-            // protected constructor
-        };
+        AlertDialog alertDialog = new AlertDialog.Builder(Robolectric.application).create();
         assertNull(ShadowDialog.getLatestDialog());
+        assertNull(ShadowAlertDialog.getLatestAlertDialog());
 
         alertDialog.show();
 
-        assertEquals(Robolectric.shadowOf(alertDialog), ShadowDialog.getLatestDialog());
-        assertEquals(Robolectric.shadowOf(alertDialog), ShadowAlertDialog.getLatestAlertDialog());
+        assertEquals(alertDialog, ShadowDialog.getLatestDialog());
+        assertEquals(alertDialog, ShadowAlertDialog.getLatestAlertDialog());
     }
 
     @Test
@@ -129,7 +142,7 @@ public class AlertDialogTest {
         assertEquals(shadowAlertDialog.getCheckedItemIndex(), 1);
         assertEquals(shadowAlertDialog.getItems()[0], "foo");
         assertThat(shadowAlertDialog.getItems().length, equalTo(2));
-        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(shadowAlertDialog));
+        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(alert));
     }
 
     @Test
@@ -148,6 +161,21 @@ public class AlertDialogTest {
         assertThat(shadowAlertDialog.getCheckedItemIndex(), equalTo(0));
     }
 
+    @Test
+    public void shouldFindViewsByIdIfAViewIsSet() throws Exception {
+        ContextWrapper context = new ContextWrapper(null);
+        AlertDialog dialog = new AlertDialog.Builder(context).create();
+        
+        assertThat(dialog.findViewById(99), nullValue());
+
+        View view = new View(context);
+        view.setId(99);
+        dialog.setView(view);
+        assertThat(dialog.findViewById(99), sameInstance(view));
+        
+        assertThat(dialog.findViewById(66), nullValue());
+    }
+    
     private static class TestDialogOnClickListener implements DialogInterface.OnClickListener {
         private DialogInterface dialog;
         private int clickedItem;

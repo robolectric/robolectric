@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.database.Cursor;
 import android.net.Uri;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.tester.android.database.TestCursor;
@@ -84,8 +85,43 @@ public class ContentResolverTest {
     }
 
     @Test
+    public void query__shouldKnowWhatItsParamsWere() throws Exception {
+        String[] projection = {};
+        String selection = "select";
+        String[] selectionArgs = {};
+        String sortOrder = "order";
+
+        QueryParamTrackingTestCursor testCursor = new QueryParamTrackingTestCursor();
+
+        shadowContentResolver.setCursor(testCursor);
+        Cursor cursor = shadowContentResolver.query(uri21, projection, selection, selectionArgs, sortOrder);
+        assertThat((QueryParamTrackingTestCursor)cursor, equalTo(testCursor));
+        assertThat(testCursor.uri, equalTo(uri21));
+        assertThat(testCursor.projection, equalTo(projection));
+        assertThat(testCursor.selection, equalTo(selection));
+        assertThat(testCursor.selectionArgs, equalTo(selectionArgs));
+        assertThat(testCursor.sortOrder, equalTo(sortOrder));
+    }
+
+    @Test
     public void openInputStream_shouldReturnAnInputStream() throws Exception {
         assertThat(contentResolver.openInputStream(uri21), CoreMatchers.instanceOf(InputStream.class));
     }
 
+    class QueryParamTrackingTestCursor extends TestCursor {
+        public Uri uri;
+        public String[] projection;
+        public String selection;
+        public String[] selectionArgs;
+        public String sortOrder;
+
+        @Override
+        public void setQuery(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+            this.uri = uri;
+            this.projection = projection;
+            this.selection = selection;
+            this.selectionArgs = selectionArgs;
+            this.sortOrder = sortOrder;
+        }
+    }
 }

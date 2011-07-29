@@ -11,6 +11,10 @@ import com.xtremelabs.robolectric.internal.RealObject;
 @Implements(Notification.class)
 public class ShadowNotification {
 
+    public Notification getRealNotification() {
+        return realNotification;
+    }
+
     @RealObject
     Notification realNotification;
 
@@ -26,6 +30,7 @@ public class ShadowNotification {
     public void setLatestEventInfo(Context context, CharSequence contentTitle,
                                    CharSequence contentText, PendingIntent contentIntent) {
         latestEventInfo = new LatestEventInfo(contentTitle, contentText, contentIntent);
+        realNotification.contentIntent = contentIntent;
     }
 
     public LatestEventInfo getLatestEventInfo() {

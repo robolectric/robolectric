@@ -43,8 +43,9 @@ public class ShadowDialog {
         setLatestDialog(null);
     }
 
-    public static ShadowDialog getLatestDialog() {
-        return Robolectric.getShadowApplication().getLatestDialog();
+    public static Dialog getLatestDialog() {
+        ShadowDialog dialog = Robolectric.getShadowApplication().getLatestDialog();
+        return dialog == null ? null : dialog.realDialog;
     }
 
     public static void setLatestDialog(ShadowDialog latestDialog) {
@@ -173,8 +174,12 @@ public class ShadowDialog {
     }
 
     @Implementation
-    public void setOnCancelListener(final DialogInterface.OnCancelListener listener) {
+    public void setOnCancelListener(DialogInterface.OnCancelListener listener) {
         this.onCancelListener = listener;
+    }
+
+    public DialogInterface.OnCancelListener getOnCancelListener() {
+        return onCancelListener;
     }
 
     @Implementation

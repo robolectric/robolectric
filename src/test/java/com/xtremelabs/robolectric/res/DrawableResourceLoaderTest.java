@@ -1,15 +1,17 @@
 package com.xtremelabs.robolectric.res;
 
-import java.io.File;
-
+import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import static org.junit.Assert.*;
 
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import java.io.File;
+
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * DrawableResourceLoaderTest

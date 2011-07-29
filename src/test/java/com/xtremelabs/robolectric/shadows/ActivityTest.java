@@ -21,9 +21,11 @@ import org.junit.runner.RunWith;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 
@@ -217,11 +219,11 @@ public class ActivityTest {
 
         activity.showDialog(1);
 
-        ShadowDialog firstDialog = ShadowDialog.getLatestDialog();
+        Dialog firstDialog = ShadowDialog.getLatestDialog();
 
         activity.showDialog(1);
 
-        final ShadowDialog secondDialog = ShadowDialog.getLatestDialog();
+        final Dialog secondDialog = ShadowDialog.getLatestDialog();
 
         assertSame("dialogs should be the same instance", firstDialog, secondDialog);
     }

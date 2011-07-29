@@ -1,13 +1,12 @@
 package com.xtremelabs.robolectric.shadows;
 
-import java.util.ArrayList;
-
 import android.hardware.Sensor;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
-
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+
+import java.util.ArrayList;
 
 
 @Implements(SensorManager.class)
