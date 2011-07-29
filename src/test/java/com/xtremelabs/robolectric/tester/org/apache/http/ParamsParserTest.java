@@ -8,7 +8,6 @@ import org.junit.runner.RunWith;
 
 import java.util.Map;
 
-import static android.test.MoreAsserts.assertEmpty;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -31,6 +30,6 @@ public class ParamsParserTest {
         HttpGet httpGet = new HttpGet("example.com");
         TestHttpResponse response = new TestHttpResponse();
         response.setResponseBody("param1=foobar");
-        assertEmpty(ParamsParser.parseParams(httpGet));
+        assertThat(ParamsParser.parseParams(httpGet).size(), equalTo(0));
     }
 }
