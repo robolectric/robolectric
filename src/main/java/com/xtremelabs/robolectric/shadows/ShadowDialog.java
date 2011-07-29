@@ -59,8 +59,6 @@ public class ShadowDialog {
     public void __constructor__(Context context, int themeId) {
         this.context = context;
         this.themeId = themeId;
-
-        setLatestDialog(this);
     }
 
     @Implementation
@@ -115,6 +113,7 @@ public class ShadowDialog {
             throw new RuntimeException(e);
         }
         hasShownBefore = true;
+        setLatestDialog(this);
     }
 
     @Implementation

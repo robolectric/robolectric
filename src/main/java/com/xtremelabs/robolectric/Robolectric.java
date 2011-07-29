@@ -40,8 +40,10 @@ import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.ShapeDrawable;
 import android.hardware.Camera;
+import android.hardware.SensorManager;
 import android.location.Geocoder;
 import android.location.LocationManager;
 import android.media.AudioManager;
@@ -118,7 +120,6 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 
-@SuppressWarnings({"UnusedDeclaration"})
 public class Robolectric {
     public static Application application;
 
@@ -239,6 +240,7 @@ public class Robolectric {
                 ShadowItemizedOverlay.class,
                 ShadowKeyEvent.class,
                 ShadowKeyguardManager.class,
+                ShadowLayerDrawable.class,
                 ShadowLayoutInflater.class,
                 ShadowLayoutParams.class,
                 ShadowLinearLayout.class,
@@ -291,6 +293,7 @@ public class Robolectric {
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
                 ShadowSeekBar.class,
+                ShadowSensorManager.class,
                 ShadowService.class,
                 ShadowSettings.class,
                 ShadowSettings.ShadowSecure.class,
@@ -348,6 +351,10 @@ public class Robolectric {
 
     public static ShadowDrawable shadowOf(Drawable instance) {
         return (ShadowDrawable) shadowOf_(instance);
+    }
+
+    public static ShadowLayerDrawable shadowOf(LayerDrawable instance) {
+        return (ShadowLayerDrawable) shadowOf_(instance);
     }
 
     public static ShadowService shadowOf(Service instance) {
@@ -757,6 +764,10 @@ public class Robolectric {
     public static ShadowActivityManager shadowOf(ActivityManager instance) {
         return (ShadowActivityManager) shadowOf_(instance);
     }
+    
+    public static ShadowSensorManager shadowOf(SensorManager instance) {
+    	return (ShadowSensorManager) shadowOf_(instance);
+    }
 
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
@@ -826,6 +837,10 @@ public class Robolectric {
      */
     public static HttpRequest getSentHttpRequest(int index) {
         return ShadowDefaultRequestDirector.getSentHttpRequest(index);
+    }
+
+    public static HttpRequest getLatestSentHttpRequest() {
+        return ShadowDefaultRequestDirector.getLatestSentHttpRequest();
     }
 
     /**

@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static junit.framework.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -32,7 +33,7 @@ public class AlertDialogTest {
         assertThat(alert.isShowing(), equalTo(true));
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-        assertThat(shadowAlertDialog.getTitle(), equalTo((CharSequence)"title"));
+        assertEquals("title", shadowAlertDialog.getTitle());
         assertThat(shadowAlertDialog.getMessage(), equalTo("message"));
         assertThat(shadowAlertDialog.isCancelable(), equalTo(true));
         assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog()), sameInstance(shadowAlertDialog));
@@ -112,6 +113,55 @@ public class AlertDialogTest {
     }
 
     @Test
+    public void show_setsLatestAlertDialogAndLatestDialog() {
+        AlertDialog alertDialog = new AlertDialog.Builder(Robolectric.application).create();
+        assertNull(ShadowDialog.getLatestDialog());
+        assertNull(ShadowAlertDialog.getLatestAlertDialog());
+
+        alertDialog.show();
+
+        assertEquals(alertDialog, ShadowDialog.getLatestDialog());
+        assertEquals(alertDialog, ShadowAlertDialog.getLatestAlertDialog());
+    }
+
+    @Test
+    public void shouldReturnTheIndexOfTheCheckedItemInASingleChoiceDialog() throws Exception {
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(Robolectric.application));
+
+        builder.setSingleChoiceItems(new String[]{"foo", "bar"}, 1, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int item) {
+
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
+
+        assertThat(alert.isShowing(), equalTo(true));
+
+        ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
+        assertEquals(shadowAlertDialog.getCheckedItemIndex(), 1);
+        assertEquals(shadowAlertDialog.getItems()[0], "foo");
+        assertThat(shadowAlertDialog.getItems().length, equalTo(2));
+        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(alert));
+    }
+
+    @Test
+    public void shouldCallTheClickListenerOfTheCheckedItemInASingleChoiceDialog() throws Exception {
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(Robolectric.application));
+
+        TestDialogOnClickListener listener = new TestDialogOnClickListener();
+        builder.setSingleChoiceItems(new String[]{"foo", "bar"}, 1, listener);
+
+        AlertDialog alert = builder.create();
+        alert.show();
+
+        ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
+        shadowAlertDialog.clickOnItem(0);
+        assertThat(listener.clickedItem, equalTo(0));
+        assertThat(shadowAlertDialog.getCheckedItemIndex(), equalTo(0));
+    }
+
+    @Test
     public void shouldFindViewsByIdIfAViewIsSet() throws Exception {
         ContextWrapper context = new ContextWrapper(null);
         AlertDialog dialog = new AlertDialog.Builder(context).create();
@@ -124,5 +174,15 @@ public class AlertDialogTest {
         assertThat(dialog.findViewById(99), sameInstance(view));
         
         assertThat(dialog.findViewById(66), nullValue());
+    }
+    
+    private static class TestDialogOnClickListener implements DialogInterface.OnClickListener {
+        private DialogInterface dialog;
+        private int clickedItem;
+
+        public void onClick(DialogInterface dialog, int item) {
+            this.dialog = dialog;
+            this.clickedItem = item;
+        }
     }
 }

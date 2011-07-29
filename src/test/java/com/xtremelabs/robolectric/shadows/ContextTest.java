@@ -7,7 +7,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -93,6 +96,6 @@ public class ContextTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void openFileOutput_shouldNotAcceptPathsWithSeparatorCharacters() throws Exception {
-        context.openFileOutput("/data/test/hi", 0);
+        context.openFileOutput(File.separator + "data" + File.separator + "test" + File.separator + "hi", 0);
     }
 }

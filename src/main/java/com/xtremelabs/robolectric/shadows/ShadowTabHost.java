@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Activity;
 import android.view.View;
 import android.widget.TabHost;
 import com.xtremelabs.robolectric.Robolectric;
@@ -59,10 +60,34 @@ public class ShadowTabHost extends ShadowFrameLayout {
     }
 
     @Implementation
+    public String getCurrentTabTag() {
+    	return currentTab.getTag();
+    }
+    
+    @Implementation
     public void setOnTabChangedListener(android.widget.TabHost.OnTabChangeListener listener) {
         this.listener = listener;
     }
-
+    @Implementation
+    public View getCurrentView() {
+    	ShadowTabSpec ts = Robolectric.shadowOf(currentTab);
+    	View v = ts.getContentView(); //just get the view if it was built by a TabContentFactory
+    	if (v==null) {
+    		//otherwise findViewById
+	    	int viewId = ts.getContentViewId();
+	    	if (getContext() instanceof Activity) {
+	    		/** wasn't quite sure how to find the view here, simply using 
+	    		findViewById() wasn't enough, I had to get it though the 
+	    		Activity context.**/
+	    		v = ((Activity) getContext()).findViewById(viewId);
+	    	} else {
+	    	//	throw new RuntimeException("getContext is not an Activity, unable to findViewById without an Activity context");
+	    		return null;
+	    	}
+    	}
+    	return v;
+    }
+    
     public TabHost.TabSpec getSpecByTag(String tag) {
         for (TabHost.TabSpec tabSpec : tabSpecs) {
             if (tag.equals(tabSpec.getTag())) {

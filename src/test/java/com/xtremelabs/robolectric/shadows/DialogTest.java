@@ -9,6 +9,8 @@ import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -82,6 +84,17 @@ public class DialogTest {
         dialog.dismiss();
         dialog.show();
         transcript.assertNoEventsSoFar();
+    }
+
+    @Test
+    public void show_setsLatestDialog() {
+        Dialog dialog = new Dialog(Robolectric.application);
+        assertNull(ShadowDialog.getLatestDialog());
+        
+        dialog.show();
+
+        assertEquals(dialog, ShadowDialog.getLatestDialog());
+        assertNull(ShadowAlertDialog.getLatestAlertDialog());
     }
 
     @Test

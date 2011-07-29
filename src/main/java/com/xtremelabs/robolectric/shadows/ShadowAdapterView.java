@@ -18,12 +18,14 @@ public class ShadowAdapterView extends ShadowViewGroup {
     private static int ignoreRowsAtEndOfList = 0;
     private static boolean automaticallyUpdateRowViews = true;
 
-    @RealObject private AdapterView realAdapterView;
+    @RealObject
+    private AdapterView realAdapterView;
 
     private Adapter adapter;
-	private View mEmptyView;
+    private View mEmptyView;
     private AdapterView.OnItemSelectedListener onItemSelectedListener;
     private AdapterView.OnItemClickListener onItemClickListener;
+    private AdapterView.OnItemLongClickListener onItemLongClickListener;
     private boolean valid = false;
     private int selectedPosition;
     private int itemCount = 0;
@@ -41,16 +43,16 @@ public class ShadowAdapterView extends ShadowViewGroup {
         invalidateAndScheduleUpdate();
         setSelection(0);
     }
-    
+
     @Implementation
     public void setEmptyView(View emptyView) {
-		this.mEmptyView = emptyView;
-		updateEmptyStatus(adapter == null || adapter.isEmpty());
+        this.mEmptyView = emptyView;
+        updateEmptyStatus(adapter == null || adapter.isEmpty());
     }
 
     @Implementation
     public int getPositionForView(android.view.View view) {
-        while(view.getParent() != null && view.getParent() != realView) {
+        while (view.getParent() != null && view.getParent() != realView) {
             view = (View) view.getParent();
         }
 
@@ -67,7 +69,7 @@ public class ShadowAdapterView extends ShadowViewGroup {
         valid = false;
         itemCount = adapter == null ? 0 : adapter.getCount();
         updateEmptyStatus(itemCount == 0);
-        
+
         new Handler().post(new Runnable() {
             @Override
             public void run() {
@@ -78,11 +80,11 @@ public class ShadowAdapterView extends ShadowViewGroup {
             }
         });
     }
-    
+
     private void updateEmptyStatus(boolean empty) {
-    	// code taken from the real AdapterView and commented out where not (yet?) applicable
-    	
-    	// we don't deal with filterMode yet...
+        // code taken from the real AdapterView and commented out where not (yet?) applicable
+
+        // we don't deal with filterMode yet...
 //        if (isInFilterMode()) {
 //            empty = false;
 //        }
@@ -191,6 +193,11 @@ public class ShadowAdapterView extends ShadowViewGroup {
     }
 
     @Implementation
+    public void setOnItemLongClickListener(AdapterView.OnItemLongClickListener listener) {
+        this.onItemLongClickListener = listener;
+    }
+
+    @Implementation
     public Object getItemAtPosition(int position) {
         Adapter adapter = getAdapter();
         return (adapter == null || position < 0) ? null : adapter.getItem(position);
@@ -223,17 +230,25 @@ public class ShadowAdapterView extends ShadowViewGroup {
         }
         return false;
     }
-    
+
+    public boolean performItemLongClick(View view, int position, long id) {
+        if (onItemLongClickListener != null) {
+            onItemLongClickListener.onItemLongClick(realAdapterView, view, position, id);
+            return true;
+        }
+        return false;
+    }
+
     @Implementation
     public View getEmptyView() {
-    	return mEmptyView;
+        return mEmptyView;
     }
 
     private void update() {
         if (!automaticallyUpdateRowViews) {
             return;
         }
-        
+
         super.removeAllViews();
         addViews();
     }

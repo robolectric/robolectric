@@ -68,10 +68,10 @@ public class ShadowCanvas {
     public void drawPaint(Paint paint) {
         drawnPaint = paint;
     }
-    
+
     @Implementation
     public void drawColor(int color) {
-    	appendDescription( "draw color " + color);
+        appendDescription("draw color " + color);
     }
 
     @Implementation
@@ -87,6 +87,11 @@ public class ShadowCanvas {
         if (scaleX != 1 && scaleY != 1) {
             appendDescription(" scaled by (" + scaleX + "," + scaleY + ")");
         }
+    }
+
+    @Implementation
+    public void drawPath(Path path, Paint paint) {
+        pathPaintEvents.add(new PathPaintHistoryEvent(path, paint));
     }
 
     private void describeBitmap(Bitmap bitmap, Paint paint) {

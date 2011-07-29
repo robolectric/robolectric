@@ -12,15 +12,16 @@ import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.lang.reflect.Constructor;
 
+import static com.xtremelabs.robolectric.Robolectric.getShadowApplication;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
-@SuppressWarnings( { "UnusedDeclaration" })
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
 public class ShadowAlertDialog extends ShadowDialog {
     private CharSequence[] items;
     private String message;
     private DialogInterface.OnClickListener clickListener;
-    private AlertDialog realDialog;
+    private AlertDialog realAlertDialog;
     private boolean isMultiItem;
     private boolean isSingleItem;
     private DialogInterface.OnMultiChoiceClickListener multiChoiceClickListener;
@@ -29,7 +30,6 @@ public class ShadowAlertDialog extends ShadowDialog {
     private Button positiveButton;
     private Button negativeButton;
     private Button neutralButton;
-    private boolean isCancelable;
     private View view;
 
     /**
@@ -39,7 +39,7 @@ public class ShadowAlertDialog extends ShadowDialog {
      */
     public static AlertDialog getLatestAlertDialog() {
         ShadowAlertDialog dialog = Robolectric.getShadowApplication().getLatestAlertDialog();
-        return dialog == null ? null : dialog.realDialog;
+        return dialog == null ? null : dialog.realAlertDialog;
     }
 
     @Override
@@ -61,37 +61,36 @@ public class ShadowAlertDialog extends ShadowDialog {
      * Resets the tracking of the most recently created {@code AlertDialog}
      */
     public static void reset() {
-        Robolectric.getShadowApplication().setLatestAlertDialog(null);
+        getShadowApplication().setLatestAlertDialog(null);
     }
 
     /**
      * Simulates a click on the {@code Dialog} item indicated by {@code index}. Handles both multi- and single-choice dialogs, tracks which items are currently
      * checked and calls listeners appropriately.
      *
-     * @param index
-     *            the index of the item to click on
+     * @param index the index of the item to click on
      */
     public void clickOnItem(int index) {
         if (isMultiItem) {
             checkedItems[index] = !checkedItems[index];
-            multiChoiceClickListener.onClick(realDialog, index, checkedItems[index]);
+            multiChoiceClickListener.onClick(realAlertDialog, index, checkedItems[index]);
         } else {
             if (isSingleItem) {
                 checkedItemIndex = index;
             }
-            clickListener.onClick(realDialog, index);
+            clickListener.onClick(realAlertDialog, index);
         }
     }
 
     @Implementation
     public Button getButton(int whichButton) {
         switch (whichButton) {
-        case AlertDialog.BUTTON_POSITIVE:
-            return positiveButton;
-        case AlertDialog.BUTTON_NEGATIVE:
-            return negativeButton;
-        case AlertDialog.BUTTON_NEUTRAL:
-            return neutralButton;
+            case AlertDialog.BUTTON_POSITIVE:
+                return positiveButton;
+            case AlertDialog.BUTTON_NEGATIVE:
+                return negativeButton;
+            case AlertDialog.BUTTON_NEUTRAL:
+                return neutralButton;
         }
         throw new RuntimeException("Only positive, negative, or neutral button choices are recognized");
     }
@@ -104,7 +103,7 @@ public class ShadowAlertDialog extends ShadowDialog {
     public CharSequence[] getItems() {
         return items;
     }
-    
+
     /**
      * Non-Android accessor.
      *
@@ -123,7 +122,6 @@ public class ShadowAlertDialog extends ShadowDialog {
      * Non-Android accessor.
      *
      * @return an array indicating which items are and are not clicked on a multi-choice dialog
-     *         todo: support single choice dialogs
      */
     public boolean[] getCheckedItems() {
         return checkedItems;
@@ -132,13 +130,18 @@ public class ShadowAlertDialog extends ShadowDialog {
     /**
      * Non-Android accessor.
      *
-     * @return the message displayed in the dialog
+     * @return return the index of the checked item clicked on a single-choice dialog
      */
-    @Override
-    public boolean isCancelable() {
-        return isCancelable;
+    public int getCheckedItemIndex() {
+        return checkedItemIndex;
     }
-    
+
+    @Implementation
+    public void show() {
+        super.show();
+        getShadowApplication().setLatestAlertDialog(this);
+    }
+
     /**
      * Shadows the {@code android.app.AlertDialog.Builder} class.
      */
@@ -149,7 +152,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         private CharSequence[] items;
         private DialogInterface.OnClickListener clickListener;
-		private DialogInterface.OnCancelListener cancelListener;
+        private DialogInterface.OnCancelListener cancelListener;
         private String title;
         private String message;
         private Context context;
@@ -169,8 +172,7 @@ public class ShadowAlertDialog extends ShadowDialog {
         /**
          * just stashes the context for later use
          *
-         * @param context
-         *            the context
+         * @param context the context
          */
         public void __constructor__(Context context) {
             this.context = context;
@@ -236,7 +238,7 @@ public class ShadowAlertDialog extends ShadowDialog {
         public AlertDialog.Builder setTitle(int titleId) {
             return setTitle(context.getResources().getString(titleId));
         }
-        
+
         @Implementation
         public AlertDialog.Builder setMessage(CharSequence message) {
             this.message = message.toString();
@@ -253,7 +255,7 @@ public class ShadowAlertDialog extends ShadowDialog {
         public AlertDialog.Builder setIcon(int iconId) {
             return realBuilder;
         }
-        
+
         @Implementation
         public AlertDialog.Builder setPositiveButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.positiveText = text;
@@ -263,7 +265,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         @Implementation
         public AlertDialog.Builder setPositiveButton(int positiveTextId, final DialogInterface.OnClickListener listener) {
-        	return setPositiveButton(context.getResources().getText(positiveTextId), listener);
+            return setPositiveButton(context.getResources().getText(positiveTextId), listener);
         }
 
         @Implementation
@@ -275,9 +277,9 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         @Implementation
         public AlertDialog.Builder setNegativeButton(int negativeTextId, final DialogInterface.OnClickListener listener) {
-        	return setNegativeButton(context.getResources().getString(negativeTextId), listener);
+            return setNegativeButton(context.getResources().getString(negativeTextId), listener);
         }
-        
+
         @Implementation
         public AlertDialog.Builder setNeutralButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.neutralText = text;
@@ -287,19 +289,20 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         @Implementation
         public AlertDialog.Builder setNeutralButton(int neutralTextId, final DialogInterface.OnClickListener listener) {
-        	return setNegativeButton(context.getResources().getText(neutralTextId), listener);
+            return setNegativeButton(context.getResources().getText(neutralTextId), listener);
         }
-        
+
+
         @Implementation
         public AlertDialog.Builder setCancelable(boolean cancelable) {
             this.isCancelable = cancelable;
             return realBuilder;
         }
-        
+
         @Implementation
         public AlertDialog.Builder setOnCancelListener(DialogInterface.OnCancelListener listener) {
-			this.cancelListener = listener;
-        	return realBuilder;
+            this.cancelListener = listener;
+            return realBuilder;
         }
 
         @Implementation
@@ -315,7 +318,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
             ShadowAlertDialog latestAlertDialog = shadowOf(realDialog);
             latestAlertDialog.context = context;
-            latestAlertDialog.realDialog = realDialog;
+            latestAlertDialog.realAlertDialog = realDialog;
             latestAlertDialog.items = items;
             latestAlertDialog.setTitle(title);
             latestAlertDialog.message = message;
@@ -329,9 +332,7 @@ public class ShadowAlertDialog extends ShadowDialog {
             latestAlertDialog.positiveButton = createButton(realDialog, AlertDialog.BUTTON_POSITIVE, positiveText, positiveListener);
             latestAlertDialog.negativeButton = createButton(realDialog, AlertDialog.BUTTON_NEGATIVE, negativeText, negativeListener);
             latestAlertDialog.neutralButton = createButton(realDialog, AlertDialog.BUTTON_NEUTRAL, neutralText, neutralListener);
-            latestAlertDialog.isCancelable = isCancelable;
-
-            Robolectric.getShadowApplication().setLatestAlertDialog(latestAlertDialog);
+            latestAlertDialog.setCancelable(isCancelable);
 
             return realDialog;
         }
