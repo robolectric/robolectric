@@ -1,16 +1,21 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.os.AsyncTask;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.Join;
-import com.xtremelabs.robolectric.util.Transcript;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.util.concurrent.TimeUnit;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import android.os.AsyncTask;
+
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.Join;
+import com.xtremelabs.robolectric.util.Transcript;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AsyncTaskTest {
@@ -31,6 +36,7 @@ public class AsyncTaskTest {
 
         Robolectric.runBackgroundTasks();
         transcript.assertEventsSoFar("doInBackground a, b");
+        assertEquals("Result should get stored in the AsyncTask", "c", asyncTask.get(100, TimeUnit.MILLISECONDS));
 
         Robolectric.runUiThreadTasks();
         transcript.assertEventsSoFar("onPostExecute c");
@@ -43,13 +49,14 @@ public class AsyncTaskTest {
         asyncTask.execute("a", "b");
         transcript.assertEventsSoFar("onPreExecute");
 
-        assertTrue(asyncTask.cancel(false));
+        assertTrue(asyncTask.cancel(true));
+        assertTrue(asyncTask.isCancelled());
 
         Robolectric.runBackgroundTasks();
         transcript.assertNoEventsSoFar();
 
         Robolectric.runUiThreadTasks();
-        transcript.assertNoEventsSoFar();
+        transcript.assertEventsSoFar("onCancelled");
     }
 
     @Test
@@ -61,8 +68,10 @@ public class AsyncTaskTest {
 
         Robolectric.runBackgroundTasks();
         transcript.assertEventsSoFar("doInBackground a, b");
+        assertEquals("Result should get stored in the AsyncTask", "c", asyncTask.get(100, TimeUnit.MILLISECONDS));
 
-        assertFalse(asyncTask.cancel(false));
+        assertFalse(asyncTask.cancel(true));
+        assertFalse(asyncTask.isCancelled());
 
         Robolectric.runUiThreadTasks();
         transcript.assertEventsSoFar("onPostExecute c");
@@ -84,6 +93,7 @@ public class AsyncTaskTest {
 
         Robolectric.runBackgroundTasks();
         transcript.assertNoEventsSoFar();
+        assertEquals("Result should get stored in the AsyncTask", "done", asyncTask.get(100, TimeUnit.MILLISECONDS));
 
         Robolectric.runUiThreadTasks();
         transcript.assertEventsSoFar(
@@ -112,7 +122,7 @@ public class AsyncTaskTest {
         }
 
         @Override protected void onCancelled() {
-            super.onCancelled();
+        	transcript.add("onCancelled");
         }
     }
 }
