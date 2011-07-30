@@ -48,7 +48,7 @@ public class ShadowAlertDialog extends ShadowDialog {
     @Implementation
     public View findViewById(int viewId) {
         if(view == null) {
-            return null;
+            return super.findViewById(viewId);
         }
 
         return view.findViewById(viewId);

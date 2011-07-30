@@ -11,12 +11,14 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.resetStaticState;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -175,7 +177,19 @@ public class AlertDialogTest {
         
         assertThat(dialog.findViewById(66), nullValue());
     }
-    
+
+    @Test
+    public void shouldDelegateToDialogFindViewByIdIfViewIsNull() {
+        AlertDialog dialog = new AlertDialog(Robolectric.application) {
+        };
+
+        assertThat(dialog.findViewById(99), nullValue());
+
+        dialog.setContentView(R.layout.main);
+        assertNotNull(dialog.findViewById(R.id.title));
+    }
+
+
     private static class TestDialogOnClickListener implements DialogInterface.OnClickListener {
         private DialogInterface dialog;
         private int clickedItem;
