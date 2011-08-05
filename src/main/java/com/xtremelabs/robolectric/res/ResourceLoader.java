@@ -50,6 +50,7 @@ public class ResourceLoader {
     private MenuLoader menuLoader;
     private PreferenceLoader preferenceLoader;
     private final StringResourceLoader stringResourceLoader;
+    private final PluralResourceLoader pluralResourceLoader;
     private final StringArrayResourceLoader stringArrayResourceLoader;
     private final AttrResourceLoader attrResourceLoader;
     private final ColorResourceLoader colorResourceLoader;
@@ -69,6 +70,7 @@ public class ResourceLoader {
         resourceExtractor.addSystemRClass(R.class);
 
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
+        pluralResourceLoader = new PluralResourceLoader(resourceExtractor, stringResourceLoader);
         stringArrayResourceLoader = new StringArrayResourceLoader(
                 resourceExtractor, stringResourceLoader);
         colorResourceLoader = new ColorResourceLoader(resourceExtractor);
@@ -101,6 +103,8 @@ public class ResourceLoader {
 
                 loadStringResources(localValueResourceDir,
                         systemValueResourceDir);
+                loadPluralsResources(localValueResourceDir,
+                        systemValueResourceDir);
                 loadValueResources(localValueResourceDir,
                         systemValueResourceDir);
                 loadViewResources(systemResourceDir, resourceDir);
@@ -127,6 +131,14 @@ public class ResourceLoader {
             File systemValueResourceDir) throws Exception {
         DocumentLoader stringResourceDocumentLoader = new DocumentLoader(
                 this.stringResourceLoader);
+        loadValueResourcesFromDirs(stringResourceDocumentLoader,
+                localResourceDir, systemValueResourceDir);
+    }
+
+    private void loadPluralsResources(File localResourceDir,
+            File systemValueResourceDir) throws Exception {
+        DocumentLoader stringResourceDocumentLoader = new DocumentLoader(
+                this.pluralResourceLoader);
         loadValueResourcesFromDirs(stringResourceDocumentLoader,
                 localResourceDir, systemValueResourceDir);
     }
@@ -319,6 +331,7 @@ public class ResourceLoader {
     protected ResourceLoader(StringResourceLoader stringResourceLoader) {
         resourceExtractor = new ResourceExtractor();
         this.stringResourceLoader = stringResourceLoader;
+        pluralResourceLoader = null;
         viewLoader = null;
         stringArrayResourceLoader = null;
         attrResourceLoader = null;
@@ -352,6 +365,11 @@ public class ResourceLoader {
     public String getStringValue(int id) {
         init();
         return stringResourceLoader.getValue(id);
+    }
+
+    public String getPluralStringValue(int id, int quantity) {
+        init();
+        return pluralResourceLoader.getValue(id, quantity);
     }
 
     public boolean isDrawableXml(int resourceId) {
