@@ -42,20 +42,6 @@ public abstract class ShadowSQLiteProgram {
 	
 	@Implementation
 	public void compile(String sql, boolean forceCompilation) {
-        // Only compile if we don't have a valid statement already or the caller has
-        // explicitly requested a recompile. 
-       // if (nStatement == 0 || forceCompilation) {
-       //   Robolectric.shadowOf(mDatabase).lock();
-           // try {
-                // Note that the native_compile() takes care of destroying any previously
-                // existing programs before it compiles.
-            //    acquireReference();                
-            //    native_compile(sql);
-           // } finally {
-           //     releaseReference();
-          //      Robolectric.shadowOf(mDatabase).unlock();
-         //   }        
-      //  }
     } 
 	
 

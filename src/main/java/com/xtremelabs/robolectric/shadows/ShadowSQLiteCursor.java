@@ -123,10 +123,8 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     }
     
     private void checkPosition() {
-        if (-1 == currentRowNumber || getCount() == currentRowNumber) {
-        	//TODO: make this an IndexOutOfBoundsException
-          //  throw new IndexOutOfBoundsException(currentRowNumber, getCount());
-        	throw new RuntimeException("SQLiteCursor threw IndexOutOfBoundsException");
+        if (-1 == currentRowNumber || getCount() == currentRowNumber) {      
+            throw new IndexOutOfBoundsException(currentRowNumber + " " + getCount());
         }
     }
 

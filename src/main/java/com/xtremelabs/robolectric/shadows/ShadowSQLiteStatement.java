@@ -1,15 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
+
+import org.h2.jdbc.JdbcSQLException;
 
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteStatement;
-import android.os.SystemClock;
 
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -52,4 +50,33 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
 			 throw new RuntimeException(e);
 		 }
 	 }
+	 
+	 @Implementation
+	 public long simpleQueryForLong() {	 
+		ResultSet rs;
+		try {
+			rs = actualDBstatement.executeQuery();
+			rs.first();
+			return rs.getLong(1);
+		} catch (JdbcSQLException e) {
+			if (e.getMessage().contains("No data is available")) throw new android.database.sqlite.SQLiteDoneException("No data is available"); //if the query returns zero rows
+			throw new RuntimeException(e);
+		} catch (SQLException e) {
+			throw new RuntimeException(e);
+		} 
+	 }
+	 	@Implementation
+	    public String simpleQueryForString() {
+	 		ResultSet rs;
+			try {
+				rs = actualDBstatement.executeQuery();
+				rs.first();
+				return rs.getString(1);
+			} catch (JdbcSQLException e) {
+				if (e.getMessage().contains("No data is available")) throw new android.database.sqlite.SQLiteDoneException("No data is available"); //if the query returns zero rows
+				throw new RuntimeException(e);
+			} catch (SQLException e) {
+				throw new RuntimeException(e);
+			} 
+	 	}
 }

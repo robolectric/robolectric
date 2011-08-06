@@ -42,6 +42,14 @@ public class SQLiteDatabaseTest {
                 "  big_int INTEGER\n" +
                 ");");
         
+        database.execSQL("CREATE TABLE exectable (\n" +
+                "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                "  first_column VARCHAR(255),\n" +
+                "  second_column BINARY,\n" +
+                "  name VARCHAR(255),\n" +
+                "  big_int INTEGER\n" +
+                ");");
+        
         String stringColumnValue = "column_value";
         byte[] byteColumnValue = new byte[]{1, 2, 3};
 
@@ -115,6 +123,8 @@ public class SQLiteDatabaseTest {
         assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
     }
 
+ 
+    
     @Test(expected=IllegalArgumentException.class)
     public void testRawQueryThrowsIndex0NullException() throws Exception {
         database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?",new String[]{null} );
@@ -317,6 +327,65 @@ public class SQLiteDatabaseTest {
     @Test(expected = android.database.SQLException.class)
     public void testExecSQLException() throws Exception {
         database.execSQL("INSERT INTO table_name;");    // invalid SQL
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void testExecSQLException2() throws Exception {
+    	database.execSQL("insert into exectable (first_column) values (?);",null);
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void testExecSQLException4() throws Exception {
+    	database.execSQL("insert into exectable (first_column) values ('sdfsfs');",null);
+    }
+    
+    @Test(expected=Exception.class)
+    public void testExecSQLException5() throws Exception {
+        //TODO: make this throw android.database.SQLException.class
+    	database.execSQL("insert into exectable (first_column) values ('kjhk');",new String[]{"xxxx"});
+    }
+    
+    @Test(expected=Exception.class)
+    public void testExecSQLException6() throws Exception {
+        //TODO: make this throw android.database.SQLException.class
+    	database.execSQL("insert into exectable (first_column) values ('kdfd');",new String[]{null});
+    }
+    
+    @Test
+    public void testExecSQL2() throws Exception {
+    	database.execSQL("insert into exectable (first_column) values ('eff');",new String[]{});
+    }
+    
+    @Test
+    public void testExecSQLInsertNull() throws Exception {
+    	String name = "nullone";
+    	
+    	database.execSQL("insert into exectable (first_column, name) values (?,?);",new String[]{null,name});
+    	
+    	Cursor cursor = database.rawQuery("select * from exectable WHERE `name` = ?",new String[]{name} );
+    	cursor.moveToFirst();
+    	int firstIndex = cursor.getColumnIndex("first_column");
+    	int nameIndex = cursor.getColumnIndex("name");
+    	assertThat(cursor.getString(nameIndex),equalTo(name));
+        assertThat(cursor.getString(firstIndex),equalTo(null));
+    	
+    }
+    
+    @Test(expected=Exception.class)
+    public void testExecSQLInsertNullShouldBeException() throws Exception {
+    	//this inserts null in android, but it when it happens it is likely an error.  H2 throws an exception.  So we'll make Robolectric expect an Exception so that the error can be found.
+    	
+    	database.delete("exectable", null, null);
+    	
+    	Cursor cursor = database.rawQuery("select * from exectable",null);
+    	cursor.moveToFirst();
+    	assertThat(cursor.getCount(),equalTo(0));
+    	
+    	database.execSQL("insert into exectable (first_column) values (?);",new String[]{});
+    	Cursor cursor2 = database.rawQuery("select * from exectable",new String[]{null} );
+    	cursor.moveToFirst();
+    	assertThat(cursor2.getCount(),equalTo(1));
+        
     }
 
     @Test
