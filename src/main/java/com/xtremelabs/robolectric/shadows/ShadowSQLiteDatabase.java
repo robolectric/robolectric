@@ -230,20 +230,17 @@ public class ShadowSQLiteDatabase  {
 
 
     @Implementation
-    public Cursor rawQuery (String sql, String[] selectionArgs){
-        String sqlBody = sql;
-        if (sql != null && selectionArgs != null) {
-        	sqlBody = buildWhereClause(sql, selectionArgs);
-        }
+    public Cursor rawQuery (String sql, String[] selectionArgs){        
         ResultSet resultSet;
         try {
-            Statement statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
-            resultSet = statement.executeQuery(sqlBody);
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in query", e);
-        }
-
-      //TODO: ASSERT rawquery with args returns actual values (we want to test that sqlBody is passed to setResultSet and not sql)
+          	SQLiteStatement stmt = compileStatement(sql);
+              for(int x=0;x<selectionArgs.length;x++) {
+              	stmt.bindString(x, selectionArgs[x]);
+              }
+              resultSet = Robolectric.shadowOf(stmt).getStatement().executeQuery();
+          } catch (SQLException e) {
+              throw new RuntimeException("SQL exception in query", e);
+          }
         SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
         shadowOf(cursor).setResultSet(resultSet, sqlBody);
         return cursor;

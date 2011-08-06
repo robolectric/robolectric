@@ -77,7 +77,7 @@ public class SQLiteDatabaseTest {
 
         database.insert("table_name", null, values);
 
-        Cursor cursor = database.rawQuery("select second_column, first_column from table_name", null);
+        Cursor cursor = database.rawQuery("select second_column, first_column from table_name", new String[]{});
 
         assertThat(cursor.moveToFirst(), equalTo(true));
 
@@ -88,6 +88,16 @@ public class SQLiteDatabaseTest {
         assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
     }
 
+    @Test(expected=IllegalArgumentException.class)
+    public void testRawQueryThrowsIndex0NullException() throws Exception {
+        database.rawQuery("select second_column, first_column from table_name WHERE `id` = ?",new String[]{null} );
+    }
+    
+    @Test(expected=NullPointerException.class)
+    public void testRawQueryThrowsNullException() throws Exception {
+        database.rawQuery("select second_column, first_column from table_name WHERE `id` = ?",null );
+    }
+    
     @Test
     public void testInsertWithException() {
         ContentValues values = new ContentValues();
@@ -333,4 +343,6 @@ public class SQLiteDatabaseTest {
         assertThat(cursor.moveToFirst(), equalTo(true));
         assertThat(cursor.getCount(), not(equalTo(0)));
     }
+    
+    
 }

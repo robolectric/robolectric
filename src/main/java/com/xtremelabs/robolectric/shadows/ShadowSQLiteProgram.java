@@ -67,7 +67,7 @@ public abstract class ShadowSQLiteProgram {
      */
 	@Implementation
     public void bindNull(int index) {
-	//	parameterMap.put(index, null);
+		checkDatabaseIsOpen();
 		try {
 			// SQLite ignores typecode
 			// typecode is also ignored in H2 when using the two parameter setNUll()
@@ -86,14 +86,25 @@ public abstract class ShadowSQLiteProgram {
      */
     @Implementation
     public void bindLong(int index, long value) {
-    //	parameterMap.put(index, value);
+    	checkDatabaseIsOpen();
+
     	try {
 			actualDBstatement.setLong(index,value);
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
     }
+    
+    private void checkDatabaseIsOpen() {
+    	if (!mDatabase.isOpen()) {
+            throw new IllegalStateException("database " + mDatabase.getPath() + " already closed");
+        }
+    }
 
+    public PreparedStatement getStatement() {
+    	return actualDBstatement;
+    }
+    
     /**
      * Bind a double value to this statement. The value remains bound until
      * {@link #clearBindings} is called.
@@ -103,7 +114,7 @@ public abstract class ShadowSQLiteProgram {
      */
     @Implementation
     public void bindDouble(int index, double value) {
-    	//parameterMap.put(index, value);
+    	checkDatabaseIsOpen();
     	try {
 			actualDBstatement.setDouble(index,value);
 		} catch (SQLException e) {
@@ -123,7 +134,7 @@ public abstract class ShadowSQLiteProgram {
         if (value == null) {
             throw new IllegalArgumentException("the bind value at index " + index + " is null");
         }
-      //  parameterMap.put(index, value);
+        checkDatabaseIsOpen();
         try {
 			actualDBstatement.setString(index,value);
 		} catch (SQLException e) {
@@ -143,7 +154,7 @@ public abstract class ShadowSQLiteProgram {
         if (value == null) {
             throw new IllegalArgumentException("the bind value at index " + index + " is null");
         }
-      //  parameterMap.put(index, value);
+        checkDatabaseIsOpen();
         try {
 			actualDBstatement.setBytes(index,value);
 		} catch (SQLException e) {
@@ -157,7 +168,8 @@ public abstract class ShadowSQLiteProgram {
      */
     @Implementation
     public void clearBindings() {
-       //     parameterMap = new HashMap<Integer,Object>();
+    	checkDatabaseIsOpen();
+    	
     	try {
 			actualDBstatement.clearParameters();
 		} catch (SQLException e) {
