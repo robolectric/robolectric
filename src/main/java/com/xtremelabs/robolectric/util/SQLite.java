@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.util;
 
 import android.content.ContentValues;
+import android.database.sqlite.SQLiteException;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -102,12 +103,22 @@ public class SQLite {
      * @param selectionArgs Array of substitutions for args in selection
      * @return where clause
      */
-    public static String buildWhereClause(String selection, String[] selectionArgs) {
+    public static String buildWhereClause(String selection, String[] selectionArgs) throws SQLiteException {
         String whereClause = selection;
-
+        int argsNeeded = 0;
+        int args = 0;
+       
         for (String selectionArg : selectionArgs) {
+        	if (selectionArg!=null)args++;
             whereClause = whereClause.replaceFirst("\\?", "'" + selectionArg + "'");
         }
+        
+        for (char c : selection.toCharArray()) {
+        	if (c=='?') argsNeeded++;
+        }
+        
+        if (argsNeeded<args) throw new SQLiteException("bind or column index out of range: too many selectionArgs for the given sql statement!");
+        
 
         return whereClause;
     }

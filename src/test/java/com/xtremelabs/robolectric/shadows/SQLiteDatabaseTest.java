@@ -33,6 +33,33 @@ public class SQLiteDatabaseTest {
                 "  name VARCHAR(255),\n" +
                 "  big_int INTEGER\n" +
                 ");");
+        
+        database.execSQL("CREATE TABLE rawtable (\n" +
+                "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
+                "  first_column VARCHAR(255),\n" +
+                "  second_column BINARY,\n" +
+                "  name VARCHAR(255),\n" +
+                "  big_int INTEGER\n" +
+                ");");
+        
+        String stringColumnValue = "column_value";
+        byte[] byteColumnValue = new byte[]{1, 2, 3};
+
+        ContentValues values = new ContentValues();
+
+        values.put("first_column", stringColumnValue);
+        values.put("second_column", byteColumnValue);
+
+        database.insert("rawtable", null, values);
+        ////////////////////////////////////////////////
+        String stringColumnValue2 = "column_value2";
+        byte[] byteColumnValue2 = new byte[]{4, 5, 6};
+        ContentValues values2 = new ContentValues();
+
+        values2.put("first_column", stringColumnValue2);
+        values2.put("second_column", byteColumnValue2);
+
+        database.insert("rawtable", null, values2);
     }
 
     
@@ -77,7 +104,7 @@ public class SQLiteDatabaseTest {
 
         database.insert("table_name", null, values);
 
-        Cursor cursor = database.rawQuery("select second_column, first_column from table_name", new String[]{});
+        Cursor cursor = database.rawQuery("select second_column, first_column from table_name",null);
 
         assertThat(cursor.moveToFirst(), equalTo(true));
 
@@ -90,12 +117,46 @@ public class SQLiteDatabaseTest {
 
     @Test(expected=IllegalArgumentException.class)
     public void testRawQueryThrowsIndex0NullException() throws Exception {
-        database.rawQuery("select second_column, first_column from table_name WHERE `id` = ?",new String[]{null} );
+        database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?",new String[]{null} );
+    }
+    @Test(expected=IllegalArgumentException.class)
+    public void testRawQueryThrowsIndex0NullException2() throws Exception {
+    	database.rawQuery("select second_column, first_column from rawtable",new String[]{null} );
     }
     
-    @Test(expected=NullPointerException.class)
-    public void testRawQueryThrowsNullException() throws Exception {
-        database.rawQuery("select second_column, first_column from table_name WHERE `id` = ?",null );
+    @Test
+    public void testRawQueryCount() throws Exception {
+      Cursor cursor = database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?",new String[]{"1"} );
+      assertThat(cursor.getCount(),equalTo(1));
+    }
+    
+    @Test
+    public void testRawQueryCount2() throws Exception {
+      Cursor cursor = database.rawQuery("select second_column, first_column from rawtable",null );
+      assertThat(cursor.getCount(),equalTo(2));
+    }
+    
+    @Test
+    public void testRawQueryCount3() throws Exception {
+      Cursor cursor = database.rawQuery("select second_column, first_column from rawtable",new String[]{});
+      assertThat(cursor.getCount(),equalTo(2));
+    }
+    
+    @Test(expected=Exception.class)
+    public void testRawQueryCount4() throws Exception {
+    	//Android and SQLite don't normally throw an exception here.  But I wish they would, H2 does.  Lets make sure Robolectric does (whether it runs with H2 or not). 
+    	Cursor cursor = database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?",null);
+    }
+    
+    @Test(expected=Exception.class)
+    public void testRawQueryCount5() throws Exception {
+    	//Android and SQLite don't normally throw an exception here.  But I wish they would, H2 does.  Lets make sure Robolectric does (whether it runs with H2 or not).
+    	Cursor cursor = database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?",new String[]{});
+    }
+    
+    @Test(expected=android.database.sqlite.SQLiteException.class)
+    public void testRawQueryCount8() throws Exception {
+    	Cursor cursor = database.rawQuery("select second_column, first_column from rawtable",new String[]{"1"});
     }
     
     @Test

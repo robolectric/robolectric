@@ -1,12 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.SQLite.buildDeleteString;
 import static com.xtremelabs.robolectric.util.SQLite.buildInsertString;
 import static com.xtremelabs.robolectric.util.SQLite.buildUpdateString;
 import static com.xtremelabs.robolectric.util.SQLite.buildWhereClause;
-
+import static com.xtremelabs.robolectric.Robolectric.*;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -18,14 +16,12 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import android.content.ContentValues;
 import android.database.Cursor;
-import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteClosable;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.database.sqlite.SQLiteQueryBuilder;
 import android.database.sqlite.SQLiteStatement;
-import android.os.SystemClock;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -230,17 +226,29 @@ public class ShadowSQLiteDatabase  {
 
 
     @Implementation
-    public Cursor rawQuery (String sql, String[] selectionArgs){        
+    public Cursor rawQuery (String sql, String[] selectionArgs){
+    	String sqlBody = sql;
+        if (sql != null && selectionArgs != null) {
+        	sqlBody = buildWhereClause(sql, selectionArgs);
+        }
+    	
         ResultSet resultSet;
         try {
           	SQLiteStatement stmt = compileStatement(sql);
-              for(int x=0;x<selectionArgs.length;x++) {
-              	stmt.bindString(x, selectionArgs[x]);
-              }
+          	
+          	 int numArgs = selectionArgs == null ? 0
+                     : selectionArgs.length;
+             for (int i = 0; i < numArgs; i++) {
+            		stmt.bindString(i + 1, selectionArgs[i]);
+             }
+          
               resultSet = Robolectric.shadowOf(stmt).getStatement().executeQuery();
           } catch (SQLException e) {
               throw new RuntimeException("SQL exception in query", e);
           }
+          //TODO: assert rawquery with args returns actual values
+          
+          
         SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
         shadowOf(cursor).setResultSet(resultSet, sqlBody);
         return cursor;
