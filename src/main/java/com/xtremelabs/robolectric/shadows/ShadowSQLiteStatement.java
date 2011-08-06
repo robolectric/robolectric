@@ -56,12 +56,13 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
 		ResultSet rs;
 		try {
 			rs = actualDBstatement.executeQuery();
-			rs.first();
+			rs.next();
 			return rs.getLong(1);
 		} catch (JdbcSQLException e) {
 			if (e.getMessage().contains("No data is available")) throw new android.database.sqlite.SQLiteDoneException("No data is available"); //if the query returns zero rows
 			throw new RuntimeException(e);
 		} catch (SQLException e) {
+			if (e.getMessage().contains("ResultSet closed")) throw new android.database.sqlite.SQLiteDoneException("ResultSet closed,(probably, no data available)"); //if the query returns zero rows (SQLiteMap)
 			throw new RuntimeException(e);
 		} 
 	 }
@@ -70,12 +71,13 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
 	 		ResultSet rs;
 			try {
 				rs = actualDBstatement.executeQuery();
-				rs.first();
+				rs.next();
 				return rs.getString(1);
 			} catch (JdbcSQLException e) {
-				if (e.getMessage().contains("No data is available")) throw new android.database.sqlite.SQLiteDoneException("No data is available"); //if the query returns zero rows
+				if (e.getMessage().contains("No data is available")) throw new android.database.sqlite.SQLiteDoneException("No data is available"); //if the query returns zero rows (H2Map)
 				throw new RuntimeException(e);
 			} catch (SQLException e) {
+				if (e.getMessage().contains("ResultSet closed")) throw new android.database.sqlite.SQLiteDoneException("ResultSet closed,(probably, no data available)"); //if the query returns zero rows (SQLiteMap)
 				throw new RuntimeException(e);
 			} 
 	 	}
