@@ -7,14 +7,13 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.MediaScannerConnection;
 import android.os.IBinder;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ServiceTest {
@@ -51,7 +50,7 @@ public class ServiceTest {
         ServiceConnection conn = newInstanceOf(MediaScannerConnection.class);
         service.unbindService(conn);
     }
-
+    
     private static class MyService extends Service {
         @Override public void onDestroy() {
             super.onDestroy();

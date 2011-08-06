@@ -1,11 +1,9 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
 import com.xtremelabs.robolectric.shadows.StatusLineStub;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpVersion;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.StatusLine;
+import org.apache.http.*;
+import org.apache.http.params.BasicHttpParams;
+import org.apache.http.params.HttpParams;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -16,10 +14,11 @@ public class TestHttpResponse extends HttpResponseStub {
 
     private int statusCode;
     private String responseBody;
-    private Header contentType;
     private TestStatusLine statusLine = new TestStatusLine();
     private TestHttpEntity httpEntity = new TestHttpEntity();
     private int openEntityContentStreamCount = 0;
+    private Header[] headers = new Header[0];
+    private HttpParams params = new BasicHttpParams();
 
     public TestHttpResponse() {
         this.statusCode = 200;
@@ -31,9 +30,9 @@ public class TestHttpResponse extends HttpResponseStub {
         this.responseBody = responseBody;
     }
 
-    public TestHttpResponse(int statusCode, String responseBody, Header contentType) {
+    public TestHttpResponse(int statusCode, String responseBody, Header[] headers) {
         this(statusCode, responseBody);
-        this.contentType = contentType;
+        this.headers = headers;
     }
 
     protected void setResponseBody(String responseBody) {
@@ -49,7 +48,15 @@ public class TestHttpResponse extends HttpResponseStub {
     }
 
     @Override public Header[] getAllHeaders() {
-        return new Header[] { contentType };
+        return headers;
+    }
+
+    @Override public HttpParams getParams() {
+        return params;
+    }
+
+    @Override public void setParams(HttpParams httpParams) {
+        this.params = httpParams;
     }
 
     public boolean entityContentStreamsHaveBeenClosed() {
@@ -65,7 +72,12 @@ public class TestHttpResponse extends HttpResponseStub {
         }
         
         @Override public Header getContentType() {
-            return contentType;
+            for (Header header : headers) {
+                if (header.getName().equals("Content-Type")) {
+                    return header;
+                }
+            }
+            return null;
         }
         
         @Override public boolean isStreaming() {

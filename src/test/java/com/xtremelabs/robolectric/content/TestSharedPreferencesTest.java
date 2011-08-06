@@ -6,7 +6,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.util.HashMap;
-import java.util.Hashtable;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -14,15 +14,16 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class TestSharedPreferencesTest {
-    private HashMap<String, Hashtable<String, Object>> content;
+    private HashMap<String, Map<String, Object>> content;
     private SharedPreferences.Editor editor;
+    TestSharedPreferences sharedPreferences;
 
     @Before
     public void setUp() {
-        content = new HashMap<String, Hashtable<String, Object>>();
+        content = new HashMap<String, Map<String, Object>>();
 
-        TestSharedPreferences testSharedPreferences = new TestSharedPreferences(content, "prefsName", 3);
-        editor = testSharedPreferences.edit();
+        sharedPreferences = new TestSharedPreferences(content, "prefsName", 3);
+        editor = sharedPreferences.edit();
         editor.putBoolean("boolean", true);
         editor.putFloat("float", 1.1f);
         editor.putInt("int", 2);
@@ -40,6 +41,14 @@ public class TestSharedPreferencesTest {
         assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(2));
         assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(3l));
         assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
+    }
+
+    @Test
+    public void getAll_shouldReturnAllValues() throws Exception {
+        editor.commit();
+        Map<String, ?> all = sharedPreferences.getAll();
+        assertThat(all.size(), equalTo(5));
+        assertThat((Integer) all.get("int"), equalTo(2));
     }
 
     @Test

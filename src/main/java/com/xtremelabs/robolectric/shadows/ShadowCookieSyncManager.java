@@ -41,4 +41,8 @@ public class ShadowCookieSyncManager {
     public boolean synced() {
         return synced;
     }
+
+    public void reset() {
+        synced = false;
+    }
 }

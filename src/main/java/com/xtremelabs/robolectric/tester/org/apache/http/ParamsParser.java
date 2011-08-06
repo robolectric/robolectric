@@ -1,9 +1,12 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
 import org.apache.http.HttpRequest;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.util.EntityUtils;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Field;
 import java.net.URI;
@@ -19,6 +22,12 @@ public class ParamsParser {
         Map<String, String> params;
         if (rawQuery != null) {
             params = parseParamsFromQuery(rawQuery);
+        } else if (request instanceof HttpPost && ((HttpPost) request).getEntity() != null) {
+            try {
+                params = parseParamsFromQuery(EntityUtils.toString(((HttpPost) request).getEntity()));
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         } else {
             HttpParams httpParams = request.getParams();
             if (httpParams instanceof BasicHttpParams) {

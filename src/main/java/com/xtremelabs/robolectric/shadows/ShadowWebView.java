@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
@@ -26,6 +27,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     private boolean clearHistoryCalled = false;
     private boolean clearViewCalled = false;
     private boolean destroyCalled = false;
+    private WebChromeClient webChromeClient;
 
     @Override public void __constructor__(Context context, AttributeSet attributeSet) {
         super.__constructor__(context, attributeSet);
@@ -53,6 +55,11 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     @Implementation
     public void setWebViewClient(WebViewClient client) {
         webViewClient = client;
+    }
+
+    @Implementation
+    public void setWebChromeClient(WebChromeClient client) {
+        webChromeClient = client;
     }
 
     public WebViewClient getWebViewClient() {
@@ -126,5 +133,9 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     
     public boolean getRunFlag() {
     	return runFlag;
+    }
+
+    public WebChromeClient getWebChromeClient() {
+        return webChromeClient;
     }
 }

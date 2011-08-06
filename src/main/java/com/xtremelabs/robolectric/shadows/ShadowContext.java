@@ -11,6 +11,9 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -79,6 +82,22 @@ abstract public class ShadowContext {
         File file = new File(System.getProperty("java.io.tmpdir"), "android-tmp");
         file.mkdirs();
         return file;
+    }
+
+    @Implementation
+    public FileInputStream openFileInput(String path) throws FileNotFoundException {
+        if (path.contains(File.separator)) {
+            throw new IllegalArgumentException("File " + path + " contains a path separator");
+        }
+        return new FileInputStream(new File(path));
+    }
+
+    @Implementation
+    public FileOutputStream openFileOutput(String path, int mode) throws FileNotFoundException {
+        if (path.contains(File.separator)) {
+            throw new IllegalArgumentException("File " + path + " contains a path separator");
+        }
+        return new FileOutputStream(new File(path));
     }
 
     @Implementation

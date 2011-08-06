@@ -2,9 +2,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -17,7 +22,11 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.util.Scheduler;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -68,7 +77,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private final Looper mainLooper = newInstanceOf(Looper.class);
     private Looper currentLooper = mainLooper;
     private Scheduler backgroundScheduler = new Scheduler();
-    private Map<String, Hashtable<String, Object>> sharedPreferenceMap = new HashMap<String, Hashtable<String, Object>>();
+    private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<String, Map<String, Object>>();
     private ArrayList<Toast> shownToasts = new ArrayList<Toast>();
     private ShadowAlertDialog latestAlertDialog;
     private ShadowDialog latestDialog;
@@ -368,7 +377,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         currentLooper = looper;
     }
 
-    public Map<String, Hashtable<String, Object>> getSharedPreferenceMap() {
+    public Map<String, Map<String, Object>> getSharedPreferenceMap() {
         return sharedPreferenceMap;
     }
 

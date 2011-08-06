@@ -8,6 +8,7 @@ pairs:
   jm: Joe Moore
   if: Ian Fisher; ifisher
   pg: Phil Goodwin; phil
+  pp: Phil Plante
   rr: Ryan Richard; rrichard
   cw: Chee Wong;
   gv: Gregg Van Hove; gvanhove
@@ -17,6 +18,8 @@ pairs:
   am: Alexander Murmann
   jt: Jesse Toth
   lt: Lenny Turetsky
+  mg: Mike Grafton
+  gc: Greg Choi
 
 email:
   prefix: pair

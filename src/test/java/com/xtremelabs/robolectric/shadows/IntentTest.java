@@ -1,29 +1,22 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import java.io.Serializable;
-import java.util.ArrayList;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Parcel;
 import android.os.Parcelable;
-
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class IntentTest {
@@ -60,6 +53,17 @@ public class IntentTest {
         assertSame(intent, intent.putExtra("foo", parcelable));
         assertSame(parcelable, intent.getExtras().get("foo"));
         assertSame(parcelable, intent.getParcelableExtra("foo"));
+    }
+
+    @Test
+    public void testParcelableArrayExtra() throws Exception {
+        Intent intent = new Intent();
+        Parcelable parcelable = new TestParcelable();
+        intent.putExtra("foo", parcelable);
+        assertSame(null, intent.getParcelableArrayExtra("foo"));
+        Parcelable[] parcelables = {new TestParcelable(), new TestParcelable()};
+        assertSame(intent, intent.putExtra("bar", parcelables));
+        assertSame(parcelables, intent.getParcelableArrayExtra("bar"));
     }
 
     @Test
@@ -131,10 +135,33 @@ public class IntentTest {
     }
 
     @Test
+    public void testSetClassThroughConstructor() throws Exception {
+        Intent intent = new Intent(new Activity(), getClass());
+        assertEquals(shadowOf(intent).getIntentClass(), getClass());
+    }
+
+    @Test
     public void shouldSetFlags() throws Exception {
         Intent intent = new Intent();
         Intent self = intent.setFlags(1234);
         assertEquals(1234, intent.getFlags());
+        assertSame(self, intent);
+    }
+
+    @Test
+    public void shouldAddFlags() throws Exception {
+        Intent intent = new Intent();
+        Intent self = intent.addFlags(4);
+        self.addFlags(8);
+        assertEquals(12, intent.getFlags());
+        assertSame(self, intent);
+    }
+
+    @Test
+    public void shouldAddCategories() throws Exception {
+        Intent intent = new Intent();
+        Intent self = intent.addCategory("foo");
+        assertTrue(intent.getCategories().contains("foo"));
         assertSame(self, intent);
     }
 
