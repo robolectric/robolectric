@@ -108,18 +108,22 @@ public class SQLite {
         int argsNeeded = 0;
         int args = 0;
        
-        for (String selectionArg : selectionArgs) {
-        	if (selectionArg!=null)args++;
-            whereClause = whereClause.replaceFirst("\\?", "'" + selectionArg + "'");
-        }
-        
         for (char c : selection.toCharArray()) {
         	if (c=='?') argsNeeded++;
         }
+        if (selectionArgs!=null) {
+	        for (int x = 0;x<selectionArgs.length;x++) {
+	        	if (selectionArgs[x]==null) {
+	        		throw new IllegalArgumentException("the bind value at index " + x + " is null");
+	        	} else {
+	        		args++;
+	        	}
+	            whereClause = whereClause.replaceFirst("\\?", "'" + selectionArgs[x] + "'");
+	        }
+        }
+                
+        if (argsNeeded!=args) throw new SQLiteException("bind or column index out of range: count of selectionArgs does not match count of (?) placeholders for given sql statement!");
         
-        if (argsNeeded<args) throw new SQLiteException("bind or column index out of range: too many selectionArgs for the given sql statement!");
-        
-
         return whereClause;
     }
 

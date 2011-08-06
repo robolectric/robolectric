@@ -228,7 +228,7 @@ public class ShadowSQLiteDatabase  {
     @Implementation
     public Cursor rawQuery (String sql, String[] selectionArgs){
     	String sqlBody = sql;
-        if (sql != null && selectionArgs != null) {
+        if (sql != null) {
         	sqlBody = buildWhereClause(sql, selectionArgs);
         }
     	
