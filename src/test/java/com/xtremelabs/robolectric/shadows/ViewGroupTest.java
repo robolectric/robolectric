@@ -81,6 +81,24 @@ public class ViewGroupTest {
         assertThat(root.getChildAt(1), sameInstance((View) child3));
         assertThat(root.getChildAt(2), sameInstance(child2));
     }
+    
+    @Test
+    public void shouldfindViewWithTag() {
+    	 root.removeAllViews();
+    	 String tag1 = "tag1";
+    	 String tag2 = "tag2";
+    	 String tag3 = "tag3";
+    	 child1.setTag(tag1);
+    	 child2.setTag(tag2);
+    	 child3.setTag(tag3);
+         root.addView(child1);
+         root.addView(child2);
+         root.addView(child3, 1);
+         assertThat(root.findViewWithTag("tag1"), sameInstance(child1));
+         assertThat(root.findViewWithTag("tag2"), sameInstance((View) child2));
+         assertThat((ViewGroup)root.findViewWithTag("tag3"), sameInstance(child3));
+    }
+    
 
     @Test
     public void hasFocus_shouldReturnTrueIfAnyChildHasFocus() throws Exception {
