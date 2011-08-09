@@ -102,6 +102,11 @@ public class ShadowContextWrapper extends ShadowContext {
     public ComponentName startService(Intent service) {
         return getApplicationContext().startService(service);
     }
+    
+    @Implementation
+    public boolean stopService(Intent name) {
+    	return getApplicationContext().stopService(name);
+    }
 
     @Implementation
     public void startActivity(Intent intent) {
@@ -155,6 +160,17 @@ public class ShadowContextWrapper extends ShadowContext {
      */
     public Intent peekNextStartedService() {
         return getShadowApplication().peekNextStartedService();
+    }
+    
+    /**
+     * Non-Android accessor that delegates to the application to return the next {@code Intent} to stop 
+     * a service (irrespective of if the service was running)  
+     * 
+     * 
+     * @return {@code Intent} for the next service requested to be stopped
+     */
+    public Intent getNextStoppedService() {
+    	return getShadowApplication().getNextStoppedService();
     }
 
     /**
