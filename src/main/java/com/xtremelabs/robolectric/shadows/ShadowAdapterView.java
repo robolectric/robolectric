@@ -199,7 +199,11 @@ public class ShadowAdapterView extends ShadowViewGroup {
             List<Object> newItems = new ArrayList<Object>();
             for (int i = 0; i < adapter.getCount(); i++) {
                 newItems.add(adapter.getItem(i));
-                addView(adapter.getView(i, null, realAdapterView));
+                View view = adapter.getView(i, null, realAdapterView);
+                // don't add null views
+                if( view != null ) { 
+                	addView(view);
+                }
             }
 
             if (valid && !newItems.equals(previousItems)) {

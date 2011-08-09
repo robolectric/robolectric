@@ -19,7 +19,6 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(AlertDialog.class)
 public class ShadowAlertDialog extends ShadowDialog {
     private CharSequence[] items;
-    private String title;
     private String message;
     private DialogInterface.OnClickListener clickListener;
     private AlertDialog realDialog;
@@ -96,14 +95,14 @@ public class ShadowAlertDialog extends ShadowDialog {
         return items;
     }
     
-    /**
-     * Non-Android accessor.
-     *
-     * @return the title of the dialog
-     */
-    public String getTitle() {
-        return title;
-    }
+//    /**
+//     * Non-Android accessor.
+//     *
+//     * @return the title of the dialog
+//     */
+//    public String getTitle() {
+//        return title;
+//    }
 
     /**
      * Non-Android accessor.
@@ -282,7 +281,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         @Implementation
         public AlertDialog.Builder setNeutralButton(int neutralTextId, final DialogInterface.OnClickListener listener) {
-        	return setNegativeButton(context.getResources().getText(neutralTextId), listener);
+        	return setNeutralButton(context.getResources().getText(neutralTextId), listener);
         }
         
         @Implementation

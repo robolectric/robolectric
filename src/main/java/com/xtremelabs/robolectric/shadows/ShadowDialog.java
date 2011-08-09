@@ -32,7 +32,7 @@ public class ShadowDialog {
     private View inflatedView;
     private boolean hasBeenDismissed;
     private DialogInterface.OnDismissListener onDismissListener;
-    private CharSequence title;
+    protected CharSequence title;
     private DialogInterface.OnCancelListener onCancelListener;
     private Window window;
     private Activity ownerActivity;
