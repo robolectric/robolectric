@@ -48,6 +48,10 @@ public final class R {
         public static final int greeting = nextId++;
     }
 
+    public static final class plurals {
+        public static final int beer = nextId++;
+    }
+
     public static final class array {
         public static final int items = nextId++;
         public static final int greetings = nextId++;
