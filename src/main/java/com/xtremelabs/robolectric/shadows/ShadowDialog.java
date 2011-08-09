@@ -36,7 +36,7 @@ public class ShadowDialog {
     private DialogInterface.OnCancelListener onCancelListener;
     private Window window;
     private Activity ownerActivity;
-    private boolean isCancelable;
+    private boolean isCancelable = true;
     private boolean hasShownBefore;
     
     public static void reset() {
