@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="beer">
+        <item quantity="zero">@string/howdy</item>
+        <item quantity="one">One beer</item>
+        <item quantity="two">Two beers</item>
+        <item quantity="other">%d beers, yay!</item>
+    </plurals>
+</resources>
