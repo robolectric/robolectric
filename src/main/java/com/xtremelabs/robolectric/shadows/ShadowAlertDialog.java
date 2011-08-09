@@ -95,15 +95,6 @@ public class ShadowAlertDialog extends ShadowDialog {
         return items;
     }
     
-//    /**
-//     * Non-Android accessor.
-//     *
-//     * @return the title of the dialog
-//     */
-//    public String getTitle() {
-//        return title;
-//    }
-
     /**
      * Non-Android accessor.
      *
