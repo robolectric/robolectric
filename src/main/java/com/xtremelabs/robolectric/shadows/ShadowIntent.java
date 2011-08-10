@@ -1,19 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -27,8 +13,7 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.Join;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -46,6 +31,7 @@ public class ShadowIntent {
     private Class<?> intentClass;
     private String packageName;
     private Set<String> categories = new HashSet<String>();
+    private String uri;
 
     @Implementation
     public static Intent createChooser(Intent target, CharSequence title) {
@@ -323,6 +309,11 @@ public class ShadowIntent {
         return componentName;
     }
 
+    @Implementation
+    public String toURI() {
+        return uri;
+    }
+
     /**
      * Compares an {@code Intent} with a {@code ShadowIntent} (obtained via a call to
      * {@link Robolectric#shadowOf(android.content.Intent)})
@@ -411,5 +402,9 @@ public class ShadowIntent {
         if (o == null) return null;
         if (o instanceof Map && ((Map) o).isEmpty()) return null;
         return name + "=" + o;
+    }
+
+    public void setURI(String uri) {
+        this.uri = uri;
     }
 }
