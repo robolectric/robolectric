@@ -79,5 +79,4 @@ public class ResourceExtractor {
     public String getResourceName(int resourceId) {
         return resourceIdToString.get(resourceId);
     }
-
 }

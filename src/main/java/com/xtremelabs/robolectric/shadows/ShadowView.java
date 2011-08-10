@@ -474,8 +474,7 @@ public class ShadowView {
 
     @Implementation
     public Drawable getBackground() {
-//        return background;
-    	return null;
+        return background;
     }
     /**
      * Non-Android accessor.
