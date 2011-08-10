@@ -1,28 +1,34 @@
-package com.xtremelabs.robolectric.content;
+package com.xtremelabs.robolectric.tester.android.content;
 
-import android.content.SharedPreferences;
-import com.xtremelabs.robolectric.tester.android.content.TestSharedPreferences;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import android.content.SharedPreferences;
 
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+
+/**
+ * TestSharedPreferencesTest
+ */
+@RunWith(WithTestDefaultsRunner.class)
 public class TestSharedPreferencesTest {
-    private HashMap<String, Map<String, Object>> content;
+	protected final static String FILENAME = "filename";
+	private HashMap<String, Map<String, Object>> content;
     private SharedPreferences.Editor editor;
-    TestSharedPreferences sharedPreferences;
+    private TestSharedPreferences sharedPreferences;
 
     @Before
     public void setUp() {
         content = new HashMap<String, Map<String, Object>>();
 
-        sharedPreferences = new TestSharedPreferences(content, "prefsName", 3);
+        sharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
         editor = sharedPreferences.edit();
         editor.putBoolean("boolean", true);
         editor.putFloat("float", 1.1f);
@@ -35,7 +41,7 @@ public class TestSharedPreferencesTest {
     public void commit_shouldStoreValues() throws Exception {
         editor.commit();
 
-        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "prefsName", 3);
+        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
         assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
         assertThat(anotherSharedPreferences.getFloat("float", 666f), equalTo(1.1f));
         assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(2));
@@ -52,32 +58,54 @@ public class TestSharedPreferencesTest {
     }
 
     @Test
-    public void commit_shouldRemoveValues() throws Exception {
-        editor.putString("deleteMe", "foobar");
-        editor.remove("deleteMe");
+    public void commit_shouldRemoveValuesThenSetValues() throws Exception {
+    	content.put(FILENAME, new HashMap<String, Object>());
+    	content.get(FILENAME).put("deleteMe", "foo");
 
-        editor.putString("dontDeleteMe", "quux");
+    	editor.remove("deleteMe");
+    	
+    	editor.putString("dontDeleteMe", "baz");
         editor.remove("dontDeleteMe");
-        editor.putString("dontDeleteMe", "baz");
 
         editor.commit();
 
-        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "prefsName", 3);
+        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
         assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
         assertThat(anotherSharedPreferences.getFloat("float", 666f), equalTo(1.1f));
         assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(2));
         assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(3l));
         assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
 
-        assertThat(anotherSharedPreferences.contains("deleteMe"), equalTo(false));
+        assertThat(anotherSharedPreferences.getString("deleteMe", "awol"), equalTo("awol"));
         assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops"), equalTo("baz"));
     }
 
     @Test
+    public void commit_shouldClearThenSetValues() throws Exception {
+    	content.put(FILENAME, new HashMap<String, Object>());
+    	content.get(FILENAME).put("deleteMe", "foo");
+
+    	editor.clear();
+    	editor.putString("dontDeleteMe", "baz");
+
+        editor.commit();
+
+        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+        assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
+        assertThat(anotherSharedPreferences.getFloat("float", 666f), equalTo(1.1f));
+        assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(2));
+        assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(3l));
+        assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
+
+        assertThat(anotherSharedPreferences.getString("deleteMe", "awol"), equalTo("awol"));
+        assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops"), equalTo("baz"));
+    }
+    
+    @Test
     public void apply_shouldStoreValues() throws Exception {
         editor.apply();
 
-        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "prefsName", 3);
+        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
         assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
     }
 
