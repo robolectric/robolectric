@@ -312,6 +312,8 @@ public class ResourceLoader {
     @SuppressWarnings("rawtypes")
 	public Class getLocalRClass() { return rClass; }
     
+    public void setLocalRClass( Class clazz )  { rClass = clazz; }
+    
     public ResourceExtractor getResourceExtractor() {
         return resourceExtractor;
     }
