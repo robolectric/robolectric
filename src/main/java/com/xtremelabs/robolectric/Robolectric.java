@@ -249,6 +249,7 @@ public class Robolectric {
                 ShadowListView.class,
                 ShadowLocation.class,
                 ShadowLocationManager.class,
+                ShadowLogger.class,
                 ShadowLooper.class,
                 ShadowMapController.class,
                 ShadowMapActivity.class,
