@@ -3,12 +3,13 @@ package com.xtremelabs.robolectric.tester.android.content;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -18,91 +19,104 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
  */
 @RunWith(WithTestDefaultsRunner.class)
 public class TestSharedPreferencesTest {
-    protected final static String FILENAME = "filename";
-
-    protected Map<String, Map<String, Object>> content;
+	protected final static String FILENAME = "filename";
+	private HashMap<String, Map<String, Object>> content;
+    private SharedPreferences.Editor editor;
+    private TestSharedPreferences sharedPreferences;
 
     @Before
-    public void setup() {
+    public void setUp() {
         content = new HashMap<String, Map<String, Object>>();
+
+        sharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+        editor = sharedPreferences.edit();
+        editor.putBoolean("boolean", true);
+        editor.putFloat("float", 1.1f);
+        editor.putInt("int", 2);
+        editor.putLong("long", 3l);
+        editor.putString("string", "foobar");
     }
 
     @Test
-    public void testConstruction() {
-        TestSharedPreferences preferences = new TestSharedPreferences(content,
-                FILENAME, Context.MODE_PRIVATE);
-        assertSame("content", content, preferences.content);
-        assertEquals("filename", FILENAME, preferences.filename);
-        assertEquals("mode", Context.MODE_PRIVATE, preferences.mode);
-        assertTrue("content.filename", content.containsKey(FILENAME));
-    }
-
-    @Test
-    public void testGetAll() {
-        Map<String, Object> fileContent = new HashMap<String, Object>();
-        fileContent.put("foo", "bar");
-        content.put(FILENAME, fileContent);
-
-        TestSharedPreferences preferences = new TestSharedPreferences(content,
-                FILENAME, Context.MODE_PRIVATE);
-
-        Map<String, ?> result = preferences.getAll();
-        assertNotSame("result", fileContent, result);
-        assertEquals("result", fileContent, result);
-    }
-
-    @Test
-    public void testEditorCommit_ClearAndSet() {
-        Map<String, Object> fileContent = new HashMap<String, Object>();
-        fileContent.put("foo", "bar");
-        content.put(FILENAME, fileContent);
-
-        SharedPreferences.Editor editor = new TestSharedPreferences(content,
-                FILENAME, Context.MODE_PRIVATE).edit();
-
-        editor.clear();
-        editor.putString("alpha", "beta");
+    public void commit_shouldStoreValues() throws Exception {
         editor.commit();
 
-        assertEquals("content.filename.foo", false, content.get(FILENAME)
-                .containsKey("foo"));
-        assertEquals("content.filename.alpha", "beta", content.get(FILENAME)
-                .get("alpha"));
+        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+        assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
+        assertThat(anotherSharedPreferences.getFloat("float", 666f), equalTo(1.1f));
+        assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(2));
+        assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(3l));
+        assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
     }
 
     @Test
-    public void testEditorCommit_RemoveAndSet() {
-        Map<String, Object> fileContent = new HashMap<String, Object>();
-        fileContent.put("foo", "bar");
-        content.put(FILENAME, fileContent);
-
-        SharedPreferences.Editor editor = new TestSharedPreferences(content,
-                FILENAME, Context.MODE_PRIVATE).edit();
-
-        editor.remove("foo");
-        editor.putString("alpha", "beta");
+    public void getAll_shouldReturnAllValues() throws Exception {
         editor.commit();
-
-        assertEquals("content.filename.foo", false, content.get(FILENAME)
-                .containsKey("foo"));
-        assertEquals("content.filename.alpha", "beta", content.get(FILENAME)
-                .get("alpha"));
+        Map<String, ?> all = sharedPreferences.getAll();
+        assertThat(all.size(), equalTo(5));
+        assertThat((Integer) all.get("int"), equalTo(2));
     }
 
     @Test
-    public void testEditorCommit_RemoveAndReset() {
-        Map<String, Object> fileContent = new HashMap<String, Object>();
-        fileContent.put("foo", "bar");
-        content.put(FILENAME, fileContent);
+    public void commit_shouldRemoveValuesThenSetValues() throws Exception {
+    	content.put(FILENAME, new HashMap<String, Object>());
+    	content.get(FILENAME).put("deleteMe", "foo");
 
-        SharedPreferences.Editor editor = new TestSharedPreferences(content,
-                FILENAME, Context.MODE_PRIVATE).edit();
+    	editor.remove("deleteMe");
+    	
+    	editor.putString("dontDeleteMe", "baz");
+        editor.remove("dontDeleteMe");
 
-        editor.remove("foo");
-        editor.putString("foo", "baz");
         editor.commit();
 
-        assertEquals("content.filename.foo", "baz",
-                content.get(FILENAME).get("foo"));
+        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+        assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
+        assertThat(anotherSharedPreferences.getFloat("float", 666f), equalTo(1.1f));
+        assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(2));
+        assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(3l));
+        assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
+
+        assertThat(anotherSharedPreferences.getString("deleteMe", "awol"), equalTo("awol"));
+        assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops"), equalTo("baz"));
+    }
+
+    @Test
+    public void commit_shouldClearThenSetValues() throws Exception {
+    	content.put(FILENAME, new HashMap<String, Object>());
+    	content.get(FILENAME).put("deleteMe", "foo");
+
+    	editor.clear();
+    	editor.putString("dontDeleteMe", "baz");
+
+        editor.commit();
+
+        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+        assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
+        assertThat(anotherSharedPreferences.getFloat("float", 666f), equalTo(1.1f));
+        assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(2));
+        assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(3l));
+        assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
+
+        assertThat(anotherSharedPreferences.getString("deleteMe", "awol"), equalTo("awol"));
+        assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops"), equalTo("baz"));
+    }
+    
+    @Test
+    public void apply_shouldStoreValues() throws Exception {
+        editor.apply();
+
+        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
+        assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
+    }
+
+    @Test
+    public void shouldReturnDefaultValues() throws Exception {
+        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "bazBang", 3);
+
+        assertFalse(anotherSharedPreferences.getBoolean("boolean", false));
+        assertThat(anotherSharedPreferences.getFloat("float", 666f), equalTo(666f));
+        assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(666));
+        assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(666l));
+        assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("wacka wa"));
     }
 }
