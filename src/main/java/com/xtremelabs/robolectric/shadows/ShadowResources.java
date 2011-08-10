@@ -112,7 +112,7 @@ public class ShadowResources {
     		return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));    		
     	}
 
-    	// Load the R.anim and R.color Classes for interigation
+    	// Load the R.anim and R.color Classes for interrogation
     	Class animClass = null;
     	Class colorClass = null;
     	try {
