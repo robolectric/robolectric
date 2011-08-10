@@ -28,6 +28,7 @@ public class ShadowTextView extends ShadowView {
 
     @Override public void applyAttributes() {
         super.applyAttributes();
+        applyHintAttribute();
         applyTextAttribute();
         applyCompoundDrawablesWithIntrinsicBoundsAttributes();
     }
@@ -68,6 +69,11 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public final void setHint(int resId) {
         this.hintText = getResources().getText(resId);
+    }
+
+    @Implementation
+    public final void setHint(CharSequence hint) {
+        this.hintText = hint;
     }
 
     @Implementation
@@ -181,6 +187,17 @@ public class ShadowTextView extends ShadowView {
 
     public boolean isAutoLinkPhoneNumbers() {
         return autoLinkPhoneNumbers;
+    }
+
+    private void applyHintAttribute() {
+        String hint = attributeSet.getAttributeValue("android", "hint");
+        if (hint != null) {
+            if (hint.startsWith("@string/")) {
+                int hintResId = attributeSet.getAttributeResourceValue("android", "hint", 0);
+                hint = context.getResources().getString(hintResId);
+            }
+            setHint(hint);
+        }
     }
 
     private void applyTextAttribute() {
