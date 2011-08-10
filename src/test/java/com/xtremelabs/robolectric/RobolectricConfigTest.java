@@ -1,18 +1,30 @@
 package com.xtremelabs.robolectric;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import com.xtremelabs.robolectric.util.TestUtil;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.util.List;
-
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_BACKUP;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_CLEAR_USER_DATA;
+import static android.content.pm.ApplicationInfo.FLAG_ALLOW_TASK_REPARENTING;
+import static android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE;
+import static android.content.pm.ApplicationInfo.FLAG_HAS_CODE;
+import static android.content.pm.ApplicationInfo.FLAG_KILL_AFTER_RESTORE;
+import static android.content.pm.ApplicationInfo.FLAG_PERSISTENT;
+import static android.content.pm.ApplicationInfo.FLAG_RESIZEABLE_FOR_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_RESTORE_ANY_VERSION;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_LARGE_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_NORMAL_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SCREEN_DENSITIES;
+import static android.content.pm.ApplicationInfo.FLAG_SUPPORTS_SMALL_SCREENS;
+import static android.content.pm.ApplicationInfo.FLAG_TEST_ONLY;
+import static android.content.pm.ApplicationInfo.FLAG_VM_SAFE_MODE;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static android.content.pm.ApplicationInfo.*;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class RobolectricConfigTest {
@@ -31,13 +43,19 @@ public class RobolectricConfigTest {
 
     public static class ConfigTestReceiver extends BroadcastReceiver {
         @Override
-        public void onReceive(Context context, Intent intent) { }
+        public void onReceive(final Context context, final Intent intent) { }
     }
 
     @Test
     public void shouldReadSdkVersionFromAndroidManifest() throws Exception {
         assertEquals(42, newConfig("TestAndroidManifestWithSdkVersion.xml").getSdkVersion());
         assertEquals(3, newConfig("TestAndroidManifestWithSdkVersion.xml").getMinSdkVersion());
+    }
+    
+    @Test
+    public void shouldRessolveSdkVersionForResources() throws Exception {
+        assertEquals(3, newConfig("TestAndroidManifestWithMinSdkVersionOnly.xml").getRealSdkVersion());
+        assertEquals(42, newConfig("TestAndroidManifestWithSdkVersion.xml").getRealSdkVersion());
     }
     
     @Test
@@ -70,7 +88,7 @@ public class RobolectricConfigTest {
         assertTrue(hasFlag(config.getApplicationFlags(), FLAG_VM_SAFE_MODE));
     }
     
-    private boolean hasFlag(int flags, int flag) {
+    private boolean hasFlag(final int flags, final int flag) {
     	return (flags & flag) != 0;
     }
 }

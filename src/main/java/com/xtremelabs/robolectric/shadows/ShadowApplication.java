@@ -71,6 +71,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private Map<String, Object> systemServices = new HashMap<String, Object>();
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
+    private List<Intent> stoppedServies = new ArrayList<Intent>();
     private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
     private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
@@ -168,6 +169,13 @@ public class ShadowApplication extends ShadowContextWrapper {
         startedServices.add(intent);
         return new ComponentName("some.service.package", "SomeServiceName-FIXME");
     }
+    
+    @Implementation
+    @Override public boolean stopService(Intent name) {
+    	stoppedServies.add(name);
+    	
+    	return startedServices.contains(name);
+    }
 
     public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
         this.componentNameForBindService = name;
@@ -255,6 +263,18 @@ public class ShadowApplication extends ShadowContextWrapper {
         } else {
             return startedServices.get(0);
         }
+    }
+    
+    /**
+     * Consumes the {@code Intent} requested to stop a service by {@link #stopService(android.content.Intent)} 
+     * from the bottom of the stack of stop requests.
+     */
+    @Override public Intent getNextStoppedService() {
+    	if (stoppedServies.isEmpty()) {
+    		return null;
+    	} else {
+    		return stoppedServies.remove(0);
+    	}
     }
 
     /**

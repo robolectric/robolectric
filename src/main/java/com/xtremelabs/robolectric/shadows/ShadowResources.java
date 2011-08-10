@@ -82,6 +82,17 @@ public class ShadowResources {
     }
 
     @Implementation
+    public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
+        String raw = getQuantityString(id, quantity);
+        return String.format(Locale.ENGLISH, raw, formatArgs);
+    }
+
+    @Implementation
+    public String getQuantityString(int id, int quantity) throws Resources.NotFoundException {
+        return resourceLoader.getPluralStringValue(id, quantity);
+    }
+
+    @Implementation
     public InputStream openRawResource(int id) throws Resources.NotFoundException {
         return resourceLoader.getRawValue(id);
     }

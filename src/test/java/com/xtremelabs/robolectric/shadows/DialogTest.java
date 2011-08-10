@@ -57,13 +57,16 @@ public class DialogTest {
         Dialog dialog = new Dialog(null);
         ShadowDialog shadow = Robolectric.shadowOf(dialog);
 
-        assertThat(shadow.isCancelable(), equalTo(false));
-
-        dialog.setCancelable(true);
-        assertThat(shadow.isCancelable(), equalTo(true));
-
         dialog.setCancelable(false);
         assertThat(shadow.isCancelable(), equalTo(false));
+    }
+
+    @Test
+    public void shouldDefaultCancelableToTrueAsTheSDKDoes() throws Exception {
+        Dialog dialog = new Dialog(null);
+        ShadowDialog shadow = Robolectric.shadowOf(dialog);
+
+        assertThat(shadow.isCancelable(), equalTo(true));
     }
 
     @Test

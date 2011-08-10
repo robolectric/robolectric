@@ -28,6 +28,12 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
+import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.Statement;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
 import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
 import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
@@ -64,7 +70,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param testClass the test class to be run
      * @throws InitializationError if junit says so
      */
-    public RobolectricTestRunner(Class<?> testClass) throws InitializationError {
+    public RobolectricTestRunner(final Class<?> testClass) throws InitializationError {
         this(testClass, new RobolectricConfig(new File(".")));
     }
 
@@ -76,7 +82,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param robolectricConfig the configuration data
      * @throws InitializationError if junit says so
      */
-    protected RobolectricTestRunner(Class<?> testClass, RobolectricConfig robolectricConfig)
+    protected RobolectricTestRunner(final Class<?> testClass, final RobolectricConfig robolectricConfig)
             throws InitializationError {
         this(testClass,
                 isInstrumented() ? null : ShadowWrangler.getInstance(),
@@ -108,7 +114,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param androidProjectRoot the directory containing your AndroidManifest.xml file and res dir
      * @throws InitializationError if the test class is malformed
      */
-    public RobolectricTestRunner(Class<?> testClass, File androidProjectRoot) throws InitializationError {
+    public RobolectricTestRunner(final Class<?> testClass, final File androidProjectRoot) throws InitializationError {
         this(testClass, new RobolectricConfig(androidProjectRoot));
     }
 
@@ -120,7 +126,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @throws InitializationError if junit says so
      * @deprecated Use {@link #RobolectricTestRunner(Class, File)} instead.
      */
-    public RobolectricTestRunner(Class<?> testClass, String androidProjectRoot) throws InitializationError {
+    @Deprecated
+    public RobolectricTestRunner(final Class<?> testClass, final String androidProjectRoot) throws InitializationError {
         this(testClass, new RobolectricConfig(new File(androidProjectRoot)));
     }
 
@@ -135,7 +142,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param resourceDirectory   the directory containing the project's resources
      * @throws InitializationError if junit says so
      */
-    protected RobolectricTestRunner(Class<?> testClass, File androidManifestPath, File resourceDirectory)
+    protected RobolectricTestRunner(final Class<?> testClass, final File androidManifestPath, final File resourceDirectory)
             throws InitializationError {
         this(testClass, new RobolectricConfig(androidManifestPath, resourceDirectory));
     }
@@ -152,7 +159,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @throws InitializationError if junit says so
      * @deprecated Use {@link #RobolectricTestRunner(Class, File, File)} instead.
      */
-    protected RobolectricTestRunner(Class<?> testClass, String androidManifestPath, String resourceDirectory)
+    @Deprecated
+    protected RobolectricTestRunner(final Class<?> testClass, final String androidManifestPath, final String resourceDirectory)
             throws InitializationError {
         this(testClass, new RobolectricConfig(new File(androidManifestPath), new File(resourceDirectory)));
     }
@@ -178,7 +186,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param robolectricConfig the configuration
      * @throws InitializationError if junit says so
      */
-    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader classLoader, RobolectricConfig robolectricConfig,DatabaseMap map) throws InitializationError {
+    protected RobolectricTestRunner(final Class<?> testClass, final ClassHandler classHandler, final RobolectricClassLoader classLoader, final RobolectricConfig robolectricConfig, final DatabaseMap map) throws InitializationError {
         super(isInstrumented() ? testClass : classLoader.bootstrap(testClass));
                 
         if (!isInstrumented()) {
@@ -219,18 +227,20 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * This is not the constructor you are looking for.
      */
     @SuppressWarnings({"UnusedDeclaration", "JavaDoc"})
-    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricConfig robolectricConfig) throws InitializationError {
+    protected RobolectricTestRunner(final Class<?> testClass, final ClassHandler classHandler, final RobolectricConfig robolectricConfig) throws InitializationError {
         super(testClass);
         this.classHandler = classHandler;
         this.robolectricConfig = robolectricConfig;
     }
 
-    protected void delegateLoadingOf(String className) {
+    protected void delegateLoadingOf(final String className) {
         classLoader.delegateLoadingOf(className);
     }
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
-        if (classHandler != null) classHandler.beforeTest();
+        if (classHandler != null) {
+            classHandler.beforeTest();
+        }
         delegate.internalBeforeTest(method.getMethod());
 
         final Statement statement = super.methodBlock(method);
@@ -241,7 +251,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
                     statement.evaluate();
                 } finally {
                     delegate.internalAfterTest(method.getMethod());
-                    if (classHandler != null) classHandler.afterTest();
+                    if (classHandler != null) {
+                        classHandler.afterTest();
+                    }
                 }
             }
         };
@@ -250,17 +262,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     /*
      * Called before each test method is run. Sets up the simulation of the Android runtime environment.
      */
-    @Override public void internalBeforeTest(Method method) {
+    @Override public void internalBeforeTest(final Method method) {
         setupApplicationState(robolectricConfig);
 
         beforeTest(method);
     }
 
-    @Override public void internalAfterTest(Method method) {
+    @Override public void internalAfterTest(final Method method) {
         afterTest(method);
     }
 
-    @Override public void setRobolectricConfig(RobolectricConfig robolectricConfig) {
+    @Override public void setRobolectricConfig(final RobolectricConfig robolectricConfig) {
         this.robolectricConfig = robolectricConfig;
     }
 
@@ -269,7 +281,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      *
      * @param method the test method about to be run
      */
-    public void beforeTest(Method method) {
+    public void beforeTest(final Method method) {
     }
 
     /**
@@ -277,7 +289,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      *
      * @param method the test method that just ran.
      */
-    public void afterTest(Method method) {
+    public void afterTest(final Method method) {
     }
 
     /**
@@ -296,10 +308,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         }
     }
 
-    public void prepareTest(Object test) {
+    public void prepareTest(final Object test) {
     }
 
-    public void setupApplicationState(RobolectricConfig robolectricConfig) {
+    public void setupApplicationState(final RobolectricConfig robolectricConfig) {
         ResourceLoader resourceLoader = createResourceLoader(robolectricConfig);
 
         Robolectric.bindDefaultShadowClasses();
@@ -339,7 +351,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return new ApplicationResolver(robolectricConfig).resolveApplication();
     }
 
-    private ResourceLoader createResourceLoader(RobolectricConfig robolectricConfig) {
+    private ResourceLoader createResourceLoader(final RobolectricConfig robolectricConfig) {
         ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(robolectricConfig);
         if (resourceLoader == null) {
             try {
@@ -347,7 +359,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
                 String rClassName = robolectricConfig.getRClassName();
                 Class rClass = Class.forName(rClassName);
-                resourceLoader = new ResourceLoader(robolectricConfig.getSdkVersion(), rClass, robolectricConfig.getResourceDirectory(), robolectricConfig.getAssetsDirectory());
+                resourceLoader = new ResourceLoader(robolectricConfig.getRealSdkVersion(), rClass, robolectricConfig.getResourceDirectory(), robolectricConfig.getAssetsDirectory());
                 resourceLoaderForRootAndDirectory.put(robolectricConfig, resourceLoader);
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -356,7 +368,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return resourceLoader;
     }
 
-    private String findResourcePackageName(File projectManifestFile) throws ParserConfigurationException, IOException, SAXException {
+    private String findResourcePackageName(final File projectManifestFile) throws ParserConfigurationException, IOException, SAXException {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         DocumentBuilder db = dbf.newDocumentBuilder();
         Document doc = db.parse(projectManifestFile);
