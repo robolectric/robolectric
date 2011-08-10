@@ -73,6 +73,7 @@ public final class R {
         public static final int media = nextId++;
         public static final int inner_merge = nextId++;
         public static final int included_linear_layout = nextId++;
+        public static final int edit_text = nextId++;
     }
 
     public static final class raw {
