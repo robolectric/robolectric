@@ -6,6 +6,7 @@ com.xtremelabs.robolectric.res
 com.xtremelabs.robolectric.shadows
 com.xtremelabs.robolectric.tester.android.content
 com.xtremelabs.robolectric.tester.android.content.pm
+com.xtremelabs.robolectric.tester.android.database
 com.xtremelabs.robolectric.tester.android.util
 com.xtremelabs.robolectric.tester.android.view
 com.xtremelabs.robolectric.tester.org.apache.http
