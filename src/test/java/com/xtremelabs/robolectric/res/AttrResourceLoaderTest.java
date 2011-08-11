@@ -8,7 +8,7 @@ import com.xtremelabs.robolectric.util.CustomView;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceValuesDir;
+import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -23,7 +23,7 @@ public class AttrResourceLoaderTest {
         resourceExtractor.addSystemRClass(android.R.class);
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
         new DocumentLoader(attrResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
-        new DocumentLoader(attrResourceLoader).loadSystemResourceXmlDir(getSystemResourceValuesDir());
+        new DocumentLoader(attrResourceLoader).loadSystemResourceXmlDir(getSystemResourceDir("values"));
     }
 
     @Test

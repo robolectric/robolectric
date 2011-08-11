@@ -72,10 +72,10 @@ public abstract class TestUtil {
         return new RobolectricConfig(resourceFile(androidManifestFile), null, null);
     }
 
-    public static File getSystemResourceValuesDir() throws Exception {
+    public static File getSystemResourceDir(String... paths) throws Exception {
         Properties localProperties = new Properties();
         localProperties.load(new FileInputStream(new File("local.properties")));
         PropertiesHelper.doSubstitutions(localProperties);
-        return new File(localProperties.getProperty("sdk.dir"), "platforms/android-10/data/res/values");
+        return file(new File(localProperties.getProperty("sdk.dir"), "platforms/android-10/data/res/"), paths);
     }
 }

@@ -7,7 +7,7 @@ import org.junit.Test;
 import java.io.File;
 import java.util.Arrays;
 
-import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceValuesDir;
+import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertThat;
@@ -21,7 +21,7 @@ public class StringArrayResourceLoaderTest {
         resourceExtractor.addSystemRClass(android.R.class);
 
         File resourceXmlDir = resourceFile("res", "values");
-        File systemResourceXmlDir = getSystemResourceValuesDir();
+        File systemResourceXmlDir = getSystemResourceDir("values");
 
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
         new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceXmlDir);
