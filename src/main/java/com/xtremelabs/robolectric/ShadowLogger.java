@@ -83,7 +83,7 @@ public class ShadowLogger {
         debug, error, info, verbose, warning, wtf
     }
 
-    static class LogItem {
+    public static class LogItem {
         public final LogType type;
         public final String tag;
         public final String msg;
