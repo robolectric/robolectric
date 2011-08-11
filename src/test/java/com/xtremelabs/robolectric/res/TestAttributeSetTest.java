@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 import java.util.HashMap;
 
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -36,25 +37,32 @@ public class TestAttributeSetTest {
     }
 
     @Test
+    public void getSystemAttributeResourceValue_shouldNotReturnTheResourceValueIfNameSpaceDoesNotMatch() throws Exception {
+        attributes.put("id", "@id/text1");
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
+        assertEquals(0, testAttributeSet.getAttributeResourceValue("android", "id", 0));
+    }
+
+    @Test
     public void getAttributeResourceValue_shouldReturnTheResourceValue() throws Exception {
         attributes.put("message", "@string/howdy");
 
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
-        assertThat(testAttributeSet.getAttributeResourceValue("some namespace", "message", 0), equalTo(R.string.howdy));
+        assertThat(testAttributeSet.getAttributeResourceValue("com.some.namespace", "message", 0), equalTo(R.string.howdy));
     }
 
     @Test
     public void getAttributeResourceValue_withNamespace_shouldReturnTheResourceValue() throws Exception {
-        attributes.put("xxx:message", "@string/howdy");
+        attributes.put("message", "@string/howdy");
 
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
-        assertThat(testAttributeSet.getAttributeResourceValue("some namespace", "message", 0), equalTo(R.string.howdy));
+        assertThat(testAttributeSet.getAttributeResourceValue("com.some.namespace", "message", 0), equalTo(R.string.howdy));
     }
 
     @Test
     public void getAttributeResourceValue_shouldReturnDefaultValueWhenNotInAttributeSet() throws Exception {
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
-        assertThat(testAttributeSet.getAttributeResourceValue("some namespace", "message", -1), equalTo(-1));
+        assertThat(testAttributeSet.getAttributeResourceValue("com.some.namespace", "message", -1), equalTo(-1));
     }
 
     @Test
@@ -62,7 +70,7 @@ public class TestAttributeSetTest {
         attributes.put("isSugary", "true");
 
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
-        assertThat(testAttributeSet.getAttributeBooleanValue("some namespace", "isSugary", false), equalTo(true));
+        assertThat(testAttributeSet.getAttributeBooleanValue("com.some.namespace", "isSugary", false), equalTo(true));
     }
 
     @Test
@@ -70,13 +78,13 @@ public class TestAttributeSetTest {
         attributes.put("xxx:isSugary", "true");
 
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
-        assertThat(testAttributeSet.getAttributeBooleanValue("some namespace", "isSugary", false), equalTo(true));
+        assertThat(testAttributeSet.getAttributeBooleanValue("com.some.namespace", "isSugary", false), equalTo(true));
     }
 
     @Test
     public void getAttributeBooleanValue_shouldReturnDefaultBooleanValueWhenNotInAttributeSet() throws Exception {
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
-        assertThat(testAttributeSet.getAttributeBooleanValue("some namespace", "isSugary", true), equalTo(true));
+        assertThat(testAttributeSet.getAttributeBooleanValue("com.some.namespace", "isSugary", true), equalTo(true));
     }
 
     @Test
@@ -84,7 +92,7 @@ public class TestAttributeSetTest {
         attributes.put("isSugary", "oh heck yeah");
 
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
-        assertThat(testAttributeSet.getAttributeValue("some namespace", "isSugary"), equalTo("oh heck yeah"));
+        assertThat(testAttributeSet.getAttributeValue("com.some.namespace", "isSugary"), equalTo("oh heck yeah"));
     }
 
     @Test

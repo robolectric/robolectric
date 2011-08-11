@@ -48,7 +48,7 @@ public class ResourceExtractor {
     }
 
     public Integer getResourceId(String resourceName) {
-        if (resourceName.startsWith("@android:")) { // namespace needed for platform files
+        if (resourceName.contains("android:")) { // namespace needed for platform files
             return getResourceId(resourceName, true);
         } else {
             return getResourceId(resourceName, false);
@@ -66,8 +66,6 @@ public class ResourceExtractor {
         }
         if (resourceName.startsWith("@+id")) {
             resourceName = resourceName.substring(2);
-        } else if (resourceName.startsWith("@android:")) { // namespace needed for platform files
-            resourceName = resourceName.substring("@android:".length());
         } else if (resourceName.startsWith("@")) {
             resourceName = resourceName.substring(1);
         }
@@ -82,5 +80,4 @@ public class ResourceExtractor {
     public String getResourceName(int resourceId) {
         return resourceIdToString.get(resourceId);
     }
-
 }

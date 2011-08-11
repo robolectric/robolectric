@@ -15,6 +15,7 @@ public class ResourceExtractorTest {
     public void setUp() throws Exception {
         resourceExtractor = new ResourceExtractor();
         resourceExtractor.addLocalRClass(R.class);
+        resourceExtractor.addSystemRClass(android.R.class);
     }
 
     @Test
@@ -25,6 +26,6 @@ public class ResourceExtractorTest {
 
     @Test
     public void shouldPrefixAllSystemResourcesWithAndroid() throws Exception {
-        assertThat(resourceExtractor.getLocalResourceId("android:id/textStyle"), equalTo(R.id.textStyle));
+        assertThat(resourceExtractor.getResourceId("android:id/text1"), equalTo(android.R.id.text1));
     }
 }
