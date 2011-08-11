@@ -41,6 +41,7 @@ public class StringArrayResourceLoader extends XpathResourceXmlLoader {
                 arrayValues.add(value);
             }
         }
-        stringArrayValues.put("array/" + name, arrayValues.toArray(new String[arrayValues.size()]));
+        String valuePointer = (isSystem ? "android:" : "") + "array/" + name;
+        stringArrayValues.put(valuePointer, arrayValues.toArray(new String[arrayValues.size()]));
     }
 }
