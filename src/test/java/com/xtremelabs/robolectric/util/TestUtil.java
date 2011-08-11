@@ -3,7 +3,9 @@ package com.xtremelabs.robolectric.util;
 import com.xtremelabs.robolectric.RobolectricConfig;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Collection;
+import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
 
@@ -68,5 +70,12 @@ public abstract class TestUtil {
 
     public static RobolectricConfig newConfig(String androidManifestFile) {
         return new RobolectricConfig(resourceFile(androidManifestFile), null, null);
+    }
+
+    public static File getSystemResourceValuesDir() throws Exception {
+        Properties localProperties = new Properties();
+        localProperties.load(new FileInputStream(new File("local.properties")));
+        PropertiesHelper.doSubstitutions(localProperties);
+        return new File(localProperties.getProperty("sdk.dir"), "platforms/android-10/data/res/values");
     }
 }

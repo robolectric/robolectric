@@ -22,4 +22,9 @@ public class ResourceExtractorTest {
         assertThat(resourceExtractor.getLocalResourceId("id/textStyle"), equalTo(R.id.textStyle));
         assertThat(resourceExtractor.getLocalResourceId("styleable/TitleBar_textStyle"), CoreMatchers.<Object>nullValue());
     }
+
+    @Test
+    public void shouldPrefixAllSystemResourcesWithAndroid() throws Exception {
+        assertThat(resourceExtractor.getLocalResourceId("android:id/textStyle"), equalTo(R.id.textStyle));
+    }
 }

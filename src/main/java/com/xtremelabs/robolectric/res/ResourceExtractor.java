@@ -26,6 +26,10 @@ public class ResourceExtractor {
                     String name = section + "/" + field.getName();
                     int value = field.getInt(null);
 
+                    if (isSystemRClass) {
+                        name = "android:" + name;
+                    }
+
                     if (!section.equals("styleable")) {
                         if (isSystemRClass) {
                             systemResourceStringToId.put(name, value);
@@ -34,8 +38,7 @@ public class ResourceExtractor {
                         }
 
                         if (resourceIdToString.containsKey(value)) {
-                            throw new RuntimeException(value + " is already defined with name: " + resourceIdToString.get(value) + " can't also call it: "
-                                    + name);
+                            throw new RuntimeException(value + " is already defined with name: " + resourceIdToString.get(value) + " can't also call it: " + name);
                         }
                         resourceIdToString.put(value, name);
                     }

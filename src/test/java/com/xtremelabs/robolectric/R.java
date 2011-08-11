@@ -46,6 +46,7 @@ public final class R {
         public static final int hello = nextId++;
         public static final int some_html = nextId++;
         public static final int greeting = nextId++;
+        public static final int copy = nextId++;
     }
 
     public static final class plurals {
@@ -56,6 +57,7 @@ public final class R {
         public static final int items = nextId++;
         public static final int greetings = nextId++;
         public static final int alertDialogTestItems = nextId++;
+        public static final int emailAddressTypes = nextId++;
     }
 
     public static final class color {
