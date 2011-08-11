@@ -13,6 +13,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -39,6 +42,13 @@ public class BitmapDrawableTest {
         drawable.draw(canvas);
 
         assertEquals("Bitmap for resource:drawable/an_image", shadowOf(canvas).getDescription());
+    }
+
+    @Test
+    public void shouldInheritSourceStringFromDrawableDotCreateFromStream() throws Exception {
+        InputStream emptyInputStream = new ByteArrayInputStream("".getBytes());
+        BitmapDrawable drawable = (BitmapDrawable) Drawable.createFromStream(emptyInputStream, "source string value");
+        assertEquals("source string value", shadowOf(drawable).getSource());
     }
 
     @Test

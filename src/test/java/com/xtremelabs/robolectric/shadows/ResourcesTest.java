@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -18,19 +19,19 @@ import android.graphics.drawable.ColorDrawable;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestR;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ResourcesTest {
 
 	private Resources resources;
 	private ShadowContextWrapper shadowApp;
-	private ShadowResources shResources;
 
 	@Before
 	public void setup() {
 		resources = new Activity().getResources();
-		shResources = Robolectric.shadowOf( resources );
-		shadowApp = Robolectric.shadowOf( Robolectric.application );		
+		shadowApp = shadowOf( Robolectric.application );		
 	}
 	
     @Test(expected = Resources.NotFoundException.class)
@@ -94,5 +95,16 @@ public class ResourcesTest {
     public void testGetBitmapDrawableForUnknownId() {
     	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
     	assertThat( resources.getDrawable( Integer.MAX_VALUE ), instanceOf( BitmapDrawable.class ) );    	    	
+    }
+    @Test
+    public void testDensity() {
+        Activity activity = new Activity();
+        assertThat(activity.getResources().getDisplayMetrics().density, equalTo(1f));
+
+        shadowOf(activity.getResources()).setDensity(1.5f);
+        assertThat(activity.getResources().getDisplayMetrics().density, equalTo(1.5f));
+
+        Activity anotherActivity = new Activity();
+        assertThat(anotherActivity.getResources().getDisplayMetrics().density, equalTo(1.5f));
     }
 }

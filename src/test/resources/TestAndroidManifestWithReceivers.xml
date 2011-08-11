@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver android:name="com.xtremelabs.robolectric.RobolectricConfigTest.ConfigTestReceiver"
+                  android:permission="com.ignored.PERM">
+            <intent-filter>
+                <action android:name="com.xtremelabs.robolectric.ACTION1"/>
+                <category android:name="com.ignored"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.xtremelabs.robolectric.ACTION2"/>
+                <category android:name="com.ignored"/>
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>

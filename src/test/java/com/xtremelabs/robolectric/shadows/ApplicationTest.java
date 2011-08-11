@@ -23,6 +23,8 @@ import java.io.FileDescriptor;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
@@ -100,7 +102,7 @@ public class ApplicationTest {
         Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
 
         TestService service = new TestService();
-        Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+        assertTrue(Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE));
 
         assertNull(service.name);
         assertNull(service.service);
@@ -137,6 +139,58 @@ public class ApplicationTest {
         Robolectric.application.unbindService(service);
         assertEquals(1, shadowApplication.getUnboundServiceConnections().size());
         assertEquals(service, shadowApplication.getUnboundServiceConnections().get(0));
+    }
+
+    @Test
+    public void declaringServiceUnbindableMakesBindServiceReturnFalse() {
+        Robolectric.pauseMainLooper();
+        TestService service = new TestService();
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        final ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+        shadowApplication.setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+        shadowApplication.declareActionUnbindable("refuseToBind");
+        assertFalse(Robolectric.application.bindService(new Intent("refuseToBind"), service, Context.BIND_AUTO_CREATE));
+        Robolectric.unPauseMainLooper();
+        assertNull(service.name);
+        assertNull(service.service);
+        assertNull(shadowApplication.peekNextStartedService());
+    }
+    
+    @Test 
+    public void shouldHaveStoppedServiceIntentAndIndicateServiceWasntRunning() {
+    	ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+    	
+    	Activity activity = new Activity();
+    	
+    	Intent intent = getSomeActionIntent();
+    	
+    	boolean wasRunning = activity.stopService(intent);
+    	
+    	assertFalse(wasRunning);
+    	assertEquals(intent, shadowApplication.getNextStoppedService());
+    }
+    
+    private Intent getSomeActionIntent() {
+    	Intent intent = new Intent();
+    	intent.setAction("some.action");
+    	return intent;
+    }
+    
+    @Test
+    public void shouldHaveStoppedServiceIntentAndIndicateServiceWasRunning() {
+    	ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+    	
+    	Activity activity = new Activity();
+    	
+    	Intent intent = getSomeActionIntent();
+    	
+    	activity.startService(intent);
+    	
+    	boolean wasRunning = activity.stopService(intent);
+    	
+    	assertTrue(wasRunning);
+    	assertEquals(intent, shadowApplication.getNextStoppedService());
     }
 
     private static class NullBinder implements IBinder {

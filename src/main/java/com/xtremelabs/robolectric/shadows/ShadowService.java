@@ -1,10 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
+import android.app.Notification;
 import android.app.Service;
 import android.content.Context;
 import android.content.ServiceConnection;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -17,6 +17,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowService extends ShadowContextWrapper {
     @RealObject Service realService;
     
+    private Notification lastForegroundNotification;    
     private boolean selfStopped = false;
     private boolean unbindServiceShouldThrowIllegalArgument = false;
 
@@ -49,6 +50,15 @@ public class ShadowService extends ShadowContextWrapper {
     
     public void setUnbindServiceShouldThrowIllegalArgument(boolean flag) {
     	unbindServiceShouldThrowIllegalArgument = flag;
+    }
+
+    @Implementation
+    public final void startForeground(int id, Notification notification) {
+        lastForegroundNotification = notification;
+    }
+
+    public Notification getLastForegroundNotification() {
+        return lastForegroundNotification;
     }
 
     /**

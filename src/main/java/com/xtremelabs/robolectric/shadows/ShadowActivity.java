@@ -3,12 +3,14 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentSender;
 import android.os.Bundle;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -39,13 +41,17 @@ public class ShadowActivity extends ShadowContextWrapper {
     private Activity parent;
     private boolean finishWasCalled;
     private TestWindow window;
-    
+
     private List<IntentForResult> startedActivitiesForResults = new ArrayList<IntentForResult>();
 
     private Map<Intent, Integer> intentRequestCodeMap = new HashMap<Intent, Integer>();
     private int requestedOrientation = -1;
     private View currentFocus;
     private Integer lastShownDialogId = null;
+    private int pendingTransitionEnterAnimResId = -1;
+    private int pendingTransitionExitAnimResId = -1;
+    private Object lastNonConfigurationInstance;
+    private Map<Integer, Dialog> dialogForId = new HashMap<Integer, Dialog>();
 
     @Implementation
     public final Application getApplication() {
@@ -262,6 +268,15 @@ public class ShadowActivity extends ShadowContextWrapper {
         }
     }
 
+    @Implementation
+    public Object getLastNonConfigurationInstance() {
+        return lastNonConfigurationInstance;
+    }
+
+    public void setLastNonConfigurationInstance(Object lastNonConfigurationInstance) {
+        this.lastNonConfigurationInstance = lastNonConfigurationInstance;
+    }
+
     /**
      * Non-Android accessor Sets the {@code View} for this {@code Activity}
      *
@@ -324,26 +339,33 @@ public class ShadowActivity extends ShadowContextWrapper {
     public final boolean showDialog(int id, Bundle bundle) {
         Dialog dialog = null;
         this.lastShownDialogId = id;
-        try {
-            Method method = Activity.class.getDeclaredMethod("onCreateDialog", Integer.TYPE);
-            method.setAccessible(true);
-            dialog = (Dialog) method.invoke(realActivity, id);
 
-            if (bundle == null) {
-                method = Activity.class.getDeclaredMethod("onPrepareDialog", Integer.TYPE, Dialog.class);
+        dialog = dialogForId.get(id);
+
+        if (dialog == null) {
+            try {
+                Method method = Activity.class.getDeclaredMethod("onCreateDialog", Integer.TYPE);
                 method.setAccessible(true);
-                method.invoke(realActivity, id, dialog);
-            } else {
-                method = Activity.class.getDeclaredMethod("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class);
-                method.setAccessible(true);
-                method.invoke(realActivity, id, dialog, bundle);
+                dialog = (Dialog) method.invoke(realActivity, id);
+
+                if (bundle == null) {
+                    method = Activity.class.getDeclaredMethod("onPrepareDialog", Integer.TYPE, Dialog.class);
+                    method.setAccessible(true);
+                    method.invoke(realActivity, id, dialog);
+                } else {
+                    method = Activity.class.getDeclaredMethod("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class);
+                    method.setAccessible(true);
+                    method.invoke(realActivity, id, dialog, bundle);
+                }
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException(e);
             }
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+
+            dialogForId.put(id, dialog);
         }
 
         dialog.show();
@@ -359,5 +381,15 @@ public class ShadowActivity extends ShadowContextWrapper {
      */
     public Integer getLastShownDialogId() {
         return lastShownDialogId;
+    }
+
+    public boolean hasCancelledPendingTransitions() {
+        return pendingTransitionEnterAnimResId == 0 && pendingTransitionExitAnimResId == 0;
+    }
+
+    @Implementation
+    public void overridePendingTransition(int enterAnim, int exitAnim) {
+        pendingTransitionEnterAnimResId = enterAnim;
+        pendingTransitionExitAnimResId = exitAnim;
     }
 }

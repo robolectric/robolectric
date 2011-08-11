@@ -53,7 +53,7 @@ public class ShadowSQLiteDatabase {
                 return resultSet.getLong(1);
             }
         } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in insert", e);
+            return -1; // this is how SQLite behaves, unlike H2 which throws exceptions
         }
         return -1;
     }
@@ -71,7 +71,7 @@ public class ShadowSQLiteDatabase {
                 }
                 result = resultSet.getInt(1);
             } catch (SQLException e) {
-                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                e.printStackTrace();
             }
         }
         return result;

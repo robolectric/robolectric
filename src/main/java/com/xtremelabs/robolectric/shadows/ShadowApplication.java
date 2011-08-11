@@ -2,9 +2,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
-import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.view.LayoutInflater;
@@ -17,7 +22,11 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.util.Scheduler;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -62,17 +71,19 @@ public class ShadowApplication extends ShadowContextWrapper {
     private Map<String, Object> systemServices = new HashMap<String, Object>();
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
+    private List<Intent> stoppedServies = new ArrayList<Intent>();
     private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
     private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
     private final Looper mainLooper = newInstanceOf(Looper.class);
     private Looper currentLooper = mainLooper;
     private Scheduler backgroundScheduler = new Scheduler();
-    private Map<String, Hashtable<String, Object>> sharedPreferenceMap = new HashMap<String, Hashtable<String, Object>>();
+    private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<String, Map<String, Object>>();
     private ArrayList<Toast> shownToasts = new ArrayList<Toast>();
     private ShadowAlertDialog latestAlertDialog;
     private ShadowDialog latestDialog;
     private Object bluetoothAdapter = Robolectric.newInstanceOf("android.bluetooth.BluetoothAdapter");
+    private Resources resources;
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -80,6 +91,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private ServiceConnection serviceConnection;
     private ComponentName componentNameForBindService;
     private IBinder serviceForBindService;
+    private List<String> unbindableActions = new ArrayList<String>();
 
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
@@ -111,7 +123,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     @Override @Implementation
     public Resources getResources() {
-        return ShadowResources.bind(new Resources(null, null, null), resourceLoader);
+        if (resources == null) {
+            resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);
+        }
+        return resources;
     }
 
     @Implementation
@@ -154,6 +169,13 @@ public class ShadowApplication extends ShadowContextWrapper {
         startedServices.add(intent);
         return new ComponentName("some.service.package", "SomeServiceName-FIXME");
     }
+    
+    @Implementation
+    @Override public boolean stopService(Intent name) {
+    	stoppedServies.add(name);
+    	
+    	return startedServices.contains(name);
+    }
 
     public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
         this.componentNameForBindService = name;
@@ -162,6 +184,9 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     @Implementation
     public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+        if (unbindableActions.contains(intent.getAction())) {
+            return false;
+        }
         startedServices.add(intent);
         shadowOf(Looper.getMainLooper()).post(new Runnable() {
             @Override
@@ -238,6 +263,18 @@ public class ShadowApplication extends ShadowContextWrapper {
         } else {
             return startedServices.get(0);
         }
+    }
+    
+    /**
+     * Consumes the {@code Intent} requested to stop a service by {@link #stopService(android.content.Intent)} 
+     * from the bottom of the stack of stop requests.
+     */
+    @Override public Intent getNextStoppedService() {
+    	if (stoppedServies.isEmpty()) {
+    		return null;
+    	} else {
+    		return stoppedServies.remove(0);
+    	}
     }
 
     /**
@@ -356,7 +393,11 @@ public class ShadowApplication extends ShadowContextWrapper {
         return currentLooper;
     }
 
-    public Map<String, Hashtable<String, Object>> getSharedPreferenceMap() {
+    public void setCurrentLooper(Looper looper) {
+        currentLooper = looper;
+    }
+
+    public Map<String, Map<String, Object>> getSharedPreferenceMap() {
         return sharedPreferenceMap;
     }
 
@@ -380,10 +421,14 @@ public class ShadowApplication extends ShadowContextWrapper {
         return bluetoothAdapter;
     }
 
+    public void declareActionUnbindable(String action) {
+        unbindableActions.add(action);
+    }
+
     public class Wrapper {
-        private BroadcastReceiver broadcastReceiver;
-        private IntentFilter intentFilter;
-        private Context context;
+        public BroadcastReceiver broadcastReceiver;
+        public IntentFilter intentFilter;
+        public Context context;
         public Throwable exception;
 
         public Wrapper(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter, Context context) {

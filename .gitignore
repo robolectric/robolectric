@@ -4,6 +4,9 @@ out/
 .idea/libraries/
 .idea/modules.xml
 .idea/vcs.xml
+.idea/compiler.xml
+.idea/misc.xml
+.idea/.name
 robolectric.iml
 tmp/
 target/
@@ -16,5 +19,6 @@ local.properties
 *.iws
 *.iml
 *.ipr
+*.orig
 *~
 \#*\#

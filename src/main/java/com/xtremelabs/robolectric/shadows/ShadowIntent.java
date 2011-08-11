@@ -1,19 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.HashSet;
-import java.util.Set;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -26,7 +12,10 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.Join;
 
-import java.util.List;
+import java.io.*;
+import java.util.*;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Intent.class)
@@ -40,7 +29,9 @@ public class ShadowIntent {
     private Uri data;
     private int flags;
     private Class<?> intentClass;
+    private String packageName;
     private Set<String> categories = new HashSet<String>();
+    private String uri;
 
     @Implementation
     public static Intent createChooser(Intent target, CharSequence title) {
@@ -54,6 +45,7 @@ public class ShadowIntent {
 
     public void __constructor__(Context packageContext, Class cls) {
         componentName = new ComponentName(packageContext, cls);
+        intentClass = cls;
     }
 
     public void __constructor__(String action, Uri uri) {
@@ -109,6 +101,17 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Intent setPackage(String packageName) {
+        this.packageName = packageName;
+        return realIntent;
+    }
+
+    @Implementation
+    public String getPackage() {
+        return packageName;
+    }
+
+    @Implementation
     public Uri getData() {
         return data;
     }
@@ -122,6 +125,12 @@ public class ShadowIntent {
     @Implementation
     public Intent setClassName(String packageName, String className) {
         componentName = new ComponentName(packageName, className);
+        return realIntent;
+    }
+
+    @Implementation
+    public Intent setClassName(Context packageContext, String className) {
+        componentName = new ComponentName(packageContext.getPackageName(), className);
         return realIntent;
     }
 
@@ -194,6 +203,12 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Intent putExtra(String key, Parcelable[] value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
+    @Implementation
     public Intent putExtra(String key, String value) {
         extras.put(key, value);
         return realIntent;
@@ -259,6 +274,14 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Parcelable[] getParcelableArrayExtra(String name) {
+        if (extras.get(name) instanceof Parcelable[]) {
+            return (Parcelable[]) extras.get(name);
+        }
+        return null;
+    }
+
+    @Implementation
     public int getIntExtra(String name, int defaultValue) {
         Integer foundValue = (Integer) extras.get(name);
         return foundValue == null ? defaultValue : foundValue;
@@ -296,6 +319,11 @@ public class ShadowIntent {
         return componentName;
     }
 
+    @Implementation
+    public String toURI() {
+        return uri;
+    }
+
     /**
      * Compares an {@code Intent} with a {@code ShadowIntent} (obtained via a call to
      * {@link Robolectric#shadowOf(android.content.Intent)})
@@ -319,7 +347,8 @@ public class ShadowIntent {
         return true;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public int hashCode() {
         int result = extras != null ? extras.hashCode() : 0;
         result = 31 * result + (action != null ? action.hashCode() : 0);
@@ -330,7 +359,8 @@ public class ShadowIntent {
         return result;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public boolean equals(Object o) {
         if (!(o instanceof Intent)) return false;
         return realIntentEquals(shadowOf((Intent) o));
@@ -347,7 +377,8 @@ public class ShadowIntent {
         return intentClass;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public String toString() {
         return "Intent{" +
                 Join.join(
@@ -382,5 +413,9 @@ public class ShadowIntent {
         if (o == null) return null;
         if (o instanceof Map && ((Map) o).isEmpty()) return null;
         return name + "=" + o;
+    }
+
+    public void setURI(String uri) {
+        this.uri = uri;
     }
 }

@@ -1,12 +1,15 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.widget.TabHost;
+import android.widget.TabHost.TabContentFactory;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(TabHost.TabSpec.class)
 public class ShadowTabSpec {
 
@@ -15,6 +18,10 @@ public class ShadowTabSpec {
     private String tag;
     private View indicatorView;
     private Intent intent;
+	private int viewId;
+	private View contentView;
+	private CharSequence label;
+	private Drawable icon;
 
     /**
      * Non-Android accessor, sets the tag on the TabSpec
@@ -36,10 +43,38 @@ public class ShadowTabSpec {
     public View getIndicatorAsView() {
         return this.indicatorView;
     }
+    
+    public String getIndicatorLabel() {
+        return this.label.toString();
+    }
+    
+    public Drawable getIndicatorIcon() {
+        return this.icon;
+    }
+    
+	/**
+	 * Same as GetIndicatorLabel()
+	 * @return
+	 */
+	public String getText() {
+		return label.toString();
+	}
+    @Implementation
+    public TabHost.TabSpec setIndicator(View view) {
+        this.indicatorView = view;
+        return realObject;
+    }
+    
+    @Implementation
+    public TabHost.TabSpec setIndicator(CharSequence label) {
+    	this.label = label;
+        return realObject;
+    }
 
     @Implementation
-    public TabHost.TabSpec setIndicator(android.view.View view) {
-        this.indicatorView = view;
+    public TabHost.TabSpec setIndicator(CharSequence label, Drawable icon) {
+    	this.label = label;
+    	this.icon = icon;
         return realObject;
     }
 
@@ -53,8 +88,30 @@ public class ShadowTabSpec {
     }
 
     @Implementation
-    public android.widget.TabHost.TabSpec setContent(android.content.Intent intent) {
+    public android.widget.TabHost.TabSpec setContent(Intent intent) {
         this.intent = intent;
         return realObject;
     }
+    
+    @Implementation
+    public android.widget.TabHost.TabSpec setContent(TabContentFactory factory) {
+    	contentView = factory.createTabContent(this.tag);
+        return realObject;
+    }
+    
+    
+    @Implementation
+    public android.widget.TabHost.TabSpec setContent(int viewId) {
+    	this.viewId = viewId;
+        return realObject;
+    }
+    
+    public int getContentViewId() {
+    	return viewId;
+    }
+    
+    public View getContentView() {
+    	return contentView;
+    }
+    
 }

@@ -24,6 +24,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 
 /**
@@ -34,6 +35,8 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)
 public class ShadowResources {
+    private float density = 1.0f;
+
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
         ShadowResources shadowResources = shadowOf(resources);
         if (shadowResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
@@ -44,6 +47,19 @@ public class ShadowResources {
     @RealObject Resources realResources;
     private ResourceLoader resourceLoader;
 
+    @Implementation
+    public  int getIdentifier(String name, String defType, String defPackage) {
+        Integer index = 0;
+        
+        ResourceExtractor resourceExtractor = resourceLoader.getResourceExtractor();
+        
+        index = resourceExtractor.getResourceId(defType + "/" + name);
+        if (index == null) {
+            return 0;
+        }
+        return index;
+    }
+    
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
         return resourceLoader.getColorValue(id);
@@ -71,6 +87,17 @@ public class ShadowResources {
     }
 
     @Implementation
+    public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
+        String raw = getQuantityString(id, quantity);
+        return String.format(Locale.ENGLISH, raw, formatArgs);
+    }
+
+    @Implementation
+    public String getQuantityString(int id, int quantity) throws Resources.NotFoundException {
+        return resourceLoader.getPluralStringValue(id, quantity);
+    }
+
+    @Implementation
     public InputStream openRawResource(int id) throws Resources.NotFoundException {
         return resourceLoader.getRawValue(id);
     }
@@ -94,9 +121,15 @@ public class ShadowResources {
         return getString(id);
     }
 
+    public void setDensity(float density) {
+        this.density = density;
+    }
+
     @Implementation
     public DisplayMetrics getDisplayMetrics() {
-        return new DisplayMetrics();
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        displayMetrics.density = this.density;
+        return displayMetrics;
     }
 
     @SuppressWarnings("rawtypes")

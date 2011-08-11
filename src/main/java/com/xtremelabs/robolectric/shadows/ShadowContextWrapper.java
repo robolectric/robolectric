@@ -1,6 +1,14 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -10,6 +18,9 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.tester.android.content.TestSharedPreferences;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -23,6 +34,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     private String appName;
     private String packageName;
+    private ArrayList<Intent> broadcastIntents = new ArrayList<Intent>();
 
     public void __constructor__(Context baseContext) {
         this.baseContext = baseContext;
@@ -56,6 +68,11 @@ public class ShadowContextWrapper extends ShadowContext {
     @Implementation
     public void sendBroadcast(Intent intent) {
         getApplicationContext().sendBroadcast(intent);
+        broadcastIntents.add(intent);
+    }
+
+    public List<Intent> getBroadcastIntents() {
+        return broadcastIntents;
     }
 
     @Implementation
@@ -103,6 +120,11 @@ public class ShadowContextWrapper extends ShadowContext {
     @Implementation
     public ComponentName startService(Intent service) {
         return getApplicationContext().startService(service);
+    }
+    
+    @Implementation
+    public boolean stopService(Intent name) {
+    	return getApplicationContext().stopService(name);
     }
 
     @Implementation
@@ -157,6 +179,17 @@ public class ShadowContextWrapper extends ShadowContext {
      */
     public Intent peekNextStartedService() {
         return getShadowApplication().peekNextStartedService();
+    }
+    
+    /**
+     * Non-Android accessor that delegates to the application to return the next {@code Intent} to stop 
+     * a service (irrespective of if the service was running)  
+     * 
+     * 
+     * @return {@code Intent} for the next service requested to be stopped
+     */
+    public Intent getNextStoppedService() {
+    	return getShadowApplication().getNextStoppedService();
     }
 
     /**

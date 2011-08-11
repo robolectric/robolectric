@@ -1,6 +1,8 @@
 package com.xtremelabs.robolectric;
 
+import android.app.Activity;
 import android.content.Context;
+import android.os.Handler;
 import android.view.View;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -118,6 +120,29 @@ public class RobolectricTest {
         assertFalse(Robolectric.httpRequestWasMade("http://example.org"));
     }
 
+    @Test
+    public void idleMainLooper_executesScheduledTasks() {
+        final boolean[] wasRun = new boolean[] {false};
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                wasRun[0] = true;
+            }
+        }, 2000);
+
+        assertFalse(wasRun[0]);
+        Robolectric.idleMainLooper(1999);
+        assertFalse(wasRun[0]);
+        Robolectric.idleMainLooper(1);
+        assertTrue(wasRun[0]);
+    }
+
+    @Test
+    public void shouldUseSetDensityForContexts() throws Exception {
+        assertThat(new Activity().getResources().getDisplayMetrics().density, equalTo(1.0f));
+        Robolectric.setDisplayMetricsDensity(1.5f);
+        assertThat(new Activity().getResources().getDisplayMetrics().density, equalTo(1.5f));
+    }
 
     public void clickOn_shouldCallClickListener() throws Exception {
         View view = new View(null);

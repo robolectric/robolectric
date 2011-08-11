@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.os.Bundle;
 import android.os.Parcelable;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -11,12 +10,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-
-import android.os.Bundle;
-import android.os.Parcelable;
-
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import java.util.Set;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
@@ -156,6 +150,16 @@ public class ShadowBundle {
     @Implementation
     public boolean containsKey(String key) {
         return map.containsKey(key);
+    }
+
+    @Implementation
+    public boolean isEmpty() {
+        return map.isEmpty();
+    }
+
+    @Implementation
+    public Set<String> keySet() {
+        return map.keySet();
     }
 
     @Override @Implementation

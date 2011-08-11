@@ -85,7 +85,15 @@ public class SQLiteDatabaseTest {
         assertThat(stringValueFromDatabase, equalTo(stringColumnValue));
         assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
     }
-    
+
+    @Test
+    public void testInsertWithException() {
+        ContentValues values = new ContentValues();
+
+        assertEquals(-1 ,database.insert("table_that_doesnt_exist", null, values));
+    }
+
+
     @Test
     public void testEmptyTable() throws Exception {
         Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);

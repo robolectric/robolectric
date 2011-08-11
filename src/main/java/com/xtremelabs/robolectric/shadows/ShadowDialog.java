@@ -36,14 +36,16 @@ public class ShadowDialog {
     private DialogInterface.OnCancelListener onCancelListener;
     private Window window;
     private Activity ownerActivity;
-    private boolean isCancelable;
+    private boolean isCancelable = true;
+    private boolean hasShownBefore;
     
     public static void reset() {
         setLatestDialog(null);
     }
 
-    public static ShadowDialog getLatestDialog() {
-        return Robolectric.getShadowApplication().getLatestDialog();
+    public static Dialog getLatestDialog() {
+        ShadowDialog dialog = Robolectric.getShadowApplication().getLatestDialog();
+        return dialog == null ? null : dialog.realDialog;
     }
 
     public static void setLatestDialog(ShadowDialog latestDialog) {
@@ -57,8 +59,6 @@ public class ShadowDialog {
     public void __constructor__(Context context, int themeId) {
         this.context = context;
         this.themeId = themeId;
-
-        setLatestDialog(this);
     }
 
     @Implementation
@@ -92,12 +92,19 @@ public class ShadowDialog {
     }
 
     @Implementation
+    public void onBackPressed() {
+        cancel();
+    }
+
+    @Implementation
     public void show() {
         isShowing = true;
         try {
-            Method onCreateMethod = Dialog.class.getDeclaredMethod("onCreate", Bundle.class);
-            onCreateMethod.setAccessible(true);
-            onCreateMethod.invoke(realDialog, (Bundle) null);
+            if (!hasShownBefore) {
+                Method onCreateMethod = Dialog.class.getDeclaredMethod("onCreate", Bundle.class);
+                onCreateMethod.setAccessible(true);
+                onCreateMethod.invoke(realDialog, (Bundle) null);
+            }                
 
             Method onStartMethod = Dialog.class.getDeclaredMethod("onStart");
             onStartMethod.setAccessible(true);
@@ -105,6 +112,8 @@ public class ShadowDialog {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        hasShownBefore = true;
+        setLatestDialog(this);
     }
 
     @Implementation
@@ -165,8 +174,12 @@ public class ShadowDialog {
     }
 
     @Implementation
-    public void setOnCancelListener(final DialogInterface.OnCancelListener listener) {
+    public void setOnCancelListener(DialogInterface.OnCancelListener listener) {
         this.onCancelListener = listener;
+    }
+
+    public DialogInterface.OnCancelListener getOnCancelListener() {
+        return onCancelListener;
     }
 
     @Implementation

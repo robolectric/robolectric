@@ -63,8 +63,8 @@ public class ResourceExtractor {
         }
         if (resourceName.startsWith("@+id")) {
             resourceName = resourceName.substring(2);
-        } else if (resourceName.startsWith("@android:id")) { // namespace needed for platform files
-            resourceName = resourceName.substring(9);
+        } else if (resourceName.startsWith("@android:")) { // namespace needed for platform files
+            resourceName = resourceName.substring("@android:".length());
         } else if (resourceName.startsWith("@")) {
             resourceName = resourceName.substring(1);
         }

@@ -45,6 +45,10 @@ public class ShadowLooper {
         unPauseLooper(Looper.getMainLooper());
     }
 
+    public static void idleMainLooper(int interval) {
+        shadowOf(Looper.getMainLooper()).idle(interval);
+    }
+
     /**
      * Causes {@link Runnable}s that have been scheduled to run immediately to actually run. Does not advance the
      * scheduler's clock;
@@ -121,5 +125,4 @@ public class ShadowLooper {
     public Scheduler getScheduler() {
         return scheduler;
     }
-
 }
