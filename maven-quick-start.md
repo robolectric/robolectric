@@ -34,19 +34,13 @@ Create a file named <code>pom.xml</code> in the root of your project based on th
         </dependency>
 
         <dependency>
-            <groupId>com.google.android</groupId>
-            <artifactId>android-test</artifactId>
-            <version>2.2.1</version>
-            <scope>provided</scope>
-        </dependency>
-
-        <dependency>
             <groupId>com.google.android.maps</groupId>
             <artifactId>maps</artifactId>
             <version>8_r2</version>
             <scope>provided</scope>
         </dependency>
 
+        <!-- Make sure this is below the android dependencies -->
         <dependency>
             <groupId>com.pivotallabs</groupId>
             <artifactId>robolectric</artifactId>
@@ -66,10 +60,6 @@ Create a file named <code>pom.xml</code> in the root of your project based on th
         <finalName>${project.artifactId}</finalName>
 
         <plugins>
-            <plugin>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
-            </plugin>
             <plugin>
                 <groupId>com.jayway.maven.plugins.android.generation2</groupId>
                 <artifactId>maven-android-plugin</artifactId>

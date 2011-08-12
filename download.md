@@ -5,22 +5,10 @@
 
 ## Downloads
 
-We now distribute Robolectric releases via the
-[Maven Central Repository](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/).
+We now distribute Robolectric releases via 
+[Sonatype](https://oss.sonatype.org/index.html#nexus-search;quick~robolectric).
 
-If you're <a href="maven-quick-start.html">using Maven to build your project</a> (which we recommend), just add the
-following to your <code>pom.xml</code>:
-
-{% highlight xml %}
-<dependencies>
-    <dependency>
-        <groupId>com.pivotallabs</groupId>
-        <artifactId>robolectric</artifactId>
-        <version>XXX</version>
-        <scope>test</scope>
-    </dependency>
-</dependencies>
-{% endhighlight %}
+We recommend using Maven to build your project. Please see the [Maven quick-start guide](maven-quick-start.html) and using the sample `pom.xml`.
 
 If you're not using Maven to build your project, you'll probably want to grab the latest
 robolectric-X.X.X-jar-with-dependencies.jar from [Sonatype](https://oss.sonatype.org/index.html#nexus-search;quick~robolectric)
