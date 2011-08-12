@@ -21,7 +21,8 @@ public class TestAttributeSetTest {
     private HashMap<String, String> attributes;
     private ResourceExtractor resourceExtractor;
 
-    @Before public void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         attributes = new HashMap<String, String>();
 
         resourceExtractor = new ResourceExtractor();
@@ -32,22 +33,38 @@ public class TestAttributeSetTest {
     @Test
     public void getSystemAttributeResourceValue_shouldReturnTheResourceValue() throws Exception {
         attributes.put("android:id", "@android:id/text1");
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
         assertThat(testAttributeSet.getAttributeResourceValue("android", "id", 0), equalTo(android.R.id.text1));
     }
 
     @Test
     public void getSystemAttributeResourceValue_shouldNotReturnTheResourceValueIfNameSpaceDoesNotMatch() throws Exception {
         attributes.put("id", "@id/text1");
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
         assertEquals(0, testAttributeSet.getAttributeResourceValue("android", "id", 0));
+    }
+
+    @Test
+    public void shouldCopeWithDefiningSystemIds() throws Exception {
+        attributes.put("android:id", "@+id/text1");
+
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, true);
+        assertThat(testAttributeSet.getAttributeResourceValue("android", "id", 0), equalTo(android.R.id.text1));
+    }
+
+    @Test
+    public void shouldCopeWithDefiningLocalIds() throws Exception {
+        attributes.put("android:id", "@+id/text1");
+
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
+        assertThat(testAttributeSet.getAttributeResourceValue("android", "id", 0), equalTo(R.id.text1));
     }
 
     @Test
     public void getAttributeResourceValue_shouldReturnTheResourceValue() throws Exception {
         attributes.put("message", "@string/howdy");
 
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
         assertThat(testAttributeSet.getAttributeResourceValue("com.some.namespace", "message", 0), equalTo(R.string.howdy));
     }
 
@@ -55,13 +72,13 @@ public class TestAttributeSetTest {
     public void getAttributeResourceValue_withNamespace_shouldReturnTheResourceValue() throws Exception {
         attributes.put("message", "@string/howdy");
 
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
         assertThat(testAttributeSet.getAttributeResourceValue("com.some.namespace", "message", 0), equalTo(R.string.howdy));
     }
 
     @Test
     public void getAttributeResourceValue_shouldReturnDefaultValueWhenNotInAttributeSet() throws Exception {
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
         assertThat(testAttributeSet.getAttributeResourceValue("com.some.namespace", "message", -1), equalTo(-1));
     }
 
@@ -69,7 +86,7 @@ public class TestAttributeSetTest {
     public void getAttributeBooleanValue_shouldGetBooleanValuesFromAttributes() throws Exception {
         attributes.put("isSugary", "true");
 
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
         assertThat(testAttributeSet.getAttributeBooleanValue("com.some.namespace", "isSugary", false), equalTo(true));
     }
 
@@ -77,13 +94,13 @@ public class TestAttributeSetTest {
     public void getAttributeBooleanValue_withNamespace_shouldGetBooleanValuesFromAttributes() throws Exception {
         attributes.put("xxx:isSugary", "true");
 
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
         assertThat(testAttributeSet.getAttributeBooleanValue("com.some.namespace", "isSugary", false), equalTo(true));
     }
 
     @Test
     public void getAttributeBooleanValue_shouldReturnDefaultBooleanValueWhenNotInAttributeSet() throws Exception {
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
         assertThat(testAttributeSet.getAttributeBooleanValue("com.some.namespace", "isSugary", true), equalTo(true));
     }
 
@@ -91,7 +108,7 @@ public class TestAttributeSetTest {
     public void getAttributeValue_shouldReturnValueFromAttribute() throws Exception {
         attributes.put("isSugary", "oh heck yeah");
 
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
         assertThat(testAttributeSet.getAttributeValue("com.some.namespace", "isSugary"), equalTo("oh heck yeah"));
     }
 
@@ -100,7 +117,7 @@ public class TestAttributeSetTest {
         attributes.put("sugarinessPercent", "100");
 
         AttrResourceLoader resourceLoader = new AttrResourceLoader(resourceExtractor);
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, resourceLoader, View.class);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, resourceLoader, View.class, false);
         assertThat(testAttributeSet.getAttributeIntValue("some namespace", "sugarinessPercent", 0), equalTo(100));
     }
 
@@ -110,7 +127,7 @@ public class TestAttributeSetTest {
 
         AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
         new DocumentLoader(attrResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, attrResourceLoader, CustomView.class);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, attrResourceLoader, CustomView.class, false);
         assertThat(testAttributeSet.getAttributeIntValue("some namespace", "itemType", 0), equalTo(1));
     }
 }

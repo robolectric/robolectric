@@ -13,17 +13,19 @@ public class TestAttributeSet implements AttributeSet {
     private ResourceExtractor resourceExtractor;
     private AttrResourceLoader attrResourceLoader;
     private Class<? extends View> viewClass;
+    private boolean isSystem = false;
 
     public TestAttributeSet() {
         this.attributes = new HashMap<String, String>();
     }
 
     public TestAttributeSet(Map<String, String> attributes, ResourceExtractor resourceExtractor,
-                            AttrResourceLoader attrResourceLoader, Class<? extends View> viewClass) {
+                            AttrResourceLoader attrResourceLoader, Class<? extends View> viewClass, boolean isSystem) {
         this.attributes = attributes;
         this.resourceExtractor = resourceExtractor;
         this.attrResourceLoader = attrResourceLoader;
         this.viewClass = viewClass;
+        this.isSystem = isSystem;
     }
 
     public TestAttributeSet put(String name, String value) {
@@ -178,6 +180,9 @@ public class TestAttributeSet implements AttributeSet {
                 value = attributes.get(key);
                 break;
             }
+        }
+        if (value != null && isSystem && value.startsWith("@+id")) {
+            value = value.replace("@+id", "@+android:id");
         }
         return value;
     }
