@@ -23,8 +23,7 @@ following to your <code>pom.xml</code>:
 {% endhighlight %}
 
 If you're not using Maven to build your project, you'll probably want to grab the latest
-robolectric-X.X.X-jar-with-dependencies.jar from
-[Maven Central](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/).
+robolectric-X.X.X-jar-with-dependencies.jar from [Sonatype](https://oss.sonatype.org/index.html#nexus-search;quick~robolectric)
 
 ### Older releases are still available here:
 
@@ -49,27 +48,6 @@ source level debugging and browsing.
   <th>SHA1</th>
 </tr>
 <!-- START_DOWNLOADS -->
-<tr>
-  <td class="link"><a href="downloads/robolectric-1.0-RC4.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-1.0-RC4.jar'); ">robolectric-1.0-RC4.jar</a></td>
-  <td class="version">1.0-RC4</td>
-  <td class="size">303k</td>
-  <td class="date">2011/08/11 14:41:04 PDT</td>
-  <td class="sha">235053f0c52a82c764b20dbc1de3801b0b956ad5</td>
-</tr>
-<tr>
-  <td class="link"><a href="downloads/robolectric-src-1.0-RC4.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-src-1.0-RC4.jar'); ">robolectric-src-1.0-RC4.jar</a></td>
-  <td class="version">1.0-RC4</td>
-  <td class="size">160k</td>
-  <td class="date">2011/08/11 14:41:04 PDT</td>
-  <td class="sha">989375cd270823132df93403179dd02f85628e76</td>
-</tr>
-<tr>
-  <td class="link"><a href="downloads/robolectric-all-1.0-RC4.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-all-1.0-RC4.jar'); ">robolectric-all-1.0-RC4.jar</a></td>
-  <td class="version">1.0-RC4</td>
-  <td class="size">2984k</td>
-  <td class="date">2011/08/11 14:41:04 PDT</td>
-  <td class="sha">529ad4f2c162325bde31df8b134abb65f8da8b10</td>
-</tr>
 <tr>
   <td class="link"><a href="downloads/robolectric-0.9.4.jar" onClick="javascript:pageTracker._trackPageView('downloads/robolectric-0.9.4.jar'); ">robolectric-0.9.4.jar</a></td>
   <td class="version">0.9.4</td>
