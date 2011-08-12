@@ -23,7 +23,7 @@ import java.util.Map;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ViewLoader extends XmlLoader {
-    private Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
+    protected Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
     private AttrResourceLoader attrResourceLoader;
 
     public ViewLoader(ResourceExtractor resourceExtractor, AttrResourceLoader attrResourceLoader) {

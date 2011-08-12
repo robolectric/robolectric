@@ -134,8 +134,8 @@ public class ResourceLoader {
 
     private void loadViewResources(File systemResourceDir, File xmlResourceDir) throws Exception {
         DocumentLoader viewDocumentLoader = new DocumentLoader(viewLoader);
-        loadLayoutResourceXmlSubDirs(viewDocumentLoader, xmlResourceDir);
-        loadLayoutResourceXmlSubDirs(viewDocumentLoader, systemResourceDir);
+        loadLayoutResourceXmlSubDirs(viewDocumentLoader, xmlResourceDir, false);
+        loadLayoutResourceXmlSubDirs(viewDocumentLoader, systemResourceDir, true);
     }
 
     private void loadMenuResources(File xmlResourceDir) throws Exception {
@@ -155,9 +155,9 @@ public class ResourceLoader {
         }
     }
 
-    private void loadLayoutResourceXmlSubDirs(DocumentLoader layoutDocumentLoader, File xmlResourceDir) throws Exception {
+    private void loadLayoutResourceXmlSubDirs(DocumentLoader layoutDocumentLoader, File xmlResourceDir, boolean isSystem) throws Exception {
         if (xmlResourceDir != null) {
-            layoutDocumentLoader.loadResourceXmlDirs(xmlResourceDir.listFiles(LAYOUT_DIR_FILE_FILTER));
+            layoutDocumentLoader.loadResourceXmlDirs(isSystem, xmlResourceDir.listFiles(LAYOUT_DIR_FILE_FILTER));
         }
     }
 
@@ -367,5 +367,9 @@ public class ResourceLoader {
 
     public ResourceExtractor getResourceExtractor() {
         return resourceExtractor;
+    }
+
+    public ViewLoader.ViewNode getLayoutViewNode(String layoutName) {
+        return viewLoader.viewNodesByLayoutName.get(layoutName);
     }
 }
