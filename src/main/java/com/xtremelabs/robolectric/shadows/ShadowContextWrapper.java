@@ -152,6 +152,14 @@ public class ShadowContextWrapper extends ShadowContext {
     public Intent getNextStartedService() {
         return getShadowApplication().getNextStartedService();
     }
+    
+    /**
+     * Non-android accessor that delefates to the application to clear the stack of started 
+     * service intents.
+     */
+    public void clearStartedServices() {
+    	getShadowApplication().clearStartedServices();
+    }
 
     /**
      * Return (without consuming) the next {@code Intent} on the started services stack.
