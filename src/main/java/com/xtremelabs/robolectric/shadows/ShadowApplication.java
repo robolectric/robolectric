@@ -266,6 +266,13 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
     
     /**
+     * Clears all {@code Intent} started by {@link #startService(android.content.Intent)}
+     */
+    @Override public void clearStartedServices() {
+		startedServices.clear();
+	}
+    
+    /**
      * Consumes the {@code Intent} requested to stop a service by {@link #stopService(android.content.Intent)} 
      * from the bottom of the stack of stop requests.
      */
