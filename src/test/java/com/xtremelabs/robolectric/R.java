@@ -22,6 +22,8 @@ public final class R {
         public static final int false_checkbox = nextId++;
         public static final int default_checkbox = nextId++;
         public static final int image = nextId++;
+        public static final int icon = nextId++;
+        public static final int text1 = nextId++;
         public static final int button = nextId++;
         public static final int invalid_onclick_button = nextId++;
         public static final int edit_text = nextId++;
@@ -46,6 +48,7 @@ public final class R {
         public static final int hello = nextId++;
         public static final int some_html = nextId++;
         public static final int greeting = nextId++;
+        public static final int copy = nextId++;
     }
 
     public static final class plurals {
@@ -56,6 +59,7 @@ public final class R {
         public static final int items = nextId++;
         public static final int greetings = nextId++;
         public static final int alertDialogTestItems = nextId++;
+        public static final int emailAddressTypes = nextId++;
     }
 
     public static final class color {

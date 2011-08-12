@@ -27,8 +27,7 @@ public class DrawableResourceLoader extends XmlLoader {
      * @param resourceDirectory
      *            Resource directory
      */
-    public DrawableResourceLoader(ResourceExtractor extractor,
-            File resourceDirectory) {
+    public DrawableResourceLoader(ResourceExtractor extractor, File resourceDirectory) {
         super(extractor);
         this.resourceDirectory = resourceDirectory;
     }
@@ -41,8 +40,7 @@ public class DrawableResourceLoader extends XmlLoader {
      * @return Boolean
      */
     public boolean isXml(int resourceId) {
-        return documents.containsKey(resourceExtractor
-                .getResourceName(resourceId));
+        return documents.containsKey(resourceExtractor.getResourceName(resourceId));
     }
 
     /**
@@ -59,10 +57,12 @@ public class DrawableResourceLoader extends XmlLoader {
      *      org.w3c.dom.Document, boolean)
      */
     @Override
-    protected void processResourceXml(File xmlFile, Document document,
-            boolean isSystem) throws Exception {
+    protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
         String name = toResourceName(xmlFile);
         if (!documents.containsKey(name)) {
+            if (isSystem) {
+                name = "android:" + name;
+            }
             documents.put(name, document);
         }
     }
@@ -91,18 +91,20 @@ public class DrawableResourceLoader extends XmlLoader {
      * @return Drawables
      */
     protected int[] getDrawableIds(int resourceId) {
-        Document document = documents.get(resourceExtractor
-                .getResourceName(resourceId));
+        String resourceName = resourceExtractor.getResourceName(resourceId);
+        Document document = documents.get(resourceName);
 
         NodeList items = document.getElementsByTagName("item");
         int[] drawableIds = new int[items.getLength()];
 
         for (int i = 0; i < items.getLength(); i++) {
             Node item = items.item(i);
-            Node drawableName = item.getAttributes().getNamedItem(
-                    "android:drawable");
-            drawableIds[i] = resourceExtractor.getResourceId(drawableName
-                    .getNodeValue());
+            String drawableName = item.getAttributes().getNamedItem("android:drawable").getNodeValue();
+            if (resourceName.startsWith("android:")) {
+                drawableIds[i] = -1;
+            } else {
+                drawableIds[i] = resourceExtractor.getResourceId(drawableName);
+            }
         }
 
         return drawableIds;

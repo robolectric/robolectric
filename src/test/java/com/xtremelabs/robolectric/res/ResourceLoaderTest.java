@@ -22,4 +22,11 @@ public class ResourceLoaderTest {
         String stringValue = resourceLoader.getStringValue(android.R.string.copy);
         assertEquals("Copy", stringValue);
     }
+
+    @Test
+    public void shouldLoadLocalResources() throws Exception {
+        ResourceLoader resourceLoader = new ResourceLoader(10, R.class, resourceFile("res"), resourceFile("assets"));
+        String stringValue = resourceLoader.getStringValue(R.string.copy);
+        assertEquals("Local Copy", stringValue);
+    }
 }

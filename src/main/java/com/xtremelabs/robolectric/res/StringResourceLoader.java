@@ -17,8 +17,8 @@ public class StringResourceLoader extends XpathResourceXmlLoader implements Reso
         return getValue(resourceExtractor.getResourceId(resourceName, isSystem));
     }
 
-    @Override protected void processNode(Node node, String name, boolean ignored) {
-        stringResolver.processResource(name, node.getTextContent(), this);
+    @Override protected void processNode(Node node, String name, boolean isSystem) {
+        stringResolver.processResource(name, node.getTextContent(), this, isSystem);
     }
 
     @Override public Object convertRawValue(String rawValue) {
