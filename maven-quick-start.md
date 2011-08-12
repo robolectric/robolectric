@@ -6,8 +6,9 @@
 ##Quick Start for Maven
 
 The [maven-android-plugin](http://code.google.com/p/maven-android-plugin/) makes it easy to add Robolectric to your
-Android project.
+Android project. 
 
+If you plan on using a google maps add-on version of the sdk, you may be interested in [maven-android-sdk-deployer](https://github.com/mosabua/maven-android-sdk-deployer). The maps jars are not available for download from Sonatype. Using this project will make the maps jars available to your local Maven install. 
 
 ###Project Creation
 ----------------------
@@ -61,6 +62,7 @@ Create a file named <code>pom.xml</code> in the root of your project based on th
 
         <plugins>
             <plugin>
+                <!-- See http://code.google.com/p/maven-android-plugin/ -->
                 <groupId>com.jayway.maven.plugins.android.generation2</groupId>
                 <artifactId>maven-android-plugin</artifactId>
                 <version>2.8.3</version>
@@ -140,8 +142,11 @@ runner.
 
 #### No Android SDK path could be found.
 
-If Maven reports "No Android SDK path could be found." you need to tell Maven where to find Android by making your
-<code>~/.m2/settings.xml</code> file look something like this:
+Set the `ANDROID_HOME` environment variable.
+
+-or-
+
+Tell Maven where to find Android by making your `~/.m2/settings.xml` file look something like this:
 
 {% highlight xml %}
     <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
