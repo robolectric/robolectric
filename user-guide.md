@@ -8,7 +8,7 @@ title: User Guide
 A sample app that uses Robolectric can be found at
 [http://github.com/pivotal/RobolectricSample](http://github.com/pivotal/RobolectricSample).
 
-This sample app shows how to layout your project, includes example tests, and a build.xml file for compiling and
+This sample app shows how to layout your project, includes example tests, and a `build.xml` file for compiling and
 running tests. For now, the best way to get started is to download this app, and use it as a starting point for
 building your own app.
 
@@ -16,16 +16,16 @@ building your own app.
 
 Robolectric must have an opportunity to intercept the class loading process of the Android classes to make this all
 work. This is done by adding the JUnit annotation to your tests. JUnit will defer processing of the Test file to the
-class defined in the <code>@RunWith(RobolectricTestRunner.class)</code> annotation. The
-<code>RobolectricTestRunner.class</code> sets up your test to run with Robolectric.
+class defined in the `@RunWith(RobolectricTestRunner.class)` annotation. The
+`RobolectricTestRunner.class` sets up your test to run with Robolectric.
 
-## <code>Robolectric.shadowOf()</code>
+##  `Robolectric.shadowOf()`
 
 Sometimes Android classes don't provide methods to access the state of the Android objects under test. The
-<code>Robolectric.shadowOf()</code> methods provide reference to the shadow instances representing Android objects,
+ `Robolectric.shadowOf()` methods provide reference to the shadow instances representing Android objects,
 allowing tests to assert on state otherwise not available.
 
-Suppose the application assigns a drawable resource id on an <code>ImageView</code> in layout xml, like this:
+Suppose the application assigns a drawable resource id on an  `ImageView` in layout xml, like this:
 
 {% highlight xml %}
 <ImageView
@@ -37,8 +37,8 @@ Suppose the application assigns a drawable resource id on an <code>ImageView</co
     > 
 {% endhighlight %}
 
-Android provides no way to access the drawable resource id that was applied to the <code>ImageView</code>.
-Robolectric's <code>ShadowImageView</code> object records the drawable resource id so you can assert on it in test,
+Android provides no way to access the drawable resource id that was applied to the  `ImageView`.
+Robolectric's  `ShadowImageView` object records the drawable resource id so you can assert on it in test,
 like this:
 
 {% highlight java %}
@@ -50,31 +50,36 @@ public void shouldHaveALogo() throws Exception {
 }
 {% endhighlight %}
 
-## Shadow Objects
+<a id="extending" href="#"> </a>
 
+## Extending Robolectric
+Robolectric is a work in progress and everyone in the community relies on everyone else to add functionality.
+
+### Shadow Objects
 Robolectric defines many shadow objects that give behavior to the stripped classes in the SDK jar. When an Android
 class's constructor is invoked, a shadow object is created if a shadow class has been registered.
-(See <code>Robolectric.getDefaultShadowClasses()</code> for the complete list of shadows Robolectric provides.)
+(See  `Robolectric.getDefaultShadowClasses()` for the complete list of shadows Robolectric provides.)
 
-#### Writing your own Shadow Classes
+
+### Writing your own Shadow Classes
 The library of shadow classes supplied with Robolectric does not cover the entire Android API. Even if it did, some
 projects will require behavior that differs from what is in the library. When these situations are encountered
 it will be necessary to extend existing or add new shadow classes. Creating new shadow classes is easy. Here is an
 outline of the process, details about each step will follow:
 
-- <b>Clone the Robolectric project on GitHub</b>
+- **Clone the [Robolectric project on GitHub](https://github.com/pivotal/robolectric/):**
 We very often make Robolectric a sub-module of the project that we are working on in order to make it easier to add
 new shadow classes as we need them, but you could also create dependencies between projects or build and copy .jar files
-depending on your needs.
+depending on your needs.  See [GitHub - Fork A Repo](http://help.github.com/fork-a-repo/ "Help.GitHub - Fork A Repo").
 
-- <b>Add tests for your shadow class</b>
+- **Add tests for your shadow class:**
 They live in the com.extremelabs.robolectric.shadows package under the code/tests folder
 
-- <b>Develop the implementation</b>
+- **Develop the implementation:**
 Put it in the same package under code/src. There are lots of shadow classes that are already implemented there that can
 be used as examples. The most important aspects of writing a shadow class are described below.
 
-- <b>Register your new class with the Robolectric framework</b>
+- **Register your new class with the Robolectric framework:**
 Add it to the list returned by Robolectric.getDefaultShadowClasses() and also add an implementation of
 Robolectric.shadowOf(). Just duplicate the examples that are already in the Robolectric class.
 
@@ -112,27 +117,27 @@ Suppose an application defined the following line of code:
   ...
 {% endhighlight %}
 
-Under test the <code>ShadowImageView#setImageResource(int resId)</code> method on the shadow instance would be invoked.
+Under test the  `ShadowImageView#setImageResource(int resId)` method on the shadow instance would be invoked.
 
-Shadow methods must be marked with the <code>@Implementation</code> annotation. Robolectric includes a lint test to help
+Shadow methods must be marked with the  `@Implementation` annotation. Robolectric includes a lint test to help
 ensure this is done correctly.
 
 It is important shadow methods are implemented on the corresponding shadow of the class in which they were
 originally defined. Otherwise Robolectric's lookup mechanism will not find them (even if they have been declared on a
-shadow subclass.) For example, the method <code>setEnabled()</code> is defined on View. If a <code>setEnabled()</code>
-method is defined on <code>ShadowViewGroup</code> instead of <code>ShadowView</code> then it will not be found at run
-time even when <code>setEnabled()</code> is called on an instance of <code>ViewGroup</code>.
+shadow subclass.) For example, the method `setEnabled()` is defined on View. If a `setEnabled()`
+method is defined on `ShadowViewGroup` instead of `ShadowView` then it will not be found at run
+time even when `setEnabled()` is called on an instance of `ViewGroup`.
 
 #### Shadowing Constructors
 
-Once a shadow object is instantiated, Robolectric will look for a method named <code>__constructor__</code> which has
+Once a shadow object is instantiated, Robolectric will look for a method named  `__constructor__` which has
 the same arguments as the constructor that was invoked on the real object.
 
 For instance, if the application code were to invoke the TextView constructor which receives a Context:
 {% highlight java %}
 new TextView(context);
 {% endhighlight %}
-Robolectric would invoke the following <code>__constructor__</code> method that receives a Context:
+Robolectric would invoke the following  `__constructor__` method that receives a Context:
 {% highlight java %}
 @Implements(TextView.class)
 public class ShadowTextView {
@@ -159,7 +164,7 @@ public class ShadowPoint {
     }
 }
 {% endhighlight %}
-Robolectric will set realPoint to the actual instance of <code>Point</code> before invoking any other methods.
+Robolectric will set realPoint to the actual instance of  `Point` before invoking any other methods.
 
 It is important to note that methods called on the real object will still be intercepted and redirected by Robolectric.
 This does not often matter in test code, but it has important implications for Shadow class implementors. Since the

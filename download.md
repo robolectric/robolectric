@@ -13,7 +13,7 @@ We recommend using Maven to build your project. Please see the [Maven quick-star
 If you're not using Maven to build your project, you'll probably want to grab the latest
 robolectric-X.X.X-jar-with-dependencies.jar from [Sonatype](https://oss.sonatype.org/index.html#nexus-search;quick~robolectric)
 
-### Older releases are still available here:
+## Older Releases
 
 If you're looking for an older release, you'll probably want to grab one of the robolectric-X.X.X-all.jars below.
 
