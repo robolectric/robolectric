@@ -12,7 +12,7 @@ This is by far the easiest installation method.
 1. Open IntelliJ
 2. Select File &rarr; Open Project... &rarr; select the `pom.xml`.
 
-![](/images/intellij.jpg)
+![](images/intellij.jpg)
 
 ## Manual Creation
 If you are not using Maven you will have to do the work yourself.

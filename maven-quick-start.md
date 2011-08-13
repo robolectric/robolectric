@@ -124,7 +124,7 @@ public class MyActivityTest {
 Typing: <code>mvn clean test</code> will run the tests.
 
 ### Importing into an IDE
-Go check out the Maven sections of [IntelliJ](/intellij-quick-start.html) and [Eclipse](/eclipse-quick-start.html).
+Go check out the Maven sections of [IntelliJ](intellij-quick-start.html) and [Eclipse](eclipse-quick-start.html).
 
 When running tests from within IntelliJ or Eclipse, be sure to run tests using the JUnit runner, not the Android Test
 runner.
