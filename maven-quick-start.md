@@ -81,7 +81,6 @@ Create a file named <code>pom.xml</code> in the root of your project based on th
 
 Note that you need Robolectric and JUnit 4 in 'test' scope, and android, android-test, and maps in 'provided' scope.
 
-
 ### Prepare directory structures
 ------------------------------
 You'll need the standard <code>AndroidManifest.xml</code> file in your root directory, as well as something like
@@ -93,7 +92,7 @@ the following files:
   /src/test/java/com/pivotallabs/MyActivityTest.java
 </pre>
 
-You should then be able to build your project and run tests using <code>maven test</code>.
+You should then be able to build your project and run tests using <code>maven install</code>.
 
 ### Verify your setup
 --------------------------------------------------------------------------------------------
@@ -122,18 +121,10 @@ public class MyActivityTest {
 
 {% endhighlight %}
 
-Typing: <code>mvn clean test</code> will run the test.
+Typing: <code>mvn clean test</code> will run the tests.
 
 ### Importing into an IDE
-
-To open the project in IntelliJ: File -> Open Project... -> select the pom.xml.
-
-To open the project in Eclipse, make sure you have the
-[M2Eclipse plugin](http://m2eclipse.sonatype.org/installing-m2eclipse.html) installed, then:
-*  android update project -p $PATH --target xxx
-* Import... -> Existing Maven Projects, find your project.
-* &lt;right click project&gt; -> Android -> Convert to Android Project
-* &lt;right click "gen" folder&gt; -> Build Path -> Add to Build Path
+Go check out the Maven sections of [IntelliJ](/intellij-quick-start.html) and [Eclipse](/eclipse-quick-start.html).
 
 When running tests from within IntelliJ or Eclipse, be sure to run tests using the JUnit runner, not the Android Test
 runner.

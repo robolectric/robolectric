@@ -5,10 +5,20 @@
 
 ##Quick Start for Eclipse
 
+## Maven 
+To open the project in Eclipse, make sure you have the
+[M2Eclipse plugin](http://m2eclipse.sonatype.org/installing-m2eclipse.html) installed, then:
+*  android update project -p $PATH --target xxx
+* Import... &rarr; Existing Maven Projects, find your project.
+* &lt;right click project&gt; &rarr; Android &rarr; Convert to Android Project
+* &lt;right click "gen" folder&gt; &rarr; Build Path &rarr; Add to Build Path
+
+
+
 ###Project Creation
 -----------------------
 Create a project
-- File -> New -> Project... -> Android -> Android Project
+- File &rarr; New &rarr; Project... &rarr; Android &rarr; Android Project
 - Click "Next"
 
 New Android Project dialog
@@ -19,7 +29,7 @@ New Android Project dialog
 - Click "Finish" (Do NOT create an Android Test project)
 
 Add a source test directory to your project
-- Right click on 'MyProject' in the package explorer -> New... -> Folder
+- Right click on 'MyProject' in the package explorer &rarr; New... &rarr; Folder
 - Folder name: test (do not make this a source folder for this project - hang tight)
 - Click "Finish"
 
@@ -27,7 +37,7 @@ Add a source test directory to your project
 ------------------------
 
 Create and configure test Java project
-- File -> New -> Java Project...
+- File &rarr; New &rarr; Java Project...
 - Project Name: MyProjectTest
 - Click "Next"
 - Expand the MyProjectTest row and select the "src" row
@@ -55,7 +65,7 @@ Back in Eclipse
 - Right click "MyProjectTest"
 - Select "Refresh"
 - Right click "MyProjectTest"
-- Select "Build Path" -> "Configure Build Path..."
+- Select "Build Path" &rarr; "Configure Build Path..."
 
 Add JUnit library
 - Select "Libraries" tab at the top of the Properties dialog for MyProjectTest
@@ -67,7 +77,7 @@ Add JUnit library
 
 Add Robolectric jar
 - Click "Add JARs..."
-- Expand MyProjectTest -> lib
+- Expand MyProjectTest &rarr; lib
 - Select robolectric-X.X.X-jar-with-dependencies.jar
 - Click "OK" (keep the Properties dialog for MyProjectTest open)
 
@@ -83,7 +93,7 @@ Add Android Jars
 ### Create a test Run Configuration
 -----------------------------------------------
 Your tests will *not* run without this step. Your resources will not be found.
-- "Run" -> "Run Configurations..."
+- "Run" &rarr; "Run Configurations..."
 - Double click "*JUnit*" (not "Android JUnit Test")
 - Name: MyProjectTestConfiguration
 - Select the "Run all tests in the selected project, package or source folder:" radio button
@@ -104,7 +114,7 @@ Your tests will *not* run without this step. Your resources will not be found.
 ### Verify your setup
 --------------------------------------------------------------------------------------------
 - Right click the "test" folder under "MyProjectTest"
-- Select "New"->"Class"
+- Select "New"&rarr;"Class"
 - Package: "com.example"
 - Name: "MyActivityTest"
 - Click "Finish"
@@ -133,15 +143,15 @@ public class MyActivityTest {
 {% endhighlight %}
 
 To run the tests
-- "Run" -> "Run Configurations..."
-- Select "JUnit" -> "MyProjectTestConfiguration"
+- "Run" &rarr; "Run Configurations..."
+- Select "JUnit" &rarr; "MyProjectTestConfiguration"
 - Click "Run"
 
 ###*If you get a RuntimeException saying: "no such layout layout/main"*
 --------------------------------------------------------------------
 It means that you have tried to run a test for which you do not have a Run Configuration set up. To remedy this:
 - Right click on the test
-- "Run As" -> "Run Configurations..."
+- "Run As" &rarr; "Run Configurations..."
 - Double click "JUnit" (this will magically make the test you're running appear under JUnit)
 - Select "MyActivityTest" (or the name of whichever test you are currently trying to run)
 - TestRunner: JUnit 4

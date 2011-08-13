@@ -4,19 +4,23 @@
 ---
 
 ##Quick Start for IntelliJ
+Thanks JetBrains! As of IntelliJ 10.5 makes developing Android applications with Robolectric easy.
 
-###Thanks JetBrains!
-As of IntelliJ 10.0.2, JetBrains has fixed the [bug](http://youtrack.jetbrains.net/issue/IDEA-60449) which made JUnit
-tests within Android projects run slowly. If you used the second module workaround we suggested before, you can now
-move your Robolectric tests back into the Android module!
+### Maven
+This is by far the easiest installation method.
 
-Now, you should be able to add the robolectric jar to your test path and go! The old instructions are below for reference.
+1. Open IntelliJ
+2. Select File &rarr; Open Project... &rarr; select the `pom.xml`.
 
-##Old Quick Start...
+![](/images/intellij.jpg)
+
+## Manual Creation
+If you are not using Maven you will have to do the work yourself.
+
 ###Project Creation
 ----------------------
 Create a project
-- File -> New Project
+- File &rarr; New Project
 - Name: MyProject
 - Select Type:  "Android Module"
 - Next
@@ -30,7 +34,6 @@ Select the SDK
 _<br>(You may need to run the Android tool to download/install an sdk version. Robolectric REQUIRES a Google Apis version of the sdk.)_
 - SDK properties: Android X.X Google APIs
 - Finish
-
 
 ###Prepare directory structures
 ------------------------------
@@ -53,12 +56,12 @@ cp junit-4.x.x.jar .../MyProject/src/libs/test
 ###Configure the IntelliJ project
 -------------------------------
 Open the Modules tab of Project Settings
-- In File -> Project Structure...
-- Project Settings -> Select "Modules"
+- In File &rarr; Project Structure...
+- Project Settings &rarr; Select "Modules"
 
 Create a new module
 - Press the "+" in the tool bar at the top of the dialog to create a new module
-- "Create module from scratch" radio -> Next
+- "Create module from scratch" radio &rarr; Next
 <blockquote>
 	Name: src<br>
 	Content root: .../MyProject/src 	# default value<br>
@@ -94,7 +97,7 @@ automatically replaces this setting from time to time)_
 
 ###Set up source directories for the "src" module
 -------------------------------
-- Select the "src" module --> "Sources" tab
+- Select the "src" module &rarr; "Sources" tab
 - In the source tree out on the far right, select the <code>.../MyProject/src/test/java</code>
 folder and click the green "Test Sources" button above the source tree, adding it as a test source folder
 - Select the <code>.../MyProject/src/gen</code> folder and click the blue "Sources" button, adding it as a source folder
@@ -107,22 +110,22 @@ To fix this problem follow the steps under "Removed unused source directories fr
 
 ###Set up dependencies for the "src" module
 -------------------------------
-- Select the "src" module --> "Dependencies" tab
+- Select the "src" module &rarr; "Dependencies" tab
 
 Add the Robolectric jar
-- "Add..." --> "Single Entry Module Library"
+- "Add..." &rarr; "Single Entry Module Library"
 - Select .../MyProject/src/libs/test/robolectric-X.X.X-jar-with-dependencies.jar
 - Click "Ok"
 - Click on "Compile" at the end of the newly-created dependency line, and choose "Test" from the resulting list
 
 Add the JUnit jar
--"Add..." --> "Single Entry Module Library"
+-"Add..." &rarr; "Single Entry Module Library"
 - Select .../MyProject/src/libs/test/junit-4.x.x.jar
 - Click "Ok"
 - Click on "Compile" at the end of the newly-created dependency line, and choose "Test" from the resulting list
 
 Add the Android libraries
-- "Add..." --> "Library"
+- "Add..." &rarr; "Library"
 - Select "Android X.X Google Apis"  # must be GOOGLE android apis and not just plain android apis
 
 NOTE: Android X.X Google Apis MUST be moved below the junit and robolectric jar.
@@ -131,26 +134,26 @@ NOTE: Android X.X Google Apis MUST be moved below the junit and robolectric jar.
 
 ###Set up dependencies for the main Android Project module
 ----------------------------
-Select "MyProject" module --> "Dependencies tab"
+Select "MyProject" module &rarr; "Dependencies tab"
 
 Add the "src" module
-- Click "Add..." --> "Module Dependency..."
+- Click "Add..." &rarr; "Module Dependency..."
 - Select "src"
 - Click "OK"
 - Move the newly created dependency "src" row above the Android line by clicking the "Move Up" button
 - Check the "src" row's export box
-- Leave the src module scope at the default of "scope" --> "compile"
+- Leave the src module scope at the default of "scope" &rarr; "compile"
 - Click	"Apply"
 
 ###Set up exclusions for the main Android Project module
 --------------------------------------------------------
-- Select "MyProject" module --> "Sources tab"
+- Select "MyProject" module &rarr; "Sources tab"
 - In the source tree out on the far right, select the "bin" folder and click the 'Excluded' button above, adding it as an excluded folder
 - Click "OK"
 
 ### Verify your setup
 --------------------------------------------------------------------------------------------
-In Project View, right click on MyProject>src>test>java -> New -> Java class ->  MyActivityTest
+In Project View, right click on MyProject>src>test>java &rarr; New &rarr; Java class &rarr;  MyActivityTest
 Add the following source:
 
 {% highlight java %}
