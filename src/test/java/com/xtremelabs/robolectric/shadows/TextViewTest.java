@@ -10,6 +10,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -109,6 +110,24 @@ public class TextViewTest {
         TextView grey = (TextView) activity.findViewById(R.id.grey_text_view);
         assertThat(grey.getText().toString(), equalTo("Grey Text"));
         assertThat(shadowOf(grey).getTextColorHexValue(), equalTo(activity.getResources().getColor(R.color.grey42)));
+    }
+
+    @Test
+    public void shouldSetHintAndHintColorWhileInflatingXmlLayout() throws Exception {
+        Activity activity = new Activity();
+        activity.setContentView(R.layout.text_views_hints);
+
+        TextView black = (TextView) activity.findViewById(R.id.black_text_view_hint);
+        assertThat(black.getHint().toString(), equalTo("Black Hint"));
+        assertThat(shadowOf(black).getHintColorHexValue(), equalTo(0));
+
+        TextView white = (TextView) activity.findViewById(R.id.white_text_view_hint);
+        assertThat(white.getHint().toString(), equalTo("White Hint"));
+        assertThat(shadowOf(white).getHintColorHexValue(), equalTo(activity.getResources().getColor(android.R.color.white)));
+
+        TextView grey = (TextView) activity.findViewById(R.id.grey_text_view_hint);
+        assertThat(grey.getHint().toString(), equalTo("Grey Hint"));
+        assertThat(shadowOf(grey).getHintColorHexValue(), equalTo(activity.getResources().getColor(R.color.grey42)));
     }
     
     private List<String> urlStringsFrom(URLSpan[] urlSpans) {
