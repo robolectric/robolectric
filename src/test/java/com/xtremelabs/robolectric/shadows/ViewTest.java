@@ -149,13 +149,11 @@ public class ViewTest {
         shadowOf(view).checkedPerformClick();
     }
 
-    @Ignore("Temporarily disabled")
     @Test
     public void getBackground_shouldReturnNullIfNoBackgroundHasBeenSet() throws Exception {
         assertThat(view.getBackground(), nullValue());
     }
 
-    @Ignore("Temporarily disabled")
     @Test
     public void shouldSetBackgroundColor() {
         view.setBackgroundColor(R.color.android_red);
@@ -164,7 +162,6 @@ public class ViewTest {
         assertThat((ColorDrawable) view.getBackground(), equalTo(new ColorDrawable(intColor)));
     }
 
-    @Ignore("Temporarily disabled")
     @Test
     public void shouldSetBackgroundResource() throws Exception {
         view.setBackgroundResource(R.drawable.an_image);
