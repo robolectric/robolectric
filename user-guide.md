@@ -4,7 +4,7 @@ title: User Guide
 ---
 
 ## Getting Started
-[RobolectricSample](http://github.com/pivotal/RobolectricSample) is a Maven-enabled sample app shows how to layout your project, includes example tests, and a `build.xml` file for compiling and
+[RobolectricSample](http://github.com/pivotal/RobolectricSample) is a Maven-enabled sample app that shows how to layout your project, includes example tests, and a `build.xml` file for compiling and
 running tests.
 
 <a href="http://github.com/pivotal/RobolectricSample"><img src="images/robolectricsample.jpg" style="border:1px solid #000;"/></a>
@@ -26,12 +26,15 @@ Robolectric must have an opportunity to intercept the class loading process of t
 
 For example: 
     
-    @RunWith(RobolectricTestRunner.class)  // <== REQUIRED for Robolectric! 
-    public class HomeActivityTest {
-        @Test
-        public void shouldHaveAButtonThatSaysPressMe() throws Exception {
-	        // test code here
-        }
+{% highlight java %}
+@RunWith(RobolectricTestRunner.class)  // <== REQUIRED for Robolectric! 
+  public class HomeActivityTest {
+    @Test
+    public void shouldHaveAButtonThatSaysPressMe() throws Exception {
+      // test code here
+  }
+}
+{% endhighlight %}
     
 ##  `Robolectric.shadowOf()`
 Sometimes Android classes don't provide methods to access the state of the Android objects under test. The
