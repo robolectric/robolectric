@@ -1,16 +1,26 @@
 ---
 layout: default
-title: Troubleshooting
+title: Help and Resources
 ---
 
-## JavaDocs
-
-[JavaDocs](javadoc/index.html?overview-summary.html)
+## Who's Using Robolectric?
+* [Square](https://squareup.com/)
+* [Path](http://www.path.com/ "Path")
+* [Zoodles](http://www.zoodles.com/home/marketing "Zoodles: A safe Kid Mode&#153; for every device")
+* [ Xtreme Labs Inc.](http://www.xtremelabs.com/ "Mobile App Development | Blackberry Apps| iPhone Apps | Xtreme Labs Inc.")
+* [Found](http://beta.getfoundapp.com/ "Found &ndash; See where your friends are going.")
+* [Zauber](http://www.zaubersoftware.com/en/home/ "Zauber | Software Development Outsourcing")
+* [RoboGuice](http://code.google.com/p/roboguice/ "roboguice - Google Guice on Android - Google Project Hosting")
+* [Robolectric Sample](https://github.com/pivotal/RobolectricSample)
+* [Android IntelliJ Starter](https://github.com/pivotal/AndroidIntelliJStarter)
+* [Android in Practice](http://code.google.com/p/android-in-practice/ "android-in-practice -Source code and demo apps for the Manning book &quot;Android in Practice&quot; - Google Project Hosting")
 
 ## Presentation: TDD Android Applications with Robolectric
 Pivotal Labs developers have given this presentation several times.
 
 <div style="width:425px" id="__ss_8857513"><strong style="display:block;margin:12px 0 4px"><a href="http://www.slideshare.net/joemoore1/tdd-android-applications-with-robolectric" title="TDD Android Applications with Robolectric">TDD Android Applications with Robolectric</a></strong><object id="__sse8857513" width="425" height="355"><param name="movie" value="http://static.slidesharecdn.com/swf/ssplayer2.swf?doc=tddandroidwithrobolectric-110815140800-phpapp01&stripped_title=tdd-android-applications-with-robolectric&userName=joemoore1" /><param name="allowFullScreen" value="true"/><param name="allowScriptAccess" value="always"/><embed name="__sse8857513" src="http://static.slidesharecdn.com/swf/ssplayer2.swf?doc=tddandroidwithrobolectric-110815140800-phpapp01&stripped_title=tdd-android-applications-with-robolectric&userName=joemoore1" type="application/x-shockwave-flash" allowscriptaccess="always" allowfullscreen="true" width="425" height="355"></embed></object><div style="padding:5px 0 12px">View more <a href="http://www.slideshare.net/">presentations</a> from <a href="http://www.slideshare.net/joemoore1">Joseph Moore</a>.</div></div>
+
+-----
 
 ## Troubleshooting
 
