@@ -52,6 +52,10 @@ public class ShadowAlarmManager {
         }
     }
 
+    public List<ScheduledAlarm> getScheduledAlarms() {
+        return scheduledAlarms;
+    }
+
     /**
      * Container object to hold an PendingIntent, together with the alarm
      * parameters used in a call to {@code AlarmManager}
