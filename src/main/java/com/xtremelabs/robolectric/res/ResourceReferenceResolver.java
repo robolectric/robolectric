@@ -18,11 +18,14 @@ class ResourceReferenceResolver<T> {
         return attributeNamesToValues.get(resourceName);
     }
 
-    public void processResource(String name, String rawValue, ResourceValueConverter loader) {
+    public void processResource(String name, String rawValue, ResourceValueConverter loader, boolean isSystem) {
         String valuePointer = prefix + "/" + name;
-        if (rawValue.startsWith("@" + prefix)) {
+        if (rawValue.startsWith("@" + prefix) || rawValue.startsWith("@android:" + prefix)) {
             addAttributeReference(rawValue, valuePointer);
         } else {
+            if (isSystem) {
+                valuePointer = "android:" + valuePointer;
+            }
             addAttribute(valuePointer, (T) loader.convertRawValue(rawValue));
         }
     }

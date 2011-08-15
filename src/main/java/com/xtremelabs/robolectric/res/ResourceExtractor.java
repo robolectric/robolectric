@@ -26,6 +26,10 @@ public class ResourceExtractor {
                     String name = section + "/" + field.getName();
                     int value = field.getInt(null);
 
+                    if (isSystemRClass) {
+                        name = "android:" + name;
+                    }
+
                     if (!section.equals("styleable")) {
                         if (isSystemRClass) {
                             systemResourceStringToId.put(name, value);
@@ -34,8 +38,7 @@ public class ResourceExtractor {
                         }
 
                         if (resourceIdToString.containsKey(value)) {
-                            throw new RuntimeException(value + " is already defined with name: " + resourceIdToString.get(value) + " can't also call it: "
-                                    + name);
+                            throw new RuntimeException(value + " is already defined with name: " + resourceIdToString.get(value) + " can't also call it: " + name);
                         }
                         resourceIdToString.put(value, name);
                     }
@@ -45,7 +48,7 @@ public class ResourceExtractor {
     }
 
     public Integer getResourceId(String resourceName) {
-        if (resourceName.startsWith("@android:")) { // namespace needed for platform files
+        if (resourceName.contains("android:")) { // namespace needed for platform files
             return getResourceId(resourceName, true);
         } else {
             return getResourceId(resourceName, false);
@@ -63,8 +66,8 @@ public class ResourceExtractor {
         }
         if (resourceName.startsWith("@+id")) {
             resourceName = resourceName.substring(2);
-        } else if (resourceName.startsWith("@android:")) { // namespace needed for platform files
-            resourceName = resourceName.substring("@android:".length());
+        } else if (resourceName.startsWith("@+android:id")) {
+            resourceName = resourceName.substring(2);
         } else if (resourceName.startsWith("@")) {
             resourceName = resourceName.substring(1);
         }
@@ -79,5 +82,4 @@ public class ResourceExtractor {
     public String getResourceName(int resourceId) {
         return resourceIdToString.get(resourceId);
     }
-
 }
