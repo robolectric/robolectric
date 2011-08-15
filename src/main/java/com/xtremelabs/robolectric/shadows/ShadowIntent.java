@@ -236,7 +236,13 @@ public class ShadowIntent {
     public void putExtra(String key, byte[] value) {
         extras.put(key, value);
     }
-    
+
+    @Implementation
+    public Intent putStringArrayListExtra(String key, ArrayList<String> value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
     @Implementation
     public Intent putParcelableArrayListExtra(String key, ArrayList<Parcelable> value) {
     	extras.put(key, value );
