@@ -3,7 +3,7 @@
   title: IntelliJ Quick Start
 ---
 
-##Quick Start for IntelliJ
+# Quick Start for IntelliJ
 Thanks JetBrains! As of IntelliJ 10.5 makes developing Android applications with Robolectric easy.
 
 ### Maven
@@ -14,11 +14,15 @@ This is by far the easiest installation method.
 
 ![](images/intellij.jpg)
 
+### Git Submodules
+[Android IntelliJ Starter](https://github.com/pivotal/AndroidIntelliJStarter) is a "template" which configures Robolectric as a [git submodule](http://kernel.org/pub/software/scm/git/docs/git-submodule.html "git-submodule(1)"). This is especially useful if you plan on forking Robolectric.
+
+------
+
 ## Manual Creation
-If you are not using Maven you will have to do the work yourself.
+Use this section for reference if you have issues, or if you need create a project completely from scratch.
 
 ###Project Creation
-----------------------
 Create a project
 - File &rarr; New Project
 - Name: MyProject
@@ -36,25 +40,20 @@ _<br>(You may need to run the Android tool to download/install an sdk version. R
 - Finish
 
 ###Prepare directory structures
-------------------------------
 At the command line:
-<pre>
-mkdir -p .../MyProject/src/libs/test
-mkdir -p .../MyProject/src/libs/main    #production jars go here e.g. roboguice
-mkdir -p .../MyProject/src/test/java
-mkdir -p .../MyProject/src/gen
-</pre>
+
+    mkdir -p .../MyProject/src/libs/test
+    mkdir -p .../MyProject/src/libs/main    #production jars go here e.g. roboguice
+    mkdir -p .../MyProject/src/test/java
+    mkdir -p .../MyProject/src/gen
 
 ###Install downloaded jars
--------------------------------
-<pre>
-cp robolectric-X.X.X-jar-with-dependencies.jar .../MyProject/src/libs/test
-cp junit-4.x.x.jar .../MyProject/src/libs/test
-</pre>
 
+    cp robolectric-X.X.X-jar-with-dependencies.jar .../MyProject/src/libs/test
+    cp junit-4.x.x.jar .../MyProject/src/libs/test
 
 ###Configure the IntelliJ project
--------------------------------
+
 Open the Modules tab of Project Settings
 - In File &rarr; Project Structure...
 - Project Settings &rarr; Select "Modules"
@@ -62,20 +61,19 @@ Open the Modules tab of Project Settings
 Create a new module
 - Press the "+" in the tool bar at the top of the dialog to create a new module
 - "Create module from scratch" radio &rarr; Next
-<blockquote>
-	Name: src<br>
-	Content root: .../MyProject/src 	# default value<br>
-	Module file location: .../MyProject/src  	# default value<br>
-	Type: java  	# default selection<br>
-	Next<br>
-</blockquote>
+
+> Name: src<br/>
+> Content root: .../MyProject/src 	# default value<br/>
+> Module file location: .../MyProject/src  	# default value<br/>
+> Type: java  	# default selection<br/>
+> Next
+
 - Accept .../MyProject/src/main/java \[java\] as a source root
 - Next<br>
 
 No additional facets/technologies required
 
 - Finish
-
 
 ###Configure generated source directories
 -------------------------

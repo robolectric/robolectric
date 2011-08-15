@@ -3,24 +3,37 @@ layout: default
 title: User Guide
 ---
 
-## Sample Application
+## Getting Started
+[RobolectricSample](http://github.com/pivotal/RobolectricSample) is a Maven-enabled sample app shows how to layout your project, includes example tests, and a `build.xml` file for compiling and
+running tests.
 
-A sample app that uses Robolectric can be found at
-[http://github.com/pivotal/RobolectricSample](http://github.com/pivotal/RobolectricSample).
+<a href="http://github.com/pivotal/RobolectricSample"><img src="images/robolectricsample.jpg" style="border:1px solid #000;"/></a>
 
-This sample app shows how to layout your project, includes example tests, and a `build.xml` file for compiling and
-running tests. For now, the best way to get started is to download this app, and use it as a starting point for
-building your own app.
+### Sample Tests
+[RobolectricSample's own tests](https://github.com/pivotal/RobolectricSample/tree/master/src/test/java/com/pivotallabs) are an excellent source for sample test code. Of note:
+
+* **[HomeActivityTest.java](https://github.com/pivotal/RobolectricSample/blob/master/src/test/java/com/pivotallabs/HomeActivityTest.java)**: a simple Activity test exercising Buttons, presence of Images.
+* **[LoadingTextViewTest.java](https://github.com/pivotal/RobolectricSample/blob/master/src/test/java/com/pivotallabs/views/LoadingTextViewTest.java)**: Testing custom views.
+* **[HttpTest.java](https://github.com/pivotal/RobolectricSample/blob/master/src/test/java/com/pivotallabs/api/HttpTest.java)**: Testing HTTP requests and responses.
+* **[ApiGatewayTest.java](https://github.com/pivotal/RobolectricSample/blob/master/src/test/java/com/pivotallabs/api/ApiGatewayTest.java)**: More HTTP traffic tests; incorporates pausing and resuming the background scheduler.
+* **[InjectedActivityTest.java](https://github.com/pivotal/RobolectricSample/blob/master/src/test/java/com/pivotallabs/injected/InjectedActivityTest.java)**: Example of using [RoboGuice](http://code.google.com/p/roboguice/ "roboguice - Google Guice on Android - Google Project Hosting") dependency injection.
+
+## Android IntelliJ Starter
+Another resource, especially for IntelliJ users, is the [Android IntelliJ Starter](https://github.com/pivotal/AndroidIntelliJStarter).  This "template" project configures Robolectric as a [git submodule](http://kernel.org/pub/software/scm/git/docs/git-submodule.html "git-submodule(1)"). 
 
 ## Test Annotations
+Robolectric must have an opportunity to intercept the class loading process of the Android classes to make this all work. This is done by adding the JUnit annotation to your tests. JUnit will defer processing of the Test file to the class defined in the  `@RunWith(RobolectricTestRunner.class)` annotation. The `RobolectricTestRunner.class` sets up your test to run with Robolectric.  
 
-Robolectric must have an opportunity to intercept the class loading process of the Android classes to make this all
-work. This is done by adding the JUnit annotation to your tests. JUnit will defer processing of the Test file to the
-class defined in the `@RunWith(RobolectricTestRunner.class)` annotation. The
-`RobolectricTestRunner.class` sets up your test to run with Robolectric.
-
+For example: 
+    
+    @RunWith(RobolectricTestRunner.class)  // <== REQUIRED for Robolectric! 
+    public class HomeActivityTest {
+        @Test
+        public void shouldHaveAButtonThatSaysPressMe() throws Exception {
+	        // test code here
+        }
+    
 ##  `Robolectric.shadowOf()`
-
 Sometimes Android classes don't provide methods to access the state of the Android objects under test. The
  `Robolectric.shadowOf()` methods provide reference to the shadow instances representing Android objects,
 allowing tests to assert on state otherwise not available.
@@ -49,129 +62,3 @@ public void shouldHaveALogo() throws Exception {
     assertThat(shadowPivotalLogo.resourceId, equalTo(R.drawable.pivotallabs_logo));
 }
 {% endhighlight %}
-
-<a id="extending" href="#"> </a>
-
-## Extending Robolectric
-Robolectric is a work in progress and everyone in the community relies on everyone else to add functionality.
-
-### Shadow Objects
-Robolectric defines many shadow objects that give behavior to the stripped classes in the SDK jar. When an Android
-class's constructor is invoked, a shadow object is created if a shadow class has been registered.
-(See  `Robolectric.getDefaultShadowClasses()` for the complete list of shadows Robolectric provides.)
-
-
-### Writing your own Shadow Classes
-The library of shadow classes supplied with Robolectric does not cover the entire Android API. Even if it did, some
-projects will require behavior that differs from what is in the library. When these situations are encountered
-it will be necessary to extend existing or add new shadow classes. Creating new shadow classes is easy. Here is an
-outline of the process, details about each step will follow:
-
-- **Clone the [Robolectric project on GitHub](https://github.com/pivotal/robolectric/):**
-We very often make Robolectric a sub-module of the project that we are working on in order to make it easier to add
-new shadow classes as we need them, but you could also create dependencies between projects or build and copy .jar files
-depending on your needs.  See [GitHub - Fork A Repo](http://help.github.com/fork-a-repo/ "Help.GitHub - Fork A Repo").
-
-- **Add tests for your shadow class:**
-They live in the com.extremelabs.robolectric.shadows package under the code/tests folder
-
-- **Develop the implementation:**
-Put it in the same package under code/src. There are lots of shadow classes that are already implemented there that can
-be used as examples. The most important aspects of writing a shadow class are described below.
-
-- **Register your new class with the Robolectric framework:**
-Add it to the list returned by Robolectric.getDefaultShadowClasses() and also add an implementation of
-Robolectric.shadowOf(). Just duplicate the examples that are already in the Robolectric class.
-
-If would like to contribute your code to the Robolectric community, we would love to receive your pull requests through
-GitHub.
-
-#### Shadow Classes
-
-Shadow classes always need a public no-arg constructor so that the Robolectric framework can instantiate them. They are
-associated to the class that they shadow with an @Implements annotation on the class declaration. In general, they
-should be implemented as if from scratch, the facilities of the classes they shadow have almost always been removed and
-their data members are difficult to access. The methods on a shadow class usually either shadow the methods on the
-original class or facilitate testing by setting up return values or providing access to internal state or logged
-method calls.
-
-Shadow classes should mimic the production classes' inheritance hierarchy. For example, if you are implementing a shadow
-for ViewGroup, ShadowViewGroup, then your shadow class should extend ViewGroup's superclass's shadow,
-ShadowView.
-{% highlight java %}
-  ...
-  @Implements(ViewGroup.class)
-  public class ShadowViewGroup extends ShadowView {
-  ...
-{% endhighlight %}
-
-#### Methods
-
-Shadow objects implement methods that have the same signature as the Android class. Robolectric will invoke the method
-on a shadow object when a method with the same signature on the Android object is invoked.
-
-Suppose an application defined the following line of code:
-{% highlight java %}
-  ...
-  this.imageView.setImageResource(R.drawable.pivotallabs_logo);
-  ...
-{% endhighlight %}
-
-Under test the  `ShadowImageView#setImageResource(int resId)` method on the shadow instance would be invoked.
-
-Shadow methods must be marked with the  `@Implementation` annotation. Robolectric includes a lint test to help
-ensure this is done correctly.
-
-It is important shadow methods are implemented on the corresponding shadow of the class in which they were
-originally defined. Otherwise Robolectric's lookup mechanism will not find them (even if they have been declared on a
-shadow subclass.) For example, the method `setEnabled()` is defined on View. If a `setEnabled()`
-method is defined on `ShadowViewGroup` instead of `ShadowView` then it will not be found at run
-time even when `setEnabled()` is called on an instance of `ViewGroup`.
-
-#### Shadowing Constructors
-
-Once a shadow object is instantiated, Robolectric will look for a method named  `__constructor__` which has
-the same arguments as the constructor that was invoked on the real object.
-
-For instance, if the application code were to invoke the TextView constructor which receives a Context:
-{% highlight java %}
-new TextView(context);
-{% endhighlight %}
-Robolectric would invoke the following  `__constructor__` method that receives a Context:
-{% highlight java %}
-@Implements(TextView.class)
-public class ShadowTextView {
-  ...
-  public void __constructor__(Context context) {
-    this.context = context;
-  }
-  ...
-{% endhighlight %}
-
-
-#### Getting access to the real instance
-
-Sometimes shadow classes may want to refer to the object they are shadowing, e.g. to manipulate fields. A shadow class
-can accomplish this by declaring a field annotated @RealObject:
-{% highlight java %}
-@Implements(Point.class)
-public class ShadowPoint {
-    @RealObject private Point realPoint;
-    ...
-    public void __constructor__(int x, int y) {
-        realPoint.x = x;
-        realPoint.y = y;
-    }
-}
-{% endhighlight %}
-Robolectric will set realPoint to the actual instance of  `Point` before invoking any other methods.
-
-It is important to note that methods called on the real object will still be intercepted and redirected by Robolectric.
-This does not often matter in test code, but it has important implications for Shadow class implementors. Since the
-Shadow class inheritance hierarchy does not always mirror that of their associated Android classes, it is sometimes
-necessary to make calls through these real objects so that the Robolectric runtime will have the opportunity to route
-them to the correct Shadow class based on the actual class of the object. Otherwise methods on Shadows of base classes
-would be unable to access methods on the shadows of their subclasses.
-
-
-

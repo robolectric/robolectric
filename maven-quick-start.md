@@ -3,15 +3,20 @@
   title: Maven Quick Start
 ---
 
-##Quick Start for Maven
+## Setup
+Maven setup presents some challenges, namely telling Maven where the Android SDK jars live, and telling Maven how to build your Android application. 
 
+### Google API Jars
+The Google API jars, such as the `maps.jar`, are not available for download from Sonatype. If you plan on using a Google API add-ons you may be interested in [maven-android-sdk-deployer](https://github.com/mosabua/maven-android-sdk-deployer). Using this project will make the maps jars available to your local Maven install. 
+
+
+### Deploying .apks
 The [maven-android-plugin](http://code.google.com/p/maven-android-plugin/) makes it easy to add Robolectric to your
 Android project. 
 
-If you plan on using a google maps add-on version of the sdk, you may be interested in [maven-android-sdk-deployer](https://github.com/mosabua/maven-android-sdk-deployer). The maps jars are not available for download from Sonatype. Using this project will make the maps jars available to your local Maven install. 
-
-###Project Creation
 ----------------------
+
+##Project Creation
 Create a file named <code>pom.xml</code> in the root of your project based on this example:
 
 {% highlight xml %}
@@ -82,7 +87,6 @@ Create a file named <code>pom.xml</code> in the root of your project based on th
 Note that you need Robolectric and JUnit 4 in 'test' scope, and android, android-test, and maps in 'provided' scope.
 
 ### Prepare directory structures
-------------------------------
 You'll need the standard <code>AndroidManifest.xml</code> file in your root directory, as well as something like
 the following files:
 <pre>
@@ -95,7 +99,6 @@ the following files:
 You should then be able to build your project and run tests using <code>maven install</code>.
 
 ### Verify your setup
---------------------------------------------------------------------------------------------
 In Project View, right click on MyProject>code>test -> New -> Java class ->  MyActivityTest
 Add the following source:
 
@@ -131,9 +134,11 @@ runner.
 
 ### Troubleshooting
 
-#### No Android SDK path could be found.
+####No Android SDK path could be found.
 
-Set the `ANDROID_HOME` environment variable.
+export the `ANDROID_HOME` environment variable. You might want to set this in `.bash_profile` or `.bashrc`.
+
+    export ANDROID_HOME="PATH/TO/THE/ANDROID/SDK"
 
 -or-
 
@@ -160,3 +165,4 @@ Tell Maven where to find Android by making your `~/.m2/settings.xml` file look s
         </activeProfiles>
     </settings>
 {% endhighlight %}
+

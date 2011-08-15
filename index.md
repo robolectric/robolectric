@@ -85,6 +85,7 @@ drive the development of Android applications.
 * [Christian Williams](http://github.com/Xian), Pivotal Labs
 * [Tyler Schultz](http://github.com/tylerschultz), Pivotal Labs
 * [Phil Goodwin](mailto:phil@pivotallabs.com), Pivotal Labs
+* [Joe Moore](http://github.com/joemoore), Pivotal Labs
 
 ## Acknowledgments
 
