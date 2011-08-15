@@ -6,6 +6,7 @@ title: Help and Resources
 ## Who's Using Robolectric?
 * [Square](https://squareup.com/)
 * [Path](http://www.path.com/ "Path")
+* [Pivotal Labs](http://pivotallabs.com/ "Pivotal Labs: Home")
 * [Zoodles](http://www.zoodles.com/home/marketing "Zoodles: A safe Kid Mode&#153; for every device")
 * [ Xtreme Labs Inc.](http://www.xtremelabs.com/ "Mobile App Development | Blackberry Apps| iPhone Apps | Xtreme Labs Inc.")
 * [Found](http://beta.getfoundapp.com/ "Found &ndash; See where your friends are going.")
