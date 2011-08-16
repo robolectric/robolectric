@@ -97,6 +97,7 @@ import android.widget.TabHost;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.VideoView;
+import android.widget.ViewFlipper;
 import android.widget.ZoomButtonsController;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
@@ -315,7 +316,9 @@ public class Robolectric {
                 ShadowURLSpan.class,
                 ShadowVideoView.class,
                 ShadowView.class,
+                ShadowViewAnimator.class,
                 ShadowViewGroup.class,
+                ShadowViewFlipper.class,
                 ShadowViewStub.class,
                 ShadowWebSettings.class,
                 ShadowWebView.class,
@@ -495,6 +498,10 @@ public class Robolectric {
 
     public static ShadowView shadowOf(View instance) {
         return (ShadowView) shadowOf_(instance);
+    }
+
+    public static ShadowViewFlipper shadowOf(ViewFlipper instance) {
+        return (ShadowViewFlipper) shadowOf_(instance);
     }
 
     public static ShadowColorDrawable shadowOf(ColorDrawable instance) {
