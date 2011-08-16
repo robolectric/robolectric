@@ -22,7 +22,8 @@ public class AttrResourceLoader extends XmlLoader {
         super(resourceExtractor);
     }
 
-    @Override protected void processResourceXml(File xmlFile, Document document, boolean ignored) throws Exception {
+    @Override
+    protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
         XPathExpression stringsXPath = XPathFactory.newInstance().newXPath().compile("/resources/declare-styleable/attr/enum");
         NodeList stringNodes = (NodeList) stringsXPath.evaluate(document, XPathConstants.NODESET);
         for (int i = 0; i < stringNodes.getLength(); i++) {
@@ -32,35 +33,41 @@ public class AttrResourceLoader extends XmlLoader {
             String name = node.getAttributes().getNamedItem("name").getNodeValue();
             String value = node.getAttributes().getNamedItem("value").getNodeValue();
 
-            classAttrEnumToValue.put(key(viewName, enumName, name), value);
-            knownClassAttrs.add(key(viewName, enumName));
+            classAttrEnumToValue.put(key(viewName, enumName, name, isSystem), value);
+            knownClassAttrs.add(key(viewName, enumName, isSystem));
         }
     }
 
     public String convertValueToEnum(Class<? extends View> viewClass, String namespace, String attrName, String attrValue) {
-        String className = findKnownAttrClass(attrName, viewClass).getName();
-        return classAttrEnumToValue.get(key(className, attrName, attrValue));
+        boolean isSystem = "android".equals(namespace);
+        String className = findKnownAttrClass(attrName, viewClass, isSystem);
+        return classAttrEnumToValue.get(key(className, attrName, attrValue, isSystem));
     }
 
     public boolean hasAttributeFor(Class<? extends View> viewClass, String namespace, String attrName) {
-        return findKnownAttrClass(attrName, viewClass) != null;
+        boolean isSystem = "android".equals(namespace);
+        return findKnownAttrClass(attrName, viewClass, isSystem) != null;
     }
 
-    private Class<?> findKnownAttrClass(String attrName, Class<?> clazz) {
+    private String findKnownAttrClass(String attrName, Class<?> clazz, boolean isSystem) {
         while (clazz != null) {
-            if (knownClassAttrs.contains(key(clazz.getName(), attrName))) {
-                return clazz;
+            String className = clazz.getName();
+            if (isSystem) {
+                className = clazz.getSimpleName();
+            }
+            if (knownClassAttrs.contains(key(className, attrName, isSystem))) {
+                return className;
             }
             clazz = clazz.getSuperclass();
         }
         return null;
     }
 
-    private String key(String viewName, String attrName, String name) {
-        return viewName + "#" + attrName + "#" + name;
+    private String key(String viewName, String attrName, String name, boolean isSystem) {
+        return key(viewName, attrName, isSystem) + "#" + name;
     }
 
-    private String key(String viewName, String attrName) {
-        return viewName + "#" + attrName;
+    private String key(String viewName, String attrName, boolean isSystem) {
+        return (isSystem ? "android:" : "") + viewName + "#" + attrName;
     }
 }
