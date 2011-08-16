@@ -102,7 +102,7 @@ public class MenuLoader extends XmlLoader {
 
         public MenuNode(String name, Map<String, String> attributes) {
             this.name = name;
-            this .attributes = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, null);
+            this.attributes = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, null, false);
         }
 
         public List<MenuNode> getChildren() {

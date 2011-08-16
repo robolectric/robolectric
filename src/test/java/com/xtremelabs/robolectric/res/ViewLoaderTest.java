@@ -28,6 +28,7 @@ import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
+import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -45,10 +46,14 @@ public class ViewLoaderTest {
 
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addLocalRClass(R.class);
+        resourceExtractor.addSystemRClass(android.R.class);
+
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
         new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
+        new DocumentLoader(stringResourceLoader).loadSystemResourceXmlDir(getSystemResourceDir("values"));
         viewLoader = new ViewLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
         new DocumentLoader(viewLoader).loadResourceXmlDir(resourceFile("res", "layout"));
+        new DocumentLoader(viewLoader).loadSystemResourceXmlDir(getSystemResourceDir("layout"));
 
         context = new Activity();
     }
@@ -86,6 +91,15 @@ public class ViewLoaderTest {
 
         ViewGroup mainView = (ViewGroup) viewLoader.inflateView(context, "layout/main");
         assertInstanceOf(View.class, mainView.findViewById(R.id.title));
+    }
+
+    @Test
+    public void testInflatingConflictingSystemAndLocalViewsWorks() throws Exception {
+        ViewGroup view = (ViewGroup) viewLoader.inflateView(context, "layout/activity_list_item");
+        assertInstanceOf(ImageView.class, view.findViewById(R.id.icon));
+
+        view = (ViewGroup) viewLoader.inflateView(context, "android:layout/activity_list_item");
+        assertInstanceOf(ImageView.class, view.findViewById(android.R.id.icon));
     }
 
     @Test
