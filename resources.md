@@ -4,13 +4,14 @@ title: Help and Resources
 ---
 
 ## Who's Using Robolectric?
+* [Pivotal Labs](http://pivotallabs.com/ "Pivotal Labs: Home")
+* [Xtreme Labs Inc.](http://www.xtremelabs.com/ "Mobile App Development | Blackberry Apps| iPhone Apps | Xtreme Labs Inc.")
 * [Square](https://squareup.com/)
 * [Path](http://www.path.com/ "Path")
-* [Pivotal Labs](http://pivotallabs.com/ "Pivotal Labs: Home")
 * [Zoodles](http://www.zoodles.com/home/marketing "Zoodles: A safe Kid Mode&#153; for every device")
-* [ Xtreme Labs Inc.](http://www.xtremelabs.com/ "Mobile App Development | Blackberry Apps| iPhone Apps | Xtreme Labs Inc.")
 * [SoundCloud](https://market.android.com/details?id=com.soundcloud.android)
 * [Found](http://beta.getfoundapp.com/ "Found &ndash; See where your friends are going.")
+* [Frogtek](http://frogtek.org/ "Frogtek")
 * [NASA Trained Monkeys](http://www.nasatrainedmonkeys.com/ "NASA Trained Monkeys")
 * [Zauber](http://www.zaubersoftware.com/en/home/ "Zauber | Software Development Outsourcing")
 * [RoboGuice](http://code.google.com/p/roboguice/ "roboguice - Google Guice on Android - Google Project Hosting")
