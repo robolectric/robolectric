@@ -1,5 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static android.content.Intent.*;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -219,7 +221,7 @@ public class ShadowIntent {
         extras.put(key, value);
         return realIntent;
     }
-
+    
     @Implementation
     public Intent putExtra(String key, boolean value) {
         extras.put(key, value);
@@ -240,6 +242,11 @@ public class ShadowIntent {
     public Intent putExtra(String key, CharSequence value) {
         extras.put(key, value);
         return realIntent;
+    }
+    
+    @Implementation
+    public CharSequence getCharSequenceExtra(String name) {
+    	return (CharSequence) extras.get(name);
     }
 
     @Implementation
@@ -322,6 +329,40 @@ public class ShadowIntent {
     @Implementation
     public String toURI() {
         return uri;
+    }
+    
+    @Implementation
+    public int fillIn(Intent otherIntent, int flags) {
+    	int changes = 0;
+    	ShadowIntent other = shadowOf(otherIntent);
+    	
+    	if (other.action != null && (action == null || (flags & FILL_IN_ACTION) != 0)) {
+    		action = other.action;
+    		changes |= FILL_IN_ACTION;
+    	}
+    	if ((other.data != null || other.type != null)
+    			&& ((data == null && type == null) || (flags & FILL_IN_DATA) != 0)) {
+    		data = other.data;
+    		type = other.type;
+    		changes |= FILL_IN_DATA;
+    	}
+    	if (!other.categories.isEmpty()
+    			&& (categories.isEmpty() || (flags & FILL_IN_CATEGORIES) != 0)) {
+    		categories.addAll(other.categories);
+    		changes |= FILL_IN_CATEGORIES;
+    	}
+    	if (other.packageName != null 
+    			&& (packageName == null || (flags & FILL_IN_PACKAGE) != 0)) {
+    		packageName = other.packageName;
+    		changes |= FILL_IN_PACKAGE;
+    	}
+    	if (other.componentName != null && (flags & FILL_IN_COMPONENT) != 0) {
+    		componentName = other.componentName;
+    		changes |= FILL_IN_COMPONENT;
+    	}
+   
+    	extras.putAll(other.extras);
+    	return changes;
     }
 
     /**

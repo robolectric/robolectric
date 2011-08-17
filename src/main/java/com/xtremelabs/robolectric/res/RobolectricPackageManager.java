@@ -54,6 +54,11 @@ public class RobolectricPackageManager extends StubPackageManager {
             }
             return applicationInfo;
         }
+        
+        PackageInfo info;
+        if ((info = packageList.get(packageName)) != null) {
+        	return info.applicationInfo;
+        }
 
         throw new NameNotFoundException();
     }

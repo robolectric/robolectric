@@ -27,6 +27,14 @@ public class IntentTest {
         assertSame(intent, intent.putExtra("foo", "bar"));
         assertEquals("bar", intent.getExtras().get("foo"));
     }
+    
+    @Test
+    public void testCharSequenceExtra() throws Exception {
+        Intent intent = new Intent();
+        CharSequence cs = new TestCharSequence("bar");
+        assertSame(intent, intent.putExtra("foo", cs));
+        assertSame(cs, intent.getExtras().get("foo"));
+    }
 
     @Test
     public void testIntExtra() throws Exception {
@@ -91,7 +99,7 @@ public class IntentTest {
         assertEquals(2L, intent.getLongExtra("foo", -1));
         assertEquals(-1L, intent.getLongExtra("bar", -1));
     }
-
+    
     @Test
     public void testHasExtra() throws Exception {
         Intent intent = new Intent();
@@ -190,6 +198,39 @@ public class IntentTest {
         assertTrue(intent.getCategories().contains("foo"));
         assertSame(self, intent);
     }
+    
+    @Test
+    public void shouldFillIn() throws Exception {
+        Intent intentA = new Intent();
+        Intent intentB = new Intent();
+        
+        intentB.setAction("foo");
+        Uri uri = Uri.parse("http://www.foo.com");
+        intentB.setData(uri);
+        intentB.setType("text/html");
+        String category = "category";
+        intentB.addCategory(category);
+        intentB.setPackage("com.foobar.app");
+        ComponentName cn = new ComponentName("com.foobar.app", "activity");
+        intentB.setComponent(cn);
+        intentB.putExtra("FOO", 23);
+        
+        int flags = Intent.FILL_IN_ACTION | 
+	    Intent.FILL_IN_DATA |
+	    Intent.FILL_IN_CATEGORIES |
+	    Intent.FILL_IN_PACKAGE |
+	    Intent.FILL_IN_COMPONENT;
+        
+        int result = intentA.fillIn(intentB, flags );
+        assertEquals("foo", intentA.getAction());
+        assertSame(uri, intentA.getData());
+        assertEquals("text/html", intentA.getType());
+        assertTrue(intentA.getCategories().contains(category));
+        assertEquals("com.foobar.app", intentA.getPackage());
+        assertSame(cn, intentA.getComponent());
+        assertEquals(23, intentA.getIntExtra("FOO", -1));
+        assertEquals(result, flags);
+    }
 
     @Test
     public void equals_shouldTestActionComponentNameDataAndExtras() throws Exception {
@@ -286,5 +327,29 @@ public class IntentTest {
         @Override
         public void writeToParcel(Parcel dest, int flags) {
         }
+    }
+    
+    private class TestCharSequence implements CharSequence {
+    	String s;
+    	
+    	public TestCharSequence(String s) {
+    		this.s = s;
+    	}
+
+		@Override
+		public char charAt(int index) {
+			return s.charAt(index);
+		}
+
+		@Override
+		public int length() {
+			return s.length();
+		}
+
+		@Override
+		public CharSequence subSequence(int start, int end) {
+			return s.subSequence(start, end);
+		}
+    	
     }
 }
