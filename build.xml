@@ -29,8 +29,16 @@
          should be checked in in Version Control Systems. -->
     <property file="default.properties"/>
 
-    <exec executable="./find-android.bat" failifexecutionfails="false"/>
-    <exec executable="./find-android.sh" failifexecutionfails="false"/>
+    <condition property="isWindows"> <os family="windows" /> </condition>
+
+    <target name="findAndroidWindows" if="isWindows">
+        <echo message="Finding the Android version in windows"/>
+        <exec executable="./find-android.bat"/>
+    </target>
+    <target name="findAndroidUnix" unless="isWindows">
+        <echo message="Finding the Android version in *nix"/>
+        <exec executable="./find-android.sh"/>
+    </target>
     <property file="local.properties"/>
 
     <!-- Custom Android task to deal with the project target, and import the proper rules.
@@ -74,7 +82,8 @@
     </condition>
 
     <target name="compile"
-            description="compile module source">
+            description="compile module source"
+            depends="findAndroidUnix, findAndroidWindows">
         <mkdir dir="${out.main.absolute.dir}"/>
 
         <javac encoding="ascii" source="1.6" target="1.6" debug="true" extdirs=""

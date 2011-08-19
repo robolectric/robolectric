@@ -54,12 +54,7 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Parcel;
-import android.os.PowerManager;
-import android.os.ResultReceiver;
+import android.os.*;
 import android.preference.DialogPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -250,6 +245,7 @@ public class Robolectric {
                 ShadowListView.class,
                 ShadowLocation.class,
                 ShadowLocationManager.class,
+                ShadowLogger.class,
                 ShadowLooper.class,
                 ShadowMapController.class,
                 ShadowMapActivity.class,
@@ -574,6 +570,10 @@ public class Robolectric {
 
     public static ShadowResources shadowOf(Resources instance) {
         return (ShadowResources) shadowOf_(instance);
+    }
+
+    public static ShadowBundle shadowOf(Bundle instance) {
+        return (ShadowBundle) shadowOf_(instance);
     }
 
     public static ShadowResultReceiver shadowOf(ResultReceiver instance) {

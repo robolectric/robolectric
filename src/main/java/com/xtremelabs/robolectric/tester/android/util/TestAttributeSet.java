@@ -13,17 +13,19 @@ public class TestAttributeSet implements AttributeSet {
     private ResourceExtractor resourceExtractor;
     private AttrResourceLoader attrResourceLoader;
     private Class<? extends View> viewClass;
+    private boolean isSystem = false;
 
     public TestAttributeSet() {
         this.attributes = new HashMap<String, String>();
     }
 
     public TestAttributeSet(Map<String, String> attributes, ResourceExtractor resourceExtractor,
-                            AttrResourceLoader attrResourceLoader, Class<? extends View> viewClass) {
+                            AttrResourceLoader attrResourceLoader, Class<? extends View> viewClass, boolean isSystem) {
         this.attributes = attributes;
         this.resourceExtractor = resourceExtractor;
         this.attrResourceLoader = attrResourceLoader;
         this.viewClass = viewClass;
+        this.isSystem = isSystem;
     }
 
     public TestAttributeSet put(String name, String value) {
@@ -32,23 +34,26 @@ public class TestAttributeSet implements AttributeSet {
     }
 
     public TestAttributeSet(Map<String, String> attributes) {
-		this.attributes = attributes;		
-		this.resourceExtractor = new ResourceExtractor();		
-		this.attrResourceLoader = new AttrResourceLoader(this.resourceExtractor);
-		this.viewClass = null;
-	}
+        this.attributes = attributes;
+        this.resourceExtractor = new ResourceExtractor();
+        this.attrResourceLoader = new AttrResourceLoader(this.resourceExtractor);
+        this.viewClass = null;
+    }
 
-    @Override public boolean getAttributeBooleanValue(String namespace, String attribute, boolean defaultValue) {
-        String value = getAttributeValueInMap(attribute);
+    @Override
+    public boolean getAttributeBooleanValue(String namespace, String attribute, boolean defaultValue) {
+        String value = getAttributeValueInMap(namespace, attribute);
         return (value != null) ? Boolean.valueOf(value) : defaultValue;
     }
 
-    @Override public String getAttributeValue(String namespace, String attribute) {
-        return getAttributeValueInMap(attribute);
+    @Override
+    public String getAttributeValue(String namespace, String attribute) {
+        return getAttributeValueInMap(namespace, attribute);
     }
 
-    @Override public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
-        String value = getAttributeValueInMap(attribute);
+    @Override
+    public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
+        String value = getAttributeValueInMap(namespace, attribute);
 
         if (attrResourceLoader.hasAttributeFor(viewClass, "xxx", attribute)) {
             value = attrResourceLoader.convertValueToEnum(viewClass, "xxx", attribute, value);
@@ -57,36 +62,44 @@ public class TestAttributeSet implements AttributeSet {
         return (value != null) ? Integer.valueOf(value) : defaultValue;
     }
 
-    @Override public int getAttributeCount() {
+    @Override
+    public int getAttributeCount() {
         throw new UnsupportedOperationException();
     }
 
-    @Override public String getAttributeName(int index) {
+    @Override
+    public String getAttributeName(int index) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public String getAttributeValue(int index) {
+    @Override
+    public String getAttributeValue(int index) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public String getPositionDescription() {
+    @Override
+    public String getPositionDescription() {
         throw new UnsupportedOperationException();
     }
 
-    @Override public int getAttributeNameResource(int index) {
+    @Override
+    public int getAttributeNameResource(int index) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public int getAttributeListValue(String namespace, String attribute, String[] options, int defaultValue) {
+    @Override
+    public int getAttributeListValue(String namespace, String attribute, String[] options, int defaultValue) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public int getAttributeUnsignedIntValue(String namespace, String attribute, int defaultValue) {
+    @Override
+    public int getAttributeUnsignedIntValue(String namespace, String attribute, int defaultValue) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public float getAttributeFloatValue(String namespace, String attribute, float defaultValue) {
-        String value = getAttributeValueInMap(attribute);
+    @Override
+    public float getAttributeFloatValue(String namespace, String attribute, float defaultValue) {
+        String value = getAttributeValueInMap(namespace, attribute);
 
         if (attrResourceLoader.hasAttributeFor(viewClass, "xxx", attribute)) {
             value = attrResourceLoader.convertValueToEnum(viewClass, "xxx", attribute, value);
@@ -95,64 +108,81 @@ public class TestAttributeSet implements AttributeSet {
         return (value != null) ? Float.valueOf(value) : defaultValue;
     }
 
-    @Override public int getAttributeListValue(int index, String[] options, int defaultValue) {
+    @Override
+    public int getAttributeListValue(int index, String[] options, int defaultValue) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public boolean getAttributeBooleanValue(int resourceId, boolean defaultValue) {
+    @Override
+    public boolean getAttributeBooleanValue(int resourceId, boolean defaultValue) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
-        String value = getAttributeValueInMap(attribute);
-		return (value != null) ? resourceExtractor.getResourceId(value) : defaultValue;
+    @Override
+    public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
+        String value = getAttributeValueInMap(namespace, attribute);
+        return (value != null) ? resourceExtractor.getResourceId(value) : defaultValue;
     }
 
-    @Override public int getAttributeResourceValue(int resourceId, int defaultValue) {
+    @Override
+    public int getAttributeResourceValue(int resourceId, int defaultValue) {
         String attrName = resourceExtractor.getResourceName(resourceId);
-        String value = getAttributeValueInMap(attrName);
-		return (value == null) ? defaultValue : resourceExtractor.getResourceId(value);
+        String value = getAttributeValueInMap(null, attrName);
+        return (value == null) ? defaultValue : resourceExtractor.getResourceId(value);
     }
 
-    @Override public int getAttributeIntValue(int index, int defaultValue) {
+    @Override
+    public int getAttributeIntValue(int index, int defaultValue) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public int getAttributeUnsignedIntValue(int index, int defaultValue) {
+    @Override
+    public int getAttributeUnsignedIntValue(int index, int defaultValue) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public float getAttributeFloatValue(int index, float defaultValue) {
+    @Override
+    public float getAttributeFloatValue(int index, float defaultValue) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public String getIdAttribute() {
+    @Override
+    public String getIdAttribute() {
         throw new UnsupportedOperationException();
     }
 
-    @Override public String getClassAttribute() {
+    @Override
+    public String getClassAttribute() {
         throw new UnsupportedOperationException();
     }
 
-    @Override public int getIdAttributeResourceValue(int defaultValue) {
+    @Override
+    public int getIdAttributeResourceValue(int defaultValue) {
         throw new UnsupportedOperationException();
     }
 
-    @Override public int getStyleAttribute() {
+    @Override
+    public int getStyleAttribute() {
         throw new UnsupportedOperationException();
     }
 
-    private String getAttributeValueInMap(String attribute) {
+    private String getAttributeValueInMap(String namespace, String attribute) {
         String value = null;
         for (String key : attributes.keySet()) {
-            String mappedKey = key;
+            String[] mappedKeys = {null, key};
             if (key.contains(":")) {
-                mappedKey = key.split(":")[1];
+                mappedKeys = key.split(":");
             }
-            if (mappedKey.equals(attribute)) {
+
+            if (mappedKeys[1].equals(attribute) && (
+                    namespace == null || namespace != "android" ||
+                    (namespace.equals("android") && namespace.equals(mappedKeys[0])) )) {
                 value = attributes.get(key);
                 break;
             }
+        }
+        if (value != null && isSystem && value.startsWith("@+id")) {
+            value = value.replace("@+id", "@+android:id");
         }
         return value;
     }
