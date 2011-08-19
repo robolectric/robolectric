@@ -74,11 +74,6 @@ public class ShadowHandler {
     }
 
     @Implementation
-    public final Looper getLooper() {
-        return looper;
-    }
-
-    @Implementation
     public final void removeCallbacks(java.lang.Runnable r) {
         shadowOf(looper).getScheduler().remove(r);
     }
