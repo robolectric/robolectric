@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 
 public class Scheduler {
     private List<PostedRunnable> postedRunnables = new ArrayList<PostedRunnable>();
@@ -34,6 +35,16 @@ public class Scheduler {
 
     public void post(Runnable runnable) {
         postDelayed(runnable, 0);
+    }
+
+    public void remove(Runnable runnable) {
+        ListIterator<PostedRunnable> iterator = postedRunnables.listIterator();
+        while (iterator.hasNext()) {
+            PostedRunnable next = iterator.next();
+            if (next.runnable == runnable) {
+                iterator.remove();
+            }
+        }
     }
 
     public boolean advanceToLastPostedRunnable() {
