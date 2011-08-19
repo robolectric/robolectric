@@ -50,12 +50,12 @@ public abstract class TestUtil {
             File roboTestDir = file("robolectric", "src", "test", "resources");
             if (hasTestManifest(roboTestDir)) return testDirLocation = roboTestDir;
 
+            File submoduleDir = file("submodules", "robolectric", "src", "test", "resources");
+            if (hasTestManifest(submoduleDir)) return testDirLocation = submoduleDir;
+            
             //required for robolectric-sqlite to find resources to test against
             File roboSiblingTestDir = file(new File(new File(".").getAbsolutePath()).getParentFile().getParentFile(),"robolectric", "src", "test", "resources");
             if (hasTestManifest(roboSiblingTestDir)) return testDirLocation = roboSiblingTestDir;
-            File submoduleDir = file("submodules", "robolectric", "src", "test", "resources");
-            if (hasTestManifest(submoduleDir)) return testDirLocation = submoduleDir;
-
             
             throw new RuntimeException("can't find your TestAndroidManifest.xml in "
                     + testDir.getAbsolutePath() + " or " + roboTestDir.getAbsolutePath() + "\n or " + roboSiblingTestDir.getAbsolutePath());
