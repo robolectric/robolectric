@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -31,6 +32,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     private PackageManager packageManager;
 
+    private String appName;
     private String packageName;
     private ArrayList<Intent> broadcastIntents = new ArrayList<Intent>();
 
@@ -86,6 +88,23 @@ public class ShadowContextWrapper extends ShadowContext {
     @Implementation
     public String getPackageName() {
         return realContextWrapper == getApplicationContext() ? packageName : getApplicationContext().getPackageName();
+    }
+    
+    @Implementation
+    public ApplicationInfo getApplicationInfo() {
+    	ApplicationInfo appInfo = new ApplicationInfo();
+    	appInfo.name = appName;
+    	appInfo.packageName = packageName;
+    	appInfo.processName = packageName;
+    	return appInfo;
+    }
+
+    /**
+     * Non-Android accessor to set the application name.
+     * @param name
+     */
+    public void setApplicationName(String name) {
+    	appName=name;
     }
 
     /**

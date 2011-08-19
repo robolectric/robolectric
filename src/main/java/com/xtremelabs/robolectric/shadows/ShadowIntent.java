@@ -1,5 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static android.content.Intent.*;
+
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -78,6 +80,27 @@ public class ShadowIntent {
     public String getType() {
         return type;
     }
+    
+    @Implementation
+    public Intent addCategory(String category) {
+    	categories.add(category);
+    	return realIntent;
+    }
+    
+    @Implementation
+    public void removeCategory(String category) {
+    	categories.remove(category);
+    }
+    
+    @Implementation
+    public boolean hasCategory(String category) {
+    	return categories.contains(category);
+    }
+    
+    @Implementation
+    public Set<String> getCategories() {
+    	return categories;
+    }
 
     @Implementation
     public Intent setPackage(String packageName) {
@@ -129,22 +152,11 @@ public class ShadowIntent {
         this.flags = flags;
         return realIntent;
     }
-
+    
     @Implementation
     public Intent addFlags(int flags) {
-        this.flags = this.flags | flags;
-        return realIntent;
-    }
-
-    @Implementation
-    public Intent addCategory(String category) {
-        this.categories.add(category);
-        return realIntent;
-    }
-
-    @Implementation
-    public Set<String> getCategories() {
-        return this.categories;
+    	this.flags |= flags;
+    	return realIntent;
     }
 
     @Implementation
@@ -209,7 +221,7 @@ public class ShadowIntent {
         extras.put(key, value);
         return realIntent;
     }
-
+    
     @Implementation
     public Intent putExtra(String key, boolean value) {
         extras.put(key, value);
@@ -230,6 +242,11 @@ public class ShadowIntent {
     public Intent putExtra(String key, CharSequence value) {
         extras.put(key, value);
         return realIntent;
+    }
+    
+    @Implementation
+    public CharSequence getCharSequenceExtra(String name) {
+    	return (CharSequence) extras.get(name);
     }
 
     @Implementation
@@ -319,6 +336,40 @@ public class ShadowIntent {
     public String toURI() {
         return uri;
     }
+    
+    @Implementation
+    public int fillIn(Intent otherIntent, int flags) {
+    	int changes = 0;
+    	ShadowIntent other = shadowOf(otherIntent);
+    	
+    	if (other.action != null && (action == null || (flags & FILL_IN_ACTION) != 0)) {
+    		action = other.action;
+    		changes |= FILL_IN_ACTION;
+    	}
+    	if ((other.data != null || other.type != null)
+    			&& ((data == null && type == null) || (flags & FILL_IN_DATA) != 0)) {
+    		data = other.data;
+    		type = other.type;
+    		changes |= FILL_IN_DATA;
+    	}
+    	if (!other.categories.isEmpty()
+    			&& (categories.isEmpty() || (flags & FILL_IN_CATEGORIES) != 0)) {
+    		categories.addAll(other.categories);
+    		changes |= FILL_IN_CATEGORIES;
+    	}
+    	if (other.packageName != null 
+    			&& (packageName == null || (flags & FILL_IN_PACKAGE) != 0)) {
+    		packageName = other.packageName;
+    		changes |= FILL_IN_PACKAGE;
+    	}
+    	if (other.componentName != null && (flags & FILL_IN_COMPONENT) != 0) {
+    		componentName = other.componentName;
+    		changes |= FILL_IN_COMPONENT;
+    	}
+   
+    	extras.putAll(other.extras);
+    	return changes;
+    }
 
     /**
      * Compares an {@code Intent} with a {@code ShadowIntent} (obtained via a call to
@@ -338,6 +389,7 @@ public class ShadowIntent {
         if (data != null ? !data.equals(o.data) : o.data != null) return false;
         if (extras != null ? !extras.equals(o.extras) : o.extras != null) return false;
         if (type != null ? !type.equals(o.type) : o.type != null) return false;
+        if (categories != null ? !categories.equals(o.categories) : o.categories != null) return false;
 
         return true;
     }

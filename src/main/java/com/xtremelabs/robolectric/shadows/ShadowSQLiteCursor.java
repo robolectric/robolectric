@@ -86,6 +86,17 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     
     @Implementation
     @Override
+    public boolean moveToPrevious() {
+        try {
+            resultSet.previous();
+        } catch (SQLException e) {
+            throw new RuntimeException("SQL exception in moveToPrevious", e);
+        }
+        return super.moveToPrevious();
+    }
+    
+    @Implementation
+    @Override
     public boolean moveToPosition(int pos) {
     	try {
     		resultSet.absolute(pos + 1);
