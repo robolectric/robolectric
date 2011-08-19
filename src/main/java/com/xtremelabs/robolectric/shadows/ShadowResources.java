@@ -1,26 +1,31 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.Locale;
+
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-
-import java.io.InputStream;
-import java.util.Locale;
-
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
@@ -127,8 +132,39 @@ public class ShadowResources {
         return displayMetrics;
     }
 
-    @Implementation
+    @SuppressWarnings("rawtypes")
+	@Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
+    	
+    	ShadowContextWrapper shadowApp = Robolectric.shadowOf( Robolectric.application );
+    	Class rClass = shadowApp.getResourceLoader().getLocalRClass();
+    	
+    	// Check to make sure there is actually an R Class, if not
+    	// return just a BitmapDrawable
+    	if( rClass == null ) {
+    		return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));    		
+    	}
+
+    	// Load the R.anim and R.color Classes for interrogation
+    	Class animClass = null;
+    	Class colorClass = null;
+    	try {
+			animClass  = Class.forName( rClass.getCanonicalName() + "$anim" );
+			colorClass = Class.forName( rClass.getCanonicalName() + "$color" );
+		} catch (ClassNotFoundException e) {
+			return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
+		}
+		
+		// Try to find the passed in resource ID
+		try {
+			for( Field field : animClass.getDeclaredFields() ) {
+				if( field.getInt( animClass ) == drawableResourceId )  { return new AnimationDrawable(); }
+			}
+			for( Field field : colorClass.getDeclaredFields() ) {
+				if( field.getInt( colorClass ) == drawableResourceId ) { return new ColorDrawable(); }
+			}			
+		} catch ( Exception e ) { } 
+		
         return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
     }
 

@@ -1,26 +1,33 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.app.Application;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.*;
+import static org.hamcrest.core.IsNull.notNullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import android.app.Application;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.Animation.AnimationListener;
+import android.widget.FrameLayout;
+
+import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewGroupTest {
@@ -60,6 +67,21 @@ public class ViewGroupTest {
         System.setProperty("line.separator", defaultLineSeparator);
     }
 
+    @Test
+    public void testLayoutAnimationListener() {
+    	assertThat( root.getLayoutAnimationListener(), nullValue() );
+    	root.setLayoutAnimationListener( new AnimationListener() {
+    		 @Override
+    		 public void onAnimationEnd( Animation a ) { }
+    		 @Override
+    		 public void onAnimationRepeat(Animation a ) { }
+    		 @Override
+    		 public void onAnimationStart(Animation a ) { }
+    	 });
+    	 
+    	assertThat( root.getLayoutAnimationListener(), notNullValue() ); 
+    }
+    
     @Test
     public void testRemoveChildAt() throws Exception {
         root.removeViewAt(1);

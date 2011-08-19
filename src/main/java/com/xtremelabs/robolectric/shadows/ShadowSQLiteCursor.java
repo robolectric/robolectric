@@ -69,6 +69,83 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     }
 
     @Implementation
+    @Override
+    public final boolean moveToFirst() {
+        try {
+            resultSet.first();
+        } catch (SQLException e) {
+            throw new RuntimeException("SQL exception in moveToFirst", e);
+        }
+        return super.moveToFirst();
+    }
+
+    @Implementation
+    @Override
+    public boolean moveToNext() {
+        try {
+            resultSet.next();
+        } catch (SQLException e) {
+            throw new RuntimeException("SQL exception in moveToNext", e);
+        }
+        return super.moveToNext();
+    }
+    
+    @Implementation
+    @Override
+    public boolean moveToPosition(int pos) {
+    	try {
+    		resultSet.absolute(pos + 1);
+    	} catch (SQLException e) {
+            throw new RuntimeException("SQL exception in moveToPosition", e);
+        }
+    	return super.moveToPosition(pos);
+    }
+
+    @Implementation
+    @Override
+    public final boolean moveToFirst() {
+        try {
+            resultSet.first();
+        } catch (SQLException e) {
+            throw new RuntimeException("SQL exception in moveToFirst", e);
+        }
+        return super.moveToFirst();
+    }
+
+    @Implementation
+    @Override
+    public boolean moveToNext() {
+        try {
+            resultSet.next();
+        } catch (SQLException e) {
+            throw new RuntimeException("SQL exception in moveToNext", e);
+        }
+        return super.moveToNext();
+    }
+    
+    @Implementation
+    @Override
+    public boolean moveToPrevious() {
+        try {
+            resultSet.previous();
+        } catch (SQLException e) {
+            throw new RuntimeException("SQL exception in moveToPrevious", e);
+        }
+        return super.moveToPrevious();
+    }
+    
+    @Implementation
+    @Override
+    public boolean moveToPosition(int pos) {
+    	try {
+    		resultSet.absolute(pos + 1);
+    	} catch (SQLException e) {
+            throw new RuntimeException("SQL exception in moveToPosition", e);
+        }
+    	return super.moveToPosition(pos);
+    }
+
+    @Implementation
     public byte[] getBlob(int columnIndex) {
     	checkPosition();
         return (byte[]) this.currentRow.get(getColumnNames()[columnIndex]);
