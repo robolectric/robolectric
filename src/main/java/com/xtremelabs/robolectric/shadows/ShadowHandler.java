@@ -18,7 +18,8 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Handler.class)
 public class ShadowHandler {
-    @RealObject private Handler realHandler;
+    @RealObject
+    private Handler realHandler;
 
     private Looper looper = Looper.myLooper();
 
@@ -70,6 +71,16 @@ public class ShadowHandler {
     @Implementation
     public final Looper getLooper() {
     	return looper;
+    }
+
+    @Implementation
+    public final Looper getLooper() {
+        return looper;
+    }
+
+    @Implementation
+    public final void removeCallbacks(java.lang.Runnable r) {
+        shadowOf(looper).getScheduler().remove(r);
     }
 
     /**

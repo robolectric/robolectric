@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.os.Handler;
 import android.os.Looper;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,7 +20,7 @@ public class LooperTest {
 
     @Test
     public void idleMainLooper_executesScheduledTasks() {
-        final boolean[] wasRun = new boolean[] {false};
+        final boolean[] wasRun = new boolean[]{false};
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
