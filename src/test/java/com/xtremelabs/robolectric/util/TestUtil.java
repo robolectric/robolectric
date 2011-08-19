@@ -5,6 +5,7 @@ import com.xtremelabs.robolectric.RobolectricConfig;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
@@ -77,9 +78,18 @@ public abstract class TestUtil {
     }
 
     public static File getSystemResourceDir(String... paths) throws Exception {
-        Properties localProperties = new Properties();
-        localProperties.load(new FileInputStream(new File("local.properties")));
-        PropertiesHelper.doSubstitutions(localProperties);
-        return file(new File(localProperties.getProperty("sdk.dir"), "platforms/android-10/data/res/"), paths);
+       
+       Map<String,String> env = System.getenv();
+       String sdkDir;
+       if (env.containsKey("ANDROID_HOME")) {
+    	   sdkDir = env.get("ANDROID_HOME");
+       } else {
+    	    Properties localProperties = new Properties();
+           	localProperties.load(new FileInputStream(new File("local.properties")));
+           	PropertiesHelper.doSubstitutions(localProperties);
+           	sdkDir = localProperties.getProperty("sdk.dir");             
+       }
+
+        return file(new File(sdkDir, "platforms/android-10/data/res/"), paths);
     }
 }
