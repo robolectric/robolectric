@@ -122,8 +122,6 @@ public class SQLiteDatabaseTest {
         assertThat(stringValueFromDatabase, equalTo(stringColumnValue));
         assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
     }
-
- 
     
     @Test(expected=IllegalArgumentException.class)
     public void testRawQueryThrowsIndex0NullException() throws Exception {
@@ -151,16 +149,53 @@ public class SQLiteDatabaseTest {
       Cursor cursor = database.rawQuery("select second_column, first_column from rawtable",new String[]{});
       assertThat(cursor.getCount(),equalTo(2));
     }
+    /*
+     * Reason why testRawQueryCount4() and testRawQueryCount5() expects exceptions even though exceptions are not found in Android.
+     * 
+     * The code in Android acts inconsistently under API version 2.1_r1 (and perhaps other APIs)..
+     * What happens is that rawQuery() remembers the selectionArgs of previous queries, 
+     * and uses them if no selectionArgs are given in subsequent queries. 
+     * If they were never given selectionArgs THEN they return empty cursors.
+     *
+     *
+	 * if you run {
+	 * 		db.rawQuery("select * from exercise WHERE name = ?",null); //this returns an empty cursor
+	 *      db.rawQuery("select * from exercise WHERE name = ?",new String[]{}); //this returns an empty cursor
+	 * }
+	 *
+	 * but if you run {
+	 *		db.rawQuery("select * from exercise WHERE name = ?",new String[]{"Leg Press"}); //this returns 1 exercise named "Leg Press"
+	 *		db.rawQuery("select * from exercise WHERE name = ?",null); //this too returns 1 exercise named "Leg Press"
+	 *		db.rawQuery("select * from exercise WHERE name = ?",new String[]{}); //this too returns 1 exercise named "Leg Press"
+	 * }
+	 *
+	 * so SQLite + Android work inconsistently (it maintains state that it should not)
+	 * whereas H2 just throws an exception for not supplying the selectionArgs 
+	 *
+	 * So the question is should Robolectric:
+	 * 1) throw an exception, the way H2 does.
+	 * 2) return an empty Cursor.
+	 * 3) mimic Android\SQLite precisely and return inconsistent results based on previous state
+	 * 
+	 * Returning an empty cursor all the time would be bad
+	 * because Android doesn't always return an empty cursor.
+	 * But just mimicing Android would not be helpful,
+	 * since it would be less than obvious where the problem is coming from.
+	 * One should just avoid ever calling a statement without selectionArgs (when one has a ? placeholder),
+	 * so it is best to throw an Exception to let the programmer know that this isn't going to turn out well if they try to run it under Android.
+	 * Because we are running in the context of a test we do not have to mimic Android precisely (if it is more helpful not to!), we just need to help
+	 * the testing programmer figure out what is going on.
+	 */
     
     @Test(expected=Exception.class)
     public void testRawQueryCount4() throws Exception {
-    	//Android and SQLite don't normally throw an exception here.  But I wish they would, H2 does.  Lets make sure Robolectric does (whether it runs with H2 or not). 
+    	//Android and SQLite don't normally throw an exception here. See above explanation as to why Robolectric should. 
     	Cursor cursor = database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?",null);
     }
     
     @Test(expected=Exception.class)
     public void testRawQueryCount5() throws Exception {
-    	//Android and SQLite don't normally throw an exception here.  But I wish they would, H2 does.  Lets make sure Robolectric does (whether it runs with H2 or not).
+    	//Android and SQLite don't normally throw an exception here. See above explanation as to why Robolectric should.
     	Cursor cursor = database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?",new String[]{});
     }
     

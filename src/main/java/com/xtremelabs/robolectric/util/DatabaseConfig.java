@@ -9,11 +9,7 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-/**
- * 
- * @author cvanvranken
- *
- */
+
 public class DatabaseConfig {
 	private static DatabaseMap dbMap = null;
 	private static boolean isLoaded = false;
@@ -47,15 +43,15 @@ public class DatabaseConfig {
 	 * Sets what database will be used and loads the database driver, based on what DBmap is provided.
 	 */
 	private static void LoadSQLiteDriver() {
-		if (isMapNull()) throw new RuntimeException("Error in SQLiteConfig: DatabaseMap has not been set.");
+		if (isMapNull()) throw new NullDatabaseMapException("Error in DatabaseConfig: DatabaseMap has not been set.");
 	  try {
 		  Class.forName(dbMap.getDriverClassName()).newInstance();
 	} catch (InstantiationException e) {
-		throw new RuntimeException("Error in SQLiteConfig: SQLite driver could not be instantiated;");
+		throw new CannotLoadDatabaseMapDriverException("Error in DatabaseConfig: SQLite driver could not be instantiated;",e);
 	} catch (IllegalAccessException e) {
-		throw new RuntimeException("Error in SQLiteConfig: SQLite driver could not be accessed;");
+		throw new CannotLoadDatabaseMapDriverException("Error in DatabaseConfig: SQLite driver could not be accessed;",e);
 	} catch (ClassNotFoundException e) {
-		throw new RuntimeException("Error in SQLiteConfig: SQLite driver class could not be found;");
+		throw new CannotLoadDatabaseMapDriverException("Error in DatabaseConfig: SQLite driver class could not be found;",e);
 	}
 		isLoaded = true;
 	}
@@ -69,7 +65,7 @@ public class DatabaseConfig {
 		try {
 			return DriverManager.getConnection(dbMap.getConnectionString());
 		} catch (SQLException e) {
-			throw new RuntimeException("Error in SQLiteConfig, could not retrieve connection to in memory database.");
+			throw new CannotLoadDatabaseMapDriverException("Error in DatabaseConfig, could not retrieve connection to in memory database.",e);
 		}
 	}
 	
@@ -79,17 +75,17 @@ public class DatabaseConfig {
 	 * @throws SQLException 
 	 */
 	public static String getScrubSQL(String sql) throws SQLException {
-		if (isMapNull()) throw new RuntimeException("No database driver loaded!");
+		if (isMapNull()) throw new NullDatabaseMapException("No database map set!");
 		return dbMap.getScrubSQL(sql);
 	}
 	
 	public static String getSelectLastInsertIdentity() {
-		if (isMapNull()) throw new RuntimeException("No database driver loaded!");
+		if (isMapNull()) throw new NullDatabaseMapException("No database map set!");
 		return dbMap.getSelectLastInsertIdentity();
 	}
 	
 	public static int getResultSetType() {
-		if (isMapNull()) throw new RuntimeException("No database driver loaded!");
+		if (isMapNull()) throw new NullDatabaseMapException("No database map set!");
 		return dbMap.getResultSetType();
 	}
 	
@@ -99,6 +95,25 @@ public class DatabaseConfig {
        String getScrubSQL(String sql) throws SQLException;
        String getSelectLastInsertIdentity();
        int getResultSetType();
+	}
+
+	public static class NullDatabaseMapException extends RuntimeException
+	{
+		private static final long serialVersionUID = -4580960157495617424L;
+
+	public NullDatabaseMapException(String message)
+	  {
+	    super(message);
+	  }
+	}
+
+	public static class CannotLoadDatabaseMapDriverException extends RuntimeException
+	{
+		private static final long serialVersionUID = 2614876121296128364L;
+
+	public CannotLoadDatabaseMapDriverException(String message, Throwable cause) {
+		super(message, cause);
+	  }
 	}
 
 	

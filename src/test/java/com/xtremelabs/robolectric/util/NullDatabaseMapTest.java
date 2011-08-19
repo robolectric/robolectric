@@ -8,12 +8,19 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.DatabaseConfig.CannotLoadDatabaseMapDriverException;
 import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 
+/**
+ * the @UsingDatabaseMap integration test
+ * @author cvanvranken
+ *
+ */
 @UsingDatabaseMap(NullDatabaseMap.class)
 @RunWith(WithTestDefaultsRunner.class)
-public class DatabaseMapTest {
-
+public class NullDatabaseMapTest {
+	
+	
 	@Test
 	public void CanChangeDatabaseMapUsingAnnotation() {
 		Assert.assertTrue(DatabaseConfig.getDatabaseMap().getClass().getName()
@@ -35,20 +42,24 @@ public class DatabaseMapTest {
 	public void MapLoadsButConnectionFails() {
 		Assert.assertFalse(DatabaseConfig.isMapLoaded());
 		Connection connection = null;
+		
+		boolean expectedError = false;
+		
 		try {
 			connection = DatabaseConfig.getMemoryConnection();
 			// we should never reach this,
 			//since the connection should not actually be made
 			Assert.assertTrue(false);
-		} catch (RuntimeException e) {
+		} catch (CannotLoadDatabaseMapDriverException e) {
 			//This error is expected.
+			expectedError = true;
 		}
+		Assert.assertTrue(expectedError);
 		Assert.assertTrue(connection == null);
 		// driver should have loaded because the class name was valid,
 		// even if the memoryConnectionString was invalid
 		Assert.assertTrue(DatabaseConfig.isMapLoaded());
 
 	}
-	//TODO: Assert setting the Map resets IsLoaded to false
-	//TODO: create a second H2 map that allows for a different resultset type.
+
 }

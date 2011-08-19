@@ -121,12 +121,21 @@ public class SQLite {
 	            whereClause = whereClause.replaceFirst("\\?", "'" + selectionArgs[x] + "'");
 	        }
         }
-                
         if (argsNeeded!=args) throw new SQLiteException("bind or column index out of range: count of selectionArgs does not match count of (?) placeholders for given sql statement!");
+        //makeSQLiteMapNotThrowExceptions();
         
         return whereClause;
     }
-
+//		private void makeSQLiteMapNotThrowExceptions(int argsNeeded,int args, String[] selectionArgs) {
+//		  if (argsNeeded<args) throw new SQLiteException("bind or column index out of range: count of selectionArgs does not match count of (?) placeholders for given sql statement!");
+//		  else {
+//		  	String[] newSelectionArgs = new String[argsNeeded];
+//		  	for(int x =0;x<args;x++) {
+//		  		newSelectionArgs[x] = selectionArgs[x];
+//		  	}
+//		  	selectionArgs = newSelectionArgs;
+//		  }
+//		}
     /**
      * Build the '(columns...) VALUES (values...)' clause used in INSERT
      * statements.
