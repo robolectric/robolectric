@@ -66,6 +66,11 @@ public class ShadowHandler {
         msg.what = what;
         return sendMessage(msg);
     }
+    
+    @Implementation
+    public final Looper getLooper() {
+    	return looper;
+    }
 
     /**
      * @deprecated use {@link #idleMainLooper()} instead

@@ -5,15 +5,18 @@ import android.app.Dialog;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestRunnable;
 import com.xtremelabs.robolectric.util.Transcript;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -257,6 +260,13 @@ public class ActivityTest {
         assertEquals(view, shadow.getCurrentFocus());
     }
 
+        @Test
+    public void shouldSetOrientation() {
+        DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+        activity.setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT );
+        assertThat( activity.getRequestedOrientation(), equalTo( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT ) );
+    }
+    
     @Test
     public void retrieveIdOfResource() {
         Activity activity = new Activity();

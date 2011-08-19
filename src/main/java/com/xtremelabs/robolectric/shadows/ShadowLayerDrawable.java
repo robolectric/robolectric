@@ -21,4 +21,13 @@ public class ShadowLayerDrawable {
     public int getNumberOfLayers() {
         return drawables.length;
     }
+    
+    @Implementation
+    public Drawable getDrawable( int idx ) {
+    	Drawable d = null;
+    	if( idx < drawables.length && idx >= 0 ) {
+    		d = drawables[ idx ];
+    	}
+    	return d;
+    }
 }
