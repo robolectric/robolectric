@@ -86,6 +86,16 @@ public class ShadowAbstractCursor {
         setPosition(++currentRowNumber);
         return true;
     }
+    
+    @Implementation
+    public boolean moveToPrevious() {
+        if (currentRowNumber < 0 || realAbstractCursor.getCount() == 0) {
+            return false;
+        }
+        setPosition(--currentRowNumber);
+        return true;
+    }
+    
     @Implementation
     public CursorWindow getWindow() {
         return null;
@@ -98,17 +108,7 @@ public class ShadowAbstractCursor {
     @Implementation
     public int getColumnCount() {
         return getColumnNames().length;
-    }
-
-    
-    @Implementation
-    public boolean moveToPrevious() {
-        if (currentRowNumber < 0 || realAbstractCursor.getCount() == 0) {
-            return false;
-        }
-        currentRowNumber--;
-        return true;
-    }
+    }  
     
     @Implementation
     public boolean isFirst() {

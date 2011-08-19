@@ -71,77 +71,24 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     @Implementation
     @Override
     public final boolean moveToFirst() {
-        try {
-            resultSet.first();
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in moveToFirst", e);
-        }
         return super.moveToFirst();
     }
 
     @Implementation
     @Override
     public boolean moveToNext() {
-        try {
-            resultSet.next();
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in moveToNext", e);
-        }
-        return super.moveToNext();
-    }
-    
-    @Implementation
-    @Override
-    public boolean moveToPosition(int pos) {
-    	try {
-    		resultSet.absolute(pos + 1);
-    	} catch (SQLException e) {
-            throw new RuntimeException("SQL exception in moveToPosition", e);
-        }
-    	return super.moveToPosition(pos);
-    }
-
-    @Implementation
-    @Override
-    public final boolean moveToFirst() {
-        try {
-            resultSet.first();
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in moveToFirst", e);
-        }
-        return super.moveToFirst();
-    }
-
-    @Implementation
-    @Override
-    public boolean moveToNext() {
-        try {
-            resultSet.next();
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in moveToNext", e);
-        }
         return super.moveToNext();
     }
     
     @Implementation
     @Override
     public boolean moveToPrevious() {
-        try {
-            resultSet.previous();
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in moveToPrevious", e);
-        }
         return super.moveToPrevious();
     }
     
     @Implementation
     @Override
     public boolean moveToPosition(int pos) {
-    	try {
-    		resultSet.absolute(pos + 1);
-    	} catch (SQLException e) {
-            throw new RuntimeException("SQL exception in moveToPosition", e);
-        }
     	return super.moveToPosition(pos);
     }
 
@@ -266,19 +213,19 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     	return row;
     }
     private void fillRows(String sql, Connection connection) throws SQLException {
+    	//ResultSets in SQLite\Android are only TYPE_FORWARD_ONLY. Android caches results in the WindowedCursor to allow moveToPrevious() to function.
+    	//Robolectric will have to cache the results too. In the rows map.
     	Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
         ResultSet rs = statement.executeQuery(sql);
         int count = 0;
         if (rs.next()) {  
-   	         // here you know that there is at least one record  
         	     do {
         	    	Map<String,Object> row = fillRowValues(rs);
          	    	rows.put(count, row);
-        	    	count++;   // here you do whatever needs to be done for each record. Note that it will be called for the first record.
+        	    	count++;
         	     } while (rs.next());  
         	 } else {  
-        		 rs.close();
-                 // here you do whatever needs to be done when there is no record  
+        		 rs.close(); 
         	 } 
         
         rowCount = count;
