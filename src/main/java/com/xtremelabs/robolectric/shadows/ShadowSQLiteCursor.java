@@ -4,9 +4,13 @@ import android.database.sqlite.SQLiteCursor;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
+import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Simulates an Android Cursor object, by wrapping a JDBC ResultSet.
@@ -15,47 +19,47 @@ import java.sql.SQLException;
 public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 
     private ResultSet resultSet;
-    private int rowCount;
-
-    @Implementation
-    public int getCount() {
-        return rowCount;
-    }
-
-    @Implementation
-    public String[] getColumnNames() {
-        try {
-            ResultSetMetaData metaData = resultSet.getMetaData();
-            String[] columnNames = new String[metaData.getColumnCount()];
-            int columnCount = metaData.getColumnCount();
+    
+    
+    /**
+     * Stores the column names so they are retrievable after the resultSet has closed
+     */
+    private void cacheColumnNames(ResultSet rs) {
+    	try {
+            ResultSetMetaData metaData = rs.getMetaData();
+            int columnCount = metaData.getColumnCount();    
+            columnNameArray = new String[columnCount];
             for (int columnIndex = 1; columnIndex <= columnCount; columnIndex++) {
-                columnNames[columnIndex - 1] = metaData.getColumnName(columnIndex);
+                String cName = metaData.getColumnName(columnIndex).toLowerCase();
+                this.columnNames.put(cName, columnIndex-1);
+                this.columnNameArray[columnIndex-1]=cName;
             }
-            return columnNames;
         } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in getColumnNames", e);
+            throw new RuntimeException("SQL exception in cacheColumnNames", e);
         }
     }
+    
+   
 
-    @Implementation
-    public int getColumnIndex(String columnName) {
+  
+    private Integer getColIndex(String columnName) {
         if (columnName == null) {
             return -1;
         }
-
-        String[] columnNames = getColumnNames();
-        for (int columnIndex = 0; columnIndex < columnNames.length; columnIndex++) {
-            if (columnNames[columnIndex].equalsIgnoreCase(columnName)) {
-                return columnIndex;
-            }
-        }
-
-        return -1;
+        
+        Integer i  = this.columnNames.get(columnName.toLowerCase());
+        if (i==null) return -1;
+        return i;
+    }
+    
+    @Implementation
+    public int getColumnIndex(String columnName) {
+    	return getColIndex(columnName);
     }
 
     @Implementation
     public int getColumnIndexOrThrow(String columnName) {
-        int columnIndex = getColumnIndex(columnName);
+    	Integer columnIndex = getColIndex(columnName);
         if (columnIndex == -1) {
             throw new IllegalArgumentException("Column index does not exist");
         }
@@ -65,98 +69,83 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     @Implementation
     @Override
     public final boolean moveToFirst() {
-        try {
-            resultSet.first();
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in moveToFirst", e);
-        }
         return super.moveToFirst();
     }
 
     @Implementation
     @Override
     public boolean moveToNext() {
-        try {
-            resultSet.next();
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in moveToNext", e);
-        }
         return super.moveToNext();
     }
     
     @Implementation
     @Override
     public boolean moveToPrevious() {
-        try {
-            resultSet.previous();
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in moveToPrevious", e);
-        }
         return super.moveToPrevious();
     }
     
     @Implementation
     @Override
     public boolean moveToPosition(int pos) {
-    	try {
-    		resultSet.absolute(pos + 1);
-    	} catch (SQLException e) {
-            throw new RuntimeException("SQL exception in moveToPosition", e);
-        }
     	return super.moveToPosition(pos);
     }
 
     @Implementation
     public byte[] getBlob(int columnIndex) {
-        try {
-            return resultSet.getBytes(columnIndex + 1);
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in getBlob", e);
-        }
+    	checkPosition();
+        return (byte[]) this.currentRow.get(getColumnNames()[columnIndex]);
     }
 
     @Implementation
     public String getString(int columnIndex) {
-        try {
-            return resultSet.getString(columnIndex + 1);
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in getString", e);
-        }
+    	checkPosition();
+    	return (String) this.currentRow.get(getColumnNames()[columnIndex]);
     }
-
+	
+	@Implementation
+	public short getShort(int columnIndex) {
+		checkPosition();
+		Object o =this.currentRow.get(getColumnNames()[columnIndex]);
+    	if (o==null) return 0;
+        return new Short(o.toString());
+	}
+	
     @Implementation
     public int getInt(int columnIndex) {
-        try {
-            return resultSet.getInt(columnIndex + 1);
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in getInt", e);
-        }
+    	checkPosition();
+    	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
+    	if (o==null) return 0;
+        return new Integer(o.toString());
     }
 
     @Implementation
     public long getLong(int columnIndex) {
-        try {
-            return resultSet.getLong(columnIndex + 1);
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in getLong", e);
-        }
+    	checkPosition();
+    	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
+    	if (o==null) return 0;
+        return new Long(o.toString());
     }
 
     @Implementation
     public float getFloat(int columnIndex) {
-        try {
-            return resultSet.getFloat(columnIndex + 1);
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in getFloat", e);
-        }
+    	checkPosition();
+    	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
+    	if (o==null) return 0;
+        return new Float(o.toString());
+        
     }
 
     @Implementation
     public double getDouble(int columnIndex) {
-        try {
-            return resultSet.getDouble(columnIndex + 1);
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in getDouble", e);
+    	checkPosition();
+    	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
+    	if (o==null) return 0;
+    	return new Double(o.toString());
+    }
+    
+    private void checkPosition() {
+        if (-1 == currentRowNumber || getCount() == currentRowNumber) {      
+            throw new IndexOutOfBoundsException(currentRowNumber + " " + getCount());
         }
     }
 
@@ -169,6 +158,8 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
         try {
             resultSet.close();
             resultSet = null;
+            rows = null;
+            currentRow = null;
         } catch (SQLException e) {
             throw new RuntimeException("SQL exception in close", e);
         }
@@ -181,12 +172,8 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 
     @Implementation
     public boolean isNull(int columnIndex) {
-        try {
-            resultSet.getObject(columnIndex + 1);
-            return resultSet.wasNull();
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in isNull", e);
-        }
+        Object o = this.currentRow.get(getColumnNames()[columnIndex]);
+        return o == null;
     }
 
     /**
@@ -198,21 +185,62 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     public ResultSet getResultSet() {
         return resultSet;
     }
-
-    public void setResultSet(ResultSet result) {
+    
+    /**
+     * Allows test cases access to the underlying JDBC ResultSetMetaData, for use in
+     * assertions. Available even if cl
+     *
+     * @return the result set
+     */
+    public ResultSet getResultSetMetaData() {
+        return resultSet;
+    }    
+    
+    /**
+     * loads a row's values
+     * @param rs
+     * @return
+     * @throws SQLException
+     */
+    private Map<String,Object> fillRowValues(ResultSet rs) throws SQLException {
+    	Map<String,Object> row = new HashMap<String,Object>();
+    	for (String s : getColumnNames()) {
+			  row.put(s, rs.getObject(s));
+    	}
+    	return row;
+    }
+    private void fillRows(String sql, Connection connection) throws SQLException {
+    	//ResultSets in SQLite\Android are only TYPE_FORWARD_ONLY. Android caches results in the WindowedCursor to allow moveToPrevious() to function.
+    	//Robolectric will have to cache the results too. In the rows map.
+    	Statement statement = connection.createStatement(ResultSet.TYPE_FORWARD_ONLY, ResultSet.CONCUR_READ_ONLY);
+        ResultSet rs = statement.executeQuery(sql);
+        int count = 0;
+        if (rs.next()) {  
+        	     do {
+        	    	Map<String,Object> row = fillRowValues(rs);
+         	    	rows.put(count, row);
+        	    	count++;
+        	     } while (rs.next());  
+        	 } else {  
+        		 rs.close(); 
+        	 } 
+        
+        rowCount = count;
+        
+    }
+    
+    public void setResultSet(ResultSet result, String sql) {
         this.resultSet = result;
         rowCount = 0;
 
-        // Cache count up front, since computing result count in JDBC
-        // is destructive to cursor position.
+        //Cache all rows.  Caching rows should be thought of as a simple replacement for ShadowCursorWindow
         if (resultSet != null) {
-            try {
-                resultSet.beforeFirst();
-                resultSet.last();
-                rowCount = resultSet.getRow();
-            } catch (SQLException e) {
-                throw new RuntimeException("SQL exception in setResultSet", e);
-            }
+        	cacheColumnNames(resultSet);
+        	try {
+        		fillRows(sql,result.getStatement().getConnection());
+			} catch (SQLException e) {
+			    throw new RuntimeException("SQL exception in setResultSet", e);
+			}
         }
     }
 }

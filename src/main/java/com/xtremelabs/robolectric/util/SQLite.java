@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.util;
 
 import android.content.ContentValues;
+import android.database.sqlite.SQLiteException;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -102,17 +103,32 @@ public class SQLite {
      * @param selectionArgs Array of substitutions for args in selection
      * @return where clause
      */
-    public static String buildWhereClause(String selection, String[] selectionArgs) {
+    public static String buildWhereClause(String selection, String[] selectionArgs) throws SQLiteException {
         String whereClause = selection;
+        int argsNeeded = 0;
+        int args = 0;
 
-        for (String selectionArg : selectionArgs) {
-            whereClause = whereClause.replaceFirst("\\?", "'" + selectionArg + "'");
+        for (char c : selection.toCharArray()) {
+            if (c == '?') argsNeeded++;
+        }
+        if (selectionArgs != null) {
+            for (int x = 0; x < selectionArgs.length; x++) {
+                if (selectionArgs[x] == null) {
+                    throw new IllegalArgumentException("the bind value at index " + x + " is null");
+                } else {
+                    args++;
+                }
+                whereClause = whereClause.replaceFirst("\\?", "'" + selectionArgs[x] + "'");
+            }
+        }
+        if (argsNeeded != args) {
+            throw new SQLiteException("bind or column index out of range: count of selectionArgs does not match count of (?) placeholders for given sql statement!");
         }
 
         return whereClause;
     }
 
-    /**
+   /**
      * Build the '(columns...) VALUES (values...)' clause used in INSERT
      * statements.
      *

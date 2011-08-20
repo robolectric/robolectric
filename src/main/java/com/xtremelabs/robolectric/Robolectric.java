@@ -29,7 +29,9 @@ import android.content.res.Resources;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteProgram;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
@@ -52,7 +54,13 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-import android.os.*;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Parcel;
+import android.os.PowerManager;
+import android.os.ResultReceiver;
 import android.preference.DialogPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -210,6 +218,7 @@ public class Robolectric {
                 ShadowCookieSyncManager.class,
                 ShadowCountDownTimer.class,
                 ShadowCursorAdapter.class,
+                ShadowDatabaseUtils.class,
                 ShadowDateFormat.class,
                 ShadowDefaultRequestDirector.class,
                 ShadowDisplay.class,
@@ -229,7 +238,6 @@ public class Robolectric {
                 ShadowHtml.class,
                 ShadowImageView.class,
                 ShadowInputMethodManager.class,
-                ShadowIntent.class,
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowIntentFilterAuthorityEntry.class,
@@ -298,9 +306,11 @@ public class Robolectric {
                 ShadowSimpleCursorAdapter.class,
                 ShadowShapeDrawable.class,
                 ShadowSpannableStringBuilder.class,
+                ShadowSQLiteProgram.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
+                ShadowSQLiteStatement.class,
                 ShadowSQLiteQueryBuilder.class,
                 ShadowSslErrorHandler.class,
                 ShadowSurfaceView.class,
@@ -596,6 +606,14 @@ public class Robolectric {
 
     public static ShadowGeocoder shadowOf(Geocoder instance) {
         return (ShadowGeocoder) shadowOf_(instance);
+    }
+
+    public static ShadowSQLiteStatement shadowOf(SQLiteStatement other) {
+        return (ShadowSQLiteStatement) Robolectric.shadowOf_(other);
+    }
+    
+    public static ShadowSQLiteProgram shadowOf(SQLiteProgram other) {
+        return (ShadowSQLiteProgram) Robolectric.shadowOf_(other);
     }
 
     public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
@@ -1001,7 +1019,6 @@ public class Robolectric {
     public static String visualize(Bitmap bitmap) {
         return shadowOf(bitmap).getDescription();
     }
-
     /**
      * Reflection helper methods.
      */

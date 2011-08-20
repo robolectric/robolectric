@@ -15,6 +15,10 @@ import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+import com.xtremelabs.robolectric.util.DatabaseConfig;
+import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
+import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
+import com.xtremelabs.robolectric.util.H2Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -40,8 +44,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     private RobolectricClassLoader classLoader;
     private ClassHandler classHandler;
     private RobolectricTestRunnerInterface delegate;
-
-    // fields in the RobolectricTestRunner in the instrumented ClassLoader
+    private DatabaseMap databaseMap;
+    
+	// fields in the RobolectricTestRunner in the instrumented ClassLoader
     protected RobolectricConfig robolectricConfig;
 
     private static RobolectricClassLoader getDefaultLoader() {
@@ -75,7 +80,24 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         this(testClass,
                 isInstrumented() ? null : ShadowWrangler.getInstance(),
                 isInstrumented() ? null : getDefaultLoader(),
-                robolectricConfig);
+                robolectricConfig,new H2Map());
+    }
+    
+    /**
+     * Call this constructor in subclasses in order to specify non-default configuration (e.g. location of the
+     * AndroidManifest.xml file, resource directory, and DatabaseMap).
+     *
+     * @param testClass         the test class to be run
+     * @param robolectricConfig the configuration data
+     * @param databaseMap		the database mapping
+     * @throws InitializationError if junit says so
+     */
+    protected RobolectricTestRunner(Class<?> testClass, RobolectricConfig robolectricConfig, DatabaseMap databaseMap)
+            throws InitializationError {
+        this(testClass,
+                isInstrumented() ? null : ShadowWrangler.getInstance(),
+                isInstrumented() ? null : getDefaultLoader(),
+                robolectricConfig, databaseMap);
     }
 
     /**
@@ -136,6 +158,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         this(testClass, new RobolectricConfig(new File(androidManifestPath), new File(resourceDirectory)));
     }
 
+    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader classLoader, RobolectricConfig robolectricConfig) throws InitializationError {
+    	this(testClass, classHandler, classLoader, robolectricConfig,new H2Map());	
+    }
+        
+    
     /**
      * This is not the constructor you are looking for... probably. This constructor creates a bridge between the test
      * runner called by JUnit and a second instance of the test runner that is loaded via the instrumenting class
@@ -152,14 +179,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param robolectricConfig the configuration
      * @throws InitializationError if junit says so
      */
-    protected RobolectricTestRunner(final Class<?> testClass, final ClassHandler classHandler, final RobolectricClassLoader classLoader, final RobolectricConfig robolectricConfig) throws InitializationError {
+    protected RobolectricTestRunner(final Class<?> testClass, final ClassHandler classHandler, final RobolectricClassLoader classLoader, final RobolectricConfig robolectricConfig, final DatabaseMap map) throws InitializationError {
         super(isInstrumented() ? testClass : classLoader.bootstrap(testClass));
-
+                
         if (!isInstrumented()) {
             this.classHandler = classHandler;
             this.classLoader = classLoader;
             this.robolectricConfig = robolectricConfig;
-
+            this.databaseMap = setupDatabaseMap(testClass, map);
+            
             Thread.currentThread().setContextClassLoader(classLoader);
             
             delegateLoadingOf(Uri__FromAndroid.class.getName());
@@ -167,13 +195,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             delegateLoadingOf(RealObject.class.getName());
             delegateLoadingOf(ShadowWrangler.class.getName());
             delegateLoadingOf(RobolectricConfig.class.getName());
+            delegateLoadingOf(DatabaseMap.class.getName());
             delegateLoadingOf(android.R.class.getName());
 
             Class<?> delegateClass = classLoader.bootstrap(this.getClass());
             try {
-                Constructor constructorForDelegate = delegateClass.getConstructor(Class.class);
+                Constructor<?> constructorForDelegate = delegateClass.getConstructor(Class.class);
                 this.delegate = (RobolectricTestRunnerInterface) constructorForDelegate.newInstance(classLoader.bootstrap(testClass));
                 this.delegate.setRobolectricConfig(robolectricConfig);
+                this.delegate.setDatabaseMap(databaseMap);
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -297,10 +327,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
         Robolectric.resetStaticState();
         resetStaticState();
-
+        
+        DatabaseConfig.setDatabaseMap(this.databaseMap);//Set static DatabaseMap in DBConfig
+        
         Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
     }
 
+    
+    
     /**
      * Override this method to bind your own shadow classes
      */
@@ -351,4 +385,32 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
         return projectPackage + ".R";
     }
+       
+    /*
+     * Specifies what database to use for testing (ex: H2 or Sqlite),
+     * this will load H2 by default, the SQLite TestRunner version will override this.
+     */
+    protected DatabaseMap setupDatabaseMap(Class<?> testClass, DatabaseMap map) {
+    	DatabaseMap dbMap = map;
+  
+    	if (testClass.isAnnotationPresent(UsingDatabaseMap.class)) {
+	    	UsingDatabaseMap usingMap = testClass.getAnnotation(UsingDatabaseMap.class);
+	    	if(usingMap.value()!=null){
+	    		dbMap = Robolectric.newInstanceOf(usingMap.value());
+	    	} else {
+	    		if (dbMap==null)
+		    		throw new RuntimeException("UsingDatabaseMap annotation value must provide a class implementing DatabaseMap");
+	    	}
+    	}
+    	return dbMap;
+    }
+    
+    public DatabaseMap getDatabaseMap() {
+		return databaseMap;
+	}
+
+	public void setDatabaseMap(DatabaseMap databaseMap) {
+		this.databaseMap = databaseMap;
+	}
+	
 }
