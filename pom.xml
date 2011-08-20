@@ -4,10 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-      <groupId>com.seventheye.android</groupId>
-      <artifactId>seventheye-android</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
-      <relativePath></relativePath>
+        <groupId>org.sonatype.oss</groupId>
+        <artifactId>oss-parent</artifactId>
+        <version>5</version>
     </parent>
 
     <groupId>com.pivotallabs</groupId>

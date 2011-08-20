@@ -1,35 +1,27 @@
 package com.xtremelabs.robolectric.shadows;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteProgram;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 @Implements(SQLiteProgram.class)
 public abstract class ShadowSQLiteProgram {
 	@RealObject	SQLiteProgram realSQLiteProgram;
 	protected SQLiteDatabase mDatabase;
 	Connection connection;
-	//Map<Integer,Object> parameterMap = new HashMap<Integer,Object>();
 	PreparedStatement actualDBstatement;
 	public void init(SQLiteDatabase db, String sql) {
 	 mDatabase = db;
 	 connection = Robolectric.shadowOf(db).getConnection();
-       // db.acquireReference();
-      //  db.addSQLiteClosable(this);
-     //   this.nHandle = db.mNativeHandle;
-	 
+
 	 try {
 			actualDBstatement = connection.prepareStatement(sql,
 					Statement.RETURN_GENERATED_KEYS);
@@ -42,8 +34,8 @@ public abstract class ShadowSQLiteProgram {
 	
 	@Implementation
 	public void compile(String sql, boolean forceCompilation) {
-    } 
-	
+    }
+
 
     /**
      * Bind a NULL value to this statement. The value remains bound until

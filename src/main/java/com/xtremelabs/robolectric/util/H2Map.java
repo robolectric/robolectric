@@ -8,61 +8,62 @@ import java.sql.SQLException;
 
 public class H2Map implements DatabaseConfig.DatabaseMap {
 
-	@Override
-	public String getDriverClassName() {
-		 return "org.h2.Driver";
-	}
+    @Override
+    public String getDriverClassName() {
+        return "org.h2.Driver";
+    }
 
-	@Override
-	public String getConnectionString() {
-		 return "jdbc:h2:mem:";
-	}
+    @Override
+    public String getConnectionString() {
+        return "jdbc:h2:mem:";
+    }
 
-	/**
-	 * Maps the SQL to the H2 Implementation
-	 * @param sql the original SQL statement
-	 * @return the modified SQL statement.
-	 * @throws SQLException 
-	 */
-	@Override
-	public String getScrubSQL(String sql) throws SQLException {
-		
-		if (sql.contains("PRIMARY KEY AUTOINCREMENT") && !sql.contains("INTEGER PRIMARY KEY AUTOINCREMENT") )	 {
-	        throw new SQLException("AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY");
-		}
-		
-		// Map 'autoincrement' (sqlite) to 'auto_increment' (h2).
-        String scrubbedSQL = sql.replaceAll("(?i:autoincrement)", "auto_increment");	  	
+    /**
+     * Maps the SQL to the H2 Implementation
+     *
+     * @param sql the original SQL statement
+     * @return the modified SQL statement.
+     * @throws SQLException
+     */
+    @Override
+    public String getScrubSQL(String sql) throws SQLException {
+
+        if (sql.contains("PRIMARY KEY AUTOINCREMENT") && !sql.contains("INTEGER PRIMARY KEY AUTOINCREMENT")) {
+            throw new SQLException("AUTOINCREMENT is only allowed on an INTEGER PRIMARY KEY");
+        }
+
+        // Map 'autoincrement' (sqlite) to 'auto_increment' (h2).
+        String scrubbedSQL = sql.replaceAll("(?i:autoincrement)", "auto_increment");
         // Map 'integer' (sqlite) to 'bigint(19)' (h2).  	
         scrubbedSQL = scrubbedSQL.replaceAll("(?i:integer)", "bigint(19)");
         return scrubbedSQL;
-	}
+    }
 
-	@Override
-	public String getSelectLastInsertIdentity() {
-		return "SELECT IDENTITY();";
-	}
+    @Override
+    public String getSelectLastInsertIdentity() {
+        return "SELECT IDENTITY();";
+    }
 
-	
-	public void DeregisterDriver() {
 
-		try {
-			Driver d = DriverManager.getDriver(getDriverClassName());
-			DriverManager.deregisterDriver(d);
-		} catch (SQLException e) {
-			throw new RuntimeException(e);
-		}
-	}
+    public void DeregisterDriver() {
 
-	@Override
-	protected void finalize() throws Throwable {
-		super.finalize();
-		DeregisterDriver();
-	}
+        try {
+            Driver d = DriverManager.getDriver(getDriverClassName());
+            DriverManager.deregisterDriver(d);
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
-	@Override
-	public int getResultSetType() {
-		return ResultSet.TYPE_SCROLL_INSENSITIVE;
-	}
+    @Override
+    protected void finalize() throws Throwable {
+        super.finalize();
+        DeregisterDriver();
+    }
+
+    @Override
+    public int getResultSetType() {
+        return ResultSet.TYPE_SCROLL_INSENSITIVE;
+    }
 
 }

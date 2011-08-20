@@ -107,36 +107,28 @@ public class SQLite {
         String whereClause = selection;
         int argsNeeded = 0;
         int args = 0;
-       
+
         for (char c : selection.toCharArray()) {
-        	if (c=='?') argsNeeded++;
+            if (c == '?') argsNeeded++;
         }
-        if (selectionArgs!=null) {
-	        for (int x = 0;x<selectionArgs.length;x++) {
-	        	if (selectionArgs[x]==null) {
-	        		throw new IllegalArgumentException("the bind value at index " + x + " is null");
-	        	} else {
-	        		args++;
-	        	}
-	            whereClause = whereClause.replaceFirst("\\?", "'" + selectionArgs[x] + "'");
-	        }
+        if (selectionArgs != null) {
+            for (int x = 0; x < selectionArgs.length; x++) {
+                if (selectionArgs[x] == null) {
+                    throw new IllegalArgumentException("the bind value at index " + x + " is null");
+                } else {
+                    args++;
+                }
+                whereClause = whereClause.replaceFirst("\\?", "'" + selectionArgs[x] + "'");
+            }
         }
-        if (argsNeeded!=args) throw new SQLiteException("bind or column index out of range: count of selectionArgs does not match count of (?) placeholders for given sql statement!");
-        //makeSQLiteMapNotThrowExceptions();
-        
+        if (argsNeeded != args) {
+            throw new SQLiteException("bind or column index out of range: count of selectionArgs does not match count of (?) placeholders for given sql statement!");
+        }
+
         return whereClause;
     }
-//		private void makeSQLiteMapNotThrowExceptions(int argsNeeded,int args, String[] selectionArgs) {
-//		  if (argsNeeded<args) throw new SQLiteException("bind or column index out of range: count of selectionArgs does not match count of (?) placeholders for given sql statement!");
-//		  else {
-//		  	String[] newSelectionArgs = new String[argsNeeded];
-//		  	for(int x =0;x<args;x++) {
-//		  		newSelectionArgs[x] = selectionArgs[x];
-//		  	}
-//		  	selectionArgs = newSelectionArgs;
-//		  }
-//		}
-    /**
+
+   /**
      * Build the '(columns...) VALUES (values...)' clause used in INSERT
      * statements.
      *

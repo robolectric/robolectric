@@ -1,10 +1,21 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.util.SQLite.buildDeleteString;
-import static com.xtremelabs.robolectric.util.SQLite.buildInsertString;
-import static com.xtremelabs.robolectric.util.SQLite.buildUpdateString;
-import static com.xtremelabs.robolectric.util.SQLite.buildWhereClause;
-import static com.xtremelabs.robolectric.Robolectric.*;
+import android.content.ContentValues;
+import android.database.Cursor;
+import android.database.DatabaseUtils;
+import android.database.sqlite.SQLiteClosable;
+import android.database.sqlite.SQLiteCursor;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseCorruptException;
+import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteStatement;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.util.DatabaseConfig;
+import com.xtremelabs.robolectric.util.SQLite.SQLStringAndBindings;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,21 +25,12 @@ import java.util.Iterator;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteClosable;
-import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabaseCorruptException;
-import android.database.sqlite.SQLiteQueryBuilder;
-import android.database.sqlite.SQLiteStatement;
-
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.util.DatabaseConfig;
-import com.xtremelabs.robolectric.util.SQLite.SQLStringAndBindings;
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.util.SQLite.buildDeleteString;
+import static com.xtremelabs.robolectric.util.SQLite.buildInsertString;
+import static com.xtremelabs.robolectric.util.SQLite.buildUpdateString;
+import static com.xtremelabs.robolectric.util.SQLite.buildWhereClause;
 
 /**
  * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.
@@ -211,7 +213,7 @@ public class ShadowSQLiteDatabase  {
             if (bindArgs != null) {
                 int numArgs = bindArgs.length;
                 for (int i = 0; i < numArgs; i++) {
-                    ShadowDatabaseUtils.bindObjectToProgram(statement, i + 1, bindArgs[i]);
+                    DatabaseUtils.bindObjectToProgram(statement, i + 1, bindArgs[i]);
                 }
             }
             statement.execute();

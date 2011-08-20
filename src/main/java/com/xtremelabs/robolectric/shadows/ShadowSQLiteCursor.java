@@ -1,5 +1,9 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.database.sqlite.SQLiteCursor;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -7,12 +11,6 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
-
-import android.database.CursorIndexOutOfBoundsException;
-import android.database.sqlite.SQLiteCursor;
-
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
 
 /**
  * Simulates an Android Cursor object, by wrapping a JDBC ResultSet.
@@ -139,7 +137,6 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 
     @Implementation
     public double getDouble(int columnIndex) {
-    	checkPosition();
     	checkPosition();
     	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
     	if (o==null) return 0;

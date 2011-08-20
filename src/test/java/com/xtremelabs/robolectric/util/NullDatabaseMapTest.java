@@ -1,15 +1,13 @@
 package com.xtremelabs.robolectric.util;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.DatabaseConfig.CannotLoadDatabaseMapDriverException;
+import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.DatabaseConfig.CannotLoadDatabaseMapDriverException;
-import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
+import java.sql.Connection;
 
 /**
  * the @UsingDatabaseMap integration test
@@ -19,8 +17,7 @@ import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 @UsingDatabaseMap(NullDatabaseMap.class)
 @RunWith(WithTestDefaultsRunner.class)
 public class NullDatabaseMapTest {
-	
-	
+
 	@Test
 	public void CanChangeDatabaseMapUsingAnnotation() {
 		Assert.assertTrue(DatabaseConfig.getDatabaseMap().getClass().getName()
@@ -30,6 +27,7 @@ public class NullDatabaseMapTest {
 				.getSelectLastInsertIdentity() == null);
 		Assert.assertTrue(DatabaseConfig.getDatabaseMap().getDriverClassName() == "com.xtremelabs.robolectric.util.NullDatabaseMap");
 	}
+
 	@Test
 	public void MapIsSetButIsNotLoaded() {
 		Assert.assertTrue(DatabaseConfig.getDatabaseMap().getClass().getName()
@@ -61,5 +59,4 @@ public class NullDatabaseMapTest {
 		Assert.assertTrue(DatabaseConfig.isMapLoaded());
 
 	}
-
 }

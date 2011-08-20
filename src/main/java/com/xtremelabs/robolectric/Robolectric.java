@@ -54,7 +54,13 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-import android.os.*;
+import android.os.Bundle;
+import android.os.CountDownTimer;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Parcel;
+import android.os.PowerManager;
+import android.os.ResultReceiver;
 import android.preference.DialogPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -212,6 +218,7 @@ public class Robolectric {
                 ShadowCookieSyncManager.class,
                 ShadowCountDownTimer.class,
                 ShadowCursorAdapter.class,
+                ShadowDatabaseUtils.class,
                 ShadowDateFormat.class,
                 ShadowDefaultRequestDirector.class,
                 ShadowDisplay.class,

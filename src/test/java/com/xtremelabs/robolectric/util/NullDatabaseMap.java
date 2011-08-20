@@ -1,9 +1,9 @@
 package com.xtremelabs.robolectric.util;
 
+import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
 
 public class NullDatabaseMap implements DatabaseMap {
 		
@@ -31,6 +31,4 @@ public class NullDatabaseMap implements DatabaseMap {
 	public int getResultSetType() {
 		return ResultSet.TYPE_FORWARD_ONLY;
 	}
-	
 }
-
