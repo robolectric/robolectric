@@ -178,6 +178,15 @@ public class ShadowView {
 
         return null;
     }
+    
+    @Implementation
+    public View findViewWithTag(Object obj) {
+        if (obj.equals(this.getTag())) {
+            return realView;
+        }
+
+        return null;
+    }
 
     @Implementation
     public View getRootView() {
