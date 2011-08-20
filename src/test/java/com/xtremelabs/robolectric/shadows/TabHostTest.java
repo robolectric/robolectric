@@ -157,4 +157,28 @@ public class TabHostTest {
 
         assertThat(tabHost.getCurrentTabTag(), equalTo("Bar"));
     }
+    
+    @Test
+    public void canGetCurrentTab() throws Exception {
+        TabHost tabHost = new TabHost(null);
+
+        TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
+        TabHost.TabSpec bar = tabHost.newTabSpec("Bar");
+        TabHost.TabSpec baz = tabHost.newTabSpec("Baz");
+
+        tabHost.addTab(foo);
+        tabHost.addTab(bar);
+        tabHost.addTab(baz);
+        assertThat(shadowOf(tabHost).getCurrentTabSpec(), equalTo(foo));
+        assertThat(tabHost.getCurrentTab(), equalTo(0));
+        tabHost.setCurrentTabByTag("Bar");
+        assertThat(tabHost.getCurrentTab(), equalTo(1));
+        assertThat(shadowOf(tabHost).getCurrentTabSpec(), equalTo(bar));
+        tabHost.setCurrentTabByTag("Foo");
+        assertThat(tabHost.getCurrentTab(), equalTo(0));
+        assertThat(shadowOf(tabHost).getCurrentTabSpec(), equalTo(foo));
+        tabHost.setCurrentTabByTag("Baz");
+        assertThat(tabHost.getCurrentTab(), equalTo(2));
+        assertThat(shadowOf(tabHost).getCurrentTabSpec(), equalTo(baz));
+    }
 }
