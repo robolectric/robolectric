@@ -1,19 +1,18 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.os.AsyncTask;
+import android.os.ShadowAsyncTaskBridge;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
+
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import android.os.AsyncTask;
-import android.os.ShadowAsyncTaskBridge;
-
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
 
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {
@@ -52,10 +51,6 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         };
 	}
 
-//    public android.os.AsyncTask.Status getStatus() {
-//        return null;
-//    }
-
 	@Implementation
     public boolean isCancelled() {
         return future.isCancelled();
@@ -66,10 +61,12 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         return future.cancel(mayInterruptIfRunning);
     }
 
+    @Implementation
     public Result get() throws InterruptedException, ExecutionException {
         return future.get();
     }
 
+    @Implementation
     public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
         return future.get(timeout, unit);
     }
