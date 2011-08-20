@@ -44,6 +44,7 @@ public class ResourceLoader {
     private File resourceDir;
     private File assetsDir;
     private int sdkVersion;
+    private Class rClass;
 
     private final ResourceExtractor resourceExtractor;
     private ViewLoader viewLoader;
@@ -64,6 +65,7 @@ public class ResourceLoader {
     public ResourceLoader(int sdkVersion, Class rClass, File resourceDir, File assetsDir) throws Exception {
         this.sdkVersion = sdkVersion;
         this.assetsDir = assetsDir;
+        this.rClass = rClass;
         resourceExtractor = new ResourceExtractor();
         resourceExtractor.addLocalRClass(rClass);
         resourceExtractor.addSystemRClass(R.class);
@@ -365,6 +367,11 @@ public class ResourceLoader {
         return assetsDir;
     }
 
+    @SuppressWarnings("rawtypes")
+	public Class getLocalRClass() { return rClass; }
+    
+    public void setLocalRClass( Class clazz )  { rClass = clazz; }
+    
     public ResourceExtractor getResourceExtractor() {
         return resourceExtractor;
     }

@@ -291,7 +291,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         @Implementation
         public AlertDialog.Builder setNeutralButton(int neutralTextId, final DialogInterface.OnClickListener listener) {
-            return setNegativeButton(context.getResources().getText(neutralTextId), listener);
+        	return setNeutralButton(context.getResources().getText(neutralTextId), listener);
         }
 
 

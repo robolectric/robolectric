@@ -35,7 +35,7 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     private Intent intent;
     View contentView;
-
+    private int orientation;
     private int resultCode;
     private Intent resultIntent;
     private Activity parent;
@@ -73,7 +73,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     public Intent getIntent() {
         return intent;
     }
-
+    
     /**
      * Sets the {@code contentView} for this {@code Activity} by invoking the
      * {@link android.view.LayoutInflater}

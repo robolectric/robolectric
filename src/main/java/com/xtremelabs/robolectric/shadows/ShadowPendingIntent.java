@@ -42,7 +42,8 @@ public class ShadowPendingIntent {
 
     @Implementation
     public void send(Context context, int code, Intent intent) throws PendingIntent.CanceledException {
-        if (isServiceIntent) {
+    	savedIntent.fillIn( intent, 0 );
+    	if (isServiceIntent) {
             context.startService(savedIntent);
         } else {
             context.startActivity(savedIntent);

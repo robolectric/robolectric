@@ -116,6 +116,11 @@ public class ShadowBundle {
     public void putParcelable(String key, Parcelable value) {
         map.put(key, value);
     }
+    
+    @Implementation
+    public void putParcelableArrayList(String key, ArrayList<? extends Parcelable> value) {
+        map.put(key, value);
+    }
 
     @Implementation
     public Parcelable getParcelable(String key) {

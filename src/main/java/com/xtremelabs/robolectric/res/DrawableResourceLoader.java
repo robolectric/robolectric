@@ -98,12 +98,14 @@ public class DrawableResourceLoader extends XmlLoader {
         int[] drawableIds = new int[items.getLength()];
 
         for (int i = 0; i < items.getLength(); i++) {
-            Node item = items.item(i);
-            String drawableName = item.getAttributes().getNamedItem("android:drawable").getNodeValue();
             if (resourceName.startsWith("android:")) {
                 drawableIds[i] = -1;
             } else {
-                drawableIds[i] = resourceExtractor.getResourceId(drawableName);
+                Node item = items.item(i);
+                Node drawableName = item.getAttributes().getNamedItem("android:drawable");
+                if (drawableName != null) {
+                    drawableIds[i] = resourceExtractor.getResourceId(drawableName.getNodeValue());
+                }
             }
         }
 
