@@ -29,7 +29,9 @@ import android.content.res.Resources;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.database.sqlite.SQLiteProgram;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteStatement;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
@@ -230,7 +232,6 @@ public class Robolectric {
                 ShadowImageView.class,
                 ShadowInputMethodManager.class,
                 ShadowIntent.class,
-                ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowIntentFilterAuthorityEntry.class,
                 ShadowItemizedOverlay.class,
@@ -298,9 +299,11 @@ public class Robolectric {
                 ShadowSimpleCursorAdapter.class,
                 ShadowShapeDrawable.class,
                 ShadowSpannableStringBuilder.class,
+                ShadowSQLiteProgram.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
+                ShadowSQLiteStatement.class,
                 ShadowSQLiteQueryBuilder.class,
                 ShadowSslErrorHandler.class,
                 ShadowSurfaceView.class,
@@ -596,6 +599,14 @@ public class Robolectric {
 
     public static ShadowGeocoder shadowOf(Geocoder instance) {
         return (ShadowGeocoder) shadowOf_(instance);
+    }
+
+    public static ShadowSQLiteStatement shadowOf(SQLiteStatement other) {
+        return (ShadowSQLiteStatement) Robolectric.shadowOf_(other);
+    }
+    
+    public static ShadowSQLiteProgram shadowOf(SQLiteProgram other) {
+        return (ShadowSQLiteProgram) Robolectric.shadowOf_(other);
     }
 
     public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
@@ -1001,7 +1012,6 @@ public class Robolectric {
     public static String visualize(Bitmap bitmap) {
         return shadowOf(bitmap).getDescription();
     }
-
     /**
      * Reflection helper methods.
      */

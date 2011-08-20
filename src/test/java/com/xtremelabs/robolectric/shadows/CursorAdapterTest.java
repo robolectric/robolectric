@@ -1,7 +1,12 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 import java.util.ArrayList;
@@ -11,24 +16,16 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.CoreMatchers.equalTo;
-
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteCursorDriver;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteQuery;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CursorAdapter;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.DatabaseConfig;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class CursorAdapterTest {
@@ -38,8 +35,7 @@ public class CursorAdapterTest {
 
 	@Before
 	public void setUp() throws Exception {
-        Class.forName("org.h2.Driver").newInstance();
-        Connection connection = DriverManager.getConnection("jdbc:h2:mem:");
+		Connection connection = DatabaseConfig.getMemoryConnection();
 
         Statement statement = connection.createStatement();
         statement.execute("CREATE TABLE table_name(_id INT PRIMARY KEY, name VARCHAR(255));" );
@@ -55,10 +51,11 @@ public class CursorAdapterTest {
             connection.createStatement().executeUpdate(insert);
         }
 
-        statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM table_name;");
+        statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
+        String sql = "SELECT * FROM table_name;";
+        ResultSet resultSet = statement.executeQuery(sql);
         curs = new SQLiteCursor(null, null, null, null);
-        Robolectric.shadowOf((SQLiteCursor)curs).setResultSet(resultSet);
+        Robolectric.shadowOf((SQLiteCursor)curs).setResultSet(resultSet,sql);
 
 		adapter = new TestAdapter(curs);
 	}
