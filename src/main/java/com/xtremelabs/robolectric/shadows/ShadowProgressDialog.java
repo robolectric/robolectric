@@ -2,9 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 
 import android.app.ProgressDialog;
-
 import android.content.Context;
-import android.content.DialogInterface;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -15,6 +13,16 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowProgressDialog extends ShadowAlertDialog {
 
     private boolean indeterminate;
+
+    @Implementation
+    public static ProgressDialog show(Context context, CharSequence title, CharSequence message) {
+        return show(context, title, message, false);
+    }
+
+    @Implementation
+    public static ProgressDialog show(Context context, CharSequence title, CharSequence message, boolean indeterminate) {
+        return show(context, title, message, indeterminate, false, null);
+    }
 
     @Implementation
     public static ProgressDialog show(Context context, CharSequence title, CharSequence message, boolean indeterminate, boolean cancelable) {
@@ -33,7 +41,6 @@ public class ShadowProgressDialog extends ShadowAlertDialog {
         Robolectric.getShadowApplication().setLatestAlertDialog(shadowOf(progressDialog));
         return progressDialog;
     }
-
 
     @Implementation
     public void setIndeterminate(boolean indeterminate) {

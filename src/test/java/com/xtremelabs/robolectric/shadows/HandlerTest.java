@@ -96,6 +96,19 @@ public class HandlerTest {
     }
 
     @Test
+    public void testRemoveCallbacks() throws Exception {
+        Handler handler = new Handler();
+        ShadowLooper shadowLooper = shadowOf(handler.getLooper());
+        shadowLooper.pause();
+        handler.post(scratchRunnable);
+        handler.removeCallbacks(scratchRunnable);
+
+        shadowLooper.unPause();
+
+        assertThat(scratchRunnable.wasRun, equalTo(false));
+    }
+
+    @Test
     public void testPostDelayedThenRunMainLooperToNextTask_shouldRunOneTask() throws Exception {
         new Handler().postDelayed(scratchRunnable, 1);
         ShadowHandler.runMainLooperToNextTask();
@@ -146,9 +159,9 @@ public class HandlerTest {
 
     @Test
     public void sendEmptyMessageHandler() {
-        
+
         final Handler handler = new Handler(new Handler.Callback() {
-            
+
             @Override
             public boolean handleMessage(Message message) {
                 throw new UnsupportedOperationException("Method not implemented");

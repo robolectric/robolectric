@@ -1,18 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.Map;
+import static android.content.Intent.*;
 
 import android.content.ComponentName;
 import android.content.Context;
@@ -27,8 +15,7 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.Join;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -46,6 +33,7 @@ public class ShadowIntent {
     private Class<?> intentClass;
     private String packageName;
     private Set<String> categories = new HashSet<String>();
+    private String uri;
 
     @Implementation
     public static Intent createChooser(Intent target, CharSequence title) {
@@ -91,6 +79,27 @@ public class ShadowIntent {
     @Implementation
     public String getType() {
         return type;
+    }
+    
+    @Implementation
+    public Intent addCategory(String category) {
+    	categories.add(category);
+    	return realIntent;
+    }
+    
+    @Implementation
+    public void removeCategory(String category) {
+    	categories.remove(category);
+    }
+    
+    @Implementation
+    public boolean hasCategory(String category) {
+    	return categories.contains(category);
+    }
+    
+    @Implementation
+    public Set<String> getCategories() {
+    	return categories;
     }
 
     @Implementation
@@ -143,22 +152,11 @@ public class ShadowIntent {
         this.flags = flags;
         return realIntent;
     }
-
+    
     @Implementation
     public Intent addFlags(int flags) {
-        this.flags = this.flags | flags;
-        return realIntent;
-    }
-
-    @Implementation
-    public Intent addCategory(String category) {
-        this.categories.add(category);
-        return realIntent;
-    }
-
-    @Implementation
-    public Set<String> getCategories() {
-        return this.categories;
+    	this.flags |= flags;
+    	return realIntent;
     }
 
     @Implementation
@@ -223,7 +221,7 @@ public class ShadowIntent {
         extras.put(key, value);
         return realIntent;
     }
-
+    
     @Implementation
     public Intent putExtra(String key, boolean value) {
         extras.put(key, value);
@@ -245,12 +243,23 @@ public class ShadowIntent {
         extras.put(key, value);
         return realIntent;
     }
+    
+    @Implementation
+    public CharSequence getCharSequenceExtra(String name) {
+    	return (CharSequence) extras.get(name);
+    }
 
     @Implementation
     public void putExtra(String key, byte[] value) {
         extras.put(key, value);
     }
-    
+
+    @Implementation
+    public Intent putStringArrayListExtra(String key, ArrayList<String> value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
     @Implementation
     public Intent putParcelableArrayListExtra(String key, ArrayList<Parcelable> value) {
     	extras.put(key, value );
@@ -323,6 +332,45 @@ public class ShadowIntent {
         return componentName;
     }
 
+    @Implementation
+    public String toURI() {
+        return uri;
+    }
+    
+    @Implementation
+    public int fillIn(Intent otherIntent, int flags) {
+    	int changes = 0;
+    	ShadowIntent other = shadowOf(otherIntent);
+    	
+    	if (other.action != null && (action == null || (flags & FILL_IN_ACTION) != 0)) {
+    		action = other.action;
+    		changes |= FILL_IN_ACTION;
+    	}
+    	if ((other.data != null || other.type != null)
+    			&& ((data == null && type == null) || (flags & FILL_IN_DATA) != 0)) {
+    		data = other.data;
+    		type = other.type;
+    		changes |= FILL_IN_DATA;
+    	}
+    	if (!other.categories.isEmpty()
+    			&& (categories.isEmpty() || (flags & FILL_IN_CATEGORIES) != 0)) {
+    		categories.addAll(other.categories);
+    		changes |= FILL_IN_CATEGORIES;
+    	}
+    	if (other.packageName != null 
+    			&& (packageName == null || (flags & FILL_IN_PACKAGE) != 0)) {
+    		packageName = other.packageName;
+    		changes |= FILL_IN_PACKAGE;
+    	}
+    	if (other.componentName != null && (flags & FILL_IN_COMPONENT) != 0) {
+    		componentName = other.componentName;
+    		changes |= FILL_IN_COMPONENT;
+    	}
+   
+    	extras.putAll(other.extras);
+    	return changes;
+    }
+
     /**
      * Compares an {@code Intent} with a {@code ShadowIntent} (obtained via a call to
      * {@link Robolectric#shadowOf(android.content.Intent)})
@@ -341,6 +389,7 @@ public class ShadowIntent {
         if (data != null ? !data.equals(o.data) : o.data != null) return false;
         if (extras != null ? !extras.equals(o.extras) : o.extras != null) return false;
         if (type != null ? !type.equals(o.type) : o.type != null) return false;
+        if (categories != null ? !categories.equals(o.categories) : o.categories != null) return false;
 
         return true;
     }
@@ -411,5 +460,9 @@ public class ShadowIntent {
         if (o == null) return null;
         if (o instanceof Map && ((Map) o).isEmpty()) return null;
         return name + "=" + o;
+    }
+
+    public void setURI(String uri) {
+        this.uri = uri;
     }
 }

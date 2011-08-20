@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
@@ -31,6 +32,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     private PackageManager packageManager;
 
+    private String appName;
     private String packageName;
     private ArrayList<Intent> broadcastIntents = new ArrayList<Intent>();
 
@@ -87,6 +89,23 @@ public class ShadowContextWrapper extends ShadowContext {
     public String getPackageName() {
         return realContextWrapper == getApplicationContext() ? packageName : getApplicationContext().getPackageName();
     }
+    
+    @Implementation
+    public ApplicationInfo getApplicationInfo() {
+    	ApplicationInfo appInfo = new ApplicationInfo();
+    	appInfo.name = appName;
+    	appInfo.packageName = packageName;
+    	appInfo.processName = packageName;
+    	return appInfo;
+    }
+
+    /**
+     * Non-Android accessor to set the application name.
+     * @param name
+     */
+    public void setApplicationName(String name) {
+    	appName=name;
+    }
 
     /**
      * Implements Android's {@code PackageManager}.
@@ -101,6 +120,11 @@ public class ShadowContextWrapper extends ShadowContext {
     @Implementation
     public ComponentName startService(Intent service) {
         return getApplicationContext().startService(service);
+    }
+    
+    @Implementation
+    public boolean stopService(Intent name) {
+    	return getApplicationContext().stopService(name);
     }
 
     @Implementation
@@ -147,6 +171,14 @@ public class ShadowContextWrapper extends ShadowContext {
     public Intent getNextStartedService() {
         return getShadowApplication().getNextStartedService();
     }
+    
+    /**
+     * Non-android accessor that delefates to the application to clear the stack of started 
+     * service intents.
+     */
+    public void clearStartedServices() {
+    	getShadowApplication().clearStartedServices();
+    }
 
     /**
      * Return (without consuming) the next {@code Intent} on the started services stack.
@@ -155,6 +187,17 @@ public class ShadowContextWrapper extends ShadowContext {
      */
     public Intent peekNextStartedService() {
         return getShadowApplication().peekNextStartedService();
+    }
+    
+    /**
+     * Non-Android accessor that delegates to the application to return the next {@code Intent} to stop 
+     * a service (irrespective of if the service was running)  
+     * 
+     * 
+     * @return {@code Intent} for the next service requested to be stopped
+     */
+    public Intent getNextStoppedService() {
+    	return getShadowApplication().getNextStoppedService();
     }
 
     /**

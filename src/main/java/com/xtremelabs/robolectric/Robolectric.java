@@ -52,12 +52,7 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
-import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.Looper;
-import android.os.Parcel;
-import android.os.PowerManager;
-import android.os.ResultReceiver;
+import android.os.*;
 import android.preference.DialogPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -167,10 +162,11 @@ public class Robolectric {
                 ShadowAbsListView.class,
                 ShadowAbsoluteLayout.class,
                 ShadowAbsSeekBar.class,
-                ShadowActivityGroup.class,
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowActivity.class,
+                ShadowActivityInfo.class,
+                ShadowActivityGroup.class,
                 ShadowActivityManager.class,
                 ShadowAdapterView.class,
                 ShadowAddress.class,
@@ -249,6 +245,7 @@ public class Robolectric {
                 ShadowListView.class,
                 ShadowLocation.class,
                 ShadowLocationManager.class,
+                ShadowLogger.class,
                 ShadowLooper.class,
                 ShadowMapController.class,
                 ShadowMapActivity.class,
@@ -573,6 +570,10 @@ public class Robolectric {
         return (ShadowResources) shadowOf_(instance);
     }
 
+    public static ShadowBundle shadowOf(Bundle instance) {
+        return (ShadowBundle) shadowOf_(instance);
+    }
+
     public static ShadowResultReceiver shadowOf(ResultReceiver instance) {
         return (ShadowResultReceiver) shadowOf_(instance);
     }
@@ -721,8 +722,8 @@ public class Robolectric {
         return (ShadowRect) shadowOf_(instance);
     }
 
-    public static PendingIntent shadowOf(PendingIntent instance) {
-        return (PendingIntent) shadowOf_(instance);
+    public static ShadowPendingIntent shadowOf(PendingIntent instance) {
+        return (ShadowPendingIntent) shadowOf_(instance);
     }
 
     public static ShadowDateFormat shadowOf(DateFormat instance) {

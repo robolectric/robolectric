@@ -3,7 +3,9 @@ package com.xtremelabs.robolectric.util;
 import com.xtremelabs.robolectric.RobolectricConfig;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.util.Collection;
+import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
 
@@ -48,6 +50,9 @@ public abstract class TestUtil {
             File roboTestDir = file("robolectric", "src", "test", "resources");
             if (hasTestManifest(roboTestDir)) return testDirLocation = roboTestDir;
 
+            File submoduleDir = file("submodules", "robolectric", "src", "test", "resources");
+            if (hasTestManifest(submoduleDir)) return testDirLocation = submoduleDir;
+
             throw new RuntimeException("can't find your TestAndroidManifest.xml in "
                     + testDir.getAbsolutePath() + " or " + roboTestDir.getAbsolutePath());
         } else {
@@ -65,5 +70,12 @@ public abstract class TestUtil {
 
     public static RobolectricConfig newConfig(String androidManifestFile) {
         return new RobolectricConfig(resourceFile(androidManifestFile), null, null);
+    }
+
+    public static File getSystemResourceDir(String... paths) throws Exception {
+        Properties localProperties = new Properties();
+        localProperties.load(new FileInputStream(new File("local.properties")));
+        PropertiesHelper.doSubstitutions(localProperties);
+        return file(new File(localProperties.getProperty("sdk.dir"), "platforms/android-10/data/res/"), paths);
     }
 }

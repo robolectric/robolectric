@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 
 import java.util.Date;
 
+import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -74,6 +75,25 @@ public class AlarmManagerTest {
         assertScheduledAlarm(now, pendingIntent, scheduledAlarm);
     }
 
+    @Test
+    public void cancel_removesMatchingPendingIntents() {
+        Intent newIntent = new Intent(Robolectric.application.getApplicationContext(), String.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(Robolectric.application.getApplicationContext(), 0, newIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmManager.set(AlarmManager.RTC, 1337, pendingIntent);
+
+        Intent newIntent2 = new Intent(Robolectric.application.getApplicationContext(), Integer.class);
+        PendingIntent pendingIntent2 = PendingIntent.getBroadcast(Robolectric.application.getApplicationContext(), 0, newIntent2, PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmManager.set(AlarmManager.RTC, 1337, pendingIntent2);
+
+        assertEquals(2, shadowAlarmManager.getScheduledAlarms().size());
+
+        Intent newIntent3 = new Intent(Robolectric.application.getApplicationContext(), String.class);
+        PendingIntent newPendingIntent = PendingIntent.getBroadcast(Robolectric.application.getApplicationContext(), 0, newIntent3, PendingIntent.FLAG_UPDATE_CURRENT);
+        alarmManager.cancel(newPendingIntent);
+        assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
+    }
+
+
     private void assertScheduledAlarm(long now, PendingIntent pendingIntent,
                                       ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
         assertThat(scheduledAlarm, notNullValue());
@@ -85,7 +105,8 @@ public class AlarmManagerTest {
     }
 
     private static class MyActivity extends Activity {
-        @Override protected void onDestroy() {
+        @Override
+        protected void onDestroy() {
             super.onDestroy();
         }
     }

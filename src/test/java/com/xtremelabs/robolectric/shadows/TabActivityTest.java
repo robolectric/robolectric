@@ -1,15 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-
+import android.app.TabActivity;
+import android.widget.TabHost;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.app.TabActivity;
-import android.widget.TabHost;
-
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class TabActivityTest {

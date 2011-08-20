@@ -156,6 +156,53 @@ public class ApplicationTest {
         assertNull(service.service);
         assertNull(shadowApplication.peekNextStartedService());
     }
+    
+    @Test 
+    public void shouldHaveStoppedServiceIntentAndIndicateServiceWasntRunning() {
+    	ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+    	
+    	Activity activity = new Activity();
+    	
+    	Intent intent = getSomeActionIntent("some.action");
+    	
+    	boolean wasRunning = activity.stopService(intent);
+    	
+    	assertFalse(wasRunning);
+    	assertEquals(intent, shadowApplication.getNextStoppedService());
+    }
+    
+    private Intent getSomeActionIntent(String action) {
+    	Intent intent = new Intent();
+    	intent.setAction(action);
+    	return intent;
+    }
+    
+    @Test
+    public void shouldHaveStoppedServiceIntentAndIndicateServiceWasRunning() {
+    	ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+    	
+    	Activity activity = new Activity();
+    	
+    	Intent intent = getSomeActionIntent("some.action");
+    	
+    	activity.startService(intent);
+    	
+    	boolean wasRunning = activity.stopService(intent);
+    	
+    	assertTrue(wasRunning);
+    	assertEquals(intent, shadowApplication.getNextStoppedService());
+    }
+    
+    @Test
+    public void shouldClearStartedServiceIntents() {
+    	ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+    	shadowApplication.startService(getSomeActionIntent("some.action"));
+    	shadowApplication.startService(getSomeActionIntent("another.action"));
+    	
+    	shadowApplication.clearStartedServices();
+    	
+    	assertNull(shadowApplication.getNextStartedService());
+    }
 
     private static class NullBinder implements IBinder {
         @Override

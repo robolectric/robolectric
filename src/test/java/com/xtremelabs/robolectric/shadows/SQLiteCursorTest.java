@@ -135,6 +135,7 @@ public class SQLiteCursorTest {
 
         cursor.moveToNext();
         cursor.moveToNext();
+        cursor.moveToNext();
 
         assertThat(cursor.moveToNext(), equalTo(false));
     }
@@ -145,6 +146,34 @@ public class SQLiteCursorTest {
 
         cursor.moveToFirst();
         assertThat(cursor.moveToNext(), equalTo(false));
+    }
+    
+    @Test
+    public void testMoveToPrevious() throws Exception {
+    	cursor.moveToFirst();
+    	cursor.moveToNext();
+    	
+    	assertThat(cursor.moveToPrevious(), equalTo(true));
+        assertThat(cursor.getInt(0), equalTo(1234));
+        assertThat(cursor.getString(1), equalTo("Chuck"));
+    }
+    
+    @Test
+    public void testMoveToPreviousPastStart() throws Exception {
+    	cursor.moveToFirst();
+    	
+    	// Possible to move cursor before the first item
+    	assertThat(cursor.moveToPrevious(), equalTo(true));
+    	// After that, attempts to move cursor back return false
+    	assertThat(cursor.moveToPrevious(), equalTo(false));
+    }
+    
+    @Test
+    public void testMoveToPreviousEmpty() throws Exception {
+        setupEmptyResult();
+    	cursor.moveToFirst();
+    	
+    	assertThat(cursor.moveToPrevious(), equalTo(false));
     }
 
     @Test

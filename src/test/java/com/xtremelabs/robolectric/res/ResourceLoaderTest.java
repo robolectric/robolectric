@@ -8,6 +8,7 @@ import java.io.File;
 
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 public class ResourceLoaderTest {
@@ -21,5 +22,15 @@ public class ResourceLoaderTest {
         ResourceLoader resourceLoader = new ResourceLoader(10, R.class, resourceFile("res"), resourceFile("assets"));
         String stringValue = resourceLoader.getStringValue(android.R.string.copy);
         assertEquals("Copy", stringValue);
+
+        ViewLoader.ViewNode node = resourceLoader.getLayoutViewNode("android:layout/simple_spinner_item");
+        assertNotNull(node);
+    }
+
+    @Test
+    public void shouldLoadLocalResources() throws Exception {
+        ResourceLoader resourceLoader = new ResourceLoader(10, R.class, resourceFile("res"), resourceFile("assets"));
+        String stringValue = resourceLoader.getStringValue(R.string.copy);
+        assertEquals("Local Copy", stringValue);
     }
 }

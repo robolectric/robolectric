@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.os.Bundle;
 import android.os.Parcelable;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -12,12 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-
-import android.os.Bundle;
-import android.os.Parcelable;
-
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
@@ -123,6 +116,11 @@ public class ShadowBundle {
     public void putParcelable(String key, Parcelable value) {
         map.put(key, value);
     }
+    
+    @Implementation
+    public void putParcelableArrayList(String key, ArrayList<? extends Parcelable> value) {
+        map.put(key, value);
+    }
 
     @Implementation
     public Parcelable getParcelable(String key) {
@@ -133,7 +131,12 @@ public class ShadowBundle {
     public ArrayList<Parcelable> getParcelableArrayList(String key) {
     	return (ArrayList<Parcelable>)map.get(key);
     }
-    
+
+    @Implementation
+    public ArrayList<String> getStringArrayList(String key) {
+        return (ArrayList<String>) map.get(key);
+    }
+
     @Implementation
     public void putAll(Bundle bundle) {
     	map.putAll(((ShadowBundle) Robolectric.shadowOf_(bundle)).map);
@@ -152,6 +155,11 @@ public class ShadowBundle {
     @Implementation
     public boolean containsKey(String key) {
         return map.containsKey(key);
+    }
+
+    @Implementation
+    public boolean isEmpty() {
+        return map.isEmpty();
     }
 
     @Implementation

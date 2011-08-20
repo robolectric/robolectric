@@ -21,6 +21,14 @@ public class RobolectricTestRunnerTest {
         assertNotNull(shadowOf(Robolectric.application).getResourceLoader());
     }
 
+    @Test
+    public void setStaticValue_shouldIgnoreFinalModifier() {
+        RobolectricTestRunner.setStaticValue(android.os.Build.class, "MODEL", "expected value");
+
+        assertEquals("expected value", android.os.Build.MODEL);
+    }
+
+
     public static class RunnerForTesting extends WithTestDefaultsRunner {
         public RunnerForTesting(Class<?> testClass) throws InitializationError {
             super(testClass);

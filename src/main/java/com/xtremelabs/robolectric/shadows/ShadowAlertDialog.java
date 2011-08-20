@@ -18,11 +18,12 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AlertDialog.class)
 public class ShadowAlertDialog extends ShadowDialog {
+    @RealObject
+    private AlertDialog realAlertDialog;
+
     private CharSequence[] items;
-    private String title;
     private String message;
     private DialogInterface.OnClickListener clickListener;
-    private AlertDialog realDialog;
     private boolean isMultiItem;
     private boolean isSingleItem;
     private DialogInterface.OnMultiChoiceClickListener multiChoiceClickListener;
@@ -31,14 +32,31 @@ public class ShadowAlertDialog extends ShadowDialog {
     private Button positiveButton;
     private Button negativeButton;
     private Button neutralButton;
+    private View view;
 
     /**
      * Non-Android accessor.
      *
      * @return the most recently created {@code AlertDialog}, or null if none has been created during this test run
      */
-    public static ShadowAlertDialog getLatestAlertDialog() {
-        return getShadowApplication().getLatestAlertDialog();
+    public static AlertDialog getLatestAlertDialog() {
+        ShadowAlertDialog dialog = Robolectric.getShadowApplication().getLatestAlertDialog();
+        return dialog == null ? null : dialog.realAlertDialog;
+    }
+
+    @Override
+    @Implementation
+    public View findViewById(int viewId) {
+        if(view == null) {
+            return super.findViewById(viewId);
+        }
+
+        return view.findViewById(viewId);
+    }
+
+    @Implementation
+    public void setView(View view) {
+        this.view = view;
     }
 
     /**
@@ -57,12 +75,12 @@ public class ShadowAlertDialog extends ShadowDialog {
     public void clickOnItem(int index) {
         if (isMultiItem) {
             checkedItems[index] = !checkedItems[index];
-            multiChoiceClickListener.onClick(realDialog, index, checkedItems[index]);
+            multiChoiceClickListener.onClick(realAlertDialog, index, checkedItems[index]);
         } else {
             if (isSingleItem) {
                 checkedItemIndex = index;
             }
-            clickListener.onClick(realDialog, index);
+            clickListener.onClick(realAlertDialog, index);
         }
     }
 
@@ -91,15 +109,6 @@ public class ShadowAlertDialog extends ShadowDialog {
     /**
      * Non-Android accessor.
      *
-     * @return the title of the dialog
-     */
-    public String getTitle() {
-        return title;
-    }
-
-    /**
-     * Non-Android accessor.
-     *
      * @return the message displayed in the dialog
      */
     public String getMessage() {
@@ -115,10 +124,18 @@ public class ShadowAlertDialog extends ShadowDialog {
      * Non-Android accessor.
      *
      * @return an array indicating which items are and are not clicked on a multi-choice dialog
-     *         todo: support single choice dialogs
      */
     public boolean[] getCheckedItems() {
         return checkedItems;
+    }
+
+    /**
+     * Non-Android accessor.
+     *
+     * @return return the index of the checked item clicked on a single-choice dialog
+     */
+    public int getCheckedItemIndex() {
+        return checkedItemIndex;
     }
 
     @Implementation
@@ -274,7 +291,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         @Implementation
         public AlertDialog.Builder setNeutralButton(int neutralTextId, final DialogInterface.OnClickListener listener) {
-            return setNegativeButton(context.getResources().getText(neutralTextId), listener);
+        	return setNeutralButton(context.getResources().getText(neutralTextId), listener);
         }
 
 
@@ -303,9 +320,8 @@ public class ShadowAlertDialog extends ShadowDialog {
 
             ShadowAlertDialog latestAlertDialog = shadowOf(realDialog);
             latestAlertDialog.context = context;
-            latestAlertDialog.realDialog = realDialog;
             latestAlertDialog.items = items;
-            latestAlertDialog.title = title;
+            latestAlertDialog.setTitle(title);
             latestAlertDialog.message = message;
             latestAlertDialog.clickListener = clickListener;
             latestAlertDialog.setOnCancelListener(cancelListener);
