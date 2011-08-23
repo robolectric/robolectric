@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.database.sqlite.SQLiteCursor;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import org.h2.jdbc.JdbcClob;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -98,8 +99,17 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 
     @Implementation
     public String getString(int columnIndex) {
-    	checkPosition();
-    	return (String) this.currentRow.get(getColumnNames()[columnIndex]);
+        checkPosition();
+        Object value = this.currentRow.get(getColumnNames()[columnIndex]);
+        if (value instanceof JdbcClob) {
+            try {
+                return ((JdbcClob) value).getSubString(1, (int)((JdbcClob) value).length());
+            } catch (SQLException x) {
+                throw new RuntimeException(x);
+            }
+        } else {
+            return (String)value;
+        }
     }
 	
 	@Implementation
@@ -237,7 +247,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
         if (resultSet != null) {
         	cacheColumnNames(resultSet);
         	try {
-        		fillRows(sql,result.getStatement().getConnection());
+        		fillRows(sql, result.getStatement().getConnection());
 			} catch (SQLException e) {
 			    throw new RuntimeException("SQL exception in setResultSet", e);
 			}
