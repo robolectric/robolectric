@@ -69,6 +69,12 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
 
     @Implementation
     @Override
+    public final boolean moveToLast() {
+        return super.moveToLast();
+    }
+    
+    @Implementation
+    @Override
     public final boolean moveToFirst() {
         return super.moveToFirst();
     }
