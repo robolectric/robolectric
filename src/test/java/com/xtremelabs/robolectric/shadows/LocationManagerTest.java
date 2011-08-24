@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.Context;
 import android.location.Criteria;
 import android.location.GpsStatus.Listener;
+import android.location.Location;
 import android.location.LocationManager;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -11,11 +12,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.List;
+
+import static android.location.LocationManager.GPS_PROVIDER;
+import static android.location.LocationManager.NETWORK_PROVIDER;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertSame;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class LocationManagerTest {
@@ -28,17 +32,17 @@ public class LocationManagerTest {
 
     @Test
     public void shouldReturnProviderEnabledAsDefault() {
-        Boolean enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
+        Boolean enabled = locationManager.isProviderEnabled(GPS_PROVIDER);
         Assert.assertTrue(enabled);
     }
 
     @Test
     public void shouldDisableProvider() {
         ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
-        shadowLocationManager.setProviderEnabled(LocationManager.GPS_PROVIDER, false);
+        shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
 
-        Boolean enabled = locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER);
-        Assert.assertFalse(enabled);
+        Boolean enabled = locationManager.isProviderEnabled(GPS_PROVIDER);
+        assertFalse(enabled);
     }
 
     @Test
@@ -47,7 +51,7 @@ public class LocationManagerTest {
 
         ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
 
-        Assert.assertTrue(shadowLocationManager.hasListener(listener));
+        assertTrue(shadowLocationManager.hasListener(listener));
     }
 
     @Test
@@ -58,7 +62,52 @@ public class LocationManagerTest {
 
         locationManager.removeGpsStatusListener(listener);
 
-        Assert.assertFalse(shadowLocationManager.hasListener(listener));
+        assertFalse(shadowLocationManager.hasListener(listener));
+    }
+
+    @Test
+    public void shouldReturnEnabledProviders() throws Exception {
+        ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
+        shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
+        shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
+        shadowLocationManager.setProviderEnabled(LocationManager.PASSIVE_PROVIDER, false);
+
+        assertTrue(locationManager.getProviders(true).isEmpty());
+
+        shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
+
+        List<String> providers = locationManager.getProviders(true);
+        assertTrue(providers.contains(NETWORK_PROVIDER));
+        assertThat(providers.size(), equalTo(1));
+
+        shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
+        providers = locationManager.getProviders(true);
+        assertTrue(providers.contains(NETWORK_PROVIDER));
+        assertTrue(providers.contains(GPS_PROVIDER));
+        assertThat(providers.size(), equalTo(2));
+
+        shadowLocationManager.setProviderEnabled(LocationManager.PASSIVE_PROVIDER, true);
+        providers = locationManager.getProviders(true);
+        assertTrue(providers.contains(NETWORK_PROVIDER));
+        assertTrue(providers.contains(GPS_PROVIDER));
+        assertTrue(providers.contains(LocationManager.PASSIVE_PROVIDER));
+        assertThat(providers.size(), equalTo(3));
+    }
+
+    @Test
+    public void shouldReturnLastKnownLocationForAProvider() throws Exception {
+        ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
+
+        assertNull(locationManager.getLastKnownLocation(NETWORK_PROVIDER));
+
+        Location networkLocation = new Location(NETWORK_PROVIDER);
+        Location gpsLocation = new Location(GPS_PROVIDER);
+
+        shadowLocationManager.setLastKnownLocation(NETWORK_PROVIDER, networkLocation);
+        shadowLocationManager.setLastKnownLocation(GPS_PROVIDER, gpsLocation);
+
+        assertSame(locationManager.getLastKnownLocation(NETWORK_PROVIDER), networkLocation);
+        assertSame(locationManager.getLastKnownLocation(GPS_PROVIDER), gpsLocation);
     }
 
     @Test
@@ -94,6 +143,5 @@ public class LocationManagerTest {
         public void onGpsStatusChanged(int event) {
 
         }
-
     }
 }
