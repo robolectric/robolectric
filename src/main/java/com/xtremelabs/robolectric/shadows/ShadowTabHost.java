@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.view.View;
 import android.widget.TabHost;
+import android.widget.TabHost.TabSpec;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -18,14 +19,14 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowTabHost extends ShadowFrameLayout {
     private List<TabHost.TabSpec> tabSpecs = new ArrayList<TabHost.TabSpec>();
     private TabHost.OnTabChangeListener listener;
-    private TabHost.TabSpec currentTab;
+    private int currentTab = -1;
 
     @RealObject
     TabHost realObject;
 
     @Implementation
     public android.widget.TabHost.TabSpec newTabSpec(java.lang.String tag) {
-        TabHost.TabSpec realTabSpec = Robolectric.newInstanceOf(TabHost.TabSpec.class);
+        TabSpec realTabSpec = Robolectric.newInstanceOf(TabHost.TabSpec.class);
         shadowOf(realTabSpec).setTag(tag);
         return realTabSpec;
     }
@@ -41,53 +42,64 @@ public class ShadowTabHost extends ShadowFrameLayout {
 
     @Implementation
     public void setCurrentTab(int index) {
-        currentTab = tabSpecs.get(index);
+        currentTab = index;
         if (listener != null) {
-            listener.onTabChanged(currentTab.getTag());
+            listener.onTabChanged(getCurrentTabTag());
         }
     }
 
     @Implementation
     public void setCurrentTabByTag(String tag) {
-        for (TabHost.TabSpec tabSpec : tabSpecs) {
+        for (int x = 0; x < tabSpecs.size(); x++) {
+            TabSpec tabSpec = tabSpecs.get(x);
             if (tag.equals(tabSpec.getTag())) {
-                currentTab = tabSpec;
+                currentTab = x;
             }
         }
         if (listener != null) {
-            listener.onTabChanged(currentTab.getTag());
+            listener.onTabChanged(getCurrentTabTag());
         }
     }
 
     @Implementation
-    public String getCurrentTabTag() {
-    	return currentTab.getTag();
+    public int getCurrentTab() {
+        if (currentTab == -1 && tabSpecs.size() > 0) currentTab = 0;
+        return currentTab;
     }
-    
+
+    public TabSpec getCurrentTabSpec() {
+        return tabSpecs.get(getCurrentTab());
+    }
+
+    @Implementation
+    public String getCurrentTabTag() {
+        int i = getCurrentTab();
+        if (i >= 0 && i < tabSpecs.size()) {
+            return tabSpecs.get(i).getTag();
+        }
+        return null;
+    }
+
     @Implementation
     public void setOnTabChangedListener(android.widget.TabHost.OnTabChangeListener listener) {
         this.listener = listener;
     }
+
     @Implementation
     public View getCurrentView() {
-    	ShadowTabSpec ts = Robolectric.shadowOf(currentTab);
-    	View v = ts.getContentView(); //just get the view if it was built by a TabContentFactory
-    	if (v==null) {
-    		//otherwise findViewById
-	    	int viewId = ts.getContentViewId();
-	    	if (getContext() instanceof Activity) {
-	    		/** wasn't quite sure how to find the view here, simply using 
-	    		findViewById() wasn't enough, I had to get it though the 
-	    		Activity context.**/
-	    		v = ((Activity) getContext()).findViewById(viewId);
-	    	} else {
-	    	//	throw new RuntimeException("getContext is not an Activity, unable to findViewById without an Activity context");
-	    		return null;
-	    	}
-    	}
-    	return v;
+        ShadowTabSpec ts = Robolectric.shadowOf(getCurrentTabSpec());
+        View v = ts.getContentView();
+        if (v == null) {
+            int viewId = ts.getContentViewId();
+            if (getContext() instanceof Activity) {
+                v = ((Activity) getContext()).findViewById(viewId);
+            } else {
+                return null;
+            }
+        }
+        return v;
     }
-    
+
     public TabHost.TabSpec getSpecByTag(String tag) {
         for (TabHost.TabSpec tabSpec : tabSpecs) {
             if (tag.equals(tabSpec.getTag())) {

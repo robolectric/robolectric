@@ -5,6 +5,7 @@ import com.xtremelabs.robolectric.RobolectricConfig;
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Collection;
+import java.util.Map;
 import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
@@ -52,9 +53,13 @@ public abstract class TestUtil {
 
             File submoduleDir = file("submodules", "robolectric", "src", "test", "resources");
             if (hasTestManifest(submoduleDir)) return testDirLocation = submoduleDir;
-
+            
+            //required for robolectric-sqlite to find resources to test against
+            File roboSiblingTestDir = file(new File(new File(".").getAbsolutePath()).getParentFile().getParentFile(),"robolectric", "src", "test", "resources");
+            if (hasTestManifest(roboSiblingTestDir)) return testDirLocation = roboSiblingTestDir;
+            
             throw new RuntimeException("can't find your TestAndroidManifest.xml in "
-                    + testDir.getAbsolutePath() + " or " + roboTestDir.getAbsolutePath());
+                    + testDir.getAbsolutePath() + " or " + roboTestDir.getAbsolutePath() + "\n or " + roboSiblingTestDir.getAbsolutePath());
         } else {
             return testDirLocation;
         }
@@ -73,9 +78,18 @@ public abstract class TestUtil {
     }
 
     public static File getSystemResourceDir(String... paths) throws Exception {
-        Properties localProperties = new Properties();
-        localProperties.load(new FileInputStream(new File("local.properties")));
-        PropertiesHelper.doSubstitutions(localProperties);
-        return file(new File(localProperties.getProperty("sdk.dir"), "platforms/android-10/data/res/"), paths);
+       
+       Map<String,String> env = System.getenv();
+       String sdkDir;
+       if (env.containsKey("ANDROID_HOME")) {
+    	   sdkDir = env.get("ANDROID_HOME");
+       } else {
+    	    Properties localProperties = new Properties();
+           	localProperties.load(new FileInputStream(new File("local.properties")));
+           	PropertiesHelper.doSubstitutions(localProperties);
+           	sdkDir = localProperties.getProperty("sdk.dir");             
+       }
+
+        return file(new File(sdkDir, "platforms/android-10/data/res/"), paths);
     }
 }

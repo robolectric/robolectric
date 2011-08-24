@@ -103,7 +103,67 @@ public class ViewGroupTest {
         assertThat(root.getChildAt(1), sameInstance((View) child3));
         assertThat(root.getChildAt(2), sameInstance(child2));
     }
-
+    
+    @Test
+    public void shouldfindViewWithTag() {
+    	 root.removeAllViews();
+    	 String tag1 = "tag1";
+    	 String tag2 = "tag2";
+    	 String tag3 = "tag3";
+    	 child1.setTag(tag1);
+    	 child2.setTag(tag2);
+    	 child3.setTag(tag3);
+         root.addView(child1);
+         root.addView(child2);
+         root.addView(child3, 1);
+         assertThat(root.findViewWithTag("tag1"), sameInstance(child1));
+         assertThat(root.findViewWithTag("tag2"), sameInstance((View) child2));
+         assertThat((ViewGroup)root.findViewWithTag("tag3"), sameInstance(child3));
+    }
+    
+    @Test
+    public void shouldNotfindViewWithTagReturnNull() {
+    	 root.removeAllViews();
+    	 String tag1 = "tag1";
+    	 String tag2 = "tag2";
+    	 String tag3 = "tag3";
+    	 child1.setTag(tag1);
+    	 child2.setTag(tag2);
+    	 child3.setTag(tag3);
+         root.addView(child1);
+         root.addView(child2);
+         root.addView(child3, 1);
+         assertThat(root.findViewWithTag("tag21"), equalTo(null));
+         assertThat((ViewGroup)root.findViewWithTag("tag23"), equalTo(null));
+    }
+    
+    @Test
+    public void shouldfindViewWithTagFromCorrectViewGroup() {
+    	 root.removeAllViews();
+    	 String tag1 = "tag1";
+    	 String tag2 = "tag2";
+    	 String tag3 = "tag3";
+    	 child1.setTag(tag1);
+    	 child2.setTag(tag2);
+    	 child3.setTag(tag3);
+         root.addView(child1);
+         root.addView(child2);
+         root.addView(child3);
+         
+         child3a.setTag(tag1);
+         child3b.setTag(tag2);
+         
+         //can find views by tag from root
+         assertThat(root.findViewWithTag("tag1"), sameInstance(child1));
+         assertThat(root.findViewWithTag("tag2"), sameInstance((View) child2));
+         assertThat((ViewGroup)root.findViewWithTag("tag3"), sameInstance(child3));
+         
+         //can find views by tag from child3
+         assertThat(child3.findViewWithTag("tag1"), sameInstance(child3a));
+         assertThat(child3.findViewWithTag("tag2"), sameInstance(child3b));
+    }
+    
+    
     @Test
     public void hasFocus_shouldReturnTrueIfAnyChildHasFocus() throws Exception {
         assertFalse(root.hasFocus());

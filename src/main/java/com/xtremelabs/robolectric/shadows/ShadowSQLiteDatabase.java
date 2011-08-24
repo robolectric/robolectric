@@ -2,18 +2,35 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.ContentValues;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
+import android.database.sqlite.SQLiteClosable;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseCorruptException;
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteStatement;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.util.DatabaseConfig;
+import com.xtremelabs.robolectric.util.SQLite.SQLStringAndBindings;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.Iterator;
+import java.util.WeakHashMap;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.SQLite.*;
+import static com.xtremelabs.robolectric.util.SQLite.buildDeleteString;
+import static com.xtremelabs.robolectric.util.SQLite.buildInsertString;
+import static com.xtremelabs.robolectric.util.SQLite.buildUpdateString;
+import static com.xtremelabs.robolectric.util.SQLite.buildWhereClause;
 
 /**
  * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.
@@ -21,20 +38,35 @@ import static com.xtremelabs.robolectric.util.SQLite.*;
  * made available to test cases for use in fixture setup and assertions.
  */
 @Implements(SQLiteDatabase.class)
-public class ShadowSQLiteDatabase {
+public class ShadowSQLiteDatabase  {
+	@RealObject	SQLiteDatabase realSQLiteDatabase;
     private static Connection connection;
-
+    private final ReentrantLock mLock = new ReentrantLock(true);
+    private boolean mLockingEnabled = true;
+    private WeakHashMap<SQLiteClosable, Object> mPrograms;
+    
+    @Implementation
+    public void setLockingEnabled(boolean lockingEnabled) {
+        mLockingEnabled = lockingEnabled;
+    }
+    
+    public void lock() {
+        if (!mLockingEnabled) return;
+        mLock.lock();
+    }
+    
+    public void unlock() {
+        if (!mLockingEnabled) return;
+        mLock.unlock();
+    }
+    
+    
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
-        try {
-            Class.forName("org.h2.Driver").newInstance();
-            connection = DriverManager.getConnection("jdbc:h2:mem:");
-        } catch (Exception e) {
-            throw new RuntimeException("SQL exception in openDatabase", e);
-        }
+     	connection = DatabaseConfig.getMemoryConnection();
         return newInstanceOf(SQLiteDatabase.class);
     }
-
+    
     @Implementation
     public long insert(String table, String nullColumnHack, ContentValues values) {
         SQLStringAndBindings sqlInsertString = buildInsertString(table, values);
@@ -49,9 +81,11 @@ public class ShadowSQLiteDatabase {
             statement.executeUpdate();
 
             ResultSet resultSet = statement.getGeneratedKeys();
-            if (resultSet.first()) {
+
+            if (resultSet.next()) {
                 return resultSet.getLong(1);
             }
+
         } catch (SQLException e) {
             return -1; // this is how SQLite behaves, unlike H2 which throws exceptions
         }
@@ -65,13 +99,14 @@ public class ShadowSQLiteDatabase {
         if (conflictAlgorithm == SQLiteDatabase.CONFLICT_IGNORE) {
             try {
                 final Statement statement = connection.createStatement();
-                final ResultSet resultSet = statement.executeQuery("SELECT IDENTITY();");
+                
+                final ResultSet resultSet = statement.executeQuery(DatabaseConfig.getSelectLastInsertIdentity());
                 if (resultSet.isBeforeFirst()) {
-                    resultSet.first();
+                    resultSet.next();
                 }
                 result = resultSet.getInt(1);
             } catch (SQLException e) {
-                e.printStackTrace();
+                throw new RuntimeException(e);
             }
         }
         return result;
@@ -92,14 +127,14 @@ public class ShadowSQLiteDatabase {
 
         ResultSet resultSet;
         try {
-            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+            Statement statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
             resultSet = statement.executeQuery(sql);
         } catch (SQLException e) {
             throw new RuntimeException("SQL exception in query", e);
         }
 
         SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
-        shadowOf(cursor).setResultSet(resultSet);
+        shadowOf(cursor).setResultSet(resultSet,sql);
         return cursor;
     }
 
@@ -152,36 +187,72 @@ public class ShadowSQLiteDatabase {
             throw new IllegalStateException("database not open");
         }
 
-        // Map 'autoincrement' (sqlite) to 'auto_increment' (h2).
-        String scrubbedSQL = sql.replaceAll("(?i:autoincrement)", "auto_increment");
-        // Map 'integer' (sqlite) to 'bigint(19)' (h2).
-        scrubbedSQL = scrubbedSQL.replaceAll("(?i:integer)", "bigint(19)");
-
+        
+        
         try {
-            connection.createStatement().execute(scrubbedSQL);
+        	String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
+            connection.createStatement().execute(scrubbedSql);
         } catch (java.sql.SQLException e) {
             android.database.SQLException ase = new android.database.SQLException();
             ase.initCause(e);
             throw ase;
         }
     }
+    
+    @Implementation
+    public void execSQL(String sql, Object[] bindArgs) throws SQLException {
+        if (bindArgs == null) {
+            throw new IllegalArgumentException("Empty bindArgs");
+        }
+        String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
+        
+        
+        SQLiteStatement statement = null;
+        	try {
+        		statement =compileStatement(scrubbedSql);
+            if (bindArgs != null) {
+                int numArgs = bindArgs.length;
+                for (int i = 0; i < numArgs; i++) {
+                    DatabaseUtils.bindObjectToProgram(statement, i + 1, bindArgs[i]);
+                }
+            }
+            statement.execute();
+        } catch (SQLiteDatabaseCorruptException e) {
+            throw e;
+        } finally {
+            if (statement != null) {
+                statement.close();
+            }
+        }
+    }
+
 
     @Implementation
     public Cursor rawQuery (String sql, String[] selectionArgs){
-        String sqlBody = sql;
-        if (sql != null && selectionArgs != null) {
+    	String sqlBody = sql;
+        if (sql != null) {
         	sqlBody = buildWhereClause(sql, selectionArgs);
         }
+    	
         ResultSet resultSet;
         try {
-            Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-            resultSet = statement.executeQuery(sqlBody);
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in query", e);
-        }
-
+          	SQLiteStatement stmt = compileStatement(sql);
+          	
+          	 int numArgs = selectionArgs == null ? 0
+                     : selectionArgs.length;
+             for (int i = 0; i < numArgs; i++) {
+            		stmt.bindString(i + 1, selectionArgs[i]);
+             }
+          
+              resultSet = Robolectric.shadowOf(stmt).getStatement().executeQuery();
+          } catch (SQLException e) {
+              throw new RuntimeException("SQL exception in query", e);
+          }
+          //TODO: assert rawquery with args returns actual values
+          
+          
         SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
-        shadowOf(cursor).setResultSet(resultSet);
+        shadowOf(cursor).setResultSet(resultSet, sqlBody);
         return cursor;
     }
     
@@ -212,4 +283,41 @@ public class ShadowSQLiteDatabase {
     public Connection getConnection() {
         return connection;
     }
+    
+    @Implementation
+    public SQLiteStatement compileStatement(String sql) throws SQLException {
+        lock();
+        String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
+        try {
+        	SQLiteStatement stmt = Robolectric.newInstanceOf(SQLiteStatement.class);
+        	Robolectric.shadowOf(stmt).init(realSQLiteDatabase, scrubbedSql);
+            return stmt;
+        } catch (Exception e){
+        	throw new RuntimeException(e);
+        } finally {
+            unlock();
+        }
+    }
+    
+	   /**
+     * @param closable
+     */
+    void addSQLiteClosable(SQLiteClosable closable) {
+        lock();
+        try {
+            mPrograms.put(closable, null);
+        } finally {
+            unlock();
+        }
+    }
+
+    void removeSQLiteClosable(SQLiteClosable closable) {
+        lock();
+        try {
+            mPrograms.remove(closable);
+        } finally {
+            unlock();
+        }
+    }  
+    
 }

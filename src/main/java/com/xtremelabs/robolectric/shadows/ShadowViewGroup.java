@@ -37,6 +37,23 @@ public class ShadowViewGroup extends ShadowView {
         }
         return null;
     }
+    
+    @Implementation
+    @Override
+    public View findViewWithTag(Object obj) {
+        if (obj.equals(this.getTag())) {
+            return realView;
+        }
+        
+        for (View child : children) {
+            View found = child.findViewWithTag(obj);
+            if (found != null) {
+                return found;
+            }
+        }
+
+        return null;
+    }
 
     @Implementation
     public void addView(View child) {

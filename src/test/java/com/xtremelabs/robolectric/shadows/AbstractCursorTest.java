@@ -34,7 +34,22 @@ public class AbstractCursorTest {
         assertThat(cursor.moveToFirst(), equalTo(false));
         assertThat(cursor.getCount(), equalTo(0));
     }
+    
+    @Test
+    public void testMoveToLast() {
+        cursor.theTable.add("Foobar");
+        cursor.theTable.add("Bletch");
+    	
+        assertThat(cursor.moveToLast(), equalTo(true));
+        assertThat(cursor.getCount(), equalTo(2));
+    }
 
+    @Test
+    public void testMoveToLastEmptyList() {
+        assertThat(cursor.moveToLast(), equalTo(false));
+        assertThat(cursor.getCount(), equalTo(0));
+    }
+    
     @Test
     public void testGetPosition() {
         cursor.theTable.add("Foobar");

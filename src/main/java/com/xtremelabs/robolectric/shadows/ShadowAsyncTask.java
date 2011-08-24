@@ -7,54 +7,82 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
-@SuppressWarnings({"UnusedDeclaration"})
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {
-    @RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
-    private boolean cancelled = false;
-    private boolean hasRun = false;
 
-//    public android.os.AsyncTask.Status getStatus() {
-//        return null;
-//    }
+	@RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
+    
+	private final FutureTask<Result> future;
+	private final BackgroundWorker worker;
+	
+	public ShadowAsyncTask() {
+		worker = new BackgroundWorker();
+		future = new FutureTask<Result>(worker) {
+        	@Override
+        	protected void done() {
+				try {
+					final Result result = get();
+					Robolectric.getUiThreadScheduler().post(new Runnable() {
+						@Override public void run() {
+							getBridge().onPostExecute(result);
+						}
+					});
+				} catch (CancellationException e) {
+					Robolectric.getUiThreadScheduler().post(new Runnable() {
+						@Override public void run() {
+							getBridge().onCancelled();
+						}
+					});
+					return;
+				} catch (InterruptedException e) {
+					// Ignore.
+				} catch (Throwable t) {
+					throw new RuntimeException("An error occured while executing doInBackground()",
+							t.getCause());
+				}
+        	}
+        };
+	}
 
-//    public boolean isCancelled() {
-//        return false;
-//    }
+	@Implementation
+    public boolean isCancelled() {
+        return future.isCancelled();
+    }
 
     @Implementation
     public boolean cancel(boolean mayInterruptIfRunning) {
-        if (hasRun) return false;
-        cancelled = true;
-        return true;
+        return future.cancel(mayInterruptIfRunning);
     }
 
-//    public Result get() throws java.lang.InterruptedException, java.util.concurrent.ExecutionException {
-//        return null;
-//    }
-
-//    public Result get(long timeout, java.util.concurrent.TimeUnit unit) throws java.lang.InterruptedException, java.util.concurrent.ExecutionException, java.util.concurrent.TimeoutException {
-//        return null;
-//    }
+    @Implementation
+    public Result get() throws InterruptedException, ExecutionException {
+        return future.get();
+    }
 
     @Implementation
-    public android.os.AsyncTask<Params, Progress, Result> execute(final Params... params) {
+    public Result get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        return future.get(timeout, unit);
+    }
+
+    @Implementation
+    public AsyncTask<Params, Progress, Result> execute(final Params... params) {
         getBridge().onPreExecute();
+        
+        worker.params = params;
 
         Robolectric.getBackgroundScheduler().post(new Runnable() {
             @Override public void run() {
-                if (cancelled) return;
-                hasRun = true;
-                final Result result = getBridge().doInBackground(params);
-
-                Robolectric.getUiThreadScheduler().post(new Runnable() {
-                    @Override public void run() {
-                        getBridge().onPostExecute(result);
-                    }
-                });
+            	future.run();
             }
         });
-
+        
         return null;
     }
 
@@ -77,4 +105,12 @@ public class ShadowAsyncTask<Params, Progress, Result> {
     private ShadowAsyncTaskBridge<Params, Progress, Result> getBridge() {
         return new ShadowAsyncTaskBridge<Params, Progress, Result>(realAsyncTask);
     }
+    
+    private final class BackgroundWorker implements Callable<Result> {
+    	Params[] params;
+		@Override
+		public Result call() throws Exception {
+			return getBridge().doInBackground(params);
+		}
+	}
 }

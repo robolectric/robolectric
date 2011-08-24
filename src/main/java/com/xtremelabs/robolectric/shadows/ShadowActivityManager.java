@@ -1,13 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import android.app.ActivityManager;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
-import android.app.ActivityManager;
-import android.content.ComponentName;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Shadow for the Android {@code ActivityManager} class.
@@ -23,8 +21,9 @@ public class ShadowActivityManager {
 		new ArrayList<ActivityManager.RunningAppProcessInfo>();
 	
 	private String backgroundPackage;
-	
-	@Implementation
+    private ActivityManager.MemoryInfo memoryInfo;
+
+    @Implementation
 	public List<ActivityManager.RunningTaskInfo> getRunningTasks(int maxNum) {
 		return tasks;
 	}
@@ -38,7 +37,14 @@ public class ShadowActivityManager {
 	public void killBackgroundProcesses(String packageName) {
 		backgroundPackage = packageName;
 	}
-	
+
+    @Implementation
+    public void getMemoryInfo(ActivityManager.MemoryInfo outInfo) {
+        if (memoryInfo != null) {
+            outInfo.lowMemory = memoryInfo.lowMemory;
+        }
+    }
+
 	/**
 	 * Non-Android accessor to set the list of running tasks.
 	 * @param tasks
@@ -61,4 +67,17 @@ public class ShadowActivityManager {
 	public String getBackgroundPackage() {
 		return backgroundPackage;
 	}
+
+    public void setMemoryInfo(ActivityManager.MemoryInfo memoryInfo) {
+        this.memoryInfo = memoryInfo;
+    }
+
+    @Implements(ActivityManager.MemoryInfo.class)
+    public static class ShadowMemoryInfo {
+        public boolean lowMemory;
+
+        public void setLowMemory(boolean lowMemory) {
+            this.lowMemory = lowMemory;
+        }
+    }
 }

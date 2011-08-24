@@ -2,12 +2,11 @@ package com.xtremelabs.robolectric.shadows;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
-import org.h2.util.StringUtils;
-
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.OverlayItem;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.util.Strings;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(OverlayItem.class)
@@ -47,8 +46,8 @@ public class ShadowOverlayItem {
 
         ShadowOverlayItem that = (ShadowOverlayItem) o;
 
-        return StringUtils.equals(title, that.title)
-        	&& StringUtils.equals(snippet, that.snippet)
+        return Strings.equals(title, that.title)
+        	&& Strings.equals(snippet, that.snippet)
         	&& geoPoint == null ? that.geoPoint == null :
         		geoPoint.equals(that.geoPoint);
     }
