@@ -4,7 +4,9 @@ import android.content.Context;
 import android.location.Criteria;
 import android.location.GpsStatus.Listener;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
+import android.os.Bundle;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import junit.framework.Assert;
@@ -12,22 +14,29 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static junit.framework.Assert.*;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class LocationManagerTest {
     private LocationManager locationManager;
+    private ShadowLocationManager shadowLocationManager;
 
     @Before
     public void setUp() {
         locationManager = (LocationManager) Robolectric.application.getSystemService(Context.LOCATION_SERVICE);
+        shadowLocationManager = shadowOf(locationManager);
     }
 
     @Test
@@ -38,7 +47,6 @@ public class LocationManagerTest {
 
     @Test
     public void shouldDisableProvider() {
-        ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
         shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
 
         Boolean enabled = locationManager.isProviderEnabled(GPS_PROVIDER);
@@ -47,18 +55,14 @@ public class LocationManagerTest {
 
     @Test
     public void shouldHaveListenerOnceAdded() {
-        Listener listener = addListenerToLocationManager();
-
-        ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
+        Listener listener = addGpsListenerToLocationManager();
 
         assertTrue(shadowLocationManager.hasListener(listener));
     }
 
     @Test
     public void shouldNotHaveListenerOnceRemoved() {
-        Listener listener = addListenerToLocationManager();
-
-        ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
+        Listener listener = addGpsListenerToLocationManager();
 
         locationManager.removeGpsStatusListener(listener);
 
@@ -67,7 +71,6 @@ public class LocationManagerTest {
 
     @Test
     public void shouldReturnEnabledProviders() throws Exception {
-        ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
         shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, false);
         shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
         shadowLocationManager.setProviderEnabled(LocationManager.PASSIVE_PROVIDER, false);
@@ -96,8 +99,6 @@ public class LocationManagerTest {
 
     @Test
     public void shouldReturnLastKnownLocationForAProvider() throws Exception {
-        ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
-
         assertNull(locationManager.getLastKnownLocation(NETWORK_PROVIDER));
 
         Location networkLocation = new Location(NETWORK_PROVIDER);
@@ -111,8 +112,30 @@ public class LocationManagerTest {
     }
 
     @Test
+    public void shouldStoreRequestLocationUpdateListeners() throws Exception {
+        TestLocationListener listener = new TestLocationListener();
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1, 2.0f, listener);
+        assertSame(shadowLocationManager.getRequestLocationUpdateListeners().get(0), listener);
+    }
+
+    @Test
+    public void shouldRemoveLocationListeners() throws Exception {
+        TestLocationListener listener = new TestLocationListener();
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1, 2.0f, listener);
+        locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 1, 2.0f, listener);
+
+        TestLocationListener otherListener = new TestLocationListener();
+        locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 1, 2.0f, otherListener);
+
+        locationManager.removeUpdates(listener);
+
+        List<LocationListener> expected = new ArrayList<LocationListener>();
+        expected.add(otherListener);
+        assertThat(shadowLocationManager.getRequestLocationUpdateListeners(), equalTo(expected));
+    }
+
+    @Test
     public void shouldStoreBestProviderCriteriaAndEnabledOnlyFlag() throws Exception {
-        ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
         Criteria criteria = new Criteria();
         assertNull(locationManager.getBestProvider(criteria, true));
         assertSame(criteria, shadowLocationManager.getLastBestProviderCriteria());
@@ -121,7 +144,6 @@ public class LocationManagerTest {
 
     @Test
     public void shouldReturnBestProvider() throws Exception {
-        ShadowLocationManager shadowLocationManager = shadowOf(locationManager);
         shadowLocationManager.setBestProvider("GNSS");
         assertEquals("GNSS", locationManager.getBestProvider(new Criteria(), false));
     }
@@ -131,13 +153,31 @@ public class LocationManagerTest {
         assertNull(locationManager.getBestProvider(new Criteria(), true));
     }
 
-    private Listener addListenerToLocationManager() {
-        Listener listener = new TestListener();
+    private Listener addGpsListenerToLocationManager() {
+        Listener listener = new TestGpsListener();
         locationManager.addGpsStatusListener(listener);
         return listener;
     }
 
-    private class TestListener implements Listener {
+    private static class TestLocationListener implements LocationListener {
+        @Override
+        public void onLocationChanged(Location location) {
+        }
+
+        @Override
+        public void onStatusChanged(String s, int i, Bundle bundle) {
+        }
+
+        @Override
+        public void onProviderEnabled(String s) {
+        }
+
+        @Override
+        public void onProviderDisabled(String s) {
+        }
+    }
+
+    private class TestGpsListener implements Listener {
 
         @Override
         public void onGpsStatusChanged(int event) {

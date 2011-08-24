@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.location.Criteria;
 import android.location.GpsStatus.Listener;
 import android.location.Location;
+import android.location.LocationListener;
 import android.location.LocationManager;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -27,6 +28,7 @@ public class ShadowLocationManager {
     private Criteria lastBestProviderCriteria;
     private boolean lastBestProviderEnabledOnly;
     private String bestProvider;
+    private List<LocationListener> requestLocationUdpateListeners = new ArrayList<LocationListener>();
 
     @Implementation
     public boolean isProviderEnabled(String provider) {
@@ -59,26 +61,37 @@ public class ShadowLocationManager {
     public Location getLastKnownLocation(String provider) {
         return lastKnownLocations.get(provider);
     }
-    	
-	@Implementation
-	public boolean addGpsStatusListener(Listener listener) {
-		if(!listeners.contains(listener)) {
-			listeners.add(listener);
-        }
-		return true;
-	}
-	
-	@Implementation
-	public void removeGpsStatusListener(Listener listener) {
-		listeners.remove(listener);
-	}
 
     @Implementation
-    public java.lang.String getBestProvider(android.location.Criteria criteria, boolean enabledOnly) {
+    public boolean addGpsStatusListener(Listener listener) {
+        if (!listeners.contains(listener)) {
+            listeners.add(listener);
+        }
+        return true;
+    }
+
+    @Implementation
+    public void removeGpsStatusListener(Listener listener) {
+        listeners.remove(listener);
+    }
+
+    @Implementation
+    public String getBestProvider(android.location.Criteria criteria, boolean enabledOnly) {
         lastBestProviderCriteria = criteria;
         lastBestProviderEnabledOnly = enabledOnly;
         return bestProvider;
     }
+
+    @Implementation
+    public void requestLocationUpdates(String provider, long minTime, float minDistance, LocationListener listener) {
+        requestLocationUdpateListeners.add(listener);
+    }
+
+    @Implementation
+    public void removeUpdates(LocationListener listener) {
+        while (requestLocationUdpateListeners.remove(listener));
+    }
+
 
     public boolean hasListener(Listener listener) {
         return listeners.contains(listener);
@@ -86,7 +99,7 @@ public class ShadowLocationManager {
 
     /**
      * Non-Android accessor.
-     *
+     * <p/>
      * Gets the criteria value used in the last call to {@link #getBestProvider(android.location.Criteria, boolean)}
      *
      * @return the criteria used to find the best provider
@@ -97,7 +110,7 @@ public class ShadowLocationManager {
 
     /**
      * Non-Android accessor.
-     *
+     * <p/>
      * Gets the enabled value used in the last call to {@link #getBestProvider(android.location.Criteria, boolean)}
      *
      * @return the enabled value used to find the best provider
@@ -110,7 +123,7 @@ public class ShadowLocationManager {
      * Sets the value to return from {@link #getBestProvider(android.location.Criteria, boolean)}
      * for the given {@code provider}
      *
-     * @param provider  name of the provider who should be considered best
+     * @param provider name of the provider who should be considered best
      */
     public void setBestProvider(String provider) {
         bestProvider = provider;
@@ -119,10 +132,19 @@ public class ShadowLocationManager {
     /**
      * Sets the value to return from {@link #getLastKnownLocation(String)} for the given {@code provider}
      *
-     * @param provider  name of the provider whose location to set
-     * @param location  the last known location for the provider
+     * @param provider name of the provider whose location to set
+     * @param location the last known location for the provider
      */
     public void setLastKnownLocation(String provider, Location location) {
         lastKnownLocations.put(provider, location);
+    }
+
+    /**
+     * Non-Android accessor.
+     *
+     * @return lastRequestedLocationUpdatesLocationListener
+     */
+    public List<LocationListener> getRequestLocationUpdateListeners() {
+        return requestLocationUdpateListeners;
     }
 }
