@@ -46,7 +46,7 @@ public class ShadowTextView extends ShadowView {
         applyCompoundDrawablesWithIntrinsicBoundsAttributes();
     }
 
-    @Implementation
+    @Implementation(i18nSafe=false)
     public void setText(CharSequence text) {
         if (text == null) {
             text = "";
