@@ -57,7 +57,7 @@ public class LocationManagerTest {
     public void shouldHaveListenerOnceAdded() {
         Listener listener = addGpsListenerToLocationManager();
 
-        assertTrue(shadowLocationManager.hasListener(listener));
+        assertTrue(shadowLocationManager.hasGpsStatusListener(listener));
     }
 
     @Test
@@ -66,7 +66,7 @@ public class LocationManagerTest {
 
         locationManager.removeGpsStatusListener(listener);
 
-        assertFalse(shadowLocationManager.hasListener(listener));
+        assertFalse(shadowLocationManager.hasGpsStatusListener(listener));
     }
 
     @Test

@@ -24,7 +24,7 @@ public class ShadowLocationManager {
     private final Map<String, Boolean> providersEnabled = new HashMap<String, Boolean>();
     private final Map<String, Location> lastKnownLocations = new HashMap<String, Location>();
 
-    private final ArrayList<Listener> listeners = new ArrayList<Listener>();
+    private final ArrayList<Listener> gpsStatusListeners = new ArrayList<Listener>();
     private Criteria lastBestProviderCriteria;
     private boolean lastBestProviderEnabledOnly;
     private String bestProvider;
@@ -64,15 +64,15 @@ public class ShadowLocationManager {
 
     @Implementation
     public boolean addGpsStatusListener(Listener listener) {
-        if (!listeners.contains(listener)) {
-            listeners.add(listener);
+        if (!gpsStatusListeners.contains(listener)) {
+            gpsStatusListeners.add(listener);
         }
         return true;
     }
 
     @Implementation
     public void removeGpsStatusListener(Listener listener) {
-        listeners.remove(listener);
+        gpsStatusListeners.remove(listener);
     }
 
     @Implementation
@@ -93,8 +93,8 @@ public class ShadowLocationManager {
     }
 
 
-    public boolean hasListener(Listener listener) {
-        return listeners.contains(listener);
+    public boolean hasGpsStatusListener(Listener listener) {
+        return gpsStatusListeners.contains(listener);
     }
 
     /**
