@@ -7,4 +7,4 @@ if [ -z $ANDROID_HOME ]; then
   ANDROID_HOME=`which android | sed 's/\/tools\/android$//'`
 fi
 
-echo "sdk.dir=$ANDROID_HOME" >> local.properties
+echo "sdk.dir=$ANDROID_HOME" > local.properties
