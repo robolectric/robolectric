@@ -308,6 +308,8 @@ public class Robolectric {
                 ShadowSimpleCursorAdapter.class,
                 ShadowShapeDrawable.class,
                 ShadowSpannableStringBuilder.class,
+                ShadowSyncResult.class,
+                ShadowSyncResult.ShadowSyncStats.class,
                 ShadowSQLiteProgram.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
