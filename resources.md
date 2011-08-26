@@ -32,6 +32,15 @@ Pivotal Labs developers have given this presentation several times.
 
 * Make sure that robolectric and its dependencies appear before the Android API jars in the classpath.
 
+### WARNING: Unable to find path to Android SDK
+Robolectric cannot find your Android SDK. Try the following: 
+
+* Set the `sdk.dir` in `local.properties` by running the following: 
+         $ android update project -p .
+
+* Set `ANDROID_HOME` environment variable. You can put this in `.bash_profile` for example.
+         export ANDROID_HOME=/path/to/android/sdk
+
 ### Type com.google.android.maps.MapView not present
 
 <div class="stacktrace">java.lang.TypeNotPresentException: Typecom.google.android.maps.MapView not present
