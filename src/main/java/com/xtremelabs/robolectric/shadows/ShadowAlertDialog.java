@@ -358,5 +358,9 @@ public class ShadowAlertDialog extends ShadowDialog {
             });
             return button;
         }
+        
+        protected Context getContext() {
+        	return context;
+        }
     }
 }
