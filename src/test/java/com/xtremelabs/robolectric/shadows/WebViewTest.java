@@ -11,7 +11,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -80,6 +83,24 @@ public class WebViewTest {
         assertThat(shadowWebView.getRunFlag(), equalTo(false));
         shadowWebView.post(testRun);
         assertThat(shadowWebView.getRunFlag(), equalTo(true));
+    }
+
+    @Test
+    public void shouldStoreCanGoBack() throws Exception {
+        shadowWebView.setCanGoBack(false);
+        assertFalse(webView.canGoBack());
+        shadowWebView.setCanGoBack(true);
+        assertTrue(webView.canGoBack());
+    }
+
+    @Test
+    public void shouldStoreTheNumberOfTimesGoBackWasCalled() throws Exception {
+        assertEquals(0, shadowWebView.getGoBackInvocations());
+        webView.goBack();
+        assertEquals(1, shadowWebView.getGoBackInvocations());
+        webView.goBack();
+        webView.goBack();
+        assertEquals(3, shadowWebView.getGoBackInvocations());
     }
 
     @Test
