@@ -334,6 +334,7 @@ public class Robolectric {
                 ShadowViewStub.class,
                 ShadowWebSettings.class,
                 ShadowWebView.class,
+                ShadowWifiInfo.class,
                 ShadowWifiManager.class,
                 ShadowWindow.class,
                 ShadowZoomButtonsController.class
