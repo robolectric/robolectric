@@ -362,12 +362,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * if these methods are invoked by application code. Additionally, Robolectric's ResourceLoader
      * will throw exceptions if layout resources use bare string literals instead of string resource IDs.
      * <p/>
-     * To enable i18n-strict mode globally, set the system property "robolectric.strictI18n" to true.
-     * This can be done via java system properties in either Ant or Maven.
      * To enable or disable i18n-strict mode for specific test cases, annotate them with
      * {@link com.xtremelabs.robolectric.annotation.EnableStrictI18n} or
      * {@link com.xtremelabs.robolectric.annotation.DisableStrictI18n}.
      * <p/>
+     *
      * By default, I18n-strict mode is disabled.
      * 
      * @param method
@@ -375,7 +374,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      */
     private void setupI18nStrictState(Method method, RobolectricConfig robolectricConfig) {
     	// Global
-    	boolean strictI18n = Boolean.valueOf(System.getProperty("robolectric.strictI18n"));
+    	boolean strictI18n = globalI18nStrictEnabled();
  
     	// Test case class
     	Annotation[] annos = method.getDeclaringClass().getAnnotations();
@@ -386,6 +385,21 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     	strictI18n = lookForI18nAnnotations(strictI18n, annos);
 
 		robolectricConfig.setStrictI18n(strictI18n);
+    }
+    
+    /**
+     * Default implementation of global switch for i18n-strict mode.
+     * To enable i18n-strict mode globally, set the system property
+     * "robolectric.strictI18n" to true. This can be done via java
+     * system properties in either Ant or Maven.
+     * <p/>
+     * Subclasses can override this method and establish their own policy
+     * for enabling i18n-strict mode.
+     * 
+     * @return
+     */
+    protected boolean globalI18nStrictEnabled() {
+    	return Boolean.valueOf(System.getProperty("robolectric.strictI18n"));
     }
 
     /**
