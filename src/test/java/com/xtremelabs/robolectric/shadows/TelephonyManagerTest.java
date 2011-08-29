@@ -74,7 +74,7 @@ public class TelephonyManagerTest {
 
     @Test(expected = SecurityException.class)
     public void getDeviceId_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() throws Exception {
-        ShadowTelephonyManager.setReadPhoneStatePermissionGranted(false);
+        shadowManager.setReadPhoneStatePermission(false);
         manager.getDeviceId();
     }
 

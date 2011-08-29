@@ -9,9 +9,9 @@ import com.xtremelabs.robolectric.internal.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(WifiManager.class)
 public class ShadowWifiManager {
-    private static boolean accessWifiStatePermissionGranted = true;
+    private boolean accessWifiStatePermission = true;
     private boolean wifiEnabled = true;
-    private static WifiInfo wifiInfo;
+    private WifiInfo wifiInfo;
 
     @Implementation
     public boolean setWifiEnabled(boolean wifiEnabled) {
@@ -35,12 +35,12 @@ public class ShadowWifiManager {
         return wifiInfo;
     }
 
-    public static void setAccessWifiStatePermissionGranted(boolean b) {
-        accessWifiStatePermissionGranted = b;
+    public void setAccessWifiStatePermission(boolean accessWifiStatePermission) {
+        this.accessWifiStatePermission = accessWifiStatePermission;
     }
 
     private void checkAccessWifiStatePermission() {
-        if (!accessWifiStatePermissionGranted) {
+        if (!accessWifiStatePermission) {
             throw new SecurityException();
         }
     }
