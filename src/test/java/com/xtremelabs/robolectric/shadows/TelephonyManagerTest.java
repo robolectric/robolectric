@@ -72,6 +72,12 @@ public class TelephonyManagerTest {
         assertEquals("SomeOperator", telephonyManager.getNetworkOperator());
     }
 
+    @Test(expected = SecurityException.class)
+    public void getDeviceId_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() throws Exception {
+        ShadowTelephonyManager.setReadPhoneStatePermissionGranted(false);
+        manager.getDeviceId();
+    }
+
 	private class MyPhoneStateListener extends PhoneStateListener {
 		
 	}

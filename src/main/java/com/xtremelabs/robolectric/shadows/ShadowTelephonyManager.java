@@ -14,6 +14,7 @@ public class ShadowTelephonyManager {
     private String networkOperatorName;
     private String networkCountryIso;
     private String networkOperator;
+    private static boolean readPhoneStatePermissionGranted = true;
 
     @Implementation
 	public void listen(PhoneStateListener listener, int events) {
@@ -42,6 +43,7 @@ public class ShadowTelephonyManager {
 
     @Implementation
     public String getDeviceId() {
+        checkReadPhoneStatePermission();
         return deviceId;
     }
 
@@ -74,5 +76,15 @@ public class ShadowTelephonyManager {
     @Implementation
     public String getNetworkOperator() {
         return networkOperator;
+    }
+
+    public static void setReadPhoneStatePermissionGranted(boolean readPhoneStatePermissionGranted) {
+        ShadowTelephonyManager.readPhoneStatePermissionGranted = readPhoneStatePermissionGranted;
+    }
+
+    private void checkReadPhoneStatePermission() {
+        if (!readPhoneStatePermissionGranted) {
+            throw new SecurityException();
+        }
     }
 }
