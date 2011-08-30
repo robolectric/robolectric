@@ -26,7 +26,7 @@ public class MenuLoader extends XmlLoader {
 
     @Override
     protected void processResourceXml(File xmlFile, Document document, boolean ignored) throws Exception {
-        MenuNode topLevelNode = new MenuNode("top-level", new HashMap<String, String>());
+        MenuNode topLevelNode = new MenuNode("top-level", new HashMap<String, String>(), strictI18n);
 
         NodeList items = document.getChildNodes();
         if (items.getLength() != 1)
@@ -60,7 +60,7 @@ public class MenuLoader extends XmlLoader {
         }
 
         if (!name.startsWith("#")) {
-            MenuNode menuNode = new MenuNode(name, attrMap);
+            MenuNode menuNode = new MenuNode(name, attrMap, strictI18n);
             parent.addChild(menuNode);
             if (node.getChildNodes().getLength() != 0)
                 throw new RuntimeException(node.getChildNodes().toString());
@@ -100,9 +100,12 @@ public class MenuLoader extends XmlLoader {
 
         private List<MenuNode> children = new ArrayList<MenuNode>();
 
-        public MenuNode(String name, Map<String, String> attributes) {
+        public MenuNode(String name, Map<String, String> attributes, boolean strictI18n) {
             this.name = name;
             this.attributes = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, null, false);
+            if ( strictI18n ) { 
+            	this.attributes.validateStrictI18n();
+            }
         }
 
         public List<MenuNode> getChildren() {

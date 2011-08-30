@@ -14,6 +14,7 @@ import org.w3c.dom.NodeList;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import com.xtremelabs.robolectric.util.I18nException;
 
 import android.content.Context;
 import android.preference.Preference;
@@ -31,7 +32,7 @@ public class PreferenceLoader extends XmlLoader {
 
 	@Override
 	protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
-		PreferenceNode topLevelNode = new PreferenceNode("top-level", new HashMap<String, String>());
+		PreferenceNode topLevelNode = new PreferenceNode("top-level", new HashMap<String, String>(), strictI18n);
 		processChildren(document.getChildNodes(), topLevelNode);
 		prefNodesByResourceName.put( "xml/" + xmlFile.getName().replace(".xml", ""), topLevelNode.getChildren().get(0));
 	}
@@ -57,7 +58,7 @@ public class PreferenceLoader extends XmlLoader {
         }
         
         if (!name.startsWith("#")) {
-	        PreferenceNode prefNode = new PreferenceNode(name, attrMap);
+	        PreferenceNode prefNode = new PreferenceNode(name, attrMap, strictI18n);
 	        if (parent != null) parent.addChild(prefNode);
 	
 	        processChildren(node.getChildNodes(), prefNode);  
@@ -72,6 +73,8 @@ public class PreferenceLoader extends XmlLoader {
         try {
         	PreferenceNode prefNode = prefNodesByResourceName.get(key);
         	return (PreferenceScreen) prefNode.inflate(context, null);
+        } catch (I18nException e) {
+        	throw e;
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + key, e);
         }
@@ -79,13 +82,15 @@ public class PreferenceLoader extends XmlLoader {
 
     public class PreferenceNode {
         private String name;
+        private boolean strictI18n;
         private final Map<String, String> attributes;
-
+        
         private List<PreferenceNode> children = new ArrayList<PreferenceNode>();
 
-        public PreferenceNode(String name, Map<String, String> attributes) {
+        public PreferenceNode(String name, Map<String, String> attributes, boolean strictI18n) {
             this.name = name;
             this.attributes = attributes;
+            this.strictI18n = strictI18n;
         }
 
         public List<PreferenceNode> getChildren() {
@@ -123,6 +128,9 @@ public class PreferenceLoader extends XmlLoader {
            	
            	try {
                 TestAttributeSet attributeSet = new TestAttributeSet(attributes);
+                if (strictI18n) {
+                	attributeSet.validateStrictI18n();
+                }
                 return ((Constructor<? extends Preference>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
             } catch (NoSuchMethodException e) {
 	            try {

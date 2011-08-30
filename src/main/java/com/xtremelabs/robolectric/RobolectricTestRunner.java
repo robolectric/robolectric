@@ -3,8 +3,6 @@ package com.xtremelabs.robolectric;
 import android.app.Application;
 import android.net.Uri__FromAndroid;
 
-import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
-import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
 import com.xtremelabs.robolectric.bytecode.ClassHandler;
 import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
@@ -447,6 +445,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
                 String rClassName = robolectricConfig.getRClassName();
                 Class rClass = Class.forName(rClassName);
                 resourceLoader = new ResourceLoader(robolectricConfig.getRealSdkVersion(), rClass, robolectricConfig.getResourceDirectory(), robolectricConfig.getAssetsDirectory());
+                resourceLoader.setStrictI18n(robolectricConfig.getStrictI18n());
                 resourceLoaderForRootAndDirectory.put(robolectricConfig, resourceLoader);
             } catch (Exception e) {
                 throw new RuntimeException(e);

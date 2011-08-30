@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import com.xtremelabs.robolectric.util.I18nException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -33,7 +35,7 @@ public class ViewLoader extends XmlLoader {
 
     @Override
     protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
-        ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>(), isSystem);
+        ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>(), isSystem, strictI18n);
         processChildren(document.getChildNodes(), topLevelNode);
         String layoutName = "layout/" + xmlFile.getName().replace(".xml", "");
         if (isSystem) {
@@ -65,7 +67,7 @@ public class ViewLoader extends XmlLoader {
             parent.attributes.put("android:focus", "true");
             parent.requestFocusOverride = true;
         } else if (!name.startsWith("#")) {
-            ViewNode viewNode = new ViewNode(name, attrMap, parent.isSystem);
+            ViewNode viewNode = new ViewNode(name, attrMap, parent.isSystem, strictI18n);
             if (parent != null) parent.addChild(viewNode);
 
             processChildren(node.getChildNodes(), viewNode);
@@ -98,6 +100,8 @@ public class ViewLoader extends XmlLoader {
                 }
             }
             return viewNode.inflate(context, parent);
+        } catch (I18nException e) {
+        	throw e;
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + layoutName, e);
         }
@@ -110,11 +114,13 @@ public class ViewLoader extends XmlLoader {
         private List<ViewNode> children = new ArrayList<ViewNode>();
         boolean requestFocusOverride = false;
         boolean isSystem = false;
+        boolean strictI18n = false;
 
-        public ViewNode(String name, Map<String, String> attributes, boolean isSystem) {
+        public ViewNode(String name, Map<String, String> attributes, boolean isSystem, boolean strictI18n) {
             this.name = name;
             this.attributes = attributes;
             this.isSystem = isSystem;
+            this.strictI18n = strictI18n;
         }
 
         public List<ViewNode> getChildren() {
@@ -168,6 +174,9 @@ public class ViewLoader extends XmlLoader {
             Class<? extends View> clazz = pickViewClass();
             try {
                 TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, clazz, isSystem);
+                if ( strictI18n ) {
+                	attributeSet.validateStrictI18n();
+                }
                 return ((Constructor<? extends View>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
             } catch (NoSuchMethodException e) {
                 try {

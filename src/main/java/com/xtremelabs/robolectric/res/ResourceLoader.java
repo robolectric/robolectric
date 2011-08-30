@@ -58,6 +58,7 @@ public class ResourceLoader {
     private final DrawableResourceLoader drawableResourceLoader;
     private final RawResourceLoader rawResourceLoader;
     private boolean isInitialized = false;
+    private boolean strictI18n = false;
 
     // TODO: get these value from the xml resources instead [xw 20101011]
     public final Map<Integer, Integer> dimensions = new HashMap<Integer, Integer>();
@@ -80,6 +81,10 @@ public class ResourceLoader {
 
         this.resourceDir = resourceDir;
     }
+    
+    public void setStrictI18n(boolean strict) {
+    	this.strictI18n = strict;
+    }
 
     private void init() {
         if (isInitialized) {
@@ -91,6 +96,10 @@ public class ResourceLoader {
                 viewLoader = new ViewLoader(resourceExtractor, attrResourceLoader);
                 menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
                 preferenceLoader = new PreferenceLoader(resourceExtractor);
+                
+                viewLoader.setStrictI18n(strictI18n);
+                menuLoader.setStrictI18n(strictI18n);
+                preferenceLoader.setStrictI18n(strictI18n);
 
                 File systemResourceDir = getSystemResourceDir(getPathToAndroidResources());
                 File localValueResourceDir = getValueResourceDir(resourceDir);
