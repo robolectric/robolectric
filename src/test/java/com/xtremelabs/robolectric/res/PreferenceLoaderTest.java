@@ -1,7 +1,5 @@
 package com.xtremelabs.robolectric.res;
 
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,6 +17,7 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
@@ -26,41 +25,41 @@ import static org.junit.Assert.assertThat;
 @RunWith(WithTestDefaultsRunner.class)
 public class PreferenceLoaderTest {
 	private PreferenceLoader prefLoader;
-	
-    @Before
-    public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-        
-        ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
-        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
-        prefLoader = new PreferenceLoader(resourceExtractor);
-        new DocumentLoader(prefLoader).loadResourceXmlDir(resourceFile("res", "xml"));    
-    }
-    
-    @Test
-    public void shouldCreateCorrectClasses() {
-    	PreferenceScreen screen = prefLoader.inflatePreferences(new Activity(), "xml/preferences"); 	
-    	assertThatScreenMatchesExpected(screen);
-    }
-    
-    @Test
-    public void shouldLoadByResourceId() {
-       	PreferenceScreen screen = prefLoader.inflatePreferences(new Activity(), R.xml.preferences); 	
-       	assertThatScreenMatchesExpected(screen); 	
-    }
-    
-    protected void assertThatScreenMatchesExpected(PreferenceScreen screen) {
-    	assertThat(screen.getPreferenceCount(), equalTo(6));
-    	
-    	assertThat(screen.getPreference(0), instanceOf(PreferenceCategory.class));
-    	assertThat(((PreferenceCategory)screen.getPreference(0)).getPreference(0), instanceOf(Preference.class));
-   	  	
-    	assertThat(screen.getPreference(1), instanceOf(CheckBoxPreference.class));
-    	assertThat(screen.getPreference(2), instanceOf(EditTextPreference.class));
-    	assertThat(screen.getPreference(3), instanceOf(ListPreference.class));
-    	assertThat(screen.getPreference(4), instanceOf(Preference.class));
-    	assertThat(screen.getPreference(5), instanceOf(RingtonePreference.class));   	
-    }
+
+	@Before
+	public void setUp() throws Exception {
+		Robolectric.bindDefaultShadowClasses();
+
+		ResourceExtractor resourceExtractor = new ResourceExtractor();
+		resourceExtractor.addLocalRClass(R.class);
+		StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
+		new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
+		prefLoader = new PreferenceLoader(resourceExtractor, null);
+		new DocumentLoader(prefLoader).loadResourceXmlDir(resourceFile("res", "xml"));
+	}
+
+	@Test
+	public void shouldCreateCorrectClasses() {
+		PreferenceScreen screen = prefLoader.inflatePreferences(new Activity(), "xml/preferences");
+		assertThatScreenMatchesExpected(screen);
+	}
+
+	@Test
+	public void shouldLoadByResourceId() {
+		PreferenceScreen screen = prefLoader.inflatePreferences(new Activity(), R.xml.preferences);
+		assertThatScreenMatchesExpected(screen);
+	}
+
+	protected void assertThatScreenMatchesExpected(PreferenceScreen screen) {
+		assertThat(screen.getPreferenceCount(), equalTo(6));
+
+		assertThat(screen.getPreference(0), instanceOf(PreferenceCategory.class));
+		assertThat(((PreferenceCategory) screen.getPreference(0)).getPreference(0), instanceOf(Preference.class));
+
+		assertThat(screen.getPreference(1), instanceOf(CheckBoxPreference.class));
+		assertThat(screen.getPreference(2), instanceOf(EditTextPreference.class));
+		assertThat(screen.getPreference(3), instanceOf(ListPreference.class));
+		assertThat(screen.getPreference(4), instanceOf(Preference.class));
+		assertThat(screen.getPreference(5), instanceOf(RingtonePreference.class));
+	}
 }

@@ -12,11 +12,12 @@ import com.xtremelabs.robolectric.internal.RealObject;
 @Implements(Preference.class)
 public class ShadowPreference {
 
-    @RealObject private Preference realPreference;
+	@RealObject
+	private Preference realPreference;
 
-    protected Context context;
+	protected Context context;
 	protected AttributeSet attrs;
-	protected int defStyle;	
+	protected int defStyle;
 
 	protected String key;
 	protected CharSequence title;
@@ -28,10 +29,10 @@ public class ShadowPreference {
 	protected boolean persistent = false;
 	protected int persistedInt;
 	protected Object callChangeListenerValue = null;
-	
-	protected Preference.OnPreferenceClickListener  onClickListener;
+
+	protected Preference.OnPreferenceClickListener onClickListener;
 	private Intent intent;
-	
+
 	public void __constructor__(Context context) {
 		__constructor__(context, null, 0);
 	}
@@ -44,35 +45,47 @@ public class ShadowPreference {
 		this.context = context;
 		this.attrs = attributeSet;
 		this.defStyle = defStyle;
-		
+
 		if (attributeSet != null) {
 			key = attributeSet.getAttributeValue("android", "key");
-        }
+			setTitle(checkIfAttributeIsAResourceAndReturnResourceValueIfSo(attributeSet, "android", "title"));
+			setSummary(checkIfAttributeIsAResourceAndReturnResourceValueIfSo(attributeSet, "android", "summary"));
+		}
+	}
+
+	private String checkIfAttributeIsAResourceAndReturnResourceValueIfSo(AttributeSet attributeSet, String namespace, String name) {
+		String attributeValue = attributeSet.getAttributeValue(namespace, name);
+		if (attributeValue != null && attributeValue.startsWith("@")) {
+			int textResId = attributeSet.getAttributeResourceValue(namespace, name, 0);
+			return context.getResources().getString(textResId);
+		} else {
+			return attributeValue;
+		}
 	}
 
 	@Implementation
 	public Context getContext() {
-    	return context;
-    }
-    
-    public AttributeSet getAttrs() {
-    	return attrs;
-    }
-    
-    public int getDefStyle() {
-    	return defStyle;
-    }	
-   
+		return context;
+	}
+
+	public AttributeSet getAttrs() {
+		return attrs;
+	}
+
+	public int getDefStyle() {
+		return defStyle;
+	}
+
 	@Implementation
 	public void setEnabled(boolean enabled) {
 		this.enabled = enabled;
 	}
-	
+
 	@Implementation
 	public boolean isEnabled() {
 		return enabled;
 	}
-    
+
 	@Implementation
 	public boolean shouldPersist() {
 		return persistent;
@@ -87,24 +100,24 @@ public class ShadowPreference {
 	public void setPersistent(boolean persistent) {
 		this.persistent = persistent;
 	}
-	
+
 	@Implementation
 	public int getPersistedInt(int defaultReturnValue) {
 		return persistent ? persistedInt : defaultReturnValue;
 	}
-	
+
 	@Implementation
 	public boolean persistInt(int value) {
 		this.persistedInt = value;
 		return persistent;
 	}
-	
+
 	@Implementation
 	public boolean callChangeListener(Object newValue) {
 		callChangeListenerValue = newValue;
 		return true;
 	}
-	
+
 	public Object getCallChangeListenerValue() {
 		return callChangeListenerValue;
 	}
@@ -118,12 +131,12 @@ public class ShadowPreference {
 	public void setSummary(CharSequence summary) {
 		this.summary = summary;
 	}
-	
-	@Implementation 
+
+	@Implementation
 	public CharSequence getSummary() {
 		return summary;
 	}
-	
+
 	@Implementation
 	public void setTitle(int titleResId) {
 		this.title = context.getResources().getText(titleResId);
@@ -133,51 +146,51 @@ public class ShadowPreference {
 	public void setTitle(CharSequence title) {
 		this.title = title;
 	}
-	
-	@Implementation 
+
+	@Implementation
 	public CharSequence getTitle() {
 		return title;
 	}
-	
+
 	@Implementation
 	public void setKey(String key) {
 		this.key = key;
 	}
-	
-	@Implementation 
+
+	@Implementation
 	public String getKey() {
 		return key;
 	}
-	
+
 	@Implementation
 	public void setDefaultValue(Object defaultValue) {
 		this.defaultValue = defaultValue;
 	}
-	
+
 	public Object getDefaultValue() {
 		return defaultValue;
 	}
-	
+
 	@Implementation
 	public int getOrder() {
 		return order;
 	}
-	
+
 	@Implementation
 	public void setOrder(int order) {
 		this.order = order;
 	}
-	
+
 	@Implementation
-	public void setOnPreferenceClickListener( Preference.OnPreferenceClickListener onPreferenceClickListener ) {
+	public void setOnPreferenceClickListener(Preference.OnPreferenceClickListener onPreferenceClickListener) {
 		this.onClickListener = onPreferenceClickListener;
 	}
-	
+
 	@Implementation
 	public Preference.OnPreferenceClickListener getOnPreferenceClickListener() {
 		return onClickListener;
-	}	
-	
+	}
+
 	public boolean click() {
 		return onClickListener.onPreferenceClick(realPreference);
 	}
@@ -186,18 +199,18 @@ public class ShadowPreference {
 	public void setIntent(Intent i) {
 		this.intent = i;
 	}
-	
+
 	@Implementation
 	public Intent getIntent() {
 		return this.intent;
 
 	}
-	
+
 	@Implementation
 	public void setDependency(String dependencyKey) {
 		this.dependencyKey = dependencyKey;
 	}
-	
+
 	@Implementation
 	public String getDependency() {
 		return this.dependencyKey;
