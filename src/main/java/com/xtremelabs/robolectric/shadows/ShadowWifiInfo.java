@@ -7,14 +7,14 @@ import com.xtremelabs.robolectric.internal.Implements;
 @Implements(WifiInfo.class)
 public class ShadowWifiInfo {
 
-    private static String macAddress;
+    private String macAddress;
 
     @Implementation
     public String getMacAddress() {
         return macAddress;
     }
 
-    public static void setMacAddress(String newMacAddress) {
+    public void setMacAddress(String newMacAddress) {
         macAddress = newMacAddress;
     }
 }

@@ -8,6 +8,7 @@ import org.junit.runner.RunWith;
 
 import static android.content.Context.WIFI_SERVICE;
 import static com.xtremelabs.robolectric.Robolectric.application;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -18,8 +19,10 @@ public class WifiInfoTest {
     public void shouldReturnMacAddress() {
         WifiManager wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
         WifiInfo wifiInfo = wifiManager.getConnectionInfo();
-        ShadowWifiInfo.setMacAddress("mac address");
+        shadowOf(wifiInfo).setMacAddress("mac address");
+
+        wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
+        wifiInfo = wifiManager.getConnectionInfo();
         assertThat(wifiInfo.getMacAddress(), equalTo("mac address"));
     }
-
 }

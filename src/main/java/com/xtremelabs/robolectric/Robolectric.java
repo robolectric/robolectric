@@ -53,6 +53,7 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -389,6 +390,10 @@ public class Robolectric {
 
     public static ShadowConnectivityManager shadowOf(ConnectivityManager instance) {
         return (ShadowConnectivityManager) shadowOf_(instance);
+    }
+
+    public static ShadowWifiInfo shadowOf(WifiInfo instance) {
+        return (ShadowWifiInfo) shadowOf_(instance);
     }
 
     public static ShadowWifiManager shadowOf(WifiManager instance) {
