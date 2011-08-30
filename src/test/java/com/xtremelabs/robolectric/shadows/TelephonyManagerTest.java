@@ -43,8 +43,8 @@ public class TelephonyManagerTest {
     @Test
     public void shouldGiveDeviceId() {
         String testId = "TESTING123";
-        ShadowTelephonyManager.setDeviceId(testId);
         TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+        shadowOf(telephonyManager).setDeviceId(testId);
         assertEquals(testId, telephonyManager.getDeviceId());
     }
 

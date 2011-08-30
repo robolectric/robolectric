@@ -10,7 +10,7 @@ public class ShadowTelephonyManager {
 	
 	private PhoneStateListener listener;
 	private int eventFlags;
-    private static String deviceId;
+    private String deviceId;
     private String networkOperatorName;
     private String networkCountryIso;
     private String networkOperator;
@@ -47,7 +47,7 @@ public class ShadowTelephonyManager {
         return deviceId;
     }
 
-    public static void setDeviceId(String newDeviceId) {
+    public void setDeviceId(String newDeviceId) {
         deviceId = newDeviceId;
     }
 
