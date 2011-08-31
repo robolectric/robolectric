@@ -17,6 +17,9 @@ import java.util.HashMap;
 public class ShadowWebView extends ShadowAbsoluteLayout {
 
     private String lastUrl;
+    private String lastLoadedData;
+    private String lastLoadedMimeType;
+    private String lastLoadedEncoding;
     private HashMap<String, Object> javascriptInterfaces = new HashMap<String, Object>();
     private WebSettings webSettings = Robolectric.newInstanceOf(WebSettings.class);
     private WebViewClient webViewClient = null;
@@ -39,6 +42,13 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     @Implementation
     public void loadUrl(String url) {
         lastUrl = url;
+    }
+
+    @Implementation
+    public void loadData(String data, String mimeType, String encoding) {
+        lastLoadedData = data;
+        lastLoadedMimeType = mimeType;
+        lastLoadedEncoding = encoding;
     }
 
     /**
@@ -178,5 +188,17 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
      */
     public void setCanGoBack(boolean canGoBack) {
         this.canGoBack = canGoBack;
+    }
+
+    public String getLastLoadedData() {
+        return lastLoadedData;
+    }
+
+    public String getLastLoadedMimeType() {
+        return lastLoadedMimeType;
+    }
+
+    public String getLastLoadedEncoding() {
+        return lastLoadedEncoding;
     }
 }

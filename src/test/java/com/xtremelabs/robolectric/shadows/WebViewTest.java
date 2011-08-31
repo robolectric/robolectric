@@ -36,6 +36,14 @@ public class WebViewTest {
     }
 
     @Test
+    public void shouldRecordLastLoadedData() {
+        webView.loadData("<html><body><h1>Hi</h1></body></html>", "text/html", "utf-8");
+        assertThat(shadowOf(webView).getLastLoadedData(), equalTo("<html><body><h1>Hi</h1></body></html>"));
+        assertThat(shadowOf(webView).getLastLoadedMimeType(), equalTo("text/html"));
+        assertThat(shadowOf(webView).getLastLoadedEncoding(), equalTo("utf-8"));
+    }
+
+    @Test
     public void shouldReturnSettings() {
         WebSettings webSettings = webView.getSettings();
         ShadowWebSettings shadowWebSettings = Robolectric.shadowOf(webSettings);
