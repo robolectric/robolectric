@@ -3,7 +3,6 @@ package com.xtremelabs.robolectric.shadows;
 import android.util.Log;
 import com.xtremelabs.robolectric.ShadowLog;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -105,11 +104,6 @@ public class LogTest {
         Log.wtf("tag", "msg", throwable);
 
         assertLogged(ShadowLog.LogType.wtf, "tag", "msg", throwable);
-    }
-
-    @After
-    public void tearDown() {
-        ShadowLog.reset();
     }
 
     private void assertLogged(ShadowLog.LogType type, String tag, String msg, Throwable throwable) {
