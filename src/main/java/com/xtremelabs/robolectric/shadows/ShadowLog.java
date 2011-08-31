@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric;
+package com.xtremelabs.robolectric.shadows;
 
 import android.util.Log;
 import com.xtremelabs.robolectric.internal.Implementation;

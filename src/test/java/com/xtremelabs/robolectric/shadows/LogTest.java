@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.util.Log;
-import com.xtremelabs.robolectric.ShadowLog;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
