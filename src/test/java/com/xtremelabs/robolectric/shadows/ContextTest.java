@@ -51,7 +51,7 @@ public class ContextTest {
 
         File file = null;
         try {
-            file = new File("__test__");
+            file = new File(context.getFilesDir(), "__test__");
             FileWriter fileWriter = new FileWriter(file);
             fileWriter.write(fileContents);
             fileWriter.close();
@@ -83,7 +83,7 @@ public class ContextTest {
             String fileContents = "blah";
             fileOutputStream.write(fileContents.getBytes());
 
-            FileInputStream fileInputStream = new FileInputStream(file);
+            FileInputStream fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()));
             byte[] readBuffer = new byte[fileContents.length()];
             fileInputStream.read(readBuffer);
             assertThat(new String(readBuffer), equalTo(fileContents));
