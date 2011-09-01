@@ -332,7 +332,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         DatabaseConfig.setDatabaseMap(this.databaseMap);//Set static DatabaseMap in DBConfig
         
         Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
-        ShadowContext.clearFilesAndCache();
     }
 
     
