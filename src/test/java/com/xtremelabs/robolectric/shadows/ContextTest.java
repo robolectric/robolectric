@@ -14,6 +14,7 @@ import java.io.FileWriter;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -25,6 +26,8 @@ public class ContextTest {
     @Before
     public void setUp() throws Exception {
         context = new Activity();
+        assertThat(context.getFilesDir().listFiles().length, is(0));
+        assertThat(context.getCacheDir().listFiles().length, is(0));
     }
 
     @Test
@@ -49,23 +52,16 @@ public class ContextTest {
     public void openFileInput_shouldReturnAFileInputStream() throws Exception {
         String fileContents = "blah";
 
-        File file = null;
-        try {
-            file = new File(context.getFilesDir(), "__test__");
-            FileWriter fileWriter = new FileWriter(file);
-            fileWriter.write(fileContents);
-            fileWriter.close();
+        File file = new File(context.getFilesDir(), "__test__");
+        FileWriter fileWriter = new FileWriter(file);
+        fileWriter.write(fileContents);
+        fileWriter.close();
 
-            FileInputStream fileInputStream = context.openFileInput("__test__");
+        FileInputStream fileInputStream = context.openFileInput("__test__");
 
-            byte[] bytes = new byte[fileContents.length()];
-            fileInputStream.read(bytes);
-            assertThat(bytes, equalTo(fileContents.getBytes()));
-        } finally {
-            if (file != null) {
-                file.delete();
-            }
-        }
+        byte[] bytes = new byte[fileContents.length()];
+        fileInputStream.read(bytes);
+        assertThat(bytes, equalTo(fileContents.getBytes()));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -75,23 +71,15 @@ public class ContextTest {
 
     @Test
     public void openFileOutput_shouldReturnAFileOutputStream() throws Exception {
-        File file = null;
-        try {
-            file = new File("__test__");
-            FileOutputStream fileOutputStream = context.openFileOutput("__test__", -1);
+        File file = new File("__test__");
+        FileOutputStream fileOutputStream = context.openFileOutput("__test__", -1);
+        String fileContents = "blah";
+        fileOutputStream.write(fileContents.getBytes());
 
-            String fileContents = "blah";
-            fileOutputStream.write(fileContents.getBytes());
-
-            FileInputStream fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()));
-            byte[] readBuffer = new byte[fileContents.length()];
-            fileInputStream.read(readBuffer);
-            assertThat(new String(readBuffer), equalTo(fileContents));
-        } finally {
-            if (file != null) {
-                file.delete();
-            }
-        }
+        FileInputStream fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()));
+        byte[] readBuffer = new byte[fileContents.length()];
+        fileInputStream.read(readBuffer);
+        assertThat(new String(readBuffer), equalTo(fileContents));
     }
 
     @Test(expected = IllegalArgumentException.class)
