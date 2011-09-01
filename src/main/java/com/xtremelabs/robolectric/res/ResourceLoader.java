@@ -6,6 +6,8 @@ import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
 
 import java.io.BufferedReader;
@@ -84,8 +86,13 @@ public class ResourceLoader {
     
     public void setStrictI18n(boolean strict) {
     	this.strictI18n = strict;
+    	if (viewLoader != null ) 	   { viewLoader.setStrictI18n(strict); }
+    	if (menuLoader != null ) 	   { menuLoader.setStrictI18n(strict); }
+    	if (preferenceLoader != null ) { preferenceLoader.setStrictI18n(strict); }
     }
-
+    
+    public boolean getStrictI18n() { return strictI18n; }
+    
     private void init() {
         if (isInitialized) {
             return;
@@ -118,6 +125,8 @@ public class ResourceLoader {
                 menuLoader = null;
                 preferenceLoader = null;
             }
+        } catch(I18nException e) {
+        	throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -32,7 +32,7 @@ public class PreferenceLoader extends XmlLoader {
 
 	@Override
 	protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
-		PreferenceNode topLevelNode = new PreferenceNode("top-level", new HashMap<String, String>(), strictI18n);
+		PreferenceNode topLevelNode = new PreferenceNode("top-level", new HashMap<String, String>());
 		processChildren(document.getChildNodes(), topLevelNode);
 		prefNodesByResourceName.put( "xml/" + xmlFile.getName().replace(".xml", ""), topLevelNode.getChildren().get(0));
 	}
@@ -58,7 +58,7 @@ public class PreferenceLoader extends XmlLoader {
         }
         
         if (!name.startsWith("#")) {
-	        PreferenceNode prefNode = new PreferenceNode(name, attrMap, strictI18n);
+	        PreferenceNode prefNode = new PreferenceNode(name, attrMap);
 	        if (parent != null) parent.addChild(prefNode);
 	
 	        processChildren(node.getChildNodes(), prefNode);  
@@ -82,15 +82,13 @@ public class PreferenceLoader extends XmlLoader {
 
     public class PreferenceNode {
         private String name;
-        private boolean strictI18n;
         private final Map<String, String> attributes;
         
         private List<PreferenceNode> children = new ArrayList<PreferenceNode>();
 
-        public PreferenceNode(String name, Map<String, String> attributes, boolean strictI18n) {
+        public PreferenceNode(String name, Map<String, String> attributes) {
             this.name = name;
             this.attributes = attributes;
-            this.strictI18n = strictI18n;
         }
 
         public List<PreferenceNode> getChildren() {

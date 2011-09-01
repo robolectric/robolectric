@@ -35,7 +35,7 @@ public class ViewLoader extends XmlLoader {
 
     @Override
     protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
-        ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>(), isSystem, strictI18n);
+        ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>(), isSystem);
         processChildren(document.getChildNodes(), topLevelNode);
         String layoutName = "layout/" + xmlFile.getName().replace(".xml", "");
         if (isSystem) {
@@ -67,7 +67,7 @@ public class ViewLoader extends XmlLoader {
             parent.attributes.put("android:focus", "true");
             parent.requestFocusOverride = true;
         } else if (!name.startsWith("#")) {
-            ViewNode viewNode = new ViewNode(name, attrMap, parent.isSystem, strictI18n);
+            ViewNode viewNode = new ViewNode(name, attrMap, parent.isSystem);
             if (parent != null) parent.addChild(viewNode);
 
             processChildren(node.getChildNodes(), viewNode);
@@ -114,13 +114,11 @@ public class ViewLoader extends XmlLoader {
         private List<ViewNode> children = new ArrayList<ViewNode>();
         boolean requestFocusOverride = false;
         boolean isSystem = false;
-        boolean strictI18n = false;
 
-        public ViewNode(String name, Map<String, String> attributes, boolean isSystem, boolean strictI18n) {
+        public ViewNode(String name, Map<String, String> attributes, boolean isSystem) {
             this.name = name;
             this.attributes = attributes;
             this.isSystem = isSystem;
-            this.strictI18n = strictI18n;
         }
 
         public List<ViewNode> getChildren() {

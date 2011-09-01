@@ -18,6 +18,7 @@ import android.preference.RingtonePreference;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.I18nException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
@@ -49,6 +50,19 @@ public class PreferenceLoaderTest {
     public void shouldLoadByResourceId() {
        	PreferenceScreen screen = prefLoader.inflatePreferences(new Activity(), R.xml.preferences); 	
        	assertThatScreenMatchesExpected(screen); 	
+    }
+    
+    @Test(expected=I18nException.class) 
+    public void shouldThrowI18nExceptionOnPrefsWithBareStrings() throws Exception {
+        ResourceExtractor resourceExtractor = new ResourceExtractor();
+        resourceExtractor.addLocalRClass(R.class);
+        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
+        prefLoader = new PreferenceLoader(resourceExtractor);
+        prefLoader.setStrictI18n(true);
+        new DocumentLoader(prefLoader).loadResourceXmlDir(resourceFile("res", "xml"));   
+
+        prefLoader.inflatePreferences(Robolectric.application, R.xml.preferences);
     }
     
     protected void assertThatScreenMatchesExpected(PreferenceScreen screen) {

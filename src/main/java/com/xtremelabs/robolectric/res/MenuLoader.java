@@ -4,6 +4,8 @@ import android.content.Context;
 import android.view.Menu;
 import android.view.MenuItem;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import com.xtremelabs.robolectric.util.I18nException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -26,7 +28,7 @@ public class MenuLoader extends XmlLoader {
 
     @Override
     protected void processResourceXml(File xmlFile, Document document, boolean ignored) throws Exception {
-        MenuNode topLevelNode = new MenuNode("top-level", new HashMap<String, String>(), strictI18n);
+        MenuNode topLevelNode = new MenuNode("top-level", new HashMap<String, String>());
 
         NodeList items = document.getChildNodes();
         if (items.getLength() != 1)
@@ -60,7 +62,7 @@ public class MenuLoader extends XmlLoader {
         }
 
         if (!name.startsWith("#")) {
-            MenuNode menuNode = new MenuNode(name, attrMap, strictI18n);
+            MenuNode menuNode = new MenuNode(name, attrMap);
             parent.addChild(menuNode);
             if (node.getChildNodes().getLength() != 0)
                 throw new RuntimeException(node.getChildNodes().toString());
@@ -89,6 +91,8 @@ public class MenuLoader extends XmlLoader {
                 }
             }
             menuNode.inflate(context, root);
+        } catch (I18nException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + key, e);
         }
@@ -100,12 +104,9 @@ public class MenuLoader extends XmlLoader {
 
         private List<MenuNode> children = new ArrayList<MenuNode>();
 
-        public MenuNode(String name, Map<String, String> attributes, boolean strictI18n) {
+        public MenuNode(String name, Map<String, String> attributes) {
             this.name = name;
             this.attributes = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, null, false);
-            if ( strictI18n ) { 
-            	this.attributes.validateStrictI18n();
-            }
         }
 
         public List<MenuNode> getChildren() {
@@ -118,8 +119,12 @@ public class MenuLoader extends XmlLoader {
 
         public void inflate(Context context, Menu root) throws Exception {
             for (MenuNode child : children) {
-                MenuItem menuItem = root.add(0, child.attributes.getAttributeResourceValue("android", "id", 0),
-                        0, child.attributes.getAttributeValue("android", "title"));
+            	TestAttributeSet attributes = child.attributes;
+                if ( strictI18n ) { 
+                	attributes.validateStrictI18n();
+                }
+                MenuItem menuItem = root.add(0, attributes.getAttributeResourceValue("android", "id", 0),
+                        0, attributes.getAttributeValue("android", "title"));
             }
         }
     }
