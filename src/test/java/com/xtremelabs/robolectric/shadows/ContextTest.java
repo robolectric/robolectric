@@ -44,6 +44,17 @@ public class ContextTest {
     }
 
     @Test
+    public void shouldWriteToCacheDir() throws Exception {
+        File cacheTest = new File(context.getCacheDir(), "__test__");
+
+        FileOutputStream fos = new FileOutputStream(cacheTest);
+        fos.write("test".getBytes());
+        fos.close();
+
+        assertTrue(cacheTest.exists());
+    }
+
+    @Test
     public void getFilesDir_shouldCreateDirectory() throws Exception {
         assertTrue(context.getFilesDir().exists());
     }
