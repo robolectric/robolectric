@@ -38,7 +38,6 @@ public class MenuLoaderTest {
         new DocumentLoader(stringResourceLoader).loadSystemResourceXmlDir(getSystemResourceDir("values"));
 
         menuLoader = new MenuLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
-        menuLoader.setStrictI18n(true);
         new DocumentLoader(menuLoader).loadResourceXmlDir(resourceFile("res", "menu"));
 	}
 
@@ -49,6 +48,7 @@ public class MenuLoaderTest {
 	@Test(expected=I18nException.class)
 	public void shouldThrowI18nExceptionOnMenuWithBareStrings() throws Exception {
 		Menu testMenu = new TestMenu();
+        menuLoader.setStrictI18n(true);
 		menuLoader.inflateMenu(Robolectric.application, R.menu.test, testMenu);
 	}
 	

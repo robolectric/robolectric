@@ -45,7 +45,15 @@ public class ViewLoaderTest {
     public void setUp() throws Exception {
         Robolectric.bindDefaultShadowClasses();
 
-        viewLoader = createViewLoader();
+        ResourceExtractor resourceExtractor = new ResourceExtractor();
+        resourceExtractor.addLocalRClass(R.class);
+        resourceExtractor.addSystemRClass(android.R.class);
+
+        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
+        new DocumentLoader(stringResourceLoader).loadSystemResourceXmlDir(getSystemResourceDir("values"));
+        
+        viewLoader =  new ViewLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
         new DocumentLoader(viewLoader).loadResourceXmlDir(resourceFile("res", "layout"));
         new DocumentLoader(viewLoader).loadSystemResourceXmlDir(getSystemResourceDir("layout"));
 
@@ -303,24 +311,11 @@ public class ViewLoaderTest {
     
     @Test(expected=I18nException.class)
     public void shouldThrowI18nExceptionOnLayoutWithBareStrings() throws Exception {
-    	viewLoader = createViewLoader();
     	viewLoader.setStrictI18n(true);
         new DocumentLoader(viewLoader).loadResourceXmlDir(resourceFile("res", "layout"));
         new DocumentLoader(viewLoader).loadSystemResourceXmlDir(getSystemResourceDir("layout"));
 
     	viewLoader.inflateView(context,"layout/text_views");
-    }
-    
-    private ViewLoader createViewLoader() throws Exception {
-        ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
-        resourceExtractor.addSystemRClass(android.R.class);
-
-        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
-        new DocumentLoader(stringResourceLoader).loadSystemResourceXmlDir(getSystemResourceDir("values"));
-        
-        return new ViewLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
     }
 
     public static class ClickActivity extends Activity {
