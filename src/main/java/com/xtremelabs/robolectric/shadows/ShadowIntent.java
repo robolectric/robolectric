@@ -1,7 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static android.content.Intent.*;
-
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -14,9 +12,19 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.Join;
 
-import java.io.*;
-import java.util.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
+import static android.content.Intent.*;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -35,16 +43,6 @@ public class ShadowIntent {
     private Set<String> categories = new HashSet<String>();
     private String uri;
 
-    @Implementation
-    public static Intent createChooser(Intent target, CharSequence title) {
-        Intent intent = new Intent(Intent.ACTION_CHOOSER);
-        intent.putExtra(Intent.EXTRA_INTENT, target);
-        if (title != null) {
-            intent.putExtra(Intent.EXTRA_TITLE, title);
-        }
-        return intent;
-    }
-
     public void __constructor__(Context packageContext, Class cls) {
         componentName = new ComponentName(packageContext, cls);
         intentClass = cls;
@@ -57,6 +55,16 @@ public class ShadowIntent {
 
     public void __constructor__(String action) {
         __constructor__(action, null);
+    }
+
+    @Implementation
+    public static Intent createChooser(Intent target, CharSequence title) {
+        Intent intent = new Intent(Intent.ACTION_CHOOSER);
+        intent.putExtra(Intent.EXTRA_INTENT, target);
+        if (title != null) {
+            intent.putExtra(Intent.EXTRA_TITLE, title);
+        }
+        return intent;
     }
 
     @Implementation
