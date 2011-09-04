@@ -61,6 +61,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return defaultLoader;
     }
     public static void setDefaultLoader(Loader robolectricClassLoader) {
+    	//used by the RoboSpecs project to allow for mixed scala\java tests to be run with Maven Surefire (see the RoboSpecs project on github)
         if (defaultLoader == null) {
             defaultLoader = (RobolectricClassLoader)robolectricClassLoader;
         } else throw new RuntimeException("You may not set the default robolectricClassLoader unless it is null!");
