@@ -35,7 +35,7 @@ public class RobolectricClassLoader extends javassist.Loader {
     
     @Override
     public Class loadClass(String name) throws ClassNotFoundException {
-        boolean shouldComeFromThisClassLoader = !(name.startsWith("org.junit") || name.startsWith("org.hamcrest"));
+        boolean shouldComeFromThisClassLoader = !(name.startsWith("org.junit") || name.startsWith("org.hamcrest")  || name.startsWith("org.specs2") || name.startsWith("scala."));
 
         Class<?> theClass;
         if (shouldComeFromThisClassLoader) {
