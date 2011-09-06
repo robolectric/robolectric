@@ -1,8 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.content.ContentResolver;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
+import android.text.method.PasswordTransformationMethod;
 import android.text.style.URLSpan;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -10,6 +12,8 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.core.IsAnything;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,10 +24,8 @@ import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
@@ -128,6 +130,23 @@ public class TextViewTest {
         TextView grey = (TextView) activity.findViewById(R.id.grey_text_view_hint);
         assertThat(grey.getHint().toString(), equalTo("Grey Hint"));
         assertThat(shadowOf(grey).getHintColorHexValue(), equalTo(activity.getResources().getColor(R.color.grey42)));
+    }
+
+    @Test
+    public void shouldNotHaveTransformationMethodByDefault(){
+
+        ShadowTextView view = new ShadowTextView();
+
+        assertThat(view.getTransformationMethod(), is(CoreMatchers.<Object>nullValue()));
+    }
+
+    @Test
+    public void shouldAllowSettingATransformationMethod(){
+
+        ShadowTextView view = new ShadowTextView();
+        view.setTransformationMethod(new ShadowPasswordTransformationMethod());
+
+        assertEquals(view.getTransformationMethod().getClass(), ShadowPasswordTransformationMethod.class);
     }
     
     private List<String> urlStringsFrom(URLSpan[] urlSpans) {
