@@ -44,7 +44,7 @@ public class ShadowSQLiteDatabase  {
     private final ReentrantLock mLock = new ReentrantLock(true);
     private boolean mLockingEnabled = true;
     private WeakHashMap<SQLiteClosable, Object> mPrograms;
-    private static boolean transactionSuccess = false;
+    private boolean transactionSuccess = false;
     
     @Implementation
     public void setLockingEnabled(boolean lockingEnabled) {
@@ -278,7 +278,6 @@ public class ShadowSQLiteDatabase  {
 	public void beginTransaction() {
 		try {
 			connection.setAutoCommit(false);
-			transactionSuccess = false;
 		} catch (SQLException e) {
 			throw new RuntimeException("SQL exception in beginTransaction", e);
 		}
@@ -298,6 +297,7 @@ public class ShadowSQLiteDatabase  {
 	public void endTransaction() {
 		try {
 			if (transactionSuccess) {
+				transactionSuccess = false;
 				connection.commit();
 			} else {
 				connection.rollback();
@@ -306,6 +306,14 @@ public class ShadowSQLiteDatabase  {
 		} catch (SQLException e) {
 			throw new RuntimeException("SQL exception in beginTransaction", e);
 		}
+	}
+	
+	/**
+	 * Allows tests cases to query the transaction state
+	 * @return
+	 */
+	public boolean isTransactionSuccess() { 
+		return transactionSuccess; 
 	}
 
     /**
