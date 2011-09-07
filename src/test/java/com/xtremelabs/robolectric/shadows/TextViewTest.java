@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.ContentResolver;
+import android.text.InputType;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.method.PasswordTransformationMethod;
@@ -147,6 +148,15 @@ public class TextViewTest {
         view.setTransformationMethod(new ShadowPasswordTransformationMethod());
 
         assertEquals(view.getTransformationMethod().getClass(), ShadowPasswordTransformationMethod.class);
+    }
+
+    @Test
+    public void shouldBeAbleToSetAndGetTheInputType(){
+
+        ShadowTextView view = new ShadowTextView();
+        view.setInputType(InputType.TYPE_CLASS_TEXT);
+
+        assertThat(view.getInputType(), is(InputType.TYPE_CLASS_TEXT));
     }
     
     private List<String> urlStringsFrom(URLSpan[] urlSpans) {

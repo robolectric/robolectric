@@ -37,6 +37,7 @@ public class ShadowTextView extends ShadowView {
     private int imeOptions = EditorInfo.IME_NULL;
     private int textAppearanceId;
     private TransformationMethod transformationMethod;
+    private int inputType;
 
     @Override
     public void applyAttributes() {
@@ -337,6 +338,16 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public TransformationMethod getTransformationMethod() {
         return transformationMethod;
+    }
+
+    @Implementation
+    public void setInputType(int value) {
+        inputType = value;
+    }
+
+    @Implementation
+    public int getInputType() {
+        return inputType;
     }
 
     public static class CompoundDrawables {
