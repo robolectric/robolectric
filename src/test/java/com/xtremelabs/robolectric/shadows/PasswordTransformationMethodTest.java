@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
-public class ShadowPasswordTransformationMethodTest {
+public class PasswordTransformationMethodTest {
 
     private ShadowPasswordTransformationMethod transformationMethod;
 
