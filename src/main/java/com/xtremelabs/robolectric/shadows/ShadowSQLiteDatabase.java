@@ -44,6 +44,7 @@ public class ShadowSQLiteDatabase  {
     private final ReentrantLock mLock = new ReentrantLock(true);
     private boolean mLockingEnabled = true;
     private WeakHashMap<SQLiteClosable, Object> mPrograms;
+    private static boolean transactionSuccess = false;
     
     @Implementation
     public void setLockingEnabled(boolean lockingEnabled) {
@@ -59,7 +60,6 @@ public class ShadowSQLiteDatabase  {
         if (!mLockingEnabled) return;
         mLock.unlock();
     }
-    
     
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
@@ -273,6 +273,40 @@ public class ShadowSQLiteDatabase  {
             throw new RuntimeException("SQL exception in close", e);
         }
     }
+
+	@Implementation
+	public void beginTransaction() {
+		try {
+			connection.setAutoCommit(false);
+			transactionSuccess = false;
+		} catch (SQLException e) {
+			throw new RuntimeException("SQL exception in beginTransaction", e);
+		}
+	}
+
+	@Implementation
+	public void setTransactionSuccessful() {
+		if (!isOpen()) {
+			throw new IllegalStateException("connection is not opened");
+		} else if (transactionSuccess) {
+			throw new IllegalStateException("transaction already successfully");
+		}
+		transactionSuccess = true;
+	}
+
+	@Implementation
+	public void endTransaction() {
+		try {
+			if (transactionSuccess) {
+				connection.commit();
+			} else {
+				connection.rollback();
+			}
+			connection.setAutoCommit(true);
+		} catch (SQLException e) {
+			throw new RuntimeException("SQL exception in beginTransaction", e);
+		}
+	}
 
     /**
      * Allows test cases access to the underlying JDBC connection, for use in

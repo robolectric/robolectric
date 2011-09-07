@@ -43,8 +43,8 @@ public class TelephonyManagerTest {
     @Test
     public void shouldGiveDeviceId() {
         String testId = "TESTING123";
-        ShadowTelephonyManager.setDeviceId(testId);
         TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+        shadowOf(telephonyManager).setDeviceId(testId);
         assertEquals(testId, telephonyManager.getDeviceId());
     }
 
@@ -70,6 +70,12 @@ public class TelephonyManagerTest {
         ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
         shadowTelephonyManager.setNetworkOperator("SomeOperator");
         assertEquals("SomeOperator", telephonyManager.getNetworkOperator());
+    }
+
+    @Test(expected = SecurityException.class)
+    public void getDeviceId_shouldThrowSecurityExceptionWhenReadPhoneStatePermissionNotGranted() throws Exception {
+        shadowManager.setReadPhoneStatePermission(false);
+        manager.getDeviceId();
     }
 
 	private class MyPhoneStateListener extends PhoneStateListener {

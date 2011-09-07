@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric;
+package com.xtremelabs.robolectric.shadows;
 
 import android.util.Log;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -8,7 +8,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Implements(Log.class)
-public class ShadowLogger {
+public class ShadowLog {
     private static List<LogItem> logs = new ArrayList<LogItem>();
 
     @Implementation

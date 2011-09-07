@@ -53,6 +53,7 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -183,6 +184,7 @@ public class Robolectric {
                 ShadowAlarmManager.class,
                 ShadowAlertDialog.class,
                 ShadowAlertDialog.ShadowBuilder.class,
+                ShadowAndroidHttpClient.class,
                 ShadowAnimation.class,
                 ShadowAnimationUtils.class,
                 ShadowApplication.class,
@@ -255,7 +257,7 @@ public class Robolectric {
                 ShadowListView.class,
                 ShadowLocation.class,
                 ShadowLocationManager.class,
-                ShadowLogger.class,
+                ShadowLog.class,
                 ShadowLooper.class,
                 ShadowMapController.class,
                 ShadowMapActivity.class,
@@ -308,6 +310,8 @@ public class Robolectric {
                 ShadowSimpleCursorAdapter.class,
                 ShadowShapeDrawable.class,
                 ShadowSpannableStringBuilder.class,
+                ShadowSyncResult.class,
+                ShadowSyncResult.ShadowSyncStats.class,
                 ShadowSQLiteProgram.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
@@ -334,6 +338,7 @@ public class Robolectric {
                 ShadowViewStub.class,
                 ShadowWebSettings.class,
                 ShadowWebView.class,
+                ShadowWifiInfo.class,
                 ShadowWifiManager.class,
                 ShadowWindow.class,
                 ShadowZoomButtonsController.class
@@ -346,6 +351,7 @@ public class Robolectric {
         ShadowBitmapFactory.reset();
         ShadowDrawable.reset();
         ShadowMediaStore.reset();
+        ShadowLog.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -386,6 +392,10 @@ public class Robolectric {
 
     public static ShadowConnectivityManager shadowOf(ConnectivityManager instance) {
         return (ShadowConnectivityManager) shadowOf_(instance);
+    }
+
+    public static ShadowWifiInfo shadowOf(WifiInfo instance) {
+        return (ShadowWifiInfo) shadowOf_(instance);
     }
 
     public static ShadowWifiManager shadowOf(WifiManager instance) {

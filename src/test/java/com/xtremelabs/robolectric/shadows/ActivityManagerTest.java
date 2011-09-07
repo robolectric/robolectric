@@ -12,7 +12,7 @@ import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
-public class ShadowActivityManagerTest {
+public class ActivityManagerTest {
     @Test
     public void canGetMemoryInfoForOurProcess() {
         ActivityManager activityManager = (ActivityManager) Robolectric.application.getSystemService(Context.ACTIVITY_SERVICE);

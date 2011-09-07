@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -458,6 +459,31 @@ public class SQLiteDatabaseTest {
         cursor.moveToFirst();
         assertEquals(1234567890123456789L, cursor.getLong(0));
     }
+
+	@Test
+	public void testSuccessTransaction() throws SQLException {
+		database.beginTransaction();
+		database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
+		database.setTransactionSuccessful();
+		database.endTransaction();
+
+		Statement statement = shadowOf(database).getConnection().createStatement();
+		ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
+		assertThat(resultSet.next(), equalTo(true));
+		assertThat(resultSet.getInt(1), equalTo(1));
+	}
+
+	@Test
+	public void testFailureTransaction() throws SQLException {
+		database.beginTransaction();
+		database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
+		database.endTransaction();
+
+		Statement statement = shadowOf(database).getConnection().createStatement();
+		ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
+		assertThat(resultSet.next(), equalTo(true));
+		assertThat(resultSet.getInt(1), equalTo(0));
+	}
 
     private void addChuck() {
         addPerson(1234L, "Chuck");

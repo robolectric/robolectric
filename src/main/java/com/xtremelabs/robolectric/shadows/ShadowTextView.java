@@ -35,6 +35,7 @@ public class ShadowTextView extends ShadowView {
     private TextView.OnEditorActionListener onEditorActionListener;
     private int imeOptions = EditorInfo.IME_NULL;
     private int textAppearanceId;
+    private int inputType;
 
     @Override
     public void applyAttributes() {
@@ -82,6 +83,16 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public void setTextAppearance(Context context, int resid) {
         textAppearanceId = resid;
+    }
+
+    @Implementation
+    public void setInputType(int type){
+        this.inputType = type;
+    }
+
+    @Implementation
+    public int getInputType() {
+        return this.inputType;
     }
 
     @Implementation

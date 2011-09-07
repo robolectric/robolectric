@@ -1,5 +1,8 @@
 package com.xtremelabs.robolectric.tester.android.view;
 
+import com.xtremelabs.robolectric.Robolectric;
+
+import android.app.Application;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.ContextMenu;
@@ -156,6 +159,8 @@ public class TestMenuItem implements MenuItem {
     public void click() {
         if (enabled && menuItemClickListener != null) {
             menuItemClickListener.onMenuItemClick(this);
+        } else if (enabled && intent != null) {
+        	Robolectric.application.startActivity(intent);
         }
     }
 }

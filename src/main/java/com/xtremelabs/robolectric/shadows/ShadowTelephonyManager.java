@@ -10,10 +10,11 @@ public class ShadowTelephonyManager {
 	
 	private PhoneStateListener listener;
 	private int eventFlags;
-    private static String deviceId;
+    private String deviceId;
     private String networkOperatorName;
     private String networkCountryIso;
     private String networkOperator;
+    private boolean readPhoneStatePermission = true;
 
     @Implementation
 	public void listen(PhoneStateListener listener, int events) {
@@ -42,10 +43,11 @@ public class ShadowTelephonyManager {
 
     @Implementation
     public String getDeviceId() {
+        checkReadPhoneStatePermission();
         return deviceId;
     }
 
-    public static void setDeviceId(String newDeviceId) {
+    public void setDeviceId(String newDeviceId) {
         deviceId = newDeviceId;
     }
 
@@ -74,5 +76,15 @@ public class ShadowTelephonyManager {
     @Implementation
     public String getNetworkOperator() {
         return networkOperator;
+    }
+
+    public void setReadPhoneStatePermission(boolean readPhoneStatePermission) {
+        this.readPhoneStatePermission = readPhoneStatePermission;
+    }
+
+    private void checkReadPhoneStatePermission() {
+        if (!readPhoneStatePermission) {
+            throw new SecurityException();
+        }
     }
 }
