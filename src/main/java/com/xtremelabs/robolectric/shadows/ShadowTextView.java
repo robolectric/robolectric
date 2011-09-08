@@ -47,7 +47,7 @@ public class ShadowTextView extends ShadowView {
         applyCompoundDrawablesWithIntrinsicBoundsAttributes();
     }
 
-    @Implementation
+    @Implementation(i18nSafe=false)
     public void setText(CharSequence text) {
         if (text == null) {
             text = "";
@@ -100,7 +100,7 @@ public class ShadowTextView extends ShadowView {
         this.hintText = getResources().getText(resId);
     }
 
-    @Implementation
+    @Implementation(i18nSafe=false)
     public final void setHint(CharSequence hintText) {
         this.hintText = hintText;
     }

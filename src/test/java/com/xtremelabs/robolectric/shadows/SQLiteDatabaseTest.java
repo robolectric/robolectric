@@ -3,6 +3,8 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.After;
 import org.junit.Before;
@@ -18,15 +20,18 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class SQLiteDatabaseTest {
+	
     private SQLiteDatabase database;
+    private ShadowSQLiteDatabase shDatabase;
 
     @Before
     public void setUp() throws Exception {
         database = SQLiteDatabase.openDatabase("path", null, 0);
-
+        shDatabase = Robolectric.shadowOf( database );
         database.execSQL("CREATE TABLE table_name (\n" +
                 "  id INTEGER PRIMARY KEY AUTOINCREMENT,\n" +
                 "  first_column VARCHAR(255),\n" +
@@ -462,10 +467,15 @@ public class SQLiteDatabaseTest {
 
 	@Test
 	public void testSuccessTransaction() throws SQLException {
+		assertThat( shDatabase.isTransactionSuccess(), equalTo( false ) );
 		database.beginTransaction();
+		assertThat( shDatabase.isTransactionSuccess(), equalTo( false ) );
 		database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
+		assertThat( shDatabase.isTransactionSuccess(), equalTo( false ) );
 		database.setTransactionSuccessful();
+		assertThat( shDatabase.isTransactionSuccess(), equalTo( true ) );
 		database.endTransaction();
+		assertThat( shDatabase.isTransactionSuccess(), equalTo( false ) );
 
 		Statement statement = shadowOf(database).getConnection().createStatement();
 		ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
@@ -475,16 +485,33 @@ public class SQLiteDatabaseTest {
 
 	@Test
 	public void testFailureTransaction() throws SQLException {
+		assertThat( shDatabase.isTransactionSuccess(), equalTo( false ) );		
 		database.beginTransaction();
+		assertThat( shDatabase.isTransactionSuccess(), equalTo( false ) );		
 		database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
+		assertThat( shDatabase.isTransactionSuccess(), equalTo( false ) );		
 		database.endTransaction();
-
+		assertThat( shDatabase.isTransactionSuccess(), equalTo( false ) );
+		
 		Statement statement = shadowOf(database).getConnection().createStatement();
 		ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
 		assertThat(resultSet.next(), equalTo(true));
 		assertThat(resultSet.getInt(1), equalTo(0));
 	}
 
+	@Test
+	public void testTransactionAlreadySuccessful() {
+		database.beginTransaction();
+		database.setTransactionSuccessful();
+		try{
+			database.setTransactionSuccessful();
+			fail( "didn't receive the expected IllegalStateException");
+		}
+		catch( IllegalStateException e ) {
+			assertThat( e.getMessage(), equalTo("transaction already successfully") );
+		}
+	}
+	
     private void addChuck() {
         addPerson(1234L, "Chuck");
     }

@@ -1,6 +1,9 @@
 package com.xtremelabs.robolectric.bytecode;
 
+import com.xtremelabs.robolectric.RobolectricConfig;
+import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.Join;
 import javassist.CannotCompileException;
 import javassist.CtClass;
@@ -26,7 +29,8 @@ public class ShadowWrangler implements ClassHandler {
     private static ShadowWrangler singleton;
 
     public boolean debug = false;
-
+    private boolean strictI18n = false;
+    
     private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
     private Map<String, String> shadowClassMap = new HashMap<String, String>();
     private Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
@@ -41,6 +45,11 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     private ShadowWrangler() {
+    }
+    
+    @Override
+    public void configure(RobolectricConfig robolectricConfig) {
+    	strictI18n = robolectricConfig.getStrictI18n();
     }
 
     @Override
@@ -81,6 +90,10 @@ public class ShadowWrangler implements ClassHandler {
         if (!invocationPlan.prepare()) {
             reportNoShadowMethodFound(clazz, methodName, paramTypes);
             return null;
+        }
+        
+        if (strictI18n && !invocationPlan.isI18nSafe()) {
+        	throw new I18nException("Method " + methodName + " on class " + clazz.getName() + " is not i18n-safe.");
         }
 
         try {
@@ -292,6 +305,24 @@ public class ShadowWrangler implements ClassHandler {
         public Object getShadow() {
             return shadow;
         }
+        
+        public boolean isI18nSafe() {
+        	// method is loaded by another class loader. So do everything reflectively.
+        	Annotation[] annos = method.getAnnotations();
+        	for (int i = 0; i < annos.length; i++) {
+        		String name = annos[i].annotationType().getName();
+        		if (name.equals("com.xtremelabs.robolectric.internal.Implementation")) {
+					try {
+						Method m = (annos[i]).getClass().getMethod("i18nSafe");
+	        			return (Boolean) m.invoke(annos[i]);
+					} catch (Exception e) {
+						return true;	// should probably throw some other exception
+					}
+        		}
+        	}
+        	
+        	return true;	
+        }
 
         public boolean prepare() {
             Class<?>[] paramClasses = getParamClasses();
@@ -391,6 +422,7 @@ public class ShadowWrangler implements ClassHandler {
         private boolean isOnShadowClass(Method method) {
             Class<?> declaringClass = method.getDeclaringClass();
             // why doesn't getAnnotation(com.xtremelabs.robolectric.internal.Implements) work here? It always returns null. pg 20101115
+            // It doesn't work because the method and declaringClass were loaded by the delegate class loader. Different classloaders so types don't match. mp 20110823
             for (Annotation annotation : declaringClass.getAnnotations()) {
                 if (annotation.annotationType().toString().equals("interface com.xtremelabs.robolectric.internal.Implements")) {
                     return true;

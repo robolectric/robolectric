@@ -4,6 +4,8 @@ import android.content.Context;
 import android.view.Menu;
 import android.view.MenuItem;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import com.xtremelabs.robolectric.util.I18nException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -89,6 +91,8 @@ public class MenuLoader extends XmlLoader {
                 }
             }
             menuNode.inflate(context, root);
+        } catch (I18nException e) {
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + key, e);
         }
@@ -115,8 +119,12 @@ public class MenuLoader extends XmlLoader {
 
         public void inflate(Context context, Menu root) throws Exception {
             for (MenuNode child : children) {
-                MenuItem menuItem = root.add(0, child.attributes.getAttributeResourceValue("android", "id", 0),
-                        0, child.attributes.getAttributeValue("android", "title"));
+            	TestAttributeSet attributes = child.attributes;
+                if ( strictI18n ) { 
+                	attributes.validateStrictI18n();
+                }
+                MenuItem menuItem = root.add(0, attributes.getAttributeResourceValue("android", "id", 0),
+                        0, attributes.getAttributeValue("android", "title"));
             }
         }
     }

@@ -30,7 +30,7 @@ public class ShadowToast {
         return makeText(context, context.getResources().getString(resId), duration);
     }
 
-    @Implementation
+    @Implementation(i18nSafe=false)
     public static Toast makeText(Context context, CharSequence text, int duration) {
         Toast toast = new Toast(null);
         shadowOf(toast).text = text.toString();

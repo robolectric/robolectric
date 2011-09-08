@@ -47,6 +47,7 @@ public class RobolectricConfig {
     private boolean minSdkVersionSpecified = true;
     private int applicationFlags;
     private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
+    private boolean strictI18n = false;
 
     /**
      * Creates a Robolectric configuration using default Android files relative to the specified base directory.
@@ -253,6 +254,14 @@ public class RobolectricConfig {
         return receivers.get(receiverIndex).getIntentFilterActions();
     }
 
+    public boolean getStrictI18n() {
+    	return strictI18n;
+    }
+    
+    public void setStrictI18n(boolean strict) {
+    	strictI18n = strict;
+    }
+
     private static String getTagAttributeText(final Document doc, final String tag, final String attribute) {
         NodeList elementsByTagName = doc.getElementsByTagName(tag);
         for (int i = 0; i < elementsByTagName.getLength(); ++i) {
@@ -264,7 +273,7 @@ public class RobolectricConfig {
         }
         return null;
     }
-
+    
     private static Application newApplicationInstance(final String packageName, final String applicationName) {
         Application application;
         try {

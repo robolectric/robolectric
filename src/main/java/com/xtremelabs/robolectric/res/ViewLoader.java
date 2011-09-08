@@ -6,6 +6,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import com.xtremelabs.robolectric.util.I18nException;
+
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -98,6 +100,8 @@ public class ViewLoader extends XmlLoader {
                 }
             }
             return viewNode.inflate(context, parent);
+        } catch (I18nException e) {
+        	throw e;
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + layoutName, e);
         }
@@ -168,6 +172,9 @@ public class ViewLoader extends XmlLoader {
             Class<? extends View> clazz = pickViewClass();
             try {
                 TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, clazz, isSystem);
+                if ( strictI18n ) {
+                	attributeSet.validateStrictI18n();
+                }
                 return ((Constructor<? extends View>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
             } catch (NoSuchMethodException e) {
                 try {
