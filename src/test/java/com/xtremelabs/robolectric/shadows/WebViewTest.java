@@ -38,9 +38,21 @@ public class WebViewTest {
     @Test
     public void shouldRecordLastLoadedData() {
         webView.loadData("<html><body><h1>Hi</h1></body></html>", "text/html", "utf-8");
-        assertThat(shadowOf(webView).getLastLoadedData(), equalTo("<html><body><h1>Hi</h1></body></html>"));
-        assertThat(shadowOf(webView).getLastLoadedMimeType(), equalTo("text/html"));
-        assertThat(shadowOf(webView).getLastLoadedEncoding(), equalTo("utf-8"));
+        ShadowWebView.LoadData lastLoadData = shadowOf(webView).getLastLoadData();
+        assertThat(lastLoadData.data, equalTo("<html><body><h1>Hi</h1></body></html>"));
+        assertThat(lastLoadData.mimeType, equalTo("text/html"));
+        assertThat(lastLoadData.encoding, equalTo("utf-8"));
+    }
+
+    @Test
+    public void shouldRecordLastLoadDataWithBaseURL() throws Exception {
+        webView.loadDataWithBaseURL("base/url", "<html><body><h1>Hi</h1></body></html>", "text/html", "utf-8", "history/url");
+        ShadowWebView.LoadDataWithBaseURL lastLoadData = shadowOf(webView).getLastLoadDataWithBaseURL();
+        assertThat(lastLoadData.baseUrl, equalTo("base/url"));
+        assertThat(lastLoadData.data, equalTo("<html><body><h1>Hi</h1></body></html>"));
+        assertThat(lastLoadData.mimeType, equalTo("text/html"));
+        assertThat(lastLoadData.encoding, equalTo("utf-8"));
+        assertThat(lastLoadData.historyUrl, equalTo("history/url"));
     }
 
     @Test

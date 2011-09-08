@@ -17,9 +17,6 @@ import java.util.HashMap;
 public class ShadowWebView extends ShadowAbsoluteLayout {
 
     private String lastUrl;
-    private String lastLoadedData;
-    private String lastLoadedMimeType;
-    private String lastLoadedEncoding;
     private HashMap<String, Object> javascriptInterfaces = new HashMap<String, Object>();
     private WebSettings webSettings = Robolectric.newInstanceOf(WebSettings.class);
     private WebViewClient webViewClient = null;
@@ -33,6 +30,8 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     private WebChromeClient webChromeClient;
     private boolean canGoBack;
     private int goBackInvocations = 0;
+    private ShadowWebView.LoadData lastLoadData;
+    private LoadDataWithBaseURL lastLoadDataWithBaseURL;
 
     @Override
     public void __constructor__(Context context, AttributeSet attributeSet) {
@@ -45,10 +44,13 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     }
 
     @Implementation
+    public void loadDataWithBaseURL(String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
+        lastLoadDataWithBaseURL = new LoadDataWithBaseURL(baseUrl, data, mimeType, encoding, historyUrl);
+    }
+
+    @Implementation
     public void loadData(String data, String mimeType, String encoding) {
-        lastLoadedData = data;
-        lastLoadedMimeType = mimeType;
-        lastLoadedEncoding = encoding;
+        lastLoadData = new LoadData(data, mimeType, encoding);
     }
 
     /**
@@ -190,15 +192,39 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
         this.canGoBack = canGoBack;
     }
 
-    public String getLastLoadedData() {
-        return lastLoadedData;
+    public LoadData getLastLoadData() {
+        return lastLoadData;
     }
 
-    public String getLastLoadedMimeType() {
-        return lastLoadedMimeType;
+    public LoadDataWithBaseURL getLastLoadDataWithBaseURL() {
+        return lastLoadDataWithBaseURL;
     }
 
-    public String getLastLoadedEncoding() {
-        return lastLoadedEncoding;
+    public class LoadDataWithBaseURL {
+        public final String baseUrl;
+        public final String data;
+        public final String mimeType;
+        public final String encoding;
+        public final String historyUrl;
+
+        public LoadDataWithBaseURL(String baseUrl, String data, String mimeType, String encoding, String historyUrl) {
+            this.baseUrl = baseUrl;
+            this.data = data;
+            this.mimeType = mimeType;
+            this.encoding = encoding;
+            this.historyUrl = historyUrl;
+        }
+    }
+
+    public class LoadData {
+        public final String data;
+        public final String mimeType;
+        public final String encoding;
+
+        public LoadData(String data, String mimeType, String encoding) {
+            this.data = data;
+            this.mimeType = mimeType;
+            this.encoding = encoding;
+        }
     }
 }
