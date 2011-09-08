@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.style.URLSpan;
+import android.text.InputType;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
@@ -128,6 +129,13 @@ public class TextViewTest {
         TextView grey = (TextView) activity.findViewById(R.id.grey_text_view_hint);
         assertThat(grey.getHint().toString(), equalTo("Grey Hint"));
         assertThat(shadowOf(grey).getHintColorHexValue(), equalTo(activity.getResources().getColor(R.color.grey42)));
+    }
+
+    @Test
+    public void testGetInputType() throws Exception {
+        assertThat(textView.getInputType(), not(equalTo(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)));
+        textView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        assertThat(textView.getInputType(), equalTo(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD));
     }
     
     private List<String> urlStringsFrom(URLSpan[] urlSpans) {
