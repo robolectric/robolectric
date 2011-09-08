@@ -52,6 +52,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     private int pendingTransitionExitAnimResId = -1;
     private Object lastNonConfigurationInstance;
     private Map<Integer, Dialog> dialogForId = new HashMap<Integer, Dialog>();
+    private CharSequence title;
 
     @Implementation
     public final Application getApplication() {
@@ -72,6 +73,21 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public Intent getIntent() {
         return intent;
+    }
+    
+    @Implementation(i18nSafe=false)
+    public void setTitle(CharSequence title) {
+    	this.title = title;
+    }
+    
+    @Implementation
+    public void setTitle(int titleId) {
+    	this.title = this.getResources().getString(titleId);
+    }
+    
+    @Implementation
+    public CharSequence getTitle() {
+    	return title;
     }
     
     /**

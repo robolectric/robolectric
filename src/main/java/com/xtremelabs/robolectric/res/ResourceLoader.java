@@ -6,6 +6,8 @@ import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+
+import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
 
 import java.io.BufferedReader;
@@ -58,6 +60,7 @@ public class ResourceLoader {
     private final DrawableResourceLoader drawableResourceLoader;
     private final RawResourceLoader rawResourceLoader;
     private boolean isInitialized = false;
+    private boolean strictI18n = false;
 
     // TODO: get these value from the xml resources instead [xw 20101011]
     public final Map<Integer, Integer> dimensions = new HashMap<Integer, Integer>();
@@ -80,7 +83,16 @@ public class ResourceLoader {
 
         this.resourceDir = resourceDir;
     }
-
+    
+    public void setStrictI18n(boolean strict) {
+    	this.strictI18n = strict;
+    	if (viewLoader != null ) 	   { viewLoader.setStrictI18n(strict); }
+    	if (menuLoader != null ) 	   { menuLoader.setStrictI18n(strict); }
+    	if (preferenceLoader != null ) { preferenceLoader.setStrictI18n(strict); }
+    }
+    
+    public boolean getStrictI18n() { return strictI18n; }
+    
     private void init() {
         if (isInitialized) {
             return;
@@ -91,6 +103,10 @@ public class ResourceLoader {
                 viewLoader = new ViewLoader(resourceExtractor, attrResourceLoader);
                 menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
                 preferenceLoader = new PreferenceLoader(resourceExtractor);
+                
+                viewLoader.setStrictI18n(strictI18n);
+                menuLoader.setStrictI18n(strictI18n);
+                preferenceLoader.setStrictI18n(strictI18n);
 
                 File systemResourceDir = getSystemResourceDir(getPathToAndroidResources());
                 File localValueResourceDir = getValueResourceDir(resourceDir);
@@ -109,6 +125,8 @@ public class ResourceLoader {
                 menuLoader = null;
                 preferenceLoader = null;
             }
+        } catch(I18nException e) {
+        	throw e;
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

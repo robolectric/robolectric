@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric;
 
 import android.app.Application;
 import android.net.Uri__FromAndroid;
+
 import com.xtremelabs.robolectric.bytecode.ClassHandler;
 import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
@@ -25,6 +26,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -246,7 +248,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
-        if (classHandler != null) {
+        setupI18nStrictState(method.getMethod(), robolectricConfig);
+
+    	if (classHandler != null) {
+            classHandler.configure(robolectricConfig);
             classHandler.beforeTest();
         }
         delegate.internalBeforeTest(method.getMethod());
@@ -346,6 +351,78 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      */
     protected void resetStaticState() {
     }
+    
+    /**
+     * Sets Robolectric config to determine if Robolectric should blacklist API calls that are not
+     * I18N/L10N-safe.
+     * <p/>
+     * I18n-strict mode affects suitably annotated shadow methods. Robolectric will throw exceptions
+     * if these methods are invoked by application code. Additionally, Robolectric's ResourceLoader
+     * will throw exceptions if layout resources use bare string literals instead of string resource IDs.
+     * <p/>
+     * To enable or disable i18n-strict mode for specific test cases, annotate them with
+     * {@link com.xtremelabs.robolectric.annotation.EnableStrictI18n} or
+     * {@link com.xtremelabs.robolectric.annotation.DisableStrictI18n}.
+     * <p/>
+     *
+     * By default, I18n-strict mode is disabled.
+     * 
+     * @param method
+     * @param robolectricConfig
+     */
+    private void setupI18nStrictState(Method method, RobolectricConfig robolectricConfig) {
+    	// Global
+    	boolean strictI18n = globalI18nStrictEnabled();
+ 
+    	// Test case class
+    	Annotation[] annos = method.getDeclaringClass().getAnnotations();
+    	strictI18n = lookForI18nAnnotations(strictI18n, annos);
+    	
+    	// Test case methods
+    	annos = method.getAnnotations();
+    	strictI18n = lookForI18nAnnotations(strictI18n, annos);
+
+		robolectricConfig.setStrictI18n(strictI18n);
+    }
+    
+    /**
+     * Default implementation of global switch for i18n-strict mode.
+     * To enable i18n-strict mode globally, set the system property
+     * "robolectric.strictI18n" to true. This can be done via java
+     * system properties in either Ant or Maven.
+     * <p/>
+     * Subclasses can override this method and establish their own policy
+     * for enabling i18n-strict mode.
+     * 
+     * @return
+     */
+    protected boolean globalI18nStrictEnabled() {
+    	return Boolean.valueOf(System.getProperty("robolectric.strictI18n"));
+    }
+
+    /**
+     * As test methods are loaded by the delegate's class loader, the normal
+ 	 * method#isAnnotationPresent test fails. Look at string versions of the
+     * annotation names to test for their presence.
+     * 
+     * @param strictI18n
+     * @param annos
+     * @return
+     */
+	private boolean lookForI18nAnnotations(boolean strictI18n, Annotation[] annos) {
+		for ( int i = 0; i < annos.length; i++ ) {
+    		String name = annos[i].annotationType().getName();
+    		if (name.equals("com.xtremelabs.robolectric.annotation.EnableStrictI18n")) {
+    			strictI18n = true;
+    			break;
+    		}
+    		if (name.equals("com.xtremelabs.robolectric.annotation.DisableStrictI18n")) {
+    			strictI18n = false;
+    			break;
+    		}
+    	}
+		return strictI18n;
+	}
 
     /**
      * Override this method if you want to provide your own implementation of Application.
@@ -373,6 +450,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
                 throw new RuntimeException(e);
             }
         }
+
+        resourceLoader.setStrictI18n(robolectricConfig.getStrictI18n());
         return resourceLoader;
     }
 
