@@ -846,9 +846,10 @@ public class Robolectric {
      *
      * @param statusCode   the status code of the response
      * @param responseBody the body of the response
+     * @param headers      optional headers for the request
      */
-    public static void addPendingHttpResponse(int statusCode, String responseBody) {
-        getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody);
+    public static void addPendingHttpResponse(int statusCode, String responseBody, Header... headers) {
+        getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody, headers);
     }
 
     /**
@@ -857,9 +858,10 @@ public class Robolectric {
      * @param statusCode   the status code of the response
      * @param responseBody the body of the response
      * @param contentType  the contentType of the response
+     * @deprecated         use {@link #addPendingHttpResponse(int, String, Header...)} instead
      */
     public static void addPendingHttpResponseWithContentType(int statusCode, String responseBody, Header contentType) {
-        getFakeHttpLayer().addPendingHttpResponseWithContentType(statusCode, responseBody, contentType);
+        getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody, contentType);
     }
 
     /**
