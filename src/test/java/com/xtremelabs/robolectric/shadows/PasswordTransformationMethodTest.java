@@ -22,19 +22,19 @@ public class PasswordTransformationMethodTest {
     @Test
     public void shouldMaskInputCharacters(){
         CharSequence output = transformationMethod.getTransformation("foobar", null);
-        assertThat(output.toString(), is("••••••"));
+        assertThat(output.toString(), is("\u2022\u2022\u2022\u2022\u2022\u2022")); //using the escaped characters for cross platform compatibility.
     }
 
     @Test
     public void shouldTransformSpacesWithText(){
         CharSequence output = transformationMethod.getTransformation(" baz ", null);
-        assertThat(output.toString(), is("•••••"));
+        assertThat(output.toString(), is("\u2022\u2022\u2022\u2022\u2022"));
     }
 
     @Test
     public void shouldTransformSpacesWithoutText(){
         CharSequence output = transformationMethod.getTransformation("    ", null);
-        assertThat(output.toString(), is("••••"));
+        assertThat(output.toString(), is("\u2022\u2022\u2022\u2022"));
     }
 
     @Test
