@@ -71,6 +71,7 @@ import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.telephony.TelephonyManager;
 import android.text.format.DateFormat;
+import android.text.method.PasswordTransformationMethod;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -278,6 +279,7 @@ public class Robolectric {
                 ShadowPaint.class,
                 ShadowPair.class,
                 ShadowParcel.class,
+                ShadowPasswordTransformationMethod.class,
                 ShadowPath.class,
                 ShadowPendingIntent.class,
                 ShadowPoint.class,
@@ -809,6 +811,10 @@ public class Robolectric {
     
     public static ShadowSensorManager shadowOf(SensorManager instance) {
     	return (ShadowSensorManager) shadowOf_(instance);
+    }
+
+    public static ShadowPasswordTransformationMethod shadowOf(PasswordTransformationMethod instance) {
+        return (ShadowPasswordTransformationMethod) shadowOf_(instance);
     }
 
     @SuppressWarnings({"unchecked"})
