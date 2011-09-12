@@ -44,19 +44,41 @@ public class TestMenu implements Menu {
     }
 
     @Override public SubMenu addSubMenu(CharSequence title) {
-        return null;
+    	TestSubMenu tsm = new TestSubMenu();
+    	TestMenuItem menuItem = new TestMenuItem();
+        menuItems.add(menuItem);
+        menuItem.setTitle(title);
+    	menuItem.setSubMenu(tsm);
+        return tsm;
     }
 
     @Override public SubMenu addSubMenu(int titleRes) {
-        return null;
+    	TestSubMenu tsm = new TestSubMenu();
+    	TestMenuItem menuItem = new TestMenuItem();
+        menuItems.add(menuItem);
+        menuItem.setTitle(titleRes);
+    	menuItem.setSubMenu(tsm);
+        return tsm;
     }
 
     @Override public SubMenu addSubMenu(int groupId, int itemId, int order, CharSequence title) {
-        return null;
+    	TestSubMenu tsm = new TestSubMenu();
+    	TestMenuItem menuItem = new TestMenuItem();
+        menuItems.add(menuItem);
+        menuItem.setItemId(itemId);
+        menuItem.setTitle(title);
+    	menuItem.setSubMenu(tsm);
+        return tsm;
     }
 
     @Override public SubMenu addSubMenu(int groupId, int itemId, int order, int titleRes) {
-        return null;
+    	TestSubMenu tsm = new TestSubMenu();
+    	TestMenuItem menuItem = new TestMenuItem();
+        menuItems.add(menuItem);
+        menuItem.setItemId(itemId);
+        menuItem.setTitle(titleRes);
+    	menuItem.setSubMenu(tsm);
+        return tsm;
     }
 
     @Override

@@ -1,0 +1,14 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:id="@+id/test_menu_1" android:title="Test menu item 1">
+	</item>
+	<group android:id="@+id/group_id_1">
+		<item android:id="@+id/test_menu_2" android:title="Test menu item 2" />
+		<item android:id="@+id/test_menu_3" android:title="Test menu item 3" />
+	</group>
+	<item android:id="@+id/test_submenu_1">
+		<menu>
+			<item android:id="@+id/test_menu_2" android:title="Test menu item 2" />
+			<item android:id="@+id/test_menu_3" android:title="Test menu item 3" />			
+		</menu>
+	</item>
+</menu>

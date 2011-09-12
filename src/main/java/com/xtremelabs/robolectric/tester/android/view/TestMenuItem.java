@@ -17,6 +17,7 @@ public class TestMenuItem implements MenuItem {
     private OnMenuItemClickListener menuItemClickListener;
     public int iconRes;
     private Intent intent;
+    private SubMenu subMenu;
 
     public TestMenuItem() {
         super();
@@ -140,12 +141,16 @@ public class TestMenuItem implements MenuItem {
     }
 
     @Override public boolean hasSubMenu() {
-        return false;
+        return subMenu != null;
     }
 
     @Override public SubMenu getSubMenu() {
-        return null;
+        return subMenu;
     }
+    
+    public void setSubMenu(SubMenu subMenu) {
+		this.subMenu = subMenu;
+	}
 
     @Override public MenuItem setOnMenuItemClickListener(OnMenuItemClickListener menuItemClickListener) {
         this.menuItemClickListener = menuItemClickListener;
