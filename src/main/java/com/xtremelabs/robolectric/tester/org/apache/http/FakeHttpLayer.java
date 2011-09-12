@@ -37,12 +37,8 @@ public class FakeHttpLayer {
         return requestInfos.get(requestInfos.size() - 1);
     }
 
-    public void addPendingHttpResponse(int statusCode, String responseBody) {
-        addPendingHttpResponse(new TestHttpResponse(statusCode, responseBody));
-    }
-
-    public void addPendingHttpResponseWithContentType(int statusCode, String responseBody, Header contentType) {
-        addPendingHttpResponse(new TestHttpResponse(statusCode, responseBody, new Header[]{contentType}));
+    public void addPendingHttpResponse(int statusCode, String responseBody, Header... headers) {
+        addPendingHttpResponse(new TestHttpResponse(statusCode, responseBody, headers));
     }
 
     public void addPendingHttpResponse(HttpResponse httpResponse) {

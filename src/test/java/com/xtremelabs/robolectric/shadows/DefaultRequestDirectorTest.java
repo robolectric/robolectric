@@ -268,7 +268,7 @@ public class DefaultRequestDirectorTest {
     
     @Test
     public void shouldSupportBasicResponseHandlerHandleResponse() throws Exception {
-        Robolectric.addPendingHttpResponseWithContentType(200, "OK", new BasicHeader("Content-Type", "text/plain"));
+        Robolectric.addPendingHttpResponse(200, "OK", new BasicHeader("Content-Type", "text/plain"));
 
         DefaultHttpClient client = new DefaultHttpClient();
         HttpResponse response = client.execute(new HttpGet("http://www.nowhere.org"));

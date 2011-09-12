@@ -9,6 +9,9 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 public class TestHttpResponse extends HttpResponseStub {
 
@@ -30,7 +33,7 @@ public class TestHttpResponse extends HttpResponseStub {
         this.responseBody = responseBody;
     }
 
-    public TestHttpResponse(int statusCode, String responseBody, Header[] headers) {
+    public TestHttpResponse(int statusCode, String responseBody, Header... headers) {
         this(statusCode, responseBody);
         this.headers = headers;
     }
@@ -49,6 +52,94 @@ public class TestHttpResponse extends HttpResponseStub {
 
     @Override public Header[] getAllHeaders() {
         return headers;
+    }
+
+    @Override public Header getFirstHeader(String s) {
+        for (Header h : headers) {
+            if (s.equalsIgnoreCase(h.getName())) {
+                return h;
+            }
+        }
+        return null;
+    }
+
+    @Override public Header getLastHeader(String s) {
+        for (int i = headers.length -1; i >= 0; i--) {
+            if (headers[i].getName().equalsIgnoreCase(s)) {
+                return headers[i];
+            }
+        }
+        return null;
+    }
+
+    @Override public Header[] getHeaders(String s) {
+        List<Header> found = new ArrayList<Header>();
+        for (Header h : headers) {
+            if (h.getName().equalsIgnoreCase(s)) found.add(h);
+        }
+        return found.toArray(new Header[found.size()]);
+    }
+
+    @Override public HeaderIterator headerIterator() {
+        return new HeaderIterator() {
+            int index = 0;
+
+            @Override public boolean hasNext() {
+                return index < headers.length;
+            }
+
+            @Override public Header nextHeader() {
+                if (index >= headers.length) throw new NoSuchElementException();
+                return headers[index++];
+            }
+
+            @Override public Object next() {
+                return nextHeader();
+            }
+
+            @Override public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+
+    @Override public HeaderIterator headerIterator(final String s) {
+        return new HeaderIterator() {
+            int index = 0;
+
+            @Override public boolean hasNext() {
+                return nextIndex() != -1;
+            }
+
+            private int nextIndex() {
+                for (int i = index; i<headers.length; i++) {
+                    if (headers[i].getName().equalsIgnoreCase(s)) {
+                        return i;
+                    }
+                }
+                return -1;
+            }
+
+            @Override public Header nextHeader() {
+                index = nextIndex();
+                if (index == -1) throw new NoSuchElementException();
+                return headers[index++];
+            }
+
+            @Override public Object next() {
+                return nextHeader();
+            }
+
+            @Override public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        };
+    }
+
+    @Override public boolean containsHeader(String s) {
+        return getFirstHeader(s) != null;
+
     }
 
     @Override public HttpParams getParams() {
