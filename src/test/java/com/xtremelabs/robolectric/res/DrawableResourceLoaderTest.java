@@ -1,16 +1,24 @@
 package com.xtremelabs.robolectric.res;
 
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.StateListDrawable;
+
+import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 /**
  * DrawableResourceLoaderTest
@@ -35,7 +43,7 @@ public class DrawableResourceLoaderTest {
     @Test
     public void testProcessResourceXml() throws Exception {
         assertTrue("drawable/rainbow", resourceLoader.documents.containsKey("drawable/rainbow"));
-        assertEquals("documents.size", 114, resourceLoader.documents.size());
+        assertEquals("documents.size", 115, resourceLoader.documents.size());
     }
 
     @Test
@@ -73,5 +81,30 @@ public class DrawableResourceLoaderTest {
         for (int resultItem : result) {
             assertEquals(-1, resultItem);
         }
+    }
+
+    @Test
+    public void testNotXmlDrawable() {
+        int[] drawables = { R.drawable.l7_white, R.drawable.l0_red,
+                R.drawable.l1_orange, R.drawable.l2_yellow,
+                R.drawable.l3_green, R.drawable.l4_blue, R.drawable.l5_indigo,
+                R.drawable.l6_violet };
+
+        for (int i = 0; i < drawables.length; i++) {
+        	Drawable drawable = resourceLoader.getXmlDrawable( drawables[i] );
+        	assertThat( drawable, nullValue() );        	
+        }
+    }
+
+    @Test
+    public void testLayerDrawable() {
+    	Drawable drawable = resourceLoader.getXmlDrawable( R.drawable.rainbow );
+    	assertThat( drawable, instanceOf( LayerDrawable.class ) );
+    }
+    
+    @Test
+    public void testStateListDrawable() {
+    	Drawable drawable = resourceLoader.getXmlDrawable( R.drawable.state_drawable );
+    	assertThat( drawable, instanceOf( StateListDrawable.class ) );
     }
 }

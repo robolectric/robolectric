@@ -1,13 +1,17 @@
 package com.xtremelabs.robolectric.res;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.StateListDrawable;
 
 /**
  * DrawableResourceLoader
@@ -43,6 +47,20 @@ public class DrawableResourceLoader extends XmlLoader {
         return documents.containsKey(resourceExtractor.getResourceName(resourceId));
     }
 
+    public Drawable getXmlDrawable( int resId ) {
+    	
+    	if( !isXml( resId ) ) { return null; }
+    	
+    	Document xmlDoc = documents.get( resourceExtractor.getResourceName( resId ) );
+    	NodeList nodes = xmlDoc.getElementsByTagName("selector");
+    	if( nodes != null && nodes.getLength() > 0 ) { return new StateListDrawable(); } 
+
+    	nodes = xmlDoc.getElementsByTagName("layer-list");
+    	if( nodes != null && nodes.getLength() > 0 ) { return new LayerDrawable( null ); }    	
+
+    	return null;
+    }
+    
     /**
      * Store document locally keyed by resource name.
      * 
