@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<selector
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+   <item android:state_selected="true" android:drawable="@drawable/l0_red" />
+   
+   <item android:drawable="@drawable/l1_orange" /> 
+    
+</selector>
