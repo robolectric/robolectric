@@ -83,6 +83,8 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
+import android.webkit.JsPromptResult;
+import android.webkit.JsResult;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -247,6 +249,8 @@ public class Robolectric {
                 ShadowIntentFilter.class,
                 ShadowIntentFilterAuthorityEntry.class,
                 ShadowItemizedOverlay.class,
+                ShadowJsPromptResult.class,
+                ShadowJsResult.class,
                 ShadowKeyEvent.class,
                 ShadowKeyguardManager.class,
                 ShadowLayerDrawable.class,
@@ -563,6 +567,14 @@ public class Robolectric {
 
     public static ShadowIntent shadowOf(Intent instance) {
         return (ShadowIntent) shadowOf_(instance);
+    }
+
+    public static ShadowJsPromptResult shadowOf(JsPromptResult instance) {
+        return (ShadowJsPromptResult) shadowOf_(instance);
+    }
+
+    public static ShadowJsResult shadowOf(JsResult instance) {
+        return (ShadowJsResult) shadowOf_(instance);
     }
 
     public static ShadowKeyguardManager shadowOf(KeyguardManager instance) {
