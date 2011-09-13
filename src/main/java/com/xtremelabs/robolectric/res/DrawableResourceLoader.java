@@ -6,12 +6,17 @@ import java.util.HashMap;
 import java.util.Map;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import android.R;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.StateListDrawable;
+
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.shadows.ShadowStateListDrawable;
 
 /**
  * DrawableResourceLoader
@@ -53,7 +58,7 @@ public class DrawableResourceLoader extends XmlLoader {
     	
     	Document xmlDoc = documents.get( resourceExtractor.getResourceName( resId ) );
     	NodeList nodes = xmlDoc.getElementsByTagName("selector");
-    	if( nodes != null && nodes.getLength() > 0 ) { return new StateListDrawable(); } 
+    	if( nodes != null && nodes.getLength() > 0 ) { return buildStateListDrawable( xmlDoc ); } 
 
     	nodes = xmlDoc.getElementsByTagName("layer-list");
     	if( nodes != null && nodes.getLength() > 0 ) { return new LayerDrawable( null ); }    	
@@ -101,6 +106,7 @@ public class DrawableResourceLoader extends XmlLoader {
         }
     }
 
+    
     /**
      * Get drawables by resource id.
      * 
@@ -129,4 +135,44 @@ public class DrawableResourceLoader extends XmlLoader {
 
         return drawableIds;
     }
+    
+    private StateListDrawable buildStateListDrawable( Document d ) {
+    	
+    	StateListDrawable drawable = new StateListDrawable();
+    	ShadowStateListDrawable shDrawable = Robolectric.shadowOf( drawable );
+    	
+    	NodeList items = d.getElementsByTagName( "item" );
+    	for (int i = 0; i < items.getLength(); i++) {
+    		Node node = items.item( i );
+    		Node drawableName = node.getAttributes().getNamedItem("android:drawable");
+    		if( drawableName != null ) {
+    			int resId = resourceExtractor.getResourceId(drawableName.getNodeValue());
+    			int stateId = getStateId( node );
+    			shDrawable.addState(stateId, resId);
+    		}
+    	}
+    	return drawable;
+    }
+    
+    private int getStateId( Node node ) {
+    	// Put all the states for a StateListDrawable in the into a Map for looking up
+    	// http://developer.android.com/guide/topics/resources/drawable-resource.html#StateList
+    	Map<String, Integer> stateMap = new HashMap<String, Integer>();
+    	stateMap.put( "android:state_selected", R.attr.state_selected );
+    	stateMap.put( "android:state_pressed", R.attr.state_pressed );
+    	stateMap.put( "android:state_focused", R.attr.state_focused );
+    	stateMap.put( "android:state_checkable", R.attr.state_checkable );
+    	stateMap.put( "android:state_checked", R.attr.state_checked );
+    	stateMap.put( "android:state_enabled", R.attr.state_enabled );
+    	stateMap.put( "android:state_window_focused", R.attr.state_window_focused );
+    	
+    	NamedNodeMap attrs = node.getAttributes();
+    	for( String state : stateMap.keySet() ) {
+        	Node attr = attrs.getNamedItem( state ); 
+        	if( attr != null ) { return stateMap.get( state ); }    		
+    	}
+    	
+    	// if a state wasn't specified, return the default state
+    	return R.attr.state_active;
+    }    
 }
