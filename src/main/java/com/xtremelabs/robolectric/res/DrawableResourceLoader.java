@@ -22,6 +22,20 @@ import com.xtremelabs.robolectric.shadows.ShadowStateListDrawable;
  * DrawableResourceLoader
  */
 public class DrawableResourceLoader extends XmlLoader {
+	
+   	// Put all the states for a StateListDrawable in the into a Map for looking up
+	// http://developer.android.com/guide/topics/resources/drawable-resource.html#StateList
+	private static final Map<String, Integer> stateMap = new HashMap<String, Integer>();
+	static {
+		stateMap.put( "android:state_selected", R.attr.state_selected );
+		stateMap.put( "android:state_pressed", R.attr.state_pressed );
+		stateMap.put( "android:state_focused", R.attr.state_focused );
+		stateMap.put( "android:state_checkable", R.attr.state_checkable );
+		stateMap.put( "android:state_checked", R.attr.state_checked );
+		stateMap.put( "android:state_enabled", R.attr.state_enabled );
+		stateMap.put( "android:state_window_focused", R.attr.state_window_focused );
+	}
+	
     /** document */
     protected Map<String, Document> documents = new HashMap<String, Document>();
 
@@ -155,16 +169,6 @@ public class DrawableResourceLoader extends XmlLoader {
     }
     
     private int getStateId( Node node ) {
-    	// Put all the states for a StateListDrawable in the into a Map for looking up
-    	// http://developer.android.com/guide/topics/resources/drawable-resource.html#StateList
-    	Map<String, Integer> stateMap = new HashMap<String, Integer>();
-    	stateMap.put( "android:state_selected", R.attr.state_selected );
-    	stateMap.put( "android:state_pressed", R.attr.state_pressed );
-    	stateMap.put( "android:state_focused", R.attr.state_focused );
-    	stateMap.put( "android:state_checkable", R.attr.state_checkable );
-    	stateMap.put( "android:state_checked", R.attr.state_checked );
-    	stateMap.put( "android:state_enabled", R.attr.state_enabled );
-    	stateMap.put( "android:state_window_focused", R.attr.state_window_focused );
     	
     	NamedNodeMap attrs = node.getAttributes();
     	for( String state : stateMap.keySet() ) {
