@@ -1,17 +1,17 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.text.InputType;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.style.URLSpan;
-import android.text.InputType;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Assert;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -21,12 +21,8 @@ import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class TextViewTest {
@@ -131,6 +127,19 @@ public class TextViewTest {
         assertThat(shadowOf(grey).getHintColorHexValue(), equalTo(activity.getResources().getColor(R.color.grey42)));
     }
 
+    @Test
+    public void shouldNotHaveTransformationMethodByDefault(){
+        ShadowTextView view = new ShadowTextView();
+        assertThat(view.getTransformationMethod(), is(CoreMatchers.<Object>nullValue()));
+    }
+
+    @Test
+    public void shouldAllowSettingATransformationMethod(){
+        ShadowTextView view = new ShadowTextView();
+        view.setTransformationMethod(new ShadowPasswordTransformationMethod());
+        assertEquals(view.getTransformationMethod().getClass(), ShadowPasswordTransformationMethod.class);
+    }
+    
     @Test
     public void testGetInputType() throws Exception {
         assertThat(textView.getInputType(), not(equalTo(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)));

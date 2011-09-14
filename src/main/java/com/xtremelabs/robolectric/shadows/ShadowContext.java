@@ -23,6 +23,9 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Context.class)
 abstract public class ShadowContext {
+    public static final File CACHE_DIR = new File(System.getProperty("java.io.tmpdir"), "android-cache");
+    public static final File FILES_DIR = new File(System.getProperty("java.io.tmpdir"), "android-tmp");
+
     @RealObject private Context realContext;
 
     @Implementation
@@ -70,38 +73,31 @@ abstract public class ShadowContext {
 
     @Implementation
     public File getCacheDir() {
-        // todo: clean this up when tests finish? [xw 20110124]
-        File file = new File(System.getProperty("java.io.tmpdir"), "android-cache");
-        file.mkdirs();
-        return file;
+        CACHE_DIR.mkdirs();
+        return CACHE_DIR;
     }
 
     @Implementation
     public File getFilesDir() {
-        // todo: clean this up when tests finish? [xw 20110124]
-        File file = new File(System.getProperty("java.io.tmpdir"), "android-tmp");
-        file.mkdirs();
-        return file;
+        FILES_DIR.mkdirs();
+        return FILES_DIR;
     }
 
     @Implementation
     public FileInputStream openFileInput(String path) throws FileNotFoundException {
-        if (path.contains(File.separator)) {
-            throw new IllegalArgumentException("File " + path + " contains a path separator");
-        }
-        return new FileInputStream(new File(path));
+        return new FileInputStream(getFileStreamPath(path));
     }
 
     @Implementation
     public FileOutputStream openFileOutput(String path, int mode) throws FileNotFoundException {
-        if (path.contains(File.separator)) {
-            throw new IllegalArgumentException("File " + path + " contains a path separator");
-        }
-        return new FileOutputStream(new File(path));
+        return new FileOutputStream(getFileStreamPath(path));
     }
 
     @Implementation
     public File getFileStreamPath(String name) {
+        if (name.contains(File.separator)) {
+            throw new IllegalArgumentException("File " + name + " contains a path separator");
+        }
         return new File(getFilesDir(), name);
     }
 
@@ -112,5 +108,24 @@ abstract public class ShadowContext {
      */
     public ResourceLoader getResourceLoader() {
         return shadowOf((Application) realContext.getApplicationContext()).getResourceLoader();
+    }
+
+    public static void clearFilesAndCache() {
+        clearFiles(FILES_DIR);
+        clearFiles(CACHE_DIR);
+    }
+
+    public static void clearFiles(File dir) {
+        if (dir != null && dir.isDirectory()) {
+            File[] files = dir.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    if (f.isDirectory()) {
+                        clearFiles(f);
+                    }
+                    f.delete();
+                }
+            }
+        }
     }
 }
