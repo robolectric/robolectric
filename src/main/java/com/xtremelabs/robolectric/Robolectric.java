@@ -70,6 +70,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.telephony.TelephonyManager;
+import android.text.ClipboardManager;
 import android.text.format.DateFormat;
 import android.text.method.PasswordTransformationMethod;
 import android.view.Display;
@@ -208,6 +209,7 @@ public class Robolectric {
                 ShadowCameraParameters.class,
                 ShadowCameraSize.class,
                 ShadowCanvas.class,
+                ShadowClipboardManager.class,
                 ShadowColorDrawable.class,
                 ShadowColorMatrix.class,
                 ShadowColorMatrixColorFilter.class,
@@ -459,6 +461,10 @@ public class Robolectric {
 
     public static ShadowCanvas shadowOf(Canvas instance) {
         return (ShadowCanvas) shadowOf_(instance);
+    }
+
+    public static ShadowClipboardManager shadowOf(ClipboardManager instance) {
+        return (ShadowClipboardManager) shadowOf_(instance);
     }
 
     public static ShadowColorDrawable shadowOf(ColorDrawable instance) {
