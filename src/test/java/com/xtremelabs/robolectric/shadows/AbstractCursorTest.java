@@ -95,8 +95,11 @@ public class AbstractCursorTest {
         assertThat(cursor.moveToFirst(), equalTo(true));
         assertThat(cursor.getCount(), equalTo(2));
         assertThat(cursor.moveToNext(), equalTo(true));
+        assertThat(cursor.isLast(), equalTo(true));
+        assertThat(cursor.moveToNext(), equalTo(true));
+        assertThat(cursor.getPosition(), equalTo(2));
         assertThat(cursor.moveToNext(), equalTo(false));
-        assertThat(cursor.getPosition(), equalTo(1));
+        assertThat(cursor.getPosition(), equalTo(2));
     }
 
     @Test
@@ -105,8 +108,10 @@ public class AbstractCursorTest {
 
         assertThat(cursor.moveToFirst(), equalTo(true));
         assertThat(cursor.getCount(), equalTo(1));
+        assertThat(cursor.moveToNext(), equalTo(true));
+        assertThat(cursor.getPosition(), equalTo(1));
         assertThat(cursor.moveToNext(), equalTo(false));
-        assertThat(cursor.getPosition(), equalTo(0));
+        assertThat(cursor.getPosition(), equalTo(1));
     }
 
     @Test
@@ -163,8 +168,42 @@ public class AbstractCursorTest {
         assertThat(cursor.isLast(), equalTo(false));     
         cursor.moveToFirst();
         cursor.moveToNext();
-        cursor.moveToNext();
         assertThat(cursor.isLast(), equalTo(true));   	
+    }
+    
+    @Test
+    public void testIsBeforeFirst() {
+        cursor.theTable.add("Foobar");
+        cursor.theTable.add("Bletch");
+        assertThat(cursor.moveToFirst(), equalTo(true));
+        cursor.moveToNext();
+        assertThat(cursor.isLast(), equalTo(true));
+        cursor.moveToPrevious();
+        assertThat(cursor.isLast(), equalTo(false));     
+        cursor.moveToPrevious();
+        assertThat(cursor.isFirst(), equalTo(false));
+        cursor.moveToPrevious();
+        assertThat(cursor.isBeforeFirst(), equalTo(true));   	
+    }
+    
+    @Test
+    public void testIsAfterLast() {
+        cursor.theTable.add("Foobar");
+        cursor.theTable.add("Bletch");
+        assertThat(cursor.moveToFirst(), equalTo(true));
+        cursor.moveToNext();
+        assertThat(cursor.isLast(), equalTo(true));
+        cursor.moveToNext();
+        assertThat(cursor.isAfterLast(), equalTo(true));
+        cursor.moveToPrevious();
+        assertThat(cursor.isLast(), equalTo(true));
+        cursor.moveToPrevious();
+        assertThat(cursor.isLast(), equalTo(false));
+        cursor.moveToFirst();
+        cursor.moveToNext();
+        assertThat(cursor.isAfterLast(), equalTo(false));    
+        cursor.moveToNext();
+        assertThat(cursor.isAfterLast(), equalTo(true));    	
     }
     
     
