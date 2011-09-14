@@ -17,6 +17,7 @@ public class TestMenuItem implements MenuItem {
     private OnMenuItemClickListener menuItemClickListener;
     public int iconRes;
     private Intent intent;
+    private SubMenu subMenu;
 
     public TestMenuItem() {
         super();
@@ -31,128 +32,162 @@ public class TestMenuItem implements MenuItem {
         this.itemId = itemId;
     }
 
-    @Override public int getItemId() {
+    @Override
+    public int getItemId() {
         return itemId;
     }
 
-    @Override public int getGroupId() {
+    @Override
+    public int getGroupId() {
         return 0;
     }
 
-    @Override public int getOrder() {
+    @Override
+    public int getOrder() {
         return 0;
     }
 
-    @Override public MenuItem setTitle(CharSequence title) {
+    @Override
+    public MenuItem setTitle(CharSequence title) {
         this.title = title;
         return this;
     }
 
-    @Override public MenuItem setTitle(int title) {
+    @Override
+    public MenuItem setTitle(int title) {
         return null;
     }
 
-    @Override public CharSequence getTitle() {
+    @Override
+    public CharSequence getTitle() {
         return title;
     }
 
-    @Override public MenuItem setTitleCondensed(CharSequence title) {
+    @Override
+    public MenuItem setTitleCondensed(CharSequence title) {
         return null;
     }
 
-    @Override public CharSequence getTitleCondensed() {
+    @Override
+    public CharSequence getTitleCondensed() {
         return null;
     }
 
-    @Override public MenuItem setIcon(Drawable icon) {
+    @Override
+    public MenuItem setIcon(Drawable icon) {
         return null;
     }
 
-    @Override public MenuItem setIcon(int iconRes) {
+    @Override
+    public MenuItem setIcon(int iconRes) {
         this.iconRes = iconRes;
         return this;
     }
 
-    @Override public Drawable getIcon() {
+    @Override
+    public Drawable getIcon() {
         return null;
     }
 
-    @Override public MenuItem setIntent(Intent intent) {
+    @Override
+    public MenuItem setIntent(Intent intent) {
         this.intent = intent;
         return this;
     }
 
-    @Override public Intent getIntent() {
+    @Override
+    public Intent getIntent() {
         return this.intent;
     }
 
-    @Override public MenuItem setShortcut(char numericChar, char alphaChar) {
+    @Override
+    public MenuItem setShortcut(char numericChar, char alphaChar) {
         return null;
     }
 
-    @Override public MenuItem setNumericShortcut(char numericChar) {
+    @Override
+    public MenuItem setNumericShortcut(char numericChar) {
         return null;
     }
 
-    @Override public char getNumericShortcut() {
+    @Override
+    public char getNumericShortcut() {
         return 0;
     }
 
-    @Override public MenuItem setAlphabeticShortcut(char alphaChar) {
+    @Override
+    public MenuItem setAlphabeticShortcut(char alphaChar) {
         return null;
     }
 
-    @Override public char getAlphabeticShortcut() {
+    @Override
+    public char getAlphabeticShortcut() {
         return 0;
     }
 
-    @Override public MenuItem setCheckable(boolean checkable) {
+    @Override
+    public MenuItem setCheckable(boolean checkable) {
         return null;
     }
 
-    @Override public boolean isCheckable() {
+    @Override
+    public boolean isCheckable() {
         return false;
     }
 
-    @Override public MenuItem setChecked(boolean checked) {
+    @Override
+    public MenuItem setChecked(boolean checked) {
         return null;
     }
 
-    @Override public boolean isChecked() {
+    @Override
+    public boolean isChecked() {
         return false;
     }
 
-    @Override public MenuItem setVisible(boolean visible) {
+    @Override
+    public MenuItem setVisible(boolean visible) {
         return null;
     }
 
-    @Override public boolean isVisible() {
+    @Override
+    public boolean isVisible() {
         return false;
     }
 
-    @Override public MenuItem setEnabled(boolean enabled) {
+    @Override
+    public MenuItem setEnabled(boolean enabled) {
         this.enabled = enabled;
         return this;
     }
 
-    @Override public boolean isEnabled() {
+    @Override
+    public boolean isEnabled() {
         return enabled;
     }
 
-    @Override public boolean hasSubMenu() {
-        return false;
+    @Override
+    public boolean hasSubMenu() {
+        return subMenu != null;
     }
 
-    @Override public SubMenu getSubMenu() {
-        return null;
+    @Override
+    public SubMenu getSubMenu() {
+        return subMenu;
     }
 
-    @Override public MenuItem setOnMenuItemClickListener(OnMenuItemClickListener menuItemClickListener) {
+    public void setSubMenu(SubMenu subMenu) {
+        this.subMenu = subMenu;
+    }
+
+    @Override
+    public MenuItem setOnMenuItemClickListener(OnMenuItemClickListener menuItemClickListener) {
         this.menuItemClickListener = menuItemClickListener;
         return this;
     }
 
-    @Override public ContextMenu.ContextMenuInfo getMenuInfo() {
+    @Override
+    public ContextMenu.ContextMenuInfo getMenuInfo() {
         return null;
     }
 
@@ -160,7 +195,7 @@ public class TestMenuItem implements MenuItem {
         if (enabled && menuItemClickListener != null) {
             menuItemClickListener.onMenuItemClick(this);
         } else if (enabled && intent != null) {
-        	Robolectric.application.startActivity(intent);
+            Robolectric.application.startActivity(intent);
         }
     }
 }
