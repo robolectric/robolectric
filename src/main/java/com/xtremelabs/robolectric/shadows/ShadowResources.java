@@ -69,7 +69,7 @@ public class ShadowResources {
     @Implementation
     public Configuration getConfiguration() {
     	if (configuration==null) {
-    		Configuration configuration = new Configuration();
+    		configuration = new Configuration();
         	configuration.setToDefaults();
     	}
         if (configuration.locale == null) {
