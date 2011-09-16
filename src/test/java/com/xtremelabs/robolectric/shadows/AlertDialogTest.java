@@ -5,13 +5,13 @@ import android.app.AlertDialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.view.View;
+import android.widget.EditText;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.resetStaticState;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -83,6 +83,17 @@ public class AlertDialogTest {
         AlertDialog alert = builder.create();
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
         assertThat(shadowAlertDialog.getMessage(), equalTo("Hello"));
+    }
+
+    @Test
+    public void shouldSetView() throws Exception {
+        Activity context = new Activity();
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        EditText view = new EditText(context);
+        builder.setView(view);
+
+        AlertDialog alert = builder.create();
+        assertThat(shadowOf(alert).getView(), equalTo((View) view));
     }
 
     @Test

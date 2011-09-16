@@ -145,6 +145,15 @@ public class ShadowAlertDialog extends ShadowDialog {
     }
 
     /**
+     * Non-Android accessor.
+     *
+     * @return return the view set with {@link ShadowAlertDialog.ShadowBuilder#setView(View)}
+     */
+    public View getView() {
+        return view;
+    }
+
+    /**
      * Shadows the {@code android.app.AlertDialog.Builder} class.
      */
     @Implements(AlertDialog.Builder.class)
@@ -170,6 +179,7 @@ public class ShadowAlertDialog extends ShadowDialog {
         private boolean isCancelable;
         private boolean isSingleItem;
         private int checkedItem;
+        private View view;
 
         /**
          * just stashes the context for later use
@@ -258,6 +268,12 @@ public class ShadowAlertDialog extends ShadowDialog {
             return realBuilder;
         }
 
+        @Implementation
+        public AlertDialog.Builder setView(View view) {
+            this.view = view;
+            return realBuilder;
+        }
+
         @Implementation(i18nSafe=false)
         public AlertDialog.Builder setPositiveButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.positiveText = text;
@@ -330,6 +346,7 @@ public class ShadowAlertDialog extends ShadowDialog {
             latestAlertDialog.checkedItemIndex = checkedItem;
             latestAlertDialog.multiChoiceClickListener = multiChoiceClickListener;
             latestAlertDialog.checkedItems = checkedItems;
+            latestAlertDialog.setView(view);
             latestAlertDialog.positiveButton = createButton(realDialog, AlertDialog.BUTTON_POSITIVE, positiveText, positiveListener);
             latestAlertDialog.negativeButton = createButton(realDialog, AlertDialog.BUTTON_NEGATIVE, negativeText, negativeListener);
             latestAlertDialog.neutralButton = createButton(realDialog, AlertDialog.BUTTON_NEUTRAL, neutralText, neutralListener);
