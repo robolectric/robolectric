@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -20,6 +21,7 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AlertDialogTest {
@@ -87,13 +89,55 @@ public class AlertDialogTest {
 
     @Test
     public void shouldSetView() throws Exception {
-        Activity context = new Activity();
+        ContextWrapper context = new ContextWrapper(null);
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         EditText view = new EditText(context);
         builder.setView(view);
 
         AlertDialog alert = builder.create();
         assertThat(shadowOf(alert).getView(), equalTo((View) view));
+    }
+
+    @Test
+    public void clickingPositiveButtonDismissesDialog() throws Exception {
+        AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
+        .setPositiveButton("Positive", new DialogInterface.OnClickListener() {
+            @Override public void onClick(DialogInterface dialog, int which) {
+            }
+        }).create();
+        alertDialog.show();
+
+        assertTrue(alertDialog.isShowing());
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
+        assertFalse(alertDialog.isShowing());
+    }
+    
+    @Test
+    public void clickingNeutralButtonDismissesDialog() throws Exception {
+        AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
+        .setNeutralButton("Neutral", new DialogInterface.OnClickListener() {
+            @Override public void onClick(DialogInterface dialog, int which) {
+            }
+        }).create();
+        alertDialog.show();
+
+        assertTrue(alertDialog.isShowing());
+        alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).performClick();
+        assertFalse(alertDialog.isShowing());
+    }
+    
+    @Test
+    public void clickingNegativeButtonDismissesDialog() throws Exception {
+        AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
+        .setNegativeButton("Negative", new DialogInterface.OnClickListener() {
+            @Override public void onClick(DialogInterface dialog, int which) {
+            }
+        }).create();
+        alertDialog.show();
+
+        assertTrue(alertDialog.isShowing());
+        alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).performClick();
+        assertFalse(alertDialog.isShowing());
     }
 
     @Test

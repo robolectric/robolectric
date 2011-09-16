@@ -370,6 +370,7 @@ public class ShadowAlertDialog extends ShadowDialog {
                 public void onClick(View v) {
                     if (listener != null) {
                         listener.onClick(dialog, which);
+                        dialog.dismiss();
                     }
                 }
             });
