@@ -101,10 +101,7 @@ public class AlertDialogTest {
     @Test
     public void clickingPositiveButtonDismissesDialog() throws Exception {
         AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
-        .setPositiveButton("Positive", new DialogInterface.OnClickListener() {
-            @Override public void onClick(DialogInterface dialog, int which) {
-            }
-        }).create();
+        .setPositiveButton("Positive", null).create();
         alertDialog.show();
 
         assertTrue(alertDialog.isShowing());
