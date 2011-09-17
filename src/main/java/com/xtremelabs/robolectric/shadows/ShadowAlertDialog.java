@@ -363,6 +363,9 @@ public class ShadowAlertDialog extends ShadowDialog {
         }
 
         private Button createButton(final DialogInterface dialog, final int which, CharSequence text, final DialogInterface.OnClickListener listener) {
+            if (text == null && listener == null) {
+                return null;
+            }
             Button button = new Button(context);
             Robolectric.shadowOf(button).setText(text);		// use shadow to skip i18n-strict checking
             button.setOnClickListener(new View.OnClickListener() {

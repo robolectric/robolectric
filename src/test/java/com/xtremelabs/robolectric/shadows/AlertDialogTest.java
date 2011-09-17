@@ -16,6 +16,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
@@ -50,6 +51,16 @@ public class AlertDialogTest {
 
         AlertDialog dialog = new AlertDialog.Builder(new ContextWrapper(null)).show();
         assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(dialog));
+    }
+
+    @Test
+    public void shouldOnlyCreateRequestedButtons() throws Exception {
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));
+        builder.setPositiveButton("OK", null);
+        AlertDialog dialog = builder.create();
+        dialog.show();
+        assertThat(shadowOf(dialog).getButton(AlertDialog.BUTTON_POSITIVE), not(nullValue()));
+        assertThat(shadowOf(dialog).getButton(AlertDialog.BUTTON_NEGATIVE), nullValue());
     }
 
     @Test
