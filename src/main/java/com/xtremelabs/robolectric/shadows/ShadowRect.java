@@ -25,6 +25,19 @@ public class ShadowRect {
         realRect.bottom = otherRect.bottom;
     }
 
+    @Implementation    
+    public void set(Rect rect) {
+        set(rect.left, rect.top, rect.right, rect.bottom);
+    }
+    
+    @Implementation
+    public void set(int left, int top, int right, int bottom) {
+        realRect.left = left;
+        realRect.top = top;
+        realRect.right = right;
+        realRect.bottom = bottom;
+    }
+
     @Implementation
     public int width() {
         return realRect.right - realRect.left;
