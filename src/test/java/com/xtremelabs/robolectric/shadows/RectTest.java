@@ -181,4 +181,14 @@ public class RectTest {
 		assertThat(r.right, is(3));
 		assertThat(r.bottom, is(4));
 	}
+	
+	@Test
+	public void offsetModifiesRect() {
+	  Rect r = new Rect(1, 2, 3, 4);
+	  r.offset(10, 20);
+		assertThat(r.left, is(11));
+		assertThat(r.top, is(22));
+		assertThat(r.right, is(13));
+		assertThat(r.bottom, is(24));
+	}
 }

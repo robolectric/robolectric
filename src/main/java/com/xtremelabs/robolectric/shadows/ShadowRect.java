@@ -104,4 +104,12 @@ public class ShadowRect {
     public boolean intersect(int left, int top, int right, int bottom) {
     	return intersect(new Rect(left, top, right, bottom));
     }
+    
+    @Implementation
+    public void offset(int dx, int dy) {
+      realRect.left += dx;
+      realRect.right += dx;
+      realRect.top += dy;
+      realRect.bottom += dy;
+    }
 }
