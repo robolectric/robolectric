@@ -116,7 +116,9 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     @Implementation
     public View getView(int position, View convertView, ViewGroup parent) {
         T item = list.get(position);
-        View view = getResourceLoader().inflateView(context, resource, parent);
+        //FIXME check if this is the reason of an empty entry! (will increase number of views in list)
+        //View view = getResourceLoader().inflateView(context, resource, parent);
+        View view;
 
         if (convertView == null) {
             view = getResourceLoader().inflateView(context,resource, parent);
