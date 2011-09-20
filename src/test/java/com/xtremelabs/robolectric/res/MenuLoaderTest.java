@@ -4,23 +4,28 @@ package com.xtremelabs.robolectric.res;
 import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 
+import java.util.ArrayList;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
-import com.xtremelabs.robolectric.util.I18nException;
-
 import android.content.ComponentName;
 import android.content.Intent;
+import android.graphics.drawable.Drawable;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
+import android.view.ContextMenu.ContextMenuInfo;
+import android.view.MenuItem.OnMenuItemClickListener;
+
+import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.tester.android.view.TestMenuItem;
+import com.xtremelabs.robolectric.util.I18nException;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class MenuLoaderTest {
@@ -53,7 +58,6 @@ public class MenuLoaderTest {
 	}
 	
 	public class TestMenu implements Menu {
-
 		@Override
 		public MenuItem add(CharSequence title) {
 			return null;
@@ -185,8 +189,6 @@ public class MenuLoaderTest {
 		public void setQwertyMode(boolean isQwerty) {
 			
 			
-		}
-		
-	}
-	
+		}		
+	}	
 }
