@@ -160,4 +160,35 @@ public class RectTest {
 		Rect r = new Rect(0, 0, 10, 10);
 		assertThat(r.intersect(5, 0, 15, 10), is(true));
 	}
+
+	@Test
+	public void setWithIntsSetsCoordinates() {
+		Rect r = new Rect();
+		r.set(1, 2, 3, 4);
+		assertThat(r.left, is(1));
+		assertThat(r.top, is(2));
+		assertThat(r.right, is(3));
+		assertThat(r.bottom, is(4));
+	}
+
+	@Test
+	public void setWithRectSetsCoordinates() {
+		Rect rSrc = new Rect(1, 2, 3, 4);
+		Rect r = new Rect();
+		r.set(rSrc);
+		assertThat(r.left, is(1));
+		assertThat(r.top, is(2));
+		assertThat(r.right, is(3));
+		assertThat(r.bottom, is(4));
+	}
+	
+	@Test
+	public void offsetModifiesRect() {
+	  Rect r = new Rect(1, 2, 3, 4);
+	  r.offset(10, 20);
+		assertThat(r.left, is(11));
+		assertThat(r.top, is(22));
+		assertThat(r.right, is(13));
+		assertThat(r.bottom, is(24));
+	}
 }
