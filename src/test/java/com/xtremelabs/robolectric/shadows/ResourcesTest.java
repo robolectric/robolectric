@@ -44,6 +44,8 @@ public class ResourcesTest {
         Configuration configuration = resources.getConfiguration();
         assertThat(configuration, notNullValue());
         assertThat(configuration.locale, notNullValue());
+      //make sure we are using the same instance, we should not reconstruct the config each time.
+        assertThat(resources.getConfiguration(), equalTo(resources.getConfiguration())); 
     }
 
     @Test
