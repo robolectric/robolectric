@@ -36,7 +36,8 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 @Implements(Resources.class)
 public class ShadowResources {
     private float density = 1.0f;
-
+    Configuration configuration = null;
+    
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
         ShadowResources shadowResources = shadowOf(resources);
         if (shadowResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
@@ -64,11 +65,13 @@ public class ShadowResources {
     public int getColor(int id) throws Resources.NotFoundException {
         return resourceLoader.getColorValue(id);
     }
-
+   
     @Implementation
     public Configuration getConfiguration() {
-        Configuration configuration = new Configuration();
-        configuration.setToDefaults();
+    	if (configuration==null) {
+    		configuration = new Configuration();
+        	configuration.setToDefaults();
+    	}
         if (configuration.locale == null) {
             configuration.locale = Locale.getDefault();
         }
