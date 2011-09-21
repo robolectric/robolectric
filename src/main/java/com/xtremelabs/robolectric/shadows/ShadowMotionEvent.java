@@ -111,11 +111,12 @@ public class ShadowMotionEvent {
         return realObject;
     }
 
-    public void setPointerIdByIndex(int index, int id) {
-        pointerIds[index] = id;
-    }
-
     public void setPointerIndex(int pointerIndex) {
         this.pointerIndex = pointerIndex;
+    }
+
+    public void setPointerIds(int index0PointerId, int index1PointerId) {
+        pointerIds[0] = index0PointerId;
+        pointerIds[1] = index1PointerId;
     }
 }

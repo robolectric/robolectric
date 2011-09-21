@@ -38,8 +38,7 @@ public class MotionEventTest {
     @Test
     public void canSetPointerIdsByIndex() {
         shadowMotionEvent.setPointer2(20.0f, 30.0f);
-        shadowMotionEvent.setPointerIdByIndex(0, 2);
-        shadowMotionEvent.setPointerIdByIndex(1, 5);
+        shadowMotionEvent.setPointerIds(2, 5);
         assertEquals(2, event.getPointerId(0));
         assertEquals(5, event.getPointerId(1));
     }
