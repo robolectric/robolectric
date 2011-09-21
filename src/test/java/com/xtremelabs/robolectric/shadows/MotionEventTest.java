@@ -62,4 +62,13 @@ public class MotionEventTest {
         shadowMotionEvent.setPointerIndex(1);
         assertEquals(MotionEvent.ACTION_MOVE, event.getActionMasked());
     }
+    
+    @Test
+    public void canFindPointerIndexFromId() {
+        shadowMotionEvent.setPointer2(20.0f, 30.0f);
+        shadowMotionEvent.setPointerIds(2, 1);
+        assertEquals(0, event.findPointerIndex(2));
+        assertEquals(1, event.findPointerIndex(1));
+        assertEquals(-1, event.findPointerIndex(3));
+    }
 }

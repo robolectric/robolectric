@@ -95,6 +95,18 @@ public class ShadowMotionEvent {
     }
 
     @Implementation
+    public final int findPointerIndex(int id) {
+        for (int i = 0; i < pointerIds.length; i++) {
+            int pointerId = pointerIds[i];
+
+            if (pointerId == id) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Implementation
     public final int getActionMasked() {
         return action;
     }
