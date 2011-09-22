@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric;
 
 import android.app.Application;
 import android.net.Uri__FromAndroid;
-
 import com.xtremelabs.robolectric.bytecode.ClassHandler;
 import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
@@ -10,16 +9,17 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
+import com.xtremelabs.robolectric.util.DatabaseConfig;
+import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
+import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
+import com.xtremelabs.robolectric.util.H2Map;
+import javassist.Loader;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
-import com.xtremelabs.robolectric.util.DatabaseConfig;
-import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
-import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
-import com.xtremelabs.robolectric.util.H2Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -57,7 +57,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         }
         return defaultLoader;
     }
-
+    public static void setDefaultLoader(Loader robolectricClassLoader) {
+    	//used by the RoboSpecs project to allow for mixed scala\java tests to be run with Maven Surefire (see the RoboSpecs project on github)
+        if (defaultLoader == null) {
+            defaultLoader = (RobolectricClassLoader)robolectricClassLoader;
+        } else throw new RuntimeException("You may not set the default robolectricClassLoader unless it is null!");
+    }
     /**
      * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
      * and res directory.

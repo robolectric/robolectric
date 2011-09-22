@@ -72,10 +72,10 @@ public class ShadowAbstractCursor {
         }
     }
 
-
     @Implementation
     public boolean moveToNext() {
-        if (currentRowNumber >= realAbstractCursor.getCount() - 1) {
+        if (currentRowNumber + 1 >= realAbstractCursor.getCount()) {
+            currentRowNumber = realAbstractCursor.getCount();
             return false;
         }
         setPosition(++currentRowNumber);
