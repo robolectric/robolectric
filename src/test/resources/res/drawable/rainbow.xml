@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+	<item android:drawable="@drawable/l7_white" />
+	<item android:drawable="@drawable/l0_red" />
+	<item android:drawable="@drawable/l1_orange" />
+	<item android:drawable="@drawable/l2_yellow" />
+	<item android:drawable="@drawable/l3_green" />
+	<item android:drawable="@drawable/l4_blue" />
+	<item android:drawable="@drawable/l5_indigo" />
+	<item android:drawable="@drawable/l6_violet" />
+</layer-list>

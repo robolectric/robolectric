@@ -82,6 +82,19 @@ public class SchedulerTest {
     }
 
     @Test
+    public void removeShouldRemoveAllInstancesOfRunnableFromQueue() throws Exception {
+        scheduler.post(new TestRunnable());
+        TestRunnable runnable = new TestRunnable();
+        scheduler.post(runnable);
+        scheduler.post(runnable);
+        assertThat(scheduler.enqueuedTaskCount(), equalTo(3));
+        scheduler.remove(runnable);
+        assertThat(scheduler.enqueuedTaskCount(), equalTo(1));
+        scheduler.advanceToLastPostedRunnable();
+        assertThat(runnable.wasRun, equalTo(false));
+    }
+
+    @Test
     public void resetShouldUnPause() throws Exception {
         scheduler.pause();
 

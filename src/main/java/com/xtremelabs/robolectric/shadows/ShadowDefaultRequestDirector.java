@@ -108,6 +108,15 @@ public class ShadowDefaultRequestDirector {
         return getSentHttpRequestInfo(index).getHttpRequest();
     }
 
+    public static HttpRequest getLatestSentHttpRequest() {
+        return getLatestSentHttpRequestInfo().getHttpRequest();
+    }
+
+    public static HttpRequestInfo getLatestSentHttpRequestInfo() {
+        int requestCount = Robolectric.getFakeHttpLayer().getSentHttpRequestInfos().size();
+        return Robolectric.getFakeHttpLayer().getSentHttpRequestInfo(requestCount - 1);
+    }
+
     public static HttpRequestInfo getSentHttpRequestInfo(int index) {
         return Robolectric.getFakeHttpLayer().getSentHttpRequestInfo(index);
     }

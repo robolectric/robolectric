@@ -2,6 +2,8 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Message;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestRunnable;
@@ -94,6 +96,19 @@ public class HandlerTest {
     }
 
     @Test
+    public void testRemoveCallbacks() throws Exception {
+        Handler handler = new Handler();
+        ShadowLooper shadowLooper = shadowOf(handler.getLooper());
+        shadowLooper.pause();
+        handler.post(scratchRunnable);
+        handler.removeCallbacks(scratchRunnable);
+
+        shadowLooper.unPause();
+
+        assertThat(scratchRunnable.wasRun, equalTo(false));
+    }
+
+    @Test
     public void testPostDelayedThenRunMainLooperToNextTask_shouldRunOneTask() throws Exception {
         new Handler().postDelayed(scratchRunnable, 1);
         ShadowHandler.runMainLooperToNextTask();
@@ -140,6 +155,20 @@ public class HandlerTest {
         assertThat(task1.wasRun, equalTo(true));
         assertThat(task2.wasRun, equalTo(true));
         assertThat(task3.wasRun, equalTo(true));
+    }
+
+    @Test
+    public void sendEmptyMessageHandler() {
+
+        final Handler handler = new Handler(new Handler.Callback() {
+
+            @Override
+            public boolean handleMessage(Message message) {
+                throw new UnsupportedOperationException("Method not implemented");
+            }
+
+        });
+        handler.sendEmptyMessage(0);
     }
 
     private class Say implements Runnable {

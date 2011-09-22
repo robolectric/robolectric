@@ -12,17 +12,21 @@ import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.impl.client.DefaultRequestDirector;
 import org.apache.http.message.BasicHeader;
+import org.apache.http.params.HttpConnectionParams;
+import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.InputStream;
 import java.net.URI;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -119,6 +123,30 @@ public class DefaultRequestDirectorTest {
     }
 
     @Test
+    public void shouldReturnRequestsByRule_KeepsTrackOfOpenContentStreams() throws Exception {
+        TestHttpResponse testHttpResponse = new TestHttpResponse(200, "a cheery response body");
+        Robolectric.addHttpResponseRule("http://some.uri", testHttpResponse);
+
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(true));
+
+        HttpResponse getResponse = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+        InputStream getResponseStream = getResponse.getEntity().getContent();
+        assertThat(Strings.fromStream(getResponseStream), equalTo("a cheery response body"));
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(false));
+
+        HttpResponse postResponse = requestDirector.execute(null, new HttpPost("http://some.uri"), null);
+        InputStream postResponseStream = postResponse.getEntity().getContent();
+        assertThat(Strings.fromStream(postResponseStream), equalTo("a cheery response body"));
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(false));
+
+        getResponseStream.close();
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(false));
+
+        postResponseStream.close();
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(true));
+    }
+
+    @Test
     public void shouldReturnRequestsByRule_WithTextResponse() throws Exception {
         Robolectric.addHttpResponseRule("http://some.uri", "a cheery response body");
 
@@ -142,6 +170,19 @@ public class DefaultRequestDirectorTest {
         assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a gloomy response body"));
     }
 
+    @Test
+    public void clearPendingHttpResponses() throws Exception {
+        Robolectric.addPendingHttpResponse(200, "earlier");
+        Robolectric.clearPendingHttpResponses();
+        Robolectric.addPendingHttpResponse(500, "later");
+
+        HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
+
+        assertNotNull(response);
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(500));
+        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("later"));
+    }
+    
     @Test
     public void shouldReturnRequestsByRule_WithCustomRequestMatcher() throws Exception {
         Robolectric.setDefaultHttpResponse(404, "no such page");
@@ -210,7 +251,7 @@ public class DefaultRequestDirectorTest {
             requestDirector.execute(null, new HttpGet("http://example.com"), null);
             fail();
         } catch (RuntimeException expected) {
-            assertThat(expected.getMessage(), equalTo("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse()."));
+            assertThat(expected.getMessage(), equalTo("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse(). Request was: GET http://example.com"));
         }
     }
 
@@ -227,7 +268,7 @@ public class DefaultRequestDirectorTest {
     
     @Test
     public void shouldSupportBasicResponseHandlerHandleResponse() throws Exception {
-        Robolectric.addPendingHttpResponseWithContentType(200, "OK", new BasicHeader("Content-Type", "text/plain"));
+        Robolectric.addPendingHttpResponse(200, "OK", new BasicHeader("Content-Type", "text/plain"));
 
         DefaultHttpClient client = new DefaultHttpClient();
         HttpResponse response = client.execute(new HttpGet("http://www.nowhere.org"));
@@ -238,5 +279,63 @@ public class DefaultRequestDirectorTest {
         Assert.assertNotNull(response);
         String responseStr = new BasicResponseHandler().handleResponse(response);
         Assert.assertEquals("OK", responseStr);
+    }
+
+    @Test
+    public void shouldFindLastRequestMade() throws Exception {
+        Robolectric.addPendingHttpResponse(200, "a happy response body");
+        Robolectric.addPendingHttpResponse(200, "a happy response body");
+        Robolectric.addPendingHttpResponse(200, "a happy response body");
+
+        DefaultHttpClient client = new DefaultHttpClient();
+        client.execute(new HttpGet("http://www.first.org"));
+        client.execute(new HttpGet("http://www.second.org"));
+        client.execute(new HttpGet("http://www.third.org"));
+
+        assertThat(((HttpUriRequest) Robolectric.getLatestSentHttpRequest()).getURI(),
+                equalTo(URI.create("http://www.third.org")));
+    }
+
+
+    @Test
+    public void shouldSupportConnectionTimeoutWithExceptions() throws Exception {
+        Robolectric.setDefaultHttpResponse(new TestHttpResponse() {
+            @Override
+            public HttpParams getParams() {
+                HttpParams httpParams = super.getParams();
+                HttpConnectionParams.setConnectionTimeout(httpParams, -1);
+                return httpParams;
+            }
+        });
+
+        DefaultHttpClient client = new DefaultHttpClient();
+        try {
+            client.execute(new HttpGet("http://www.nowhere.org"));
+        } catch (ConnectTimeoutException x) {
+            return;
+        }
+
+        fail("Exception should have been thrown");
+    }
+
+    @Test
+    public void shouldSupportSocketTimeoutWithExceptions() throws Exception {
+        Robolectric.setDefaultHttpResponse(new TestHttpResponse() {
+            @Override
+            public HttpParams getParams() {
+                HttpParams httpParams = super.getParams();
+                HttpConnectionParams.setSoTimeout(httpParams, -1);
+                return httpParams;
+            }
+        });
+
+        DefaultHttpClient client = new DefaultHttpClient();
+        try {
+            client.execute(new HttpGet("http://www.nowhere.org"));
+        } catch (ConnectTimeoutException x) {
+            return;
+        }
+
+        fail("Exception should have been thrown");
     }
 }

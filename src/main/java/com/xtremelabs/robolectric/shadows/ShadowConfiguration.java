@@ -10,7 +10,11 @@ public class ShadowConfiguration {
 
     @RealObject
     private Configuration realConfiguration;
-
+    
+    public int screenLayout;
+    public int touchscreen;
+    public int orientation;
+    
     @Implementation
     public void setToDefaults() {
         realConfiguration.screenLayout = Configuration.SCREENLAYOUT_LONG_NO |

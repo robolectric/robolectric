@@ -15,12 +15,38 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListView.class)
-public class ShadowListView extends ShadowAdapterView {
+public class ShadowListView extends ShadowAbsListView {
     @RealObject private ListView realListView;
 
     private boolean itemsCanFocus;
     private List<View> headerViews = new ArrayList<View>();
     private List<View> footerViews = new ArrayList<View>();
+
+    @Implementation
+    @Override
+    public View findViewById(int id) {
+        View child = super.findViewById(id);
+        if (child == null) {
+            child = findView(headerViews, id);
+
+            if (child == null) {
+                child = findView(footerViews, id);
+            }
+        }
+        return child;
+    }
+
+    private View findView(List<View> views, int viewId) {
+        View child = null;
+        for (View v : views) {
+            child = v.findViewById(viewId);
+            if (child != null) {
+                break;
+            }
+        }
+        return child;
+    }
+
 
     @Implementation
     public void setItemsCanFocus(boolean itemsCanFocus) {
@@ -45,14 +71,26 @@ public class ShadowListView extends ShadowAdapterView {
 
     @Implementation
     public void addHeaderView(View headerView) {
+        addHeaderView(headerView, null, true);
+    }
+
+    @Implementation
+    public void addHeaderView(View headerView, Object data, boolean isSelectable) {
         ensureAdapterNotSet("header");
         headerViews.add(headerView);
+        realListView.addView(headerView);
+    }
+
+    @Implementation
+    public int getHeaderViewsCount() {
+        return headerViews.size();
     }
 
     @Implementation
     public void addFooterView(View footerView, Object data, boolean isSelectable) {
         ensureAdapterNotSet("footer");
         footerViews.add(footerView);
+        realListView.addView(footerView);
     }
 
     @Implementation
@@ -60,6 +98,20 @@ public class ShadowListView extends ShadowAdapterView {
         addFooterView(footerView, null, false);
     }
 
+    @Implementation
+    public void removeAllViews() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Implementation
+    public void removeView(View view) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Implementation
+    public void removeViewAt(int index) {
+        throw new UnsupportedOperationException();
+    }
 
     public boolean performItemClick(int position) {
         return realListView.performItemClick(realListView.getChildAt(position), position, realListView.getItemIdAtPosition(position));
@@ -93,7 +145,7 @@ public class ShadowListView extends ShadowAdapterView {
     }
 
     private void ensureAdapterNotSet(String view) {
-        if (adapter != null) {
+        if (getAdapter() != null) {
             throw new IllegalStateException("Cannot add " + view + " view to list -- setAdapter has already been called");
         }
     }
@@ -116,5 +168,18 @@ public class ShadowListView extends ShadowAdapterView {
 
     public void setFooterViews(List<View> footerViews) {
         this.footerViews = footerViews;
+    }
+
+    @Override
+    protected void addViews() {
+        for (View headerView : headerViews) {
+            addView(headerView);
+        }
+
+        super.addViews();
+
+        for (View footerView : footerViews) {
+            addView(footerView);
+        }
     }
 }

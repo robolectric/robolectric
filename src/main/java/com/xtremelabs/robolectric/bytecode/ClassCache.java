@@ -62,7 +62,9 @@ public class ClassCache {
     }
 
     public boolean isWriting() {
-        return startedWriting;
+        synchronized (this) {
+            return startedWriting;
+        }
     }
 
     public void addClass(String className, byte[] classBytes) {
@@ -93,34 +95,37 @@ public class ClassCache {
         }
     }
 
-    private void saveAllClassesToCache(File file, Manifest manifest) {
-        startedWriting = true;
-
-        if (cachedClasses.size() > 0) {
-            JarOutputStream jarOutputStream = null;
-            try {
-                File cacheJarDir = file.getParentFile();
-                if (!cacheJarDir.exists()) {
-                    cacheJarDir.mkdirs();
-                }
-
-                jarOutputStream = new JarOutputStream(new FileOutputStream(file), manifest);
-                for (Map.Entry<String, byte[]> entry : cachedClasses.entrySet()) {
-                    String key = entry.getKey();
-                    jarOutputStream.putNextEntry(new JarEntry(key.replace('.', '/') + ".class"));
-                    jarOutputStream.write(entry.getValue());
-                    jarOutputStream.closeEntry();
-                }
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } finally {
-                if (jarOutputStream != null) {
-                    try {
-                        jarOutputStream.close();
-                    } catch (IOException ignore) {
+    protected void saveAllClassesToCache(File file, Manifest manifest) {
+        synchronized (this) {
+            startedWriting = true;
+    
+            if (cachedClasses.size() > 0) {
+                JarOutputStream jarOutputStream = null;
+                try {
+                    File cacheJarDir = file.getParentFile();
+                    if (!cacheJarDir.exists()) {
+                        cacheJarDir.mkdirs();
+                    }
+    
+                    jarOutputStream = new JarOutputStream(new FileOutputStream(file), manifest);
+                    for (Map.Entry<String, byte[]> entry : cachedClasses.entrySet()) {
+                        String key = entry.getKey();
+                        jarOutputStream.putNextEntry(new JarEntry(key.replace('.', '/') + ".class"));
+                        jarOutputStream.write(entry.getValue());
+                        jarOutputStream.closeEntry();
+                    }
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    if (jarOutputStream != null) {
+                        try {
+                            jarOutputStream.close();
+                        } catch (IOException ignore) {
+                        }
                     }
                 }
             }
+            startedWriting = false;
         }
     }
 }

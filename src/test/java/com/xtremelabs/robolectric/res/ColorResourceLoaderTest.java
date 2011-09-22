@@ -5,6 +5,7 @@ import com.xtremelabs.robolectric.R;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -15,8 +16,10 @@ public class ColorResourceLoaderTest {
     @Before public void setUp() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addLocalRClass(R.class);
+        resourceExtractor.addSystemRClass(android.R.class);
         colorResourceLoader = new ColorResourceLoader(resourceExtractor);
         new DocumentLoader(colorResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
+        new DocumentLoader(colorResourceLoader).loadSystemResourceXmlDir(getSystemResourceDir("values"));
     }
 
     @Test
@@ -51,8 +54,8 @@ public class ColorResourceLoaderTest {
     }
 
     @Test
-    public void shouldNotSupportCarrierDefinedColors() throws Exception {
-        assertThat(colorResourceLoader.getValue(android.R.color.background_dark), equalTo(-1));
+    public void shouldSupportCarrierDefinedColors() throws Exception {
+        assertThat(colorResourceLoader.getValue(android.R.color.background_dark), equalTo(0xFF000000));
     }
 
     @Test

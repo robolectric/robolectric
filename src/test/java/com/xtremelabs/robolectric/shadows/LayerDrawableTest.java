@@ -1,0 +1,53 @@
+package com.xtremelabs.robolectric.shadows;
+
+import android.graphics.BitmapFactory;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertSame;
+
+/**
+ * ShadowLayerDrawableTest
+ */
+@RunWith(WithTestDefaultsRunner.class)
+public class LayerDrawableTest {
+    /** drawables */
+    protected Drawable drawable1000;
+    protected Drawable drawable2000;
+    protected Drawable drawable3000;
+
+    /** drawables */
+    protected Drawable[] drawables;
+
+    @Before
+    public void setUp() {
+        drawable1000 = new BitmapDrawable(BitmapFactory.decodeResource(
+                Robolectric.application.getResources(), 0x00001000));
+        drawable2000 = new BitmapDrawable(BitmapFactory.decodeResource(
+                Robolectric.application.getResources(), 0x00002000));
+        drawable3000 = new BitmapDrawable(BitmapFactory.decodeResource(
+                Robolectric.application.getResources(), 0x00003000));
+
+        drawables = new Drawable[] { drawable1000, drawable2000, drawable3000 };
+    }
+
+    @Test
+    public void testConstruction() {
+        LayerDrawable layerDrawable = new LayerDrawable(drawables);
+        assertSame("drawables", drawables, shadowOf(layerDrawable).drawables);
+    }
+
+    @Test
+    public void testGetNumberOfLayers() {
+        LayerDrawable layerDrawable = new LayerDrawable(drawables);
+        assertEquals("count", 3, layerDrawable.getNumberOfLayers());
+    }
+}

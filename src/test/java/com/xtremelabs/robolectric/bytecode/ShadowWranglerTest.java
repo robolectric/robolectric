@@ -2,10 +2,13 @@ package com.xtremelabs.robolectric.bytecode;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithoutTestDefaultsRunner;
+import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
+import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.Instrument;
 import com.xtremelabs.robolectric.internal.RealObject;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -146,6 +149,14 @@ public class ShadowWranglerTest {
         assertThat(stackTrace, not(containsString(ShadowWrangler.class.getName() + ".")));
         assertThat(stackTrace, not(containsString(RobolectricInternals.class.getName() + ".")));
     }
+    
+    @Test(expected=RuntimeException.class)
+    @EnableStrictI18n
+    public void shouldThrowExceptionOnI18nStrictMode() {
+    	Robolectric.bindShadowClass(ShadowFooI18n.class);
+    	Foo foo = new Foo(null);
+    	foo.getName();
+    }
 
     private ShadowFoo shadowOf(Foo foo) {
         return (ShadowFoo) Robolectric.shadowOf_(foo);
@@ -187,6 +198,20 @@ public class ShadowWranglerTest {
         public TextFoo(String s) {
             super(s);
         }
+    }
+    
+    @Implements(Foo.class)
+    public static class ShadowFooI18n {
+    	String name;
+    	
+        public void __constructor__(String name) {
+           this.name = name;
+        }
+
+    	@Implementation(i18nSafe=false)
+    	public String getName() {
+    		return name;
+    	}
     }
 
     @Implements(Foo.class)

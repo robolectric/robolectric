@@ -7,7 +7,7 @@ public class Foo {
     public Foo(String s) {
         throw new RuntimeException("stub!");
     }
-
+    
     public String getName() {
         throw new RuntimeException("stub!");
     }

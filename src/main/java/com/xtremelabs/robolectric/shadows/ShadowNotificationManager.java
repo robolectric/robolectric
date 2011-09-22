@@ -5,7 +5,9 @@ import android.app.NotificationManager;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -63,5 +65,9 @@ public class ShadowNotificationManager {
     public Notification getNotification(String tag) {
         Integer id = idForTag.get(tag);
         return notifications.get(id);
+    }
+
+    public List<Notification> getAllNotifications() {
+        return new ArrayList<Notification>(notifications.values());
     }
 }

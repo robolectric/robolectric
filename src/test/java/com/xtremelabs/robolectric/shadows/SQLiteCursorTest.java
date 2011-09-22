@@ -4,13 +4,13 @@ package com.xtremelabs.robolectric.shadows;
 import android.database.sqlite.SQLiteCursor;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.util.DatabaseConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.Statement;
@@ -28,13 +28,12 @@ public class SQLiteCursorTest {
 
     @Before
     public void setUp() throws Exception {
-        Class.forName("org.h2.Driver").newInstance();
-        connection = DriverManager.getConnection("jdbc:h2:mem:");
+    	connection = DatabaseConfig.getMemoryConnection();
 
         Statement statement = connection.createStatement();
         statement.execute("CREATE TABLE table_name(" +
-                "id INT PRIMARY KEY, name VARCHAR(255), long_value BIGINT," +
-                "float_value REAL, double_value DOUBLE, blob_value BINARY );");
+                "id INTEGER PRIMARY KEY, name VARCHAR(255), long_value BIGINT," +
+                "float_value REAL, double_value DOUBLE, blob_value BINARY, clob_value CLOB );");
 
         addPeople();
         setupCursor();
@@ -135,8 +134,31 @@ public class SQLiteCursorTest {
 
         cursor.moveToNext();
         cursor.moveToNext();
+        cursor.moveToNext();
 
         assertThat(cursor.moveToNext(), equalTo(false));
+    }
+    
+    @Test
+    public void testMoveBackwards() throws Exception {
+    	assertThat(cursor.getPosition(), equalTo(-1));
+    	
+        cursor.moveToFirst();
+        assertThat(cursor.getPosition(), equalTo(0));
+        cursor.moveToNext();
+        assertThat(cursor.getPosition(), equalTo(1));
+        cursor.moveToNext();
+        assertThat(cursor.getPosition(), equalTo(2));
+        
+        cursor.moveToFirst();
+        assertThat(cursor.getPosition(), equalTo(0));
+        cursor.moveToNext();
+        assertThat(cursor.getPosition(), equalTo(1));
+        cursor.moveToNext();
+        assertThat(cursor.getPosition(), equalTo(2));
+        
+        cursor.moveToPosition(1);
+        assertThat(cursor.getPosition(), equalTo(1));
     }
 
     @Test
@@ -145,6 +167,34 @@ public class SQLiteCursorTest {
 
         cursor.moveToFirst();
         assertThat(cursor.moveToNext(), equalTo(false));
+    }
+    
+    @Test
+    public void testMoveToPrevious() throws Exception {
+    	cursor.moveToFirst();
+    	cursor.moveToNext();
+    	
+    	assertThat(cursor.moveToPrevious(), equalTo(true));
+        assertThat(cursor.getInt(0), equalTo(1234));
+        assertThat(cursor.getString(1), equalTo("Chuck"));
+    }
+    
+    @Test
+    public void testMoveToPreviousPastStart() throws Exception {
+    	cursor.moveToFirst();
+    	
+    	// Possible to move cursor before the first item
+    	assertThat(cursor.moveToPrevious(), equalTo(true));
+    	// After that, attempts to move cursor back return false
+    	assertThat(cursor.moveToPrevious(), equalTo(false));
+    }
+    
+    @Test
+    public void testMoveToPreviousEmpty() throws Exception {
+        setupEmptyResult();
+    	cursor.moveToFirst();
+    	
+    	assertThat(cursor.moveToPrevious(), equalTo(false));
     }
 
     @Test
@@ -174,6 +224,22 @@ public class SQLiteCursorTest {
         for (int i = 0; i < byteData.length; i++) {
             assertThat(byteData[i], equalTo(retrievedByteData[i]));
         }
+    }
+
+    @Test
+    public void testGetClob() throws Exception {
+        String sql = "UPDATE table_name set clob_value=? where id=1234";
+        String s = "Don't CLOBber my data, please. Thank you.";
+
+        PreparedStatement statement = connection.prepareStatement(sql);
+        statement.setObject(1, s);
+        statement.executeUpdate();
+
+        setupCursor();
+        cursor.moveToFirst();
+
+        String actual = cursor.getString(6);
+        assertThat(s, equalTo(actual));
     }
 
     @Test
@@ -271,10 +337,11 @@ public class SQLiteCursorTest {
     }
 
     private void setupCursor() throws Exception {
-        Statement statement = connection.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+        Statement statement = connection.createStatement(DatabaseConfig.getResultSetType(), ResultSet.CONCUR_READ_ONLY);
+        String sql ="SELECT * FROM table_name;";
         resultSet = statement.executeQuery("SELECT * FROM table_name;");
         cursor = new SQLiteCursor(null, null, null, null);
-        Robolectric.shadowOf(cursor).setResultSet(resultSet);
+        Robolectric.shadowOf(cursor).setResultSet(resultSet, sql);
     }
 
     private void setupEmptyResult() throws Exception {
@@ -285,13 +352,14 @@ public class SQLiteCursorTest {
     }
 
     private void assertColumnNames(String[] columnNames) {
-        assertThat(columnNames.length, equalTo(6));
-        assertThat(columnNames[0], equalTo("ID"));
-        assertThat(columnNames[1], equalTo("NAME"));
-        assertThat(columnNames[2], equalTo("LONG_VALUE"));
-        assertThat(columnNames[3], equalTo("FLOAT_VALUE"));
-        assertThat(columnNames[4], equalTo("DOUBLE_VALUE"));
-        assertThat(columnNames[5], equalTo("BLOB_VALUE"));
+        assertThat(columnNames.length, equalTo(7));
+        assertThat(columnNames[0], equalTo("id"));
+        assertThat(columnNames[1], equalTo("name"));
+        assertThat(columnNames[2], equalTo("long_value"));
+        assertThat(columnNames[3], equalTo("float_value"));
+        assertThat(columnNames[4], equalTo("double_value"));
+        assertThat(columnNames[5], equalTo("blob_value"));
+        assertThat(columnNames[6], equalTo("clob_value"));
     }
 
 }
