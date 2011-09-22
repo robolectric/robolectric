@@ -265,9 +265,8 @@ public class ShadowAdapterView extends ShadowViewGroup {
                 newItems.add(adapter.getItem(i));
                 View view = adapter.getView(i, null, realAdapterView);
                 // don't add null views
-                if( view != null ) {
-                	//FIXME actually do i have to add the view? (will increase number of views in list)
-                	//addView(view);
+                if( view != null ) { 
+                	addView(view);
                 }
             }
 
