@@ -116,10 +116,10 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     @Implementation
     public View getView(int position, View convertView, ViewGroup parent) {
         T item = list.get(position);
-        View view = getResourceLoader().inflateView(context, resource, parent);
+        View view = getResourceLoader().inflateView(context, resource, null);
 
         if (convertView == null) {
-            view = getResourceLoader().inflateView(context,resource, parent);
+            view = getResourceLoader().inflateView(context,resource, null);
         } else {
             view = convertView;
         }
