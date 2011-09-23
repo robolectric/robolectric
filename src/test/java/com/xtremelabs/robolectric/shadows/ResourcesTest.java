@@ -1,25 +1,21 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestR;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -44,6 +40,11 @@ public class ResourcesTest {
         Configuration configuration = resources.getConfiguration();
         assertThat(configuration, notNullValue());
         assertThat(configuration.locale, notNullValue());
+    }
+
+    @Test
+    public void testConfigurationReturnsTheSameInstance() {
+        assertThat(resources.getConfiguration(), is(resources.getConfiguration()));
     }
 
     @Test
