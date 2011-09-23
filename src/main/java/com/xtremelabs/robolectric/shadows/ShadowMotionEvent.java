@@ -55,6 +55,16 @@ public class ShadowMotionEvent {
     }
 
     @Implementation
+    public float getRawX() {
+        return getX();
+    }
+
+    @Implementation
+    public float getRawY() {
+        return getY();
+    }
+
+    @Implementation
     public final float getX() {
         return getX(0);
     }
@@ -114,6 +124,11 @@ public class ShadowMotionEvent {
     @Implementation
     public final int getActionIndex() {
         return pointerIndex;
+    }
+
+    @Implementation
+    public final float getPressure(int pointerIndex) {
+        return 1.0f;
     }
 
     public MotionEvent setPointer2(float x, float y) {
