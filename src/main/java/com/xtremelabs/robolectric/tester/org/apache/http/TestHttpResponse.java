@@ -16,7 +16,7 @@ import java.util.NoSuchElementException;
 public class TestHttpResponse extends HttpResponseStub {
 
     private int statusCode;
-    private String responseBody;
+    private byte[] responseBody;
     private TestStatusLine statusLine = new TestStatusLine();
     private TestHttpEntity httpEntity = new TestHttpEntity();
     private int openEntityContentStreamCount = 0;
@@ -25,21 +25,26 @@ public class TestHttpResponse extends HttpResponseStub {
 
     public TestHttpResponse() {
         this.statusCode = 200;
-        this.responseBody = "";
+        this.responseBody = new byte[0];
     }
 
     public TestHttpResponse(int statusCode, String responseBody) {
         this.statusCode = statusCode;
-        this.responseBody = responseBody;
+        this.responseBody = responseBody.getBytes();
     }
 
     public TestHttpResponse(int statusCode, String responseBody, Header... headers) {
-        this(statusCode, responseBody);
+        this(statusCode, responseBody.getBytes(), headers);
+    }
+
+    public TestHttpResponse(int statusCode, byte[] responseBody, Header... headers) {
+        this.statusCode = statusCode;
+        this.responseBody = responseBody.clone();
         this.headers = headers;
     }
 
     protected void setResponseBody(String responseBody) {
-        this.responseBody = responseBody;
+        this.responseBody = responseBody.getBytes();
     }
 
     @Override public StatusLine getStatusLine() {
@@ -159,7 +164,7 @@ public class TestHttpResponse extends HttpResponseStub {
         private ByteArrayInputStream inputStream;
 
         @Override public long getContentLength() {
-            return responseBody.length();
+            return responseBody.length;
         }
         
         @Override public Header getContentType() {
@@ -181,7 +186,7 @@ public class TestHttpResponse extends HttpResponseStub {
 
         @Override public InputStream getContent() throws IOException, IllegalStateException {
             openEntityContentStreamCount++;
-            inputStream = new ByteArrayInputStream(responseBody.getBytes()) {
+            inputStream = new ByteArrayInputStream(responseBody) {
                 @Override
                 public void close() throws IOException {
                     openEntityContentStreamCount--;
@@ -192,7 +197,7 @@ public class TestHttpResponse extends HttpResponseStub {
         }
 
         @Override public void writeTo(OutputStream outputStream) throws IOException {
-            outputStream.write(responseBody.getBytes());
+            outputStream.write(responseBody);
         }
 
         @Override public void consumeContent() throws IOException {
