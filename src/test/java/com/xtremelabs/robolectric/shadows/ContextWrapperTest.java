@@ -2,7 +2,11 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.appwidget.AppWidgetProvider;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.IntentFilter;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Transcript;
@@ -10,11 +14,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertEquals;
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -126,7 +133,15 @@ public class ContextWrapperTest {
     public void shouldReturnSameAlarmServiceEveryTime() throws Exception {
         assertSameInstanceEveryTime(Context.ALARM_SERVICE);
     }
-    
+
+    @Test
+    public void checkPermissionsShouldReturnPermissionGrantedToAddedPermissions() throws Exception {
+        shadowOf(contextWrapper).grantPermissions("foo", "bar");
+        assertThat(contextWrapper.checkPermission("foo", 0, 0), equalTo(PERMISSION_GRANTED));
+        assertThat(contextWrapper.checkPermission("bar", 0, 0), equalTo(PERMISSION_GRANTED));
+        assertThat(contextWrapper.checkPermission("baz", 0, 0), equalTo(PERMISSION_DENIED));
+    }
+
     @Test
     public void shouldReturnAContext() {
     	assertThat(contextWrapper.getBaseContext(), notNullValue());
