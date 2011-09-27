@@ -57,6 +57,18 @@ public class ShadowDrawable {
     }
 
     @Implementation
+    public Rect copyBounds() {
+        Rect bounds = new Rect();
+        copyBounds(bounds);
+        return bounds;
+    }
+
+    @Implementation
+    public void copyBounds(Rect bounds) {
+        bounds.set(getBounds());
+    }
+
+    @Implementation
     public int getIntrinsicWidth() {
         return intrinsicWidth;
     }

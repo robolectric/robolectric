@@ -23,6 +23,8 @@ public class ShadowMotionEvent {
     private int pointerCount = 1;
     private long downTime;
     private long eventTime;
+    private int[] pointerIds = new int[2];
+    private int pointerIndex;
 
     @Implementation
     public static MotionEvent obtain(long downTime, long eventTime, int action, float x, float y, int metaState) {
@@ -49,7 +51,17 @@ public class ShadowMotionEvent {
 
     @Implementation
     public int getAction() {
-        return action;
+        return action | (pointerIndex << MotionEvent.ACTION_POINTER_ID_SHIFT);
+    }
+
+    @Implementation
+    public float getRawX() {
+        return getX();
+    }
+
+    @Implementation
+    public float getRawY() {
+        return getY();
     }
 
     @Implementation
@@ -87,10 +99,51 @@ public class ShadowMotionEvent {
         return downTime;
     }
 
+    @Implementation
+    public final int getPointerId(int index) {
+        return pointerIds[index];
+    }
+
+    @Implementation
+    public final int findPointerIndex(int id) {
+        for (int i = 0; i < pointerIds.length; i++) {
+            int pointerId = pointerIds[i];
+
+            if (pointerId == id) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    @Implementation
+    public final int getActionMasked() {
+        return action;
+    }
+
+    @Implementation
+    public final int getActionIndex() {
+        return pointerIndex;
+    }
+
+    @Implementation
+    public final float getPressure(int pointerIndex) {
+        return 1.0f;
+    }
+
     public MotionEvent setPointer2(float x, float y) {
         this.x[1] = x;
         this.y[1] = y;
         pointerCount = 2;
         return realObject;
+    }
+
+    public void setPointerIndex(int pointerIndex) {
+        this.pointerIndex = pointerIndex;
+    }
+
+    public void setPointerIds(int index0PointerId, int index1PointerId) {
+        pointerIds[0] = index0PointerId;
+        pointerIds[1] = index1PointerId;
     }
 }

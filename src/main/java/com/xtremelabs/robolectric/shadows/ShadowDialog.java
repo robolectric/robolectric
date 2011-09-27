@@ -170,7 +170,7 @@ public class ShadowDialog {
         if (onCancelListener != null) {
             onCancelListener.onCancel(realDialog);
         }
-        dismiss();
+        realDialog.dismiss();
     }
 
     @Implementation

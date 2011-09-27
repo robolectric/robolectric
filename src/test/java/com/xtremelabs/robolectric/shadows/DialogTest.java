@@ -46,7 +46,7 @@ public class DialogTest {
 
     @Test
     public void shouldCallOnStartFromShow() {
-        TestOnStartDialog dialog = new TestOnStartDialog();
+        TestDialog dialog = new TestDialog();
         dialog.show();
 
         assertTrue(dialog.onStartCalled);
@@ -59,6 +59,13 @@ public class DialogTest {
 
         dialog.setCancelable(false);
         assertThat(shadow.isCancelable(), equalTo(false));
+    }
+
+    @Test
+    public void shouldDismissTheRealDialogWhenCancelled() throws Exception {
+        TestDialog dialog = new TestDialog();
+        dialog.cancel();
+        assertThat(dialog.wasDismissed, equalTo(true));
     }
 
     @Test
@@ -109,10 +116,11 @@ public class DialogTest {
         assertThat(ShadowDialog.getLatestDialog(), sameInstance(dialog));
     }
 
-    private static class TestOnStartDialog extends Dialog {
+    private static class TestDialog extends Dialog {
         boolean onStartCalled = false;
+        boolean wasDismissed =  false;
 
-        public TestOnStartDialog() {
+        public TestDialog() {
             super(null);
         }
 
@@ -120,5 +128,11 @@ public class DialogTest {
         protected void onStart() {
             onStartCalled = true;
         }
+
+        @Override public void dismiss() {
+            super.dismiss();
+            wasDismissed = true;
+        }
     }
+
 }

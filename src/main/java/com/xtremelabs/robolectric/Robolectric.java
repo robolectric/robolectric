@@ -1,15 +1,5 @@
 package com.xtremelabs.robolectric;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultRequestDirector;
-
 import android.app.*;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
@@ -36,6 +26,7 @@ import android.net.wifi.WifiManager;
 import android.os.*;
 import android.preference.*;
 import android.telephony.TelephonyManager;
+import android.text.ClipboardManager;
 import android.text.format.DateFormat;
 import android.text.method.PasswordTransformationMethod;
 import android.view.*;
@@ -44,7 +35,6 @@ import android.view.animation.AnimationUtils;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.*;
 import android.widget.*;
-
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
@@ -52,6 +42,15 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultRequestDirector;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
 
 public class Robolectric {
     public static Application application;
@@ -132,6 +131,7 @@ public class Robolectric {
                 ShadowCameraParameters.class,
                 ShadowCameraSize.class,
                 ShadowCanvas.class,
+                ShadowClipboardManager.class,
                 ShadowColorDrawable.class,
                 ShadowColorMatrix.class,
                 ShadowColorMatrixColorFilter.class,
@@ -173,6 +173,8 @@ public class Robolectric {
                 ShadowIntentFilter.class,
                 ShadowIntentFilterAuthorityEntry.class,
                 ShadowItemizedOverlay.class,
+                ShadowJsPromptResult.class,
+                ShadowJsResult.class,
                 ShadowKeyEvent.class,
                 ShadowKeyguardManager.class,
                 ShadowLayerDrawable.class,
@@ -262,6 +264,7 @@ public class Robolectric {
                 ShadowVideoView.class,
                 ShadowView.class,
                 ShadowViewAnimator.class,
+                ShadowViewConfiguration.class,
                 ShadowViewGroup.class,
                 ShadowViewFlipper.class,
                 ShadowViewStub.class,
@@ -384,6 +387,10 @@ public class Robolectric {
         return (ShadowCanvas) shadowOf_(instance);
     }
 
+    public static ShadowClipboardManager shadowOf(ClipboardManager instance) {
+        return (ShadowClipboardManager) shadowOf_(instance);
+    }
+
     public static ShadowColorDrawable shadowOf(ColorDrawable instance) {
         return (ShadowColorDrawable) shadowOf_(instance);
     }
@@ -490,6 +497,14 @@ public class Robolectric {
 
     public static ShadowIntent shadowOf(Intent instance) {
         return (ShadowIntent) shadowOf_(instance);
+    }
+
+    public static ShadowJsPromptResult shadowOf(JsPromptResult instance) {
+        return (ShadowJsPromptResult) shadowOf_(instance);
+    }
+
+    public static ShadowJsResult shadowOf(JsResult instance) {
+        return (ShadowJsResult) shadowOf_(instance);
     }
 
     public static ShadowKeyguardManager shadowOf(KeyguardManager instance) {
@@ -714,6 +729,10 @@ public class Robolectric {
 
     public static ShadowViewAnimator shadowOf(ViewAnimator instance) {
         return (ShadowViewAnimator) shadowOf_(instance);
+    }
+
+    public static ShadowViewConfiguration shadowOf(ViewConfiguration instance) {
+        return (ShadowViewConfiguration) shadowOf_(instance);
     }
 
     public static ShadowViewFlipper shadowOf(ViewFlipper instance) {

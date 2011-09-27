@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.ListActivity;
 import android.view.View;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -16,6 +17,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(ListActivity.class)
 public class ShadowListActivity extends ShadowActivity {
     private ListView listView;
+    private ListAdapter listAdapter;
 
     @Implementation
     public ListView getListView() {
@@ -30,7 +32,17 @@ public class ShadowListActivity extends ShadowActivity {
     public void setListView(ListView view) {
     	listView = view;
     }
-    
+
+    @Implementation
+    public void setListAdapter(ListAdapter listAdapter) {
+        this.listAdapter = listAdapter;
+    }
+
+    @Implementation
+    public ListAdapter getListAdapter() {
+        return listAdapter;
+    }
+
     private ListView findListView(View parent) {
         if (parent instanceof ListView) {
             return (ListView) parent;

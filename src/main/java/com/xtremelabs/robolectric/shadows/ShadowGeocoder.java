@@ -24,6 +24,7 @@ public class ShadowGeocoder {
     private boolean wasCalled;
     private double lastLatitude;
     private double lastLongitude;
+    private String lastLocationName;
     private double simulatedLatitude;
     private double simulatedLongitude;
     private boolean shouldSimulateGeocodeException;
@@ -47,6 +48,7 @@ public class ShadowGeocoder {
 
     @Implementation
     public List<Address> getFromLocationName(String locationName, int maxResults) throws IOException {
+        this.lastLocationName = locationName;
         if (shouldSimulateGeocodeException) {
             throw new IOException("Simulated geocode exception");
         }
@@ -110,6 +112,10 @@ public class ShadowGeocoder {
 
     public double getLastLatitude() {
         return lastLatitude;
+    }
+
+    public String getLastLocationName() {
+        return lastLocationName;
     }
 
     private List<Address> oneElementList(Address address) {
