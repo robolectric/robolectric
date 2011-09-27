@@ -7,6 +7,10 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
@@ -20,8 +24,8 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowHandler {
     @RealObject
     private Handler realHandler;
-
     private Looper looper = Looper.myLooper();
+    private List<Message> messages = new ArrayList<Message>();
 
     public void __constructor__() {
         this.looper = Looper.myLooper();
@@ -52,20 +56,34 @@ public class ShadowHandler {
 
     @Implementation
     public final boolean sendMessage(final Message msg) {
-        post(new Runnable() {
+        return sendMessageDelayed(msg, 0L);
+    }
+
+    @Implementation
+    public final boolean sendMessageDelayed(final Message msg, long delayMillis) {
+        messages.add(msg);
+        postDelayed(new Runnable() {
             @Override
             public void run() {
-                realHandler.handleMessage(msg);
+                if (messages.contains(msg)) {
+                    realHandler.handleMessage(msg);
+                    messages.remove(msg);
+                }
             }
-        });
+        }, delayMillis);
         return true;
     }
 
     @Implementation
     public final boolean sendEmptyMessage(int what) {
+        return sendEmptyMessageDelayed(what, 0L);
+    }
+
+    @Implementation
+    public final boolean sendEmptyMessageDelayed(int what, long delayMillis) {
         final Message msg = new Message();
         msg.what = what;
-        return sendMessage(msg);
+        return sendMessageDelayed(msg, delayMillis);
     }
     
     @Implementation
@@ -76,6 +94,27 @@ public class ShadowHandler {
     @Implementation
     public final void removeCallbacks(java.lang.Runnable r) {
         shadowOf(looper).getScheduler().remove(r);
+    }
+
+    @Implementation
+    public final boolean hasMessages(int what) {
+        for (Message message : messages) {
+            if (message.what == what) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
+    @Implementation
+    public final void removeMessages(int what) {
+        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext(); ) {
+            Message message = iterator.next();
+            if (message.what == what) {
+                iterator.remove();
+            }
+        }
     }
 
     /**
