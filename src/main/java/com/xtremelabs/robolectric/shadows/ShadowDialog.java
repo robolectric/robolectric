@@ -64,6 +64,11 @@ public class ShadowDialog {
     }
 
     @Implementation
+    public void setContentView(View contentView) {
+        inflatedView = contentView;
+    }
+
+    @Implementation
     public void setTitle(int stringResourceId) {
         this.title = context.getResources().getText(stringResourceId);
     }
@@ -122,8 +127,8 @@ public class ShadowDialog {
 
     @Implementation
     public View findViewById(int viewId) {
-        if (layoutId > 0 && context != null) {
-            if (inflatedView == null) {
+        if (context != null) {
+            if (inflatedView == null && layoutId > 0) {
                 inflatedView = ShadowLayoutInflater.from(context).inflate(layoutId, null);
             }
             return inflatedView.findViewById(viewId);
