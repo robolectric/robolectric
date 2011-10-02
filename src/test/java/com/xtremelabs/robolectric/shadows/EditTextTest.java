@@ -14,4 +14,6 @@ public class EditTextTest {
         assertTrue(new EditText(null).isFocusable());
         assertTrue(new EditText(null).isFocusableInTouchMode());
     }
+    
+    
 }

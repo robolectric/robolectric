@@ -16,29 +16,11 @@ import java.util.List;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(EditText.class)
 public class ShadowEditText extends ShadowTextView {
-    private List<TextWatcher> watchers = new ArrayList<TextWatcher>();
-
     public ShadowEditText() {
         focusable = true;
         focusableInTouchMode = true;
     }
-
-    @Override @Implementation
-    public void setText(CharSequence text) {
-        super.setText(text);
-        for (TextWatcher watcher : watchers) {
-            watcher.afterTextChanged(getText());
-        }
-    }
-
-    @Override @Implementation
-    public void setText(int textResourceId) {
-        super.setText(textResourceId);
-        for (TextWatcher watcher : watchers) {
-            watcher.afterTextChanged(getText());
-        }
-    }
-
+    
     @Override @Implementation
     public Editable getText() {
         CharSequence text = super.getText();
@@ -48,15 +30,4 @@ public class ShadowEditText extends ShadowTextView {
         return (Editable) text;
     }
 
-    @Implementation
-    public void addTextChangedListener(TextWatcher watcher) {
-        this.watchers.add(watcher);
-    }
-
-    /**
-     * @return the list of currently registered watchers/listeners
-     */
-    public List<TextWatcher> getWatchers() {
-        return watchers;
-    }
 }
