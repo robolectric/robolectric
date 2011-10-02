@@ -28,7 +28,6 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.text.Editable;
 import android.text.InputType;
-import android.text.SpannableStringBuilder;
 import android.text.TextWatcher;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
