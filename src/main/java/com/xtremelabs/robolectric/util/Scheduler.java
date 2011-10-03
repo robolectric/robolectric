@@ -37,6 +37,14 @@ public class Scheduler {
         postDelayed(runnable, 0);
     }
 
+    public void postAtFrontOfQueue(Runnable runnable) {
+        if (paused) {
+            postedRunnables.add(0, new PostedRunnable(runnable, currentTime));
+        } else {
+            runnable.run();
+        }
+    }
+
     public void remove(Runnable runnable) {
         ListIterator<PostedRunnable> iterator = postedRunnables.listIterator();
         while (iterator.hasNext()) {

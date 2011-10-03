@@ -102,6 +102,10 @@ public class ShadowLooper {
         scheduler.postDelayed(runnable, delayMillis);
     }
 
+    public void postAtFrontOfQueue(Runnable runnable) {
+        scheduler.postAtFrontOfQueue(runnable);
+    }
+
     public void pause() {
         scheduler.pause();
     }

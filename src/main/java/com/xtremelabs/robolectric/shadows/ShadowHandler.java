@@ -43,6 +43,12 @@ public class ShadowHandler {
     }
 
     @Implementation
+    public final boolean postAtFrontOfQueue(Runnable runnable) {
+        shadowOf(looper).postAtFrontOfQueue(runnable);
+        return true;
+    }
+
+    @Implementation
     public Message obtainMessage(int what, Object obj) {
         Message message = new Message();
         message.what = what;

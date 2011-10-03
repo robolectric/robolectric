@@ -53,6 +53,29 @@ public class SchedulerTest {
     }
 
     @Test
+    public void testShadowPostAtFrontOfQueue() throws Exception {
+        scheduler.post(new AddToTranscript("one"));
+        scheduler.post(new AddToTranscript("two"));
+        scheduler.postAtFrontOfQueue(new AddToTranscript("three"));
+
+        scheduler.runOneTask();
+        transcript.assertEventsSoFar("three");
+
+        scheduler.runOneTask();
+        transcript.assertEventsSoFar("one");
+
+        scheduler.runOneTask();
+        transcript.assertEventsSoFar("two");
+    }
+
+    @Test
+    public void testShadowPostAtFrontOfQueue_whenUnpaused() throws Exception {
+        scheduler.unPause();
+        scheduler.postAtFrontOfQueue(new AddToTranscript("three"));
+        transcript.assertEventsSoFar("three");
+    }
+
+    @Test
     public void testShadowPostDelayed_WhenMoreItemsAreAdded() throws Exception {
         scheduler.postDelayed(new Runnable() {
             @Override

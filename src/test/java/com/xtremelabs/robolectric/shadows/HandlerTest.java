@@ -3,7 +3,6 @@ package com.xtremelabs.robolectric.shadows;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestRunnable;
@@ -16,6 +15,7 @@ import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class HandlerTest {
@@ -155,6 +155,24 @@ public class HandlerTest {
         assertThat(task1.wasRun, equalTo(true));
         assertThat(task2.wasRun, equalTo(true));
         assertThat(task3.wasRun, equalTo(true));
+    }
+
+    @Test
+    public void testPostAtFrontOfQueueThenRunMainLooperOneTaskAtATime_shouldRunFrontOfQueueTaskFirst() throws Exception {
+        TestRunnable task1 = new TestRunnable();
+        TestRunnable task2 = new TestRunnable();
+
+        ShadowLooper.pauseMainLooper();
+        new Handler().post(task1);
+        boolean result = new Handler().postAtFrontOfQueue(task2);
+
+        assertTrue(result);
+
+        ShadowHandler.runMainLooperOneTask();
+        assertThat(task2.wasRun, equalTo(true));
+        assertThat(task1.wasRun, equalTo(false));
+        ShadowHandler.runMainLooperOneTask();
+        assertThat(task1.wasRun, equalTo(true));
     }
 
     @Test
