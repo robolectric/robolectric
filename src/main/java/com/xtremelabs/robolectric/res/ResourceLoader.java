@@ -1,27 +1,27 @@
 package com.xtremelabs.robolectric.res;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
 import android.R;
 import android.content.Context;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.shadows.ShadowContextWrapper;
 import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
-
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileFilter;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ResourceLoader {
     private static final FileFilter MENU_DIR_FILE_FILTER = new FileFilter() {
@@ -350,7 +350,7 @@ public class ResourceLoader {
         init();
         return pluralResourceLoader.getValue(id, quantity);
     }
-
+    
     public boolean isDrawableXml(int resourceId) {
         init();
         return drawableResourceLoader.isXml(resourceId);
@@ -359,6 +359,45 @@ public class ResourceLoader {
     public int[] getDrawableIds(int resourceId) {
         init();
         return drawableResourceLoader.getDrawableIds(resourceId);
+    }
+    
+    public Drawable getXmlDrawable( int resourceId ) {
+    	return drawableResourceLoader.getXmlDrawable( resourceId );
+    }
+    
+    public Drawable getAnimDrawable( int resourceId ) {
+    	return getInnerRClassDrawable( resourceId, "$anim", AnimationDrawable.class );
+    }
+
+    public Drawable getColorDrawable( int resourceId ) {
+    	return getInnerRClassDrawable( resourceId, "$color", ColorDrawable.class );
+    }
+
+    @SuppressWarnings("rawtypes")
+	private Drawable getInnerRClassDrawable( int drawableResourceId, String suffix, Class returnClass ) {
+    	ShadowContextWrapper shadowApp = Robolectric.shadowOf( Robolectric.application );
+    	Class rClass = shadowApp.getResourceLoader().getLocalRClass();
+    	
+    	// Check to make sure there is actually an R Class, if not
+    	// return just a BitmapDrawable
+    	if( rClass == null ) { return null; }
+
+    	// Load the Inner Class for interrogation
+    	Class animClass = null;
+    	try {
+			animClass  = Class.forName( rClass.getCanonicalName() + suffix );
+		} catch (ClassNotFoundException e) {
+			return null;
+		}
+		
+		// Try to find the passed in resource ID
+		try {
+			for( Field field : animClass.getDeclaredFields() ) {
+				if( field.getInt( animClass ) == drawableResourceId )  { return (Drawable) returnClass.newInstance(); }
+			}			
+		} catch ( Exception e ) { }  
+		
+		return null;
     }
 
     public InputStream getRawValue(int id) {
