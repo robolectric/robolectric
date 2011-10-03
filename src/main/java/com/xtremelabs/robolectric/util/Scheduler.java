@@ -10,6 +10,9 @@ public class Scheduler {
     private long currentTime = 0;
     private boolean paused = false;
 
+    public long getCurrentTime() {
+        return currentTime;
+    }
 
     public void pause() {
         paused = true;

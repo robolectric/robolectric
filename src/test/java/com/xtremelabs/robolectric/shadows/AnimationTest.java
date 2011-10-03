@@ -2,13 +2,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
-import com.xtremelabs.robolectric.Robolectric;
+import android.view.animation.Transformation;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestAnimationListener;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -18,14 +19,14 @@ import static org.junit.Assert.assertThat;
 @RunWith(WithTestDefaultsRunner.class)
 public class AnimationTest {
 	
-	private Animation animation;
+	private TestAnimation animation;
 	private ShadowAnimation shadow;
 	private TestAnimationListener listener;
 
 	@Before
 	public void setUp() throws Exception {
 		animation = new TestAnimation();
-		shadow = Robolectric.shadowOf(animation);
+		shadow = shadowOf(animation);
 		listener = new TestAnimationListener();
 		animation.setAnimationListener(listener);
 	}
@@ -65,7 +66,14 @@ public class AnimationTest {
 		assertThat(listener.wasEndCalled, equalTo(true));
 		assertThat(listener.wasRepeatCalled, equalTo(false));		
 	}
-	
+
+    @Test
+	public void simulateAnimationEndShouldInvokeApplyTransformationWith1() throws Exception {
+		assertThat(animation.interpolatedTime, equalTo(0f));
+		shadow.invokeEnd();
+        assertThat(animation.interpolatedTime, equalTo(1f));
+	}
+
 	@Test
 	public void testHasStarted() throws Exception {
 		assertThat(animation.hasStarted(), equalTo(false));
@@ -90,5 +98,13 @@ public class AnimationTest {
 		assertThat((LinearInterpolator)animation.getInterpolator(), sameInstance(i));
 	}
 
-	private class TestAnimation extends Animation { }
+	private class TestAnimation extends Animation {
+        float interpolatedTime;
+        Transformation t;
+
+        @Override protected void applyTransformation(float interpolatedTime, Transformation t) {
+            this.interpolatedTime = interpolatedTime;
+            this.t = t;
+        }
+    }
 }

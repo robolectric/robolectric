@@ -224,7 +224,6 @@ public class ShadowView {
 
     @Implementation
     public void setBackgroundResource(int backgroundResourceId) {
-        this.background = this.getResources().getDrawable(backgroundResourceId);
         this.backgroundResourceId = backgroundResourceId;
         setBackgroundDrawable(getResources().getDrawable(backgroundResourceId));
     }
