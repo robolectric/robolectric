@@ -29,10 +29,7 @@ public final class ShadowAssetManager {
         File file = new File(resourceLoader.getAssetsBase(), path);
         if (file.isDirectory()) {
             return file.list();
-        } else if (file.exists()) {
-            return new String[] {file.getName()};
         }
-
         return new String[0];
     }
 
