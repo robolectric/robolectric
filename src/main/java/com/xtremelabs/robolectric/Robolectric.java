@@ -249,6 +249,7 @@ public class Robolectric {
                 ShadowSQLiteStatement.class,
                 ShadowSQLiteQueryBuilder.class,
                 ShadowSslErrorHandler.class,
+                ShadowStateListDrawable.class,
                 ShadowSurfaceView.class,
                 ShadowTabActivity.class,
                 ShadowTabHost.class,
@@ -696,6 +697,10 @@ public class Robolectric {
 
     public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
         return (ShadowSslErrorHandler) shadowOf_(instance);
+    }
+    
+    public static ShadowStateListDrawable shadowOf(StateListDrawable instance) {
+    	return (ShadowStateListDrawable) shadowOf_(instance);
     }
 
     public static ShadowTabHost shadowOf(TabHost instance) {

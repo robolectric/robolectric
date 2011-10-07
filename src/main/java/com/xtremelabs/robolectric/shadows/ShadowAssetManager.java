@@ -26,7 +26,11 @@ public final class ShadowAssetManager {
 
     @Implementation
     public final String[] list(String path) throws IOException {
-        return new File(resourceLoader.getAssetsBase(), path).list();
+        File file = new File(resourceLoader.getAssetsBase(), path);
+        if (file.isDirectory()) {
+            return file.list();
+        }
+        return new String[0];
     }
 
     @Implementation

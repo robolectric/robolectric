@@ -3,7 +3,6 @@ package com.xtremelabs.robolectric.shadows;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestRunnable;
@@ -16,6 +15,7 @@ import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class HandlerTest {
@@ -158,6 +158,24 @@ public class HandlerTest {
     }
 
     @Test
+    public void testPostAtFrontOfQueueThenRunMainLooperOneTaskAtATime_shouldRunFrontOfQueueTaskFirst() throws Exception {
+        TestRunnable task1 = new TestRunnable();
+        TestRunnable task2 = new TestRunnable();
+
+        ShadowLooper.pauseMainLooper();
+        new Handler().post(task1);
+        boolean result = new Handler().postAtFrontOfQueue(task2);
+
+        assertTrue(result);
+
+        ShadowHandler.runMainLooperOneTask();
+        assertThat(task2.wasRun, equalTo(true));
+        assertThat(task1.wasRun, equalTo(false));
+        ShadowHandler.runMainLooperOneTask();
+        assertThat(task1.wasRun, equalTo(true));
+    }
+
+    @Test
     public void sendEmptyMessageHandler() {
 
         final Handler handler = new Handler(new Handler.Callback() {
@@ -169,6 +187,55 @@ public class HandlerTest {
 
         });
         handler.sendEmptyMessage(0);
+    }
+
+    @Test
+    public void sendEmptyMessage_addMessageToQueue() {
+        Robolectric.pauseMainLooper();
+        Handler handler = new Handler();
+        assertThat(handler.hasMessages(123), equalTo(false));
+        handler.sendEmptyMessage(123);
+        assertThat(handler.hasMessages(456), equalTo(false));
+        assertThat(handler.hasMessages(123), equalTo(true));
+        Robolectric.idleMainLooper(0);
+        assertThat(handler.hasMessages(123), equalTo(false));
+    }
+    
+    @Test
+    public void sendEmptyMessageDelayed_sendsMessageAtCorrectTime() {
+        Robolectric.pauseMainLooper();
+        Handler handler = new Handler();
+        handler.sendEmptyMessageDelayed(123, 500);
+        assertThat(handler.hasMessages(123), equalTo(true));
+        Robolectric.idleMainLooper(100);
+        assertThat(handler.hasMessages(123), equalTo(true));
+        Robolectric.idleMainLooper(400);
+        assertThat(handler.hasMessages(123), equalTo(false));
+    }
+
+    @Test
+    public void removeMessages_takesMessageOutOfQueue() {
+        Robolectric.pauseMainLooper();
+        Handler handler = new Handler();
+        handler.sendEmptyMessageDelayed(123, 500);
+        handler.removeMessages(123);
+        assertThat(handler.hasMessages(123), equalTo(false));
+    }
+
+    @Test
+    public void removeMessages_removesFromLooperQueueAsWell() {
+        final boolean[] wasRun = new boolean[1];
+        Robolectric.pauseMainLooper();
+        Handler handler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                wasRun[0] = true;
+            }
+        };
+        handler.sendEmptyMessageDelayed(123, 500);
+        handler.removeMessages(123);
+        Robolectric.unPauseMainLooper();
+        assertThat(wasRun[0], equalTo(false));
     }
 
     private class Say implements Runnable {

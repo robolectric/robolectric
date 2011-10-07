@@ -10,6 +10,9 @@ public class Scheduler {
     private long currentTime = 0;
     private boolean paused = false;
 
+    public long getCurrentTime() {
+        return currentTime;
+    }
 
     public void pause() {
         paused = true;
@@ -35,6 +38,14 @@ public class Scheduler {
 
     public void post(Runnable runnable) {
         postDelayed(runnable, 0);
+    }
+
+    public void postAtFrontOfQueue(Runnable runnable) {
+        if (paused) {
+            postedRunnables.add(0, new PostedRunnable(runnable, currentTime));
+        } else {
+            runnable.run();
+        }
     }
 
     public void remove(Runnable runnable) {
