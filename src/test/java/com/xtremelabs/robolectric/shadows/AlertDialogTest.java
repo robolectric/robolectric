@@ -110,6 +110,17 @@ public class AlertDialogTest {
     }
 
     @Test
+    public void shouldSetCustomTitleView() throws Exception {
+        ContextWrapper context = new ContextWrapper(null);
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        View view = new View(context);
+        assertThat(builder.setCustomTitle(view), sameInstance(builder));
+
+        AlertDialog alert = builder.create();
+        assertThat(shadowOf(alert).getCustomTitleView(), equalTo((View) view));
+    }
+
+    @Test
     public void clickingPositiveButtonDismissesDialog() throws Exception {
         AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
         .setPositiveButton("Positive", null).create();
