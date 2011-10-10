@@ -237,6 +237,17 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Intent putExtra(String key, int[] value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
+    @Implementation
+    public int[] getIntArrayExtra(String name) {
+        return (int[]) extras.get(name);
+    }
+
+    @Implementation
     public boolean getBooleanExtra(String name, boolean defaultValue) {
         return extras.containsKey(name) ? (Boolean) extras.get(name) : defaultValue;
     }
