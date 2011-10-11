@@ -285,6 +285,7 @@ public class Robolectric {
         ShadowMediaStore.reset();
         ShadowLog.reset();
         ShadowContext.clearFilesAndCache();
+        ShadowLooper.resetThreadLoopers();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
