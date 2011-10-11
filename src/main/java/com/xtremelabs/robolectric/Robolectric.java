@@ -177,6 +177,7 @@ public class Robolectric {
                 ShadowJsResult.class,
                 ShadowKeyEvent.class,
                 ShadowKeyguardManager.class,
+                ShadowKeyGuardLock.class,
                 ShadowLayerDrawable.class,
                 ShadowLayoutInflater.class,
                 ShadowLayoutParams.class,
@@ -509,6 +510,10 @@ public class Robolectric {
 
     public static ShadowKeyguardManager shadowOf(KeyguardManager instance) {
         return (ShadowKeyguardManager) shadowOf_(instance);
+    }
+
+    public static ShadowKeyGuardLock shadowOf(KeyguardManager.KeyguardLock instance) {
+        return (ShadowKeyGuardLock) shadowOf_(instance);
     }
 
     public static ShadowLayerDrawable shadowOf(LayerDrawable instance) {
