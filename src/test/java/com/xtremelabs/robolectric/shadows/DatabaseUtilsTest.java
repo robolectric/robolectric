@@ -14,6 +14,6 @@ public class DatabaseUtilsTest {
 	@Test
 	public void testQuote() {
 		assertThat( ShadowDatabaseUtils.sqlEscapeString( "foobar" ), equalTo( "'foobar'" ) );
-		assertThat( ShadowDatabaseUtils.sqlEscapeString( "Rich's" ), equalTo( "'Rich\\'s'" ) );
+		assertThat( ShadowDatabaseUtils.sqlEscapeString( "Rich's" ), equalTo( "'Rich''s'" ) );
 	}
 }

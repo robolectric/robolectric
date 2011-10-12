@@ -35,7 +35,8 @@ public class ShadowDatabaseUtils {
     public static String sqlEscapeString( String value ) {
 		StringBuilder builder = new StringBuilder();	
 		
-		value = value.replaceAll( "'", "\\\\'" );  
+		// SQLite quoting conventions are used.
+		value = value.replaceAll( "'", "''" );  
 		builder.append( "'" ).append( value ).append( "'" );	
 		
 		return builder.toString();
