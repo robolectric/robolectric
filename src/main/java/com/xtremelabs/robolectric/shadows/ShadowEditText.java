@@ -25,8 +25,11 @@ public class ShadowEditText extends ShadowTextView {
 
     @Override @Implementation
     public void setText(CharSequence text) {
+    	CharSequence oldText = getText();
         super.setText(text);
         for (TextWatcher watcher : watchers) {
+        	watcher.beforeTextChanged(getText(), 0, oldText.length(), getText().length());
+            watcher.onTextChanged(getText(), 0, oldText.length(), getText().length());
             watcher.afterTextChanged(getText());
         }
     }
