@@ -1,11 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static android.view.View.VISIBLE;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.text.SpannableStringBuilder;
@@ -17,9 +11,14 @@ import android.text.util.Linkify;
 import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
-
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static android.view.View.VISIBLE;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextView.class)
@@ -81,18 +80,21 @@ public class ShadowTextView extends ShadowView {
     }
 
     private void sendAfterTextChanged() {
-		for (TextWatcher watcher : watchers)
+		for (TextWatcher watcher : watchers) {
             watcher.afterTextChanged(new SpannableStringBuilder(getText()));
+        }
 	}
 
 	private void sendOnTextChanged(CharSequence oldValue) {
-		for (TextWatcher watcher : watchers)
+		for (TextWatcher watcher : watchers) {
     	    watcher.onTextChanged(text, 0, oldValue.length(), text.length());
+        }
 	}
 
 	private void sendBeforeTextChanged(CharSequence newValue) {
-		for (TextWatcher watcher : watchers)
+		for (TextWatcher watcher : watchers) {
     		watcher.beforeTextChanged(this.text, 0, this.text.length(), newValue.length());
+        }
 	}
     
     @Implementation

@@ -1,5 +1,27 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Activity;
+import android.text.Editable;
+import android.text.InputType;
+import android.text.TextWatcher;
+import android.text.method.ArrowKeyMovementMethod;
+import android.text.method.MovementMethod;
+import android.text.style.URLSpan;
+import android.view.Gravity;
+import android.view.KeyEvent;
+import android.view.inputmethod.EditorInfo;
+import android.widget.TextView;
+import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.hamcrest.CoreMatchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -12,52 +34,17 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import android.app.Activity;
-import android.content.Context;
-import android.content.res.Resources;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.TextWatcher;
-import android.text.method.ArrowKeyMovementMethod;
-import android.text.method.MovementMethod;
-import android.text.style.URLSpan;
-import android.view.Gravity;
-import android.view.KeyEvent;
-import android.view.inputmethod.EditorInfo;
-import android.widget.TextView;
-
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class TextViewTest {
 
-	private static final String INITIAL_TEXT = "initial text";;
+	private static final String INITIAL_TEXT = "initial text";
 	private static final String NEW_TEXT = "new text";
-	private static final int TEXT_RESOURCE_ID = 0;
-	
 	private TextView textView;
-    private Context mockContext;
-    
+
     @Before
     public void setUp() throws Exception {
-    	mockContext = mock(Context.class);
-        textView = new TextView(mockContext);
-         
-        Resources mockResources = mock(Resources.class);
-        when(mockResources.getText(TEXT_RESOURCE_ID)).thenReturn("some text");
-		when(mockContext.getResources()).thenReturn(mockResources);
+        textView = new TextView(new Activity());
     }
 
     @Test
@@ -178,7 +165,7 @@ public class TextViewTest {
     	MockTextWatcher mockTextWatcher = new MockTextWatcher();
     	textView.addTextChangedListener(mockTextWatcher);
 
-    	textView.setText(TEXT_RESOURCE_ID);
+    	textView.setText(R.string.hello);
 		
 		assertEachTextWatcherEventWasInvoked(mockTextWatcher);
     }
@@ -196,13 +183,15 @@ public class TextViewTest {
     @Test
 	public void givenATextViewWithMultipleTextWatchersAdded_WhenSettingText_ShouldNotifyEachTextWatcher() {
     	List<MockTextWatcher> mockTextWatchers = anyNumberOfTextWatchers();
-    	for (MockTextWatcher textWatcher : mockTextWatchers)
+    	for (MockTextWatcher textWatcher : mockTextWatchers) {
     		textView.addTextChangedListener(textWatcher);
+        }
     	
 		textView.setText("text");
 		
-    	for (MockTextWatcher textWatcher : mockTextWatchers)
+    	for (MockTextWatcher textWatcher : mockTextWatchers) {
     		assertEachTextWatcherEventWasInvoked(textWatcher);
+        }
 	}
     
     @Test
@@ -240,8 +229,9 @@ public class TextViewTest {
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
 		List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
 		int numberBetweenOneAndTen = new Random().nextInt(10) + 1;
-		for (int i = 0; i < numberBetweenOneAndTen; i++)
+		for (int i = 0; i < numberBetweenOneAndTen; i++) {
 			mockTextWatchers.add(new MockTextWatcher());
+        }
 		return mockTextWatchers;
 	}
 
