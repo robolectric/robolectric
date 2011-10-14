@@ -54,6 +54,17 @@ public class IntentTest {
     }
 
     @Test
+    public void testIntArrayExtra() throws Exception {
+        Intent intent = new Intent();
+        int[] array = new int[2];
+        array[0] = 1;
+        array[1] = 2;
+        assertSame(intent, intent.putExtra("foo", array));
+        assertEquals(1, intent.getIntArrayExtra("foo")[0]);
+        assertEquals(2, intent.getIntArrayExtra("foo")[1]);
+    }
+
+    @Test
     public void testSerializableExtra() throws Exception {
         Intent intent = new Intent();
         TestSerializable serializable = new TestSerializable("some string");

@@ -1,18 +1,16 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-
+import android.os.Parcel;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.os.Parcel;
-
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ParcelTest {
@@ -36,6 +34,11 @@ public class ParcelTest {
 	@Test
 	public void testReadIntWhenEmpty() {
 		assertThat( parcel.readInt(), equalTo( 0 ) );
+	}
+
+    @Test
+	public void testReadLongWhenEmpty() {
+        assertThat( parcel.readLong(), equalTo( 0l ) );
 	}
 	
 	@Test
@@ -115,6 +118,54 @@ public class ParcelTest {
 	public void testWriteIntReadString() {
 		int val = 9;
 		parcel.writeInt( val );
+		parcel.readString();
+	}
+
+    @Test
+	public void testReadWriteSingleLong() {
+		long val = 5;
+		parcel.writeLong( val );
+		assertThat( parcel.readLong(), equalTo( val ) );
+	}
+
+	@Test
+	public void testReadWriteMultipleLongs() {
+		for( long i = 0; i < 10; ++i ) {
+			parcel.writeLong( i );
+		}
+		for( long i = 0; i < 10; ++i ) {
+			assertThat( parcel.readLong(), equalTo( i ) );
+		}
+		// now try to read past the number of items written and see what happens
+		assertThat( parcel.readLong(), equalTo( 0l ) );
+	}
+
+	@Test
+	public void testReadWriteStringLong() {
+		for( long i = 0; i < 10; ++i ) {
+			parcel.writeString( Long.toString( i ) );
+			parcel.writeLong( i );
+		}
+		for( long i = 0; i < 10; ++i ) {
+			assertThat( parcel.readString(), equalTo( Long.toString( i ) ) );
+			assertThat( parcel.readLong(), equalTo( i ) );
+		}
+		// now try to read past the number of items written and see what happens
+		assertThat( parcel.readString(), nullValue() );
+		assertThat( parcel.readLong(), equalTo( 0l ) );
+	}
+
+	@Test( expected = ClassCastException.class )
+	public void testWriteStringReadLong() {
+		String val = "test";
+		parcel.writeString( val );
+		parcel.readLong();
+	}
+
+	@Test( expected = ClassCastException.class )
+	public void testWriteLongReadString() {
+		long val = 9;
+		parcel.writeLong( val );
 		parcel.readString();
 	}
 }
