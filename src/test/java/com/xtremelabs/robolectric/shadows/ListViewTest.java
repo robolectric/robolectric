@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -200,6 +201,26 @@ public class ListViewTest {
         });
         shadowListView.clickFirstItemContainingText("Item 1");
         transcript.assertEventsSoFar("clicked on item 1");
+    }
+    
+    @Test
+    public void clickItemContainingText_shouldPerformItemClickOnList_arrayAdapter() throws Exception {
+    	ArrayList<String> adapterFileList = new ArrayList<String>();
+    	adapterFileList.add("Item 1");
+    	adapterFileList.add("Item 2");
+    	adapterFileList.add("Item 3");
+    	final ArrayAdapter<String> adapter = new ArrayAdapter<String>(null, android.R.layout.simple_list_item_1, adapterFileList);
+    	listView.setAdapter(adapter);
+        ShadowHandler.idleMainLooper();
+    	ShadowListView shadowListView = shadowOf(listView);
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                transcript.add("clicked on item " + adapter.getItem(position));
+            }
+        });
+        shadowListView.clickFirstItemContainingText("Item 3");
+        transcript.assertEventsSoFar("clicked on item Item 3");
     }
 
     @Test(expected = IllegalArgumentException.class)
