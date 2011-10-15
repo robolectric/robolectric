@@ -1,17 +1,16 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
-import static org.hamcrest.CoreMatchers.hasItems;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicHeader;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class TestHttpResponseTest {
 
@@ -100,4 +99,31 @@ public class TestHttpResponseTest {
         assertThat(headers[0].getValue(), CoreMatchers.equalTo("http://bar.com"));
         assertThat(headers[1].getValue(), CoreMatchers.equalTo("http://foo.com"));
     }
+
+    @Test
+    public void canAddNewBasicHeader() {
+        TestHttpResponse response = new TestHttpResponse(200, "abc");
+        assertThat(response.getAllHeaders().length, is(0));
+        response.addHeader(new BasicHeader("foo", "bar"));
+        assertThat(response.getAllHeaders().length, is(1));
+        assertThat(response.getHeaders("foo")[0].getValue(), CoreMatchers.equalTo("bar"));
+    }
+    
+    @Test
+    public void canOverrideExistingHeaderValue() {
+        TestHttpResponse response = new TestHttpResponse(200, "abc", new BasicHeader("foo", "bar"));
+        response.setHeader(new BasicHeader("foo", "bletch"));
+        assertThat(response.getAllHeaders().length, is(1));
+        assertThat(response.getHeaders("foo")[0].getValue(), CoreMatchers.equalTo("bletch"));
+    }
+    
+    @Test
+    public void onlyOverridesFirstHeaderValue() {
+        TestHttpResponse response = new TestHttpResponse(200, "abc", new BasicHeader("foo", "bar"), new BasicHeader("foo", "baz"));
+        response.setHeader(new BasicHeader("foo", "bletch"));
+        assertThat(response.getAllHeaders().length, is(2));
+        assertThat(response.getHeaders("foo")[0].getValue(), CoreMatchers.equalTo("bletch"));
+        assertThat(response.getHeaders("foo")[1].getValue(), CoreMatchers.equalTo("baz"));
+    }
+
 }
