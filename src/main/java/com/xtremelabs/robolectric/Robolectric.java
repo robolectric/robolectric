@@ -166,6 +166,7 @@ public class Robolectric {
                 ShadowGeoPoint.class,
                 ShadowGridView.class,
                 ShadowHandler.class,
+                ShadowHandlerThread.class,
                 ShadowHtml.class,
                 ShadowImageView.class,
                 ShadowInputMethodManager.class,
@@ -486,6 +487,10 @@ public class Robolectric {
 
     public static ShadowHandler shadowOf(Handler instance) {
         return (ShadowHandler) shadowOf_(instance);
+    }
+
+    public static ShadowHandlerThread shadowOf(HandlerThread instance) {
+        return (ShadowHandlerThread) shadowOf_(instance);
     }
 
     public static ShadowImageView shadowOf(ImageView instance) {
