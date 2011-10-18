@@ -57,12 +57,27 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         }
         return defaultLoader;
     }
+
     public static void setDefaultLoader(Loader robolectricClassLoader) {
     	//used by the RoboSpecs project to allow for mixed scala\java tests to be run with Maven Surefire (see the RoboSpecs project on github)
         if (defaultLoader == null) {
             defaultLoader = (RobolectricClassLoader)robolectricClassLoader;
         } else throw new RuntimeException("You may not set the default robolectricClassLoader unless it is null!");
     }
+
+    /**
+     * Call this if you would like Robolectric to rewrite additional classes and turn them
+     * into "do nothing" classes which proxy all method calls to shadow classes, just like it does
+     * with the android classes by default.
+     *
+     * @param classOrPackageToBeInstrumented fully-qualified class or package name
+     */
+    protected static void addClassOrPackageToInstrument(String classOrPackageToBeInstrumented) {
+        if (!isInstrumented()) {
+            defaultLoader.addCustomShadowClass(classOrPackageToBeInstrumented);
+        }
+    }
+
     /**
      * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
      * and res directory.
