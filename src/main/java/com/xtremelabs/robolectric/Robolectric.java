@@ -25,6 +25,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.*;
 import android.preference.*;
+import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
 import android.text.format.DateFormat;
@@ -239,6 +240,7 @@ public class Robolectric {
                 ShadowSettings.ShadowSystem.class,
                 ShadowSimpleCursorAdapter.class,
                 ShadowShapeDrawable.class,
+                ShadowSmsManager.class,
                 ShadowSpannableStringBuilder.class,
                 ShadowSyncResult.class,
                 ShadowSyncResult.ShadowSyncStats.class,
@@ -670,6 +672,10 @@ public class Robolectric {
 
     public static ShadowSimpleCursorAdapter shadowOf(SimpleCursorAdapter instance) {
         return (ShadowSimpleCursorAdapter) shadowOf_(instance);
+    }
+    
+    public static ShadowSmsManager shadowOf(SmsManager instance) {
+    	return (ShadowSmsManager) shadowOf_(instance);
     }
 
     public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
