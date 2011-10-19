@@ -1,13 +1,12 @@
 package com.xtremelabs.robolectric.shadows;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.os.Parcel;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Implements(Parcel.class)
 public class ShadowParcel {
@@ -37,6 +36,12 @@ public class ShadowParcel {
     }
 
     @Implementation
+    @SuppressWarnings("unchecked")
+    public void writeLong(long i) {
+        parcelData.add(i);
+    }
+
+    @Implementation
     public String readString() {
         return index < parcelData.size() ? (String) parcelData.get(index++) : null;
     }
@@ -44,6 +49,11 @@ public class ShadowParcel {
     @Implementation
     public int readInt() {
         return index < parcelData.size() ? (Integer) parcelData.get(index++) : 0;
+    }
+
+    @Implementation
+    public long readLong() {
+        return index < parcelData.size() ? (Long) parcelData.get(index++) : 0;
     }
 
     public int getIndex() {

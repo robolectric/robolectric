@@ -1,18 +1,17 @@
 package com.xtremelabs.robolectric.bytecode;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
+import android.graphics.Bitmap;
 import android.graphics.Paint;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithCustomClassListTestRunner;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithCustomClassListTestRunner.class)
 public class AndroidTranslatorClassIntrumentedTest {
@@ -26,31 +25,63 @@ public class AndroidTranslatorClassIntrumentedTest {
 
         assertThat(paint.getColor(), is(1234));
     }
-    
+
+    @Test
+    public void testClassesWithPrivateDefaultConstructorsCanBeShadowed() {
+        Robolectric.bindShadowClass(ShadowClassWithPrivateConstructor.class);
+
+        ClassWithPrivateConstructor inst = new ClassWithPrivateConstructor();
+        assertThat(inst.getInt(), is(42));
+    }
+
+    @Test
+    public void testEnumConstructorsAreNotRewritten() {
+        // just referencing this enum value would blow up if we rewrite its constructor
+        Bitmap.Config alpha8 = Bitmap.Config.ALPHA_8;
+        assertThat(alpha8.toString(), equalTo("ALPHA_8"));
+    }
+
     /*
      * Test "foreign class" getting its methods shadowed whe it's
      * in the RobolectricClassLoader CustomClassNames arrayList
      */
     @Test
     public void testCustomMethodShadowed() throws Exception {
-    	Robolectric.bindShadowClass(ShadowCustomPaint.class);
-    	
-    	CustomPaint customPaint = new CustomPaint();
-    	assertThat(customPaint.getColor(), equalTo(10));
-    	assertThat(customPaint.getColorName(), equalTo("rainbow"));
+        Robolectric.bindShadowClass(ShadowCustomPaint.class);
+
+        CustomPaint customPaint = new CustomPaint();
+        assertThat(customPaint.getColor(), equalTo(10));
+        assertThat(customPaint.getColorName(), equalTo("rainbow"));
     }
-    
+
     /*
      * Test "foreign class" not getting its methods shadowed when it's
      * not in the RobolectricClassLoader CustomClassNames arrayList
      */
     @Test
     public void testCustomMethodNotShadowed() throws Exception {
-    	Robolectric.bindShadowClass(ShadowCustomXmasPaint.class);
-    	
-    	CustomXmasPaint customXmasPaint = new CustomXmasPaint();
-    	assertThat(customXmasPaint.getColor(), equalTo(999));
-    	assertThat(customXmasPaint.getColorName(), equalTo("XMAS"));   	
+        Robolectric.bindShadowClass(ShadowCustomXmasPaint.class);
+
+        CustomXmasPaint customXmasPaint = new CustomXmasPaint();
+        assertThat(customXmasPaint.getColor(), equalTo(999));
+        assertThat(customXmasPaint.getColorName(), equalTo("XMAS"));
+    }
+
+    public static class ClassWithPrivateConstructor {
+        private ClassWithPrivateConstructor() {
+        }
+
+        public int getInt() {
+            return 99;
+        }
+    }
+
+    @Implements(ClassWithPrivateConstructor.class)
+    public static class ShadowClassWithPrivateConstructor {
+        @Implementation
+        public int getInt() {
+            return 42;
+        }
     }
 
     @Implements(Paint.class)
@@ -67,35 +98,35 @@ public class AndroidTranslatorClassIntrumentedTest {
             return color;
         }
     }
-    
+
     @SuppressWarnings({"UnusedDeclaration"})
     public static class CustomPaint extends Paint {
-    	private int customColor;
+        private int customColor;
 
         @Override
         public int getColor() {
             return customColor;
         }
-        
+
         public String getColorName() {
-        	return Integer.toString(customColor);        	
+            return Integer.toString(customColor);
         }
     }
-    
-    @Implements(CustomPaint.class) 
-    public static class ShadowCustomPaint{
-    	
+
+    @Implements(CustomPaint.class)
+    public static class ShadowCustomPaint {
+
         @Implementation
         public int getColor() {
             return 10;
         }
-        
+
         @Implementation
         public String getColorName() {
-        	return "rainbow";
-        }      
+            return "rainbow";
+        }
     }
-    
+
     @SuppressWarnings({"UnusedDeclaration"})
     public static class CustomXmasPaint extends Paint {
 
@@ -103,23 +134,23 @@ public class AndroidTranslatorClassIntrumentedTest {
         public int getColor() {
             return 999;
         }
-        
+
         public String getColorName() {
-        	return "XMAS";        	
+            return "XMAS";
         }
-    }    
-    
-    @Implements(CustomXmasPaint.class) 
-    public static class ShadowCustomXmasPaint{
-    	
+    }
+
+    @Implements(CustomXmasPaint.class)
+    public static class ShadowCustomXmasPaint {
+
         @Implementation
         public int getColor() {
             return -999;
         }
-        
+
         @Implementation
         public String getColorName() {
-        	return "XMAS Color Test";
-        }      
+            return "XMAS Color Test";
+        }
     }
 }

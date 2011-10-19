@@ -1,7 +1,9 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.text.Editable;
 import android.text.InputType;
+import android.text.TextWatcher;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.style.URLSpan;
@@ -18,20 +20,31 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class TextViewTest {
 
-    private TextView textView;
+	private static final String INITIAL_TEXT = "initial text";
+	private static final String NEW_TEXT = "new text";
+	private TextView textView;
 
     @Before
     public void setUp() throws Exception {
-        textView = new TextView(null);
+        textView = new TextView(new Activity());
     }
 
     @Test
@@ -147,7 +160,90 @@ public class TextViewTest {
         assertThat(textView.getInputType(), equalTo(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD));
     }
     
-    private List<String> urlStringsFrom(URLSpan[] urlSpans) {
+    @Test
+	public void givenATextViewWithATextWatcherAdded_WhenSettingTextWithTextResourceId_ShouldNotifyTextWatcher() {
+    	MockTextWatcher mockTextWatcher = new MockTextWatcher();
+    	textView.addTextChangedListener(mockTextWatcher);
+
+    	textView.setText(R.string.hello);
+		
+		assertEachTextWatcherEventWasInvoked(mockTextWatcher);
+    }
+    
+    @Test
+	public void givenATextViewWithATextWatcherAdded_WhenSettingTextWithCharSequence_ShouldNotifyTextWatcher() {
+    	MockTextWatcher mockTextWatcher = new MockTextWatcher();
+    	textView.addTextChangedListener(mockTextWatcher);
+
+		textView.setText("text");
+		
+		assertEachTextWatcherEventWasInvoked(mockTextWatcher);
+	}
+    
+    @Test
+	public void givenATextViewWithMultipleTextWatchersAdded_WhenSettingText_ShouldNotifyEachTextWatcher() {
+    	List<MockTextWatcher> mockTextWatchers = anyNumberOfTextWatchers();
+    	for (MockTextWatcher textWatcher : mockTextWatchers) {
+    		textView.addTextChangedListener(textWatcher);
+        }
+    	
+		textView.setText("text");
+		
+    	for (MockTextWatcher textWatcher : mockTextWatchers) {
+    		assertEachTextWatcherEventWasInvoked(textWatcher);
+        }
+	}
+    
+    @Test
+	public void whenSettingText_ShouldFireBeforeTextChangedWithCorrectArguments() {
+		textView.setText(INITIAL_TEXT);
+		TextWatcher mockTextWatcher = mock(TextWatcher.class);
+		textView.addTextChangedListener(mockTextWatcher);
+		
+		textView.setText(NEW_TEXT);
+		
+		verify(mockTextWatcher).beforeTextChanged(INITIAL_TEXT, 0, INITIAL_TEXT.length(), NEW_TEXT.length());
+	}
+    
+    @Test
+	public void whenSettingText_ShouldFireOnTextChangedWithCorrectArguments() {
+    	textView.setText(INITIAL_TEXT);
+		TextWatcher mockTextWatcher = mock(TextWatcher.class);
+		textView.addTextChangedListener(mockTextWatcher);
+		
+		textView.setText(NEW_TEXT);
+		
+		verify(mockTextWatcher).onTextChanged(NEW_TEXT, 0, INITIAL_TEXT.length(), NEW_TEXT.length());
+	}
+    
+    @Test
+	public void whenSettingText_ShouldFireAfterTextChangedWithCorrectArgument() {
+		MockTextWatcher mockTextWatcher = new MockTextWatcher();
+		textView.addTextChangedListener(mockTextWatcher);
+		
+		textView.setText(NEW_TEXT);
+		
+		assertThat(mockTextWatcher.afterTextChangeArgument.toString(), equalTo(NEW_TEXT));
+	}
+    
+    private List<MockTextWatcher> anyNumberOfTextWatchers() {
+		List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
+		int numberBetweenOneAndTen = new Random().nextInt(10) + 1;
+		for (int i = 0; i < numberBetweenOneAndTen; i++) {
+			mockTextWatchers.add(new MockTextWatcher());
+        }
+		return mockTextWatchers;
+	}
+
+	private void assertEachTextWatcherEventWasInvoked(MockTextWatcher mockTextWatcher) {
+    	assertTrue("Expected each TextWatcher event to have been invoked once", mockTextWatcher.methodsCalled.size() == 3);
+    	
+		assertThat(mockTextWatcher.methodsCalled.get(0), equalTo("beforeTextChanged"));
+		assertThat(mockTextWatcher.methodsCalled.get(1), equalTo("onTextChanged"));
+		assertThat(mockTextWatcher.methodsCalled.get(2), equalTo("afterTextChanged"));
+	}
+
+	private List<String> urlStringsFrom(URLSpan[] urlSpans) {
         List<String> urls = new ArrayList<String>();
         for (URLSpan urlSpan : urlSpans) {
             urls.add(urlSpan.getURL());
@@ -165,5 +261,28 @@ public class TextViewTest {
             this.sentImeId = sentImeId;
             return false;
         }
+    }
+    
+    private static class MockTextWatcher implements TextWatcher {
+
+    	List<String> methodsCalled = new ArrayList<String>();
+    	Editable afterTextChangeArgument;
+    	
+		@Override
+		public void beforeTextChanged(CharSequence s, int start, int count,	int after) {
+			methodsCalled.add("beforeTextChanged");
+		}
+
+		@Override
+		public void onTextChanged(CharSequence s, int start, int before, int count) {
+			methodsCalled.add("onTextChanged");
+		}
+
+		@Override
+		public void afterTextChanged(Editable s) {
+			methodsCalled.add("afterTextChanged");
+			afterTextChangeArgument = s;
+		}
+    	
     }
 }

@@ -25,6 +25,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.*;
 import android.preference.*;
+import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
 import android.text.format.DateFormat;
@@ -166,6 +167,7 @@ public class Robolectric {
                 ShadowGeoPoint.class,
                 ShadowGridView.class,
                 ShadowHandler.class,
+                ShadowHandlerThread.class,
                 ShadowHtml.class,
                 ShadowImageView.class,
                 ShadowInputMethodManager.class,
@@ -240,6 +242,7 @@ public class Robolectric {
                 ShadowSettings.ShadowSystem.class,
                 ShadowSimpleCursorAdapter.class,
                 ShadowShapeDrawable.class,
+                ShadowSmsManager.class,
                 ShadowSpannableStringBuilder.class,
                 ShadowSyncResult.class,
                 ShadowSyncResult.ShadowSyncStats.class,
@@ -286,6 +289,7 @@ public class Robolectric {
         ShadowMediaStore.reset();
         ShadowLog.reset();
         ShadowContext.clearFilesAndCache();
+        ShadowLooper.resetThreadLoopers();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -488,6 +492,10 @@ public class Robolectric {
         return (ShadowHandler) shadowOf_(instance);
     }
 
+    public static ShadowHandlerThread shadowOf(HandlerThread instance) {
+        return (ShadowHandlerThread) shadowOf_(instance);
+    }
+
     public static ShadowImageView shadowOf(ImageView instance) {
         return (ShadowImageView) shadowOf_(instance);
     }
@@ -674,6 +682,10 @@ public class Robolectric {
 
     public static ShadowSimpleCursorAdapter shadowOf(SimpleCursorAdapter instance) {
         return (ShadowSimpleCursorAdapter) shadowOf_(instance);
+    }
+    
+    public static ShadowSmsManager shadowOf(SmsManager instance) {
+    	return (ShadowSmsManager) shadowOf_(instance);
     }
 
     public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {

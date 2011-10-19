@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.hardware.Sensor;
+import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -35,6 +36,10 @@ public class ShadowSensorManager {
 	
 	public boolean hasListener(SensorEventListener listener) {
 		return listeners.contains(listener);
+	}
+	
+	public SensorEvent createSensorEvent() {
+		return null;
 	}
 
 }

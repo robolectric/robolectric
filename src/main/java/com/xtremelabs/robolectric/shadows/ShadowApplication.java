@@ -76,8 +76,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
     private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
-    private final Looper mainLooper = newInstanceOf(Looper.class);
-    private Looper currentLooper = mainLooper;
+    private Looper mainLooper = ShadowLooper.myLooper();
     private Scheduler backgroundScheduler = new Scheduler();
     private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<String, Map<String, Object>>();
     private ArrayList<Toast> shownToasts = new ArrayList<Toast>();
@@ -395,14 +394,6 @@ public class ShadowApplication extends ShadowContextWrapper {
     @Override @Implementation
     public Looper getMainLooper() {
         return mainLooper;
-    }
-
-    public Looper getCurrentLooper() {
-        return currentLooper;
-    }
-
-    public void setCurrentLooper(Looper looper) {
-        currentLooper = looper;
     }
 
     public Map<String, Map<String, Object>> getSharedPreferenceMap() {

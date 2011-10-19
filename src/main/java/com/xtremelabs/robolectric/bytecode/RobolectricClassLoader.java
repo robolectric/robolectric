@@ -1,19 +1,21 @@
 package com.xtremelabs.robolectric.bytecode;
 
-import java.util.ArrayList;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 
+import java.util.List;
+
 public class RobolectricClassLoader extends javassist.Loader {
     private ClassCache classCache;
+    private AndroidTranslator androidTranslator;
 
     public RobolectricClassLoader(ClassHandler classHandler) {
     	this(classHandler, null);
     }
     
-    public RobolectricClassLoader(ClassHandler classHandler, ArrayList<String> customClassNames) {
+    public RobolectricClassLoader(ClassHandler classHandler, List<String> customClassNames) {
         super(RobolectricClassLoader.class.getClassLoader(), null);
 
         delegateLoadingOf(AndroidTranslator.class.getName());
@@ -24,15 +26,19 @@ public class RobolectricClassLoader extends javassist.Loader {
             ClassPool classPool = new ClassPool();
             classPool.appendClassPath(new LoaderClassPath(RobolectricClassLoader.class.getClassLoader()));
 
-            AndroidTranslator androidTranslator = new AndroidTranslator(classHandler, classCache, customClassNames);
+            androidTranslator = new AndroidTranslator(classHandler, classCache, customClassNames);
             addTranslator(classPool, androidTranslator);
         } catch (NotFoundException e) {
             throw new RuntimeException(e);
         } catch (CannotCompileException e) {
             throw new RuntimeException(e);
         }
-    } 
-    
+    }
+
+    public void addCustomShadowClass(String classOrPackageToBeInstrumented) {
+        androidTranslator.addCustomShadowClass(classOrPackageToBeInstrumented);
+    }
+
     @Override
     public Class loadClass(String name) throws ClassNotFoundException {
         boolean shouldComeFromThisClassLoader = !(name.startsWith("org.junit") || name.startsWith("org.hamcrest")  
