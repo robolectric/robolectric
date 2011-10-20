@@ -13,8 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class SensorManagerTest {
@@ -62,6 +61,11 @@ public class SensorManagerTest {
 		SensorEventListener listener = new TestSensorEventListener();
 		
 		assertFalse(shadow.hasListener(listener));
+	}
+	
+	@Test 
+	public void shouldCreateSensorEvent() {
+		assertTrue(shadow.createSensorEvent() instanceof SensorEvent);
 	}
 	
 	private class TestSensorEventListener implements SensorEventListener {
