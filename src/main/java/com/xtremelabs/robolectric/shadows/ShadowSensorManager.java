@@ -4,6 +4,8 @@ import android.hardware.Sensor;
 import android.hardware.SensorEvent;
 import android.hardware.SensorEventListener;
 import android.hardware.SensorManager;
+
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -39,7 +41,7 @@ public class ShadowSensorManager {
 	}
 	
 	public SensorEvent createSensorEvent() {
-		return null;
+		return Robolectric.newInstanceOf(SensorEvent.class);
 	}
 
 }
