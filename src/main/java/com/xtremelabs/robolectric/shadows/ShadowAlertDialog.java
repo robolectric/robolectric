@@ -1,12 +1,16 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.R;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
 import android.widget.Adapter;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListAdapter;
+import android.widget.ListView;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -36,7 +40,8 @@ public class ShadowAlertDialog extends ShadowDialog {
     private Button neutralButton;
     private View view;
     private View customTitleView;
-    private Adapter adapter;
+    private ListAdapter adapter;
+    private ListView listView;
 
     /**
      * Non-Android accessor.
@@ -77,15 +82,7 @@ public class ShadowAlertDialog extends ShadowDialog {
      * @param index the index of the item to click on
      */
     public void clickOnItem(int index) {
-        if (isMultiItem) {
-            checkedItems[index] = !checkedItems[index];
-            multiChoiceClickListener.onClick(realAlertDialog, index, checkedItems[index]);
-        } else {
-            if (isSingleItem) {
-                checkedItemIndex = index;
-            }
-            clickListener.onClick(realAlertDialog, index);
-        }
+        shadowOf(realAlertDialog.getListView()).performItemClick(index);
     }
 
     @Implementation
@@ -99,6 +96,28 @@ public class ShadowAlertDialog extends ShadowDialog {
                 return neutralButton;
         }
         throw new RuntimeException("Only positive, negative, or neutral button choices are recognized");
+    }
+
+    @Implementation
+    public ListView getListView() {
+        if (listView == null) {
+            listView = new ListView(context);
+            listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    if (isMultiItem) {
+                        checkedItems[position] = !checkedItems[position];
+                        multiChoiceClickListener.onClick(realAlertDialog, position, checkedItems[position]);
+                    } else {
+                        if (isSingleItem) {
+                            checkedItemIndex = position;
+                        }
+                        clickListener.onClick(realAlertDialog, position);
+                    }
+                }
+            });
+        }
+        return listView;
     }
 
     /**
@@ -149,6 +168,15 @@ public class ShadowAlertDialog extends ShadowDialog {
     @Implementation
     public void show() {
         super.show();
+        if (items != null) {
+            adapter = new ArrayAdapter<CharSequence>(context, R.layout.simple_list_item_checked, R.id.text1, items);
+        }
+
+        if (adapter != null) {
+            getListView().setAdapter(adapter);
+        }
+
+
         getShadowApplication().setLatestAlertDialog(this);
     }
 
@@ -179,7 +207,7 @@ public class ShadowAlertDialog extends ShadowDialog {
         private AlertDialog.Builder realBuilder;
 
         private CharSequence[] items;
-        private Adapter adapter;
+        private ListAdapter adapter;
         private DialogInterface.OnClickListener clickListener;
         private DialogInterface.OnCancelListener cancelListener;
         private String title;
@@ -343,7 +371,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         @Implementation
         public AlertDialog.Builder setNeutralButton(int neutralTextId, final DialogInterface.OnClickListener listener) {
-        	return setNeutralButton(context.getResources().getText(neutralTextId), listener);
+            return setNeutralButton(context.getResources().getText(neutralTextId), listener);
         }
 
 
@@ -418,7 +446,7 @@ public class ShadowAlertDialog extends ShadowDialog {
         }
 
         protected Context getContext() {
-        	return context;
+            return context;
         }
     }
 }

@@ -200,7 +200,7 @@ public class AlertDialogTest {
         list.add(99);
         list.add(88);
         list.add(77);
-        ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(Robolectric.application, 0, list);
+        ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(Robolectric.application, R.layout.main, R.id.title, list);
 
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));
         builder.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
