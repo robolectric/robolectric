@@ -1,22 +1,21 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Filter;
 import android.widget.TextView;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.res.ResourceLoader;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings( { "UnusedDeclaration" })
 @Implements(ArrayAdapter.class)
@@ -116,10 +115,10 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     @Implementation
     public View getView(int position, View convertView, ViewGroup parent) {
         T item = list.get(position);
-        View view = getResourceLoader().inflateView(context, resource, parent);
+        View view;
 
         if (convertView == null) {
-            view = getResourceLoader().inflateView(context,resource, parent);
+            view = getResourceLoader().inflateView(context,resource, null);
         } else {
             view = convertView;
         }

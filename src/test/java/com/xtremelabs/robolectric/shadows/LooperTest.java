@@ -6,9 +6,7 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class LooperTest {
@@ -33,6 +31,29 @@ public class LooperTest {
         assertFalse(wasRun[0]);
         ShadowLooper.idleMainLooper(1);
         assertTrue(wasRun[0]);
+    }
+
+    @Test
+    public void differentThreadsGetDifferentLoopers() {
+        Looper mainLooper = Looper.getMainLooper();
+        Looper thisThreadsLooper = Looper.myLooper();
+
+        assertSame("junit test's thread should use the main looper", mainLooper, thisThreadsLooper);
+
+        final Looper[] thread1Looper = new Looper[1];
+        new Thread() {
+            @Override
+            public void run() {
+                Looper.prepare();
+                thread1Looper[0] = Looper.myLooper();
+            }
+        }.start();
+
+        while(thread1Looper[0] == null) {
+            Thread.yield();
+        }
+
+        assertNotSame(mainLooper, thread1Looper[0]);
     }
 
 }

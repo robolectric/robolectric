@@ -1,7 +1,12 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
 import com.xtremelabs.robolectric.shadows.StatusLineStub;
-import org.apache.http.*;
+import org.apache.http.Header;
+import org.apache.http.HeaderIterator;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpVersion;
+import org.apache.http.ProtocolVersion;
+import org.apache.http.StatusLine;
 import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
 
@@ -10,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 
@@ -83,6 +89,25 @@ public class TestHttpResponse extends HttpResponseStub {
             if (h.getName().equalsIgnoreCase(s)) found.add(h);
         }
         return found.toArray(new Header[found.size()]);
+    }
+
+    @Override
+    public void addHeader(Header header) {
+        List<Header> temp = new ArrayList<Header>();
+        Collections.addAll(temp, headers);
+        temp.add(header);
+        headers = temp.toArray(new Header[temp.size()]);
+    }
+
+    @Override
+    public void setHeader(Header newHeader) {
+        for (int i = 0; i < headers.length; i++) {
+            Header header = headers[i];
+            if (header.getName().equals(newHeader.getName())) {
+                headers[i] = newHeader;
+                return;
+            }
+        }
     }
 
     @Override public HeaderIterator headerIterator() {

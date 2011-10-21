@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric.bytecode;
 
 import com.xtremelabs.robolectric.RobolectricConfig;
-import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.Join;

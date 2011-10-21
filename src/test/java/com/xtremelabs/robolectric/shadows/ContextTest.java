@@ -13,9 +13,10 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -44,9 +45,33 @@ public class ContextTest {
     }
 
     @Test
+    public void getExternalCacheDir_shouldCreateDirectory() throws Exception {
+        assertTrue(context.getExternalCacheDir().exists());
+    }
+
+    @Test
     public void shouldWriteToCacheDir() throws Exception {
+        assertNotNull(context.getCacheDir());
         File cacheTest = new File(context.getCacheDir(), "__test__");
 
+        assertThat(cacheTest,
+                        equalTo(new File(new File(System.getProperty("java.io.tmpdir"), "android-cache"), "__test__")));
+
+        FileOutputStream fos = new FileOutputStream(cacheTest);
+        fos.write("test".getBytes());
+        fos.close();
+
+        assertTrue(cacheTest.exists());
+    }
+
+    @Test
+    public void shouldWriteToExternalCacheDir() throws Exception {
+        assertNotNull(context.getExternalCacheDir());
+        File cacheTest = new File(context.getExternalCacheDir(), "__test__");
+
+        assertThat(cacheTest,
+                equalTo(new File(new File(System.getProperty("java.io.tmpdir"), "android-external-cache"), "__test__")));
+        
         FileOutputStream fos = new FileOutputStream(cacheTest);
         fos.write("test".getBytes());
         fos.close();

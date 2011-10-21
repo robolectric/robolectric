@@ -4,7 +4,9 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
+import android.widget.Adapter;
 import android.widget.Button;
+import android.widget.ListAdapter;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -34,6 +36,7 @@ public class ShadowAlertDialog extends ShadowDialog {
     private Button neutralButton;
     private View view;
     private View customTitleView;
+    private Adapter adapter;
 
     /**
      * Non-Android accessor.
@@ -107,6 +110,10 @@ public class ShadowAlertDialog extends ShadowDialog {
         return items;
     }
 
+    public Adapter getAdapter() {
+        return adapter;
+    }
+
     /**
      * Non-Android accessor.
      *
@@ -172,6 +179,7 @@ public class ShadowAlertDialog extends ShadowDialog {
         private AlertDialog.Builder realBuilder;
 
         private CharSequence[] items;
+        private Adapter adapter;
         private DialogInterface.OnClickListener clickListener;
         private DialogInterface.OnCancelListener cancelListener;
         private String title;
@@ -230,6 +238,16 @@ public class ShadowAlertDialog extends ShadowDialog {
             this.isSingleItem = true;
             this.checkedItem = checkedItem;
             this.items = items;
+            this.clickListener = listener;
+            return realBuilder;
+        }
+
+        @Implementation(i18nSafe=false)
+        public AlertDialog.Builder setSingleChoiceItems(ListAdapter adapter, int checkedItem, final DialogInterface.OnClickListener listener) {
+            this.isSingleItem = true;
+            this.checkedItem = checkedItem;
+            this.items = null;
+            this.adapter = adapter;
             this.clickListener = listener;
             return realBuilder;
         }
@@ -355,6 +373,7 @@ public class ShadowAlertDialog extends ShadowDialog {
             ShadowAlertDialog latestAlertDialog = shadowOf(realDialog);
             latestAlertDialog.context = context;
             latestAlertDialog.items = items;
+            latestAlertDialog.adapter = adapter;
             latestAlertDialog.setTitle(title);
             latestAlertDialog.message = message;
             latestAlertDialog.clickListener = clickListener;
@@ -397,7 +416,7 @@ public class ShadowAlertDialog extends ShadowDialog {
             });
             return button;
         }
-        
+
         protected Context getContext() {
         	return context;
         }

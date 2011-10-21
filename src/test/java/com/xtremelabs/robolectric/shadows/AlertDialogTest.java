@@ -5,12 +5,16 @@ import android.app.AlertDialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertFalse;
@@ -123,35 +127,37 @@ public class AlertDialogTest {
     @Test
     public void clickingPositiveButtonDismissesDialog() throws Exception {
         AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
-        .setPositiveButton("Positive", null).create();
+                .setPositiveButton("Positive", null).create();
         alertDialog.show();
 
         assertTrue(alertDialog.isShowing());
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).performClick();
         assertFalse(alertDialog.isShowing());
     }
-    
+
     @Test
     public void clickingNeutralButtonDismissesDialog() throws Exception {
         AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
-        .setNeutralButton("Neutral", new DialogInterface.OnClickListener() {
-            @Override public void onClick(DialogInterface dialog, int which) {
-            }
-        }).create();
+                .setNeutralButton("Neutral", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                }).create();
         alertDialog.show();
 
         assertTrue(alertDialog.isShowing());
         alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).performClick();
         assertFalse(alertDialog.isShowing());
     }
-    
+
     @Test
     public void clickingNegativeButtonDismissesDialog() throws Exception {
         AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
-        .setNegativeButton("Negative", new DialogInterface.OnClickListener() {
-            @Override public void onClick(DialogInterface dialog, int which) {
-            }
-        }).create();
+                .setNegativeButton("Negative", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    }
+                }).create();
         alertDialog.show();
 
         assertTrue(alertDialog.isShowing());
@@ -186,6 +192,30 @@ public class AlertDialogTest {
         assertEquals(shadowAlertDialog.getItems()[0], "Aloha");
         assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog()), sameInstance(shadowAlertDialog));
         assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(alert));
+    }
+
+    @Test
+    public void testBuilderWithAdapter() throws Exception {
+        List<Integer> list = new ArrayList<Integer>();
+        list.add(99);
+        list.add(88);
+        list.add(77);
+        ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(Robolectric.application, 0, list);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));
+        builder.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int item) {
+                dialog.dismiss();
+            }
+        });
+        AlertDialog alert = builder.create();
+        alert.show();
+
+        assertTrue(alert.isShowing());
+        ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
+        assertEquals(shadowAlertDialog.getAdapter().getCount(), 3);
+        assertEquals(shadowAlertDialog.getAdapter().getItem(0), 99);
     }
 
     @Test
@@ -241,14 +271,14 @@ public class AlertDialogTest {
     public void shouldFindViewsByIdIfAViewIsSet() throws Exception {
         ContextWrapper context = new ContextWrapper(null);
         AlertDialog dialog = new AlertDialog.Builder(context).create();
-        
+
         assertThat(dialog.findViewById(99), nullValue());
 
         View view = new View(context);
         view.setId(99);
         dialog.setView(view);
         assertThat(dialog.findViewById(99), sameInstance(view));
-        
+
         assertThat(dialog.findViewById(66), nullValue());
     }
 

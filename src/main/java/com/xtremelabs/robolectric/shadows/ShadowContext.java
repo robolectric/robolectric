@@ -24,6 +24,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(Context.class)
 abstract public class ShadowContext {
     public static final File CACHE_DIR = new File(System.getProperty("java.io.tmpdir"), "android-cache");
+    public static final File EXTERNAL_CACHE_DIR = new File(System.getProperty("java.io.tmpdir"), "android-external-cache");
     public static final File FILES_DIR = new File(System.getProperty("java.io.tmpdir"), "android-tmp");
 
     @RealObject private Context realContext;
@@ -84,6 +85,12 @@ abstract public class ShadowContext {
     }
 
     @Implementation
+    public File getExternalCacheDir() {
+        EXTERNAL_CACHE_DIR.mkdir();
+        return EXTERNAL_CACHE_DIR;
+    }
+
+    @Implementation
     public FileInputStream openFileInput(String path) throws FileNotFoundException {
         return new FileInputStream(getFileStreamPath(path));
     }
@@ -113,6 +120,7 @@ abstract public class ShadowContext {
     public static void clearFilesAndCache() {
         clearFiles(FILES_DIR);
         clearFiles(CACHE_DIR);
+        clearFiles(EXTERNAL_CACHE_DIR);
     }
 
     public static void clearFiles(File dir) {

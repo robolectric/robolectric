@@ -3,18 +3,7 @@ package com.xtremelabs.robolectric.bytecode;
 import android.net.Uri;
 import com.xtremelabs.robolectric.internal.DoNotInstrument;
 import com.xtremelabs.robolectric.internal.Instrument;
-import javassist.CannotCompileException;
-import javassist.ClassMap;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtConstructor;
-import javassist.CtField;
-import javassist.CtMethod;
-import javassist.CtNewConstructor;
-import javassist.CtNewMethod;
-import javassist.Modifier;
-import javassist.NotFoundException;
-import javassist.Translator;
+import javassist.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,7 +15,7 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 19;
+    public static final int CACHE_VERSION = 20;
 
     private static final List<ClassHandler> CLASS_HANDLERS = new ArrayList<ClassHandler>();
 
@@ -44,13 +33,19 @@ public class AndroidTranslator implements Translator {
         instrumentingList.add("org.apache.http.impl.client.DefaultRequestDirector");
     }
     
-    public AndroidTranslator(ClassHandler classHandler, ClassCache classCache, ArrayList<String> customShadowClassNames) {
+    public AndroidTranslator(ClassHandler classHandler, ClassCache classCache, List<String> customShadowClassNames) {
     	this(classHandler, classCache);
     	if ( customShadowClassNames != null && !customShadowClassNames.isEmpty() ) {
         	instrumentingList.addAll(customShadowClassNames);    		
     	}
     }
-       
+
+    public void addCustomShadowClass(String customShadowClassName) {
+        if (!instrumentingList.contains(customShadowClassName)) {
+            instrumentingList.add(customShadowClassName);
+        }
+    }
+
     public static ClassHandler getClassHandler(int index) {
         return CLASS_HANDLERS.get(index);
     }
@@ -191,9 +186,15 @@ public class AndroidTranslator implements Translator {
     }
 
     private void fixConstructors(CtClass ctClass) throws CannotCompileException, NotFoundException {
+
+        if (ctClass.isEnum()) {
+            // skip enum constructors because they are not stubs in android.jar
+            return;
+        }
+
         boolean hasDefault = false;
 
-        for (CtConstructor ctConstructor : ctClass.getConstructors()) {
+        for (CtConstructor ctConstructor : ctClass.getDeclaredConstructors()) {
             try {
                 fixConstructor(ctClass, hasDefault, ctConstructor);
 
