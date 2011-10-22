@@ -170,17 +170,7 @@ public class AlertDialogTest {
         AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(Robolectric.application));
 
         builder.setTitle("title");
-        builder.setItems(R.array.alertDialogTestItems, new DialogInterface.OnClickListener() {
-            @Override
-            public void onClick(DialogInterface dialog, int item) {
-                if (item == 0) {
-
-                } else if (item == 1) {
-
-                }
-                dialog.dismiss();
-            }
-        });
+        builder.setItems(R.array.alertDialogTestItems, new TestDialogOnClickListener());
         AlertDialog alert = builder.create();
         alert.show();
 
@@ -193,6 +183,21 @@ public class AlertDialogTest {
         assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog()), sameInstance(shadowAlertDialog));
         assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(alert));
     }
+
+
+//    @Test
+//    public void testBuilderWithItemArrayCanPerformClickOnItem() throws Exception {
+//        TestDialogOnClickListener listener = new TestDialogOnClickListener();
+//        AlertDialog alert = new AlertDialog.Builder(new ContextWrapper(Robolectric.application))
+//                .setItems(R.array.alertDialogTestItems, listener)
+//                .create();
+//
+//        alert.show();
+//        ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
+//        shadowAlertDialog.clickOnItem(1);
+//
+//
+//    }
 
     @Test
     public void testBuilderWithAdapter() throws Exception {
@@ -265,6 +270,37 @@ public class AlertDialogTest {
         shadowAlertDialog.clickOnItem(0);
         assertThat(listener.clickedItem, equalTo(0));
         assertThat(shadowAlertDialog.getCheckedItemIndex(), equalTo(0));
+
+        shadowAlertDialog.clickOnItem(1);
+        assertThat(listener.clickedItem, equalTo(1));
+        assertThat(shadowAlertDialog.getCheckedItemIndex(), equalTo(1));
+
+    }
+
+    @Test
+    public void shouldCallTheClickListenerOfTheCheckedAdapterInASingleChoiceDialog() throws Exception {
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(Robolectric.application));
+
+        TestDialogOnClickListener listener = new TestDialogOnClickListener();
+        List<Integer> list = new ArrayList<Integer>();
+        list.add(1);
+        list.add(2);
+        list.add(3);
+        ArrayAdapter<Integer> arrayAdapter = new ArrayAdapter<Integer>(Robolectric.application, R.layout.main, R.id.title, list);
+        builder.setSingleChoiceItems(arrayAdapter, 1, listener);
+
+        AlertDialog alert = builder.create();
+        alert.show();
+
+        ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
+        shadowAlertDialog.clickOnItem(0);
+        assertThat(listener.clickedItem, equalTo(0));
+        assertThat(shadowAlertDialog.getCheckedItemIndex(), equalTo(0));
+
+        shadowAlertDialog.clickOnItem(1);
+        assertThat(listener.clickedItem, equalTo(1));
+        assertThat(shadowAlertDialog.getCheckedItemIndex(), equalTo(1));
+
     }
 
     @Test
