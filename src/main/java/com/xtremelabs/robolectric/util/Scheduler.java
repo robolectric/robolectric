@@ -132,6 +132,10 @@ public class Scheduler {
         paused = false;
     }
 
+    public int size() {
+        return postedRunnables.size();
+    }
+
     class PostedRunnable implements Comparable<PostedRunnable> {
         Runnable runnable;
         long scheduledTime;
