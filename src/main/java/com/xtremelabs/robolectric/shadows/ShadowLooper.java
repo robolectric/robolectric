@@ -59,7 +59,7 @@ public class ShadowLooper {
         unPauseLooper(Looper.getMainLooper());
     }
 
-    public static void idleMainLooper(int interval) {
+    public static void idleMainLooper(long interval) {
         shadowOf(Looper.getMainLooper()).idle(interval);
     }
 
