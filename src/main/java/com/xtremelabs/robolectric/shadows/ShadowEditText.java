@@ -17,6 +17,11 @@ public class ShadowEditText extends ShadowTextView {
         focusable = true;
         focusableInTouchMode = true;
     }
+
+    @Override @Implementation(i18nSafe=true)
+    public void setText( CharSequence str ) {
+    	super.setText( str );
+    }
     
     @Override @Implementation
     public Editable getText() {

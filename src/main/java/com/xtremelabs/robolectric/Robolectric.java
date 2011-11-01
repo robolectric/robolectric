@@ -1059,7 +1059,7 @@ public class Robolectric {
         ShadowLooper.unPauseMainLooper();
     }
 
-    public static void idleMainLooper(int interval) {
+    public static void idleMainLooper(long interval) {
         ShadowLooper.idleMainLooper(interval);
     }
 
