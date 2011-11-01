@@ -83,6 +83,11 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     }
 
     @Implementation
+    public void clear() {
+        list.clear();
+    }
+
+    @Implementation
     public void remove(T object) {
         list.remove(object);
     }
