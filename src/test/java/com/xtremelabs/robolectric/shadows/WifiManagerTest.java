@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -7,10 +8,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static android.content.Context.WIFI_SERVICE;
 import static com.xtremelabs.robolectric.Robolectric.application;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class WifiManagerTest {
@@ -47,4 +53,10 @@ public class WifiManagerTest {
         wifiManager.getConnectionInfo();
     }
 
+    @Test
+    public void shouldReturnSetScanResults() throws Exception {
+        List<ScanResult> scanResults = new ArrayList<ScanResult>();
+        shadowWifiManager.setScanResults(scanResults);
+        assertThat(wifiManager.getScanResults(), sameInstance(scanResults));
+    }
 }
