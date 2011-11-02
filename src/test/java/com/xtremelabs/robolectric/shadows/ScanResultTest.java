@@ -5,6 +5,8 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static junit.framework.Assert.assertNotNull;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -19,5 +21,6 @@ public class ScanResultTest {
         assertThat(scanResult.capabilities, equalTo("Caps"));
         assertThat(scanResult.level, equalTo(11));
         assertThat(scanResult.frequency, equalTo(42));
+        assertNotNull(shadowOf(scanResult).realObject);
     }
 }
