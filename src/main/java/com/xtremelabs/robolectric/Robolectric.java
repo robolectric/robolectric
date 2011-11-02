@@ -54,6 +54,7 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.ScanResult;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -317,6 +318,7 @@ public class Robolectric {
                 ShadowResourceCursorAdapter.class,
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
+                ShadowScanResult.class,
                 ShadowSeekBar.class,
                 ShadowSensorManager.class,
                 ShadowService.class,
@@ -749,6 +751,10 @@ public class Robolectric {
 
     public static ShadowResultReceiver shadowOf(ResultReceiver instance) {
         return (ShadowResultReceiver) shadowOf_(instance);
+    }
+
+    public static ShadowScanResult shadowOf(ScanResult instance) {
+        return (ShadowScanResult) shadowOf_(instance);
     }
 
     public static ShadowSeekBar shadowOf(SeekBar instance) {
