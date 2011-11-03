@@ -34,6 +34,9 @@ public class ShadowWifiConfiguration {
         config.networkId = realObject.networkId;
         config.SSID = realObject.SSID;
         config.BSSID = realObject.BSSID;
+        config.preSharedKey = realObject.preSharedKey;
+        config.wepTxKeyIndex = realObject.wepTxKeyIndex;
+        config.status = realObject.status;
         config.priority = realObject.priority;
         config.hiddenSSID = realObject.hiddenSSID;
         config.allowedKeyManagement = (BitSet) realObject.allowedKeyManagement.clone();

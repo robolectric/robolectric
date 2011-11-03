@@ -25,6 +25,9 @@ public class WifiConfigurationTest {
         wifiConfiguration.networkId = 1;
         wifiConfiguration.SSID = "SSID";
         wifiConfiguration.BSSID = "BSSID";
+        wifiConfiguration.preSharedKey = "preSharedKey";
+        wifiConfiguration.status = 666;
+        wifiConfiguration.wepTxKeyIndex = 777;
         wifiConfiguration.priority = 2;
         wifiConfiguration.hiddenSSID = true;
         wifiConfiguration.allowedKeyManagement.set(1);
@@ -42,6 +45,9 @@ public class WifiConfigurationTest {
         assertThat(copy.networkId, equalTo(1));
         assertThat(copy.SSID, equalTo("SSID"));
         assertThat(copy.BSSID, equalTo("BSSID"));
+        assertThat(copy.preSharedKey, equalTo("preSharedKey"));
+        assertThat(copy.status, equalTo(666));
+        assertThat(copy.wepTxKeyIndex, equalTo(777));
         assertThat(copy.priority, equalTo(2));
         assertThat(copy.hiddenSSID, equalTo(true));
         assertThat(copy.allowedKeyManagement.get(1), equalTo(true));
