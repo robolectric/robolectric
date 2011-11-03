@@ -226,6 +226,7 @@ public class Robolectric {
                 ShadowConfiguration.class,
                 ShadowConnectivityManager.class,
                 ShadowContentResolver.class,
+                ShadowContentUris.class,
                 ShadowContentValues.class,
                 ShadowContext.class,
                 ShadowContextWrapper.class,
