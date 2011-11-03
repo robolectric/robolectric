@@ -55,6 +55,7 @@ import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.net.wifi.ScanResult;
+import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -359,6 +360,7 @@ public class Robolectric {
                 ShadowViewStub.class,
                 ShadowWebSettings.class,
                 ShadowWebView.class,
+                ShadowWifiConfiguration.class,
                 ShadowWifiInfo.class,
                 ShadowWifiManager.class,
                 ShadowWindow.class,
@@ -863,6 +865,10 @@ public class Robolectric {
 
     public static ShadowWebView shadowOf(WebView instance) {
         return (ShadowWebView) shadowOf_(instance);
+    }
+
+    public static ShadowWifiConfiguration shadowOf(WifiConfiguration instance) {
+        return (ShadowWifiConfiguration) shadowOf_(instance);
     }
 
     public static ShadowWifiInfo shadowOf(WifiInfo instance) {
