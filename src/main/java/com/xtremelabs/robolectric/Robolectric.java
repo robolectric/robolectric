@@ -22,6 +22,7 @@ import android.content.ContentValues;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.UriMatcher;
 import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
@@ -225,7 +226,9 @@ public class Robolectric {
                 ShadowCompoundButton.class,
                 ShadowConfiguration.class,
                 ShadowConnectivityManager.class,
+                ShadowContentProvider.class,
                 ShadowContentResolver.class,
+                ShadowContentUris.class,
                 ShadowContentValues.class,
                 ShadowContext.class,
                 ShadowContextWrapper.class,
@@ -350,6 +353,7 @@ public class Robolectric {
                 ShadowToast.class,
                 ShadowTypedArray.class,
                 ShadowTypedValue.class,
+                ShadowUriMatcher.class,
                 ShadowURLSpan.class,
                 ShadowVideoView.class,
                 ShadowView.class,
@@ -833,6 +837,10 @@ public class Robolectric {
 
     public static ShadowToast shadowOf(Toast instance) {
         return (ShadowToast) shadowOf_(instance);
+    }
+
+    public static ShadowUriMatcher shadowOf(UriMatcher instance) {
+        return (ShadowUriMatcher) shadowOf_(instance);
     }
 
     public static ShadowView shadowOf(View instance) {
