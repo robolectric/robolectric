@@ -37,7 +37,7 @@ public class ShadowBundle {
     @Implementation
     public String getString(String key, String defaultValue) {
     	Object value = map.get(key);
-    	return value == null ? (String) value : defaultValue;
+    	return value == null ? defaultValue : (String) value;
     }
 
     @Implementation
