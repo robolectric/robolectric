@@ -1,13 +1,16 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import android.content.ContentResolver;
 import android.database.AbstractCursor;
 import android.database.CursorWindow;
+import android.net.Uri;
+
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-
-import java.util.HashMap;
-import java.util.Map;
 
 
 @Implements(AbstractCursor.class)
@@ -21,6 +24,7 @@ public class ShadowAbstractCursor {
     protected String[] columnNameArray;
     protected Map<Integer, Map<String, Object>> rows = new HashMap<Integer, Map<String, Object>>();
     protected int rowCount;
+    protected Uri notificationUri;
 
     @Implementation
     public int getCount() {
@@ -124,5 +128,18 @@ public class ShadowAbstractCursor {
     @Implementation
     public boolean isAfterLast() {
         return currentRowNumber >= realAbstractCursor.getCount();
+    }
+
+    @Implementation
+    public void setNotificationUri(ContentResolver cr, Uri notifyUri) {
+        notificationUri = notifyUri;
+    }
+
+    /**
+     * Returns the Uri set by {@code setNotificationUri()}.  Method included for testing
+     * pre-API 11 projects.
+     */
+    public Uri getNotificationUri_Compatibility() {
+        return notificationUri;
     }
 }
