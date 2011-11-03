@@ -33,6 +33,11 @@ public class ShadowBundle {
     public String getString(String key) {
         return (String) map.get(key);
     }
+    
+    @Implementation
+    public String getString(String key, String defaultValue ) {
+    	return map.containsKey(key) ? (String) map.get(key) : defaultValue;
+    }
 
     @Implementation
     public void putLong(String key, long value) {
