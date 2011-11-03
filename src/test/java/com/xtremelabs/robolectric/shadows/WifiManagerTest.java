@@ -14,9 +14,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.Context.WIFI_SERVICE;
-import static android.test.MoreAsserts.assertEmpty;
 import static com.xtremelabs.robolectric.Robolectric.application;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -121,7 +121,7 @@ public class WifiManagerTest {
         config.networkId = -1;
         assertThat(wifiManager.updateNetwork(config), equalTo(-1));
         assertThat(wifiManager.updateNetwork(null), equalTo(-1));
-        assertEmpty(wifiManager.getConfiguredNetworks());
+        assertTrue(wifiManager.getConfiguredNetworks().isEmpty());
     }
 
     @Test
