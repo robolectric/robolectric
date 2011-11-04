@@ -33,12 +33,6 @@ public class ShadowBundle {
     public String getString(String key) {
         return (String) map.get(key);
     }
-    
-    @Implementation
-    public String getString(String key, String defaultValue) {
-    	Object value = map.get(key);
-    	return value == null ? defaultValue : (String) value;
-    }
 
     @Implementation
     public void putLong(String key, long value) {
