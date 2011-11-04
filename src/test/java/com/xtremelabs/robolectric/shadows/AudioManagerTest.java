@@ -4,26 +4,56 @@ package com.xtremelabs.robolectric.shadows;
 import android.media.AudioManager;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AudioManagerTest {
     private AudioManager audioManager;
     private ShadowAudioManager shadowAudioManager;
+    private AudioManager.OnAudioFocusChangeListener listener;
 
     @Before
     public void setUp() throws Exception {
         audioManager = Robolectric.newInstanceOf(AudioManager.class);
         shadowAudioManager = Robolectric.shadowOf(audioManager);
+        listener = new AudioManager.OnAudioFocusChangeListener() {
+            @Override
+            public void onAudioFocusChange(int focusChange) {
+            }
+        };
     }
 
-    @After
-    public void tearDown() throws Exception {
+    @Test
+    public void requestAudioFocus_shouldRecordArgumentsOfMostRecentCall() {
+        assertNull(shadowAudioManager.getLastAudioFocusRequest());
+        audioManager.requestAudioFocus(listener, 999, 888);
+        assertSame(listener, shadowAudioManager.getLastAudioFocusRequest().listener);
+        assertEquals(999, shadowAudioManager.getLastAudioFocusRequest().streamType);
+        assertEquals(888, shadowAudioManager.getLastAudioFocusRequest().durationHint);
+    }
+
+    @Test
+    public void requestAudioFocus_shouldReturnTheSpecifiedValue() {
+        int value = audioManager.requestAudioFocus(listener, 999, 888);
+        assertEquals(AudioManager.AUDIOFOCUS_REQUEST_GRANTED, value);
+
+        shadowAudioManager.setNextFocusRequestResponse(AudioManager.AUDIOFOCUS_REQUEST_FAILED);
+        
+        value = audioManager.requestAudioFocus(listener, 999, 888);
+        assertEquals(AudioManager.AUDIOFOCUS_REQUEST_FAILED, value);
+    }
+
+    @Test
+    public void abandonAudioFocus_shouldRecordTheListenerOfTheMostRecentCall() {
+        audioManager.abandonAudioFocus(null);
+        assertNull(shadowAudioManager.getLastAbandonedAudioFocusListener());
+        
+        audioManager.abandonAudioFocus(listener);
+        assertSame(listener, shadowAudioManager.getLastAbandonedAudioFocusListener());
     }
 
     @Test

@@ -116,12 +116,14 @@ public class ShadowApplication extends ShadowContextWrapper {
         return backgroundScheduler;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public Context getApplicationContext() {
         return realApplication;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public Resources getResources() {
         if (resources == null) {
             resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);
@@ -130,7 +132,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     @Implementation
-    @Override public ContentResolver getContentResolver() {
+    @Override
+    public ContentResolver getContentResolver() {
         if (contentResolver == null) {
             contentResolver = new ContentResolver(realApplication) {
             };
@@ -139,7 +142,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     @Implementation
-    @Override public Object getSystemService(String name) {
+    @Override
+    public Object getSystemService(String name) {
         if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
             return LayoutInflater.from(realApplication);
         } else {
@@ -160,21 +164,24 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     @Implementation
-    @Override public void startActivity(Intent intent) {
+    @Override
+    public void startActivity(Intent intent) {
         startedActivities.add(intent);
     }
 
     @Implementation
-    @Override public ComponentName startService(Intent intent) {
+    @Override
+    public ComponentName startService(Intent intent) {
         startedServices.add(intent);
         return new ComponentName("some.service.package", "SomeServiceName-FIXME");
     }
-    
+
     @Implementation
-    @Override public boolean stopService(Intent name) {
-    	stoppedServies.add(name);
-    	
-    	return startedServices.contains(name);
+    @Override
+    public boolean stopService(Intent name) {
+        stoppedServies.add(name);
+
+        return startedServices.contains(name);
     }
 
     public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
@@ -216,7 +223,8 @@ public class ShadowApplication extends ShadowContextWrapper {
      *
      * @return the most recently started {@code Intent}
      */
-    @Override public Intent getNextStartedActivity() {
+    @Override
+    public Intent getNextStartedActivity() {
         if (startedActivities.isEmpty()) {
             return null;
         } else {
@@ -230,7 +238,8 @@ public class ShadowApplication extends ShadowContextWrapper {
      *
      * @return the most recently started {@code Intent}
      */
-    @Override public Intent peekNextStartedActivity() {
+    @Override
+    public Intent peekNextStartedActivity() {
         if (startedActivities.isEmpty()) {
             return null;
         } else {
@@ -243,7 +252,8 @@ public class ShadowApplication extends ShadowContextWrapper {
      *
      * @return the most recently started {@code Intent}
      */
-    @Override public Intent getNextStartedService() {
+    @Override
+    public Intent getNextStartedService() {
         if (startedServices.isEmpty()) {
             return null;
         } else {
@@ -257,31 +267,34 @@ public class ShadowApplication extends ShadowContextWrapper {
      *
      * @return the most recently started {@code Intent}
      */
-    @Override public Intent peekNextStartedService() {
+    @Override
+    public Intent peekNextStartedService() {
         if (startedServices.isEmpty()) {
             return null;
         } else {
             return startedServices.get(0);
         }
     }
-    
+
     /**
      * Clears all {@code Intent} started by {@link #startService(android.content.Intent)}
      */
-    @Override public void clearStartedServices() {
-		startedServices.clear();
-	}
-    
+    @Override
+    public void clearStartedServices() {
+        startedServices.clear();
+    }
+
     /**
-     * Consumes the {@code Intent} requested to stop a service by {@link #stopService(android.content.Intent)} 
+     * Consumes the {@code Intent} requested to stop a service by {@link #stopService(android.content.Intent)}
      * from the bottom of the stack of stop requests.
      */
-    @Override public Intent getNextStoppedService() {
-    	if (stoppedServies.isEmpty()) {
-    		return null;
-    	} else {
-    		return stoppedServies.remove(0);
-    	}
+    @Override
+    public Intent getNextStoppedService() {
+        if (stoppedServies.isEmpty()) {
+            return null;
+        } else {
+            return stoppedServies.remove(0);
+        }
     }
 
     /**
@@ -300,9 +313,12 @@ public class ShadowApplication extends ShadowContextWrapper {
      * @param intent the {@code Intent} to broadcast
      *               todo: enqueue the Intent for later inspection
      */
-    @Override @Implementation
+    @Override
+    @Implementation
     public void sendBroadcast(Intent intent) {
-        for (Wrapper wrapper : registeredReceivers) {
+        List<Wrapper> copy = new ArrayList<Wrapper>();
+        copy.addAll(registeredReceivers);
+        for (Wrapper wrapper : copy) {
             if (wrapper.intentFilter.matchAction(intent.getAction())) {
                 wrapper.broadcastReceiver.onReceive(realApplication, intent);
             }
@@ -314,7 +330,8 @@ public class ShadowApplication extends ShadowContextWrapper {
      *
      * @return {@code null}
      */
-    @Override @Implementation
+    @Override
+    @Implementation
     public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
         return registerReceiverWithContext(receiver, filter, realApplication);
     }
@@ -324,7 +341,8 @@ public class ShadowApplication extends ShadowContextWrapper {
         return null;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
         boolean found = false;
         Iterator<Wrapper> iterator = registeredReceivers.iterator();
@@ -360,6 +378,23 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    public void assertNoBroadcastListenersOfActionRegistered(Context context, String action) {
+        for (Wrapper registeredReceiver : registeredReceivers) {
+            if (registeredReceiver.context == context) {
+                Iterator<String> actions = registeredReceiver.intentFilter.actionsIterator();
+                while (actions.hasNext()) {
+                    if (actions.next().equals(action)) {
+                        RuntimeException e = new IllegalStateException("Unexpected BroadcastReceiver on " + context +
+                                " with action " + action + " "
+                                + registeredReceiver.broadcastReceiver + " that was originally registered here:");
+                        e.setStackTrace(registeredReceiver.exception.getStackTrace());
+                        throw e;
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Non-Android accessor.
      *
@@ -391,7 +426,8 @@ public class ShadowApplication extends ShadowContextWrapper {
         return fakeHttpLayer;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public Looper getMainLooper() {
         return mainLooper;
     }

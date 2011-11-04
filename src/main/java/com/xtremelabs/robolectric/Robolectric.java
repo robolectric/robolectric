@@ -54,6 +54,8 @@ import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.Bundle;
@@ -317,6 +319,7 @@ public class Robolectric {
                 ShadowResourceCursorAdapter.class,
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
+                ShadowScanResult.class,
                 ShadowSeekBar.class,
                 ShadowSensorManager.class,
                 ShadowService.class,
@@ -357,6 +360,7 @@ public class Robolectric {
                 ShadowViewStub.class,
                 ShadowWebSettings.class,
                 ShadowWebView.class,
+                ShadowWifiConfiguration.class,
                 ShadowWifiInfo.class,
                 ShadowWifiManager.class,
                 ShadowWindow.class,
@@ -751,6 +755,10 @@ public class Robolectric {
         return (ShadowResultReceiver) shadowOf_(instance);
     }
 
+    public static ShadowScanResult shadowOf(ScanResult instance) {
+        return (ShadowScanResult) shadowOf_(instance);
+    }
+
     public static ShadowSeekBar shadowOf(SeekBar instance) {
         return (ShadowSeekBar) shadowOf_(instance);
     }
@@ -857,6 +865,10 @@ public class Robolectric {
 
     public static ShadowWebView shadowOf(WebView instance) {
         return (ShadowWebView) shadowOf_(instance);
+    }
+
+    public static ShadowWifiConfiguration shadowOf(WifiConfiguration instance) {
+        return (ShadowWifiConfiguration) shadowOf_(instance);
     }
 
     public static ShadowWifiInfo shadowOf(WifiInfo instance) {
@@ -1059,7 +1071,7 @@ public class Robolectric {
         ShadowLooper.unPauseMainLooper();
     }
 
-    public static void idleMainLooper(int interval) {
+    public static void idleMainLooper(long interval) {
         ShadowLooper.idleMainLooper(interval);
     }
 
