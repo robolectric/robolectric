@@ -121,7 +121,7 @@ public class ShadowToast {
      */
     public static String getTextOfLatestToast() {
         List<Toast> shownToasts = Robolectric.getShadowApplication().getShownToasts();
-        return shadowOf(shownToasts.get(shownToasts.size() - 1)).text;
+        return (shownToasts.size() == 0) ? null : shadowOf(shownToasts.get(shownToasts.size() - 1)).text;
     }
 
     /**
@@ -131,6 +131,6 @@ public class ShadowToast {
      */
     public static Toast getLatestToast() {
         List<Toast> shownToasts = Robolectric.getShadowApplication().getShownToasts();
-        return shownToasts.get(shownToasts.size() - 1);
+        return (shownToasts.size() == 0) ? null : shownToasts.get(shownToasts.size() - 1);
     }
 }
