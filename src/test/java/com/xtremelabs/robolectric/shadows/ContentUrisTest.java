@@ -1,21 +1,25 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
+import android.content.ContentUris;
+import android.net.Uri;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.content.ContentUris;
-import android.net.Uri;
-
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ContentUrisTest {
-	static final Uri URI = Uri.parse("content://foo.com");
+	Uri URI;
 
-	@Test public void canAppendId() {
+    @Before
+    public void setUp() throws Exception {
+        URI = Uri.parse("content://foo.com");
+    }
+
+    @Test public void canAppendId() {
 		assertThat(ContentUris.withAppendedId(URI, 1),
 				is(Uri.parse("content://foo.com/1")));
 	}

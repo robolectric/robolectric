@@ -1,31 +1,30 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.UriMatcher;
+import android.net.Uri;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.shadows.ShadowUriMatcher.MatchNode;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.matchers.JUnitMatchers.hasItem;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import android.content.UriMatcher;
-import android.net.Uri;
-
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.shadows.ShadowUriMatcher.MatchNode;
-
 @RunWith(WithTestDefaultsRunner.class)
 public class UriMatcherTest {
 	static final String AUTH = "com.foo";
-	static final Uri URI = Uri.parse("content://" + AUTH);
 	static final int NO_MATCH = -2;
 
 	UriMatcher matcher;
 	MatchNode root;
-
+    Uri URI;
+    
 	@Before public void getMatcher() {
+        URI = Uri.parse("content://" + AUTH);
 		matcher = new UriMatcher(NO_MATCH);
 		root = Robolectric.shadowOf(matcher).rootNode;
 	}
