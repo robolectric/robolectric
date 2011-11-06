@@ -14,4 +14,14 @@ public class ShadowContentUris {
 		return Uri.withAppendedPath(contentUri, String.valueOf(id));
 	}
 
+	@Implementation
+	public static long parseId(Uri contentUri) {
+		if (!contentUri.isHierarchical()) {
+			throw new UnsupportedOperationException();
+		}
+		String path = contentUri.getLastPathSegment();
+		if (path == null) return -1;
+		return Long.parseLong(path);
+	}
+
 }
