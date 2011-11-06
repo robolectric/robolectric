@@ -1,16 +1,22 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.database.AbstractCursor;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import android.database.AbstractCursor;
+import android.net.Uri;
+
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AbstractCursorTest {
@@ -203,8 +209,17 @@ public class AbstractCursorTest {
         cursor.moveToNext();
         assertThat(cursor.isAfterLast(), equalTo(true));    	
     }
-    
-    
+
+    @Test
+    public void testGetNotificationUri() {
+        Uri uri = Uri.parse("content://foo.com");
+        ShadowAbstractCursor shadow = Robolectric.shadowOf_(cursor);
+        assertThat(shadow.getNotificationUri_Compatibility(), is(nullValue()));
+        cursor.setNotificationUri(null, uri);
+        assertThat(shadow.getNotificationUri_Compatibility(), is(uri));
+    }
+
+
     private class TestCursor extends AbstractCursor {
 
         public List<Object> theTable = new ArrayList<Object>();
