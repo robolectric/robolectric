@@ -66,4 +66,11 @@ public class ConnectivityManagerTest {
     	shadowOfActiveNetworkInfo.setConnectionType(ConnectivityManager.TYPE_WIFI);
     	assertEquals(ConnectivityManager.TYPE_WIFI, shadowOfActiveNetworkInfo.getType());
     }
+
+    @Test
+    public void shouldGetAndSetBackgroundDataSetting() throws Exception {
+        assertFalse(connectivityManager.getBackgroundDataSetting());
+        shadowConnectivityManager.setBackgroundDataSetting(true);
+        assertTrue(connectivityManager.getBackgroundDataSetting());
+    }
 }
