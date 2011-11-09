@@ -42,7 +42,16 @@ public class ShadowBitmapFactory {
 
     @Implementation
     public static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
-        return create("file:" + pathName, options);
+    	Bitmap result;
+    	if (options == null)
+    	{
+    		result = decodeFile(pathName);
+    	}
+    	else
+    	{
+    		result = create("file:" + pathName, options);
+    	}
+        return result;
     }
 
     @Implementation
