@@ -20,6 +20,7 @@ public class ShadowConnectivityManager {
 
     private NetworkInfo activeNetwork;
     private NetworkInfo[] networkInfo;
+    private boolean backgroundDataSetting;
 
     private Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<Integer, NetworkInfo>();
 
@@ -40,5 +41,14 @@ public class ShadowConnectivityManager {
 
     public void setNetworkInfo(int networkType, NetworkInfo networkInfo) {
         networkTypeToNetworkInfo.put(networkType, networkInfo);
+    }
+
+    @Implementation
+    public boolean getBackgroundDataSetting() {
+        return backgroundDataSetting;
+    }
+
+    public void setBackgroundDataSetting(boolean b) {
+        backgroundDataSetting = b;
     }
 }
