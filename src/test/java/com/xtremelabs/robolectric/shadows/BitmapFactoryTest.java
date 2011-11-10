@@ -71,6 +71,14 @@ public class BitmapFactoryTest {
         assertEquals(123, options.outWidth);
         assertEquals(456, options.outHeight);
     }
+    
+    @Test
+    public void decodeFile_shouldIgnoreOptionsIfTheyAreNull() {
+        Bitmap bitmap = BitmapFactory.decodeFile("/some/file.jpg", null);
+        assertEquals("Bitmap for file:/some/file.jpg", shadowOf(bitmap).getDescription());
+        assertEquals(100, bitmap.getWidth());
+        assertEquals(100, bitmap.getHeight());
+    }
 
     @Test
     public void decodeUri_shouldGetWidthAndHeightFromHints() throws Exception {
