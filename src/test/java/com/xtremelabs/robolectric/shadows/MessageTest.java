@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
@@ -14,6 +14,12 @@ import android.os.Message;
 public class MessageTest {
 
     @Test
+    public void testGetDataShouldLazilyCreateBundle() throws Exception {
+        assertNotNull(new Message().getData());
+        assertTrue(new Message().getData().isEmpty());
+    }
+
+    @Test
     public void testGetData() throws Exception {
         Message m = new Message();
         Bundle b = new Bundle();
@@ -23,6 +29,8 @@ public class MessageTest {
 
     @Test
     public void testPeekData() throws Exception {
+        assertNull(new Message().peekData());
+
         Message m = new Message();
         Bundle b = new Bundle();
         m.setData(b);

@@ -22,11 +22,14 @@ public class ShadowMessage {
 
     @Implementation
     public Bundle peekData() {
-        return getData();
+        return data;
     }
 
     @Implementation
     public Bundle getData() {
+        if (data == null) {
+            data = new Bundle();
+        }
         return data;
     }
 
