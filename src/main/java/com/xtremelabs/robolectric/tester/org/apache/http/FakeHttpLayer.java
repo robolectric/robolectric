@@ -1,12 +1,7 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
 import com.xtremelabs.robolectric.Robolectric;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
+import org.apache.http.*;
 import org.apache.http.client.RequestDirector;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.conn.ConnectTimeoutException;
@@ -72,7 +67,7 @@ public class FakeHttpLayer {
     }
 
     public void addHttpResponseRule(HttpEntityStub.ResponseRule responseRule) {
-        httpResponseRules.add(responseRule);
+        httpResponseRules.add(0, responseRule);
     }
 
     public void setDefaultHttpResponse(HttpResponse defaultHttpResponse) {
@@ -326,7 +321,7 @@ public class FakeHttpLayer {
                 }
             }
             if (postBodyMatcher != null) {
-                if(! (request instanceof HttpEntityEnclosingRequestBase)) {
+                if (!(request instanceof HttpEntityEnclosingRequestBase)) {
                     return false;
                 }
                 HttpEntityEnclosingRequestBase postOrPut = (HttpEntityEnclosingRequestBase) request;
