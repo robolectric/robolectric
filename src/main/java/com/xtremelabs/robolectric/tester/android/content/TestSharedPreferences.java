@@ -2,16 +2,15 @@ package com.xtremelabs.robolectric.tester.android.content;
 
 import android.content.SharedPreferences;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class TestSharedPreferences implements SharedPreferences {
 
     public Map<String, Map<String, Object>> content;
     protected String filename;
     public int mode;
+
+    private ArrayList<OnSharedPreferenceChangeListener> listeners;
 
     public TestSharedPreferences(Map<String, Map<String, Object>> content,
             String name, int mode) {
@@ -21,6 +20,8 @@ public class TestSharedPreferences implements SharedPreferences {
         if (!content.containsKey(name)) {
             content.put(name, new HashMap<String, Object>());
         }
+
+        listeners = new ArrayList<OnSharedPreferenceChangeListener>();
     }
 
     @Override
@@ -77,11 +78,19 @@ public class TestSharedPreferences implements SharedPreferences {
     @Override
     public void registerOnSharedPreferenceChangeListener(
             OnSharedPreferenceChangeListener listener) {
+        if(!listeners.contains(listener))
+            listeners.add(listener);
     }
 
     @Override
     public void unregisterOnSharedPreferenceChangeListener(
             OnSharedPreferenceChangeListener listener) {
+        if(listeners.contains(listener))
+            listeners.remove(listener);
+    }
+
+    public boolean hasListener(OnSharedPreferenceChangeListener listener) {
+        return listeners.contains(listener);
     }
 
     private class TestSharedPreferencesEditor implements Editor {
