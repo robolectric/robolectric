@@ -119,4 +119,26 @@ public class TestSharedPreferencesTest {
         assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(666l));
         assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("wacka wa"));
     }
+
+    @Test
+    public void shouldStoreRegisteredListeners() {
+        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "bazBang", 3);
+        anotherSharedPreferences.registerOnSharedPreferenceChangeListener(testListener);
+        assertTrue(anotherSharedPreferences.hasListener(testListener));
+    }
+
+    @Test
+    public void shouldRemoveRegisteredListenersOnUnresgister() {
+        TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "bazBang", 3);
+        anotherSharedPreferences.registerOnSharedPreferenceChangeListener(testListener);
+
+        anotherSharedPreferences.unregisterOnSharedPreferenceChangeListener(testListener);
+        assertFalse(anotherSharedPreferences.hasListener(testListener));
+    }
+
+    private SharedPreferences.OnSharedPreferenceChangeListener testListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+        @Override
+        public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        }
+    };
 }
