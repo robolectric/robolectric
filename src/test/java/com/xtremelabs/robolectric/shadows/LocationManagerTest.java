@@ -174,37 +174,34 @@ public class LocationManagerTest {
         assertFalse(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", false));
         assertTrue(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", true));
         assertThat("BEST_ENABLED_PROVIDER", equalTo(locationManager.getBestProvider(null, true)));
+        assertNull(locationManager.getBestProvider(null, false));
 
         shadowLocationManager.setProviderEnabled("BEST_DISABLED_PROVIDER", false);
         assertTrue(shadowLocationManager.setBestProvider("BEST_DISABLED_PROVIDER", false));
         assertThat("BEST_DISABLED_PROVIDER", equalTo(locationManager.getBestProvider(null, false)));
+        assertThat("BEST_ENABLED_PROVIDER", equalTo(locationManager.getBestProvider(null, true)));
 
-        Criteria providerCriteria = new Criteria();
-        ArrayList<Criteria> gpsCriteriaList = new ArrayList<Criteria>();
-        providerCriteria.setPowerRequirement(Criteria.POWER_HIGH);
-        providerCriteria.setAccuracy(Criteria.ACCURACY_FINE);
-        gpsCriteriaList.add(providerCriteria);
-        shadowLocationManager.setProviderEnabled(LocationManager.GPS_PROVIDER, false, gpsCriteriaList);
-        ArrayList<Criteria> networkCriteriaList = new ArrayList<Criteria>();
-        providerCriteria.setPowerRequirement(Criteria.POWER_LOW);
-        providerCriteria.setAccuracy(Criteria.ACCURACY_COARSE);
-        networkCriteriaList.add(providerCriteria);
-        shadowLocationManager.setProviderEnabled(LocationManager.NETWORK_PROVIDER, false, networkCriteriaList);
-
+        shadowLocationManager.setProviderEnabled(LocationManager.GPS_PROVIDER, false);
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
         assertThat(LocationManager.GPS_PROVIDER, equalTo(locationManager.getBestProvider(criteria, false)));
 
+        shadowLocationManager.setProviderEnabled(LocationManager.NETWORK_PROVIDER, false);
         criteria.setAccuracy(Criteria.ACCURACY_COARSE);
         assertThat(LocationManager.NETWORK_PROVIDER, equalTo(locationManager.getBestProvider(criteria, false)));
 
+        //TODO true?!?!
         criteria.setPowerRequirement(Criteria.POWER_LOW);
         criteria.setAccuracy(Criteria.ACCURACY_FINE);
         assertThat(LocationManager.NETWORK_PROVIDER, equalTo(locationManager.getBestProvider(criteria, false)));
 
-        assertNull(locationManager.getBestProvider(criteria, true));
+        assertThat("BEST_ENABLED_PROVIDER", equalTo(locationManager.getBestProvider(null, true)));
 
         // Manually set best provider should be returned
-        shadowLocationManager.setProviderEnabled("BEST_ENABLED_PROVIDER_WITH_CRITERIA", true, networkCriteriaList);
+        Criteria providerCriteria = new Criteria();
+        ArrayList<Criteria> criteriaList = new ArrayList<Criteria>();
+        providerCriteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        criteriaList.add(providerCriteria);
+        shadowLocationManager.setProviderEnabled("BEST_ENABLED_PROVIDER_WITH_CRITERIA", true, criteriaList);
         assertTrue(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER_WITH_CRITERIA", true));
         criteria.setAccuracy(Criteria.ACCURACY_COARSE);
         criteria.setPowerRequirement(Criteria.NO_REQUIREMENT);

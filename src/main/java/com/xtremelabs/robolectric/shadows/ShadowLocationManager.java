@@ -258,10 +258,11 @@ public class ShadowLocationManager {
      * @throws Exception
      *
      */
-    public boolean  setBestProvider(String provider, boolean enabled, List<Criteria> criteria) throws Exception {
+    public boolean setBestProvider(String provider, boolean enabled, List<Criteria> criteria) throws Exception {
         if (!getAllProviders().contains(provider)) {
             throw new Exception("Best provider is not a known provider");
         }
+        // If provider is not enabled but it is supposed to be set as the best enabled provider don't set it.
         for (String prvdr : providersEnabled.keySet()) {
             if (provider.equals(prvdr) && providersEnabled.get(prvdr).enabled != enabled) {
                 return false;
