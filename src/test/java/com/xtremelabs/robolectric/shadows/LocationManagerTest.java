@@ -1,5 +1,24 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static android.location.LocationManager.GPS_PROVIDER;
+import static android.location.LocationManager.NETWORK_PROVIDER;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
+import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import junit.framework.Assert;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import android.content.Context;
 import android.location.Criteria;
 import android.location.GpsStatus.Listener;
@@ -7,26 +26,9 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import junit.framework.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static android.location.LocationManager.GPS_PROVIDER;
-import static android.location.LocationManager.NETWORK_PROVIDER;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class LocationManagerTest {
@@ -40,15 +42,18 @@ public class LocationManagerTest {
     }
 
     @Test
-    public void shouldReturnProviderEnabledAsDefault() {
+    public void shouldReturnNoProviderEnabledByDefault() {
         Boolean enabled = locationManager.isProviderEnabled(GPS_PROVIDER);
-        Assert.assertTrue(enabled);
+        assertFalse(enabled);
+        enabled = locationManager.isProviderEnabled(NETWORK_PROVIDER);
+        assertFalse(enabled);
+        enabled = locationManager.isProviderEnabled("RANDOM_PROVIDER");
+        assertFalse(enabled);
     }
 
     @Test
     public void shouldDisableProvider() {
         shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
-
         Boolean enabled = locationManager.isProviderEnabled(GPS_PROVIDER);
         assertFalse(enabled);
     }
@@ -56,7 +61,6 @@ public class LocationManagerTest {
     @Test
     public void shouldHaveListenerOnceAdded() {
         Listener listener = addGpsListenerToLocationManager();
-
         assertTrue(shadowLocationManager.hasGpsStatusListener(listener));
     }
 
@@ -76,6 +80,7 @@ public class LocationManagerTest {
         shadowLocationManager.setProviderEnabled(LocationManager.PASSIVE_PROVIDER, false);
 
         assertTrue(locationManager.getProviders(true).isEmpty());
+        assertThat(locationManager.getProviders(false).size(), equalTo(3));
 
         shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
 
@@ -152,13 +157,71 @@ public class LocationManagerTest {
 
     @Test
     public void shouldReturnBestProvider() throws Exception {
-        shadowLocationManager.setBestProvider("GNSS");
-        assertEquals("GNSS", locationManager.getBestProvider(new Criteria(), false));
+        Criteria criteria = new Criteria();
+        assertNull(locationManager.getBestProvider(null, false));
+        assertNull(locationManager.getBestProvider(null, true));
+        assertNull(locationManager.getBestProvider(criteria, false));
+        assertNull(locationManager.getBestProvider(criteria, true));
+
+        try {
+            shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", true);
+            Assert.fail("The best provider is unknown!");
+        } catch (Exception e) {
+            // No worries, everything is fine...
+        }
+
+        shadowLocationManager.setProviderEnabled("BEST_ENABLED_PROVIDER", true);
+        assertFalse(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", false));
+        assertTrue(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", true));
+        assertThat("BEST_ENABLED_PROVIDER", equalTo(locationManager.getBestProvider(null, true)));
+
+        shadowLocationManager.setProviderEnabled("BEST_DISABLED_PROVIDER", false);
+        assertTrue(shadowLocationManager.setBestProvider("BEST_DISABLED_PROVIDER", false));
+        assertThat("BEST_DISABLED_PROVIDER", equalTo(locationManager.getBestProvider(null, false)));
+
+        Criteria providerCriteria = new Criteria();
+        ArrayList<Criteria> gpsCriteriaList = new ArrayList<Criteria>();
+        providerCriteria.setPowerRequirement(Criteria.POWER_HIGH);
+        providerCriteria.setAccuracy(Criteria.ACCURACY_FINE);
+        gpsCriteriaList.add(providerCriteria);
+        shadowLocationManager.setProviderEnabled(LocationManager.GPS_PROVIDER, false, gpsCriteriaList);
+        ArrayList<Criteria> networkCriteriaList = new ArrayList<Criteria>();
+        providerCriteria.setPowerRequirement(Criteria.POWER_LOW);
+        providerCriteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        networkCriteriaList.add(providerCriteria);
+        shadowLocationManager.setProviderEnabled(LocationManager.NETWORK_PROVIDER, false, networkCriteriaList);
+
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        assertThat(LocationManager.GPS_PROVIDER, equalTo(locationManager.getBestProvider(criteria, false)));
+
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        assertThat(LocationManager.NETWORK_PROVIDER, equalTo(locationManager.getBestProvider(criteria, false)));
+
+        criteria.setPowerRequirement(Criteria.POWER_LOW);
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        assertThat(LocationManager.NETWORK_PROVIDER, equalTo(locationManager.getBestProvider(criteria, false)));
+
+        assertNull(locationManager.getBestProvider(criteria, true));
+
+        // Manually set best provider should be returned
+        shadowLocationManager.setProviderEnabled("BEST_ENABLED_PROVIDER_WITH_CRITERIA", true, networkCriteriaList);
+        assertTrue(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER_WITH_CRITERIA", true));
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        criteria.setPowerRequirement(Criteria.NO_REQUIREMENT);
+        assertThat("BEST_ENABLED_PROVIDER_WITH_CRITERIA", equalTo(locationManager.getBestProvider(criteria, true)));
+        assertTrue(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER_WITH_CRITERIA", true));
+        assertThat("BEST_ENABLED_PROVIDER_WITH_CRITERIA", equalTo(locationManager.getBestProvider(criteria, false)));
+        assertThat("BEST_ENABLED_PROVIDER_WITH_CRITERIA", equalTo(locationManager.getBestProvider(criteria, true)));
     }
 
     @Test
-    public void shouldReturnNullWhenBestProviderIsNotSet() throws Exception {
-        assertNull(locationManager.getBestProvider(new Criteria(), true));
+    public void shouldNotifyAllListenersIfProviderStateChanges() {
+        TestLocationListener listener = new TestLocationListener();
+        locationManager.requestLocationUpdates("TEST_PROVIDER", 0, 0, listener);
+        shadowLocationManager.setProviderEnabled("TEST_PROVIDER", true);
+        assertTrue(listener.providerEnabled);
+        shadowLocationManager.setProviderEnabled("TEST_PROVIDER", false);
+        assertFalse(listener.providerEnabled);
     }
 
     private Listener addGpsListenerToLocationManager() {
@@ -168,6 +231,8 @@ public class LocationManagerTest {
     }
 
     private static class TestLocationListener implements LocationListener {
+        public boolean providerEnabled;
+
         @Override
         public void onLocationChanged(Location location) {
         }
@@ -178,10 +243,12 @@ public class LocationManagerTest {
 
         @Override
         public void onProviderEnabled(String s) {
+            providerEnabled = true;
         }
 
         @Override
         public void onProviderDisabled(String s) {
+            providerEnabled = false;
         }
     }
 
