@@ -50,4 +50,12 @@ public class ShadowCountDownTimer {
     public boolean hasStarted() {
         return started;
     }
+    
+    public long getCountDownInterval() {
+    	return countDownInterval;
+    }
+    
+    public long getMillisInFuture() {
+    	return millisInFuture;
+    }
 }
