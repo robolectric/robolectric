@@ -68,7 +68,7 @@ public class ShadowSQLiteDatabase  {
     }
     
     @Implementation
-    public long insert(String table, String nullColumnHack, ContentValues values) {
+    public long insertOrThrow(String table, String nullColumnHack, ContentValues values) {
         SQLStringAndBindings sqlInsertString = buildInsertString(table, values);
         try {
             PreparedStatement statement = connection.prepareStatement(sqlInsertString.sql, Statement.RETURN_GENERATED_KEYS);
@@ -87,9 +87,18 @@ public class ShadowSQLiteDatabase  {
             }
 
         } catch (SQLException e) {
-            return -1; // this is how SQLite behaves, unlike H2 which throws exceptions
+        	throw new android.database.SQLException(e.getMessage());
         }
         return -1;
+    }
+    
+    @Implementation
+    public long insert(String table, String nullColumnHack, ContentValues values) {
+        try {
+            return insertOrThrow(table, nullColumnHack, values);
+        } catch (android.database.SQLException e) {
+            return -1; // this is how SQLite behaves, unlike H2 which throws exceptions
+        }
     }
 
     @Implementation
