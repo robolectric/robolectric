@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.view.View;
 import android.widget.AbsSpinner;
 import android.widget.SpinnerAdapter;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -26,7 +27,12 @@ public class ShadowAbsSpinner extends ShadowAdapterView {
     	super.setSelection(position);
     	animatedTransition = animate;
     }
-    
+
+    @Override
+    public View getChildAt(int index) {
+        return new View(getContext());
+    }
+
     // Non-implementation helper method
     public boolean isAnimatedTransition() {
     	return animatedTransition;
