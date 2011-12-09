@@ -172,6 +172,13 @@ public class SQLiteDatabaseTest {
     }
     
     @Test(expected = android.database.SQLException.class)
+    public void testSetThrowOnInsert() {
+        ShadowSQLiteDatabase shadow = Robolectric.shadowOf(database);
+        shadow.setThrowOnInsert(true);
+        database.insertOrThrow("no_table", null, null);
+    }
+    
+    @Test(expected = android.database.SQLException.class)
     public void testInsertOrThrowWithException() throws Exception {
         String stringColumnValue = "column_value";
         byte[] byteColumnValue = new byte[]{1, 2, 3};
