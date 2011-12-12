@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 import org.junit.Before;
@@ -49,10 +50,21 @@ public class VideoViewTest {
     }
     
     @Test
+    public void shouldSetVideoPath() throws Exception {
+    	view.setVideoPath("video.mp4");
+    	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
+    	assertThat(shadowVideoView.getVideoPath(), equalTo("video.mp4"));
+    	view.setVideoPath(null);
+    	assertThat(shadowVideoView.getVideoPath(), nullValue());
+    }
+    
+    @Test
     public void shouldSetVideoURI() throws Exception {
     	view.setVideoURI(Uri.parse("video.mp4"));
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
     	assertThat(shadowVideoView.getVideoURIString(), equalTo("video.mp4"));
+    	view.setVideoURI(null);
+    	assertThat(shadowVideoView.getVideoURIString(), nullValue());
     }
     
     @Test
