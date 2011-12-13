@@ -362,6 +362,7 @@ public class Robolectric {
                 ShadowViewConfiguration.class,
                 ShadowViewGroup.class,
                 ShadowViewFlipper.class,
+                ShadowViewMeasureSpec.class,
                 ShadowViewStub.class,
                 ShadowWebSettings.class,
                 ShadowWebView.class,
