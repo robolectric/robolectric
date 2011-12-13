@@ -16,6 +16,8 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.tester.android.view.TestWindow;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -38,9 +40,11 @@ public class ShadowDialog {
     private Activity ownerActivity;
     private boolean isCancelable = true;
     private boolean hasShownBefore;
-    
+    private static final ArrayList<Dialog> shownDialogs = new ArrayList<Dialog>();
+
     public static void reset() {
         setLatestDialog(null);
+        shownDialogs.clear();
     }
 
     public static Dialog getLatestDialog() {
@@ -114,6 +118,7 @@ public class ShadowDialog {
         }
         hasShownBefore = true;
         setLatestDialog(this);
+        shownDialogs.add(realDialog);
     }
 
     @Implementation
@@ -237,5 +242,9 @@ public class ShadowDialog {
             }
         }
       return false;
+    }
+
+    public static List<Dialog> getShownDialogs() {
+        return shownDialogs;
     }
 }
