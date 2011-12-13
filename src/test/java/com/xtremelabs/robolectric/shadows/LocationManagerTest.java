@@ -98,6 +98,14 @@ public class LocationManagerTest {
     }
 
     @Test
+    public void shouldReturnAllProviders() throws Exception {
+        assertThat(locationManager.getAllProviders().size(), equalTo(3));
+
+        shadowLocationManager.setProviderEnabled("MY_PROVIDER", false);
+        assertThat(locationManager.getAllProviders().size(), equalTo(4));
+    }
+
+    @Test
     public void shouldReturnLastKnownLocationForAProvider() throws Exception {
         assertNull(locationManager.getLastKnownLocation(NETWORK_PROVIDER));
 

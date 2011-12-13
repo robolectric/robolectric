@@ -1,5 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.util.LinkedHashSet;
+import java.util.Set;
 import android.location.Criteria;
 import android.location.GpsStatus.Listener;
 import android.location.Location;
@@ -34,6 +36,16 @@ public class ShadowLocationManager {
     public boolean isProviderEnabled(String provider) {
         Boolean isEnabled = providersEnabled.get(provider);
         return isEnabled == null ? true : isEnabled;
+    }
+
+    @Implementation
+    public List<String> getAllProviders() {
+        Set<String> allKnownProviders = new LinkedHashSet<String>(providersEnabled.keySet());
+        allKnownProviders.add(LocationManager.GPS_PROVIDER);
+        allKnownProviders.add(LocationManager.NETWORK_PROVIDER);
+        allKnownProviders.add(LocationManager.PASSIVE_PROVIDER);
+
+        return new ArrayList<String>(allKnownProviders);
     }
 
     /**

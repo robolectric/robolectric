@@ -73,4 +73,10 @@ public class CountDownTimerTest {
 		shadowCountDownTimer.cancel();
 		assertThat(shadowCountDownTimer.hasStarted(), equalTo(false));			
 	}
+	
+	@Test
+	public void testAccessors() {
+		assertThat(shadowCountDownTimer.getCountDownInterval(), equalTo(countDownInterval));
+		assertThat(shadowCountDownTimer.getMillisInFuture(), equalTo(millisInFuture));
+	}
 }
