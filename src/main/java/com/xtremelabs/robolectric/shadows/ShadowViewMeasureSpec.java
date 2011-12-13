@@ -6,7 +6,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import android.view.View;
 
 /**
- * Shadow for View's MeasureSpec inner class.
+ * Shadow for {@code View.MeasureSpec} inner class.
  * 
  * As the implementation is very simple, it is taken from the AOSP source.
  */
