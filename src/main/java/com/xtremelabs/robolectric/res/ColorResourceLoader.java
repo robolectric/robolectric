@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.res;
 
-import android.R;
 import android.graphics.Color;
 import org.w3c.dom.Node;
 
@@ -37,6 +36,7 @@ public class ColorResourceLoader extends XpathResourceXmlLoader implements Resou
         androidColors.put("@android:color/yellow", Color.YELLOW);
         androidColors.put("@android:color/cyan", Color.CYAN);
         androidColors.put("@android:color/magenta", Color.MAGENTA);
+        androidColors.put("@android:color/transparent", Color.TRANSPARENT);
 
         androidColorsFromIds.put(android.R.color.black, Color.BLACK);
         androidColorsFromIds.put(android.R.color.white, Color.WHITE);
