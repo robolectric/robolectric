@@ -76,7 +76,7 @@ public class RobolectricConfig {
             packageName = getTagAttributeText(manifestDocument, "manifest", "package");
             rClassName = packageName + ".R";
             applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
-            sdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion", 9);
+            sdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion", 10);
         } catch (Exception ignored) {
         }
         manifestIsParsed = true;
