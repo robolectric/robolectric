@@ -17,6 +17,7 @@ public class ShadowVideoView extends ShadowSurfaceView {
 	private MediaPlayer.OnPreparedListener preparedListener;
 	
 	private Uri uri;
+	private String path;
 		
 	public static final int STOP = 0;
 	public static final int START = 1;
@@ -40,6 +41,11 @@ public class ShadowVideoView extends ShadowSurfaceView {
 	@Implementation
 	public void setOnCompletionListener(MediaPlayer.OnCompletionListener l) {
 		completionListner = l;
+	}
+	
+	@Implementation
+	public void setVideoPath(String path) {
+		this.path = path;
 	}
 	
 	@Implementation
@@ -116,8 +122,16 @@ public class ShadowVideoView extends ShadowSurfaceView {
 	 * Non-Android accessor.
 	 * @return
 	 */
+	public String getVideoPath() {
+		return path;
+	}
+	
+	/**
+	 * Non-Android accessor.
+	 * @return
+	 */
 	public String getVideoURIString() {
-		return uri.toString();
+		return uri == null ? null : uri.toString();
 	}
 	
 	/**
