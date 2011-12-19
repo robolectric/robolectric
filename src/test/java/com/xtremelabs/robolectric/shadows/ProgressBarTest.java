@@ -35,4 +35,12 @@ public class ProgressBarTest {
             assertThat(progressBar.getProgress(), equalTo(progress));
         }
     }
+    
+    @Test
+    public void testSecondaryProgress() {
+        for (int progress : testValues) {
+            progressBar.setSecondaryProgress(progress);
+            assertThat(progressBar.getSecondaryProgress(), equalTo(progress));
+        }
+    }
 }
