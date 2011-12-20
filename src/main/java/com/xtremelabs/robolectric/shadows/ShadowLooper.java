@@ -20,7 +20,7 @@ public class ShadowLooper {
     private static ThreadLocal<Looper> looperForThread = makeThreadLocalLoopers();
     private Scheduler scheduler = new Scheduler();
 
-    private static ThreadLocal<Looper> makeThreadLocalLoopers() {
+    private static synchronized ThreadLocal<Looper> makeThreadLocalLoopers() {
         return new ThreadLocal<Looper>() {
             @Override
             protected Looper initialValue() {
@@ -39,7 +39,7 @@ public class ShadowLooper {
     }
 
     @Implementation
-    public static Looper myLooper() {
+    public static synchronized Looper myLooper() {
         return looperForThread.get();
     }
 
