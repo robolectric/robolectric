@@ -16,12 +16,7 @@ import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteQueryBuilder;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.ColorMatrix;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.*;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.hardware.Camera;
@@ -39,12 +34,7 @@ import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.Looper;
 import android.telephony.TelephonyManager;
-import android.view.Display;
-import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
+import android.view.*;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.widget.*;
@@ -117,6 +107,7 @@ public class Robolectric {
                 ShadowAlarmManager.class,
                 ShadowAlertDialog.class,
                 ShadowAlertDialog.ShadowBuilder.class,
+                ShadowAnimationUtils.class,
                 ShadowApplication.class,
                 ShadowAppWidgetManager.class,
                 ShadowArrayAdapter.class,
