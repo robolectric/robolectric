@@ -21,6 +21,11 @@ public class ProgressBarTest {
     }
 
     @Test
+    public void shouldInitMaxTo100() {
+        assertThat(progressBar.getMax(), equalTo(100));
+    }
+    
+    @Test
     public void testMax() {
         for (int max : testValues) {
             progressBar.setMax(max);

@@ -7,9 +7,9 @@ import com.xtremelabs.robolectric.internal.Implements;
 @Implements(ProgressBar.class)
 public class ShadowProgressBar extends ShadowView {
 
-  private int progress;
-  private int secondaryProgress;
-  private int max;
+  private int progress = 0;
+  private int secondaryProgress = 0;
+  private int max = 100;
 
   @Implementation
   public void setMax(int max) {
