@@ -383,6 +383,7 @@ public class Robolectric {
         ShadowLog.reset();
         ShadowContext.clearFilesAndCache();
         ShadowLooper.resetThreadLoopers();
+        ShadowDialog.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {

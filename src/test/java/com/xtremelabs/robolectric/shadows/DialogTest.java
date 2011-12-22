@@ -9,9 +9,7 @@ import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNull;
-import static junit.framework.Assert.assertTrue;
+import static junit.framework.Assert.*;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -114,6 +112,31 @@ public class DialogTest {
         Dialog dialog = new Dialog(null);
         dialog.show();
         assertThat(ShadowDialog.getLatestDialog(), sameInstance(dialog));
+    }
+
+    @Test
+    public void shouldKeepListOfOpenedDialogs() throws Exception {
+        assertEquals(0, ShadowDialog.getShownDialogs().size());
+
+        TestDialog dialog = new TestDialog();
+        dialog.show();
+
+        assertEquals(1, ShadowDialog.getShownDialogs().size());
+        assertEquals(dialog, ShadowDialog.getShownDialogs().get(0));
+
+        TestDialog dialog2 = new TestDialog();
+        dialog2.show();
+
+        assertEquals(2, ShadowDialog.getShownDialogs().size());
+        assertEquals(dialog2, ShadowDialog.getShownDialogs().get(1));
+
+        dialog.dismiss();
+
+        assertEquals(2, ShadowDialog.getShownDialogs().size());
+
+        ShadowDialog.reset();
+
+        assertEquals(0, ShadowDialog.getShownDialogs().size());
     }
 
     private static class TestDialog extends Dialog {
