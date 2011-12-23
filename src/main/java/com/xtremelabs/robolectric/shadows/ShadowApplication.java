@@ -2,13 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
+import android.content.*;
 import android.content.res.Resources;
 import android.os.IBinder;
 import android.os.Looper;
@@ -22,11 +16,7 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.util.Scheduler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -458,6 +448,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     public void declareActionUnbindable(String action) {
         unbindableActions.add(action);
+    }
+
+    public void setSystemService(String key, Object service) {
+        systemServices.put(key, service);
     }
 
     public class Wrapper {
