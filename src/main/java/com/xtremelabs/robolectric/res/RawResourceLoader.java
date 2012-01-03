@@ -17,9 +17,18 @@ public class RawResourceLoader {
 
     public InputStream getValue(int resourceId) {
         String resourceFileName = resourceExtractor.getResourceName(resourceId);
-        String resourceName = resourceFileName.substring("/raw".length());
+        
+        // FIXME not sure if that is correct - but it works
+        //String resourceName = resourceFileName.substring("/raw".length()); // original code
+        
+        String[] splittedResourceFileName = resourceFileName.split("/");
+        String childPath = "";
+        for(int i = 0; i < splittedResourceFileName.length - 1; i++)
+        	childPath += splittedResourceFileName[i];
+        String resourceName = splittedResourceFileName[splittedResourceFileName.length - 1];
 
-        File rawResourceDir = new File(resourceDir, "raw");
+        //File rawResourceDir = new File(resourceDir, "raw"); // original code
+        File rawResourceDir = new File(resourceDir, childPath);
 
         try {
             File[] files = rawResourceDir.listFiles();
