@@ -26,7 +26,7 @@ public class ShadowSmsManager {
 	public void sendTextMessage(
 			String destinationAddress, String scAddress, String text,
             PendingIntent sentIntent, PendingIntent deliveryIntent) {
-		
+
 		if (TextUtils.isEmpty(destinationAddress))
             throw new IllegalArgumentException("Invalid destinationAddress");
 
@@ -44,6 +44,10 @@ public class ShadowSmsManager {
 	public TextSmsParams getLastSentTextMessageParams() {
 		return lastTextSmsParams;
 	}
+
+    public void clearLastSentTextMessageParams() {
+        lastTextSmsParams = null;
+    }
 	
 	public class TextSmsParams {
 		private String destinationAddress;
