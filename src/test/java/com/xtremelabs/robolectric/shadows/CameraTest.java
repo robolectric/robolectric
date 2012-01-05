@@ -165,6 +165,52 @@ public class CameraTest {
     	assertThat(callback.data, nullValue());
     }
     
+    @Test
+    public void testCameraInfoNoCameras() throws Exception {
+    	assertThat(Camera.getNumberOfCameras(), equalTo(0));
+    }
+    
+    @Test
+    public void testCameraInfoBackOnly() throws Exception {
+    	Camera.CameraInfo cameraQuery = new Camera.CameraInfo();
+    	
+		addBackCamera();
+    	Camera.getCameraInfo(0, cameraQuery);
+    	
+    	assertThat(Camera.getNumberOfCameras(), equalTo(1));
+    	assertThat(cameraQuery.facing, equalTo(Camera.CameraInfo.CAMERA_FACING_BACK));
+    	assertThat(cameraQuery.orientation, equalTo(0));
+    }
+
+    @Test
+    public void testCameraInfoBackAndFront() throws Exception {
+    	Camera.CameraInfo cameraQuery = new Camera.CameraInfo();
+		addBackCamera();
+    	addFrontCamera();
+
+    	assertThat( Camera.getNumberOfCameras(), equalTo(2) );
+    	Camera.getCameraInfo(0, cameraQuery);
+    	assertThat( cameraQuery.facing, equalTo(Camera.CameraInfo.CAMERA_FACING_BACK) );
+    	assertThat( cameraQuery.orientation, equalTo(0) );
+    	Camera.getCameraInfo(1, cameraQuery);
+    	assertThat( cameraQuery.facing, equalTo(Camera.CameraInfo.CAMERA_FACING_FRONT) );
+    	assertThat( cameraQuery.orientation, equalTo(90) );
+    }
+    
+	private void addBackCamera() {
+		Camera.CameraInfo frontCamera = new Camera.CameraInfo();
+		frontCamera.facing = Camera.CameraInfo.CAMERA_FACING_BACK;
+		frontCamera.orientation = 0;
+		ShadowCamera.addCameraInfo(0, frontCamera);
+	}
+    
+	private void addFrontCamera() {
+		Camera.CameraInfo backCamera = new Camera.CameraInfo();
+		backCamera.facing = Camera.CameraInfo.CAMERA_FACING_FRONT;
+		backCamera.orientation = 90;
+		ShadowCamera.addCameraInfo(1, backCamera);
+	}
+    
     private class TestPreviewCallback implements Camera.PreviewCallback {
     	public Camera camera = null;
     	public byte[] data = null;
