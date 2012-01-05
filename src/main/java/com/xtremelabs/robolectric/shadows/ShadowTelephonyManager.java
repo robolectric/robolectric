@@ -15,6 +15,7 @@ public class ShadowTelephonyManager {
     private String networkCountryIso;
     private String networkOperator;
     private boolean readPhoneStatePermission = true;
+    private int phoneType = TelephonyManager.PHONE_TYPE_GSM;
 
     @Implementation
 	public void listen(PhoneStateListener listener, int events) {
@@ -86,5 +87,14 @@ public class ShadowTelephonyManager {
         if (!readPhoneStatePermission) {
             throw new SecurityException();
         }
+    }
+    
+    @Implementation
+    public int getPhoneType() {
+    	return phoneType;
+    }
+    
+    public void setPhoneType(int phoneType) {
+    	this.phoneType = phoneType;
     }
 }
