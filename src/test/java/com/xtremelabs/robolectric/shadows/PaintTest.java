@@ -27,9 +27,18 @@ public class PaintTest {
 	@Test
 	public void shouldGetIsAntiAlias() {
 		Paint paint = Robolectric.newInstanceOf(Paint.class);
-		assertFalse(paint.isDither());
+		assertFalse(paint.isAntiAlias());
 		ShadowPaint shadowPaint = shadowOf(paint);
-		shadowPaint.setDither(true);
-		assertTrue(paint.isDither());				
+		shadowPaint.setAntiAlias(true);
+		assertTrue(paint.isAntiAlias());				
+	}
+	
+	@Test
+	public void testCtor() {
+		Paint paint = Robolectric.newInstanceOf(Paint.class);
+		assertFalse(paint.isAntiAlias());
+		ShadowPaint shadowPaint = shadowOf(paint);
+		shadowPaint.__constructor__( Paint.ANTI_ALIAS_FLAG );
+		assertTrue(paint.isAntiAlias());		
 	}
 }
