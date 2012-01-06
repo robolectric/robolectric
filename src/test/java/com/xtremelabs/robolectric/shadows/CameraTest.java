@@ -9,6 +9,8 @@ import android.view.Surface;
 import android.view.SurfaceHolder;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +32,11 @@ public class CameraTest {
     public void setUp() throws Exception {
         camera = Camera.open();
         shadowCamera = Robolectric.shadowOf(camera);
+    }
+    
+    @After
+    public void tearDown() throws Exception {
+    	ShadowCamera.clearCameraInfo();
     }
 
     @Test
