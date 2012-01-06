@@ -139,8 +139,9 @@ public class ShadowCamera {
     }
     
     /**
-     * Non-Android API.  Add a mock Camera.CameraInfo object to simulate
-     * the existence of one or more cameras.
+     * Add a mock {@code Camera.CameraInfo} object to simulate
+     * the existence of one or more cameras.  By default, no
+     * cameras are defined.
      * 
      * @param id
      * @param camInfo
