@@ -1,5 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import android.hardware.Camera;
 import android.view.SurfaceHolder;
 import com.xtremelabs.robolectric.Robolectric;
@@ -19,6 +24,8 @@ public class ShadowCamera {
     private Camera.Parameters parameters;
     private Camera.PreviewCallback previewCallback;
     private SurfaceHolder surfaceHolder;
+    
+    private static Map<Integer, Camera.CameraInfo> cameras = new HashMap<Integer,Camera.CameraInfo>();
 
     @RealObject
     private Camera realCamera;
@@ -91,6 +98,18 @@ public class ShadowCamera {
     public void setPreviewCallbackWithBuffer(Camera.PreviewCallback cb) {
         previewCallback = cb;
     }
+    
+    @Implementation
+    public static void getCameraInfo(int cameraId, Camera.CameraInfo cameraInfo ) {
+    	Camera.CameraInfo foundCam = cameras.get( cameraId );
+    	cameraInfo.facing = foundCam.facing;
+    	cameraInfo.orientation = foundCam.orientation;
+    }
+    
+    @Implementation
+    public static int getNumberOfCameras() {
+    	return cameras.size();
+    }
 
     /**
      * Allows test cases to invoke the preview callback, to simulate a frame of camera data.
@@ -118,4 +137,21 @@ public class ShadowCamera {
     public SurfaceHolder getPreviewDisplay() {
         return surfaceHolder;
     }
+    
+    /**
+     * Add a mock {@code Camera.CameraInfo} object to simulate
+     * the existence of one or more cameras.  By default, no
+     * cameras are defined.
+     * 
+     * @param id
+     * @param camInfo
+     */
+    public static void addCameraInfo(int id, Camera.CameraInfo camInfo) {
+    	cameras.put(id, camInfo); 
+    }
+    
+    public static void clearCameraInfo() {
+    	cameras.clear();
+    }
+
 }
