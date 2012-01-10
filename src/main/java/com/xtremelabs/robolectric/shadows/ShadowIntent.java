@@ -271,6 +271,11 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public ArrayList<String> getStringArrayListExtra(String name) {
+        return (ArrayList<String>) extras.get(name);
+    }
+
+    @Implementation
     public Intent putParcelableArrayListExtra(String key, ArrayList<Parcelable> value) {
     	extras.put(key, value );
     	return realIntent;
