@@ -124,6 +124,72 @@ public class SQLiteDatabaseTest {
         assertThat(stringValueFromDatabase, equalTo(stringColumnValue));
         assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
     }
+    
+    @Test()
+    public void testInsertOrThrowAndQuery() throws Exception {
+        String stringColumnValue = "column_value";
+        byte[] byteColumnValue = new byte[]{1, 2, 3};
+
+        ContentValues values = new ContentValues();
+
+        values.put("first_column", stringColumnValue);
+        values.put("second_column", byteColumnValue);
+
+        database.insertOrThrow("table_name", null, values);
+
+        Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);
+
+        assertThat(cursor.moveToFirst(), equalTo(true));
+
+        byte[] byteValueFromDatabase = cursor.getBlob(0);
+        String stringValueFromDatabase = cursor.getString(1);
+
+        assertThat(stringValueFromDatabase, equalTo(stringColumnValue));
+        assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
+    }
+
+    @Test
+    public void testInsertOrThrowAndRawQuery() throws Exception {
+        String stringColumnValue = "column_value";
+        byte[] byteColumnValue = new byte[]{1, 2, 3};
+
+        ContentValues values = new ContentValues();
+
+        values.put("first_column", stringColumnValue);
+        values.put("second_column", byteColumnValue);
+
+        database.insertOrThrow("table_name", null, values);
+
+        Cursor cursor = database.rawQuery("select second_column, first_column from table_name", null);
+
+        assertThat(cursor.moveToFirst(), equalTo(true));
+
+        byte[] byteValueFromDatabase = cursor.getBlob(0);
+        String stringValueFromDatabase = cursor.getString(1);
+
+        assertThat(stringValueFromDatabase, equalTo(stringColumnValue));
+        assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
+    }
+    
+    @Test(expected = android.database.SQLException.class)
+    public void testSetThrowOnInsert() {
+        ShadowSQLiteDatabase shadow = Robolectric.shadowOf(database);
+        shadow.setThrowOnInsert(true);
+        database.insertOrThrow("no_table", null, null);
+    }
+    
+    @Test(expected = android.database.SQLException.class)
+    public void testInsertOrThrowWithException() throws Exception {
+        String stringColumnValue = "column_value";
+        byte[] byteColumnValue = new byte[]{1, 2, 3};
+
+        ContentValues values = new ContentValues();
+
+        values.put("first_column", stringColumnValue);
+        values.put("second_column", byteColumnValue);
+
+        database.insertOrThrow("no_table", null, values);
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void testRawQueryThrowsIndex0NullException() throws Exception {
