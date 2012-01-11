@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.util;
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteException;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -24,7 +25,7 @@ public class SQLite {
      * @param conflictAlgorithm the conflict algorithm to use
      * @return insert string
      */
-    public static SQLStringAndBindings buildInsertString(String table, ContentValues values, int conflictAlgorithm) {
+    public static SQLStringAndBindings buildInsertString(String table, ContentValues values, int conflictAlgorithm) throws SQLException {
         StringBuilder sb = new StringBuilder();
 
         sb.append("INSERT ");
@@ -38,7 +39,8 @@ public class SQLite {
         sb.append(columnsValueClause.sql);
         sb.append(";");
 
-        return new SQLStringAndBindings(sb.toString(), columnsValueClause.columnValues);
+        String sql = DatabaseConfig.getScrubSQL(sb.toString());
+        return new SQLStringAndBindings(sql, columnsValueClause.columnValues);
     }
 
     /**

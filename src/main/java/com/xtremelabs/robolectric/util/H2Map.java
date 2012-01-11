@@ -36,6 +36,12 @@ public class H2Map implements DatabaseConfig.DatabaseMap {
         String scrubbedSQL = sql.replaceAll("(?i:autoincrement)", "auto_increment");
         // Map 'integer' (sqlite) to 'bigint(19)' (h2).  	
         scrubbedSQL = scrubbedSQL.replaceAll("(?i:integer)", "bigint(19)");
+        // h2 doesn't understand conflict algorithms
+        scrubbedSQL = scrubbedSQL.replaceAll(" OR ROLLBACK INTO", " INTO");
+        scrubbedSQL = scrubbedSQL.replaceAll(" OR ABORT INTO", " INTO");
+        scrubbedSQL = scrubbedSQL.replaceAll(" OR FAIL INTO", " INTO");
+        scrubbedSQL = scrubbedSQL.replaceAll(" OR IGNORE INTO", " INTO");
+        scrubbedSQL = scrubbedSQL.replaceAll(" OR REPLACE INTO", " INTO");
         return scrubbedSQL;
     }
 

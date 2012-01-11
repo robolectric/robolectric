@@ -34,7 +34,7 @@ public class SQLiteTest {
     }
 
     @Test
-    public void testBuildInsertString() {
+    public void testBuildInsertString() throws Exception {
         SQLStringAndBindings insertString = buildInsertString("table_name", values, SQLiteDatabase.CONFLICT_NONE);
         assertThat(insertString.sql, equalTo("INSERT INTO table_name (float_value, byte_data, name, int_value) VALUES (?, ?, ?, ?);"));
         verifyColumnValues(insertString.columnValues);

@@ -81,8 +81,8 @@ public class ShadowSQLiteDatabase  {
     public long insertWithOnConflict(String table, String nullColumnHack,
             ContentValues initialValues, int conflictAlgorithm) {
 
-        SQLStringAndBindings sqlInsertString = buildInsertString(table, initialValues, conflictAlgorithm);
         try {
+            SQLStringAndBindings sqlInsertString = buildInsertString(table, initialValues, conflictAlgorithm);
             PreparedStatement insert = connection.prepareStatement(sqlInsertString.sql, Statement.RETURN_GENERATED_KEYS);
             Iterator<Object> columns = sqlInsertString.columnValues.iterator();
             int i = 1;
