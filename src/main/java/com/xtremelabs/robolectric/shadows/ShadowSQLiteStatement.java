@@ -1,10 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDoneException;
 import android.database.sqlite.SQLiteStatement;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
-import org.h2.jdbc.JdbcSQLException;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -53,14 +53,9 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
             rs = actualDBstatement.executeQuery();
             rs.next();
             return rs.getLong(1);
-        } catch (JdbcSQLException e) {
-            if (e.getMessage().contains("No data is available"))
-                throw new android.database.sqlite.SQLiteDoneException("No data is available"); //if the query returns zero rows
-            throw new RuntimeException(e);
         } catch (SQLException e) {
-            if (e.getMessage().contains("ResultSet closed"))
-                throw new android.database.sqlite.SQLiteDoneException("ResultSet closed,(probably, no data available)"); //if the query returns zero rows (SQLiteMap)
-            throw new RuntimeException(e);
+             handleException(e);
+             throw new RuntimeException(e);
         }
     }
 
@@ -71,14 +66,19 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
             rs = actualDBstatement.executeQuery();
             rs.next();
             return rs.getString(1);
-        } catch (JdbcSQLException e) {
-            if (e.getMessage().contains("No data is available"))
-                throw new android.database.sqlite.SQLiteDoneException("No data is available"); //if the query returns zero rows (H2Map)
-            throw new RuntimeException(e);
         } catch (SQLException e) {
-            if (e.getMessage().contains("ResultSet closed"))
-                throw new android.database.sqlite.SQLiteDoneException("ResultSet closed,(probably, no data available)"); //if the query returns zero rows (SQLiteMap)
+            handleException(e);
             throw new RuntimeException(e);
         }
+    }
+    
+    private void handleException(SQLException e)  {
+        if (e.getMessage().contains("No data is available")) {
+            //if the query returns zero rows
+            throw new SQLiteDoneException("No data is available");
+        } else if (e.getMessage().contains("ResultSet closed")) {
+            //if the query returns zero rows (SQLiteMap)
+            throw new SQLiteDoneException("ResultSet closed,(probably, no data available)");
+        } 
     }
 }

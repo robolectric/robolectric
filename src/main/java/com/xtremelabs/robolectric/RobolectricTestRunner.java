@@ -12,7 +12,7 @@ import com.xtremelabs.robolectric.shadows.ShadowApplication;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
 import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
 import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
-import com.xtremelabs.robolectric.util.H2Map;
+import com.xtremelabs.robolectric.util.SQLiteMap;
 import javassist.Loader;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
@@ -102,7 +102,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         this(testClass,
                 isInstrumented() ? null : ShadowWrangler.getInstance(),
                 isInstrumented() ? null : getDefaultLoader(),
-                robolectricConfig,new H2Map());
+                robolectricConfig, new SQLiteMap());
     }
     
     /**
@@ -181,7 +181,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader classLoader, RobolectricConfig robolectricConfig) throws InitializationError {
-    	this(testClass, classHandler, classLoader, robolectricConfig,new H2Map());	
+        this(testClass, classHandler, classLoader, robolectricConfig, new SQLiteMap());
     }
         
     
