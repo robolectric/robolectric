@@ -13,6 +13,7 @@ import java.util.Map.Entry;
  * {@code ShadowSQLiteDatabase} and {@code ShadowSQLiteCursor}.
  */
 public class SQLite {
+    private static final String[] CONFLICT_VALUES = {"", " OR ROLLBACK ", " OR ABORT ", " OR FAIL ", " OR IGNORE ", " OR REPLACE "};
 
     /**
      * Create a SQL INSERT string.  Returned values are then bound via
@@ -20,12 +21,16 @@ public class SQLite {
      *
      * @param table  table name
      * @param values column name/value pairs
+     * @param conflictAlgorithm the conflict algorithm to use
      * @return insert string
      */
-    public static SQLStringAndBindings buildInsertString(String table, ContentValues values) {
+    public static SQLStringAndBindings buildInsertString(String table, ContentValues values, int conflictAlgorithm) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("INSERT INTO ");
+        sb.append("INSERT ");
+        sb.append(CONFLICT_VALUES[conflictAlgorithm]);
+        sb.append("INTO ");
+
         sb.append(table);
         sb.append(" ");
 

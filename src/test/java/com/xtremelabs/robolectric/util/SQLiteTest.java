@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.util;
 
 
 import android.content.ContentValues;
+import android.database.sqlite.SQLiteDatabase;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.SQLite.*;
 import org.junit.Before;
@@ -34,7 +35,7 @@ public class SQLiteTest {
 
     @Test
     public void testBuildInsertString() {
-        SQLStringAndBindings insertString = buildInsertString("table_name", values);
+        SQLStringAndBindings insertString = buildInsertString("table_name", values, SQLiteDatabase.CONFLICT_NONE);
         assertThat(insertString.sql, equalTo("INSERT INTO table_name (float_value, byte_data, name, int_value) VALUES (?, ?, ?, ?);"));
         verifyColumnValues(insertString.columnValues);
     }
