@@ -237,7 +237,7 @@
 
     <ciManagement>
         <system>Hudson</system>
-        <url>http://cibuilder.pivotallabs.com:8080/job/robolectric/</url>
+        <url>http://ci.robolectric.org/job/robolectric</url>
     </ciManagement>
 
     <developers>
