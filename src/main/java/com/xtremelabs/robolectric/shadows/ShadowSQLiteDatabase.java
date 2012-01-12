@@ -45,6 +45,7 @@ public class ShadowSQLiteDatabase  {
     private boolean mLockingEnabled = true;
     private WeakHashMap<SQLiteClosable, Object> mPrograms;
     private boolean transactionSuccess = false;
+    private boolean throwOnInsert;
     
     @Implementation
     public void setLockingEnabled(boolean lockingEnabled) {
@@ -61,6 +62,10 @@ public class ShadowSQLiteDatabase  {
         mLock.unlock();
     }
     
+    public void setThrowOnInsert(boolean throwOnInsert) {
+        this.throwOnInsert = throwOnInsert;
+    }
+    
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
      	connection = DatabaseConfig.getMemoryConnection();
@@ -69,6 +74,13 @@ public class ShadowSQLiteDatabase  {
     
     @Implementation
     public long insert(String table, String nullColumnHack, ContentValues values) {
+        return insertWithOnConflict(table, nullColumnHack, values, SQLiteDatabase.CONFLICT_NONE);
+    }
+    
+    @Implementation
+    public long insertOrThrow(String table, String nullColumnHack, ContentValues values) {
+        if (throwOnInsert)
+            throw new android.database.SQLException();
         return insertWithOnConflict(table, nullColumnHack, values, SQLiteDatabase.CONFLICT_NONE);
     }
 

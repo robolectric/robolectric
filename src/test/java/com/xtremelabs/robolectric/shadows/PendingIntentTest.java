@@ -1,18 +1,23 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.TestIntentSender;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static junit.framework.Assert.assertEquals;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class PendingIntentTest {
@@ -22,25 +27,43 @@ public class PendingIntentTest {
         PendingIntent service = PendingIntent.getService(null, 0, expectedIntent, 0);
 
         IntentSender intentSender = service.getIntentSender();
-        assertEquals(expectedIntent, ((TestIntentSender) intentSender).intent);
+        assertThat(expectedIntent, equalTo(((TestIntentSender) intentSender).intent));
     }
 
     @Test
     public void getBroadcast__shouldCreateIntentForBroadcast() throws Exception {
         Intent intent = new Intent();
-        Activity context = new Activity();
-        PendingIntent broadcast = PendingIntent.getBroadcast(context, 99, intent, 100);
-        assertEquals(intent, shadowOf(broadcast).getSavedIntent());
-        assertEquals(context, shadowOf(broadcast).getSavedContext());
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(Robolectric.application, 99, intent, 100);
+        ShadowPendingIntent shadow = shadowOf(pendingIntent);
+        assertThat(shadow.isActivityIntent(), is(false));
+        assertThat(shadow.isBroadcastIntent(), is(true));
+        assertThat(shadow.isServiceIntent(), is(false));
+        assertThat(intent, equalTo(shadow.getSavedIntent()));
+        assertThat(Robolectric.application, equalTo(shadow.getSavedContext()));
     }
 
     @Test
     public void getActivity__shouldCreateIntentForBroadcast() throws Exception {
         Intent intent = new Intent();
-        Activity context = new Activity();
-        PendingIntent forActivity = PendingIntent.getActivity(context, 99, intent, 100);
-        assertEquals(intent, shadowOf(forActivity).getSavedIntent());
-        assertEquals(context, shadowOf(forActivity).getSavedContext());
+        PendingIntent pendingIntent = PendingIntent.getActivity(Robolectric.application, 99, intent, 100);
+        ShadowPendingIntent shadow = shadowOf(pendingIntent);
+        assertThat(shadow.isActivityIntent(), is(true));
+        assertThat(shadow.isBroadcastIntent(), is(false));
+        assertThat(shadow.isServiceIntent(), is(false));
+        assertThat(intent, equalTo(shadow.getSavedIntent()));
+        assertThat(Robolectric.application, equalTo(shadow.getSavedContext()));
+    }
+    
+    @Test
+    public void getService__shouldCreateIntentForBroadcast() throws Exception {
+        Intent intent = new Intent();
+        PendingIntent pendingIntent = PendingIntent.getService(Robolectric.application, 99, intent, 100);
+        ShadowPendingIntent shadow = shadowOf(pendingIntent);
+        assertThat(shadow.isActivityIntent(), is(false));
+        assertThat(shadow.isBroadcastIntent(), is(false));
+        assertThat(shadow.isServiceIntent(), is(true));
+        assertThat(intent, equalTo(shadow.getSavedIntent()));
+        assertThat(Robolectric.application, equalTo(shadow.getSavedContext()));
     }
     
     @Test

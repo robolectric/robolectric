@@ -1,6 +1,5 @@
 package android.content;
 
-public class TestIntentSender extends IntentSender{
+public class TestIntentSender extends IntentSender {
     public Intent intent;
-
 }
