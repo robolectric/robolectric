@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import static com.xtremelabs.robolectric.Robolectric.*;
 import android.location.Location;
+import android.os.Bundle;
 
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -31,6 +32,8 @@ public class ShadowLocation {
     // Scratchpad
     private float[] mResults = new float[2];
     
+    private Bundle extras = new Bundle();
+
     public void __constructor__(String provider) {
     	this.provider = provider;
     }
@@ -313,5 +316,15 @@ public class ShadowLocation {
             }
             return mInitialBearing;
         }
+    }
+
+    @Implementation
+    public Bundle getExtras() {
+        return extras;
+    }
+
+    @Implementation
+    public void setExtras(Bundle extras) {
+        this.extras = extras;
     }
 }
