@@ -223,6 +223,12 @@ public class ShadowLocationManager {
         while (requestLocationUdpateListeners.remove(listener));
     }
 
+    @Implementation
+    public void removeUpdates(PendingIntent pendingIntent) {
+        while (requestLocationUdpateCriteriaPendingIntents.remove(pendingIntent) != null);
+        while (requestLocationUdpateProviderPendingIntents.remove(pendingIntent) != null);
+    }
+
     public boolean hasGpsStatusListener(Listener listener) {
         return gpsStatusListeners.contains(listener);
     }
@@ -319,6 +325,14 @@ public class ShadowLocationManager {
      */
     public List<LocationListener> getRequestLocationUpdateListeners() {
         return requestLocationUdpateListeners;
+    }
+
+    public Map<PendingIntent, Criteria> getRequestLocationUdpateCriteriaPendingIntents() {
+        return requestLocationUdpateCriteriaPendingIntents;
+    }
+
+    public Map<PendingIntent, String> getRequestLocationUdpateProviderPendingIntents() {
+        return requestLocationUdpateProviderPendingIntents;
     }
 
     final private class LocationProviderEntry implements Map.Entry<Boolean, List<Criteria>> {

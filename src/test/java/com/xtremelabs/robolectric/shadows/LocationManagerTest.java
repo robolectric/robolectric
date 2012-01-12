@@ -11,7 +11,9 @@ import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import junit.framework.Assert;
 
@@ -19,7 +21,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
 import android.location.Criteria;
 import android.location.GpsStatus.Listener;
 import android.location.Location;
@@ -145,6 +149,47 @@ public class LocationManagerTest {
         List<LocationListener> expected = new ArrayList<LocationListener>();
         expected.add(otherListener);
         assertThat(shadowLocationManager.getRequestLocationUpdateListeners(), equalTo(expected));
+    }
+
+    @Test
+    public void shouldRemovePendingIntentsWhenRequestingLocationUpdatesUsingCriteria() {
+        Intent someIntent = new Intent("some_action");
+        PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric
+                .getShadowApplication().getApplicationContext(), 0, someIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent someOtherIntent = new Intent("some_other_action");
+        PendingIntent someOtherLocationListenerPendingIntent = PendingIntent.getBroadcast(
+                Robolectric.getShadowApplication().getApplicationContext(), 0, someOtherIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        Criteria criteria = new Criteria();
+        locationManager.requestLocationUpdates(0, 0, criteria, someLocationListenerPendingIntent);
+        locationManager.requestLocationUpdates(0, 0, criteria, someOtherLocationListenerPendingIntent);
+
+        locationManager.removeUpdates(someLocationListenerPendingIntent);
+
+        Map<PendingIntent, Criteria> expectedCriteria = new HashMap<PendingIntent, Criteria>();
+        expectedCriteria.put(someOtherLocationListenerPendingIntent, criteria);
+        assertThat(shadowLocationManager.getRequestLocationUdpateCriteriaPendingIntents(), equalTo(expectedCriteria));
+    }
+
+    @Test
+    public void shouldRemovePendingIntentsWhenRequestingLocationUpdatesUsingLocationListeners() {
+        Intent someIntent = new Intent("some_action");
+        PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(), 0,
+                someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent someOtherIntent = new Intent("some_other_action");
+        PendingIntent someOtherLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(),
+                0, someOtherIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, someLocationListenerPendingIntent);
+        locationManager.requestLocationUpdates(NETWORK_PROVIDER, 0, 0, someOtherLocationListenerPendingIntent);
+
+        locationManager.removeUpdates(someLocationListenerPendingIntent);
+
+        Map<PendingIntent, String> expectedProviders = new HashMap<PendingIntent, String>();
+        expectedProviders.put(someOtherLocationListenerPendingIntent, NETWORK_PROVIDER);
+        assertThat(shadowLocationManager.getRequestLocationUdpateProviderPendingIntents(),
+                equalTo(expectedProviders));
     }
 
     @Test
