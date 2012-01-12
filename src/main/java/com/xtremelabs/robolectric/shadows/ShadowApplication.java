@@ -346,7 +346,23 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     Intent registerReceiverWithContext(BroadcastReceiver receiver, IntentFilter filter, Context context) {
-        registeredReceivers.add(new Wrapper(receiver, filter, context));
+        if (receiver != null) {
+            registeredReceivers.add(new Wrapper(receiver, filter, context));
+        }
+        return getStickyIntent(filter);
+    }
+
+    private Intent getStickyIntent(IntentFilter filter) {
+        for (Intent stickyIntent : stickyIntents) {
+            String action = null;
+            for (int i = 0; i < filter.countActions(); i++) {
+                action = filter.getAction(i);
+                if (stickyIntent.getAction().equals(action)) {
+                    return stickyIntent;
+                }
+            }
+        }
+
         return null;
     }
 

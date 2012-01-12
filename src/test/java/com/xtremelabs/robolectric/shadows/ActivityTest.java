@@ -53,6 +53,14 @@ public class ActivityTest {
     }
 
     @Test
+    public void shouldNotRegisterNullBroadcastReceiver() {
+        DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+        activity.registerReceiver(null, new IntentFilter());
+
+        activity.onDestroy();
+    }
+
+    @Test
     public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity() throws Exception {
         final Transcript transcript = new Transcript();
         Activity activity = new Activity() {
