@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.view.View;
 import android.widget.AbsSpinner;
 import android.widget.SpinnerAdapter;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -9,9 +8,9 @@ import com.xtremelabs.robolectric.internal.Implements;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AbsSpinner.class)
 public class ShadowAbsSpinner extends ShadowAdapterView {
-	
+
 	private boolean animatedTransition;
-	
+
 	@Implementation
     public void setAdapter(SpinnerAdapter adapter) {
         super.setAdapter(adapter);
@@ -21,16 +20,11 @@ public class ShadowAbsSpinner extends ShadowAdapterView {
     public SpinnerAdapter getAdapter() {
         return (SpinnerAdapter) super.getAdapter();
     }
-    
+
     @Implementation
     public void setSelection(int position, boolean animate) {
     	super.setSelection(position);
     	animatedTransition = animate;
-    }
-
-    @Override
-    public View getChildAt(int index) {
-        return new View(getContext());
     }
 
     // Non-implementation helper method

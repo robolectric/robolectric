@@ -77,6 +77,16 @@ public class TelephonyManagerTest {
         shadowManager.setReadPhoneStatePermission(false);
         manager.getDeviceId();
     }
+    
+    @Test
+    public void shouldGivePhoneType() {
+        TelephonyManager telephonyManager = (TelephonyManager) application.getSystemService(TELEPHONY_SERVICE);
+        ShadowTelephonyManager shadowTelephonyManager = shadowOf(telephonyManager);
+        shadowTelephonyManager.setPhoneType( TelephonyManager.PHONE_TYPE_CDMA );
+        assertEquals(TelephonyManager.PHONE_TYPE_CDMA, telephonyManager.getPhoneType());
+        shadowTelephonyManager.setPhoneType( TelephonyManager.PHONE_TYPE_GSM );
+        assertEquals(TelephonyManager.PHONE_TYPE_GSM, telephonyManager.getPhoneType());
+    }
 
 	private class MyPhoneStateListener extends PhoneStateListener {
 		

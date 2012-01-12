@@ -2,13 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
+import android.content.*;
 import android.content.res.Resources;
 import android.os.IBinder;
 import android.os.Looper;
@@ -483,6 +477,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     public void declareActionUnbindable(String action) {
         unbindableActions.add(action);
+    }
+
+    public void setSystemService(String key, Object service) {
+        systemServices.put(key, service);
     }
 
     public class Wrapper {

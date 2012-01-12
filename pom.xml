@@ -38,9 +38,16 @@
         </dependency>
 
         <dependency>
+            <groupId>org.xerial</groupId>
+            <artifactId>sqlite-jdbc</artifactId>
+            <version>3.7.2</version>
+        </dependency>
+
+        <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <version>1.2.147</version>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -230,7 +237,7 @@
 
     <ciManagement>
         <system>Hudson</system>
-        <url>http://cibuilder.pivotallabs.com:8080/job/robolectric/</url>
+        <url>http://ci.robolectric.org/job/robolectric</url>
     </ciManagement>
 
     <developers>

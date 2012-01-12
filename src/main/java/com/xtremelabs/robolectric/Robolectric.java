@@ -363,6 +363,7 @@ public class Robolectric {
                 ShadowViewConfiguration.class,
                 ShadowViewGroup.class,
                 ShadowViewFlipper.class,
+                ShadowViewMeasureSpec.class,
                 ShadowViewStub.class,
                 ShadowWebSettings.class,
                 ShadowWebView.class,
@@ -383,6 +384,7 @@ public class Robolectric {
         ShadowLog.reset();
         ShadowContext.clearFilesAndCache();
         ShadowLooper.resetThreadLoopers();
+        ShadowDialog.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
