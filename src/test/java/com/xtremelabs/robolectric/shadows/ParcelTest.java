@@ -93,6 +93,26 @@ public class ParcelTest {
 	}
 	
 	@Test
+	public void testReadWriteSingleByte() {
+		byte val = 1;
+		parcel.writeByte( val );
+		assertThat( parcel.readByte(), equalTo( val ) );
+	}
+	
+	@Test
+	public void testReadWriteMultipleBytes() {
+		for( byte i = Byte.MIN_VALUE; i < Byte.MAX_VALUE; ++i ) {
+			parcel.writeByte( i );
+		}
+		for( byte i = Byte.MIN_VALUE; i < Byte.MAX_VALUE; ++i ) {
+			assertThat( parcel.readByte(), equalTo( i ) );
+		}		
+		// now try to read past the number of items written and see what happens
+		assertThat( parcel.readByte(), equalTo( (byte) 0 ) );
+	}
+		
+	
+	@Test
 	public void testReadWriteStringInt() {
 		for( int i = 0; i < 10; ++i ) {
 			parcel.writeString( Integer.toString( i ) );
