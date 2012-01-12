@@ -200,6 +200,7 @@ public class LocationManagerTest {
         assertTrue(shadowLocationManager.getLastBestProviderEnabledOnly());
     }
 
+    // Refactor this monster
     @Test
     public void shouldReturnBestProvider() throws Exception {
         Criteria criteria = new Criteria();
@@ -264,6 +265,30 @@ public class LocationManagerTest {
         assertTrue(listener.providerEnabled);
         shadowLocationManager.setProviderEnabled("TEST_PROVIDER", false);
         assertFalse(listener.providerEnabled);
+    }
+
+    @Test
+    public void shouldRegisterLocationUpdatesWhenProviderGiven() {
+        Intent someIntent = new Intent("some_action");
+        PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(), 0,
+                someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, someLocationListenerPendingIntent);
+
+        assertThat(shadowLocationManager.getRequestLocationUdpateProviderPendingIntents().get(someLocationListenerPendingIntent),
+                equalTo(GPS_PROVIDER));
+    }
+
+    @Test
+    public void shouldRegisterLocationUpdatesWhenCriteriaGiven() {
+        Intent someIntent = new Intent("some_action");
+        PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(), 0,
+                someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Criteria someCriteria = new Criteria();
+        someCriteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        locationManager.requestLocationUpdates(0, 0, someCriteria, someLocationListenerPendingIntent);
+
+        assertThat(shadowLocationManager.getRequestLocationUdpateCriteriaPendingIntents().get(someLocationListenerPendingIntent),
+                equalTo(someCriteria));
     }
 
     private Listener addGpsListenerToLocationManager() {

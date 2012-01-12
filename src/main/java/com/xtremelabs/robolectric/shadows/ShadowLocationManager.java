@@ -26,18 +26,18 @@ import com.xtremelabs.robolectric.internal.Implements;
  * Shadow of {@code LocationManager} that provides for the simulation of different location providers being enabled and
  * disabled.
  */
-
 @Implements(LocationManager.class)
 public class ShadowLocationManager {
     private final Map<String, LocationProviderEntry> providersEnabled = new LinkedHashMap<String, LocationProviderEntry>();
     private final Map<String, Location> lastKnownLocations = new HashMap<String, Location>();
+    private final Map<PendingIntent, Criteria> requestLocationUdpateCriteriaPendingIntents = new HashMap<PendingIntent, Criteria>();
+    private final Map<PendingIntent, String> requestLocationUdpateProviderPendingIntents = new HashMap<PendingIntent, String>();
 
     private final ArrayList<Listener> gpsStatusListeners = new ArrayList<Listener>();
     private Criteria lastBestProviderCriteria;
     private boolean lastBestProviderEnabled;
     private String bestEnabledProvider, bestDisabledProvider;
     private final List<LocationListener> requestLocationUdpateListeners = new ArrayList<LocationListener>();
-    private final List<PendingIntent> requestLocationUdpatePendingIntents = new ArrayList<PendingIntent>();
 
     @Implementation
     public boolean isProviderEnabled(String provider) {
@@ -91,11 +91,14 @@ public class ShadowLocationManager {
         final Intent intent = new Intent();
         intent.putExtra(LocationManager.KEY_PROVIDER_ENABLED, isEnabled);
         Robolectric.getShadowApplication().sendBroadcast(intent);
-        for (PendingIntent requestLocationUdpatePendingIntent : requestLocationUdpatePendingIntents) {
+        Set<PendingIntent> requestLocationUdpatePendingIntentSet = requestLocationUdpateCriteriaPendingIntents
+                .keySet();
+        for (PendingIntent requestLocationUdpatePendingIntent : requestLocationUdpatePendingIntentSet) {
             try {
                 requestLocationUdpatePendingIntent.send();
             } catch (CanceledException e) {
-                requestLocationUdpatePendingIntents.remove(requestLocationUdpatePendingIntent);
+                requestLocationUdpateCriteriaPendingIntents
+                        .remove(requestLocationUdpatePendingIntent);
             }
         }
         // if this provider gets disabled and it was the best active provider, then it's not anymore
@@ -215,7 +218,13 @@ public class ShadowLocationManager {
 
     @Implementation
     public void requestLocationUpdates(long minTime, float minDistance, Criteria criteria, PendingIntent pendingIntent) {
-        requestLocationUdpatePendingIntents.add(pendingIntent);
+        requestLocationUdpateCriteriaPendingIntents.put(pendingIntent, criteria);
+    }
+
+    @Implementation
+    public void requestLocationUpdates(String provider, long minTime, float minDistance,
+            PendingIntent pendingIntent) {
+        requestLocationUdpateProviderPendingIntents.put(pendingIntent, provider);
     }
 
     @Implementation
