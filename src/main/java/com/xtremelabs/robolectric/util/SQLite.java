@@ -14,7 +14,7 @@ import java.util.Map.Entry;
  * {@code ShadowSQLiteDatabase} and {@code ShadowSQLiteCursor}.
  */
 public class SQLite {
-    private static final String[] CONFLICT_VALUES = {"", " OR ROLLBACK ", " OR ABORT ", " OR FAIL ", " OR IGNORE ", " OR REPLACE "};
+    private static final String[] CONFLICT_VALUES = {"", "OR ROLLBACK ", "OR ABORT ", "OR FAIL ", "OR IGNORE ", "OR REPLACE "};
 
     /**
      * Create a SQL INSERT string.  Returned values are then bound via

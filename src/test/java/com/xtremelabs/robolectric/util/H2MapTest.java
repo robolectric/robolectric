@@ -68,11 +68,11 @@ public class H2MapTest {
 
     @Test
     public void scrubSQL_shouldRemoveConflictAlgorithms() throws Exception {
-        assertThat(map.getScrubSQL("INSERT INTO"), equalTo("INSERT INTO"));
-        assertThat(map.getScrubSQL("INSERT OR ROLLBACK INTO"), equalTo("INSERT INTO"));
-        assertThat(map.getScrubSQL("INSERT OR ABORT INTO"), equalTo("INSERT INTO"));
-        assertThat(map.getScrubSQL("INSERT OR FAIL INTO"), equalTo("INSERT INTO"));
-        assertThat(map.getScrubSQL("INSERT OR IGNORE INTO"), equalTo("INSERT INTO"));
-        assertThat(map.getScrubSQL("INSERT OR REPLACE INTO"), equalTo("INSERT INTO"));
+        assertThat(map.getScrubSQL("INSERT INTO "), equalTo("INSERT INTO "));
+        assertThat(map.getScrubSQL("INSERT OR ROLLBACK INTO "), equalTo("INSERT INTO "));
+        assertThat(map.getScrubSQL("INSERT OR ABORT INTO "), equalTo("INSERT INTO "));
+        assertThat(map.getScrubSQL("INSERT OR FAIL INTO "), equalTo("INSERT INTO "));
+        assertThat(map.getScrubSQL("INSERT OR IGNORE INTO "), equalTo("INSERT INTO "));
+        assertThat(map.getScrubSQL("INSERT OR REPLACE INTO "), equalTo("INSERT INTO "));
     }
 }
