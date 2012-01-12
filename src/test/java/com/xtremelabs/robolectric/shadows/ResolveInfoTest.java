@@ -20,7 +20,7 @@ public class ResolveInfoTest {
 
     @Before
     public void setup() {
-        mResolveInfo = new ResolveInfo();
+    	mResolveInfo = ShadowResolveInfo.newResolveInfo("name", "package", "activity");
         mShadowInfo = Robolectric.shadowOf(mResolveInfo);
     }
 
@@ -29,11 +29,11 @@ public class ResolveInfoTest {
         mShadowInfo.setLabel("test");
         assertThat("test", equalTo(mResolveInfo.loadLabel(null)));
     }
-
+    
     @Test
-    public void testNewResolveInfo() {
-        ResolveInfo info = ShadowResolveInfo.newResolveInfo("name", "package");
-        assertThat(info.loadLabel(null).toString(), equalTo("name"));
-        assertThat(info.activityInfo.packageName, equalTo("package"));
+    public void testNewResolveInfoWithActivity() {
+        assertThat(mResolveInfo.loadLabel(null).toString(), equalTo("name"));
+        assertThat(mResolveInfo.activityInfo.packageName, equalTo("package"));
+        assertThat(mResolveInfo.activityInfo.name, equalTo("activity"));
     }
 }

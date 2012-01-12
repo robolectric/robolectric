@@ -12,17 +12,8 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.Join;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.io.*;
+import java.util.*;
 
 import static android.content.Intent.*;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -280,6 +271,11 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public ArrayList<String> getStringArrayListExtra(String name) {
+        return (ArrayList<String>) extras.get(name);
+    }
+
+    @Implementation
     public Intent putParcelableArrayListExtra(String key, ArrayList<Parcelable> value) {
     	extras.put(key, value );
     	return realIntent;
@@ -390,6 +386,82 @@ public class ShadowIntent {
     	return changes;
     }
 
+    @Implementation
+    // cribbed from Android source
+    public boolean filterEquals(Intent other) {
+        if (other == null) {
+            return false;
+        }
+        if (getAction() != other.getAction()) {
+            if (getAction() != null) {
+                if (!getAction().equals(other.getAction())) {
+                    return false;
+                }
+            } else {
+                if (!other.getAction().equals(getAction())) {
+                    return false;
+                }
+            }
+        }
+        if (getData() != other.getData()) {
+            if (getData() != null) {
+                if (!getData().equals(other.getData())) {
+                    return false;
+                }
+            } else {
+                if (!other.getData().equals(getData())) {
+                    return false;
+                }
+            }
+        }
+        if (getType() != other.getType()) {
+            if (getType() != null) {
+                if (!getType().equals(other.getType())) {
+                    return false;
+                }
+            } else {
+                if (!other.getType().equals(getType())) {
+                    return false;
+                }
+            }
+        }
+        if (getPackage() != other.getPackage()) {
+            if (getPackage() != null) {
+                if (!getPackage().equals(other.getPackage())) {
+                    return false;
+                }
+            } else {
+                if (!other.getPackage().equals(getPackage())) {
+                    return false;
+                }
+            }
+        }
+        if (getComponent() != other.getComponent()) {
+            if (getComponent() != null) {
+                if (!getComponent().equals(other.getComponent())) {
+                    return false;
+                }
+            } else {
+                if (!other.getComponent().equals(getComponent())) {
+                    return false;
+                }
+            }
+        }
+        if (getCategories() != other.getCategories()) {
+            if (getCategories() != null) {
+                if (!getCategories().equals(other.getCategories())) {
+                    return false;
+                }
+            } else {
+                if (!other.getCategories().equals(getCategories())) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+    
     /**
      * Compares an {@code Intent} with a {@code ShadowIntent} (obtained via a call to
      * {@link Robolectric#shadowOf(android.content.Intent)})
@@ -424,7 +496,7 @@ public class ShadowIntent {
         result = 31 * result + flags;
         return result;
     }
-
+    
     @Override
     @Implementation
     public boolean equals(Object o) {

@@ -45,7 +45,6 @@ public class ShadowSQLiteDatabase  {
     private boolean mLockingEnabled = true;
     private WeakHashMap<SQLiteClosable, Object> mPrograms;
     private boolean transactionSuccess = false;
-    private boolean throwOnInsert;
     
     @Implementation
     public void setLockingEnabled(boolean lockingEnabled) {
@@ -62,10 +61,6 @@ public class ShadowSQLiteDatabase  {
         mLock.unlock();
     }
     
-    public void setThrowOnInsert(boolean throwOnInsert) {
-        this.throwOnInsert = throwOnInsert;
-    }
-    
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
      	connection = DatabaseConfig.getMemoryConnection();
@@ -73,9 +68,7 @@ public class ShadowSQLiteDatabase  {
     }
     
     @Implementation
-    public long insertOrThrow(String table, String nullColumnHack, ContentValues values) {
-        if (throwOnInsert)
-            throw new android.database.SQLException();
+    public long insert(String table, String nullColumnHack, ContentValues values) {
         SQLStringAndBindings sqlInsertString = buildInsertString(table, values);
         try {
             PreparedStatement statement = connection.prepareStatement(sqlInsertString.sql, Statement.RETURN_GENERATED_KEYS);
@@ -94,18 +87,9 @@ public class ShadowSQLiteDatabase  {
             }
 
         } catch (SQLException e) {
-        	throw new android.database.SQLException(e.getMessage());
-        }
-        return -1;
-    }
-    
-    @Implementation
-    public long insert(String table, String nullColumnHack, ContentValues values) {
-        try {
-            return insertOrThrow(table, nullColumnHack, values);
-        } catch (android.database.SQLException e) {
             return -1; // this is how SQLite behaves, unlike H2 which throws exceptions
         }
+        return -1;
     }
 
     @Implementation

@@ -29,9 +29,20 @@ public class ShadowPaint {
     private ColorFilter filter;
     private boolean antiAlias;
     private boolean dither;
+    private int flags;
     
     @RealObject Paint paint;
 
+    public void __constructor__(int flags) {
+    	this.flags = flags;
+    	antiAlias = ( flags & Paint.ANTI_ALIAS_FLAG ) == Paint.ANTI_ALIAS_FLAG;   
+    }
+    
+    @Implementation
+    public int getFlags() {
+    	return flags;
+    }
+    
     @Implementation
     public Shader setShader(Shader shader) {
         this.shader = shader;

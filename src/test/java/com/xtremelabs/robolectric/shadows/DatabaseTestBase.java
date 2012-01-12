@@ -19,11 +19,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
-public class SQLiteDatabaseTest {
 
-    private SQLiteDatabase database;
-    private ShadowSQLiteDatabase shDatabase;
+public abstract class DatabaseTestBase {
+    protected SQLiteDatabase database;
+    protected ShadowSQLiteDatabase shDatabase;
 
     @Before
     public void setUp() throws Exception {
@@ -320,6 +319,7 @@ public class SQLiteDatabaseTest {
         assertEmptyDatabase();
     }
 
+
     @Test
     public void testExecSQL() throws Exception {
         Statement statement;
@@ -484,19 +484,30 @@ public class SQLiteDatabaseTest {
     }
 
     @Test
-    public void testFailureTransaction() throws SQLException {
+    public void testFailureTransaction() throws Exception {
         assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
         database.beginTransaction();
         assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+
         database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
-        database.endTransaction();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
 
         Statement statement = shadowOf(database).getConnection().createStatement();
-        ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getInt(1), equalTo(0));
+        final String select = "SELECT COUNT(*) FROM table_name";
+
+        ResultSet rs = statement.executeQuery(select);
+        assertThat(rs.next(), equalTo(true));
+        assertThat(rs.getInt(1), equalTo(1));
+        rs.close();
+
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        database.endTransaction();
+
+        statement = shadowOf(database).getConnection().createStatement();
+        rs = statement.executeQuery(select);
+        assertThat(rs.next(), equalTo(true));
+        assertThat(rs.getInt(1), equalTo(0));
+
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
     }
 
     @Test
@@ -511,34 +522,34 @@ public class SQLiteDatabaseTest {
         }
     }
 
-    private void addChuck() {
-        addPerson(1234L, "Chuck");
+    protected long addChuck() {
+        return addPerson(1234L, "Chuck");
     }
 
-    private void addJulie() {
-        addPerson(1235L, "Julie");
+    protected long addJulie() {
+        return addPerson(1235L, "Julie");
     }
 
-    private void addPerson(long id, String name) {
+    protected long addPerson(long id, String name) {
         ContentValues values = new ContentValues();
         values.put("id", id);
         values.put("name", name);
-        database.insert("table_name", null, values);
+        return database.insert("table_name", null, values);
     }
 
-    private int updateName(long id, String name) {
+    protected int updateName(long id, String name) {
         ContentValues values = new ContentValues();
         values.put("name", name);
         return database.update("table_name", values, "id=" + id, null);
     }
 
-    private int updateName(String name) {
+    protected int updateName(String name) {
         ContentValues values = new ContentValues();
         values.put("name", name);
         return database.update("table_name", values, null, null);
     }
 
-    private void assertIdAndName(Cursor cursor, long id, String name) {
+    protected void assertIdAndName(Cursor cursor, long id, String name) {
         long idValueFromDatabase;
         String stringValueFromDatabase;
 
@@ -548,18 +559,16 @@ public class SQLiteDatabaseTest {
         assertThat(stringValueFromDatabase, equalTo(name));
     }
 
-    private void assertEmptyDatabase() {
+    protected void assertEmptyDatabase() {
         Cursor cursor = database.query("table_name", new String[]{"id", "name"}, null, null, null, null, null);
         assertThat(cursor.moveToFirst(), equalTo(false));
         assertThat(cursor.isClosed(), equalTo(false));
         assertThat(cursor.getCount(), equalTo(0));
     }
 
-    private void assertNonEmptyDatabase() {
+    protected void assertNonEmptyDatabase() {
         Cursor cursor = database.query("table_name", new String[]{"id", "name"}, null, null, null, null, null);
         assertThat(cursor.moveToFirst(), equalTo(true));
         assertThat(cursor.getCount(), not(equalTo(0)));
     }
-
-
 }
