@@ -27,6 +27,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -75,6 +77,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private List<Intent> stoppedServies = new ArrayList<Intent>();
     private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
+    private Set<Intent> stickyIntents = new TreeSet<Intent>();
     private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
     private Looper mainLooper = ShadowLooper.myLooper();
     private Scheduler backgroundScheduler = new Scheduler();
@@ -323,6 +326,12 @@ public class ShadowApplication extends ShadowContextWrapper {
                 wrapper.broadcastReceiver.onReceive(realApplication, intent);
             }
         }
+    }
+
+    @Implementation
+    public void sendStickyBroadcast(Intent intent) {
+        stickyIntents.add(intent);
+        sendBroadcast(intent);
     }
 
     /**
