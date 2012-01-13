@@ -107,6 +107,11 @@ abstract public class ShadowContext {
         }
         return new File(getFilesDir(), name);
     }
+    
+    @Implementation
+    public boolean deleteFile(String name) {
+        return getFileStreamPath(name).delete();
+    }
 
     /**
      * Non-Android accessor.
