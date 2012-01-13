@@ -218,12 +218,25 @@ public class ShadowLocationManager {
 
     @Implementation
     public void requestLocationUpdates(long minTime, float minDistance, Criteria criteria, PendingIntent pendingIntent) {
+        if (pendingIntent == null) {
+            throw new IllegalStateException("Intent must not be null");
+        }
+        if (getBestProvider(criteria, true) == null) {
+            throw new IllegalArgumentException("no providers found for criteria");
+        }
         requestLocationUdpateCriteriaPendingIntents.put(pendingIntent, criteria);
     }
 
     @Implementation
     public void requestLocationUpdates(String provider, long minTime, float minDistance,
             PendingIntent pendingIntent) {
+        if (pendingIntent == null) {
+            throw new IllegalStateException("Intent must not be null");
+        }
+        if (!providersEnabled.containsKey(provider)) {
+            throw new IllegalArgumentException("no providers found");
+        }
+
         requestLocationUdpateProviderPendingIntents.put(pendingIntent, provider);
     }
 
@@ -275,7 +288,7 @@ public class ShadowLocationManager {
      */
     public boolean setBestProvider(String provider, boolean enabled, List<Criteria> criteria) throws Exception {
         if (!getAllProviders().contains(provider)) {
-            throw new Exception("Best provider is not a known provider");
+            throw new IllegalStateException("Best provider is not a known provider");
         }
         // If provider is not enabled but it is supposed to be set as the best enabled provider don't set it.
         for (String prvdr : providersEnabled.keySet()) {
