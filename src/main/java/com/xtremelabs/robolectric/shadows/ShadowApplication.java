@@ -71,7 +71,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private List<Intent> stoppedServies = new ArrayList<Intent>();
     private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
-    private Set<Intent> stickyIntents = new TreeSet<Intent>();
+    private Map<String, Intent> stickyIntents = new HashMap<String, Intent>();
     private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
     private Looper mainLooper = ShadowLooper.myLooper();
     private Scheduler backgroundScheduler = new Scheduler();
@@ -324,7 +324,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     @Implementation
     public void sendStickyBroadcast(Intent intent) {
-        stickyIntents.add(intent);
+        stickyIntents.put(intent.getAction(), intent);
         sendBroadcast(intent);
     }
 
@@ -347,7 +347,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     private Intent getStickyIntent(IntentFilter filter) {
-        for (Intent stickyIntent : stickyIntents) {
+        for (Intent stickyIntent : stickyIntents.values()) {
             String action = null;
             for (int i = 0; i < filter.countActions(); i++) {
                 action = filter.getAction(i);
