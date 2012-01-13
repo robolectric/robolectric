@@ -36,6 +36,7 @@ public class ShadowLocation {
 
     public void __constructor__(String provider) {
     	this.provider = provider;
+    	time = System.currentTimeMillis();
     }
 
     @Implementation
