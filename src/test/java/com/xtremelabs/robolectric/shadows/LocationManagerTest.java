@@ -57,9 +57,10 @@ public class LocationManagerTest {
 
     @Test
     public void shouldDisableProvider() {
+        // No provider is enabled by default, so it must be manually enabled
+        shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
         shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
-        Boolean enabled = locationManager.isProviderEnabled(GPS_PROVIDER);
-        assertFalse(enabled);
+        assertFalse(locationManager.isProviderEnabled(GPS_PROVIDER));
     }
 
     @Test
