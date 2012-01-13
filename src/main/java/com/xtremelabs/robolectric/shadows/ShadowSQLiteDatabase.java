@@ -69,47 +69,37 @@ public class ShadowSQLiteDatabase  {
     
     @Implementation
     public long insert(String table, String nullColumnHack, ContentValues values) {
-        SQLStringAndBindings sqlInsertString = buildInsertString(table, values);
-        try {
-            PreparedStatement statement = connection.prepareStatement(sqlInsertString.sql, Statement.RETURN_GENERATED_KEYS);
-            Iterator<Object> columns = sqlInsertString.columnValues.iterator();
-            int i = 1;
-            while (columns.hasNext()) {
-                statement.setObject(i++, columns.next());
-            }
+        return insertWithOnConflict(table, nullColumnHack, values, SQLiteDatabase.CONFLICT_NONE);
+    }
 
-            statement.executeUpdate();
-
-            ResultSet resultSet = statement.getGeneratedKeys();
-
-            if (resultSet.next()) {
-                return resultSet.getLong(1);
-            }
-
-        } catch (SQLException e) {
-            return -1; // this is how SQLite behaves, unlike H2 which throws exceptions
-        }
-        return -1;
+    @Implementation
+    public long replace(String table, String nullColumnHack, ContentValues values) {
+        return insertWithOnConflict(table, nullColumnHack, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     @Implementation
     public long insertWithOnConflict(String table, String nullColumnHack,
             ContentValues initialValues, int conflictAlgorithm) {
-        long result = insert(table, nullColumnHack, initialValues);
-        if (conflictAlgorithm == SQLiteDatabase.CONFLICT_IGNORE) {
-            try {
-                final Statement statement = connection.createStatement();
-                
-                final ResultSet resultSet = statement.executeQuery(DatabaseConfig.getSelectLastInsertIdentity());
-                if (resultSet.isBeforeFirst()) {
-                    resultSet.next();
-                }
-                result = resultSet.getInt(1);
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
+
+        try {
+            SQLStringAndBindings sqlInsertString = buildInsertString(table, initialValues, conflictAlgorithm);
+            PreparedStatement insert = connection.prepareStatement(sqlInsertString.sql, Statement.RETURN_GENERATED_KEYS);
+            Iterator<Object> columns = sqlInsertString.columnValues.iterator();
+            int i = 1;
+            long result = -1;
+            while (columns.hasNext()) {
+                insert.setObject(i++, columns.next());
             }
+            insert.executeUpdate();
+            ResultSet resultSet = insert.getGeneratedKeys();
+            if (resultSet.next()) {
+                result = resultSet.getLong(1);
+            }
+            resultSet.close();
+            return result;
+        } catch (SQLException e) {
+            return -1; // this is how SQLite behaves, unlike H2 which throws exceptions
         }
-        return result;
     }
 
     @Implementation
@@ -187,8 +177,6 @@ public class ShadowSQLiteDatabase  {
             throw new IllegalStateException("database not open");
         }
 
-        
-        
         try {
         	String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
             connection.createStatement().execute(scrubbedSql);
@@ -198,7 +186,7 @@ public class ShadowSQLiteDatabase  {
             throw ase;
         }
     }
-    
+
     @Implementation
     public void execSQL(String sql, Object[] bindArgs) throws SQLException {
         if (bindArgs == null) {
