@@ -62,6 +62,17 @@ public class IntentTest {
         assertEquals(1, intent.getIntArrayExtra("foo")[0]);
         assertEquals(2, intent.getIntArrayExtra("foo")[1]);
     }
+    
+    @Test
+    public void testLongArrayExtra() throws Exception {
+        Intent intent = new Intent();
+        long[] array = new long[2];
+        array[0] = 1L;
+        array[1] = 2L;
+        assertSame(intent, intent.putExtra("foo", array));
+        assertEquals(1L, intent.getLongArrayExtra("foo")[0]);
+        assertEquals(2L, intent.getLongArrayExtra("foo")[1]);
+    }
 
     @Test
     public void testSerializableExtra() throws Exception {
