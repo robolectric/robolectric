@@ -58,6 +58,23 @@ public class ContentResolverTest {
         assertThat(shadowContentResolver.getDeletedUris(), hasItem(uri22));
         assertThat(shadowContentResolver.getDeletedUris().size(), equalTo(2));
     }
+    
+    @Test
+    public void delete_bla() {
+        assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(0));
+
+        assertThat(contentResolver.delete(uri21, "id", new String[] { "5" }), equalTo(1));
+        assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(1));
+        assertThat(shadowContentResolver.getDeleteStatements().get(0).getUri(), equalTo(uri21));
+        assertThat(shadowContentResolver.getDeleteStatements().get(0).getWhere(), equalTo("id"));
+        assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0], equalTo("5"));
+
+        assertThat(contentResolver.delete(uri21, "foo", new String[] { "bar" }), equalTo(1));
+        assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(2));
+        assertThat(shadowContentResolver.getDeleteStatements().get(1).getUri(), equalTo(uri21));
+        assertThat(shadowContentResolver.getDeleteStatements().get(1).getWhere(), equalTo("foo"));
+        assertThat(shadowContentResolver.getDeleteStatements().get(1).getSelectionArgs()[0], equalTo("bar"));
+    }
 
     @Test
     public void query_shouldReturnTheCursorThatWasSet() throws Exception {

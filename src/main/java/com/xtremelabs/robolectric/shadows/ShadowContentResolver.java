@@ -13,25 +13,27 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
-@SuppressWarnings({"UnusedDeclaration"})
+@SuppressWarnings({ "UnusedDeclaration" })
 @Implements(ContentResolver.class)
 public class ShadowContentResolver {
     private int nextDatabaseIdForInserts;
 
     private TestCursor cursor;
-    private List<Uri> deletedUris = new ArrayList<Uri>();
-    private HashMap<Uri,TestCursor> uriCursorMap = new HashMap<Uri, TestCursor>();
-
+    private final List<DeleteStatement> deleteStatements = new ArrayList<DeleteStatement>();
+    private HashMap<Uri, TestCursor> uriCursorMap = new HashMap<Uri, TestCursor>();
 
     @Implementation
     public final InputStream openInputStream(final Uri uri) {
         return new InputStream() {
-            @Override public int read() throws IOException {
+            @Override
+            public int read() throws IOException {
                 throw new UnsupportedOperationException();
             }
 
-            @Override public String toString() {
+            @Override
+            public String toString() {
                 return "stream for " + uri;
             }
         };
@@ -43,21 +45,23 @@ public class ShadowContentResolver {
     }
 
     @Implementation
-    public final Cursor query(Uri uri, String[] projection,
-            String selection, String[] selectionArgs, String sortOrder) {
+    public final Cursor query(Uri uri, String[] projection, String selection,
+            String[] selectionArgs, String sortOrder) {
 
         TestCursor returnCursor = getCursor(uri);
         if (returnCursor == null) {
             return null;
         }
 
-        returnCursor.setQuery(uri, projection, selection, selectionArgs, sortOrder);
+        returnCursor.setQuery(uri, projection, selection, selectionArgs,
+                sortOrder);
         return returnCursor;
     }
 
     @Implementation
     public final int delete(Uri url, String where, String[] selectionArgs) {
-        deletedUris.add(url);
+        DeleteStatement deleteStatement = new DeleteStatement(url, where, selectionArgs);
+        deleteStatements.add(deleteStatement);
         return 1;
     }
 
@@ -74,7 +78,15 @@ public class ShadowContentResolver {
     }
 
     public List<Uri> getDeletedUris() {
-        return deletedUris;
+        List<Uri> uris = new ArrayList<Uri>();
+        for (DeleteStatement deleteStatement : deleteStatements) {
+            uris.add(deleteStatement.getUri());
+        }
+        return uris;
+    }
+
+    public List<DeleteStatement> getDeleteStatements() {
+        return deleteStatements;
     }
 
     private TestCursor getCursor(Uri uri) {
@@ -84,6 +96,30 @@ public class ShadowContentResolver {
             return cursor;
         } else {
             return null;
+        }
+    }
+
+    public class DeleteStatement {
+        private final Uri uri;
+        private final String where;
+        private final String[] selectionArgs;
+
+        public DeleteStatement(Uri uri, String where, String[] selectionArgs) {
+            this.uri = uri;
+            this.where = where;
+            this.selectionArgs = selectionArgs;
+        }
+
+        public Uri getUri() {
+            return uri;
+        }
+
+        public String getWhere() {
+            return where;
+        }
+
+        public String[] getSelectionArgs() {
+            return selectionArgs;
         }
     }
 }
