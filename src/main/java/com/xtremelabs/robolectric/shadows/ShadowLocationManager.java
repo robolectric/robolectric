@@ -154,40 +154,44 @@ public class ShadowLocationManager {
         if (criteria == null) {
             return getBestProviderWithNoCriteria(enabled);
         }
-        return getBestProviderWithCriteria(criteria, enabled);
 
+        return getBestProviderWithCriteria(criteria, enabled);
     }
 
     private String getBestProviderWithCriteria(Criteria criteria, boolean enabled) {
-        String bestProvider = null;
         List<String> providers = getProviders(enabled);
+        int powerRequirement = criteria.getPowerRequirement();
+        int accuracy = criteria.getAccuracy();
         for (String provider : providers) {
-            List<Criteria> criteriaList = providersEnabled.get(provider).getValue();
+            LocationProviderEntry locationProviderEntry = providersEnabled.get(provider);
+            if (locationProviderEntry == null) {
+                continue;
+            }
+            List<Criteria> criteriaList = locationProviderEntry.getValue();
             if (criteriaList == null) {
                 continue;
             }
             for (Criteria criteriaListItem : criteriaList) {
                 if (criteria.equals(criteriaListItem)) {
-                    bestProvider = provider;
-                } else if (criteriaListItem.getAccuracy() == criteria.getAccuracy()) {
-                    bestProvider = provider;
-                } else if (criteriaListItem.getPowerRequirement() == criteria.getPowerRequirement()) {
-                    bestProvider = provider;
+                    return provider;
+                } else if (criteriaListItem.getAccuracy() == accuracy) {
+                    return provider;
+                } else if (criteriaListItem.getPowerRequirement() == powerRequirement) {
+                    return provider;
                 }
             }
         }
         // TODO: these conditions are incomplete
-        if (bestProvider == null) {
-            int accuracy = criteria.getAccuracy();
-            if ((accuracy == Criteria.ACCURACY_COARSE || criteria.getPowerRequirement() == Criteria.POWER_LOW)
-                    && providers.contains(LocationManager.NETWORK_PROVIDER)) {
-                bestProvider = LocationManager.NETWORK_PROVIDER;
-            } else if ((accuracy == Criteria.ACCURACY_FINE || criteria.getPowerRequirement() == Criteria.POWER_HIGH)
-                    && providers.contains(LocationManager.GPS_PROVIDER)) {
-                bestProvider = LocationManager.GPS_PROVIDER;
+        for (String provider : providers) {
+            if (provider.equals(LocationManager.NETWORK_PROVIDER) && (accuracy == Criteria.ACCURACY_COARSE || powerRequirement == Criteria.POWER_LOW)) {
+                return provider;
+            } else if (provider.equals(LocationManager.GPS_PROVIDER) && accuracy == Criteria.ACCURACY_FINE && powerRequirement != Criteria.POWER_LOW) {
+                return provider;
             }
         }
-        return bestProvider;
+
+        // No enabled provider found with the desired criteria, then return the the first registered provider(?)
+        return providers.isEmpty()? null : providers.get(0);
     }
 
     private String getBestProviderWithNoCriteria(boolean enabled) {
