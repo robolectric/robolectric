@@ -60,7 +60,7 @@ public class ContentResolverTest {
     }
     
     @Test
-    public void delete_bla() {
+    public void delete_shouldTrackDeletedStatements() {
         assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(0));
 
         assertThat(contentResolver.delete(uri21, "id", new String[] { "5" }), equalTo(1));
