@@ -10,7 +10,6 @@ import com.xtremelabs.robolectric.tester.android.content.TestSharedPreferences;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.Hashtable;
 import java.util.Map;
 
 import static org.junit.Assert.assertEquals;
@@ -20,7 +19,7 @@ import static org.junit.Assert.assertNotNull;
 public class PreferenceManagerTest {
     @Test
     public void shouldProvideDefaultSharedPreferences() throws Exception {
-        Map<String, Hashtable<String, Object>> content = Robolectric.getShadowApplication().getSharedPreferenceMap();
+        Map<String, Map<String, Object>> content = Robolectric.getShadowApplication().getSharedPreferenceMap();
 
         TestSharedPreferences testPrefs = new TestSharedPreferences(content, "__default__", Context.MODE_PRIVATE);
         Editor editor = testPrefs.edit();

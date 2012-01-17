@@ -2,8 +2,15 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.os.IBinder;
+import android.os.IInterface;
+import android.os.Parcel;
+import android.os.RemoteException;
 import android.content.res.Resources;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
@@ -11,9 +18,12 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.StringResourceLoader;
+import com.xtremelabs.robolectric.util.TestBroadcastReceiver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.FileDescriptor;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
@@ -83,7 +93,173 @@ public class ApplicationTest {
     @Test
     public void packageManager_shouldKnowPackageName() throws Exception {
         Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
-        assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo(null, 0).packageName);
+        assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo("com.wacka.wa", 0).packageName);
+    }
+
+    @Test
+    public void bindServiceShouldCallOnServiceConnectedWhenNotPaused() {
+        Robolectric.pauseMainLooper();
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+
+        TestService service = new TestService();
+        assertTrue(Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE));
+
+        assertNull(service.name);
+        assertNull(service.service);
+
+        Robolectric.unPauseMainLooper();
+
+        assertEquals(expectedComponentName, service.name);
+        assertEquals(expectedBinder, service.service);
+    }
+
+    @Test
+    public void unbindServiceShouldCallOnServiceDisconnectedWhenNotPaused() {
+        TestService service = new TestService();
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        Robolectric.shadowOf(Robolectric.application).setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+        Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+        Robolectric.pauseMainLooper();
+
+        Robolectric.application.unbindService(service);
+        assertNull(service.nameUnbound);
+        Robolectric.unPauseMainLooper();
+        assertEquals(expectedComponentName, service.nameUnbound);
+    }
+
+    @Test
+    public void unbindServiceAddsEntryToUnboundServicesCollection() {
+        TestService service = new TestService();
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        final ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+        shadowApplication.setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+        Robolectric.application.bindService(new Intent(""), service, Context.BIND_AUTO_CREATE);
+        Robolectric.application.unbindService(service);
+        assertEquals(1, shadowApplication.getUnboundServiceConnections().size());
+        assertEquals(service, shadowApplication.getUnboundServiceConnections().get(0));
+    }
+
+    @Test
+    public void declaringServiceUnbindableMakesBindServiceReturnFalse() {
+        Robolectric.pauseMainLooper();
+        TestService service = new TestService();
+        ComponentName expectedComponentName = new ComponentName("", "");
+        NullBinder expectedBinder = new NullBinder();
+        final ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+        shadowApplication.setComponentNameAndServiceForBindService(expectedComponentName, expectedBinder);
+        shadowApplication.declareActionUnbindable("refuseToBind");
+        assertFalse(Robolectric.application.bindService(new Intent("refuseToBind"), service, Context.BIND_AUTO_CREATE));
+        Robolectric.unPauseMainLooper();
+        assertNull(service.name);
+        assertNull(service.service);
+        assertNull(shadowApplication.peekNextStartedService());
+    }
+    
+    @Test 
+    public void shouldHaveStoppedServiceIntentAndIndicateServiceWasntRunning() {
+    	ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+    	
+    	Activity activity = new Activity();
+    	
+    	Intent intent = getSomeActionIntent("some.action");
+    	
+    	boolean wasRunning = activity.stopService(intent);
+    	
+    	assertFalse(wasRunning);
+    	assertEquals(intent, shadowApplication.getNextStoppedService());
+    }
+    
+    private Intent getSomeActionIntent(String action) {
+    	Intent intent = new Intent();
+    	intent.setAction(action);
+    	return intent;
+    }
+    
+    @Test
+    public void shouldHaveStoppedServiceIntentAndIndicateServiceWasRunning() {
+    	ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+    	
+    	Activity activity = new Activity();
+    	
+    	Intent intent = getSomeActionIntent("some.action");
+    	
+    	activity.startService(intent);
+    	
+    	boolean wasRunning = activity.stopService(intent);
+    	
+    	assertTrue(wasRunning);
+    	assertEquals(intent, shadowApplication.getNextStoppedService());
+    }
+    
+    @Test
+    public void shouldClearStartedServiceIntents() {
+    	ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+    	shadowApplication.startService(getSomeActionIntent("some.action"));
+    	shadowApplication.startService(getSomeActionIntent("another.action"));
+    	
+    	shadowApplication.clearStartedServices();
+    	
+    	assertNull(shadowApplication.getNextStartedService());
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowIfContainsRegisteredReceiverOfAction() {
+        Activity activity = new Activity();
+        activity.registerReceiver(new TestBroadcastReceiver(), new IntentFilter("Foo"));
+
+        shadowOf(Robolectric.application).assertNoBroadcastListenersOfActionRegistered(activity, "Foo");
+    }
+
+    @Test
+    public void shouldNotThrowIfDoesNotContainsRegisteredReceiverOfAction() {
+        Activity activity = new Activity();
+        activity.registerReceiver(new TestBroadcastReceiver(), new IntentFilter("Foo"));
+
+        shadowOf(Robolectric.application).assertNoBroadcastListenersOfActionRegistered(activity, "Bar");
+    }
+
+    private static class NullBinder implements IBinder {
+        @Override
+        public String getInterfaceDescriptor() throws RemoteException {
+            return null;
+        }
+
+        @Override
+        public boolean pingBinder() {
+            return false;
+        }
+
+        @Override
+        public boolean isBinderAlive() {
+            return false;
+        }
+
+        @Override
+        public IInterface queryLocalInterface(String descriptor) {
+            return null;
+        }
+
+        @Override
+        public void dump(FileDescriptor fd, String[] args) throws RemoteException {
+        }
+
+        @Override
+        public boolean transact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
+            return false;
+        }
+
+        @Override
+        public void linkToDeath(DeathRecipient recipient, int flags) throws RemoteException {
+        }
+
+        @Override
+        public boolean unlinkToDeath(DeathRecipient recipient, int flags) {
+            return false;
+        }
     }
 
     @Test

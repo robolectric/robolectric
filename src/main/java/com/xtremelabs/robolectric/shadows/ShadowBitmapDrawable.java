@@ -16,6 +16,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowBitmapDrawable extends ShadowDrawable {
     private Bitmap bitmap;
     private ColorFilter colorFilter;
+    private String drawableCreateFromStreamSource;
 
     @RealObject private BitmapDrawable realBitmapDrawable;
 
@@ -54,6 +55,15 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
      */
     public int getLoadedFromResourceId() {
         return shadowOf(bitmap).getLoadedFromResourceId();
+    }
+
+    // Used by ShadowDrawable.createFromStream()
+    public void setSource(String drawableCreateFromStreamSource) {
+        this.drawableCreateFromStreamSource = drawableCreateFromStreamSource;
+    }
+
+    public String getSource() {
+        return drawableCreateFromStreamSource;
     }
 
     @Override @Implementation

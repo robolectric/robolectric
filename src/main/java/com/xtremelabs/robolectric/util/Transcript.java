@@ -22,6 +22,10 @@ public class Transcript {
         events.clear();
     }
 
+    public void clear() {
+        events.clear();
+    }
+
     public List<String> getEvents() {
         return events;
     }

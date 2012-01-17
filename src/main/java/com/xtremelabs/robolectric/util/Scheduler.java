@@ -3,12 +3,16 @@ package com.xtremelabs.robolectric.util;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.ListIterator;
 
 public class Scheduler {
     private List<PostedRunnable> postedRunnables = new ArrayList<PostedRunnable>();
     private long currentTime = 0;
     private boolean paused = false;
 
+    public long getCurrentTime() {
+        return currentTime;
+    }
 
     public void pause() {
         paused = true;
@@ -34,6 +38,24 @@ public class Scheduler {
 
     public void post(Runnable runnable) {
         postDelayed(runnable, 0);
+    }
+
+    public void postAtFrontOfQueue(Runnable runnable) {
+        if (paused) {
+            postedRunnables.add(0, new PostedRunnable(runnable, currentTime));
+        } else {
+            runnable.run();
+        }
+    }
+
+    public void remove(Runnable runnable) {
+        ListIterator<PostedRunnable> iterator = postedRunnables.listIterator();
+        while (iterator.hasNext()) {
+            PostedRunnable next = iterator.next();
+            if (next.runnable == runnable) {
+                iterator.remove();
+            }
+        }
     }
 
     public boolean advanceToLastPostedRunnable() {
@@ -83,6 +105,20 @@ public class Scheduler {
         return true;
     }
 
+    public boolean runTasks(int howMany) {
+        if (enqueuedTaskCount() < howMany) {
+            return false;
+        }
+
+        while (howMany > 0) {
+            PostedRunnable postedRunnable = postedRunnables.remove(0);
+            currentTime = postedRunnable.scheduledTime;
+            postedRunnable.run();
+            howMany--;
+        }
+        return true;
+    }
+
     public int enqueuedTaskCount() {
         return postedRunnables.size();
     }
@@ -94,6 +130,10 @@ public class Scheduler {
     public void reset() {
         postedRunnables.clear();
         paused = false;
+    }
+
+    public int size() {
+        return postedRunnables.size();
     }
 
     class PostedRunnable implements Comparable<PostedRunnable> {

@@ -11,7 +11,6 @@ import java.util.regex.Pattern;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Rect.class)
 public class ShadowRect {
     @RealObject Rect realRect;
@@ -26,11 +25,29 @@ public class ShadowRect {
         realRect.bottom = bottom;
     }
 
-    public void __constructor__(Rect r) {
-        realRect.left = r.left;
-        realRect.top = r.top;
-        realRect.right = r.right;
-        realRect.bottom = r.bottom;
+    public void __constructor__(Rect otherRect) {
+        realRect.left = otherRect.left;
+        realRect.top = otherRect.top;
+        realRect.right = otherRect.right;
+        realRect.bottom = otherRect.bottom;
+    }
+
+    @Implementation    
+    public void set(Rect rect) {
+        set(rect.left, rect.top, rect.right, rect.bottom);
+    }
+    
+    @Implementation
+    public void set(int left, int top, int right, int bottom) {
+        realRect.left = left;
+        realRect.top = top;
+        realRect.right = right;
+        realRect.bottom = bottom;
+    }
+
+    @Implementation
+    public int width() {
+        return realRect.right - realRect.left;
     }
 
     @Implementation
@@ -43,11 +60,8 @@ public class ShadowRect {
         if (this == o) return true;
 
         Rect r = (Rect) obj;
-        if (r != null) {
-            return realRect.left == r.left && realRect.top == r.top && realRect.right == r.right
-                    && realRect.bottom == r.bottom;
-        }
-        return false;
+        return realRect.left == r.left && realRect.top == r.top && realRect.right == r.right
+                && realRect.bottom == r.bottom;
     }
 
     @Implementation

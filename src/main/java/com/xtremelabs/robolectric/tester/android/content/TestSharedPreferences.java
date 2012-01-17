@@ -2,29 +2,31 @@ package com.xtremelabs.robolectric.tester.android.content;
 
 import android.content.SharedPreferences;
 
-import java.util.HashSet;
-import java.util.Hashtable;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class TestSharedPreferences implements SharedPreferences {
 
-    public Map<String, Hashtable<String, Object>> content;
-    private String filename;
+    public Map<String, Map<String, Object>> content;
+    protected String filename;
     public int mode;
 
-    public TestSharedPreferences(Map<String, Hashtable<String, Object>> content, String name, int mode) {
+    private ArrayList<OnSharedPreferenceChangeListener> listeners;
+
+    public TestSharedPreferences(Map<String, Map<String, Object>> content,
+            String name, int mode) {
         this.content = content;
         this.filename = name;
         this.mode = mode;
         if (!content.containsKey(name)) {
-            content.put(name, new Hashtable<String, Object>());
+            content.put(name, new HashMap<String, Object>());
         }
+
+        listeners = new ArrayList<OnSharedPreferenceChangeListener>();
     }
 
     @Override
     public Map<String, ?> getAll() {
-        return null;
+        return new HashMap<String, Object>(content.get(filename));
     }
 
     @Override
@@ -33,7 +35,7 @@ public class TestSharedPreferences implements SharedPreferences {
     }
 
     private Object getValue(String key, Object defValue) {
-        Hashtable<String, Object> fileHash = content.get(filename);
+        Map<String, Object> fileHash = content.get(filename);
         if (fileHash != null) {
             Object value = fileHash.get(key);
             if (value != null) {
@@ -74,16 +76,26 @@ public class TestSharedPreferences implements SharedPreferences {
     }
 
     @Override
-    public void registerOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
+    public void registerOnSharedPreferenceChangeListener(
+            OnSharedPreferenceChangeListener listener) {
+        if(!listeners.contains(listener))
+            listeners.add(listener);
     }
 
     @Override
-    public void unregisterOnSharedPreferenceChangeListener(OnSharedPreferenceChangeListener listener) {
+    public void unregisterOnSharedPreferenceChangeListener(
+            OnSharedPreferenceChangeListener listener) {
+        if(listeners.contains(listener))
+            listeners.remove(listener);
+    }
+
+    public boolean hasListener(OnSharedPreferenceChangeListener listener) {
+        return listeners.contains(listener);
     }
 
     private class TestSharedPreferencesEditor implements Editor {
 
-        Hashtable<String, Object> editsThatNeedCommit = new Hashtable<String, Object>();
+        Map<String, Object> editsThatNeedCommit = new HashMap<String, Object>();
         Set<String> editsThatNeedRemove = new HashSet<String>();
         private boolean shouldClearOnCommit = false;
 
@@ -147,10 +159,16 @@ public class TestSharedPreferences implements SharedPreferences {
                     previousContent.remove(key);
                 }
             }
+
+            for (String key : editsThatNeedCommit.keySet()) {
+                previousContent.put(key, editsThatNeedCommit.get(key));
+            }
+
             return true;
         }
 
-        @Override public void apply() {
+        @Override
+        public void apply() {
             commit();
         }
     }

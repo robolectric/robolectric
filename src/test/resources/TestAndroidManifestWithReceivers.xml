@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+          package="com.xtremelabs.robolectric"
+        >
+    <application>
+        <receiver android:name="com.xtremelabs.robolectric.RobolectricConfigTest.ConfigTestReceiver"
+                  android:permission="com.ignored.PERM">
+            <intent-filter>
+                <action android:name="com.xtremelabs.robolectric.ACTION1"/>
+                <category android:name="com.ignored"/>
+            </intent-filter>
+            <intent-filter>
+                <action android:name="com.xtremelabs.robolectric.ACTION2"/>
+                <category android:name="com.ignored"/>
+            </intent-filter>
+        </receiver>
+
+        <receiver android:name="com.xtremelabs.robolectric.test.ConfigTestReceiver">
+            <intent-filter>
+                <action android:name="com.xtremelabs.robolectric.ACTION_SUPERSET_PACKAGE"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.xtremelabs.ConfigTestReceiver">
+            <intent-filter>
+                <action android:name="com.xtremelabs.robolectric.ACTION_SUBSET_PACKAGE"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".DotConfigTestReceiver">
+            <intent-filter>
+                <action android:name="com.xtremelabs.robolectric.ACTION_DOT_PACKAGE"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name=".test.ConfigTestReceiver">
+            <intent-filter>
+                <action android:name="com.xtremelabs.robolectric.ACTION_DOT_SUBPACKAGE"/>
+            </intent-filter>
+        </receiver>
+        <receiver android:name="com.foo.Receiver">
+            <intent-filter>
+                <action android:name="com.xtremelabs.robolectric.ACTION_DIFFERENT_PACKAGE"/>
+            </intent-filter>
+        </receiver>
+
+    </application>
+</manifest>

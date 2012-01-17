@@ -13,41 +13,50 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 public class RobolectricBackgroundExecutorService implements ExecutorService {
-    @Override public void shutdown() {
+    @Override
+    public void shutdown() {
         throw new UnsupportedOperationException();
     }
 
-    @Override public List<Runnable> shutdownNow() {
+    @Override
+    public List<Runnable> shutdownNow() {
         throw new UnsupportedOperationException();
     }
 
-    @Override public boolean isShutdown() {
+    @Override
+    public boolean isShutdown() {
         throw new UnsupportedOperationException();
     }
 
-    @Override public boolean isTerminated() {
+    @Override
+    public boolean isTerminated() {
         throw new UnsupportedOperationException();
     }
 
-    @Override public boolean awaitTermination(long l, TimeUnit timeUnit) throws InterruptedException {
+    @Override
+    public boolean awaitTermination(long l, TimeUnit timeUnit) throws InterruptedException {
         throw new UnsupportedOperationException();
     }
 
-    @Override public <T> Future<T> submit(Callable<T> tCallable) {
+    @Override
+    public <T> Future<T> submit(Callable<T> tCallable) {
         return schedule(new FutureTask<T>(tCallable));
     }
 
-    @Override public <T> Future<T> submit(Runnable runnable, T t) {
+    @Override
+    public <T> Future<T> submit(Runnable runnable, T t) {
         return schedule(new FutureTask<T>(runnable, t));
     }
 
-    @Override public Future<?> submit(Runnable runnable) {
+    @Override
+    public Future<?> submit(Runnable runnable) {
         return submit(runnable, null);
     }
 
     private <T> Future<T> schedule(final FutureTask<T> futureTask) {
         Robolectric.getShadowApplication().getBackgroundScheduler().post(new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 futureTask.run();
             }
         });
@@ -75,7 +84,8 @@ public class RobolectricBackgroundExecutorService implements ExecutorService {
         throw new UnsupportedOperationException();
     }
 
-    @Override public void execute(Runnable runnable) {
+    @Override
+    public void execute(Runnable runnable) {
         submit(runnable);
     }
 }

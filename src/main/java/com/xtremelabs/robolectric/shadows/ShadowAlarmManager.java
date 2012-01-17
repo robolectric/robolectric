@@ -2,11 +2,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.AlarmManager;
 import android.app.PendingIntent;
+import android.content.Intent;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadows the {@code android.app.AlarmManager} class.
@@ -19,6 +22,14 @@ public class ShadowAlarmManager {
 
     @Implementation
     public void set(int type, long triggerAtTime, PendingIntent operation) {
+        Intent intent = shadowOf(operation).getSavedIntent();
+        for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
+            Intent scheduledIntent = shadowOf(scheduledAlarm.operation).getSavedIntent();
+            if (scheduledIntent.filterEquals(intent)) {
+                scheduledAlarms.remove(scheduledAlarm);
+                break;
+            }
+        }
         scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, operation));
     }
 
@@ -49,6 +60,21 @@ public class ShadowAlarmManager {
             return null;
         } else {
             return scheduledAlarms.get(0);
+        }
+    }
+
+    public List<ScheduledAlarm> getScheduledAlarms() {
+        return scheduledAlarms;
+    }
+
+    @Implementation
+    public void cancel(PendingIntent pendingIntent) {
+        final Intent intentTypeToRemove = shadowOf(pendingIntent).getSavedIntent();
+        for (ScheduledAlarm scheduledAlarm : new ArrayList<ScheduledAlarm>(scheduledAlarms)) {
+            final Intent alarmIntent = shadowOf(scheduledAlarm.operation).getSavedIntent();
+            if (shadowOf(intentTypeToRemove).getIntentClass().equals(shadowOf(alarmIntent).getIntentClass())) {
+                scheduledAlarms.remove(scheduledAlarm);
+            }
         }
     }
 

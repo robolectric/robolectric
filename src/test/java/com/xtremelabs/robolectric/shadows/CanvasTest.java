@@ -3,8 +3,10 @@ package com.xtremelabs.robolectric.shadows;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.Paint;
+import android.graphics.Path;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
@@ -12,14 +14,17 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class CanvasTest {
     private Bitmap targetBitmap;
     private Bitmap imageBitmap;
 
-    @Before public void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         targetBitmap = Robolectric.newInstanceOf(Bitmap.class);
         imageBitmap = BitmapFactory.decodeFile("/an/image.jpg");
     }
@@ -59,5 +64,31 @@ public class CanvasTest {
         assertEquals("Bitmap for file:/an/image.jpg transformed by matrix\n" +
                 "Bitmap for file:/an/image.jpg transformed by matrix", Robolectric.visualize(canvas));
 
+    }
+
+    @Test
+    public void drawColor_shouldReturnDescription() throws Exception {
+        Canvas canvas = new Canvas(targetBitmap);
+        canvas.drawColor(Color.WHITE);
+        canvas.drawColor(Color.GREEN);
+        canvas.drawColor(Color.TRANSPARENT);
+        assertEquals("draw color -1draw color -16711936draw color 0",
+                shadowOf(canvas).getDescription());
+    }
+
+    @Test
+    public void drawPath_shouldRecordThePathAndThePaint() throws Exception {
+        Canvas canvas = new Canvas(targetBitmap);
+        Path path = new Path();
+        path.lineTo(10, 10);
+
+        Paint paint = new Paint();
+        paint.setAlpha(7);
+        canvas.drawPath(path, paint);
+
+        ShadowCanvas shadow = shadowOf(canvas);
+        assertThat(shadow.getPathPaintHistoryCount(), equalTo(1));
+        assertThat(shadow.getDrawnPath(0), equalTo(path));
+        assertThat(shadow.getDrawnPathPaint(0), equalTo(paint));
     }
 }

@@ -1,7 +1,9 @@
 package com.xtremelabs.robolectric.util;
 
 import android.content.ContentValues;
+import android.database.sqlite.SQLiteException;
 
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
@@ -12,6 +14,7 @@ import java.util.Map.Entry;
  * {@code ShadowSQLiteDatabase} and {@code ShadowSQLiteCursor}.
  */
 public class SQLite {
+    private static final String[] CONFLICT_VALUES = {"", "OR ROLLBACK ", "OR ABORT ", "OR FAIL ", "OR IGNORE ", "OR REPLACE "};
 
     /**
      * Create a SQL INSERT string.  Returned values are then bound via
@@ -19,12 +22,16 @@ public class SQLite {
      *
      * @param table  table name
      * @param values column name/value pairs
+     * @param conflictAlgorithm the conflict algorithm to use
      * @return insert string
      */
-    public static SQLStringAndBindings buildInsertString(String table, ContentValues values) {
+    public static SQLStringAndBindings buildInsertString(String table, ContentValues values, int conflictAlgorithm) throws SQLException {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("INSERT INTO ");
+        sb.append("INSERT ");
+        sb.append(CONFLICT_VALUES[conflictAlgorithm]);
+        sb.append("INTO ");
+
         sb.append(table);
         sb.append(" ");
 
@@ -32,7 +39,8 @@ public class SQLite {
         sb.append(columnsValueClause.sql);
         sb.append(";");
 
-        return new SQLStringAndBindings(sb.toString(), columnsValueClause.columnValues);
+        String sql = DatabaseConfig.getScrubSQL(sb.toString());
+        return new SQLStringAndBindings(sql, columnsValueClause.columnValues);
     }
 
     /**
@@ -102,17 +110,32 @@ public class SQLite {
      * @param selectionArgs Array of substitutions for args in selection
      * @return where clause
      */
-    public static String buildWhereClause(String selection, String[] selectionArgs) {
+    public static String buildWhereClause(String selection, String[] selectionArgs) throws SQLiteException {
         String whereClause = selection;
+        int argsNeeded = 0;
+        int args = 0;
 
-        for (String selectionArg : selectionArgs) {
-            whereClause = whereClause.replaceFirst("\\?", "'" + selectionArg + "'");
+        for (char c : selection.toCharArray()) {
+            if (c == '?') argsNeeded++;
+        }
+        if (selectionArgs != null) {
+            for (int x = 0; x < selectionArgs.length; x++) {
+                if (selectionArgs[x] == null) {
+                    throw new IllegalArgumentException("the bind value at index " + x + " is null");
+                } else {
+                    args++;
+                }
+                whereClause = whereClause.replaceFirst("\\?", "'" + selectionArgs[x] + "'");
+            }
+        }
+        if (argsNeeded != args) {
+            throw new SQLiteException("bind or column index out of range: count of selectionArgs does not match count of (?) placeholders for given sql statement!");
         }
 
         return whereClause;
     }
 
-    /**
+   /**
      * Build the '(columns...) VALUES (values...)' clause used in INSERT
      * statements.
      *

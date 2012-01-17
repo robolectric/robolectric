@@ -5,10 +5,17 @@ import javassist.ClassPool;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 
+import java.util.List;
+
 public class RobolectricClassLoader extends javassist.Loader {
     private ClassCache classCache;
+    private AndroidTranslator androidTranslator;
 
     public RobolectricClassLoader(ClassHandler classHandler) {
+    	this(classHandler, null);
+    }
+    
+    public RobolectricClassLoader(ClassHandler classHandler, List<String> customClassNames) {
         super(RobolectricClassLoader.class.getClassLoader(), null);
 
         delegateLoadingOf(AndroidTranslator.class.getName());
@@ -19,7 +26,7 @@ public class RobolectricClassLoader extends javassist.Loader {
             ClassPool classPool = new ClassPool();
             classPool.appendClassPath(new LoaderClassPath(RobolectricClassLoader.class.getClassLoader()));
 
-            AndroidTranslator androidTranslator = new AndroidTranslator(classHandler, classCache);
+            androidTranslator = new AndroidTranslator(classHandler, classCache, customClassNames);
             addTranslator(classPool, androidTranslator);
         } catch (NotFoundException e) {
             throw new RuntimeException(e);
@@ -28,9 +35,14 @@ public class RobolectricClassLoader extends javassist.Loader {
         }
     }
 
+    public void addCustomShadowClass(String classOrPackageToBeInstrumented) {
+        androidTranslator.addCustomShadowClass(classOrPackageToBeInstrumented);
+    }
+
     @Override
     public Class loadClass(String name) throws ClassNotFoundException {
-        boolean shouldComeFromThisClassLoader = !(name.startsWith("org.junit") || name.startsWith("org.hamcrest"));
+        boolean shouldComeFromThisClassLoader = !(name.startsWith("org.junit") || name.startsWith("org.hamcrest")  
+        		|| name.startsWith("org.specs2") || name.startsWith("scala.")); //org.specs2 and scala. allows for android projects with mixed scala\java tests to be run with Maven Surefire (see the RoboSpecs project on github)
 
         Class<?> theClass;
         if (shouldComeFromThisClassLoader) {

@@ -14,7 +14,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static android.content.pm.PackageManager.PERMISSION_DENIED;
+import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -127,11 +134,37 @@ public class ContextWrapperTest {
         assertSameInstanceEveryTime(Context.ALARM_SERVICE);
     }
 
+    @Test
+    public void checkPermissionsShouldReturnPermissionGrantedToAddedPermissions() throws Exception {
+        shadowOf(contextWrapper).grantPermissions("foo", "bar");
+        assertThat(contextWrapper.checkPermission("foo", 0, 0), equalTo(PERMISSION_GRANTED));
+        assertThat(contextWrapper.checkPermission("bar", 0, 0), equalTo(PERMISSION_GRANTED));
+        assertThat(contextWrapper.checkPermission("baz", 0, 0), equalTo(PERMISSION_DENIED));
+    }
+
+    @Test
+    public void shouldReturnAContext() {
+    	assertThat(contextWrapper.getBaseContext(), notNullValue());
+    	ShadowContextWrapper shContextWrapper = Robolectric.shadowOf(contextWrapper);
+    	shContextWrapper.attachBaseContext(null);
+    	assertThat(contextWrapper.getBaseContext(), nullValue());
+
+    	Activity baseContext = new Activity();
+    	shContextWrapper.attachBaseContext(baseContext);
+    	assertThat(contextWrapper.getBaseContext(), sameInstance((Context) baseContext));
+    }
+
     private void assertSameInstanceEveryTime(String serviceName) {
         Activity activity = new Activity();
         assertThat(activity.getSystemService(serviceName), sameInstance(activity.getSystemService(serviceName)));
 
         assertThat(activity.getSystemService(serviceName), sameInstance(new Activity().getSystemService(serviceName)));
+    }
+
+    @Test
+    public void bindServiceDelegatesToShadowApplication() {
+        contextWrapper.bindService(new Intent("foo"), new TestService(), Context.BIND_AUTO_CREATE);
+        assertEquals("foo", shadowOf(Robolectric.application).getNextStartedService().getAction());
     }
 
     private BroadcastReceiver broadcastReceiver(final String name) {
