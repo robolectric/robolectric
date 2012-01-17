@@ -10,6 +10,8 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Implements(SensorManager.class)
@@ -18,7 +20,23 @@ public class ShadowSensorManager {
 	private ArrayList<SensorEventListener> listeners = new ArrayList<SensorEventListener>();
 	
 	public boolean forceListenersToFail = false;
-	
+
+    private final Map<Integer, Sensor> sensorMap = new HashMap<Integer, Sensor>();
+
+    /**
+     * Provide a Sensor for the indicated sensor type.
+     * @param sensorType from Sensor constants
+     * @param sensor Sensor instance
+     */
+    public void addSensor(int sensorType, Sensor sensor) {
+        sensorMap.put(sensorType, sensor);
+    }
+
+    @Implementation
+    public Sensor getDefaultSensor(int type) {
+        return sensorMap.get(type);
+    }
+
 	@Implementation
 	public boolean registerListener(SensorEventListener listener, Sensor sensor, int rate) {
 		

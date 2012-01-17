@@ -228,12 +228,6 @@ public class ShadowIntent {
     }
 
     @Implementation
-    public Intent putExtra(String key, String[] value) {
-        extras.put(key, value);
-        return realIntent;
-    }
-
-    @Implementation
     public boolean hasExtra(String name) {
         return extras.containsKey(name);
     }
@@ -296,11 +290,6 @@ public class ShadowIntent {
     	return (ArrayList<Parcelable>) extras.get(key);
     }
     
-    @Implementation
-    public boolean hasExtra(String name) {
-	    return extras.containsKey(name);
-	}
-
 	@Implementation
     public String getStringExtra(String name) {
         return (String) extras.get(name);
@@ -334,11 +323,6 @@ public class ShadowIntent {
     @Implementation
     public byte[] getByteArrayExtra(String name) {
         return (byte[]) extras.get(name);
-    }
-
-    @Implementation
-    public String[] getStringArrayExtra(String name) {
-        return (String[]) extras.get(name);
     }
 
     @Implementation

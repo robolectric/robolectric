@@ -144,11 +144,6 @@ public class ShadowTextView extends ShadowView {
     }
 
     @Implementation
-    public final void setHint(CharSequence hint) {
-        this.hintText = hint;
-    }
-
-    @Implementation
     public CharSequence getHint() {
         return hintText;
     }

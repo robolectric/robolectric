@@ -48,8 +48,6 @@ public class ShadowResources {
     @RealObject Resources realResources;
     private ResourceLoader resourceLoader;
 
-    private Configuration configuration;
-
     public ShadowResources() {
         Configuration configuration = new Configuration();
         configuration.setToDefaults();

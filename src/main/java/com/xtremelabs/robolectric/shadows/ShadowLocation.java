@@ -22,8 +22,7 @@ public class ShadowLocation {
     private float accuracy;
     private float bearing;
     private float speed;
-    private float accuracy;
-    
+
     // Cache the inputs and outputs of computeDistanceAndBearing
     // so calls to distanceTo() and bearingTo() can share work
     private double mLat1 = 0.0;
@@ -270,8 +269,16 @@ public class ShadowLocation {
         }
     }
 
+    private static float[] distanceBetween;
+
+    public static void setDistanceBetween(float[] distanceBetween) {
+        ShadowLocation.distanceBetween = distanceBetween;
+    }
+
     /**
-     * Computes the approximate distance in meters between two
+     * If it is non-null, returns the mock distance last set with
+     * {@link #setDistanceBetween}.
+     * Otherwise computes the approximate distance in meters between two
      * locations, and optionally the initial and final bearings of the
      * shortest path between them.  Distance and bearing are defined using the
      * WGS84 ellipsoid.
@@ -291,6 +298,10 @@ public class ShadowLocation {
     @Implementation
     public static void distanceBetween(double startLatitude, double startLongitude,
         double endLatitude, double endLongitude, float[] results) {
+        if (distanceBetween != null && results.length == distanceBetween.length){
+            System.arraycopy(distanceBetween, 0, results, 0, results.length);
+        }
+
         if (results == null || results.length < 1) {
             throw new IllegalArgumentException("results is null or has length < 1");
         }

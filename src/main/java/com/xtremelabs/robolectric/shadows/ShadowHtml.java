@@ -2,78 +2,44 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.text.Html;
 import android.text.Spanned;
+import android.text.SpannedString;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
-@SuppressWarnings({"UnusedDeclaration"})
+import java.util.HashMap;
+import java.util.Map;
+
 @Implements(Html.class)
 public class ShadowHtml {
 
+    private static final Map<String, Spanned> EXPECTATIONS = new HashMap<String, Spanned>();
+
     @Implementation
     public static Spanned fromHtml(String source) {
-        return new SpannedThatActsLikeString(source);
+        Spanned expected = EXPECTATIONS.get(source);
+        if (expected != null){
+            return expected;
+        }
+        return new SpannedString(source);
     }
 
-    private static class SpannedThatActsLikeString implements Spanned {
-        String source;
+    public static ExpectInput expect(String s) {
+        return new ExpectInput(s);
+    }
 
-        private SpannedThatActsLikeString(String source) {
-            this.source = source;
+    public static void clearExpectations() {
+        EXPECTATIONS.clear();
+    }
+
+    public static class ExpectInput {
+        private final String s;
+
+        public ExpectInput(String s) {
+            this.s = s;
         }
 
-        @Override
-        public <T> T[] getSpans(int start, int end, Class<T> type) {
-            return null;
-        }
-
-        @Override
-        public int getSpanStart(Object tag) {
-            return 0;
-        }
-
-        @Override
-        public int getSpanEnd(Object tag) {
-            return 0;
-        }
-
-        @Override
-        public int getSpanFlags(Object tag) {
-            return 0;
-        }
-
-        @Override
-        public int nextSpanTransition(int start, int limit, Class type) {
-            return 0;
-        }
-
-        @Override
-        public int length() {
-            return 0;
-        }
-
-        @Override
-        public char charAt(int i) {
-            return 0;
-        }
-
-        @Override
-        public CharSequence subSequence(int i, int i1) {
-            return null;
-        }
-
-        @Override
-        public String toString() {
-            return source;
-        }
-
-        @Override
-        public boolean equals(Object o) {
-            return source.equals(o);
-        }
-
-        @Override
-        public int hashCode() {
-            return source != null ? source.hashCode() : 0;
+        public void andReturn(Spanned spanned){
+            EXPECTATIONS.put(s, spanned);
         }
     }
 }

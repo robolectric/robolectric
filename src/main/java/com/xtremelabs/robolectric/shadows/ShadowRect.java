@@ -126,11 +126,6 @@ public class ShadowRect {
     }
 
     @Implementation
-    public final int width() {
-        return realRect.right - realRect.left;
-    }
-
-    @Implementation
     public final int height() {
         return realRect.bottom - realRect.top;
     }
@@ -158,22 +153,6 @@ public class ShadowRect {
     @Implementation
     public void setEmpty() {
         realRect.left = realRect.right = realRect.top = realRect.bottom = 0;
-    }
-
-    @Implementation
-    public void set(int left, int top, int right, int bottom) {
-        realRect.left = left;
-        realRect.top = top;
-        realRect.right = right;
-        realRect.bottom = bottom;
-    }
-
-    @Implementation
-    public void set(Rect src) {
-        realRect.left = src.left;
-        realRect.top = src.top;
-        realRect.right = src.right;
-        realRect.bottom = src.bottom;
     }
 
     @Implementation

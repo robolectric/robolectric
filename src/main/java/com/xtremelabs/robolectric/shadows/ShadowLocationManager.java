@@ -33,11 +33,6 @@ public class ShadowLocationManager {
     private List<LocationListener> requestLocationUdpateListeners = new ArrayList<LocationListener>();
 
     @Implementation
-    public List<String> getAllProviders() {
-        return new ArrayList<String>(providersEnabled.keySet());
-    }
-
-    @Implementation
     public boolean isProviderEnabled(String provider) {
         Boolean isEnabled = providersEnabled.get(provider);
         return isEnabled == null ? true : isEnabled;

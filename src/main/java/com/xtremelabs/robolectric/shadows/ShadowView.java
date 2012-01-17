@@ -104,10 +104,6 @@ public class ShadowView {
         applyOnClickAttribute();
     }
 
-    public View.OnClickListener getOnClickListener() {
-      return onClickListener;
-    }
-
     @Implementation
     public void setId(int id) {
         this.id = id;
@@ -582,34 +578,6 @@ public class ShadowView {
     @Implementation
     public boolean isClickable() {
         return clickable;
-    }
-
-    /**
-     * Non-Android accessor.
-     *
-     * @return the resource ID of this views background
-     */
-    public int getBackgroundResourceId() {
-        return backgroundResourceId;
-    }
-
-    @Implementation
-    public void setBackgroundColor(int color) {
-        backgroundColor = color;
-    }
-
-    public int getBackgroundColor() {
-        return backgroundColor;
-    }
-
-    @Implementation
-    public void setBackgroundDrawable(Drawable drawable){
-        backgroundDrawable = drawable;
-    }
-
-    @Implementation
-    public Drawable getBackground() {
-        return backgroundDrawable;
     }
 
     /**
