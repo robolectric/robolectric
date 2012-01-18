@@ -13,6 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.PrintStream;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -34,7 +35,7 @@ public class ViewGroupTest {
 
     @Before public void setUp() throws Exception {
         Application context = new Application();
-        ShadowApplication.bind(context, new ResourceLoader(10, R.class, null, null));
+        ShadowApplication.bind(context, new ResourceLoader(10, R.class, (File) null, null));
 
         root = new FrameLayout(context);
 

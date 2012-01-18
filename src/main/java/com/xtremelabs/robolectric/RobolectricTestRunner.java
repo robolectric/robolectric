@@ -308,7 +308,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
                 String rClassName = robolectricConfig.getRClassName();
                 Class rClass = Class.forName(rClassName);
-                resourceLoader = new ResourceLoader(robolectricConfig.getSdkVersion(), rClass, robolectricConfig.getResourceDirectory(), robolectricConfig.getAssetsDirectory());
+                resourceLoader = new ResourceLoader(robolectricConfig.getSdkVersion(), rClass, robolectricConfig.getResourcePath(), robolectricConfig.getAssetsDirectory());
                 resourceLoaderForRootAndDirectory.put(robolectricConfig, resourceLoader);
             } catch (Exception e) {
                 throw new RuntimeException(e);
