@@ -84,9 +84,8 @@ public class ViewLoader extends XmlLoader {
 
     private View inflateView(Context context, String key, Map<String, String> attributes, View parent) {
         ViewNode viewNode = viewNodesByLayoutName.get(key);
-        if (viewNode == null) {
-            throw new RuntimeException("Could not find layout " + key);
-        }
+        if (viewNode == null)  return null;
+
         try {
             if (attributes != null) {
                 for (Map.Entry<String, String> entry : attributes.entrySet()) {

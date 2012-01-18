@@ -2,10 +2,7 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="Javac" />
-    <resourceExtensions>
-      <entry name=".+\.(properties|xml|html|dtd|tld)" />
-      <entry name=".+\.(gif|png|jpeg|jpg)" />
-    </resourceExtensions>
+    <resourceExtensions />
     <wildcardResourcePatterns>
       <entry name="?*.properties" />
       <entry name="?*.xml" />
