@@ -26,9 +26,9 @@ public class ShadowContentResolver {
     private HashMap<Uri,TestCursor> uriCursorMap = new HashMap<Uri, TestCursor>();
 
     public static class NotifiedUri {
-        Uri uri;
-        boolean syncToNetwork;
-        ContentObserver observer;
+        public final Uri uri;
+        public final boolean syncToNetwork;
+        public final ContentObserver observer;
 
         NotifiedUri(Uri uri, ContentObserver observer, boolean syncToNetwork) {
             this.uri = uri;
