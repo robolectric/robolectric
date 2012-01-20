@@ -141,4 +141,23 @@ public class TestAttributeSetTest {
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
         assertThat(testAttributeSet.getAttributeFloatValue("some namespace", "sugaryScale", 78.9f), equalTo(78.9f));
     }
+    
+    @Test
+    public void getStyleAttribute_doesNotThrowException() throws Exception {
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
+        testAttributeSet.getStyleAttribute();
+    }
+
+    @Test
+    public void getStyleAttribute_returnsZeroWhenNoStyle() throws Exception {
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
+        assertThat(testAttributeSet.getStyleAttribute(), equalTo(0));
+    }
+
+    @Test
+    public void getStyleAttribute_returnsCorrectValue() throws Exception {
+        attributes.put("style", "@style/FancyStyle");
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
+        assertThat(testAttributeSet.getStyleAttribute(), equalTo(R.style.FancyStyle));
+    }
 }
