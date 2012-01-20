@@ -139,7 +139,8 @@ public class TestAttributeSet implements AttributeSet {
             return 0;
         }
         if (resourceExtractor != null) {
-            return resourceExtractor.getResourceId(value);
+            Integer i = resourceExtractor.getResourceId(value);
+            if (i != null) return i;
         }
         return 0;
     }
