@@ -119,4 +119,26 @@ public class TestAttributeSetTest {
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, resourceLoader, null);
         assertThat(testAttributeSet.getAttributeIntValue("some namespace", "itemType", 24), equalTo(24));
     }
+
+    @Test
+    public void getAttributeFloatValue_shouldGetFloatValuesFromAttributes() throws Exception {
+        attributes.put("sugaryScale", "1234.456");
+
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
+        assertThat(testAttributeSet.getAttributeFloatValue("some namespace", "sugaryScale", 78.9f), equalTo(1234.456f));
+    }
+
+    @Test
+    public void getAttributeFloatValue_withNamespace_shouldGetFloatValuesFromAttributes() throws Exception {
+        attributes.put("xxx:sugaryScale", "1234.456");
+
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
+        assertThat(testAttributeSet.getAttributeFloatValue("some namespace", "sugaryScale", 78.9f), equalTo(1234.456f));
+    }
+
+    @Test
+    public void getAttributeFloatValue_shouldReturnDefaultFloatValueWhenNotInAttributeSet() throws Exception {
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null);
+        assertThat(testAttributeSet.getAttributeFloatValue("some namespace", "sugaryScale", 78.9f), equalTo(78.9f));
+    }
 }
