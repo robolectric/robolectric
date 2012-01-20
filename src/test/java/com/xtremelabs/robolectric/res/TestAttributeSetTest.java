@@ -105,4 +105,18 @@ public class TestAttributeSetTest {
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, attrResourceLoader, CustomView.class);
         assertThat(testAttributeSet.getAttributeIntValue("some namespace", "itemType", 0), equalTo(1));
     }
+
+    @Test
+    public void getAttributeIntValue_shouldReturnValueFromAttributeWhenNotInAttributeSet() throws Exception {
+        AttrResourceLoader resourceLoader = new AttrResourceLoader(resourceExtractor);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, resourceLoader, null);
+        assertThat(testAttributeSet.getAttributeIntValue("some namespace", "sugarinessPercent", 42), equalTo(42));
+    }
+
+    @Test
+    public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributesWhenNotInAttributeSet() throws Exception {
+        AttrResourceLoader resourceLoader = new AttrResourceLoader(resourceExtractor);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, resourceLoader, null);
+        assertThat(testAttributeSet.getAttributeIntValue("some namespace", "itemType", 24), equalTo(24));
+    }
 }

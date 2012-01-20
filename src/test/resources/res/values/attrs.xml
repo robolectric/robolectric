@@ -1,9 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <declare-styleable name="com.xtremelabs.robolectric.util.CustomView">
+    <declare-styleable name="CustomView">
         <attr name="itemType" format="enum">
             <enum name="integer" value="0"/>
             <enum name="string" value="1"/>
         </attr>
+
+        <attr name="scrollbars">
+            <flag name="horizontal" value="0x00000100" />
+            <flag name="vertical" value="0x00000200" />
+        </attr>
+
+        <attr name="gravity"/>
+
+        <attr name="keycode"/>
     </declare-styleable>
+
+    <attr name="gravity">
+        <flag name="center" value="0x11" />
+        <flag name="fill_vertical" value="0x70" />
+    </attr>
+
+    <attr name="keycode">
+        <enum name="KEYCODE_SOFT_RIGHT" value="2" />
+        <enum name="KEYCODE_HOME" value="3" />
+    </attr>
 </resources>

@@ -43,9 +43,11 @@ public class TestAttributeSet implements AttributeSet {
     @Override public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
         String value = getAttributeValueInMap(attribute);
 
-        if (attrResourceLoader.hasAttributeFor(viewClass, "xxx", attribute)) {
-            value = attrResourceLoader.convertValueToEnum(viewClass, "xxx", attribute, value);
+        if (attrResourceLoader.hasAttributeFor(viewClass, namespace, attribute)) {
+            value = attrResourceLoader.convertValueToEnum(viewClass, namespace, attribute, value);
         }
+
+        if (value != null && value.startsWith("0x")) value = value.substring(2);
 
         return (value != null) ? Integer.valueOf(value) : defaultValue;
     }
@@ -92,13 +94,17 @@ public class TestAttributeSet implements AttributeSet {
 
     @Override public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
         String value = getAttributeValueInMap(attribute);
-		return (value != null) ? resourceExtractor.getResourceId(value) : defaultValue;
+        Integer resourceId = null;
+        if (value != null) resourceId = resourceExtractor.getResourceId(value);
+        return (resourceId != null) ? resourceId : defaultValue;
     }
 
     @Override public int getAttributeResourceValue(int resourceId, int defaultValue) {
         String attrName = resourceExtractor.getResourceName(resourceId);
         String value = getAttributeValueInMap(attrName);
-		return (value == null) ? defaultValue : resourceExtractor.getResourceId(value);
+        Integer extracted = null;
+        if (value != null) extracted = resourceExtractor.getResourceId(value);
+        return (extracted == null) ? defaultValue : extracted;
     }
 
     @Override public int getAttributeIntValue(int index, int defaultValue) {
