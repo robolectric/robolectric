@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -21,8 +22,20 @@ public class ShadowContentResolver {
 
     private TestCursor cursor;
     private List<Uri> deletedUris = new ArrayList<Uri>();
+    private List<NotifiedUri> notifiedUris = new ArrayList<NotifiedUri>();
     private HashMap<Uri,TestCursor> uriCursorMap = new HashMap<Uri, TestCursor>();
 
+    public static class NotifiedUri {
+        public final Uri uri;
+        public final boolean syncToNetwork;
+        public final ContentObserver observer;
+
+        public NotifiedUri(Uri uri, ContentObserver observer, boolean syncToNetwork) {
+            this.uri = uri;
+            this.syncToNetwork = syncToNetwork;
+            this.observer = observer;
+        }
+    }
 
     @Implementation
     public final InputStream openInputStream(final Uri uri) {
@@ -61,6 +74,16 @@ public class ShadowContentResolver {
         return 1;
     }
 
+    @Implementation
+    public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
+       notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
+    }
+
+    @Implementation
+    public void notifyChange(Uri uri, ContentObserver observer) {
+        notifyChange(uri, observer, false);
+    }
+
     public void setCursor(TestCursor cursor) {
         this.cursor = cursor;
     }
@@ -75,6 +98,10 @@ public class ShadowContentResolver {
 
     public List<Uri> getDeletedUris() {
         return deletedUris;
+    }
+
+    public List<NotifiedUri> getNotifiedUris() {
+        return notifiedUris;
     }
 
     private TestCursor getCursor(Uri uri) {
