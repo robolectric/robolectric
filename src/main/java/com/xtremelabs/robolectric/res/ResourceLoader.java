@@ -41,7 +41,6 @@ public class ResourceLoader {
     private final List<MenuLoader> menuLoaders = new ArrayList<MenuLoader>();
     private final List<StringResourceLoader> stringResourceLoaders = new ArrayList<StringResourceLoader>();
     private final List<StringArrayResourceLoader> stringArrayResourceLoaders = new ArrayList<StringArrayResourceLoader>();
-    private final List<AttrResourceLoader> attrResourceLoaders = new ArrayList<AttrResourceLoader>();
     private final List<ColorResourceLoader> colorResourceLoaders = new ArrayList<ColorResourceLoader>();
     private final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
     private boolean isInitialized = false;
@@ -77,12 +76,12 @@ public class ResourceLoader {
             try {
                 File systemResourceDir = getSystemResourceDir(getPathToAndroidResources());
                 File systemValueResourceDir = getValueResourceDir(systemResourceDir);
+                AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
 
                 for (File resourceDir : resourcePath) {
                     StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
                     StringArrayResourceLoader stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
                     ColorResourceLoader colorResourceLoader = new ColorResourceLoader(resourceExtractor);
-                    AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
                     RawResourceLoader rawResourceLoader = new RawResourceLoader(resourceExtractor, resourceDir);
 
                     ViewLoader viewLoader = new ViewLoader(resourceExtractor, attrResourceLoader);
@@ -98,7 +97,6 @@ public class ResourceLoader {
                     stringResourceLoaders.add(stringResourceLoader);
                     stringArrayResourceLoaders.add(stringArrayResourceLoader);
                     colorResourceLoaders.add(colorResourceLoader);
-                    attrResourceLoaders.add(attrResourceLoader);
                     rawResourceLoaders.add(rawResourceLoader);
                     viewLoaders.add(viewLoader);
                     menuLoaders.add(menuLoader);
