@@ -81,7 +81,8 @@ public class TestAttributeSet implements AttributeSet {
     }
 
     @Override public float getAttributeFloatValue(String namespace, String attribute, float defaultValue) {
-        throw new UnsupportedOperationException();
+        String value = getAttributeValueInMap(attribute);
+        return (value != null) ? Float.valueOf(value) : defaultValue;
     }
 
     @Override public int getAttributeListValue(int index, String[] options, int defaultValue) {
