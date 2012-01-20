@@ -133,7 +133,15 @@ public class TestAttributeSet implements AttributeSet {
     }
 
     @Override public int getStyleAttribute() {
-        throw new UnsupportedOperationException();
+        String value = attributes.get("style");
+        if (value == null) {
+            // Per Android specifications, return 0 if there is no style.
+            return 0;
+        }
+        if (resourceExtractor != null) {
+            return resourceExtractor.getResourceId(value);
+        }
+        return 0;
     }
 
     private String getAttributeValueInMap(String attribute) {
