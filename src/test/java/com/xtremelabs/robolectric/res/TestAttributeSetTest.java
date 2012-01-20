@@ -160,4 +160,11 @@ public class TestAttributeSetTest {
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
         assertThat(testAttributeSet.getStyleAttribute(), equalTo(R.style.FancyStyle));
     }
+
+    @Test
+    public void getStyleAttribute_doesNotThrowException_whenStyleIsBogus() throws Exception {
+        attributes.put("style", "@style/bogus_style");
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null);
+        assertThat(testAttributeSet.getStyleAttribute(), equalTo(0));
+    }
 }
