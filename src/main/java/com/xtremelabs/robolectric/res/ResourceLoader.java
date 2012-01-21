@@ -37,11 +37,11 @@ public class ResourceLoader {
     private int sdkVersion;
 
     private final ResourceExtractor resourceExtractor;
-    private final List<ViewLoader> viewLoaders = new ArrayList<ViewLoader>();
-    private final List<MenuLoader> menuLoaders = new ArrayList<MenuLoader>();
-    private final List<StringResourceLoader> stringResourceLoaders = new ArrayList<StringResourceLoader>();
-    private final List<StringArrayResourceLoader> stringArrayResourceLoaders = new ArrayList<StringArrayResourceLoader>();
-    private final List<ColorResourceLoader> colorResourceLoaders = new ArrayList<ColorResourceLoader>();
+    private ViewLoader viewLoader;
+    private MenuLoader menuLoader;
+    private StringResourceLoader stringResourceLoader;
+    private StringArrayResourceLoader stringArrayResourceLoader;
+    private ColorResourceLoader colorResourceLoader;
     private final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
     private boolean isInitialized = false;
 
@@ -78,29 +78,28 @@ public class ResourceLoader {
                 File systemValueResourceDir = getValueResourceDir(systemResourceDir);
                 AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
 
+                stringResourceLoader = new StringResourceLoader(resourceExtractor);
+                stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
+                colorResourceLoader = new ColorResourceLoader(resourceExtractor);
+                viewLoader = new ViewLoader(resourceExtractor, attrResourceLoader);
+                menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
+
+                loadStringResources(systemValueResourceDir, stringResourceLoader, true);
+                loadValueResources(systemValueResourceDir, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader, true);
+                loadViewResources(systemResourceDir, viewLoader);
+
                 for (File resourceDir : resourcePath) {
-                    StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-                    StringArrayResourceLoader stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
-                    ColorResourceLoader colorResourceLoader = new ColorResourceLoader(resourceExtractor);
+                    File localValueResourceDir = getValueResourceDir(resourceDir);
                     RawResourceLoader rawResourceLoader = new RawResourceLoader(resourceExtractor, resourceDir);
 
-                    ViewLoader viewLoader = new ViewLoader(resourceExtractor, attrResourceLoader);
-                    MenuLoader menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
-
-                    File localValueResourceDir = getValueResourceDir(resourceDir);
-
-                    loadStringResources(localValueResourceDir, systemValueResourceDir, stringResourceLoader);
-                    loadValueResources(localValueResourceDir, systemValueResourceDir, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader);
-                    loadViewResources(systemResourceDir, resourceDir, viewLoader);
+                    loadStringResources(localValueResourceDir, stringResourceLoader, false);
+                    loadValueResources(localValueResourceDir, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader, false);
+                    loadViewResources(resourceDir, viewLoader);
                     loadMenuResources(resourceDir, menuLoader);
 
-                    stringResourceLoaders.add(stringResourceLoader);
-                    stringArrayResourceLoaders.add(stringArrayResourceLoader);
-                    colorResourceLoaders.add(colorResourceLoader);
                     rawResourceLoaders.add(rawResourceLoader);
-                    viewLoaders.add(viewLoader);
-                    menuLoaders.add(menuLoader);
                 }
+
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -112,22 +111,19 @@ public class ResourceLoader {
         return pathToAndroidResources != null ? new File(pathToAndroidResources) : null;
     }
 
-    private void loadStringResources(File localResourceDir, File systemValueResourceDir, StringResourceLoader stringResourceLoader) throws Exception {
+    private void loadStringResources(File resourceDir, StringResourceLoader stringResourceLoader, boolean system) throws Exception {
         DocumentLoader stringResourceDocumentLoader = new DocumentLoader(stringResourceLoader);
-        loadValueResourcesFromDirs(stringResourceDocumentLoader, localResourceDir, systemValueResourceDir);
+        loadValueResourcesFromDirs(stringResourceDocumentLoader, resourceDir, system);
     }
 
-    private void loadValueResources(File localResourceDir, File systemValueResourceDir,
-                                    StringArrayResourceLoader stringArrayResourceLoader, ColorResourceLoader colorResourceLoader,
-                                    AttrResourceLoader attrResourceLoader) throws Exception {
+    private void loadValueResources(File resourceDir, StringArrayResourceLoader stringArrayResourceLoader, ColorResourceLoader colorResourceLoader, AttrResourceLoader attrResourceLoader, boolean system) throws Exception {
         DocumentLoader valueResourceLoader = new DocumentLoader(stringArrayResourceLoader, colorResourceLoader, attrResourceLoader);
-        loadValueResourcesFromDirs(valueResourceLoader, localResourceDir, systemValueResourceDir);
+        loadValueResourcesFromDirs(valueResourceLoader, resourceDir, system);
     }
 
-    private void loadViewResources(File systemResourceDir, File xmlResourceDir, ViewLoader viewLoader) throws Exception {
+    private void loadViewResources(File resourceDir, ViewLoader viewLoader) throws Exception {
         DocumentLoader viewDocumentLoader = new DocumentLoader(viewLoader);
-        loadLayoutResourceXmlSubDirs(viewDocumentLoader, xmlResourceDir);
-        loadLayoutResourceXmlSubDirs(viewDocumentLoader, systemResourceDir);
+        loadLayoutResourceXmlSubDirs(viewDocumentLoader, resourceDir);
     }
 
     private void loadMenuResources(File xmlResourceDir, MenuLoader menuLoader) throws Exception {
@@ -147,13 +143,16 @@ public class ResourceLoader {
         }
     }
 
-    private void loadValueResourcesFromDirs(DocumentLoader documentLoader, File localValueResourceDir, File systemValueResourceDir) throws Exception {
-        loadValueResourcesFromDir(documentLoader, localValueResourceDir);
-        loadSystemResourceXmlDir(documentLoader, systemValueResourceDir);
+    private void loadValueResourcesFromDirs(DocumentLoader documentLoader, File resourceDir, boolean system) throws Exception {
+        if (system) {
+            loadSystemResourceXmlDir(documentLoader, resourceDir);
+        } else {
+            loadValueResourcesFromDir(documentLoader, resourceDir);
+        }
     }
 
     private void loadValueResourcesFromDir(DocumentLoader documentloader, File xmlResourceDir) throws Exception {
-        if (xmlResourceDir != null) {
+        if (xmlResourceDir != null && xmlResourceDir.exists()) {
             documentloader.loadResourceXmlDir(xmlResourceDir);
         }
     }
@@ -254,7 +253,7 @@ public class ResourceLoader {
     protected ResourceLoader(StringResourceLoader stringResourceLoader) {
         resourceExtractor = new ResourceExtractor();
         resourcePath = Collections.emptyList();
-        stringResourceLoaders.add(stringResourceLoader);
+        this.stringResourceLoader = stringResourceLoader;
     }
 
     public static ResourceLoader getFrom(Context context) {
@@ -271,10 +270,8 @@ public class ResourceLoader {
     public View inflateView(Context context, int resource, ViewGroup viewGroup) {
         init();
 
-        for (ViewLoader viewLoader : viewLoaders) {
-            View viewNode = viewLoader.inflateView(context, resource, viewGroup);
-            if (viewNode != null) return viewNode;
-        }
+        View viewNode = viewLoader.inflateView(context, resource, viewGroup);
+        if (viewNode != null) return viewNode;
 
         throw new RuntimeException("Could not find layout " + resourceExtractor.getResourceName(resource));
     }
@@ -282,10 +279,8 @@ public class ResourceLoader {
     public int getColorValue(int id) {
         init();
 
-        for (ColorResourceLoader colorResourceLoader : colorResourceLoaders) {
-            int value = colorResourceLoader.getValue(id);
-            if (value != -1) return value;
-        }
+        int value = colorResourceLoader.getValue(id);
+        if (value != -1) return value;
 
         return -1;
     }
@@ -293,10 +288,8 @@ public class ResourceLoader {
     public String getStringValue(int id) {
         init();
 
-        for (StringResourceLoader stringResourceLoader: stringResourceLoaders) {
-            String value = stringResourceLoader.getValue(id);
-            if (value != null) return value;
-        }
+        String value = stringResourceLoader.getValue(id);
+        if (value != null) return value;
 
         return null;
     }
@@ -315,10 +308,8 @@ public class ResourceLoader {
     public String[] getStringArrayValue(int id) {
         init();
 
-        for (StringArrayResourceLoader stringArrayResourceLoader : stringArrayResourceLoaders) {
-            String[] arrayValue = stringArrayResourceLoader.getArrayValue(id);
-            if (arrayValue != null) return arrayValue;
-        }
+        String[] arrayValue = stringArrayResourceLoader.getArrayValue(id);
+        if (arrayValue != null) return arrayValue;
 
         return null;
     }
@@ -326,9 +317,7 @@ public class ResourceLoader {
     public void inflateMenu(Context context, int resource, Menu root) {
         init();
 
-        for (MenuLoader menuLoader : menuLoaders) {
-            if (menuLoader.inflateMenu(context, resource, root)) return;
-        }
+        if (menuLoader.inflateMenu(context, resource, root)) return;
 
         throw new RuntimeException("Could not find menu " + resourceExtractor.getResourceName(resource));
     }
