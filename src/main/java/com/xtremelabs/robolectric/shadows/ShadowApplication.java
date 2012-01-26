@@ -16,13 +16,7 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.util.Scheduler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeSet;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;

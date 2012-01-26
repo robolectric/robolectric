@@ -74,6 +74,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
+import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
@@ -284,6 +285,7 @@ public class Robolectric {
                 ShadowMapActivity.class,
                 ShadowMapView.class,
                 ShadowMatrix.class,
+                ShadowMatrixCursor.class,
                 ShadowMediaPlayer.class,
                 ShadowMediaRecorder.class,
                 ShadowMediaStore.ShadowImages.ShadowMedia.class,
@@ -303,6 +305,7 @@ public class Robolectric {
                 ShadowPasswordTransformationMethod.class,
                 ShadowPath.class,
                 ShadowPendingIntent.class,
+                ShadowPhoneNumberUtils.class,
                 ShadowPoint.class,
                 ShadowPointF.class,
                 ShadowPowerManager.class,
@@ -701,6 +704,10 @@ public class Robolectric {
 
     public static ShadowPendingIntent shadowOf(PendingIntent instance) {
         return (ShadowPendingIntent) shadowOf_(instance);
+    }
+    
+    public static ShadowPhoneNumberUtils shadowOf(PhoneNumberUtils instance) {
+        return (ShadowPhoneNumberUtils) shadowOf_(instance);
     }
 
     public static ShadowPowerManager shadowOf(PowerManager instance) {
