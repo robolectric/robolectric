@@ -408,4 +408,8 @@ public class ShadowActivity extends ShadowContextWrapper {
         pendingTransitionEnterAnimResId = enterAnim;
         pendingTransitionExitAnimResId = exitAnim;
     }
+    
+    public Dialog getDialogById(int dialogId) {
+    	return dialogForId.get(dialogId);
+    }
 }
