@@ -1,31 +1,27 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.util.Locale;
-
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-
+import android.view.Display;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
+
+import java.io.InputStream;
+import java.util.Locale;
+
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
@@ -37,7 +33,8 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 public class ShadowResources {
     private float density = 1.0f;
     Configuration configuration = null;
-    
+    private DisplayMetrics displayMetrics;
+
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
         ShadowResources shadowResources = shadowOf(resources);
         if (shadowResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
@@ -130,7 +127,11 @@ public class ShadowResources {
 
     @Implementation
     public DisplayMetrics getDisplayMetrics() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
+        if (displayMetrics == null) {
+            Display display = Robolectric.newInstanceOf(Display.class);
+            displayMetrics = new DisplayMetrics();
+            display.getMetrics(displayMetrics);
+        }
         displayMetrics.density = this.density;
         return displayMetrics;
     }
