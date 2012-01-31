@@ -1,27 +1,20 @@
 package com.xtremelabs.robolectric.res;
 
-import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.StateListDrawable;
-
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.shadows.ShadowStateListDrawable;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 /**
  * DrawableResourceLoaderTest
@@ -36,7 +29,7 @@ public class DrawableResourceLoaderTest {
         extractor.addLocalRClass(R.class);
         extractor.addSystemRClass(android.R.class);
 
-        resourceLoader = new DrawableResourceLoader(extractor, resourceFile("res"));
+        resourceLoader = new DrawableResourceLoader(extractor);
         DocumentLoader documentLoader = new DocumentLoader(resourceLoader);
 
         documentLoader.loadResourceXmlDir(resourceFile("res", "drawable"));

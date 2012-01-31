@@ -135,4 +135,8 @@ public final class R {
         public static final int HeaderBar_textStyle2 = 0;
         public static final int HeaderBar_textStyle3 = 1;
     }
+
+    public static final class style {
+        public static int FancyStyle = nextId++;
+    }
 }

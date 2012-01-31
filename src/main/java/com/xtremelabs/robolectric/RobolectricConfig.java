@@ -9,15 +9,19 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import static android.content.pm.ApplicationInfo.*;
 
 public class RobolectricConfig {
     private final File androidManifestFile;
-    private final File resourceDirectory;
+    private List<File> resourcePath;
     private final File assetsDirectory;
     private String rClassName;
     private String packageName;
@@ -54,10 +58,54 @@ public class RobolectricConfig {
      * @param resourceDirectory   location of the res directory
      * @param assetsDirectory     location of the assets directory
      */
-    public RobolectricConfig(final File androidManifestFile, final File resourceDirectory, final File assetsDirectory) {
+    public RobolectricConfig(File androidManifestFile, File resourceDirectory, File assetsDirectory) {
+        this(androidManifestFile, Collections.singletonList(resourceDirectory), assetsDirectory);
+    }
+
+    public RobolectricConfig(File androidManifestFile, List<File> resourcePath, File assetsDirectory) {
         this.androidManifestFile = androidManifestFile;
-        this.resourceDirectory = resourceDirectory;
+        this.resourcePath = Collections.unmodifiableList(resourcePath);
         this.assetsDirectory = assetsDirectory;
+    }
+
+    public static RobolectricConfig fromBaseDirWithLibraries(File baseDir) {
+        List<File> resources = new ArrayList<File>();
+        buildResourcePath(baseDir, resources);
+        return new RobolectricConfig(new File(baseDir, "AndroidManifest.xml"), resources, new File(baseDir, "assets"));
+    }
+
+    private static void buildResourcePath(File baseDir, List<File> resources) {
+        resources.add(new File(baseDir, "res"));
+
+        Properties properties = getProperties(new File(baseDir, "project.properties"));
+        String lib = properties == null ? null : properties.getProperty("android.library.reference.1");
+
+        if (lib != null) {
+            buildResourcePath(new File(baseDir, lib), resources);
+        }
+    }
+
+    private static Properties getProperties(File propertiesFile) {
+        if (!propertiesFile.exists()) return null;
+
+        Properties properties = new Properties();
+        FileInputStream stream;
+        try {
+            stream = new FileInputStream(propertiesFile);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            try {
+                properties.load(stream);
+            } finally {
+                stream.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return properties;
     }
 
     public String getRClassName() throws Exception {
@@ -70,8 +118,10 @@ public class RobolectricConfig {
             throw new FileNotFoundException(androidManifestFile.getAbsolutePath() + " not found or not a file; it should point to your project's AndroidManifest.xml");
         }
 
-        if (!getResourceDirectory().exists() || !getResourceDirectory().isDirectory()) {
-            throw new FileNotFoundException(getResourceDirectory().getAbsolutePath() + " not found or not a directory; it should point to your project's res directory");
+        for (File f : getResourcePath()) {
+            if (!f.exists() || !f.isDirectory()) {
+                throw new FileNotFoundException(f.getAbsolutePath() + " not found or not a directory; it should point to a res directory");
+            }
         }
     }
 
@@ -217,8 +267,13 @@ public class RobolectricConfig {
 		return processName;
 	}
     
+    @Deprecated
     public File getResourceDirectory() {
-        return resourceDirectory;
+        return resourcePath.get(0);
+    }
+
+    public List<File> getResourcePath() {
+        return resourcePath;
     }
 
     public File getAssetsDirectory() {
@@ -289,7 +344,8 @@ public class RobolectricConfig {
         if (getAssetsDirectory() != null ? !getAssetsDirectory().equals(that.getAssetsDirectory()) : that.getAssetsDirectory() != null) {
             return false;
         }
-        if (getResourceDirectory() != null ? !getResourceDirectory().equals(that.getResourceDirectory()) : that.getResourceDirectory() != null) {
+
+        if (getResourcePath() != null ? !getResourcePath().equals(that.getResourcePath()) : that.getResourcePath() != null) {
             return false;
         }
 
@@ -299,7 +355,7 @@ public class RobolectricConfig {
     @Override
     public int hashCode() {
         int result = androidManifestFile != null ? androidManifestFile.hashCode() : 0;
-        result = 31 * result + (getResourceDirectory() != null ? getResourceDirectory().hashCode() : 0);
+        result = 31 * result + (getResourcePath() != null ? getResourcePath().hashCode() : 0);
         result = 31 * result + (getAssetsDirectory() != null ? getAssetsDirectory().hashCode() : 0);
         return result;
     }

@@ -81,7 +81,7 @@ public abstract class TestUtil {
     }
 
     public static RobolectricConfig newConfig(String androidManifestFile) {
-        return new RobolectricConfig(resourceFile(androidManifestFile), null, null);
+        return new RobolectricConfig(resourceFile(androidManifestFile), (File) null, null);
     }
 
     public static File getSystemResourceDir(String... paths) throws Exception {

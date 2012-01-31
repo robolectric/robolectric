@@ -91,6 +91,7 @@ public class ViewLoader extends XmlLoader {
         if (viewNode == null) {
             throw new RuntimeException("Could not find layout " + layoutName);
         }
+
         try {
             if (attributes != null) {
                 for (Map.Entry<String, String> entry : attributes.entrySet()) {

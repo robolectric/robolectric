@@ -29,6 +29,17 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.PrintStream;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.core.IsNull.nullValue;
+import static org.junit.Assert.*;
+
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewGroupTest {
     private String defaultLineSeparator;
@@ -41,7 +52,7 @@ public class ViewGroupTest {
 
     @Before public void setUp() throws Exception {
         Application context = new Application();
-        ShadowApplication.bind(context, new ResourceLoader(10, R.class, null, null));
+        ShadowApplication.bind(context, new ResourceLoader(10, R.class, (File) null, null));
 
         root = new FrameLayout(context);
 

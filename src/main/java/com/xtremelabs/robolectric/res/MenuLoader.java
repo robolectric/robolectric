@@ -94,21 +94,20 @@ public class MenuLoader extends XmlLoader {
                 || nodei.getNodeName().equals("group");
     }
 
-    public void inflateMenu(Context context, String key, Menu root) {
-        inflateMenu(context, key, null, root);
+    public boolean inflateMenu(Context context, String key, Menu root) {
+        return inflateMenu(context, key, null, root);
     }
 
-    public void inflateMenu(Context context, int resourceId, Menu root) {
-        inflateMenu(context, resourceExtractor.getResourceName(resourceId),
+    public boolean inflateMenu(Context context, int resourceId, Menu root) {
+        return inflateMenu(context, resourceExtractor.getResourceName(resourceId),
                 root);
     }
 
-    private void inflateMenu(Context context, String key,
+    private boolean inflateMenu(Context context, String key, 
                              Map<String, String> attributes, Menu root) {
         MenuNode menuNode = menuNodesByMenuName.get(key);
-        if (menuNode == null) {
-            throw new RuntimeException("Could not find menu " + key);
-        }
+        if (menuNode == null) return false;
+
         try {
             if (attributes != null) {
                 for (Map.Entry<String, String> entry : attributes.entrySet()) {
@@ -119,6 +118,7 @@ public class MenuLoader extends XmlLoader {
                 }
             }
             menuNode.inflate(context, root);
+            return true;
         } catch (I18nException e) {
             throw e;
         } catch (Exception e) {
