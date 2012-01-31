@@ -151,7 +151,7 @@ public class ShadowDialog {
             if (inflatedView == null && layoutId > 0) {
                 inflatedView = ShadowLayoutInflater.from(context).inflate(layoutId, null);
             }
-            return inflatedView.findViewById(viewId);
+            if (inflatedView != null) return inflatedView.findViewById(viewId);
         }
         return null;
     }

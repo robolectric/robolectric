@@ -181,8 +181,31 @@ public class ShadowRect {
 
     @Implementation
     public boolean contains(int x, int y) {
-        return realRect.left < realRect.right && realRect.top < realRect.bottom  // check for empty first
-               && x >= realRect.left && x < realRect.right && y >= realRect.top && y < realRect.bottom;
+        return x > realRect.left && x < realRect.right
+                && y >= realRect.top && y <= realRect.bottom;
+    }
+
+    @Implementation
+    public boolean contains(Rect r) {
+        return equals(r)
+                || (contains(r.left, r.top) && contains(r.right, r.top)
+                && contains(r.left, r.bottom) && contains(r.right, r.bottom));
+    }
+
+    @Implementation
+    public static boolean intersects(Rect a, Rect b) {
+        return a.left < b.right && b.left < a.right
+                && a.top < b.bottom && b.top < a.bottom;
+    }
+
+    @Implementation
+    public boolean intersect(Rect r) {
+        return intersects(realRect, r);
+    }
+
+    @Implementation
+    public boolean intersect(int left, int top, int right, int bottom) {
+        return intersect(new Rect(left, top, right, bottom));
     }
 
     @Implementation
@@ -192,41 +215,6 @@ public class ShadowRect {
                // now check for containment
                 && realRect.left <= left && realRect.top <= top
                 && realRect.right >= right && realRect.bottom >= bottom;
-    }
-
-    @Implementation
-    public boolean contains(Rect r) {
-               // check for empty first
-        return realRect.left < realRect.right && realRect.top < realRect.bottom
-               // now check for containment
-               && realRect.left <= r.left && realRect.top <= r.top
-               && realRect.right >= r.right && realRect.bottom >= r.bottom;
-    }
-
-    @Implementation
-    public boolean intersect(int left, int top, int right, int bottom) {
-        if (realRect.left < right && left < realRect.right
-                && realRect.top < bottom && top < realRect.bottom) {
-            if (realRect.left < left) {
-                realRect.left = left;
-            }
-            if (realRect.top < top) {
-                realRect.top = top;
-            }
-            if (realRect.right > right) {
-                realRect.right = right;
-            }
-            if (realRect.bottom > bottom) {
-                realRect.bottom = bottom;
-            }
-            return true;
-        }
-        return false;
-    }
-    
-    @Implementation
-    public boolean intersect(Rect r) {
-        return intersect(r.left, r.top, r.right, r.bottom);
     }
 
     @Implementation
@@ -246,12 +234,6 @@ public class ShadowRect {
     public boolean intersects(int left, int top, int right, int bottom) {
         return realRect.left < right && left < realRect.right
                && realRect.top < bottom && top < realRect.bottom;
-    }
-
-    @Implementation
-    public static boolean intersects(Rect a, Rect b) {
-        return a.left < b.right && b.left < a.right
-               && a.top < b.bottom && b.top < a.bottom;
     }
 
     @Implementation

@@ -6,7 +6,7 @@
         <option name="ENABLED" value="true" />
       </pattern>
     </extension>
-    <module name="droid-sugar" />
+    <module name="" />
     <option name="ALTERNATIVE_JRE_PATH_ENABLED" value="false" />
     <option name="ALTERNATIVE_JRE_PATH" value="" />
     <option name="PACKAGE_NAME" value="com.xtremelabs.robolectric" />
@@ -21,7 +21,9 @@
     <option name="TEST_SEARCH_SCOPE">
       <value defaultName="wholeProject" />
     </option>
-    <envs />
+    <envs>
+      <env name="ANDROID_HOME" value="$USER_HOME$/android-sdk" />
+    </envs>
     <patterns />
     <RunnerSettings RunnerId="Debug">
       <option name="DEBUG_PORT" value="52365" />
