@@ -300,6 +300,7 @@ public class ShadowLocation {
         double endLatitude, double endLongitude, float[] results) {
         if (distanceBetween != null && results.length == distanceBetween.length){
             System.arraycopy(distanceBetween, 0, results, 0, results.length);
+            return;
         }
 
         if (results == null || results.length < 1) {
