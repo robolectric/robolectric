@@ -232,6 +232,7 @@ public class ShadowIntent {
         return extras.containsKey(name);
     }
 
+    @Implementation
     public Intent putExtra(String key, int[] value) {
         extras.put(key, value);
         return realIntent;
