@@ -70,7 +70,6 @@ public class ShadowView {
     private View.OnTouchListener onTouchListener;
     protected AttributeSet attributeSet;
     private boolean drawingCacheEnabled;
-    private Drawable backgroundDrawable;
     private int measuredWidth;
     private int measuredHeight;
     public Point scrollToCoordinates;
@@ -379,9 +378,9 @@ public class ShadowView {
 
     @Implementation
     public void draw(android.graphics.Canvas canvas) {
-        if (backgroundDrawable != null) {
+        if (background != null) {
             shadowOf(canvas).appendDescription("background:");
-            backgroundDrawable.draw(canvas);
+            background.draw(canvas);
         }
     }
 
