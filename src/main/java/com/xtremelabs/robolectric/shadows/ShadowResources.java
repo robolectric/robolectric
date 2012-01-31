@@ -34,6 +34,7 @@ public class ShadowResources {
     private float density = 1.0f;
     Configuration configuration = null;
     private DisplayMetrics displayMetrics;
+    private Display display;
 
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
         ShadowResources shadowResources = shadowOf(resources);
@@ -42,33 +43,34 @@ public class ShadowResources {
         return resources;
     }
 
-    @RealObject Resources realResources;
+    @RealObject
+    Resources realResources;
     private ResourceLoader resourceLoader;
 
     @Implementation
-    public  int getIdentifier(String name, String defType, String defPackage) {
+    public int getIdentifier(String name, String defType, String defPackage) {
         Integer index = 0;
-        
+
         ResourceExtractor resourceExtractor = resourceLoader.getResourceExtractor();
-        
+
         index = resourceExtractor.getResourceId(defType + "/" + name);
         if (index == null) {
             return 0;
         }
         return index;
     }
-    
+
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
         return resourceLoader.getColorValue(id);
     }
-   
+
     @Implementation
     public Configuration getConfiguration() {
-    	if (configuration==null) {
-    		configuration = new Configuration();
-        	configuration.setToDefaults();
-    	}
+        if (configuration == null) {
+            configuration = new Configuration();
+            configuration.setToDefaults();
+        }
         if (configuration.locale == null) {
             configuration.locale = Locale.getDefault();
         }
@@ -125,10 +127,18 @@ public class ShadowResources {
         this.density = density;
     }
 
+    public void setDisplay(Display display) {
+        this.display = display;
+        displayMetrics = null;
+    }
+
     @Implementation
     public DisplayMetrics getDisplayMetrics() {
         if (displayMetrics == null) {
-            Display display = Robolectric.newInstanceOf(Display.class);
+            if (display == null) {
+                display = Robolectric.newInstanceOf(Display.class);
+            }
+
             displayMetrics = new DisplayMetrics();
             display.getMetrics(displayMetrics);
         }
@@ -136,24 +146,30 @@ public class ShadowResources {
         return displayMetrics;
     }
 
-	@Implementation
+    @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
 
-		ResourceLoader resLoader = Robolectric.shadowOf( Robolectric.application ).getResourceLoader();
-		
-		// Check if this drawable is an XML drawable
-		Drawable xmlDrawable = resLoader.getXmlDrawable( drawableResourceId );
-		if( xmlDrawable != null ) { return xmlDrawable; }
-		
-		Drawable animDrawable = resLoader.getAnimDrawable( drawableResourceId );
-		if( animDrawable != null ) { return animDrawable; }
-		
-		Drawable colorDrawable = resLoader.getColorDrawable( drawableResourceId );
-		if( colorDrawable != null ) { return colorDrawable; }
+        ResourceLoader resLoader = Robolectric.shadowOf(Robolectric.application).getResourceLoader();
 
-		return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
+        // Check if this drawable is an XML drawable
+        Drawable xmlDrawable = resLoader.getXmlDrawable(drawableResourceId);
+        if (xmlDrawable != null) {
+            return xmlDrawable;
+        }
+
+        Drawable animDrawable = resLoader.getAnimDrawable(drawableResourceId);
+        if (animDrawable != null) {
+            return animDrawable;
+        }
+
+        Drawable colorDrawable = resLoader.getColorDrawable(drawableResourceId);
+        if (colorDrawable != null) {
+            return colorDrawable;
+        }
+
+        return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
     }
-    
+
     @Implementation
     public float getDimension(int id) throws Resources.NotFoundException {
         // todo: get this value from the xml resources and scale it by display metrics [xw 20101011]
