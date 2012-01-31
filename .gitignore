@@ -1,12 +1,6 @@
 bin/
 out/
-.idea/workspace.xml
-.idea/libraries/
-.idea/modules.xml
-.idea/vcs.xml
-.idea/compiler.xml
-.idea/misc.xml
-.idea/.name
+.idea
 robolectric.iml
 tmp/
 target/
