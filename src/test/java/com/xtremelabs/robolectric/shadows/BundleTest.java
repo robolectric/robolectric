@@ -51,13 +51,21 @@ public class BundleTest {
         assertEquals(Double.valueOf(0),Double.valueOf(bundle.getDouble("bar")));
         assertEquals(Double.valueOf(7), Double.valueOf(bundle.getDouble("bar", 7)));
     }
-    
+
     @Test
     public void testBoolean() {
         bundle.putBoolean("foo", true);
         assertEquals(true, bundle.getBoolean("foo"));
         assertEquals(false, bundle.getBoolean("bar"));
         assertEquals(true, bundle.getBoolean("bar", true));
+    }
+
+    @Test
+    public void testFloat() {
+        bundle.putFloat("foo", 5f);
+        assertEquals(Float.valueOf(5), Float.valueOf(bundle.getFloat("foo")));
+        assertEquals(Float.valueOf(0),Float.valueOf(bundle.getFloat("bar")));
+        assertEquals(Float.valueOf(7), Float.valueOf(bundle.getFloat("bar", 7)));
     }
 
     @Test
