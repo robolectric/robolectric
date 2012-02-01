@@ -1,15 +1,11 @@
 package com.xtremelabs.robolectric.util;
 
 
-import org.junit.experimental.runners.Enclosed;
-import org.junit.runner.RunWith;
-
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
-@RunWith(Enclosed.class)
 public class SQLiteTestHelper {
 
     static void verifyColumnValues(List<Object> colValues) {

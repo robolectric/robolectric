@@ -119,4 +119,11 @@ public class ResourcesTest {
         Activity anotherActivity = new Activity();
         assertThat(anotherActivity.getResources().getDisplayMetrics().density, equalTo(1.5f));
     }
+
+    @Test
+    public void displayMetricsShouldNotHaveLotsOfZeros() throws Exception {
+        Activity activity = new Activity();
+        assertThat(activity.getResources().getDisplayMetrics().heightPixels, equalTo(800));
+        assertThat(activity.getResources().getDisplayMetrics().widthPixels, equalTo(480));
+    }
 }

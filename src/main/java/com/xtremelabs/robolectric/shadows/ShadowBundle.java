@@ -101,6 +101,23 @@ public class ShadowBundle {
         Object value = map.get(key);
         return value == null ? defaultValue : (Boolean) value;
     }
+
+    @Implementation
+    public void putFloat(String key, float value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public float getFloat(String key) {
+        Object value = map.get(key);
+        return value == null ? 0 : (Float) value;
+    }
+
+    @Implementation
+    public float getFloat(String key, float defaultValue) {
+        Object value = map.get(key);
+        return value == null ? defaultValue : (Float) value;
+    }
     
     @Implementation
     public void putSerializable(String key, Serializable value) {
