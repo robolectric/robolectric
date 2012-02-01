@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.app.Application;
 import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -181,5 +182,10 @@ public class ContextWrapperTest {
             larryIntentFilter.addAction(action);
         }
         return larryIntentFilter;
+    }
+
+    @Test
+    public void packageManagerShouldNotBeNullWhenWrappingAnApplication() {
+        assertThat(new Application().getPackageManager(), notNullValue());
     }
 }
