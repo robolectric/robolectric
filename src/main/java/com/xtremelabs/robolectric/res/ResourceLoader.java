@@ -240,6 +240,8 @@ public class ResourceLoader {
             return resourcePath;
         } else if ((resourcePath = getAndroidResourcePathFromSystemEnvironment()) != null) {
             return resourcePath;
+        } else if ((resourcePath = getAndroidResourcePathFromSystemProperty()) != null) {
+            return resourcePath;
         } else if ((resourcePath = getAndroidResourcePathByExecingWhichAndroid()) != null) {
             return resourcePath;
         }
@@ -276,6 +278,15 @@ public class ResourceLoader {
     private String getAndroidResourcePathFromSystemEnvironment() {
         // Hand tested
         String resourcePath = System.getenv().get("ANDROID_HOME");
+        if (resourcePath != null) {
+            return new File(resourcePath, getAndroidResourceSubPath()).toString();
+        }
+        return null;
+    }
+
+    private String getAndroidResourcePathFromSystemProperty() {
+        // this is used by the android-maven-plugin
+        String resourcePath = System.getProperty("android.sdk.path");
         if (resourcePath != null) {
             return new File(resourcePath, getAndroidResourceSubPath()).toString();
         }

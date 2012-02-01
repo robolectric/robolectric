@@ -14,11 +14,14 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Looper;
+import com.xtremelabs.robolectric.RobolectricConfig;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.res.RobolectricPackageManager;
 import com.xtremelabs.robolectric.tester.android.content.TestSharedPreferences;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -125,7 +128,14 @@ public class ShadowContextWrapper extends ShadowContext {
      */
     @Implementation
     public PackageManager getPackageManager() {
-        return realContextWrapper == getApplicationContext() ? packageManager : getApplicationContext().getPackageManager();
+        return realContextWrapper == getApplicationContext() ? requirePackageManager() : getApplicationContext().getPackageManager();
+    }
+
+    private PackageManager requirePackageManager() {
+        if (packageManager == null) {
+            packageManager = new RobolectricPackageManager(realContextWrapper, new RobolectricConfig(new File(".")));
+        }
+        return packageManager;
     }
 
     @Implementation

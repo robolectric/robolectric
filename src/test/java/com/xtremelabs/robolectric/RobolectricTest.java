@@ -3,9 +3,11 @@ package com.xtremelabs.robolectric;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
+import android.view.Display;
 import android.view.View;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.shadows.ShadowDisplay;
 import com.xtremelabs.robolectric.util.TestOnClickListener;
 import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
@@ -22,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
@@ -122,7 +125,7 @@ public class RobolectricTest {
 
     @Test
     public void idleMainLooper_executesScheduledTasks() {
-        final boolean[] wasRun = new boolean[] {false};
+        final boolean[] wasRun = new boolean[]{false};
         new Handler().postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -142,6 +145,21 @@ public class RobolectricTest {
         assertThat(new Activity().getResources().getDisplayMetrics().density, equalTo(1.0f));
         Robolectric.setDisplayMetricsDensity(1.5f);
         assertThat(new Activity().getResources().getDisplayMetrics().density, equalTo(1.5f));
+    }
+
+    @Test
+    public void shouldUseSetDisplayForContexts() throws Exception {
+        assertThat(new Activity().getResources().getDisplayMetrics().widthPixels, equalTo(480));
+        assertThat(new Activity().getResources().getDisplayMetrics().heightPixels, equalTo(800));
+
+        Display display = Robolectric.newInstanceOf(Display.class);
+        ShadowDisplay shadowDisplay = shadowOf(display);
+        shadowDisplay.setWidth(100);
+        shadowDisplay.setHeight(200);
+        Robolectric.setDefaultDisplay(display);
+
+        assertThat(new Activity().getResources().getDisplayMetrics().widthPixels, equalTo(100));
+        assertThat(new Activity().getResources().getDisplayMetrics().heightPixels, equalTo(200));
     }
 
     public void clickOn_shouldCallClickListener() throws Exception {

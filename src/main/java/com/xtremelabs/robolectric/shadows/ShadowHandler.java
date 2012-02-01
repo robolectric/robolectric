@@ -53,9 +53,31 @@ public class ShadowHandler {
     }
 
     @Implementation
+    public Message obtainMessage() {
+        return obtainMessage(0);
+    }
+
+    @Implementation
+    public Message obtainMessage(int what) {
+        return obtainMessage(what, null);
+    }
+
+    @Implementation
     public Message obtainMessage(int what, Object obj) {
+        return obtainMessage(what, 0, 0, obj);
+    }
+
+    @Implementation
+    public Message obtainMessage(int what, int arg1, int arg2) {
+        return obtainMessage(what, arg1, arg2, null);
+    }
+
+    @Implementation
+    public Message obtainMessage(int what, int arg1, int arg2, Object obj) {
         Message message = new Message();
         message.what = what;
+        message.arg1 = arg1;
+        message.arg2 = arg2;
         message.obj = obj;
         return message;
     }
@@ -91,7 +113,7 @@ public class ShadowHandler {
         msg.what = what;
         return sendMessageDelayed(msg, delayMillis);
     }
-    
+
     @Implementation
     public final Looper getLooper() {
     	return looper;

@@ -28,6 +28,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.*;
 import android.preference.*;
+import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
@@ -202,6 +203,7 @@ public class Robolectric {
                 ShadowMapActivity.class,
                 ShadowMapView.class,
                 ShadowMatrix.class,
+                ShadowMatrixCursor.class,
                 ShadowMeasureSpec.class,
                 ShadowMediaPlayer.class,
                 ShadowMediaRecorder.class,
@@ -222,6 +224,7 @@ public class Robolectric {
                 ShadowPasswordTransformationMethod.class,
                 ShadowPath.class,
                 ShadowPendingIntent.class,
+                ShadowPhoneNumberUtils.class,
                 ShadowPoint.class,
                 ShadowPointF.class,
                 ShadowPowerManager.class,
@@ -626,6 +629,10 @@ public class Robolectric {
 
     public static ShadowPendingIntent shadowOf(PendingIntent instance) {
         return (ShadowPendingIntent) shadowOf_(instance);
+    }
+    
+    public static ShadowPhoneNumberUtils shadowOf(PhoneNumberUtils instance) {
+        return (ShadowPhoneNumberUtils) shadowOf_(instance);
     }
 
     public static ShadowPowerManager shadowOf(PowerManager instance) {
@@ -1047,6 +1054,10 @@ public class Robolectric {
         shadowOf(getShadowApplication().getResources()).setDensity(densityMultiplier);
     }
 
+    public static void setDefaultDisplay(Display display) {
+        shadowOf(getShadowApplication().getResources()).setDisplay(display);
+    }
+
     /**
      * Calls {@code performClick()} on a {@code View} after ensuring that it and its ancestors are visible and that it
      * is enabled.
@@ -1072,6 +1083,7 @@ public class Robolectric {
     public static String visualize(Bitmap bitmap) {
         return shadowOf(bitmap).getDescription();
     }
+
     /**
      * Reflection helper methods.
      */
