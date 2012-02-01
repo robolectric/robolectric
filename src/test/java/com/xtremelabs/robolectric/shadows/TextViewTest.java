@@ -226,6 +226,14 @@ public class TextViewTest {
 		assertThat(mockTextWatcher.afterTextChangeArgument.toString(), equalTo(NEW_TEXT));
 	}
     
+    @Test
+    public void whenSettingTextToNull_WatchersSeeEmptyString() {
+        TextWatcher mockTextWatcher = mock(TextWatcher.class);
+        textView.addTextChangedListener(mockTextWatcher);
+        textView.setText(null);
+        verify(mockTextWatcher).onTextChanged("", 0, 0, 0);
+    }
+    
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
 		List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
 		int numberBetweenOneAndTen = new Random().nextInt(10) + 1;

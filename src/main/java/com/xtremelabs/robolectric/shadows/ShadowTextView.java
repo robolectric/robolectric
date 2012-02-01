@@ -93,6 +93,7 @@ public class ShadowTextView extends ShadowView {
 	}
 
 	private void sendBeforeTextChanged(CharSequence newValue) {
+        if (newValue == null) newValue = "";
 		for (TextWatcher watcher : watchers) {
     		watcher.beforeTextChanged(this.text, 0, this.text.length(), newValue.length());
         }
