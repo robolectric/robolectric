@@ -14,6 +14,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -63,7 +64,7 @@ public class ListViewTest {
         } catch (java.lang.IllegalStateException exception) {
             assertThat(exception.getMessage(), equalTo("Cannot add header view to list -- setAdapter has already been called"));
         }
-        
+
         try {
             listView.addHeaderView(new View(null), null, false );
             fail();
@@ -202,7 +203,7 @@ public class ListViewTest {
         shadowListView.clickFirstItemContainingText("Item 1");
         transcript.assertEventsSoFar("clicked on item 1");
     }
-    
+
     @Test
     public void clickItemContainingText_shouldPerformItemClickOnList_arrayAdapter() throws Exception {
     	ArrayList<String> adapterFileList = new ArrayList<String>();
@@ -281,7 +282,7 @@ public class ListViewTest {
             ShadowAdapterView.automaticallyUpdateRowViews(true);
         }
     }
-    
+
     @Test(expected = UnsupportedOperationException.class)
     public void removeAllViews_shouldThrowAnException() throws Exception {
         listView.removeAllViews();
@@ -308,6 +309,23 @@ public class ListViewTest {
     public void getPositionForView_shouldReturnInvalidPostionForViewThatIsNotFound() throws Exception {
         prepareWithListAdapter();
         assertThat(listView.getPositionForView(new View(null)), equalTo(AdapterView.INVALID_POSITION));
+    }
+
+    @Test
+    public void revalidate_withALazyAdapterShouldWork() {
+        ListAdapter lazyAdapter = new ListAdapter() {
+            List<String> lazyItems = Arrays.asList("a", "b", "c");
+            @Override public View getView(int position, View convertView, ViewGroup parent) {
+                if (items.isEmpty()) items.addAll(lazyItems);
+                return super.getView(position, convertView, parent);
+            }
+            @Override public int getCount() {
+                return lazyItems.size();
+            }
+        };
+        listView.setAdapter(lazyAdapter);
+        ShadowHandler.idleMainLooper();
+        shadowOf(listView).checkValidity();
     }
 
     private ListAdapter prepareWithListAdapter() {
