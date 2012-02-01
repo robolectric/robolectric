@@ -30,7 +30,28 @@ public class ShadowLocationManager {
     private Criteria lastBestProviderCriteria;
     private boolean lastBestProviderEnabledOnly;
     private String bestProvider;
-    private List<LocationListener> requestLocationUdpateListeners = new ArrayList<LocationListener>();
+
+    /** Location listeners along with metadata on when they should be fired. */
+    private static final class ListenerRegistration {
+        final long minTime;
+        final float minDistance;
+        Location lastSeenLocation;
+        long lastSeenTime;
+        final LocationListener listener;
+
+        ListenerRegistration(long minTime, float minDistance, Location locationAtCreation,
+                             LocationListener listener) {
+            this.minTime = minTime;
+            this.minDistance = minDistance;
+            this.lastSeenTime = locationAtCreation == null ? 0 : locationAtCreation.getTime();
+            this.lastSeenLocation = locationAtCreation;
+            this.listener = listener;
+        }
+    }
+
+    /** Mapped by provider. */
+    private final Map<String, List<ListenerRegistration>> locationListeners =
+            new HashMap<String, List<ListenerRegistration>>();
 
     @Implementation
     public boolean isProviderEnabled(String provider) {
@@ -96,12 +117,23 @@ public class ShadowLocationManager {
 
     @Implementation
     public void requestLocationUpdates(String provider, long minTime, float minDistance, LocationListener listener) {
-        requestLocationUdpateListeners.add(listener);
+        List<ListenerRegistration> providerListeners = locationListeners.get(provider);
+        if (providerListeners == null) {
+            providerListeners = new ArrayList<ListenerRegistration>();
+            locationListeners.put(provider, providerListeners);
+        }
+        providerListeners.add(new ListenerRegistration(
+                minTime, minDistance, copyOf(getLastKnownLocation(provider)), listener));
     }
 
     @Implementation
     public void removeUpdates(LocationListener listener) {
-        while (requestLocationUdpateListeners.remove(listener));
+        for (Map.Entry<String, List<ListenerRegistration>> entry : locationListeners.entrySet()) {
+            List<ListenerRegistration> listenerRegistrations = entry.getValue();
+            for (int i = listenerRegistrations.size() - 1; i >= 0; i--) {
+                if (listenerRegistrations.get(i).listener.equals(listener)) listenerRegistrations.remove(i);
+            }
+        }
     }
 
 
@@ -157,6 +189,67 @@ public class ShadowLocationManager {
      * @return lastRequestedLocationUpdatesLocationListener
      */
     public List<LocationListener> getRequestLocationUpdateListeners() {
-        return requestLocationUdpateListeners;
+        List<LocationListener> all = new ArrayList<LocationListener>();
+        for (Map.Entry<String, List<ListenerRegistration>> entry : locationListeners.entrySet()) {
+            for (ListenerRegistration reg : entry.getValue()) {
+                all.add(reg.listener);
+            }
+        }
+
+        return all;
+    }
+
+    public void simulateLocation(Location location) {
+        setLastKnownLocation(location.getProvider(), location);
+
+        List<ListenerRegistration> providerListeners = locationListeners.get(
+                location.getProvider());
+        if (providerListeners == null) return;
+
+        for (ListenerRegistration listenerReg : providerListeners) {
+            if(listenerReg.lastSeenLocation != null && location != null) {
+                float distanceChange = distanceBetween(location, listenerReg.lastSeenLocation);
+                boolean withinMinDistance = distanceChange < listenerReg.minDistance;
+                boolean exceededMinTime = location.getTime() - listenerReg.lastSeenTime > listenerReg.minTime;
+                if (withinMinDistance && !exceededMinTime) continue;
+            }
+            listenerReg.lastSeenLocation = copyOf(location);
+            listenerReg.lastSeenTime = location == null ? 0 : location.getTime();
+            listenerReg.listener.onLocationChanged(copyOf(location));
+        }
+    }
+
+    private Location copyOf(Location location) {
+        if (location == null) return null;
+        Location copy = new Location(location);
+        copy.setAccuracy(location.getAccuracy());
+        copy.setAltitude(location.getAltitude());
+        copy.setBearing(location.getBearing());
+        copy.setExtras(location.getExtras());
+        copy.setLatitude(location.getLatitude());
+        copy.setLongitude(location.getLongitude());
+        copy.setProvider(location.getProvider());
+        copy.setSpeed(location.getSpeed());
+        copy.setTime(location.getTime());
+        return copy;
+    }
+
+    /**
+     * Returns the distance between the two locations in meters.
+     * Adapted from: http://stackoverflow.com/questions/837872/calculate-distance-in-meters-when-you-know-longitude-and-latitude-in-java
+     */
+    private static float distanceBetween(Location location1, Location location2) {
+        double earthRadius = 3958.75;
+        double latDifference = Math.toRadians(location2.getLatitude() - location1.getLatitude());
+        double lonDifference = Math.toRadians(location2.getLongitude() - location2.getLongitude());
+        double a = Math.sin(latDifference/2) * Math.sin(latDifference/2) +
+                Math.cos(Math.toRadians(location1.getLatitude())) * Math.cos(Math.toRadians(location2.getLatitude())) *
+                        Math.sin(lonDifference/2) * Math.sin(lonDifference/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        double dist = Math.abs(earthRadius * c);
+
+        int meterConversion = 1609;
+
+        return new Float(dist * meterConversion);
     }
 }
