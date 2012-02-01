@@ -4,6 +4,7 @@ import com.xtremelabs.robolectric.RobolectricConfig;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -11,6 +12,8 @@ import java.io.Reader;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.Collection;
+import java.util.Map;
+import java.util.Properties;
 
 import static org.junit.Assert.assertTrue;
 
@@ -55,8 +58,15 @@ public abstract class TestUtil {
             File roboTestDir = file("robolectric", "src", "test", "resources");
             if (hasTestManifest(roboTestDir)) return testDirLocation = roboTestDir;
 
+            File submoduleDir = file("submodules", "robolectric", "src", "test", "resources");
+            if (hasTestManifest(submoduleDir)) return testDirLocation = submoduleDir;
+            
+            //required for robolectric-sqlite to find resources to test against
+            File roboSiblingTestDir = file(new File(new File(".").getAbsolutePath()).getParentFile().getParentFile(),"robolectric", "src", "test", "resources");
+            if (hasTestManifest(roboSiblingTestDir)) return testDirLocation = roboSiblingTestDir;
+            
             throw new RuntimeException("can't find your TestAndroidManifest.xml in "
-                    + testDir.getAbsolutePath() + " or " + roboTestDir.getAbsolutePath());
+                    + testDir.getAbsolutePath() + " or " + roboTestDir.getAbsolutePath() + "\n or " + roboSiblingTestDir.getAbsolutePath());
         } else {
             return testDirLocation;
         }
@@ -72,6 +82,22 @@ public abstract class TestUtil {
 
     public static RobolectricConfig newConfig(String androidManifestFile) {
         return new RobolectricConfig(resourceFile(androidManifestFile), (File) null, null);
+    }
+
+    public static File getSystemResourceDir(String... paths) throws Exception {
+       
+       Map<String,String> env = System.getenv();
+       String sdkDir;
+       if (env.containsKey("ANDROID_HOME")) {
+    	   sdkDir = env.get("ANDROID_HOME");
+       } else {
+    	    Properties localProperties = new Properties();
+           	localProperties.load(new FileInputStream(new File("local.properties")));
+           	PropertiesHelper.doSubstitutions(localProperties);
+           	sdkDir = localProperties.getProperty("sdk.dir");             
+       }
+
+        return file(new File(sdkDir, "platforms/android-10/data/res/"), paths);
     }
 
     public static String readString(InputStream is) throws IOException {

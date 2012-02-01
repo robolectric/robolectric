@@ -53,6 +53,29 @@ public class SchedulerTest {
     }
 
     @Test
+    public void testShadowPostAtFrontOfQueue() throws Exception {
+        scheduler.post(new AddToTranscript("one"));
+        scheduler.post(new AddToTranscript("two"));
+        scheduler.postAtFrontOfQueue(new AddToTranscript("three"));
+
+        scheduler.runOneTask();
+        transcript.assertEventsSoFar("three");
+
+        scheduler.runOneTask();
+        transcript.assertEventsSoFar("one");
+
+        scheduler.runOneTask();
+        transcript.assertEventsSoFar("two");
+    }
+
+    @Test
+    public void testShadowPostAtFrontOfQueue_whenUnpaused() throws Exception {
+        scheduler.unPause();
+        scheduler.postAtFrontOfQueue(new AddToTranscript("three"));
+        transcript.assertEventsSoFar("three");
+    }
+
+    @Test
     public void testShadowPostDelayed_WhenMoreItemsAreAdded() throws Exception {
         scheduler.postDelayed(new Runnable() {
             @Override
@@ -79,6 +102,19 @@ public class SchedulerTest {
 
         scheduler.advanceBy(999);
         transcript.assertEventsSoFar("three");
+    }
+
+    @Test
+    public void removeShouldRemoveAllInstancesOfRunnableFromQueue() throws Exception {
+        scheduler.post(new TestRunnable());
+        TestRunnable runnable = new TestRunnable();
+        scheduler.post(runnable);
+        scheduler.post(runnable);
+        assertThat(scheduler.enqueuedTaskCount(), equalTo(3));
+        scheduler.remove(runnable);
+        assertThat(scheduler.enqueuedTaskCount(), equalTo(1));
+        scheduler.advanceToLastPostedRunnable();
+        assertThat(runnable.wasRun, equalTo(false));
     }
 
     @Test

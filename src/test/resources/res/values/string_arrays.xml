@@ -14,4 +14,9 @@
         <item>Aloha</item>
         <item>Hawai</item>
     </string-array>
+
+    <string-array name="emailAddressTypes">
+        <item>Doggy</item>
+        <item>Catty</item>
+    </string-array>
 </resources>

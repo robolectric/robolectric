@@ -9,7 +9,7 @@ import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 @SuppressWarnings({"UnusedDeclaration"})
 public class TestWindowManager implements WindowManager {
 
-    private static Display display;
+    private Display display;
 
     @Override
     public void addView(View arg0, android.view.ViewGroup.LayoutParams arg1) {
@@ -31,5 +31,4 @@ public class TestWindowManager implements WindowManager {
     @Override
     public void removeViewImmediate(View arg0) {
     }
-
 }

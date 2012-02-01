@@ -8,9 +8,22 @@ pairs:
   jm: Joe Moore
   if: Ian Fisher; ifisher
   pg: Phil Goodwin; phil
+  pp: Phil Plante
   rr: Ryan Richard; rrichard
   cw: Chee Wong;
   gv: Gregg Van Hove; gvanhove
+  rk: Rick Kawala
+  df: David Farber; dfarber
+  gj: Glenn Jahnke; glennj
+  am: Alexander Murmann
+  jt: Jesse Toth
+  lt: Lenny Turetsky
+  mg: Mike Grafton
+  gc: Greg Choi
+  tl: Tim Labeeuw
+  mh: Michael Haddad; mhaddad
+  mm: Mike Mazur; mmazur
+
 email:
   prefix: pair
   domain: pivotallabs.com

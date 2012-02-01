@@ -14,9 +14,7 @@ import java.io.InputStream;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AssetManagerTest {
@@ -60,6 +58,14 @@ public class AssetManagerTest {
         testPath = "docs" + sp + "extra" + sp + "testing";
         files = Arrays.asList(assetManager.list(testPath));
         assertTrue(files.contains("hello.txt"));
+
+        testPath = "assetsHome.txt";
+        files = Arrays.asList(assetManager.list(testPath));
+        assertFalse(files.contains(testPath));
+
+        testPath = "bogus.file";
+        files = Arrays.asList(assetManager.list(testPath));
+        assertEquals(0, files.size());
     }
 
     @Test

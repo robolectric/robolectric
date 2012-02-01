@@ -2,13 +2,9 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
 import android.content.res.Resources;
+import android.os.IBinder;
 import android.os.Looper;
 import android.view.LayoutInflater;
 import android.widget.Toast;
@@ -20,12 +16,7 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.util.Scheduler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Hashtable;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -47,6 +38,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         SYSTEM_SERVICE_MAP.put(Context.ACTIVITY_SERVICE, "android.app.ActivityManager");
         SYSTEM_SERVICE_MAP.put(Context.POWER_SERVICE, "android.os.PowerManager");
         SYSTEM_SERVICE_MAP.put(Context.ALARM_SERVICE, "android.app.AlarmManager");
+        SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.text.ClipboardManager");
         SYSTEM_SERVICE_MAP.put(Context.NOTIFICATION_SERVICE, "android.app.NotificationManager");
         SYSTEM_SERVICE_MAP.put(Context.KEYGUARD_SERVICE, "android.app.KeyguardManager");
         SYSTEM_SERVICE_MAP.put(Context.LOCATION_SERVICE, "android.location.LocationManager");
@@ -70,12 +62,13 @@ public class ShadowApplication extends ShadowContextWrapper {
     private Map<String, Object> systemServices = new HashMap<String, Object>();
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
+    private List<Intent> stoppedServies = new ArrayList<Intent>();
+    private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
     private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
-    private final Looper mainLooper = newInstanceOf(Looper.class);
-    private Looper currentLooper = mainLooper;
+    private Looper mainLooper = ShadowLooper.myLooper();
     private Scheduler backgroundScheduler = new Scheduler();
-    private Map<String, Hashtable<String, Object>> sharedPreferenceMap = new HashMap<String, Hashtable<String, Object>>();
+    private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<String, Map<String, Object>>();
     private ArrayList<Toast> shownToasts = new ArrayList<Toast>();
     private ShadowAlertDialog latestAlertDialog;
     private ShadowDialog latestDialog;
@@ -85,6 +78,10 @@ public class ShadowApplication extends ShadowContextWrapper {
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
     AppWidgetManager appWidgetManager;
+    private ServiceConnection serviceConnection;
+    private ComponentName componentNameForBindService;
+    private IBinder serviceForBindService;
+    private List<String> unbindableActions = new ArrayList<String>();
 
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
@@ -109,12 +106,14 @@ public class ShadowApplication extends ShadowContextWrapper {
         return backgroundScheduler;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public Context getApplicationContext() {
         return realApplication;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public Resources getResources() {
         if (resources == null) {
             resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);
@@ -131,7 +130,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     @Implementation
-    @Override public ContentResolver getContentResolver() {
+    @Override
+    public ContentResolver getContentResolver() {
         if (contentResolver == null) {
             contentResolver = new ContentResolver(realApplication) {
             };
@@ -140,7 +140,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     @Implementation
-    @Override public Object getSystemService(String name) {
+    @Override
+    public Object getSystemService(String name) {
         if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
             return LayoutInflater.from(realApplication);
         } else {
@@ -161,22 +162,67 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     @Implementation
-    @Override public void startActivity(Intent intent) {
+    @Override
+    public void startActivity(Intent intent) {
         startedActivities.add(intent);
     }
 
     @Implementation
-    @Override public ComponentName startService(Intent intent) {
+    @Override
+    public ComponentName startService(Intent intent) {
         startedServices.add(intent);
         return new ComponentName("some.service.package", "SomeServiceName-FIXME");
     }
 
+    @Implementation
+    @Override
+    public boolean stopService(Intent name) {
+        stoppedServies.add(name);
+
+        return startedServices.contains(name);
+    }
+
+    public void setComponentNameAndServiceForBindService(ComponentName name, IBinder service) {
+        this.componentNameForBindService = name;
+        this.serviceForBindService = service;
+    }
+
+    @Implementation
+    public boolean bindService(Intent intent, final ServiceConnection serviceConnection, int i) {
+        if (unbindableActions.contains(intent.getAction())) {
+            return false;
+        }
+        startedServices.add(intent);
+        shadowOf(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                serviceConnection.onServiceConnected(componentNameForBindService, serviceForBindService);
+            }
+        }, 0);
+        return true;
+    }
+
+    @Implementation
+    public void unbindService(final ServiceConnection serviceConnection) {
+        unboundServiceConnections.add(serviceConnection);
+        shadowOf(Looper.getMainLooper()).post(new Runnable() {
+            @Override
+            public void run() {
+                serviceConnection.onServiceDisconnected(componentNameForBindService);
+            }
+        }, 0);
+    }
+
+    public List<ServiceConnection> getUnboundServiceConnections() {
+        return unboundServiceConnections;
+    }
     /**
      * Consumes the most recent {@code Intent} started by {@link #startActivity(android.content.Intent)} and returns it.
      *
      * @return the most recently started {@code Intent}
      */
-    @Override public Intent getNextStartedActivity() {
+    @Override
+    public Intent getNextStartedActivity() {
         if (startedActivities.isEmpty()) {
             return null;
         } else {
@@ -190,7 +236,8 @@ public class ShadowApplication extends ShadowContextWrapper {
      *
      * @return the most recently started {@code Intent}
      */
-    @Override public Intent peekNextStartedActivity() {
+    @Override
+    public Intent peekNextStartedActivity() {
         if (startedActivities.isEmpty()) {
             return null;
         } else {
@@ -203,7 +250,8 @@ public class ShadowApplication extends ShadowContextWrapper {
      *
      * @return the most recently started {@code Intent}
      */
-    @Override public Intent getNextStartedService() {
+    @Override
+    public Intent getNextStartedService() {
         if (startedServices.isEmpty()) {
             return null;
         } else {
@@ -217,11 +265,33 @@ public class ShadowApplication extends ShadowContextWrapper {
      *
      * @return the most recently started {@code Intent}
      */
-    @Override public Intent peekNextStartedService() {
+    @Override
+    public Intent peekNextStartedService() {
         if (startedServices.isEmpty()) {
             return null;
         } else {
             return startedServices.get(0);
+        }
+    }
+
+    /**
+     * Clears all {@code Intent} started by {@link #startService(android.content.Intent)}
+     */
+    @Override
+    public void clearStartedServices() {
+        startedServices.clear();
+    }
+
+    /**
+     * Consumes the {@code Intent} requested to stop a service by {@link #stopService(android.content.Intent)}
+     * from the bottom of the stack of stop requests.
+     */
+    @Override
+    public Intent getNextStoppedService() {
+        if (stoppedServies.isEmpty()) {
+            return null;
+        } else {
+            return stoppedServies.remove(0);
         }
     }
 
@@ -241,9 +311,12 @@ public class ShadowApplication extends ShadowContextWrapper {
      * @param intent the {@code Intent} to broadcast
      *               todo: enqueue the Intent for later inspection
      */
-    @Override @Implementation
+    @Override
+    @Implementation
     public void sendBroadcast(Intent intent) {
-        for (Wrapper wrapper : registeredReceivers) {
+        List<Wrapper> copy = new ArrayList<Wrapper>();
+        copy.addAll(registeredReceivers);
+        for (Wrapper wrapper : copy) {
             if (wrapper.intentFilter.matchAction(intent.getAction())) {
                 wrapper.broadcastReceiver.onReceive(realApplication, intent);
             }
@@ -255,7 +328,8 @@ public class ShadowApplication extends ShadowContextWrapper {
      *
      * @return {@code null}
      */
-    @Override @Implementation
+    @Override
+    @Implementation
     public Intent registerReceiver(BroadcastReceiver receiver, IntentFilter filter) {
         return registerReceiverWithContext(receiver, filter, realApplication);
     }
@@ -265,7 +339,8 @@ public class ShadowApplication extends ShadowContextWrapper {
         return null;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
         boolean found = false;
         Iterator<Wrapper> iterator = registeredReceivers.iterator();
@@ -301,6 +376,23 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    public void assertNoBroadcastListenersOfActionRegistered(Context context, String action) {
+        for (Wrapper registeredReceiver : registeredReceivers) {
+            if (registeredReceiver.context == context) {
+                Iterator<String> actions = registeredReceiver.intentFilter.actionsIterator();
+                while (actions.hasNext()) {
+                    if (actions.next().equals(action)) {
+                        RuntimeException e = new IllegalStateException("Unexpected BroadcastReceiver on " + context +
+                                " with action " + action + " "
+                                + registeredReceiver.broadcastReceiver + " that was originally registered here:");
+                        e.setStackTrace(registeredReceiver.exception.getStackTrace());
+                        throw e;
+                    }
+                }
+            }
+        }
+    }
+
     /**
      * Non-Android accessor.
      *
@@ -332,16 +424,13 @@ public class ShadowApplication extends ShadowContextWrapper {
         return fakeHttpLayer;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public Looper getMainLooper() {
         return mainLooper;
     }
 
-    public Looper getCurrentLooper() {
-        return currentLooper;
-    }
-
-    public Map<String, Hashtable<String, Object>> getSharedPreferenceMap() {
+    public Map<String, Map<String, Object>> getSharedPreferenceMap() {
         return sharedPreferenceMap;
     }
 
@@ -365,10 +454,18 @@ public class ShadowApplication extends ShadowContextWrapper {
         return bluetoothAdapter;
     }
 
+    public void declareActionUnbindable(String action) {
+        unbindableActions.add(action);
+    }
+
+    public void setSystemService(String key, Object service) {
+        systemServices.put(key, service);
+    }
+
     public class Wrapper {
-        private BroadcastReceiver broadcastReceiver;
-        private IntentFilter intentFilter;
-        private Context context;
+        public BroadcastReceiver broadcastReceiver;
+        public IntentFilter intentFilter;
+        public Context context;
         public Throwable exception;
 
         public Wrapper(BroadcastReceiver broadcastReceiver, IntentFilter intentFilter, Context context) {
@@ -376,6 +473,18 @@ public class ShadowApplication extends ShadowContextWrapper {
             this.intentFilter = intentFilter;
             this.context = context;
             exception = new Throwable();
+        }
+
+        public BroadcastReceiver getBroadcastReceiver() {
+            return broadcastReceiver;
+        }
+
+        public IntentFilter getIntentFilter() {
+            return intentFilter;
+        }
+
+        public Context getContext() {
+            return context;
         }
     }
 }

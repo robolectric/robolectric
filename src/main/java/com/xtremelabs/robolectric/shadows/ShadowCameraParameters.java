@@ -84,8 +84,8 @@ public class ShadowCameraParameters {
     @Implementation
     public List<int[]> getSupportedPreviewFpsRange() {
         List<int[]> supportedRanges = new ArrayList<int[]>();
-        addRange(supportedRanges, 15, 15);
-        addRange(supportedRanges, 10, 30);
+        addRange(supportedRanges, 15000, 15000);
+        addRange(supportedRanges, 10000, 30000);
         return supportedRanges;
     }
 

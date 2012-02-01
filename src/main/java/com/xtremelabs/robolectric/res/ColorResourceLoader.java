@@ -11,7 +11,6 @@ public class ColorResourceLoader extends XpathResourceXmlLoader implements Resou
     private static Map<String, Integer> androidColors = new HashMap<String, Integer>();
     private static Map<Integer, Integer> androidColorsFromIds = new HashMap<Integer, Integer>();
 
-
     static {
         androidColors.put("black", Color.BLACK);
         androidColors.put("darkgray", Color.DKGRAY);
@@ -24,6 +23,7 @@ public class ColorResourceLoader extends XpathResourceXmlLoader implements Resou
         androidColors.put("yellow", Color.YELLOW);
         androidColors.put("cyan", Color.CYAN);
         androidColors.put("magenta", Color.MAGENTA);
+        androidColors.put("transparent", Color.TRANSPARENT);
 
         androidColors.put("@android:color/black", Color.BLACK);
         androidColors.put("@android:color/darkgray", Color.DKGRAY);
@@ -59,14 +59,15 @@ public class ColorResourceLoader extends XpathResourceXmlLoader implements Resou
     }
 
     @Override
-    protected void processNode(Node node, String name, boolean ignored) {
-        colorResolver.processResource(name, node.getTextContent(), this);
+    protected void processNode(Node node, String name, boolean isSystem) {
+        colorResolver.processResource(name, node.getTextContent(), this, isSystem);
     }
 
     @Override
     public Integer convertRawValue(String rawValue) {
         if (rawValue.startsWith("#")) {
-            return (int) (long) Long.valueOf(rawValue.replaceAll("#", ""), 16);
+            long color = Long.parseLong(rawValue.substring(1), 16);
+            return (int) color;
         } else if (androidColors.containsKey(rawValue)) {
             return androidColors.get(rawValue);
         }

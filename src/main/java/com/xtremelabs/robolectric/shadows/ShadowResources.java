@@ -1,25 +1,31 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.util.Locale;
+
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-
-import java.io.InputStream;
-import java.util.Locale;
-
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
@@ -29,6 +35,9 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)
 public class ShadowResources {
+    private float density = 1.0f;
+    Configuration configuration = null;
+    
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
         ShadowResources shadowResources = shadowOf(resources);
         if (shadowResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
@@ -38,8 +47,6 @@ public class ShadowResources {
 
     @RealObject Resources realResources;
     private ResourceLoader resourceLoader;
-
-    private Configuration configuration;
 
     public ShadowResources() {
         Configuration configuration = new Configuration();
@@ -57,12 +64,32 @@ public class ShadowResources {
     }
 
     @Implementation
+    public  int getIdentifier(String name, String defType, String defPackage) {
+        Integer index = 0;
+        
+        ResourceExtractor resourceExtractor = resourceLoader.getResourceExtractor();
+        
+        index = resourceExtractor.getResourceId(defType + "/" + name);
+        if (index == null) {
+            return 0;
+        }
+        return index;
+    }
+    
+    @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
         return resourceLoader.getColorValue(id);
     }
-
+   
     @Implementation
     public Configuration getConfiguration() {
+    	if (configuration==null) {
+    		configuration = new Configuration();
+        	configuration.setToDefaults();
+    	}
+        if (configuration.locale == null) {
+            configuration.locale = Locale.getDefault();
+        }
         return configuration;
     }
 
@@ -75,6 +102,17 @@ public class ShadowResources {
     public String getString(int id, Object... formatArgs) throws Resources.NotFoundException {
         String raw = getString(id);
         return String.format(Locale.ENGLISH, raw, formatArgs);
+    }
+
+    @Implementation
+    public String getQuantityString(int id, int quantity, Object... formatArgs) throws Resources.NotFoundException {
+        String raw = getQuantityString(id, quantity);
+        return String.format(Locale.ENGLISH, raw, formatArgs);
+    }
+
+    @Implementation
+    public String getQuantityString(int id, int quantity) throws Resources.NotFoundException {
+        return resourceLoader.getPluralStringValue(id, quantity);
     }
 
     @Implementation
@@ -101,16 +139,35 @@ public class ShadowResources {
         return getString(id);
     }
 
+    public void setDensity(float density) {
+        this.density = density;
+    }
+
     @Implementation
     public DisplayMetrics getDisplayMetrics() {
-        return new DisplayMetrics();
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        displayMetrics.density = this.density;
+        return displayMetrics;
     }
 
-    @Implementation
+	@Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
-        return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
-    }
 
+		ResourceLoader resLoader = Robolectric.shadowOf( Robolectric.application ).getResourceLoader();
+		
+		// Check if this drawable is an XML drawable
+		Drawable xmlDrawable = resLoader.getXmlDrawable( drawableResourceId );
+		if( xmlDrawable != null ) { return xmlDrawable; }
+		
+		Drawable animDrawable = resLoader.getAnimDrawable( drawableResourceId );
+		if( animDrawable != null ) { return animDrawable; }
+		
+		Drawable colorDrawable = resLoader.getColorDrawable( drawableResourceId );
+		if( colorDrawable != null ) { return colorDrawable; }
+
+		return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
+    }
+    
     @Implementation
     public float getDimension(int id) throws Resources.NotFoundException {
         // todo: get this value from the xml resources and scale it by display metrics [xw 20101011]

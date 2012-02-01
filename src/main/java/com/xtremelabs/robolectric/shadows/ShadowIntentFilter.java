@@ -15,6 +15,8 @@ import java.util.List;
 @Implements(IntentFilter.class)
 public class ShadowIntentFilter {
     List<String> actions = new ArrayList<String>();
+    List<String> schemes = new ArrayList<String>();
+    List<IntentFilter.AuthorityEntry> authoritites = new ArrayList<IntentFilter.AuthorityEntry>();
 
     public void __constructor__(String action) {
         actions.add(action);
@@ -38,5 +40,25 @@ public class ShadowIntentFilter {
     @Implementation
     public boolean matchAction(String action) {
         return actions.contains(action);
+    }
+
+    @Implementation
+    public void addDataAuthority(String host, String port) {
+        authoritites.add(new IntentFilter.AuthorityEntry(host, port));
+    }
+
+    @Implementation
+    public final  IntentFilter.AuthorityEntry getDataAuthority(int index) {
+        return authoritites.get(index);
+    }
+
+    @Implementation
+    public void addDataScheme(String scheme) {
+        schemes.add(scheme);
+    }
+
+    @Implementation
+    public String getDataScheme(int index) {
+        return schemes.get(index);
     }
 }

@@ -2,27 +2,32 @@ package com.xtremelabs.robolectric.res;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.widget.ImageView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.util.CustomView;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 public class AttrResourceLoaderTest {
+    public static final String SYSTEM_NAMESPACE = "http://schemas.android.com/apk/res/android";
     private AttrResourceLoader attrResourceLoader;
 
     @Before
     public void setUp() throws Exception {
         attrResourceLoader = makeResourceLoader();
         new DocumentLoader(attrResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
+        new DocumentLoader(attrResourceLoader).loadSystemResourceXmlDir(getSystemResourceDir("values"));
     }
 
     private AttrResourceLoader makeResourceLoader() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor();
         resourceExtractor.addLocalRClass(R.class);
+        resourceExtractor.addSystemRClass(android.R.class);
         return new AttrResourceLoader(resourceExtractor);
     }
 
@@ -37,6 +42,14 @@ public class AttrResourceLoaderTest {
         assertThat(attrResourceLoader.hasAttributeFor(CustomView.class, "xxx", "itemType"), equalTo(true));
 
         assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, "xxx", "itemType", "string"), equalTo("1"));
+        assertThat(attrResourceLoader.hasAttributeFor(CustomView.class, "xxx", "otherItemType"), equalTo(false));
+    }
+
+    @Test
+    public void testAttributesAreResolvedForSystemAttrs() throws Exception {
+        String expected = "" + ImageView.ScaleType.FIT_CENTER.ordinal();
+        assertThat(attrResourceLoader.convertValueToEnum(ImageView.class, SYSTEM_NAMESPACE, "scaleType", "fitCenter"), equalTo(expected));
+        assertThat(attrResourceLoader.hasAttributeFor(ImageView.class, SYSTEM_NAMESPACE, "scaleType"), equalTo(true));
     }
 
     @Test
@@ -74,12 +87,12 @@ public class AttrResourceLoaderTest {
         attrResourceLoader = makeResourceLoader();
         new DocumentLoader(attrResourceLoader).loadSystemResourceXmlDir(resourceFile("res", "values"));
 
-        assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, "http://schemas.android.com/apk/res/android",
+        assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, SYSTEM_NAMESPACE,
                 "gravity", "center"), equalTo("0x11"));
-        assertThat(attrResourceLoader.hasAttributeFor(CustomView.class, "http://schemas.android.com/apk/res/android",
+        assertThat(attrResourceLoader.hasAttributeFor(CustomView.class, SYSTEM_NAMESPACE,
                 "gravity"), equalTo(true));
 
-        assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, "http://schemas.android.com/apk/res/android",
+        assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, SYSTEM_NAMESPACE,
                 "gravity", "fill_vertical"), equalTo("0x70"));
     }
 
