@@ -1,10 +1,16 @@
 package com.xtremelabs.robolectric.bytecode;
 
+import java.io.File;
 import java.util.ArrayList;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
+
+
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
+import org.apache.commons.configuration.PropertiesConfiguration;
 
 public class RobolectricClassLoader extends javassist.Loader {
     private ClassCache classCache;
@@ -19,7 +25,16 @@ public class RobolectricClassLoader extends javassist.Loader {
         delegateLoadingOf(AndroidTranslator.class.getName());
         delegateLoadingOf(ClassHandler.class.getName());
 
-        classCache = new ClassCache("tmp/cached-robolectric-classes.jar", AndroidTranslator.CACHE_VERSION);
+        File classCacheTmpDirectory = new File("tmp");
+        try {
+            final Configuration config = new PropertiesConfiguration("roboelectric.properties");
+            classCacheTmpDirectory = new File(config.getString("cached.roboelectric.classes.path"));
+        } catch (ConfigurationException e) {
+            // ignore and fallback to default configuration
+        }
+
+        classCache = new ClassCache(new File(classCacheTmpDirectory, "cached-robolectric-classes.jar").getAbsolutePath(), 
+                AndroidTranslator.CACHE_VERSION);
         try {
             ClassPool classPool = new ClassPool();
             classPool.appendClassPath(new LoaderClassPath(RobolectricClassLoader.class.getClassLoader()));
