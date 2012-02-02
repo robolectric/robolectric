@@ -17,8 +17,10 @@ import java.io.InputStream;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 
@@ -44,6 +46,43 @@ public class ContentResolverTest {
 
         assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues()), equalTo(uri21));
         assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues()), equalTo(uri22));
+    }
+    
+    @Test
+    public void insert_shouldTrackInsertStatements() throws Exception {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("foo", "bar");
+        contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
+        assertThat(shadowContentResolver.getInsertStatements().size(), is(1));
+        assertThat(shadowContentResolver.getInsertStatements().get(0).getUri(), equalTo(EXTERNAL_CONTENT_URI));
+        assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues().getAsString("foo"), equalTo("bar"));
+        
+        contentValues = new ContentValues();
+        contentValues.put("hello", "world");
+        contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
+        assertThat(shadowContentResolver.getInsertStatements().size(), is(2));
+        assertThat(shadowContentResolver.getInsertStatements().get(1).getContentValues().getAsString("hello"), equalTo("world"));
+    }
+    
+    @Test
+    public void insert_shouldTrackUpdateStatements() throws Exception {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("foo", "bar");
+        contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] { "awesome" });
+        assertThat(shadowContentResolver.getUpdateStatements().size(), is(1));
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getUri(), equalTo(EXTERNAL_CONTENT_URI));
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getContentValues().getAsString("foo"), equalTo("bar"));
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getWhere(), equalTo("robolectric"));
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getSelectionArgs(), equalTo(new String[] { "awesome" }));
+        
+        contentValues = new ContentValues();
+        contentValues.put("hello", "world");
+        contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, null, null);
+        assertThat(shadowContentResolver.getUpdateStatements().size(), is(2));
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getUri(), equalTo(EXTERNAL_CONTENT_URI));
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getContentValues().getAsString("hello"), equalTo("world"));
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getWhere(), nullValue());
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getSelectionArgs(), nullValue());
     }
 
     @Test

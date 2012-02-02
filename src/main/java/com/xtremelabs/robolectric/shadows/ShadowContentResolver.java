@@ -13,14 +13,15 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-@SuppressWarnings({ "UnusedDeclaration" })
 @Implements(ContentResolver.class)
 public class ShadowContentResolver {
     private int nextDatabaseIdForInserts;
+    private int nextDatabaseIdForUpdates;
 
     private TestCursor cursor;
+    private final List<InsertStatement> insertStatements = new ArrayList<InsertStatement>();
+    private final List<UpdateStatement> updateStatements = new ArrayList<UpdateStatement>();
     private final List<DeleteStatement> deleteStatements = new ArrayList<DeleteStatement>();
     private HashMap<Uri, TestCursor> uriCursorMap = new HashMap<Uri, TestCursor>();
 
@@ -41,7 +42,16 @@ public class ShadowContentResolver {
 
     @Implementation
     public final Uri insert(Uri url, ContentValues values) {
+        InsertStatement insertStatement = new InsertStatement(url, values);
+        insertStatements.add(insertStatement);
         return Uri.parse(url.toString() + "/" + nextDatabaseIdForInserts++);
+    }
+    
+    @Implementation
+    public int update(Uri uri, ContentValues values, String where, String[] selectionArgs) {
+        UpdateStatement updateStatement = new UpdateStatement(uri, values, where, selectionArgs);
+        updateStatements.add(updateStatement);
+        return nextDatabaseIdForUpdates++;
     }
 
     @Implementation
@@ -76,6 +86,18 @@ public class ShadowContentResolver {
     public void setNextDatabaseIdForInserts(int nextId) {
         nextDatabaseIdForInserts = nextId;
     }
+    
+    public void setNextDatabaseIdForUpdates(int nextId) {
+        nextDatabaseIdForUpdates = nextId;
+    }
+
+    public List<InsertStatement> getInsertStatements() {
+        return insertStatements;
+    }
+    
+    public List<UpdateStatement> getUpdateStatements() {
+        return updateStatements;
+    }
 
     public List<Uri> getDeletedUris() {
         List<Uri> uris = new ArrayList<Uri>();
@@ -96,6 +118,54 @@ public class ShadowContentResolver {
             return cursor;
         } else {
             return null;
+        }
+    }
+    
+    public class InsertStatement {
+        private final Uri uri;
+        private final ContentValues contentValues;
+        
+        public InsertStatement(Uri uri, ContentValues contentValues) {
+            this.uri = uri;
+            this.contentValues = contentValues;
+        }
+        
+        public Uri getUri() {
+            return uri;
+        }
+        
+        public ContentValues getContentValues() {
+            return contentValues;
+        }
+    }
+    
+    public class UpdateStatement {
+        private final Uri uri;
+        private final ContentValues values;
+        private final String where;
+        private final String[] selectionArgs;
+        
+        public UpdateStatement(Uri uri, ContentValues values, String where, String[] selectionArgs) {
+            this.uri = uri;
+            this.values = values;
+            this.where = where;
+            this.selectionArgs = selectionArgs;
+        }
+        
+        public Uri getUri() {
+            return uri;
+        }
+        
+        public ContentValues getContentValues() {
+            return values;
+        }
+        
+        public String getWhere() {
+            return where;
+        }
+        
+        public String[] getSelectionArgs() {
+            return selectionArgs;
         }
     }
 
