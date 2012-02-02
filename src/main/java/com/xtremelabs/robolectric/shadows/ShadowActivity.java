@@ -11,6 +11,7 @@ import android.view.MenuInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -99,7 +100,7 @@ public class ShadowActivity extends ShadowContextWrapper {
      */
     @Implementation
     public void setContentView(int layoutResID) {
-        contentView = getLayoutInflater().inflate(layoutResID, null);
+        contentView = getLayoutInflater().inflate(layoutResID, new FrameLayout(realActivity));
         realActivity.onContentChanged();
     }
 
