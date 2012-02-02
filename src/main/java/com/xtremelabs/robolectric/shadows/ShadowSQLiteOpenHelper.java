@@ -4,6 +4,7 @@ import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
+
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -18,8 +19,19 @@ public class ShadowSQLiteOpenHelper {
 
     @RealObject private SQLiteOpenHelper realHelper;
     private static SQLiteDatabase database;
+    
+    private static Context previousContext;
 
     public void __constructor__(Context context, String name, CursorFactory factory, int version) {
+    	if (previousContext == null) {
+    		previousContext = context;
+    	} else {
+    		if(previousContext == context) {
+    			return;
+    		} else {
+    			previousContext = context;
+    		}
+    	}
         if (database != null) {
             database.close();
         }
