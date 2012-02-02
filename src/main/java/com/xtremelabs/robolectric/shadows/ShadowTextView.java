@@ -67,6 +67,19 @@ public class ShadowTextView extends ShadowView {
         sendOnTextChanged(oldValue);
         sendAfterTextChanged();
     }
+    
+    @Implementation 
+    public final void append(CharSequence text)  {
+        CharSequence oldValue = this.text;
+        StringBuffer sb = new StringBuffer(this.text);
+        sb.append(text);
+        this.text = sb.toString();
+        
+        sendBeforeTextChanged(this.text);
+        sendOnTextChanged(oldValue);
+        sendAfterTextChanged();
+        
+    }
 
     @Implementation
     public void setText(int textResourceId) {
