@@ -181,4 +181,14 @@ public class TabHostTest {
         assertThat(tabHost.getCurrentTab(), equalTo(2));
         assertThat(shadowOf(tabHost).getCurrentTabSpec(), equalTo(baz));
     }
+
+    @Test
+    public void setCurrentTabByTagShouldAcceptNullAsParameter() throws Exception {
+        TabHost tabHost = new TabHost(null);
+        TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
+        tabHost.addTab(foo);
+
+        tabHost.setCurrentTabByTag(null);
+        assertThat(tabHost.getCurrentTabTag(), equalTo("Foo"));
+    }
 }

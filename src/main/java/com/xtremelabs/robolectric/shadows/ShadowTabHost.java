@@ -52,7 +52,7 @@ public class ShadowTabHost extends ShadowFrameLayout {
     public void setCurrentTabByTag(String tag) {
         for (int x = 0; x < tabSpecs.size(); x++) {
             TabSpec tabSpec = tabSpecs.get(x);
-            if (tag.equals(tabSpec.getTag())) {
+            if (tabSpec.getTag().equals(tag)) {
                 currentTab = x;
             }
         }
