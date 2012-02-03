@@ -1,19 +1,23 @@
 package com.xtremelabs.robolectric.shadows;
 
 
-import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabase.CursorFactory;
-import android.database.sqlite.SQLiteOpenHelper;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThat;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import android.app.Activity;
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabase.CursorFactory;
+import android.database.sqlite.SQLiteOpenHelper;
+
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class SQLiteOpenHelperTest {
@@ -77,6 +81,46 @@ public class SQLiteOpenHelperTest {
         assertThat(database.isOpen(), equalTo(true));
         helper.close();
         assertThat(database.isOpen(), equalTo(false));
+    }
+    
+    @Test
+    public void testSameContextSameDatabase() throws Exception {
+    	Context c = new Activity();
+    	TestOpenHelper helper1 = new TestOpenHelper(c, "path", null, 1);
+    	SQLiteDatabase db1 = helper1.getWritableDatabase();
+    	
+    	TestOpenHelper helper2 = new TestOpenHelper(c, "path", null, 1);
+    	SQLiteDatabase db2 = helper2.getWritableDatabase();
+    	
+    	assertThat(db1, sameInstance(db2));
+    }
+    
+    @Test
+    public void testDifferentContextDifferentDatabase() throws Exception {
+    	Context c1 = new Activity();
+    	Context c2 = new Activity();
+    	
+    	TestOpenHelper helper1 = new TestOpenHelper(c1, "path", null, 1);
+    	SQLiteDatabase db1 = helper1.getWritableDatabase();
+    	
+    	TestOpenHelper helper2 = new TestOpenHelper(c2, "path", null, 1);
+    	SQLiteDatabase db2 = helper2.getWritableDatabase();
+    	
+    	assertNotSame(db1, db2);
+    }
+    
+    @Test
+    public void testSameContextSameDatabaseAfterClose() throws Exception {
+    	Context c = new Activity();
+    	TestOpenHelper helper1 = new TestOpenHelper(c, "path", null, 1);
+    	SQLiteDatabase db1 = helper1.getWritableDatabase();
+    	
+    	helper1.close();
+    	
+    	TestOpenHelper helper2 = new TestOpenHelper(c, "path", null, 1);
+    	SQLiteDatabase db2 = helper2.getWritableDatabase();
+    	
+    	assertThat(db1, sameInstance(db2));
     }
 
     private void assertInitialDB(SQLiteDatabase database) {
