@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
@@ -53,6 +54,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     private Object lastNonConfigurationInstance;
     private Map<Integer, Dialog> dialogForId = new HashMap<Integer, Dialog>();
     private CharSequence title;
+    private boolean onKeyUpWasCalled;
 
     @Implementation
     public final Application getApplication() {
@@ -74,22 +76,22 @@ public class ShadowActivity extends ShadowContextWrapper {
     public Intent getIntent() {
         return intent;
     }
-    
-    @Implementation(i18nSafe=false)
+
+    @Implementation(i18nSafe = false)
     public void setTitle(CharSequence title) {
-    	this.title = title;
+        this.title = title;
     }
-    
+
     @Implementation
     public void setTitle(int titleId) {
-    	this.title = this.getResources().getString(titleId);
+        this.title = this.getResources().getString(titleId);
     }
-    
+
     @Implementation
     public CharSequence getTitle() {
-    	return title;
+        return title;
     }
-    
+
     /**
      * Sets the {@code contentView} for this {@code Activity} by invoking the
      * {@link android.view.LayoutInflater}
@@ -305,6 +307,24 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public View getCurrentFocus() {
         return currentFocus;
+    }
+
+    @Implementation
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        onKeyUpWasCalled = true;
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            onBackPressed();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean onKeyUpWasCalled() {
+        return onKeyUpWasCalled;
+    }
+
+    public void resetKeyUpWasCalled() {
+        onKeyUpWasCalled = false;
     }
 
     /**

@@ -8,6 +8,7 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 
 import com.xtremelabs.robolectric.ApplicationResolver;
@@ -288,6 +289,28 @@ public class ActivityTest {
 
         int id = activity.getResources().getIdentifier("just_alot_of_crap", "string", "com.xtremelabs.robolectric");
         assertTrue(id == 0);
+    }
+
+    @Test
+    public void onKeyUp_recordsThatItWasCalled() throws Exception {
+        Activity activity = new Activity();
+        boolean consumed = activity.onKeyUp(KeyEvent.KEYCODE_0, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_0));
+
+        assertFalse(consumed);
+        assertTrue(shadowOf(activity).onKeyUpWasCalled());
+
+        shadowOf(activity).resetKeyUpWasCalled();
+        assertFalse(shadowOf(activity).onKeyUpWasCalled());
+    }
+    
+    @Test
+    public void onKeyUp_callsOnBackPressedWhichFinishesTheActivity() throws Exception {
+        Activity activity = new Activity();
+        boolean consumed = activity.onKeyUp(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+
+        assertTrue(consumed);
+        assertTrue(shadowOf(activity).onKeyUpWasCalled());
+        assertTrue(activity.isFinishing());
     }
 
     private static class DialogCreatingActivity extends Activity {
