@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 
+import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -25,6 +26,7 @@ import org.junit.runner.RunWith;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -291,6 +293,16 @@ public class ActivityTest {
         assertTrue(id == 0);
     }
 
+    @Test
+    public void shouldSetContentViewWithFrameLayoutAsParent() throws Exception {
+        Activity activity = new Activity();
+        activity.setContentView(R.layout.toplevel_merge);
+
+        View contentView = shadowOf(activity).getContentView();
+        assertInstanceOf(FrameLayout.class, contentView);
+        assertThat(((FrameLayout)contentView).getChildCount(), equalTo(2));
+    }
+    
     @Test
     public void onKeyUp_recordsThatItWasCalled() throws Exception {
         Activity activity = new Activity();

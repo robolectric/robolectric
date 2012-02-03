@@ -109,6 +109,7 @@ public final class R {
         public static final int with_invalid_onclick = nextId++;
         public static final int text_views = nextId++;
         public static final int text_views_hints = nextId++;
+        public static final int toplevel_merge = nextId++;
     }
 
     public static final class raw {
