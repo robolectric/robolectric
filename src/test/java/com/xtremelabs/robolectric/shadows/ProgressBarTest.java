@@ -21,6 +21,11 @@ public class ProgressBarTest {
     }
 
     @Test
+    public void shouldInitMaxTo100() {
+        assertThat(progressBar.getMax(), equalTo(100));
+    }
+    
+    @Test
     public void testMax() {
         for (int max : testValues) {
             progressBar.setMax(max);
@@ -33,6 +38,14 @@ public class ProgressBarTest {
         for (int progress : testValues) {
             progressBar.setProgress(progress);
             assertThat(progressBar.getProgress(), equalTo(progress));
+        }
+    }
+    
+    @Test
+    public void testSecondaryProgress() {
+        for (int progress : testValues) {
+            progressBar.setSecondaryProgress(progress);
+            assertThat(progressBar.getSecondaryProgress(), equalTo(progress));
         }
     }
 }
