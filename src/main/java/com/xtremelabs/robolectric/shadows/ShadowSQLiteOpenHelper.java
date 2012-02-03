@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.shadows.ShadowNotification.LatestEventInfo;
 
 /**
  * Shadow for {@code SQLiteOpenHelper}.  Provides basic support for retrieving
@@ -40,6 +41,8 @@ public class ShadowSQLiteOpenHelper {
 
     @Implementation
     public synchronized void close() {
+    	if(previousContext != null)
+    		return;
         if (database != null) {
             database.close();
         }
