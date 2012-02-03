@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.text.Editable;
 import android.text.SpannableStringBuilder;
+import android.text.TextUtils;
 import android.widget.EditText;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -29,7 +30,7 @@ public class ShadowEditText extends ShadowTextView {
     @Override
     @Implementation(i18nSafe = true)
     public void setText(CharSequence str) {
-        if (str.length() > maxLength) {
+        if ( !TextUtils.isEmpty(str) && str.length() > maxLength) {
             str = str.subSequence(0, maxLength);
         }
         super.setText(str);
