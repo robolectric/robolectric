@@ -739,6 +739,11 @@ public class Robolectric {
         return (ShadowSQLiteStatement) Robolectric.shadowOf_(other);
     }
 
+    public static <E> ShadowSparseArray<E> shadowOf(SparseArray<E> other) {
+        //noinspection unchecked
+        return (ShadowSparseArray<E>) Robolectric.shadowOf_(other);
+    }
+
     public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
         return (ShadowSslErrorHandler) shadowOf_(instance);
     }
