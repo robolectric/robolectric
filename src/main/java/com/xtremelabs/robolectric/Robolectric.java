@@ -254,6 +254,7 @@ public class Robolectric {
                 ShadowShapeDrawable.class,
                 ShadowSmsManager.class,
                 ShadowSpannableStringBuilder.class,
+                ShadowSparseArray.class,
                 ShadowSyncResult.class,
                 ShadowSyncResult.ShadowSyncStats.class,
                 ShadowSQLiteProgram.class,
