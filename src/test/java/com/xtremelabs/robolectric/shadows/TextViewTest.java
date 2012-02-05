@@ -226,6 +226,47 @@ public class TextViewTest {
 		assertThat(mockTextWatcher.afterTextChangeArgument.toString(), equalTo(NEW_TEXT));
 	}
     
+    @Test
+    public void whenAppendingText_ShouldAppendNewTextAfterOldOne() {
+    	textView.setText(INITIAL_TEXT);
+    	textView.append(NEW_TEXT);
+    	
+    	assertEquals(INITIAL_TEXT + NEW_TEXT, textView.getText());
+    }
+    
+    @Test
+    public void whenAppendingText_ShouldFireBeforeTextChangedWithCorrectArguments() {
+		textView.setText(INITIAL_TEXT);
+		TextWatcher mockTextWatcher = mock(TextWatcher.class);
+		textView.addTextChangedListener(mockTextWatcher);
+		
+		textView.append(NEW_TEXT);
+		
+		verify(mockTextWatcher).beforeTextChanged(INITIAL_TEXT, 0, INITIAL_TEXT.length(), INITIAL_TEXT.length() + NEW_TEXT.length());
+    }
+    
+    @Test
+    public void whenAppendingText_ShouldFireOnTextChangedWithCorrectArguments() {
+		textView.setText(INITIAL_TEXT);
+		TextWatcher mockTextWatcher = mock(TextWatcher.class);
+		textView.addTextChangedListener(mockTextWatcher);
+		
+		textView.append(NEW_TEXT);
+		
+		verify(mockTextWatcher).onTextChanged(INITIAL_TEXT + NEW_TEXT, 0, INITIAL_TEXT.length(), INITIAL_TEXT.length() + NEW_TEXT.length());
+    }
+    
+    @Test
+    public void whenAppendingText_ShouldFireAfterTextChangedWithCorrectArgument() {
+    	textView.setText(INITIAL_TEXT);
+		MockTextWatcher mockTextWatcher = new MockTextWatcher();
+		textView.addTextChangedListener(mockTextWatcher);
+		
+		textView.append(NEW_TEXT);
+		
+		assertThat(mockTextWatcher.afterTextChangeArgument.toString(), equalTo(INITIAL_TEXT + NEW_TEXT));
+    }
+    
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
 		List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
 		int numberBetweenOneAndTen = new Random().nextInt(10) + 1;
