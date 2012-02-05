@@ -23,4 +23,12 @@ public class SpannableStringBuilderTest {
         SpannableStringBuilder builder = new SpannableStringBuilder("abc");
         assertThat(builder.length(), equalTo(3));
     }
+    
+    @Test
+    public void testDelete() throws Exception {
+        SpannableStringBuilder builder = new SpannableStringBuilder("abc");
+        assertThat(builder.length(), equalTo(3));
+        builder.delete( 0, 3 );
+        assertThat( builder.length(), equalTo(0));
+    }
 }
