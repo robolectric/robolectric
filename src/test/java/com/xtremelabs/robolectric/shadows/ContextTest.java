@@ -83,6 +83,11 @@ public class ContextTest {
     public void getFilesDir_shouldCreateDirectory() throws Exception {
         assertTrue(context.getFilesDir().exists());
     }
+    
+    @Test
+    public void getExternalFilesDir_shouldCreateDirectory() throws Exception {
+        assertTrue(context.getExternalFilesDir(null).exists());
+    }
 
     @Test
     public void openFileInput_shouldReturnAFileInputStream() throws Exception {
