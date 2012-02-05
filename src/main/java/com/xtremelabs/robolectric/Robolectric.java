@@ -153,6 +153,7 @@ public class Robolectric {
                 ShadowContextThemeWrapper.class,
                 ShadowCookieManager.class,
                 ShadowCookieSyncManager.class,
+                ShadowCriteria.class,
                 ShadowCountDownTimer.class,
                 ShadowCursorAdapter.class,
                 ShadowDatabaseUtils.class,

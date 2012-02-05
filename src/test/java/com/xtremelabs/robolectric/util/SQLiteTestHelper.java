@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.util;
 
-
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
