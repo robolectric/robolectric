@@ -33,6 +33,7 @@ import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
 import android.text.format.DateFormat;
 import android.text.method.PasswordTransformationMethod;
+import android.util.SparseArray;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -256,6 +257,7 @@ public class Robolectric {
                 ShadowShapeDrawable.class,
                 ShadowSmsManager.class,
                 ShadowSpannableStringBuilder.class,
+                ShadowSparseArray.class,
                 ShadowSyncResult.class,
                 ShadowSyncResult.ShadowSyncStats.class,
                 ShadowSQLiteProgram.class,
@@ -738,6 +740,11 @@ public class Robolectric {
 
     public static ShadowSQLiteStatement shadowOf(SQLiteStatement other) {
         return (ShadowSQLiteStatement) Robolectric.shadowOf_(other);
+    }
+
+    public static <E> ShadowSparseArray<E> shadowOf(SparseArray<E> other) {
+        //noinspection unchecked
+        return (ShadowSparseArray<E>) Robolectric.shadowOf_(other);
     }
 
     public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
