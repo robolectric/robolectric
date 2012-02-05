@@ -5,6 +5,8 @@ import javassist.ClassPool;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 
+import java.io.File;
+import java.lang.System;
 import java.util.List;
 
 public class RobolectricClassLoader extends javassist.Loader {
@@ -21,7 +23,15 @@ public class RobolectricClassLoader extends javassist.Loader {
         delegateLoadingOf(AndroidTranslator.class.getName());
         delegateLoadingOf(ClassHandler.class.getName());
 
-        classCache = new ClassCache("tmp/cached-robolectric-classes.jar", AndroidTranslator.CACHE_VERSION);
+        final String classCachePath = System.getProperty("cached.roboelectric.classes.path");
+        final File classCacheDirectory;
+        if (null == classCachePath || "".equals(classCachePath.trim())) {
+            classCacheDirectory = new File("./tmp");
+        } else {
+            classCacheDirectory = new File(classCachePath);
+        }
+
+        classCache = new ClassCache(new File(classCacheDirectory, "cached-robolectric-classes.jar").getAbsolutePath(), AndroidTranslator.CACHE_VERSION);
         try {
             ClassPool classPool = new ClassPool();
             classPool.appendClassPath(new LoaderClassPath(RobolectricClassLoader.class.getClassLoader()));
