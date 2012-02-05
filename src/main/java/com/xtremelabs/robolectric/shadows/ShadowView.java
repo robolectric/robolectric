@@ -446,6 +446,11 @@ public class ShadowView {
     public void setOnFocusChangeListener(View.OnFocusChangeListener listener) {
         onFocusChangeListener = listener;
     }
+    
+    @Implementation
+    public View.OnFocusChangeListener getOnFocusChangeListener () {
+        return onFocusChangeListener;
+    }
 
     @Implementation
     public void invalidate() {
