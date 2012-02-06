@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.ContentResolver;
 import android.content.ContentValues;
+import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -23,7 +24,20 @@ public class ShadowContentResolver {
     private final List<InsertStatement> insertStatements = new ArrayList<InsertStatement>();
     private final List<UpdateStatement> updateStatements = new ArrayList<UpdateStatement>();
     private final List<DeleteStatement> deleteStatements = new ArrayList<DeleteStatement>();
+    private List<NotifiedUri> notifiedUris = new ArrayList<NotifiedUri>();
     private HashMap<Uri, TestCursor> uriCursorMap = new HashMap<Uri, TestCursor>();
+
+    public static class NotifiedUri {
+        public final Uri uri;
+        public final boolean syncToNetwork;
+        public final ContentObserver observer;
+
+        public NotifiedUri(Uri uri, ContentObserver observer, boolean syncToNetwork) {
+            this.uri = uri;
+            this.syncToNetwork = syncToNetwork;
+            this.observer = observer;
+        }
+    }
 
     @Implementation
     public final InputStream openInputStream(final Uri uri) {
@@ -42,14 +56,14 @@ public class ShadowContentResolver {
 
     @Implementation
     public final Uri insert(Uri url, ContentValues values) {
-        InsertStatement insertStatement = new InsertStatement(url, values);
+        InsertStatement insertStatement = new InsertStatement(url, new ContentValues(values));
         insertStatements.add(insertStatement);
         return Uri.parse(url.toString() + "/" + nextDatabaseIdForInserts++);
     }
     
     @Implementation
     public int update(Uri uri, ContentValues values, String where, String[] selectionArgs) {
-        UpdateStatement updateStatement = new UpdateStatement(uri, values, where, selectionArgs);
+        UpdateStatement updateStatement = new UpdateStatement(uri, new ContentValues(values), where, selectionArgs);
         updateStatements.add(updateStatement);
         return nextDatabaseIdForUpdates++;
     }
@@ -73,6 +87,16 @@ public class ShadowContentResolver {
         DeleteStatement deleteStatement = new DeleteStatement(url, where, selectionArgs);
         deleteStatements.add(deleteStatement);
         return 1;
+    }
+
+    @Implementation
+    public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
+       notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
+    }
+
+    @Implementation
+    public void notifyChange(Uri uri, ContentObserver observer) {
+        notifyChange(uri, observer, false);
     }
 
     public void setCursor(TestCursor cursor) {
@@ -110,6 +134,10 @@ public class ShadowContentResolver {
     public List<DeleteStatement> getDeleteStatements() {
         return deleteStatements;
     }
+    public List<NotifiedUri> getNotifiedUris() {
+        return notifiedUris;
+    }
+
 
     private TestCursor getCursor(Uri uri) {
         if (uriCursorMap.get(uri) != null) {
