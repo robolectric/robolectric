@@ -13,7 +13,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 @Implements(EditText.class)
 public class ShadowEditText extends ShadowTextView {
 
-    private int maxLength;
+    private int maxLength = Integer.MAX_VALUE;
 
     public ShadowEditText() {
         focusable = true;
