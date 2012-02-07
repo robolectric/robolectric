@@ -96,6 +96,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         ShadowApplication shadowApplication = shadowOf(application);
         if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
         shadowApplication.resourceLoader = resourceLoader;
+        shadowApplication.resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);        
         return application;
     }
 
@@ -116,8 +117,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     @Override
     @Implementation
     public Resources getResources() {
-        if (resources == null) {
-            resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);
+        if (resources == null ) {
+        	resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);
         }
         return resources;
     }
