@@ -390,6 +390,11 @@ public class ShadowTextView extends ShadowView {
         this.watchers.add(watcher);
     }
     
+    @Implementation
+    public void removeTextChangedListener(TextWatcher watcher) {
+        this.watchers.remove(watcher);
+    }
+
     /**
      * @return the list of currently registered watchers/listeners
      */

@@ -24,14 +24,9 @@ import java.util.Random;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static junit.framework.Assert.assertFalse;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -225,7 +220,17 @@ public class TextViewTest {
 		
 		assertThat(mockTextWatcher.afterTextChangeArgument.toString(), equalTo(NEW_TEXT));
 	}
-    
+
+    @Test
+    public void removeTextChangedListener_shouldRemoveTheListener() throws Exception {
+        MockTextWatcher watcher = new MockTextWatcher();
+        textView.addTextChangedListener(watcher);
+        assertTrue(shadowOf(textView).getWatchers().contains(watcher));
+
+        textView.removeTextChangedListener(watcher);
+        assertFalse(shadowOf(textView).getWatchers().contains(watcher));
+    }
+
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
 		List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
 		int numberBetweenOneAndTen = new Random().nextInt(10) + 1;
