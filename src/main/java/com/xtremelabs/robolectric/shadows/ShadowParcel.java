@@ -37,6 +37,12 @@ public class ShadowParcel {
     public void writeLong(long i) {
         parcelData.add(i);
     }
+    
+    @Implementation
+    @SuppressWarnings("unchecked")
+    public void writeByte( byte b ) {
+    	parcelData.add( b );
+    }
 
     @Implementation
     public String readString() {
@@ -48,6 +54,11 @@ public class ShadowParcel {
         return index < parcelData.size() ? (Integer) parcelData.get(index++) : 0;
     }
 
+    @Implementation
+    public byte readByte() {
+        return index < parcelData.size() ? (Byte) parcelData.get(index++) : 0;    	
+    }
+    
     @Implementation
     public long readLong() {
         return index < parcelData.size() ? (Long) parcelData.get(index++) : 0;

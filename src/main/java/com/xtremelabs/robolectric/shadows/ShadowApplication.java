@@ -65,6 +65,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private List<Intent> stoppedServies = new ArrayList<Intent>();
     private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
+    private Map<String, Intent> stickyIntents = new HashMap<String, Intent>();
     private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
     private Looper mainLooper = ShadowLooper.myLooper();
     private Scheduler backgroundScheduler = new Scheduler();
@@ -95,6 +96,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         ShadowApplication shadowApplication = shadowOf(application);
         if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
         shadowApplication.resourceLoader = resourceLoader;
+        shadowApplication.resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);        
         return application;
     }
 
@@ -115,8 +117,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     @Override
     @Implementation
     public Resources getResources() {
-        if (resources == null) {
-            resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);
+        if (resources == null ) {
+        	resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);
         }
         return resources;
     }
@@ -315,6 +317,12 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    @Implementation
+    public void sendStickyBroadcast(Intent intent) {
+        stickyIntents.put(intent.getAction(), intent);
+        sendBroadcast(intent);
+    }
+
     /**
      * Always returns {@code null}
      *
@@ -327,7 +335,23 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     Intent registerReceiverWithContext(BroadcastReceiver receiver, IntentFilter filter, Context context) {
-        registeredReceivers.add(new Wrapper(receiver, filter, context));
+        if (receiver != null) {
+            registeredReceivers.add(new Wrapper(receiver, filter, context));
+        }
+        return getStickyIntent(filter);
+    }
+
+    private Intent getStickyIntent(IntentFilter filter) {
+        for (Intent stickyIntent : stickyIntents.values()) {
+            String action = null;
+            for (int i = 0; i < filter.countActions(); i++) {
+                action = filter.getAction(i);
+                if (stickyIntent.getAction().equals(action)) {
+                    return stickyIntent;
+                }
+            }
+        }
+
         return null;
     }
 

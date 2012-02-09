@@ -33,6 +33,11 @@ public class ShadowIntentFilter {
     }
 
     @Implementation
+    public int countActions() {
+        return actions.size();
+    }
+
+    @Implementation
     public Iterator<String> actionsIterator() {
         return actions.iterator();
     }
