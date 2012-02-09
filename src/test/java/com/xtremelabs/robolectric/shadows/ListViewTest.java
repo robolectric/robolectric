@@ -10,6 +10,7 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
@@ -362,6 +363,12 @@ public class ListViewTest {
         listView.setAdapter(lazyAdapter);
         ShadowHandler.idleMainLooper();
         shadowOf(listView).checkValidity();
+    }
+    
+    @Test
+    public void getChoiceMode_ShouldReturnSameModeWhichWasSet() {
+    	listView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+    	assertTrue(listView.getChoiceMode() == ListView.CHOICE_MODE_MULTIPLE);
     }
 
     @Test
