@@ -63,4 +63,10 @@ public class ShadowSpannableStringBuilder implements CharSequence {
     public String toString() {
         return builder.toString();
     }
+    
+    @Implementation
+    public SpannableStringBuilder delete( int start, int end ) {
+    	builder.delete( start, end );
+        return realSpannableStringBuilder;
+    }
 }

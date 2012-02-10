@@ -35,5 +35,13 @@ public class SpannableStringBuilderTest {
     public void testInsert() throws Exception {
         SpannableStringBuilder builder = new SpannableStringBuilder("abc");
         assertThat(builder.insert(1, "xy").toString(), equalTo("axybc"));
+
+    
+    @Test
+    public void testDelete() throws Exception {
+        SpannableStringBuilder builder = new SpannableStringBuilder("abc");
+        assertThat(builder.length(), equalTo(3));
+        builder.delete( 0, 3 );
+        assertThat( builder.length(), equalTo(0));
     }
 }
