@@ -2,7 +2,11 @@ package com.xtremelabs.robolectric.tester.android.content;
 
 import android.content.SharedPreferences;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 public class TestSharedPreferences implements SharedPreferences {
 
@@ -32,6 +36,11 @@ public class TestSharedPreferences implements SharedPreferences {
     @Override
     public String getString(String key, String defValue) {
         return (String) getValue(key, defValue);
+    }
+
+    @Override
+    public Set<String> getStringSet(String key, Set<String> strings) {
+        return (Set<String>) getValue(key, strings);
     }
 
     private Object getValue(String key, Object defValue) {
@@ -102,6 +111,13 @@ public class TestSharedPreferences implements SharedPreferences {
         @Override
         public Editor putString(String key, String value) {
             editsThatNeedCommit.put(key, value);
+            editsThatNeedRemove.remove(key);
+            return this;
+        }
+
+        @Override
+        public Editor putStringSet(String key, Set<String> strings) {
+            editsThatNeedCommit.put(key, strings);
             editsThatNeedRemove.remove(key);
             return this;
         }

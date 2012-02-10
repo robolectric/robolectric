@@ -1,6 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.text.ClipboardManager;
+import android.content.ClipboardManager;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 

@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.I18nException;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -136,7 +135,9 @@ public class ViewLoader extends XmlLoader {
                 child.inflate(context, view);
             }
 
-            invokeOnFinishInflate(view);
+            if (view != null) {
+                invokeOnFinishInflate(view);
+            }
             return view;
         }
 
@@ -153,6 +154,10 @@ public class ViewLoader extends XmlLoader {
                 return view;
             } else if (name.equals("merge")) {
                 return parent;
+            } else if (name.equals("fragment")) {
+                final String className = attributes.get("android:name");
+                // TODO instantiate the fragment?  keep track of it somewhere?
+                return null;
             } else {
                 applyFocusOverride(parent);
                 View view = constructView(context);

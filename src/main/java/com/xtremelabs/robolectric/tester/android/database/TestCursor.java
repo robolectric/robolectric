@@ -135,6 +135,11 @@ public class TestCursor implements Cursor {
     }
 
     @Override
+    public int getType(int i) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
     public boolean isNull(int columnIndex) {
         throw new UnsupportedOperationException();
     }

@@ -5,15 +5,7 @@ import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.InputQueue;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
+import android.view.*;
 import com.xtremelabs.robolectric.Robolectric;
 
 public class TestWindow extends Window {
@@ -92,6 +84,10 @@ public class TestWindow extends Window {
     @Override public void togglePanel(int featureId, KeyEvent event) {
     }
 
+    @Override
+    public void invalidatePanelMenu(int i) {
+    }
+
     @Override public boolean performPanelShortcut(int featureId, int keyCode, KeyEvent event, int flags) {
         return false;
     }
@@ -137,11 +133,21 @@ public class TestWindow extends Window {
         return false;
     }
 
+    @Override
+    public boolean superDispatchKeyShortcutEvent(KeyEvent keyEvent) {
+        return false;
+    }
+
     @Override public boolean superDispatchTouchEvent(MotionEvent event) {
         return false;
     }
 
     @Override public boolean superDispatchTrackballEvent(MotionEvent event) {
+        return false;
+    }
+
+    @Override
+    public boolean superDispatchGenericMotionEvent(MotionEvent motionEvent) {
         return false;
     }
 

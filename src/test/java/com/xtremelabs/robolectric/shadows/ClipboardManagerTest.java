@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.ClipboardManager;
 import android.content.Context;
-import android.text.ClipboardManager;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
@@ -9,9 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ClipboardManagerTest {

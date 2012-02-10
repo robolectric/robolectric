@@ -5,12 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
-import android.widget.Adapter;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListAdapter;
-import android.widget.ListView;
+import android.widget.*;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -445,7 +440,7 @@ public class ShadowAlertDialog extends ShadowDialog {
             return button;
         }
 
-        protected Context getContext() {
+        @Implementation public Context getContext() {
             return context;
         }
     }
