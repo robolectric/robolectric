@@ -35,7 +35,7 @@ public class SpannableStringBuilderTest {
     public void testInsert() throws Exception {
         SpannableStringBuilder builder = new SpannableStringBuilder("abc");
         assertThat(builder.insert(1, "xy").toString(), equalTo("axybc"));
-
+    }
     
     @Test
     public void testDelete() throws Exception {
