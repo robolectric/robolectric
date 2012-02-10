@@ -7,11 +7,11 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
-import android.content.res.Resources;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -245,6 +245,10 @@ public class ApplicationTest {
 
         @Override
         public void dump(FileDescriptor fd, String[] args) throws RemoteException {
+        }
+
+        @Override
+        public void dumpAsync(FileDescriptor fileDescriptor, String[] strings) throws RemoteException {
         }
 
         @Override

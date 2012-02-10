@@ -2,17 +2,11 @@ package com.xtremelabs.robolectric.res;
 
 import android.app.Activity;
 import android.content.Context;
-import android.view.View;
-import android.widget.Button;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.widget.*;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -28,12 +22,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
-import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static com.xtremelabs.robolectric.util.TestUtil.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -245,6 +236,14 @@ public class ViewLoaderTest {
         TestUtil.assertInstanceOf(MapView.class, mainView.findViewById(R.id.map_view));
     }
 
+    @Test
+    public void testFragment() throws Exception {
+        View v = viewLoader.inflateView(context, "layout/fragment");
+        assertNull(v);
+        // TODO once we figure out what to do with fragments, we should actually test that they inflate ok.
+        //TestUtil.assertInstanceOf(CustomFragment.class, v);
+    }
+    
     @Test
     public void testViewEnabled() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/main");

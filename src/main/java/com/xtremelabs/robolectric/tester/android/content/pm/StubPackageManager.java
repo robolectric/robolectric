@@ -3,17 +3,7 @@ package com.xtremelabs.robolectric.tester.android.content.pm;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.pm.ActivityInfo;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.FeatureInfo;
-import android.content.pm.InstrumentationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.PermissionGroupInfo;
-import android.content.pm.PermissionInfo;
-import android.content.pm.ProviderInfo;
-import android.content.pm.ResolveInfo;
-import android.content.pm.ServiceInfo;
+import android.content.pm.*;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
@@ -244,6 +234,14 @@ public class StubPackageManager extends PackageManager {
     @Override
     public Resources getResourcesForApplication(String appPackageName) throws NameNotFoundException {
         return null;
+    }
+
+    @Override
+    public void verifyPendingInstall(int i, int i1) {
+    }
+
+    @Override
+    public void setInstallerPackageName(String s, String s1) {
     }
 
     @Override public String getInstallerPackageName(String packageName) {

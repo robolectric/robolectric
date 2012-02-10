@@ -17,6 +17,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.ReflectionUtil;
+
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -595,31 +596,19 @@ public class ShadowView {
         wasInvalidated = false;
     }
 
-    /**
-     * Non-Android accessor.
-     */
-    public void setLeft(int left) {
+    @Implementation public void setLeft(int left) {
         this.left = left;
     }
 
-    /**
-     * Non-Android accessor.
-     */
-    public void setTop(int top) {
+    @Implementation public void setTop(int top) {
         this.top = top;
     }
 
-    /**
-     * Non-Android accessor.
-     */
-    public void setRight(int right) {
+    @Implementation public void setRight(int right) {
         this.right = right;
     }
 
-    /**
-     * Non-Android accessor.
-     */
-    public void setBottom(int bottom) {
+    @Implementation public void setBottom(int bottom) {
         this.bottom = bottom;
     }
 
