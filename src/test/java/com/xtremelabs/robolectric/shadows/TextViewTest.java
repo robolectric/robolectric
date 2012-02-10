@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.text.Editable;
 import android.text.InputType;
+import android.text.TextPaint;
 import android.text.TextWatcher;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
@@ -25,8 +26,14 @@ import java.util.Random;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
 import static junit.framework.Assert.assertFalse;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -270,6 +277,13 @@ public class TextViewTest {
 
         textView.removeTextChangedListener(watcher);
         assertFalse(shadowOf(textView).getWatchers().contains(watcher));
+    }
+
+    @Test
+    public void getPaint_willReturnPreviouslyProvidedPaint() throws Exception {
+        TextPaint expectedInstance = new TextPaint();
+        shadowOf(textView).setPaint(expectedInstance);
+        assertThat(textView.getPaint(), sameInstance(expectedInstance));
     }
 
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
