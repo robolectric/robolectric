@@ -2,8 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.text.SpannableStringBuilder;
-import android.text.TextWatcher;
+import android.text.*;
 import android.text.method.MovementMethod;
 import android.text.method.TransformationMethod;
 import android.text.style.URLSpan;
@@ -407,6 +406,11 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public void removeTextChangedListener(TextWatcher watcher) {
         this.watchers.remove(watcher);
+    }
+
+    @Implementation
+    public TextPaint getPaint() {
+        return new TextPaint();
     }
 
     /**

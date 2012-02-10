@@ -1,9 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.TextWatcher;
+import android.text.*;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.style.URLSpan;
@@ -18,15 +16,19 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
 import static junit.framework.Assert.assertFalse;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -270,6 +272,11 @@ public class TextViewTest {
 
         textView.removeTextChangedListener(watcher);
         assertFalse(shadowOf(textView).getWatchers().contains(watcher));
+    }
+
+    @Test
+    public void getPaint_returnsMeasureTextEnabledObject() throws Exception {
+        assertThat(textView.getPaint().measureText("12345"), equalTo(5f));
     }
 
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
