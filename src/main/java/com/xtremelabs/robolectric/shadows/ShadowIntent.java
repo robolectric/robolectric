@@ -48,6 +48,20 @@ public class ShadowIntent {
         __constructor__(action, null);
     }
 
+    public void __constructor__(Intent intent) {
+        ShadowIntent other = shadowOf(intent);
+        extras.putAll(other.extras);
+        action = other.action;
+        componentName = other.componentName;
+        type = other.type;
+        data = other.data;
+        flags = other.flags;
+        intentClass = other.intentClass;
+        packageName = other.packageName;
+        categories.addAll(other.categories);
+        uri = other.uri;
+    }
+
     @Implementation
     public static Intent createChooser(Intent target, CharSequence title) {
         Intent intent = new Intent(Intent.ACTION_CHOOSER);
