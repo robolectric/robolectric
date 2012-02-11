@@ -6,9 +6,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.*;
 import android.content.pm.ResolveInfo;
-import android.content.res.AssetManager;
-import android.content.res.Configuration;
-import android.content.res.Resources;
+import android.content.res.*;
 import android.database.sqlite.*;
 import android.graphics.*;
 import android.graphics.drawable.*;
@@ -16,21 +14,15 @@ import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.location.Geocoder;
 import android.location.LocationManager;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
-import android.media.MediaRecorder;
+import android.media.*;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.wifi.ScanResult;
-import android.net.wifi.WifiConfiguration;
-import android.net.wifi.WifiInfo;
-import android.net.wifi.WifiManager;
+import android.net.wifi.*;
 import android.os.*;
 import android.preference.*;
-import android.telephony.PhoneNumberUtils;
-import android.telephony.SmsManager;
-import android.telephony.TelephonyManager;
+import android.telephony.*;
 import android.text.ClipboardManager;
+import android.text.TextPaint;
 import android.text.format.DateFormat;
 import android.text.method.PasswordTransformationMethod;
 import android.util.SparseArray;
@@ -43,13 +35,9 @@ import android.widget.*;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
-import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
-import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
-import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
+import com.xtremelabs.robolectric.tester.org.apache.http.*;
 import com.xtremelabs.robolectric.util.Scheduler;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
+import org.apache.http.*;
 import org.apache.http.impl.client.DefaultRequestDirector;
 
 import java.lang.reflect.Field;
@@ -273,6 +261,7 @@ public class Robolectric {
                 ShadowTabHost.class,
                 ShadowTabSpec.class,
                 ShadowTelephonyManager.class,
+                ShadowTextPaint.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
@@ -765,6 +754,10 @@ public class Robolectric {
 
     public static ShadowTelephonyManager shadowOf(TelephonyManager instance) {
         return (ShadowTelephonyManager) shadowOf_(instance);
+    }
+
+    public static ShadowTextPaint shadowOf(TextPaint instance) {
+        return (ShadowTextPaint) shadowOf_(instance);
     }
 
     public static ShadowTextView shadowOf(TextView instance) {
