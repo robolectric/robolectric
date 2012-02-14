@@ -1,6 +1,8 @@
 package com.xtremelabs.robolectric.res;
 
+import android.app.Activity;
 import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,6 +26,9 @@ import java.util.Map;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ViewLoader extends XmlLoader {
+    /**
+     * Map of "layout/foo" to the View nodes for that layout file
+     */
     protected Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
     private AttrResourceLoader attrResourceLoader;
 
@@ -36,11 +41,19 @@ public class ViewLoader extends XmlLoader {
     protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
         ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>(), isSystem);
         processChildren(document.getChildNodes(), topLevelNode);
+        String parentDir = xmlFile.getParentFile().getName();
         String layoutName = "layout/" + xmlFile.getName().replace(".xml", "");
+        String specificLayoutName = parentDir + "/" + xmlFile.getName().replace(".xml", "");
         if (isSystem) {
             layoutName = "android:" + layoutName;
+            specificLayoutName = "android:" + specificLayoutName;
         }
-        viewNodesByLayoutName.put(layoutName, topLevelNode.getChildren().get(0));
+        // Check to see if the generic "layout/foo" is already in the map.  If not, add it.
+        if (!viewNodesByLayoutName.containsKey(layoutName)) {
+            viewNodesByLayoutName.put(layoutName, topLevelNode.getChildren().get(0));
+        }
+        // Add the specific "layout-land/foo" to the map.  If this happens to be "layout/foo", it's a no-op.
+        viewNodesByLayoutName.put(specificLayoutName, topLevelNode.getChildren().get(0));
     }
 
     private void processChildren(NodeList childNodes, ViewNode parent) {
@@ -67,7 +80,7 @@ public class ViewLoader extends XmlLoader {
             parent.requestFocusOverride = true;
         } else if (!name.startsWith("#")) {
             ViewNode viewNode = new ViewNode(name, attrMap, parent.isSystem);
-            if (parent != null) parent.addChild(viewNode);
+            parent.addChild(viewNode);
 
             processChildren(node.getChildNodes(), viewNode);
         }
@@ -86,7 +99,7 @@ public class ViewLoader extends XmlLoader {
     }
 
     private View inflateView(Context context, String layoutName, Map<String, String> attributes, View parent) {
-        ViewNode viewNode = viewNodesByLayoutName.get(layoutName);
+        ViewNode viewNode = findViewNode(context, layoutName);
         if (viewNode == null) {
             throw new RuntimeException("Could not find layout " + layoutName);
         }
@@ -100,10 +113,31 @@ public class ViewLoader extends XmlLoader {
             }
             return viewNode.inflate(context, parent);
         } catch (I18nException e) {
-        	throw e;
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + layoutName, e);
         }
+    }
+
+    /**
+     * Load view nodes for the specified layout.  If in an Activity, we'll try to load "layout-land/foo" or
+     * "layout-port/foo" first, and fall back to the generic "layout/foo" if not found.  This method returns null if we
+     * couldn't find a layout with the specified name.
+     */
+    private ViewNode findViewNode(Context context, String layoutName) {
+        ViewNode viewNode = null;
+        if (context instanceof Activity) {
+            final int orientation = ((Activity) context).getRequestedOrientation();
+            if (orientation == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
+                viewNode = viewNodesByLayoutName.get(layoutName.replace("layout/", "layout-land/"));
+            } else if (orientation == ActivityInfo.SCREEN_ORIENTATION_PORTRAIT) {
+                viewNode = viewNodesByLayoutName.get(layoutName.replace("layout/", "layout-port/"));
+            }
+        }
+        if (viewNode == null) {
+            viewNode = viewNodesByLayoutName.get(layoutName);
+        }
+        return viewNode;
     }
 
     public class ViewNode {
@@ -150,12 +184,14 @@ public class ViewLoader extends XmlLoader {
         private View create(Context context, ViewGroup parent) throws Exception {
             if (name.equals("include")) {
                 String layout = attributes.get("layout");
-                View view = inflateView(context, layout.substring(1), attributes, parent);
-                return view;
+                return inflateView(context, layout.substring(1), attributes, parent);
             } else if (name.equals("merge")) {
                 return parent;
             } else if (name.equals("fragment")) {
                 final String className = attributes.get("android:name");
+                // instantiate
+                // onCreate
+                // return onCreateView;
                 // TODO instantiate the fragment?  keep track of it somewhere?
                 return null;
             } else {
@@ -177,8 +213,8 @@ public class ViewLoader extends XmlLoader {
             Class<? extends View> clazz = pickViewClass();
             try {
                 TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, clazz, isSystem);
-                if ( strictI18n ) {
-                	attributeSet.validateStrictI18n();
+                if (strictI18n) {
+                    attributeSet.validateStrictI18n();
                 }
                 return ((Constructor<? extends View>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
             } catch (NoSuchMethodException e) {

@@ -1,8 +1,9 @@
 package com.xtremelabs.robolectric.res;
 
 import android.app.Activity;
-import android.content.Context;
+import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -30,7 +31,7 @@ import static org.junit.Assert.*;
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewLoaderTest {
     private ViewLoader viewLoader;
-    private Context context;
+    private Activity context;
 
     @Before
     public void setUp() throws Exception {
@@ -45,8 +46,10 @@ public class ViewLoaderTest {
         new DocumentLoader(stringResourceLoader).loadSystemResourceXmlDir(getSystemResourceDir("values"));
         
         viewLoader =  new ViewLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
-        new DocumentLoader(viewLoader).loadResourceXmlDir(resourceFile("res", "layout"));
-        new DocumentLoader(viewLoader).loadSystemResourceXmlDir(getSystemResourceDir("layout"));
+        final DocumentLoader documentLoader = new DocumentLoader(viewLoader);
+        documentLoader.loadResourceXmlDir(resourceFile("res", "layout"));
+        documentLoader.loadSystemResourceXmlDir(getSystemResourceDir("layout"));
+        documentLoader.loadResourceXmlDir(resourceFile("res", "layout-land"));
 
         context = new Activity();
     }
@@ -243,7 +246,30 @@ public class ViewLoaderTest {
         // TODO once we figure out what to do with fragments, we should actually test that they inflate ok.
         //TestUtil.assertInstanceOf(CustomFragment.class, v);
     }
-    
+
+    @Test
+    public void testMultiOrientation() throws Exception {
+        // Default screen orientation should be portrait.
+        ViewGroup view = (ViewGroup) viewLoader.inflateView(context, "layout/multi_orientation");
+        TestUtil.assertInstanceOf(LinearLayout.class, view);
+        assertEquals(view.getId(), R.id.portrait);
+        assertSame(context, view.getContext());
+
+        // Confirm explicit "orientation = portrait" works.
+        context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        view = (ViewGroup) viewLoader.inflateView(context, "layout/multi_orientation");
+        TestUtil.assertInstanceOf(LinearLayout.class, view);
+        assertEquals(view.getId(), R.id.portrait);
+        assertSame(context, view.getContext());
+
+        // Confirm explicit "orientation = landscape" works.
+        context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
+        view = (ViewGroup) viewLoader.inflateView(context, "layout/multi_orientation");
+        assertEquals(view.getId(), R.id.landscape);
+        // TODO once we figure out what to do with fragments, we should actually test that they inflate ok.
+        //TestUtil.assertInstanceOf(CustomFragment.class, v);
+    }
+
     @Test
     public void testViewEnabled() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/main");
@@ -317,7 +343,7 @@ public class ViewLoaderTest {
     	viewLoader.inflateView(context,"layout/text_views");
     }
 
-    public static class ClickActivity extends Activity {
+    public static class ClickActivity extends FragmentActivity {
         public boolean clicked = false;
 
         @Override protected void onCreate(Bundle savedInstanceState) {

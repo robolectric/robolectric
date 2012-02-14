@@ -48,8 +48,11 @@ public final class R {
         public static final int test_menu_3 = nextId++;
         
         public static final int group_id_1 = nextId++;
-        
+
         public static final int test_submenu_1 = nextId++;
+
+        public static final int portrait = nextId++;
+        public static final int landscape = nextId++;
     }
 
     public static final class string {
