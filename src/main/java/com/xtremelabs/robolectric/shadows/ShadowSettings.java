@@ -19,7 +19,7 @@ import java.util.WeakHashMap;
 public class ShadowSettings {
     @Implements(Settings.class)
     private static class SettingsImpl {
-        private static final WeakHashMap<ContentResolver, Map<String, Integer>> dataMap = new WeakHashMap<ContentResolver, Map<String, Integer>>();
+        private static final WeakHashMap<ContentResolver, Map<String, Object>> dataMap = new WeakHashMap<ContentResolver, Map<String, Object>>();
 
         @Implementation
         public static boolean putInt(ContentResolver cr, String name, int value) {
@@ -29,15 +29,90 @@ public class ShadowSettings {
 
         @Implementation
         public static int getInt(ContentResolver cr, String name, int def) {
-            Integer value = get(cr).get(name);
-            return value == null ? def : value;
+            if (get(cr).get(name) instanceof Integer) {
+                return (Integer) get(cr).get(name);
+            } else {
+                return def;
+            }
         }
 
         @Implementation
-        private static Map<String, Integer> get(ContentResolver cr) {
-            Map<String, Integer> map = dataMap.get(cr);
+        public static int getInt(ContentResolver cr, String name) throws Settings.SettingNotFoundException {
+            if (get(cr).get(name) instanceof Integer) {
+                return (Integer) get(cr).get(name);
+            } else {
+                throw new Settings.SettingNotFoundException(name);
+            }
+        }
+
+        @Implementation
+        public static boolean putString(ContentResolver cr, String name, String value) {
+            get(cr).put(name, value);
+            return true;
+        }
+
+        @Implementation
+        public static String getString(ContentResolver cr, String name) {
+            if (get(cr).get(name) instanceof String) {
+                return (String) get(cr).get(name);
+            } else {
+                return null;
+            }
+        }
+
+        @Implementation
+        public static boolean putLong(ContentResolver cr, String name, long value) {
+            get(cr).put(name, value);
+            return true;
+        }
+
+        @Implementation
+        public static long getLong(ContentResolver cr, String name, long def) {
+            if (get(cr).get(name) instanceof Long) {
+                return (Long) get(cr).get(name);
+            } else {
+                return def;
+            }
+        }
+
+        @Implementation
+        public static long getLong(ContentResolver cr, String name) throws Settings.SettingNotFoundException {
+            if (get(cr).get(name) instanceof Long) {
+                return (Long) get(cr).get(name);
+            } else {
+                throw new Settings.SettingNotFoundException(name);
+            }
+        }
+
+        @Implementation
+        public static boolean putFloat(ContentResolver cr, String name, float value) {
+            get(cr).put(name, value);
+            return true;
+        }
+
+        @Implementation
+        public static float getFloat(ContentResolver cr, String name, float def) {
+            if (get(cr).get(name) instanceof Float) {
+                return (Float) get(cr).get(name);
+            } else {
+                return def;
+            }
+        }
+
+        @Implementation
+        public static float getFloat(ContentResolver cr, String name) throws Settings.SettingNotFoundException {
+            if (get(cr).get(name) instanceof Float) {
+                return (Float) get(cr).get(name);
+            } else {
+                throw new Settings.SettingNotFoundException(name);
+            }
+        }
+
+        @Implementation
+        private static Map<String, Object> get(ContentResolver cr) {
+            Map<String, Object> map = dataMap.get(cr);
             if (map == null) {
-                map = new HashMap<String, Integer>();
+                map = new HashMap<String, Object>();
                 dataMap.put(cr, map);
             }
             return map;

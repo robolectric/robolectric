@@ -134,6 +134,16 @@ public class ShadowHandler {
         return false;
     }
 
+    @Implementation
+    public final boolean hasMessages(int what, Object object) {
+        for (Message message : messages) {
+            if(message.what == what && message.obj == object) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     @Implementation
     public final void removeMessages(int what) {
