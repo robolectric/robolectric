@@ -9,7 +9,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 public class ShadowColor {
     @Implementation
     public static int rgb(int red, int green, int blue) {
-        return (0xFF << 24) | (red << 16) | (green << 8) | blue;
+        return argb(0xff, red, green, blue);
     }
 
     @Implementation
