@@ -125,6 +125,7 @@ public class Robolectric {
                 ShadowCameraSize.class,
                 ShadowCanvas.class,
                 ShadowClipboardManager.class,
+                ShadowColor.class,
                 ShadowColorDrawable.class,
                 ShadowColorMatrix.class,
                 ShadowColorMatrixColorFilter.class,
@@ -401,6 +402,10 @@ public class Robolectric {
 
     public static ShadowClipboardManager shadowOf(ClipboardManager instance) {
         return (ShadowClipboardManager) shadowOf_(instance);
+    }
+    
+    public static ShadowColor shadowOf(Color instance) {
+        return (ShadowColor) shadowOf_(instance);
     }
 
     public static ShadowColorDrawable shadowOf(ColorDrawable instance) {
