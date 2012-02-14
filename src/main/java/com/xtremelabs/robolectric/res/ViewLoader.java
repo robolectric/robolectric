@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.I18nException;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -17,16 +16,14 @@ import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ViewLoader extends XmlLoader {
     protected Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
     private AttrResourceLoader attrResourceLoader;
+    private List<String> qualifierSearchPath = new ArrayList<String>();
 
     public ViewLoader(ResourceExtractor resourceExtractor, AttrResourceLoader attrResourceLoader) {
         super(resourceExtractor);
@@ -37,7 +34,7 @@ public class ViewLoader extends XmlLoader {
     protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
         ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>(), isSystem);
         processChildren(document.getChildNodes(), topLevelNode);
-        String layoutName = "layout/" + xmlFile.getName().replace(".xml", "");
+        String layoutName = xmlFile.getParentFile().getName() + "/" + xmlFile.getName().replace(".xml", "");
         if (isSystem) {
             layoutName = "android:" + layoutName;
         }
@@ -87,7 +84,7 @@ public class ViewLoader extends XmlLoader {
     }
 
     private View inflateView(Context context, String layoutName, Map<String, String> attributes, View parent) {
-        ViewNode viewNode = viewNodesByLayoutName.get(layoutName);
+        ViewNode viewNode = getViewNodeByLayoutName(layoutName);
         if (viewNode == null) {
             throw new RuntimeException("Could not find layout " + layoutName);
         }
@@ -101,10 +98,27 @@ public class ViewLoader extends XmlLoader {
             }
             return viewNode.inflate(context, parent);
         } catch (I18nException e) {
-        	throw e;
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + layoutName, e);
         }
+    }
+
+    private ViewNode getViewNodeByLayoutName(String layoutName) {
+        if (layoutName.startsWith("layout/") && !qualifierSearchPath.isEmpty()) {
+            String rawLayoutName = layoutName.substring("layout/".length());
+            for (String location : qualifierSearchPath) {
+                ViewNode foundNode = viewNodesByLayoutName.get("layout-" + location + "/" + rawLayoutName);
+                if (foundNode != null) {
+                    return foundNode;
+                }
+            }
+        }
+        return viewNodesByLayoutName.get(layoutName);
+    }
+
+    public void setLayoutQualifierSearchPath(String... locations) {
+        qualifierSearchPath = Arrays.asList(locations);
     }
 
     public class ViewNode {
@@ -172,8 +186,8 @@ public class ViewLoader extends XmlLoader {
             Class<? extends View> clazz = pickViewClass();
             try {
                 TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, clazz, isSystem);
-                if ( strictI18n ) {
-                	attributeSet.validateStrictI18n();
+                if (strictI18n) {
+                    attributeSet.validateStrictI18n();
                 }
                 return ((Constructor<? extends View>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
             } catch (NoSuchMethodException e) {

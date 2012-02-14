@@ -350,6 +350,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         Robolectric.bindDefaultShadowClasses();
         bindShadowClasses();
 
+        resourceLoader.setLayoutQualifierSearchPath();
         Robolectric.resetStaticState();
         resetStaticState();
         
