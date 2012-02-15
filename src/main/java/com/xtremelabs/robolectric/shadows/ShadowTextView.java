@@ -2,7 +2,9 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.text.*;
+import android.text.SpannableStringBuilder;
+import android.text.TextPaint;
+import android.text.TextWatcher;
 import android.text.method.MovementMethod;
 import android.text.method.TransformationMethod;
 import android.text.style.URLSpan;
@@ -41,7 +43,7 @@ public class ShadowTextView extends ShadowView {
     private int inputType;
 
     private List<TextWatcher> watchers = new ArrayList<TextWatcher>();
-    
+
     @Override
     public void applyAttributes() {
         super.applyAttributes();
@@ -52,64 +54,64 @@ public class ShadowTextView extends ShadowView {
         applyCompoundDrawablesWithIntrinsicBoundsAttributes();
     }
 
-    @Implementation(i18nSafe=false)
+    @Implementation(i18nSafe = false)
     public void setText(CharSequence text) {
-    	sendBeforeTextChanged(text);
-    	
-    	if (text == null) {
+        sendBeforeTextChanged(text);
+
+        if (text == null) {
             text = "";
         }
-    	
-    	CharSequence oldValue = this.text;
+
+        CharSequence oldValue = this.text;
         this.text = text;
-        
+
         sendOnTextChanged(oldValue);
         sendAfterTextChanged();
     }
-    
-    @Implementation 
-    public final void append(CharSequence text)  {
+
+    @Implementation
+    public final void append(CharSequence text) {
         CharSequence oldValue = this.text;
         StringBuffer sb = new StringBuffer(this.text);
         sb.append(text);
-    
+
         sendBeforeTextChanged(sb.toString());
         this.text = sb.toString();
-        
+
         sendOnTextChanged(oldValue);
         sendAfterTextChanged();
-        
+
     }
 
     @Implementation
     public void setText(int textResourceId) {
-    	sendBeforeTextChanged(text);
-    	
-    	CharSequence oldValue = this.text;
+        sendBeforeTextChanged(text);
+
+        CharSequence oldValue = this.text;
         this.text = getResources().getText(textResourceId);
-        
-    	sendOnTextChanged(oldValue);
+
+        sendOnTextChanged(oldValue);
         sendAfterTextChanged();
     }
 
     private void sendAfterTextChanged() {
-		for (TextWatcher watcher : watchers) {
+        for (TextWatcher watcher : watchers) {
             watcher.afterTextChanged(new SpannableStringBuilder(getText()));
         }
-	}
+    }
 
-	private void sendOnTextChanged(CharSequence oldValue) {
-		for (TextWatcher watcher : watchers) {
-    	    watcher.onTextChanged(text, 0, oldValue.length(), text.length());
+    private void sendOnTextChanged(CharSequence oldValue) {
+        for (TextWatcher watcher : watchers) {
+            watcher.onTextChanged(text, 0, oldValue.length(), text.length());
         }
-	}
+    }
 
-	private void sendBeforeTextChanged(CharSequence newValue) {
-		for (TextWatcher watcher : watchers) {
-    		watcher.beforeTextChanged(this.text, 0, this.text.length(), newValue.length());
+    private void sendBeforeTextChanged(CharSequence newValue) {
+        for (TextWatcher watcher : watchers) {
+            watcher.beforeTextChanged(this.text, 0, this.text.length(), newValue.length());
         }
-	}
-    
+    }
+
     @Implementation
     public CharSequence getText() {
         return text;
@@ -136,7 +138,7 @@ public class ShadowTextView extends ShadowView {
     }
 
     @Implementation
-    public void setInputType(int type){
+    public void setInputType(int type) {
         this.inputType = type;
     }
 
@@ -150,7 +152,7 @@ public class ShadowTextView extends ShadowView {
         this.hintText = getResources().getText(resId);
     }
 
-    @Implementation(i18nSafe=false)
+    @Implementation(i18nSafe = false)
     public final void setHint(CharSequence hintText) {
         this.hintText = hintText;
     }
@@ -160,31 +162,31 @@ public class ShadowTextView extends ShadowView {
         return hintText;
     }
 
-     @Implementation
+    @Implementation
     public final void setHintTextColor(int color) {
         hintColorHexValue = color;
     }
-    
+
     @Implementation
     public final boolean getLinksClickable() {
-    	return linksClickable;
+        return linksClickable;
     }
-    
+
     @Implementation
     public final void setLinksClickable(boolean whether) {
-    	linksClickable = whether;
+        linksClickable = whether;
     }
-    
+
     @Implementation
     public final MovementMethod getMovementMethod() {
-    	return movementMethod;
+        return movementMethod;
     }
 
     @Implementation
     public final void setMovementMethod(MovementMethod movement) {
-    	movementMethod = movement;
+        movementMethod = movement;
     }
-    
+
     @Implementation
     public URLSpan[] getUrls() {
         String[] words = text.toString().split("\\s+");
@@ -251,28 +253,37 @@ public class ShadowTextView extends ShadowView {
             return false;
         }
     }
-    
+
+    @Implementation
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        if (onKeyListener != null) {
+            return onKeyListener.onKey(realView, keyCode, event);
+        } else {
+            return false;
+        }
+    }
+
     @Implementation
     public int getGravity() {
-    	return gravity;
+        return gravity;
     }
-    
+
     @Implementation
     public void setGravity(int gravity) {
-    	this.gravity = gravity;
+        this.gravity = gravity;
     }
-    
-    
+
+
     @Implementation
     public int getImeOptions() {
-    	return imeOptions;
+        return imeOptions;
     }
-    
+
     @Implementation
     public void setImeOptions(int imeOptions) {
-    	this.imeOptions = imeOptions;
+        this.imeOptions = imeOptions;
     }
-    
+
     /**
      * Returns the text string of this {@code TextView}.
      * <p/>
@@ -283,17 +294,19 @@ public class ShadowTextView extends ShadowView {
         return (text == null || getVisibility() != VISIBLE) ? "" : text.toString();
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public boolean equals(Object o) {
         return super.equals(shadowOf_(o));
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public int hashCode() {
         return super.hashCode();
     }
-    
-     public CompoundDrawables getCompoundDrawablesImpl() {
+
+    public CompoundDrawables getCompoundDrawablesImpl() {
         return compoundDrawablesImpl;
     }
 
@@ -321,7 +334,7 @@ public class ShadowTextView extends ShadowView {
     public boolean isAutoLinkPhoneNumbers() {
         return autoLinkPhoneNumbers;
     }
-    
+
     private void applyTextAttribute() {
         String text = attributeSet.getAttributeValue("android", "text");
         if (text != null) {
@@ -402,7 +415,7 @@ public class ShadowTextView extends ShadowView {
     public void addTextChangedListener(TextWatcher watcher) {
         this.watchers.add(watcher);
     }
-    
+
     @Implementation
     public void removeTextChangedListener(TextWatcher watcher) {
         this.watchers.remove(watcher);
@@ -419,7 +432,7 @@ public class ShadowTextView extends ShadowView {
     public List<TextWatcher> getWatchers() {
         return watchers;
     }
-    
+
     public static class CompoundDrawables {
         public int left;
         public int top;
