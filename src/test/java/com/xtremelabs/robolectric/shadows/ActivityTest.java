@@ -205,6 +205,38 @@ public class ActivityTest {
         assertTrue(activity.preparedDialog);
         assertTrue(dialogWasShown.get());
     }
+    
+    @Test
+    public void removeDialog_shouldCreatePrepareAndShowDialogAgain() {
+        final DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+        final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
+
+        new Dialog(activity) {
+            {  activity.dialog = this; }
+
+            @Override
+            public void show() {
+                dialogWasShown.set(true);
+            }
+        };
+
+        activity.showDialog(1);
+
+        assertTrue(activity.createdDialog);
+        assertTrue(activity.preparedDialog);
+        assertTrue(dialogWasShown.get());
+        
+        activity.createdDialog = false;
+        activity.preparedDialog = false;
+        dialogWasShown.set(false);
+        
+        activity.removeDialog(1);
+
+        activity.showDialog(1);
+        assertTrue(activity.createdDialog);
+        assertTrue(activity.preparedDialog);
+        assertTrue(dialogWasShown.get());
+    }
 
     @Test
     public void showDialog_shouldCreatePrepareAndShowDialogWithBundle() {
