@@ -17,6 +17,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class HandlerTest {
@@ -221,6 +222,20 @@ public class HandlerTest {
         handler.sendEmptyMessageDelayed(123, 500);
         handler.removeMessages(123);
         assertThat(handler.hasMessages(123), equalTo(false));
+    }
+
+    @Test
+    public void testHasMessagesWithWhatAndObject() {
+        Robolectric.pauseMainLooper();
+        Object testObject = new Object();
+        Handler handler = new Handler();
+        Message message = handler.obtainMessage(123, testObject);
+
+        assertFalse(handler.hasMessages(123, testObject));
+
+        handler.sendMessage(message);
+
+        assertTrue(handler.hasMessages(123, testObject));
     }
 
     @Test

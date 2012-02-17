@@ -1,13 +1,5 @@
 package com.xtremelabs.robolectric.res;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-
 import android.R;
 import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
@@ -17,11 +9,18 @@ import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.shadows.ShadowContextWrapper;
 import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ResourceLoader {
     private static final FileFilter MENU_DIR_FILE_FILTER = new FileFilter() {
@@ -92,7 +91,7 @@ public class ResourceLoader {
     }
     
     public boolean getStrictI18n() { return strictI18n; }
-    
+
     private void init() {
         if (isInitialized) {
             return;
@@ -446,5 +445,10 @@ public class ResourceLoader {
 
     public ViewLoader.ViewNode getLayoutViewNode(String layoutName) {
         return viewLoader.viewNodesByLayoutName.get(layoutName);
+    }
+
+    public void setLayoutQualifierSearchPath(String... locations) {
+        init();
+        viewLoader.setLayoutQualifierSearchPath(locations);
     }
 }

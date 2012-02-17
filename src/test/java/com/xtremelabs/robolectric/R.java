@@ -111,6 +111,7 @@ public final class R {
         public static final int text_views_hints = nextId++;
         public static final int toplevel_merge = nextId++;
         public static final int tab_activity = nextId++;
+        public static final int different_screen_sizes = nextId++;
     }
 
     public static final class raw {
