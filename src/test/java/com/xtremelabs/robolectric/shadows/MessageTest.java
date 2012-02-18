@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -52,5 +53,18 @@ public class MessageTest {
         assertThat(m2.arg2, equalTo(m.arg2));
         assertThat(m2.obj, equalTo(m.obj));
         assertThat(m2.getData(), equalTo(m.getData()));
+    }
+    
+    @Test
+    public void testObtain() throws Exception {
+        Message m = Message.obtain();
+        assertNotNull(m);
+    }
+    
+    @Test
+    public void testObtainWithHandler() throws Exception {
+        Handler h = new Handler();
+        Message m = Message.obtain(h);
+        assertThat(m.getTarget(), equalTo(h));
     }
 }

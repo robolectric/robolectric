@@ -6,11 +6,13 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Message;
 
 @Implements(Message.class)
 public class ShadowMessage {
     private Bundle data;
+    private Handler target;
 
     @RealObject
     private Message message;
@@ -18,6 +20,11 @@ public class ShadowMessage {
     @Implementation
     public void setData(Bundle data) {
         this.data = data;
+    }
+    
+    @Implementation
+    public void setTarget(Handler target) {
+        this.target = target;
     }
 
     @Implementation
@@ -32,6 +39,11 @@ public class ShadowMessage {
         }
         return data;
     }
+    
+    @Implementation
+    public Handler getTarget() {
+        return target;
+    }
 
     @Implementation
     public void copyFrom(Message m) {
@@ -39,5 +51,17 @@ public class ShadowMessage {
         message.arg2 = m.arg2;
         message.obj = m.obj;
         message.setData(m.getData());
+    }
+    
+    @Implementation
+    public static Message obtain() {
+        return new Message();
+    }
+    
+    @Implementation
+    public static Message obtain(Handler handler) {
+        Message m = new Message();
+        m.setTarget(handler);
+        return m;
     }
 }
