@@ -52,16 +52,45 @@ public class ShadowMessage {
         message.obj = m.obj;
         message.setData(m.getData());
     }
-    
+
     @Implementation
     public static Message obtain() {
         return new Message();
     }
-    
+
     @Implementation
-    public static Message obtain(Handler handler) {
+    public static Message obtain(Handler h) {
         Message m = new Message();
-        m.setTarget(handler);
+        m.setTarget(h);
+        return m;
+    }
+
+    @Implementation
+    public static Message obtain(Handler h, int what) {
+        Message m = obtain(h);
+        m.what = what;
+        return m;
+    }
+
+    @Implementation
+    public static Message obtain(Handler h, int what, Object obj) {
+        Message m = obtain(h, what);
+        m.obj = obj;
+        return m;
+    }
+
+    @Implementation
+    public static Message obtain(Handler h, int what, int arg1, int arg2) {
+        Message m = obtain(h, what);
+        m.arg1 = arg1;
+        m.arg2 = arg2;
+        return m;
+    }
+
+    @Implementation
+    public static Message obtain(Handler h, int what, int arg1, int arg2, Object obj) {
+        Message m = obtain(h, what, arg1, arg2);
+        m.obj = obj;
         return m;
     }
 }
