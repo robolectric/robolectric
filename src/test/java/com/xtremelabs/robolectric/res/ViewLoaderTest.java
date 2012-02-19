@@ -3,7 +3,9 @@ package com.xtremelabs.robolectric.res;
 import android.app.Activity;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -31,7 +33,7 @@ import static org.junit.Assert.*;
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewLoaderTest {
     private ViewLoader viewLoader;
-    private Activity context;
+    private FragmentActivity context;
 
     @Before
     public void setUp() throws Exception {
@@ -51,7 +53,7 @@ public class ViewLoaderTest {
         documentLoader.loadSystemResourceXmlDir(getSystemResourceDir("layout"));
         documentLoader.loadResourceXmlDir(resourceFile("res", "layout-land"));
 
-        context = new Activity();
+        context = new FragmentActivity();
     }
 
     @Test
@@ -242,9 +244,10 @@ public class ViewLoaderTest {
     @Test
     public void testFragment() throws Exception {
         View v = viewLoader.inflateView(context, "layout/fragment");
-        assertNull(v);
-        // TODO once we figure out what to do with fragments, we should actually test that they inflate ok.
-        //TestUtil.assertInstanceOf(CustomFragment.class, v);
+        TestUtil.assertInstanceOf(TextView.class, v);
+        final FragmentManager fragmentManager = context.getSupportFragmentManager();
+        Fragment fragment = fragmentManager.findFragmentById(R.id.my_fragment);
+        assertNotNull(fragment);
     }
 
     @Test
@@ -266,8 +269,7 @@ public class ViewLoaderTest {
         context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
         view = (ViewGroup) viewLoader.inflateView(context, "layout/multi_orientation");
         assertEquals(view.getId(), R.id.landscape);
-        // TODO once we figure out what to do with fragments, we should actually test that they inflate ok.
-        //TestUtil.assertInstanceOf(CustomFragment.class, v);
+        TestUtil.assertInstanceOf(LinearLayout.class, view);
     }
 
     @Test

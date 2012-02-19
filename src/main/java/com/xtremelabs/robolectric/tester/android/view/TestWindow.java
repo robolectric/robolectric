@@ -6,6 +6,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.*;
+import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.Robolectric;
 
 public class TestWindow extends Window {
@@ -15,6 +16,7 @@ public class TestWindow extends Window {
     public int featureDrawableResourceResId;
     public int softInputMode;
     private TestWindowManager windowManager;
+    private View contentView;
 
     public TestWindow(Context context) {
         super(context);
@@ -53,12 +55,15 @@ public class TestWindow extends Window {
     }
 
     @Override public void setContentView(View view) {
+        this.contentView = view;
     }
 
     @Override public void setContentView(View view, ViewGroup.LayoutParams params) {
+        setContentView(view);
     }
 
     @Override public void addContentView(View view, ViewGroup.LayoutParams params) {
+        setContentView(view);
     }
 
     @Override public View getCurrentFocus() {
@@ -152,7 +157,11 @@ public class TestWindow extends Window {
     }
 
     @Override public View getDecorView() {
-        return new View(Robolectric.application);
+        final FrameLayout view = new FrameLayout(Robolectric.application);
+        if (contentView != null) {
+            view.addView(contentView);
+        }
+        return view;
     }
 
     @Override public View peekDecorView() {
