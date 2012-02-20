@@ -18,10 +18,10 @@ import java.util.concurrent.TimeoutException;
 public class ShadowAsyncTask<Params, Progress, Result> {
 
 	@RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
-    
+
 	private final FutureTask<Result> future;
 	private final BackgroundWorker worker;
-	
+
 	public ShadowAsyncTask() {
 		worker = new BackgroundWorker();
 		future = new FutureTask<Result>(worker) {
@@ -74,7 +74,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
     @Implementation
     public AsyncTask<Params, Progress, Result> execute(final Params... params) {
         getBridge().onPreExecute();
-        
+
         worker.params = params;
 
         Robolectric.getBackgroundScheduler().post(new Runnable() {
@@ -82,8 +82,8 @@ public class ShadowAsyncTask<Params, Progress, Result> {
             	future.run();
             }
         });
-        
-        return null;
+
+        return realAsyncTask;
     }
 
     /**
@@ -105,7 +105,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
     private ShadowAsyncTaskBridge<Params, Progress, Result> getBridge() {
         return new ShadowAsyncTaskBridge<Params, Progress, Result>(realAsyncTask);
     }
-    
+
     private final class BackgroundWorker implements Callable<Result> {
     	Params[] params;
 		@Override

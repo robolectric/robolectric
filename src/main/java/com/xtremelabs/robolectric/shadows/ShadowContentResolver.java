@@ -134,10 +134,10 @@ public class ShadowContentResolver {
     public List<DeleteStatement> getDeleteStatements() {
         return deleteStatements;
     }
+    
     public List<NotifiedUri> getNotifiedUris() {
         return notifiedUris;
     }
-
 
     private TestCursor getCursor(Uri uri) {
         if (uriCursorMap.get(uri) != null) {

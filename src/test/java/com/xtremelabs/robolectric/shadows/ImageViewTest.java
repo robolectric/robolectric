@@ -14,7 +14,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.Robolectric.visualize;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -76,5 +79,11 @@ public class ImageViewTest {
         assertTrue("Drawable", imageView.getDrawable() instanceof Drawable);
         assertTrue("LayerDrawable",
                 imageView.getDrawable() instanceof LayerDrawable);
+    }
+
+    @Test
+    public void testSetImageLevel() throws Exception {
+        imageView.setImageLevel(2);
+        assertThat(shadowOf(imageView).getImageLevel(), equalTo(2));
     }
 }

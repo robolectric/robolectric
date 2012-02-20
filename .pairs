@@ -23,7 +23,9 @@ pairs:
   tl: Tim Labeeuw
   mh: Michael Haddad; mhaddad
   mm: Mike Mazur; mmazur
-
+  wei: Wei Wu; wwu@apptera.com
+  ad: Andrew Dai
+  bc: Brian Colvin
 email:
   prefix: pair
   domain: pivotallabs.com

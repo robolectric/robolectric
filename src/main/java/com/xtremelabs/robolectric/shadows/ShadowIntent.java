@@ -48,6 +48,20 @@ public class ShadowIntent {
         __constructor__(action, null);
     }
 
+    public void __constructor__(Intent intent) {
+        ShadowIntent other = shadowOf(intent);
+        extras.putAll(other.extras);
+        action = other.action;
+        componentName = other.componentName;
+        type = other.type;
+        data = other.data;
+        flags = other.flags;
+        intentClass = other.intentClass;
+        packageName = other.packageName;
+        categories.addAll(other.categories);
+        uri = other.uri;
+    }
+
     @Implementation
     public static Intent createChooser(Intent target, CharSequence title) {
         Intent intent = new Intent(Intent.ACTION_CHOOSER);
@@ -82,23 +96,23 @@ public class ShadowIntent {
     
     @Implementation
     public Intent addCategory(String category) {
-    	categories.add(category);
-    	return realIntent;
+        categories.add(category);
+        return realIntent;
     }
     
     @Implementation
     public void removeCategory(String category) {
-    	categories.remove(category);
+        categories.remove(category);
     }
     
     @Implementation
     public boolean hasCategory(String category) {
-    	return categories.contains(category);
+        return categories.contains(category);
     }
     
     @Implementation
     public Set<String> getCategories() {
-    	return categories;
+        return categories;
     }
 
     @Implementation
@@ -154,8 +168,8 @@ public class ShadowIntent {
     
     @Implementation
     public Intent addFlags(int flags) {
-    	this.flags |= flags;
-    	return realIntent;
+        this.flags |= flags;
+        return realIntent;
     }
 
     @Implementation
@@ -232,10 +246,21 @@ public class ShadowIntent {
         extras.put(key, value);
         return realIntent;
     }
+    
+    @Implementation
+    public Intent putExtra(String key, long[] value) {
+        extras.put(key, value);
+        return realIntent;
+    }
 
     @Implementation
     public int[] getIntArrayExtra(String name) {
         return (int[]) extras.get(name);
+    }
+    
+    @Implementation
+    public long[] getLongArrayExtra(String name) {
+        return (long[]) extras.get(name);
     }
 
     @Implementation
@@ -256,7 +281,7 @@ public class ShadowIntent {
     
     @Implementation
     public CharSequence getCharSequenceExtra(String name) {
-    	return (CharSequence) extras.get(name);
+        return (CharSequence) extras.get(name);
     }
 
     @Implementation
@@ -277,21 +302,21 @@ public class ShadowIntent {
 
     @Implementation
     public Intent putParcelableArrayListExtra(String key, ArrayList<Parcelable> value) {
-    	extras.put(key, value );
-    	return realIntent;
+        extras.put(key, value );
+        return realIntent;
     }
 
     @Implementation
     public ArrayList<Parcelable> getParcelableArrayListExtra(String key) {
-    	return (ArrayList<Parcelable>) extras.get(key);
+        return (ArrayList<Parcelable>) extras.get(key);
     }
     
     @Implementation
     public boolean hasExtra(String name) {
-	    return extras.containsKey(name);
-	}
+        return extras.containsKey(name);
+    }
 
-	@Implementation
+    @Implementation
     public String getStringExtra(String name) {
         return (String) extras.get(name);
     }
@@ -333,7 +358,7 @@ public class ShadowIntent {
     
     @Implementation
     public void removeExtra(String name) {
-    	extras.remove(name);
+        extras.remove(name);
     }
 
     @Implementation
@@ -354,36 +379,36 @@ public class ShadowIntent {
     
     @Implementation
     public int fillIn(Intent otherIntent, int flags) {
-    	int changes = 0;
-    	ShadowIntent other = shadowOf(otherIntent);
-    	
-    	if (other.action != null && (action == null || (flags & FILL_IN_ACTION) != 0)) {
-    		action = other.action;
-    		changes |= FILL_IN_ACTION;
-    	}
-    	if ((other.data != null || other.type != null)
-    			&& ((data == null && type == null) || (flags & FILL_IN_DATA) != 0)) {
-    		data = other.data;
-    		type = other.type;
-    		changes |= FILL_IN_DATA;
-    	}
-    	if (!other.categories.isEmpty()
-    			&& (categories.isEmpty() || (flags & FILL_IN_CATEGORIES) != 0)) {
-    		categories.addAll(other.categories);
-    		changes |= FILL_IN_CATEGORIES;
-    	}
-    	if (other.packageName != null 
-    			&& (packageName == null || (flags & FILL_IN_PACKAGE) != 0)) {
-    		packageName = other.packageName;
-    		changes |= FILL_IN_PACKAGE;
-    	}
-    	if (other.componentName != null && (flags & FILL_IN_COMPONENT) != 0) {
-    		componentName = other.componentName;
-    		changes |= FILL_IN_COMPONENT;
-    	}
+        int changes = 0;
+        ShadowIntent other = shadowOf(otherIntent);
+        
+        if (other.action != null && (action == null || (flags & FILL_IN_ACTION) != 0)) {
+            action = other.action;
+            changes |= FILL_IN_ACTION;
+        }
+        if ((other.data != null || other.type != null)
+                && ((data == null && type == null) || (flags & FILL_IN_DATA) != 0)) {
+            data = other.data;
+            type = other.type;
+            changes |= FILL_IN_DATA;
+        }
+        if (!other.categories.isEmpty()
+                && (categories.isEmpty() || (flags & FILL_IN_CATEGORIES) != 0)) {
+            categories.addAll(other.categories);
+            changes |= FILL_IN_CATEGORIES;
+        }
+        if (other.packageName != null 
+                && (packageName == null || (flags & FILL_IN_PACKAGE) != 0)) {
+            packageName = other.packageName;
+            changes |= FILL_IN_PACKAGE;
+        }
+        if (other.componentName != null && (flags & FILL_IN_COMPONENT) != 0) {
+            componentName = other.componentName;
+            changes |= FILL_IN_COMPONENT;
+        }
    
-    	extras.putAll(other.extras);
-    	return changes;
+        extras.putAll(other.extras);
+        return changes;
     }
 
     @Implementation

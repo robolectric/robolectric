@@ -8,8 +8,10 @@ import android.content.IntentFilter;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.View;
 
+import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -24,6 +26,7 @@ import org.junit.runner.RunWith;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -50,6 +53,14 @@ public class ActivityTest {
         activity2.registerReceiver(new AppWidgetProvider(), new IntentFilter());
 
         activity.onDestroy(); // should not throw exception
+    }
+
+    @Test
+    public void shouldNotRegisterNullBroadcastReceiver() {
+        DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+        activity.registerReceiver(null, new IntentFilter());
+
+        activity.onDestroy();
     }
 
     @Test
@@ -194,7 +205,8 @@ public class ActivityTest {
         assertTrue(activity.preparedDialog);
         assertTrue(dialogWasShown.get());
     }
-
+    
+  
     @Test
     public void showDialog_shouldCreatePrepareAndShowDialogWithBundle() {
         final DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
@@ -231,6 +243,21 @@ public class ActivityTest {
         assertSame("dialogs should be the same instance", firstDialog, secondDialog);
     }
 
+    @Test
+    public void removeDialog_shouldCreateDialogAgain() {
+        final DialogCreatingActivity activity = new DialogCreatingActivity();
+  
+        activity.showDialog(1);
+        Dialog firstDialog = ShadowDialog.getLatestDialog();
+        
+        activity.removeDialog(1);
+        assertNull(Robolectric.shadowOf(activity).getDialogById(1));
+
+        activity.showDialog(1);
+        Dialog secondDialog = ShadowDialog.getLatestDialog();
+        
+        assertNotSame("dialogs should not be the same instance", firstDialog, secondDialog);
+    }    
 
     @Test
     public void shouldCallOnCreateDialogFromShowDialog() {
@@ -288,6 +315,38 @@ public class ActivityTest {
 
         int id = activity.getResources().getIdentifier("just_alot_of_crap", "string", "com.xtremelabs.robolectric");
         assertTrue(id == 0);
+    }
+
+    @Test
+    public void shouldSetContentViewWithFrameLayoutAsParent() throws Exception {
+        Activity activity = new Activity();
+        activity.setContentView(R.layout.toplevel_merge);
+
+        View contentView = shadowOf(activity).getContentView();
+        assertInstanceOf(FrameLayout.class, contentView);
+        assertThat(((FrameLayout)contentView).getChildCount(), equalTo(2));
+    }
+    
+    @Test
+    public void onKeyUp_recordsThatItWasCalled() throws Exception {
+        Activity activity = new Activity();
+        boolean consumed = activity.onKeyUp(KeyEvent.KEYCODE_0, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_0));
+
+        assertFalse(consumed);
+        assertTrue(shadowOf(activity).onKeyUpWasCalled());
+
+        shadowOf(activity).resetKeyUpWasCalled();
+        assertFalse(shadowOf(activity).onKeyUpWasCalled());
+    }
+    
+    @Test
+    public void onKeyUp_callsOnBackPressedWhichFinishesTheActivity() throws Exception {
+        Activity activity = new Activity();
+        boolean consumed = activity.onKeyUp(KeyEvent.KEYCODE_BACK, new KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_BACK));
+
+        assertTrue(consumed);
+        assertTrue(shadowOf(activity).onKeyUpWasCalled());
+        assertTrue(activity.isFinishing());
     }
 
     private static class DialogCreatingActivity extends Activity {

@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.text.Editable;
 import android.text.SpannableStringBuilder;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -22,6 +23,18 @@ public class ShadowSpannableStringBuilder implements CharSequence {
     @Implementation
     public SpannableStringBuilder append(char text) {
         builder.append(text);
+        return realSpannableStringBuilder;
+    }
+
+    @Implementation
+    public Editable replace(int st, int en, CharSequence text) {
+        builder.replace(st, en, text.toString());
+        return realSpannableStringBuilder;
+    }
+
+    @Implementation
+    public Editable insert(int where, CharSequence text) {
+        builder.insert(where, text);
         return realSpannableStringBuilder;
     }
 
@@ -49,5 +62,11 @@ public class ShadowSpannableStringBuilder implements CharSequence {
     @Implementation
     public String toString() {
         return builder.toString();
+    }
+    
+    @Implementation
+    public SpannableStringBuilder delete( int start, int end ) {
+    	builder.delete( start, end );
+        return realSpannableStringBuilder;
     }
 }

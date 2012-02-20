@@ -22,6 +22,7 @@ public class ShadowImageView extends ShadowView {
     private Bitmap imageBitmap;
     private ImageView.ScaleType scaleType;
     private Matrix matrix;
+    private int imageLevel;
 
     @Override
     public void applyAttributes() {
@@ -53,9 +54,8 @@ public class ShadowImageView extends ShadowView {
 
     /**
      * Build drawable, either LayerDrawable or BitmapDrawable.
-     * 
-     * @param resourceId
-     *            Resource id
+     *
+     * @param resourceId Resource id
      * @return Drawable
      */
     protected Drawable buildDrawable(int resourceId) {
@@ -78,9 +78,8 @@ public class ShadowImageView extends ShadowView {
 
     /**
      * Does the resource id point to xml resource.
-     * 
-     * @param resourceId
-     *            Resource id
+     *
+     * @param resourceId Resource id
      * @return Boolean
      */
     private boolean isDrawableXml(int resourceId) {
@@ -150,5 +149,19 @@ public class ShadowImageView extends ShadowView {
                         "android", "src", 0));
             }
         }
+    }
+
+    @Implementation
+    public void setImageLevel(int imageLevel) {
+        this.imageLevel = imageLevel;
+    }
+
+    /**
+     * Non-Android accessor.
+     *
+     * @return the imageLevel set in {@code setImageLevel(int)}
+     */
+    public int getImageLevel() {
+        return imageLevel;
     }
 }

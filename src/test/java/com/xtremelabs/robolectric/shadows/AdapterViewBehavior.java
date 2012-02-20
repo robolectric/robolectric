@@ -21,9 +21,12 @@ import static org.junit.Assert.assertThat;
 public class AdapterViewBehavior {
     public static void shouldActAsAdapterView(AdapterView adapterView) throws Exception {
         Robolectric.shadowOf(Looper.getMainLooper()).pause();
-
+        
         testSetAdapter_ShouldCauseViewsToBeRenderedAsynchronously(adapterView);
         testSetAdapter_ShouldSelectFirstItemAsynchronously(adapterView);
+        testSetAdapter_ShouldFireOnNothingSelectedWhenAdapterCountIsReducedToZero(adapterView);
+        
+        shouldIgnoreSetSelectionCallsWithInvalidPosition(adapterView);
         shouldOnlyUpdateOnceIfInvalidatedMultipleTimes(adapterView);
         
         testSetEmptyView_ShouldHideAdapterViewIfAdapterIsNull(adapterView);
@@ -32,6 +35,27 @@ public class AdapterViewBehavior {
         testSetEmptyView_ShouldHideEmptyViewWhenAdapterGetsNewItem(adapterView);
     }
 
+    private static void shouldIgnoreSetSelectionCallsWithInvalidPosition(AdapterView adapterView) {
+        final Transcript transcript = new Transcript();
+
+        adapterView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                transcript.add("onItemSelected fired");
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
+        });
+        
+        ShadowHandler.idleMainLooper();
+        transcript.assertNoEventsSoFar();
+        adapterView.setSelection(AdapterView.INVALID_POSITION);
+        ShadowHandler.idleMainLooper();
+        transcript.assertNoEventsSoFar();
+    }
+    
     private static void testSetAdapter_ShouldCauseViewsToBeRenderedAsynchronously(AdapterView adapterView) throws Exception {
         adapterView.setAdapter(new CountingAdapter(2));
 
@@ -64,6 +88,28 @@ public class AdapterViewBehavior {
         transcript.assertNoEventsSoFar();
         ShadowHandler.idleMainLooper();
         transcript.assertEventsSoFar("selected item 0");
+    }
+    
+    private static void testSetAdapter_ShouldFireOnNothingSelectedWhenAdapterCountIsReducedToZero(final AdapterView adapterView) throws Exception {
+        final Transcript transcript = new Transcript();
+
+        adapterView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                transcript.add("onNothingSelected fired");
+            }
+        });
+        CountingAdapter adapter = new CountingAdapter(2);
+        adapterView.setAdapter(adapter);
+        ShadowHandler.idleMainLooper();
+        transcript.assertNoEventsSoFar();
+        adapter.setCount(0);
+        ShadowHandler.idleMainLooper();
+        transcript.assertEventsSoFar("onNothingSelected fired");
     }
     
     private static void testSetEmptyView_ShouldHideAdapterViewIfAdapterIsNull(final AdapterView adapterView) throws Exception {

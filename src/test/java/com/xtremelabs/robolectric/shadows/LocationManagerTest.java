@@ -1,32 +1,38 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.Context;
-import android.location.Criteria;
-import android.location.GpsStatus.Listener;
-import android.location.Location;
-import android.location.LocationListener;
-import android.location.LocationManager;
-import android.os.Bundle;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import junit.framework.Assert;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import static android.location.LocationManager.GPS_PROVIDER;
 import static android.location.LocationManager.NETWORK_PROVIDER;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import junit.framework.Assert;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import android.app.PendingIntent;
+import android.content.Context;
+import android.content.Intent;
+import android.location.Criteria;
+import android.location.GpsStatus.Listener;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
+
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class LocationManagerTest {
@@ -40,23 +46,26 @@ public class LocationManagerTest {
     }
 
     @Test
-    public void shouldReturnProviderEnabledAsDefault() {
+    public void shouldReturnNoProviderEnabledByDefault() {
         Boolean enabled = locationManager.isProviderEnabled(GPS_PROVIDER);
-        Assert.assertTrue(enabled);
+        assertFalse(enabled);
+        enabled = locationManager.isProviderEnabled(NETWORK_PROVIDER);
+        assertFalse(enabled);
+        enabled = locationManager.isProviderEnabled("RANDOM_PROVIDER");
+        assertFalse(enabled);
     }
 
     @Test
     public void shouldDisableProvider() {
+        // No provider is enabled by default, so it must be manually enabled
+        shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
         shadowLocationManager.setProviderEnabled(GPS_PROVIDER, false);
-
-        Boolean enabled = locationManager.isProviderEnabled(GPS_PROVIDER);
-        assertFalse(enabled);
+        assertFalse(locationManager.isProviderEnabled(GPS_PROVIDER));
     }
 
     @Test
     public void shouldHaveListenerOnceAdded() {
         Listener listener = addGpsListenerToLocationManager();
-
         assertTrue(shadowLocationManager.hasGpsStatusListener(listener));
     }
 
@@ -76,6 +85,7 @@ public class LocationManagerTest {
         shadowLocationManager.setProviderEnabled(LocationManager.PASSIVE_PROVIDER, false);
 
         assertTrue(locationManager.getProviders(true).isEmpty());
+        assertThat(locationManager.getProviders(false).size(), equalTo(3));
 
         shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
 
@@ -143,6 +153,68 @@ public class LocationManagerTest {
     }
 
     @Test
+    public void shouldRemovePendingIntentsWhenRequestingLocationUpdatesUsingCriteria() throws Exception {
+        Intent someIntent = new Intent("some_action");
+        PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric
+                .getShadowApplication().getApplicationContext(), 0, someIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent someOtherIntent = new Intent("some_other_action");
+        PendingIntent someOtherLocationListenerPendingIntent = PendingIntent.getBroadcast(
+                Robolectric.getShadowApplication().getApplicationContext(), 0, someOtherIntent,
+                PendingIntent.FLAG_UPDATE_CURRENT);
+
+        shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
+        shadowLocationManager.setBestProvider(LocationManager.GPS_PROVIDER, true);
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+
+        locationManager.requestLocationUpdates(0, 0, criteria, someLocationListenerPendingIntent);
+        locationManager.requestLocationUpdates(0, 0, criteria, someOtherLocationListenerPendingIntent);
+
+        locationManager.removeUpdates(someLocationListenerPendingIntent);
+
+        Map<PendingIntent, Criteria> expectedCriteria = new HashMap<PendingIntent, Criteria>();
+        expectedCriteria.put(someOtherLocationListenerPendingIntent, criteria);
+        assertThat(shadowLocationManager.getRequestLocationUdpateCriteriaPendingIntents(), equalTo(expectedCriteria));
+    }
+    
+    @Test
+    public void shouldNotSetBestEnabledProviderIfProviderIsDisabled() throws Exception {
+        shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
+        assertTrue(shadowLocationManager.setBestProvider(LocationManager.GPS_PROVIDER, true));
+    }
+    
+    @Test
+    public void shouldNotSetBestDisabledProviderIfProviderIsEnabled() throws Exception {
+        shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
+        assertFalse(shadowLocationManager.setBestProvider(LocationManager.GPS_PROVIDER, false));
+    }
+
+    @Test
+    public void shouldRemovePendingIntentsWhenRequestingLocationUpdatesUsingLocationListeners() throws Exception {
+        Intent someIntent = new Intent("some_action");
+        PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(), 0,
+                someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Intent someOtherIntent = new Intent("some_other_action");
+        PendingIntent someOtherLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(),
+                0, someOtherIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
+        shadowLocationManager.setBestProvider(LocationManager.GPS_PROVIDER, true);
+        shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
+
+        locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, someLocationListenerPendingIntent);
+        locationManager.requestLocationUpdates(NETWORK_PROVIDER, 0, 0, someOtherLocationListenerPendingIntent);
+
+        locationManager.removeUpdates(someLocationListenerPendingIntent);
+
+        Map<PendingIntent, String> expectedProviders = new HashMap<PendingIntent, String>();
+        expectedProviders.put(someOtherLocationListenerPendingIntent, NETWORK_PROVIDER);
+        assertThat(shadowLocationManager.getRequestLocationUdpateProviderPendingIntents(),
+                equalTo(expectedProviders));
+    }
+
+    @Test
     public void shouldStoreBestProviderCriteriaAndEnabledOnlyFlag() throws Exception {
         Criteria criteria = new Criteria();
         assertNull(locationManager.getBestProvider(criteria, true));
@@ -151,14 +223,149 @@ public class LocationManagerTest {
     }
 
     @Test
-    public void shouldReturnBestProvider() throws Exception {
-        shadowLocationManager.setBestProvider("GNSS");
-        assertEquals("GNSS", locationManager.getBestProvider(new Criteria(), false));
+    public void shouldReturnNullIfBestProviderNotExplicitlySet() throws Exception {
+        Criteria criteria = new Criteria();
+        assertNull(locationManager.getBestProvider(null, false));
+        assertNull(locationManager.getBestProvider(null, true));
+        assertNull(locationManager.getBestProvider(criteria, false));
+        assertNull(locationManager.getBestProvider(criteria, true));
+    }
+    
+    @Test
+    public void shouldThrowExceptionWhenRequestingLocationUpdatesWithANullIntent() throws Exception {
+        try {
+            shadowLocationManager.requestLocationUpdates(0, 0, new Criteria(), null);
+            Assert.fail("When requesting location updates the intent must not be null!");
+        } catch (Exception e) {
+            // No worries, everything is fine...
+        }
+    }    
+
+    @Test
+    public void shouldThrowExceptionWhenRequestingLocationUpdatesAndNoProviderIsFound() throws Exception {
+        Intent someIntent = new Intent("some_action");
+        PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(), 0,
+                someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        try {
+            shadowLocationManager.requestLocationUpdates(0, 0, criteria, someLocationListenerPendingIntent);
+            Assert.fail("When requesting location updates the intent must not be null!");
+        } catch (Exception e) {
+            // No worries, everything is fine...
+        }
+    }
+    
+    @Test
+    public void shouldThrowExceptionIfTheBestProviderIsUnknown() throws Exception {
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        try {
+            shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", true);
+            Assert.fail("The best provider is unknown!");
+        } catch (Exception e) {
+            // No worries, everything is fine...
+        }
     }
 
     @Test
-    public void shouldReturnNullWhenBestProviderIsNotSet() throws Exception {
-        assertNull(locationManager.getBestProvider(new Criteria(), true));
+    public void shouldReturnBestCustomProviderUsingCriteria() throws Exception {
+        Criteria criteria = new Criteria();
+        Criteria customProviderCriteria = new Criteria();
+        
+        // Manually set best provider should be returned
+        ArrayList<Criteria> criteriaList = new ArrayList<Criteria>();
+        customProviderCriteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        criteriaList.add(customProviderCriteria);
+        shadowLocationManager.setProviderEnabled("BEST_ENABLED_PROVIDER_WITH_CRITERIA", true, criteriaList);
+        assertTrue(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER_WITH_CRITERIA", true));
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        criteria.setPowerRequirement(Criteria.NO_REQUIREMENT);
+        assertThat("BEST_ENABLED_PROVIDER_WITH_CRITERIA", equalTo(locationManager.getBestProvider(criteria, true)));
+        assertTrue(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER_WITH_CRITERIA", true));
+        assertThat("BEST_ENABLED_PROVIDER_WITH_CRITERIA", equalTo(locationManager.getBestProvider(criteria, false)));
+        assertThat("BEST_ENABLED_PROVIDER_WITH_CRITERIA", equalTo(locationManager.getBestProvider(criteria, true)));
+    }
+
+    @Test
+    public void shouldReturnBestProviderUsingCriteria() {
+        Criteria criteria = new Criteria();
+
+        shadowLocationManager.setProviderEnabled(LocationManager.GPS_PROVIDER, false);
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        assertThat(LocationManager.GPS_PROVIDER, equalTo(locationManager.getBestProvider(criteria, false)));
+
+        shadowLocationManager.setProviderEnabled(LocationManager.NETWORK_PROVIDER, false);
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        assertThat(LocationManager.NETWORK_PROVIDER, equalTo(locationManager.getBestProvider(criteria, false)));
+
+        criteria.setPowerRequirement(Criteria.POWER_LOW);
+        criteria.setAccuracy(Criteria.ACCURACY_FINE);
+        assertThat(LocationManager.NETWORK_PROVIDER, equalTo(locationManager.getBestProvider(criteria, false)));
+    }
+
+    @Test
+    public void shouldReturnBestDisabledProvider() throws Exception {
+        shadowLocationManager.setProviderEnabled("BEST_DISABLED_PROVIDER", false);
+        shadowLocationManager.setBestProvider("BEST_DISABLED_PROVIDER", false);
+        shadowLocationManager.setProviderEnabled("BEST_ENABLED_PROVIDER", true);
+        shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", true);
+
+        assertTrue(shadowLocationManager.setBestProvider("BEST_DISABLED_PROVIDER", false));
+        assertThat("BEST_DISABLED_PROVIDER", equalTo(locationManager.getBestProvider(null, false)));
+        assertThat("BEST_ENABLED_PROVIDER", equalTo(locationManager.getBestProvider(null, true)));
+    }
+
+    @Test
+    public void shouldReturnBestEnabledProvider() throws Exception {
+        shadowLocationManager.setProviderEnabled("BEST_ENABLED_PROVIDER", true);
+
+        assertTrue(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", true));
+        assertFalse(shadowLocationManager.setBestProvider("BEST_ENABLED_PROVIDER", false));
+        assertThat("BEST_ENABLED_PROVIDER", equalTo(locationManager.getBestProvider(null, true)));
+        assertNull(locationManager.getBestProvider(null, false));
+    }
+
+    @Test
+    public void shouldNotifyAllListenersIfProviderStateChanges() {
+        TestLocationListener listener = new TestLocationListener();
+        locationManager.requestLocationUpdates("TEST_PROVIDER", 0, 0, listener);
+        shadowLocationManager.setProviderEnabled("TEST_PROVIDER", true);
+        assertTrue(listener.providerEnabled);
+        shadowLocationManager.setProviderEnabled("TEST_PROVIDER", false);
+        assertFalse(listener.providerEnabled);
+    }
+
+    @Test
+    public void shouldRegisterLocationUpdatesWhenProviderGiven() throws Exception {
+        shadowLocationManager.setProviderEnabled(GPS_PROVIDER, true);
+        shadowLocationManager.setBestProvider(LocationManager.GPS_PROVIDER, true);
+
+        Intent someIntent = new Intent("some_action");
+        PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(), 0,
+                someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        locationManager.requestLocationUpdates(GPS_PROVIDER, 0, 0, someLocationListenerPendingIntent);
+
+        assertThat(shadowLocationManager.getRequestLocationUdpateProviderPendingIntents().get(someLocationListenerPendingIntent),
+                equalTo(GPS_PROVIDER));
+    }
+
+    @Test
+    public void shouldRegisterLocationUpdatesWhenCriteriaGiven() throws Exception {
+        shadowLocationManager.setProviderEnabled(NETWORK_PROVIDER, true);
+        shadowLocationManager.setBestProvider(LocationManager.NETWORK_PROVIDER, true);
+        Criteria criteria = new Criteria();
+        criteria.setAccuracy(Criteria.ACCURACY_COARSE);
+
+        Intent someIntent = new Intent("some_action");
+        PendingIntent someLocationListenerPendingIntent = PendingIntent.getBroadcast(Robolectric.getShadowApplication().getApplicationContext(), 0,
+                someIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+        Criteria someCriteria = new Criteria();
+        someCriteria.setAccuracy(Criteria.ACCURACY_COARSE);
+        locationManager.requestLocationUpdates(0, 0, someCriteria, someLocationListenerPendingIntent);
+
+        assertThat(shadowLocationManager.getRequestLocationUdpateCriteriaPendingIntents().get(someLocationListenerPendingIntent),
+                equalTo(someCriteria));
     }
 
     private Listener addGpsListenerToLocationManager() {
@@ -168,6 +375,8 @@ public class LocationManagerTest {
     }
 
     private static class TestLocationListener implements LocationListener {
+        public boolean providerEnabled;
+
         @Override
         public void onLocationChanged(Location location) {
         }
@@ -178,10 +387,12 @@ public class LocationManagerTest {
 
         @Override
         public void onProviderEnabled(String s) {
+            providerEnabled = true;
         }
 
         @Override
         public void onProviderDisabled(String s) {
+            providerEnabled = false;
         }
     }
 

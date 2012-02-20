@@ -70,6 +70,9 @@ public class ShadowAdapterView extends ShadowViewGroup {
         itemCount = adapter == null ? 0 : adapter.getCount();
         updateEmptyStatus(itemCount == 0);
 
+        if (hasOnItemSelectedListener() && itemCount == 0)
+            onItemSelectedListener.onNothingSelected(realAdapterView);
+        
         new Handler().post(new Runnable() {
             @Override
             public void run() {
@@ -79,6 +82,10 @@ public class ShadowAdapterView extends ShadowViewGroup {
                 }
             }
         });
+    }
+
+    private boolean hasOnItemSelectedListener() {
+        return onItemSelectedListener != null;
     }
 
     private void updateEmptyStatus(boolean empty) {
@@ -212,14 +219,17 @@ public class ShadowAdapterView extends ShadowViewGroup {
     @Implementation
     public void setSelection(final int position) {
         selectedPosition = position;
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                if (onItemSelectedListener != null) {
-                    onItemSelectedListener.onItemSelected(realAdapterView, getChildAt(position), position, getAdapter().getItemId(position));
+        
+        if (selectedPosition >= 0) {
+            new Handler().post(new Runnable() {
+                @Override
+                public void run() {
+                    if (hasOnItemSelectedListener()) {
+                        onItemSelectedListener.onItemSelected(realAdapterView, getChildAt(position), position, getAdapter().getItemId(position));
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     @Implementation
@@ -262,12 +272,12 @@ public class ShadowAdapterView extends ShadowViewGroup {
 
             List<Object> newItems = new ArrayList<Object>();
             for (int i = 0; i < adapter.getCount() - ignoreRowsAtEndOfList; i++) {
-                newItems.add(adapter.getItem(i));
                 View view = adapter.getView(i, null, realAdapterView);
                 // don't add null views
-                if( view != null ) { 
+                if( view != null ) {
                 	addView(view);
                 }
+                newItems.add(adapter.getItem(i));
             }
 
             if (valid && !newItems.equals(previousItems)) {
