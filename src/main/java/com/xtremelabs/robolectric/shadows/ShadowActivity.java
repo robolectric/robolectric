@@ -371,6 +371,11 @@ public class ShadowActivity extends ShadowContextWrapper {
     public final void showDialog(int id) {
         showDialog(id, null);
     }
+    
+    @Implementation
+    public final void removeDialog(int id) {
+        dialogForId.remove(id);
+    }
 
     @Implementation
     public final boolean showDialog(int id, Bundle bundle) {

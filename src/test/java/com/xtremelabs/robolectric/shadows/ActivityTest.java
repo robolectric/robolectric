@@ -205,7 +205,8 @@ public class ActivityTest {
         assertTrue(activity.preparedDialog);
         assertTrue(dialogWasShown.get());
     }
-
+    
+  
     @Test
     public void showDialog_shouldCreatePrepareAndShowDialogWithBundle() {
         final DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
@@ -242,6 +243,21 @@ public class ActivityTest {
         assertSame("dialogs should be the same instance", firstDialog, secondDialog);
     }
 
+    @Test
+    public void removeDialog_shouldCreateDialogAgain() {
+        final DialogCreatingActivity activity = new DialogCreatingActivity();
+  
+        activity.showDialog(1);
+        Dialog firstDialog = ShadowDialog.getLatestDialog();
+        
+        activity.removeDialog(1);
+        assertNull(Robolectric.shadowOf(activity).getDialogById(1));
+
+        activity.showDialog(1);
+        Dialog secondDialog = ShadowDialog.getLatestDialog();
+        
+        assertNotSame("dialogs should not be the same instance", firstDialog, secondDialog);
+    }    
 
     @Test
     public void shouldCallOnCreateDialogFromShowDialog() {
