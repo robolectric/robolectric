@@ -1,11 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-
 import java.util.concurrent.TimeUnit;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,6 +13,9 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Join;
 import com.xtremelabs.robolectric.util.Transcript;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AsyncTaskTest {
@@ -101,6 +101,13 @@ public class AsyncTaskTest {
                 "onProgressUpdate 66%",
                 "onProgressUpdate 99%",
                 "onPostExecute done");
+    }
+
+    @Test
+    public void executeReturnsAsyncTask() throws Exception {
+        Robolectric.getBackgroundScheduler().unPause();
+        AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
+        assertThat(asyncTask.execute("a", "b").get(), equalTo("c"));
     }
 
     private class MyAsyncTask extends AsyncTask<String, String, String> {
