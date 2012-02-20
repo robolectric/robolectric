@@ -17,8 +17,10 @@ import java.io.InputStream;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -47,6 +49,43 @@ public class ContentResolverTest {
         assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues()), equalTo(uri21));
         assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues()), equalTo(uri22));
     }
+    
+    @Test
+    public void insert_shouldTrackInsertStatements() throws Exception {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("foo", "bar");
+        contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
+        assertThat(shadowContentResolver.getInsertStatements().size(), is(1));
+        assertThat(shadowContentResolver.getInsertStatements().get(0).getUri(), equalTo(EXTERNAL_CONTENT_URI));
+        assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues().getAsString("foo"), equalTo("bar"));
+        
+        contentValues = new ContentValues();
+        contentValues.put("hello", "world");
+        contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
+        assertThat(shadowContentResolver.getInsertStatements().size(), is(2));
+        assertThat(shadowContentResolver.getInsertStatements().get(1).getContentValues().getAsString("hello"), equalTo("world"));
+    }
+    
+    @Test
+    public void insert_shouldTrackUpdateStatements() throws Exception {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("foo", "bar");
+        contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] { "awesome" });
+        assertThat(shadowContentResolver.getUpdateStatements().size(), is(1));
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getUri(), equalTo(EXTERNAL_CONTENT_URI));
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getContentValues().getAsString("foo"), equalTo("bar"));
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getWhere(), equalTo("robolectric"));
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getSelectionArgs(), equalTo(new String[] { "awesome" }));
+        
+        contentValues = new ContentValues();
+        contentValues.put("hello", "world");
+        contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, null, null);
+        assertThat(shadowContentResolver.getUpdateStatements().size(), is(2));
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getUri(), equalTo(EXTERNAL_CONTENT_URI));
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getContentValues().getAsString("hello"), equalTo("world"));
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getWhere(), nullValue());
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getSelectionArgs(), nullValue());
+    }
 
     @Test
     public void delete_shouldTrackDeletedUris() throws Exception {
@@ -59,6 +98,23 @@ public class ContentResolverTest {
         assertThat(contentResolver.delete(uri22, null, null), equalTo(1));
         assertThat(shadowContentResolver.getDeletedUris(), hasItem(uri22));
         assertThat(shadowContentResolver.getDeletedUris().size(), equalTo(2));
+    }
+    
+    @Test
+    public void delete_shouldTrackDeletedStatements() {
+        assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(0));
+
+        assertThat(contentResolver.delete(uri21, "id", new String[] { "5" }), equalTo(1));
+        assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(1));
+        assertThat(shadowContentResolver.getDeleteStatements().get(0).getUri(), equalTo(uri21));
+        assertThat(shadowContentResolver.getDeleteStatements().get(0).getWhere(), equalTo("id"));
+        assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0], equalTo("5"));
+
+        assertThat(contentResolver.delete(uri21, "foo", new String[] { "bar" }), equalTo(1));
+        assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(2));
+        assertThat(shadowContentResolver.getDeleteStatements().get(1).getUri(), equalTo(uri21));
+        assertThat(shadowContentResolver.getDeleteStatements().get(1).getWhere(), equalTo("foo"));
+        assertThat(shadowContentResolver.getDeleteStatements().get(1).getSelectionArgs()[0], equalTo("bar"));
     }
 
     @Test
