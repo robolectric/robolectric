@@ -169,6 +169,8 @@ public class Robolectric {
                 ShadowExpandableListView.class,
                 ShadowFilter.class,
                 ShadowFloatMath.class,
+                ShadowFragment.class,
+                ShadowFragmentActivity.class,
                 ShadowFrameLayout.class,
                 ShadowGallery.class,
                 ShadowGeocoder.class,
@@ -195,6 +197,7 @@ public class Robolectric {
                 ShadowListActivity.class,
                 ShadowListPreference.class,
                 ShadowListView.class,
+                ShadowLocalActivityManager.class,
                 ShadowLocation.class,
                 ShadowLocationManager.class,
                 ShadowLog.class,
@@ -325,6 +328,10 @@ public class Robolectric {
 
     public static ShadowActivity shadowOf(Activity instance) {
         return (ShadowActivity) shadowOf_(instance);
+    }
+
+    public static ShadowFragment shadowOf(android.support.v4.app.Fragment instance) {
+        return (ShadowFragment) shadowOf_(instance);
     }
 
     public static ShadowActivityGroup shadowOf(ActivityGroup instance) {

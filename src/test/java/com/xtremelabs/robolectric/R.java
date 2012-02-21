@@ -53,6 +53,12 @@ public final class R {
 
         public static final int portrait = nextId++;
         public static final int landscape = nextId++;
+        public static final int tacos = nextId++;
+        public static final int burritos = nextId++;
+        public static int lam_container = nextId++;
+        public static int lam_inner_contents = nextId++;
+        public static int my_fragment = nextId++;
+        public static int my_landscape_fragment = nextId++;
     }
 
     public static final class string {
@@ -114,6 +120,9 @@ public final class R {
         public static final int with_invalid_onclick = nextId++;
         public static final int text_views = nextId++;
         public static final int text_views_hints = nextId++;
+        public static int fragment_contents = nextId++;
+        public static int lam_outer = nextId++;
+        public static int lam_inner = nextId++;
     }
 
     public static final class raw {

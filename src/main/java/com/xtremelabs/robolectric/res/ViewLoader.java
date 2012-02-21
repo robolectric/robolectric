@@ -3,7 +3,12 @@ package com.xtremelabs.robolectric.res;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.ActivityInfo;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -188,12 +193,7 @@ public class ViewLoader extends XmlLoader {
             } else if (name.equals("merge")) {
                 return parent;
             } else if (name.equals("fragment")) {
-                final String className = attributes.get("android:name");
-                // instantiate
-                // onCreate
-                // return onCreateView;
-                // TODO instantiate the fragment?  keep track of it somewhere?
-                return null;
+                return inflateFragment(context, parent);
             } else {
                 applyFocusOverride(parent);
                 View view = constructView(context);
@@ -201,6 +201,22 @@ public class ViewLoader extends XmlLoader {
                 shadowOf(view).applyFocus();
                 return view;
             }
+        }
+
+        private View inflateFragment(Context context, ViewGroup parent) throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+            final String className = attributes.get("android:name");
+            final int id = resourceExtractor.getResourceId(attributes.get("android:id"));
+            final String tag = attributes.get("android:tag");
+            final Fragment fragment = (Fragment) Class.forName(className).newInstance();
+            fragment.onCreate(null);
+            final View view = fragment.onCreateView(LayoutInflater.from(context), parent, null);
+            if (context instanceof FragmentActivity) {
+                final FragmentManager fragmentMgr = ((FragmentActivity) context).getSupportFragmentManager();
+                final FragmentTransaction transaction = fragmentMgr.beginTransaction();
+                transaction.add(id, fragment, tag);
+                transaction.commit();
+            }
+            return view;
         }
 
         private void addToParent(ViewGroup parent, View view) {
