@@ -17,16 +17,18 @@ import java.util.concurrent.TimeoutException;
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {
 
-	@RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
+    @RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
 
-	private final FutureTask<Result> future;
-	private final BackgroundWorker worker;
+    private final FutureTask<Result> future;
+    private final BackgroundWorker worker;
+    private AsyncTask.Status status = AsyncTask.Status.PENDING;
 
 	public ShadowAsyncTask() {
 		worker = new BackgroundWorker();
 		future = new FutureTask<Result>(worker) {
         	@Override
         	protected void done() {
+                status = AsyncTask.Status.FINISHED;
 				try {
 					final Result result = get();
 					Robolectric.getUiThreadScheduler().post(new Runnable() {
@@ -40,7 +42,6 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 							getBridge().onCancelled();
 						}
 					});
-					return;
 				} catch (InterruptedException e) {
 					// Ignore.
 				} catch (Throwable t) {
@@ -73,6 +74,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
     @Implementation
     public AsyncTask<Params, Progress, Result> execute(final Params... params) {
+        status = AsyncTask.Status.RUNNING;
         getBridge().onPreExecute();
 
         worker.params = params;
@@ -84,6 +86,12 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         });
 
         return realAsyncTask;
+    }
+
+
+    @Implementation
+    public AsyncTask.Status getStatus() {
+        return status;
     }
 
     /**

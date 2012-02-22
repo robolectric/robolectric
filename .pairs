@@ -10,7 +10,6 @@ pairs:
   pg: Phil Goodwin; phil
   pp: Phil Plante
   rr: Ryan Richard; rrichard
-  cw: Chee Wong;
   gv: Gregg Van Hove; gvanhove
   rk: Rick Kawala
   df: David Farber; dfarber
@@ -26,6 +25,7 @@ pairs:
   wei: Wei Wu; wwu@apptera.com
   ad: Andrew Dai
   bc: Brian Colvin
+  av: Aaron VonderHaar; avonderhaar
 email:
   prefix: pair
   domain: pivotallabs.com
