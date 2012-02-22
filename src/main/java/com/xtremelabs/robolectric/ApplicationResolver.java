@@ -1,5 +1,7 @@
 package com.xtremelabs.robolectric;
 
+import java.util.StringTokenizer;
+
 import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
@@ -42,8 +44,21 @@ public class ApplicationResolver {
             for (String action : config.getReceiverIntentFilterActions(i)) {
                 filter.addAction(action);
             }
-            shadowApplication.registerReceiver((BroadcastReceiver) Robolectric.newInstanceOf(config.getReceiverClassName(i)), filter);
+            String receiverClassName = replaceLastDotWith$IfInnerStaticClass(config.getReceiverClassName(i));
+            shadowApplication.registerReceiver((BroadcastReceiver) Robolectric.newInstanceOf(receiverClassName), filter);
         }
+    }
+
+    private String replaceLastDotWith$IfInnerStaticClass(String receiverClassName) {
+        String[] splits = receiverClassName.split("\\.");
+        String staticInnerClassRegex = "[A-Z][a-zA-Z]*";
+        if (splits[splits.length - 1].matches(staticInnerClassRegex) && splits[splits.length - 2].matches(staticInnerClassRegex)) {
+            int lastDotIndex = receiverClassName.lastIndexOf(".");
+            StringBuffer buffer = new StringBuffer(receiverClassName);
+            buffer.setCharAt(lastDotIndex,'$');
+            return buffer.toString();
+        }
+        return receiverClassName;
     }
 
     private String getTagAttributeText(Document doc, String tag, String attribute) {

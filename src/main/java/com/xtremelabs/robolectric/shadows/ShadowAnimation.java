@@ -19,6 +19,9 @@ public class ShadowAnimation {
     private Interpolator interpolator;
     private boolean startFlag = false;
     private long durationMillis = 0;
+    private int repeatCount;
+    private int repeatMode;
+    private long startOffset;
 
     @RealObject
     private Animation realAnimation;
@@ -68,6 +71,36 @@ public class ShadowAnimation {
     public Interpolator getInterpolator() {
         return interpolator;
     }
+    
+    @Implementation
+    public void setRepeatCount(int repeatCount) {
+        this.repeatCount = repeatCount;
+    }
+
+    @Implementation
+    public int getRepeatCount() {
+        return repeatCount;
+    }
+
+    @Implementation
+    public void setRepeatMode(int repeatMode) {
+        this.repeatMode = repeatMode;
+    }
+
+    @Implementation
+    public int getRepeatMode() {
+        return repeatMode;
+    }
+
+    @Implementation
+    public void setStartOffset(long startOffset) {
+        this.startOffset = startOffset;
+    }
+
+    @Implementation
+    public long getStartOffset() {
+        return startOffset;
+    }
 
     /**
      * Non-Android accessor.  Returns most recently set animation listener.
@@ -96,4 +129,6 @@ public class ShadowAnimation {
         }
         new ShadowAnimationBridge(realAnimation).applyTransformation(1.0f, new Transformation());
     }
+
+
 }

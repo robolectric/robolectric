@@ -7,6 +7,9 @@ import com.xtremelabs.robolectric.internal.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
+import static com.xtremelabs.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
+
 /**
  * Shadow of {@code Path} that contains a simplified implementation of the original class that only supports
  * straight-line {@code Path}s.
@@ -15,19 +18,22 @@ import java.util.List;
 @Implements(Path.class)
 public class ShadowPath {
     private List<Point> points = new ArrayList<Point>();
+    private List<Point> pointsMovedTo = new ArrayList<Point>();
+    private List<Point> pointsLinedTo = new ArrayList<Point>();
     private Point wasMovedTo;
     private String quadDescription = "";
 
     @Implementation
     public void moveTo(float x, float y) {
-        Point p = new Point(x, y);
+        Point p = new Point(x, y, MOVE_TO);
         points.add(p);
         wasMovedTo = p;
     }
 
     @Implementation
     public void lineTo(float x, float y) {
-        points.add(new Point(x, y));
+        Point point = new Point(x, y, LINE_TO);
+        points.add(point);
     }
 
     @Implementation
@@ -60,21 +66,29 @@ public class ShadowPath {
 
     public static class Point {
         float x, y;
+        private Type type;
 
-        public Point(float x, float y) {
+        public enum Type {
+            MOVE_TO,
+            LINE_TO
+        }
+
+        public Point(float x, float y, Type type) {
             this.x = x;
             this.y = y;
+            this.type = type;
         }
 
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
-            if (o == null || getClass() != o.getClass()) return false;
+            if (!(o instanceof Point)) return false;
 
             Point point = (Point) o;
 
             if (Float.compare(point.x, x) != 0) return false;
             if (Float.compare(point.y, y) != 0) return false;
+            if (type != point.type) return false;
 
             return true;
         }
@@ -83,12 +97,13 @@ public class ShadowPath {
         public int hashCode() {
             int result = (x != +0.0f ? Float.floatToIntBits(x) : 0);
             result = 31 * result + (y != +0.0f ? Float.floatToIntBits(y) : 0);
+            result = 31 * result + (type != null ? type.hashCode() : 0);
             return result;
         }
 
         @Override
         public String toString() {
-            return "Point(" + x + "," + y + ")";
+            return "Point(" + x + "," + y + "," + type + ")";
         }
         
         public float getX() {
@@ -97,6 +112,10 @@ public class ShadowPath {
         
         public float getY() {
         	return y;
+        }
+
+        public Type getType() {
+            return type;
         }
     }
 }

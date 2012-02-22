@@ -6,11 +6,13 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -53,6 +55,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     private Object lastNonConfigurationInstance;
     private Map<Integer, Dialog> dialogForId = new HashMap<Integer, Dialog>();
     private CharSequence title;
+    private boolean onKeyUpWasCalled;
 
     @Implementation
     public final Application getApplication() {
@@ -74,22 +77,22 @@ public class ShadowActivity extends ShadowContextWrapper {
     public Intent getIntent() {
         return intent;
     }
-    
-    @Implementation(i18nSafe=false)
+
+    @Implementation(i18nSafe = false)
     public void setTitle(CharSequence title) {
-    	this.title = title;
+        this.title = title;
     }
-    
+
     @Implementation
     public void setTitle(int titleId) {
-    	this.title = this.getResources().getString(titleId);
+        this.title = this.getResources().getString(titleId);
     }
-    
+
     @Implementation
     public CharSequence getTitle() {
-    	return title;
+        return title;
     }
-    
+
     /**
      * Sets the {@code contentView} for this {@code Activity} by invoking the
      * {@link android.view.LayoutInflater}
@@ -99,7 +102,7 @@ public class ShadowActivity extends ShadowContextWrapper {
      */
     @Implementation
     public void setContentView(int layoutResID) {
-        contentView = getLayoutInflater().inflate(layoutResID, null);
+        contentView = getLayoutInflater().inflate(layoutResID, new FrameLayout(realActivity));
         realActivity.onContentChanged();
     }
 
@@ -307,6 +310,24 @@ public class ShadowActivity extends ShadowContextWrapper {
         return currentFocus;
     }
 
+    @Implementation
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+        onKeyUpWasCalled = true;
+        if (keyCode == KeyEvent.KEYCODE_BACK) {
+            onBackPressed();
+            return true;
+        }
+        return false;
+    }
+
+    public boolean onKeyUpWasCalled() {
+        return onKeyUpWasCalled;
+    }
+
+    public void resetKeyUpWasCalled() {
+        onKeyUpWasCalled = false;
+    }
+
     /**
      * Container object to hold an Intent, together with the requestCode used
      * in a call to {@code Activity#startActivityForResult(Intent, int)}
@@ -349,6 +370,11 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public final void showDialog(int id) {
         showDialog(id, null);
+    }
+    
+    @Implementation
+    public final void removeDialog(int id) {
+        dialogForId.remove(id);
     }
 
     @Implementation
@@ -407,5 +433,9 @@ public class ShadowActivity extends ShadowContextWrapper {
     public void overridePendingTransition(int enterAnim, int exitAnim) {
         pendingTransitionEnterAnimResId = enterAnim;
         pendingTransitionExitAnimResId = exitAnim;
+    }
+    
+    public Dialog getDialogById(int dialogId) {
+    	return dialogForId.get(dialogId);
     }
 }

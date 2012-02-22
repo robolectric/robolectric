@@ -241,5 +241,9 @@ public class TestHttpResponse extends HttpResponseStub {
         @Override public String getReasonPhrase() {
             return "HTTP status " + statusCode;
         }
+
+        @Override public String toString() {
+            return "TestStatusLine[" + getReasonPhrase() + "]";
+        }
     }
 }

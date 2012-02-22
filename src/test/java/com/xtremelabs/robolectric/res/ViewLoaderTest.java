@@ -2,17 +2,11 @@ package com.xtremelabs.robolectric.res;
 
 import android.app.Activity;
 import android.content.Context;
-import android.view.View;
-import android.widget.Button;
 import android.os.Bundle;
+import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
-import android.widget.CheckBox;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
-import android.widget.TextView;
+import android.widget.*;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -28,12 +22,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
-import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static com.xtremelabs.robolectric.util.TestUtil.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -55,6 +46,8 @@ public class ViewLoaderTest {
         
         viewLoader =  new ViewLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
         new DocumentLoader(viewLoader).loadResourceXmlDir(resourceFile("res", "layout"));
+        new DocumentLoader(viewLoader).loadResourceXmlDir(resourceFile("res", "layout-xlarge"));
+        new DocumentLoader(viewLoader).loadResourceXmlDir(resourceFile("res", "layout-land"));
         new DocumentLoader(viewLoader).loadSystemResourceXmlDir(getSystemResourceDir("layout"));
 
         context = new Activity();
@@ -66,6 +59,29 @@ public class ViewLoaderTest {
         TestUtil.assertInstanceOf(LinearLayout.class, view);
 
         assertSame(context, view.getContext());
+    }
+
+    @Test
+    public void testChoosesLayoutBasedOnDefaultScreenSize() throws Exception {
+        ViewGroup view = (ViewGroup) viewLoader.inflateView(context, "layout/different_screen_sizes");
+        TextView textView = (TextView) view.findViewById(android.R.id.text1);
+        assertThat(textView.getText().toString(), equalTo("default"));
+    }
+    
+    @Test
+    public void testChoosesLayoutBasedOnSearchPath_choosesFirstFileFoundOnPath() throws Exception {
+        viewLoader.setLayoutQualifierSearchPath("xlarge", "land");
+        ViewGroup view = (ViewGroup) viewLoader.inflateView(context, "layout/different_screen_sizes");
+        TextView textView = (TextView) view.findViewById(android.R.id.text1);
+        assertThat(textView.getText().toString(), equalTo("xlarge"));
+    }
+
+    @Test
+    public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
+        viewLoader.setLayoutQualifierSearchPath("does-not-exist", "land", "xlarge");
+        ViewGroup view = (ViewGroup) viewLoader.inflateView(context, "layout/different_screen_sizes");
+        TextView textView = (TextView) view.findViewById(android.R.id.text1);
+        assertThat(textView.getText().toString(), equalTo("land"));
     }
 
     @Test

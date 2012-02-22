@@ -14,13 +14,25 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class HandlerTest {
     private Transcript transcript;
     TestRunnable scratchRunnable = new TestRunnable();
+
+    private Handler.Callback callback = new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            hasHandlerCallbackHandledMessage = true;
+            return false;
+        }
+    };
+
+    private Boolean hasHandlerCallbackHandledMessage = false;
 
     @Before
     public void setUp() throws Exception {
@@ -72,6 +84,13 @@ public class HandlerTest {
         shadowOf(looper2).idle();
 
         transcript.assertEventsSoFar("second thing");
+    }
+
+    @Test
+    public void shouldCallProvidedHandlerCallback() {
+        Handler handler = new Handler(callback);
+        handler.sendMessage(new Message());
+        assertTrue(hasHandlerCallbackHandledMessage);
     }
 
     @Test
@@ -176,20 +195,6 @@ public class HandlerTest {
     }
 
     @Test
-    public void sendEmptyMessageHandler() {
-
-        final Handler handler = new Handler(new Handler.Callback() {
-
-            @Override
-            public boolean handleMessage(Message message) {
-                throw new UnsupportedOperationException("Method not implemented");
-            }
-
-        });
-        handler.sendEmptyMessage(0);
-    }
-
-    @Test
     public void sendEmptyMessage_addMessageToQueue() {
         Robolectric.pauseMainLooper();
         Handler handler = new Handler();
@@ -200,7 +205,7 @@ public class HandlerTest {
         Robolectric.idleMainLooper(0);
         assertThat(handler.hasMessages(123), equalTo(false));
     }
-    
+
     @Test
     public void sendEmptyMessageDelayed_sendsMessageAtCorrectTime() {
         Robolectric.pauseMainLooper();
@@ -223,6 +228,20 @@ public class HandlerTest {
     }
 
     @Test
+    public void testHasMessagesWithWhatAndObject() {
+        Robolectric.pauseMainLooper();
+        Object testObject = new Object();
+        Handler handler = new Handler();
+        Message message = handler.obtainMessage(123, testObject);
+
+        assertFalse(handler.hasMessages(123, testObject));
+
+        handler.sendMessage(message);
+
+        assertTrue(handler.hasMessages(123, testObject));
+    }
+
+    @Test
     public void removeMessages_removesFromLooperQueueAsWell() {
         final boolean[] wasRun = new boolean[1];
         Robolectric.pauseMainLooper();
@@ -236,6 +255,33 @@ public class HandlerTest {
         handler.removeMessages(123);
         Robolectric.unPauseMainLooper();
         assertThat(wasRun[0], equalTo(false));
+    }
+
+    @Test
+    public void shouldObtainMessage() throws Exception {
+        Message m0 = new Handler().obtainMessage();
+        assertThat(m0.what, equalTo(0));
+        assertThat(m0.obj, nullValue());
+
+        Message m1 = new Handler().obtainMessage(1);
+        assertThat(m1.what, equalTo(1));
+        assertThat(m1.obj, nullValue());
+
+        Message m2 = new Handler().obtainMessage(1, "foo");
+        assertThat(m2.what, equalTo(1));
+        assertThat(m2.obj, equalTo((Object)"foo"));
+
+        Message m3 = new Handler().obtainMessage(1, 2, 3);
+        assertThat(m3.what, equalTo(1));
+        assertThat(m3.arg1, equalTo(2));
+        assertThat(m3.arg2, equalTo(3));
+        assertThat(m3.obj, nullValue());
+
+        Message m4 = new Handler().obtainMessage(1, 2, 3, "foo");
+        assertThat(m4.what, equalTo(1));
+        assertThat(m4.arg1, equalTo(2));
+        assertThat(m4.arg2, equalTo(3));
+        assertThat(m4.obj, equalTo((Object)"foo"));
     }
 
     private class Say implements Runnable {

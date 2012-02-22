@@ -1,9 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
-import android.text.Editable;
-import android.text.InputType;
-import android.text.TextWatcher;
+import android.text.*;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.style.URLSpan;
@@ -18,12 +16,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
+import static junit.framework.Assert.assertFalse;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
@@ -226,6 +223,62 @@ public class TextViewTest {
 		assertThat(mockTextWatcher.afterTextChangeArgument.toString(), equalTo(NEW_TEXT));
 	}
     
+    @Test
+    public void whenAppendingText_ShouldAppendNewTextAfterOldOne() {
+    	textView.setText(INITIAL_TEXT);
+    	textView.append(NEW_TEXT);
+    	
+    	assertEquals(INITIAL_TEXT + NEW_TEXT, textView.getText());
+    }
+    
+    @Test
+    public void whenAppendingText_ShouldFireBeforeTextChangedWithCorrectArguments() {
+		textView.setText(INITIAL_TEXT);
+		TextWatcher mockTextWatcher = mock(TextWatcher.class);
+		textView.addTextChangedListener(mockTextWatcher);
+		
+		textView.append(NEW_TEXT);
+		
+		verify(mockTextWatcher).beforeTextChanged(INITIAL_TEXT, 0, INITIAL_TEXT.length(), INITIAL_TEXT.length() + NEW_TEXT.length());
+    }
+    
+    @Test
+    public void whenAppendingText_ShouldFireOnTextChangedWithCorrectArguments() {
+		textView.setText(INITIAL_TEXT);
+		TextWatcher mockTextWatcher = mock(TextWatcher.class);
+		textView.addTextChangedListener(mockTextWatcher);
+		
+		textView.append(NEW_TEXT);
+		
+		verify(mockTextWatcher).onTextChanged(INITIAL_TEXT + NEW_TEXT, 0, INITIAL_TEXT.length(), INITIAL_TEXT.length() + NEW_TEXT.length());
+    }
+    
+    @Test
+    public void whenAppendingText_ShouldFireAfterTextChangedWithCorrectArgument() {
+    	textView.setText(INITIAL_TEXT);
+		MockTextWatcher mockTextWatcher = new MockTextWatcher();
+		textView.addTextChangedListener(mockTextWatcher);
+		
+		textView.append(NEW_TEXT);
+		
+		assertThat(mockTextWatcher.afterTextChangeArgument.toString(), equalTo(INITIAL_TEXT + NEW_TEXT));
+    }
+
+    @Test
+    public void removeTextChangedListener_shouldRemoveTheListener() throws Exception {
+        MockTextWatcher watcher = new MockTextWatcher();
+        textView.addTextChangedListener(watcher);
+        assertTrue(shadowOf(textView).getWatchers().contains(watcher));
+
+        textView.removeTextChangedListener(watcher);
+        assertFalse(shadowOf(textView).getWatchers().contains(watcher));
+    }
+
+    @Test
+    public void getPaint_returnsMeasureTextEnabledObject() throws Exception {
+        assertThat(textView.getPaint().measureText("12345"), equalTo(5f));
+    }
+
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
 		List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
 		int numberBetweenOneAndTen = new Random().nextInt(10) + 1;

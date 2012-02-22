@@ -3,6 +3,10 @@ package com.xtremelabs.robolectric;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+
 import static android.content.pm.ApplicationInfo.*;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.junit.Assert.assertEquals;
@@ -82,5 +86,11 @@ public class RobolectricConfigTest {
     
     private boolean hasFlag(final int flags, final int flag) {
     	return (flags & flag) != 0;
+    }
+    
+    public static class ConfigTestReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+        }
     }
 }

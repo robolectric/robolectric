@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.os.Parcel;
+import android.os.Parcelable;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -9,8 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Implements(Parcel.class)
+@SuppressWarnings("unchecked")
 public class ShadowParcel {
-
     private ArrayList parcelData = new ArrayList();
     private int index = 0;
 
@@ -20,25 +21,27 @@ public class ShadowParcel {
     }
 
     @Implementation
-    @SuppressWarnings("unchecked")
     public void writeString(String str) {
         if (str == null) {
             return;
         }
-
         parcelData.add(str);
     }
 
     @Implementation
-    @SuppressWarnings("unchecked")
     public void writeInt(int i) {
         parcelData.add(i);
     }
 
     @Implementation
-    @SuppressWarnings("unchecked")
     public void writeLong(long i) {
         parcelData.add(i);
+    }
+    
+    @Implementation
+    @SuppressWarnings("unchecked")
+    public void writeByte( byte b ) {
+    	parcelData.add( b );
     }
 
     @Implementation
@@ -52,8 +55,23 @@ public class ShadowParcel {
     }
 
     @Implementation
+    public byte readByte() {
+        return index < parcelData.size() ? (Byte) parcelData.get(index++) : 0;    	
+    }
+    
+    @Implementation
     public long readLong() {
         return index < parcelData.size() ? (Long) parcelData.get(index++) : 0;
+    }
+
+    @Implementation
+    public void writeParcelable(Parcelable p, int flags) {
+        parcelData.add(p);
+    }
+
+    @Implementation
+    public Parcelable readParcelable(ClassLoader cl) {
+        return index < parcelData.size() ? (Parcelable) parcelData.get(index++) : null;
     }
 
     public int getIndex() {

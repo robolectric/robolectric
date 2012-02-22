@@ -1,15 +1,20 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.widget.RatingBar;
+import android.widget.RatingBar.OnRatingBarChangeListener;
 
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 @Implements(RatingBar.class)
 public class ShadowRatingBar extends ShadowAbsSeekBar {
 
+    @RealObject
+    private RatingBar realRatingBar;
     private int mNumStars = 5;
-
+    private OnRatingBarChangeListener listener;
+    
     @Override public void applyAttributes() {
         super.applyAttributes();
         
@@ -91,5 +96,23 @@ public class ShadowRatingBar extends ShadowAbsSeekBar {
         } else {
             return 1;
         }
+    }
+    
+    @Implementation
+    @Override
+    public void setProgress(int progress) {
+        super.setProgress(progress);
+        if (listener != null)
+            listener.onRatingChanged(realRatingBar, getRating(), true);
+    }
+    
+    @Implementation
+    public void setOnRatingBarChangeListener(OnRatingBarChangeListener listener) {
+        this.listener = listener;
+    }
+
+    @Implementation
+    public OnRatingBarChangeListener getOnRatingBarChangeListener() {
+        return listener;
     }
 }

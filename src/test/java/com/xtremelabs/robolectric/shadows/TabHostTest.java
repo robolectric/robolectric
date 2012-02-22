@@ -1,15 +1,19 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.app.TabActivity;
 import android.view.View;
 import android.widget.TabHost;
 import android.widget.TabHost.TabContentFactory;
+import android.widget.TabWidget;
 import android.widget.TextView;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNull;
@@ -97,7 +101,7 @@ public class TabHostTest {
 
         assertThat(listener.tag, equalTo("Bar"));
     }
-    
+
     @Test
     public void shouldRetrieveTheCurrentViewFromTabContentFactory() {
     	TabHost tabHost = new TabHost(null);
@@ -110,7 +114,7 @@ public class TabHostTest {
 				return tv;
 			}
 		});
-        
+
         tabHost.addTab(foo);
         tabHost.setCurrentTabByTag("Foo");
         TextView textView = (TextView) tabHost.getCurrentView();
@@ -124,9 +128,9 @@ public class TabHostTest {
     	TabHost tabHost = new TabHost(a);
     	TabHost.TabSpec foo = tabHost.newTabSpec("Foo")
     	.setContent(com.xtremelabs.robolectric.R.id.title);
-    	
+
     	 tabHost.addTab(foo);
-         tabHost.setCurrentTabByTag("Foo");         
+         tabHost.setCurrentTabByTag("Foo");
          TextView textView = (TextView) tabHost.getCurrentView();
 
          assertThat(textView.getText().toString(), equalTo("Main Layout"));
@@ -140,7 +144,7 @@ public class TabHostTest {
             this.tag = tag;
         }
     }
-    
+
     @Test
     public void canGetCurrentTabTag() throws Exception {
         TabHost tabHost = new TabHost(null);
@@ -157,7 +161,7 @@ public class TabHostTest {
 
         assertThat(tabHost.getCurrentTabTag(), equalTo("Bar"));
     }
-    
+
     @Test
     public void canGetCurrentTab() throws Exception {
         TabHost tabHost = new TabHost(null);
@@ -180,5 +184,23 @@ public class TabHostTest {
         tabHost.setCurrentTabByTag("Baz");
         assertThat(tabHost.getCurrentTab(), equalTo(2));
         assertThat(shadowOf(tabHost).getCurrentTabSpec(), equalTo(baz));
+    }
+
+    @Test
+    public void setCurrentTabByTagShouldAcceptNullAsParameter() throws Exception {
+        TabHost tabHost = new TabHost(null);
+        TabHost.TabSpec foo = tabHost.newTabSpec("Foo");
+        tabHost.addTab(foo);
+
+        tabHost.setCurrentTabByTag(null);
+        assertThat(tabHost.getCurrentTabTag(), equalTo("Foo"));
+    }
+
+    @Test
+    public void shouldGetTabWidget() throws Exception {
+        TabActivity activity = new TabActivity();
+        activity.setContentView(R.layout.tab_activity);
+        TabHost host = new TabHost(activity);
+        assertThat(host.getTabWidget(), instanceOf(TabWidget.class));
     }
 }

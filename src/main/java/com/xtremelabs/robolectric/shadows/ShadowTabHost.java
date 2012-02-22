@@ -1,9 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.R;
 import android.app.Activity;
 import android.view.View;
 import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
+import android.widget.TabWidget;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -52,7 +54,7 @@ public class ShadowTabHost extends ShadowFrameLayout {
     public void setCurrentTabByTag(String tag) {
         for (int x = 0; x < tabSpecs.size(); x++) {
             TabSpec tabSpec = tabSpecs.get(x);
-            if (tag.equals(tabSpec.getTag())) {
+            if (tabSpec.getTag().equals(tag)) {
                 currentTab = x;
             }
         }
@@ -98,6 +100,15 @@ public class ShadowTabHost extends ShadowFrameLayout {
             }
         }
         return v;
+    }
+
+    @Implementation
+    public TabWidget getTabWidget() {
+        if (context instanceof Activity) {
+            return (TabWidget) ((Activity)context).findViewById(R.id.tabs);
+        } else {
+            return null;
+        }
     }
 
     public TabHost.TabSpec getSpecByTag(String tag) {

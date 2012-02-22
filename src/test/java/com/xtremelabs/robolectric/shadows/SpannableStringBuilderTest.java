@@ -23,4 +23,25 @@ public class SpannableStringBuilderTest {
         SpannableStringBuilder builder = new SpannableStringBuilder("abc");
         assertThat(builder.length(), equalTo(3));
     }
+
+    @Test
+    public void testReplace() throws Exception {
+        SpannableStringBuilder builder = new SpannableStringBuilder("abc");
+        assertThat(builder.replace(2, 3, "").toString(), equalTo("ab"));
+        assertThat(builder.replace(0, 2, "xyz").toString(), equalTo("xyz"));
+    }
+
+    @Test
+    public void testInsert() throws Exception {
+        SpannableStringBuilder builder = new SpannableStringBuilder("abc");
+        assertThat(builder.insert(1, "xy").toString(), equalTo("axybc"));
+    }
+    
+    @Test
+    public void testDelete() throws Exception {
+        SpannableStringBuilder builder = new SpannableStringBuilder("abc");
+        assertThat(builder.length(), equalTo(3));
+        builder.delete( 0, 3 );
+        assertThat( builder.length(), equalTo(0));
+    }    
 }

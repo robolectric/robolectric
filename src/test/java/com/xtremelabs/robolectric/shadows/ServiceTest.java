@@ -1,5 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import android.app.Service;
 import android.appwidget.AppWidgetProvider;
 import android.content.Intent;
@@ -7,13 +15,9 @@ import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.media.MediaScannerConnection;
 import android.os.IBinder;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ServiceTest {
@@ -49,6 +53,16 @@ public class ServiceTest {
         
         ServiceConnection conn = newInstanceOf(MediaScannerConnection.class);
         service.unbindService(conn);
+    }
+    
+    @Test
+    public void stopForeground() {
+        MyService service = new MyService();
+        service.stopForeground(true);
+        
+        ShadowService shadowService = shadowOf(service);
+        assertThat(shadowService.isForegroundStopped(), is(true));
+        assertThat(shadowService.getNotificationShouldRemoved(), is(true));
     }
     
     private static class MyService extends Service {
