@@ -20,6 +20,8 @@ public class ShadowService extends ShadowContextWrapper {
     private Notification lastForegroundNotification;    
     private boolean selfStopped = false;
     private boolean unbindServiceShouldThrowIllegalArgument = false;
+    private boolean foregroundStopped;
+    private boolean notificationShouldRemoved;
 
     @Implementation
     public final Application getApplication() {
@@ -56,6 +58,12 @@ public class ShadowService extends ShadowContextWrapper {
     public final void startForeground(int id, Notification notification) {
         lastForegroundNotification = notification;
     }
+    
+    @Implementation
+    public void stopForeground(boolean removeNotification) {
+        foregroundStopped = true;
+        notificationShouldRemoved = removeNotification;
+    }
 
     public Notification getLastForegroundNotification() {
         return lastForegroundNotification;
@@ -74,5 +82,13 @@ public class ShadowService extends ShadowContextWrapper {
      */
     public boolean isStoppedBySelf() {
     	return selfStopped;
+    }
+    
+    public boolean isForegroundStopped() {
+        return foregroundStopped;
+    }
+    
+    public boolean getNotificationShouldRemoved() {
+        return notificationShouldRemoved;
     }
 }

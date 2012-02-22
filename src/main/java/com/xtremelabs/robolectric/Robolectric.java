@@ -205,6 +205,7 @@ public class Robolectric {
                 ShadowMapController.class,
                 ShadowMapActivity.class,
                 ShadowMapView.class,
+                ShadowMarginLayoutParams.class,
                 ShadowMatrix.class,
                 ShadowMatrixCursor.class,
                 ShadowMediaPlayer.class,
@@ -634,7 +635,7 @@ public class Robolectric {
     public static ShadowPendingIntent shadowOf(PendingIntent instance) {
         return (ShadowPendingIntent) shadowOf_(instance);
     }
-    
+
     public static ShadowPhoneNumberUtils shadowOf(PhoneNumberUtils instance) {
         return (ShadowPhoneNumberUtils) shadowOf_(instance);
     }
@@ -722,7 +723,7 @@ public class Robolectric {
     public static ShadowSimpleCursorAdapter shadowOf(SimpleCursorAdapter instance) {
         return (ShadowSimpleCursorAdapter) shadowOf_(instance);
     }
-    
+
     public static ShadowSmsManager shadowOf(SmsManager instance) {
     	return (ShadowSmsManager) shadowOf_(instance);
     }
@@ -759,7 +760,7 @@ public class Robolectric {
     public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
         return (ShadowSslErrorHandler) shadowOf_(instance);
     }
-    
+
     public static ShadowStateListDrawable shadowOf(StateListDrawable instance) {
     	return (ShadowStateListDrawable) shadowOf_(instance);
     }
