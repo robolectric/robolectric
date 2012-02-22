@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric.shadows;
 
 import java.util.concurrent.TimeUnit;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,6 +14,7 @@ import com.xtremelabs.robolectric.util.Join;
 import com.xtremelabs.robolectric.util.Transcript;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -108,6 +108,16 @@ public class AsyncTaskTest {
         Robolectric.getBackgroundScheduler().unPause();
         AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
         assertThat(asyncTask.execute("a", "b").get(), equalTo("c"));
+    }
+
+    @Test
+    public void shouldGetStatusForAsyncTask() throws Exception {
+        AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
+        assertThat(asyncTask.getStatus(), is(AsyncTask.Status.PENDING));
+        asyncTask.execute("a");
+        assertThat(asyncTask.getStatus(), is(AsyncTask.Status.RUNNING));
+        Robolectric.getBackgroundScheduler().unPause();
+        assertThat(asyncTask.getStatus(), is(AsyncTask.Status.FINISHED));
     }
 
     private class MyAsyncTask extends AsyncTask<String, String, String> {
