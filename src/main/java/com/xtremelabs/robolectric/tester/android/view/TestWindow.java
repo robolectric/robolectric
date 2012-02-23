@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.tester.android.view;
 
+import android.R;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
@@ -157,11 +158,18 @@ public class TestWindow extends Window {
     }
 
     @Override public View getDecorView() {
-        final FrameLayout view = new FrameLayout(Robolectric.application);
+        final FrameLayout decorView = new FrameLayout(Robolectric.application);
+
+        // On a typical Android device you can call:
+        //   myWindow.getDecorView().findViewById(android.R.content)
+        final FrameLayout contentWrapper = new FrameLayout(Robolectric.application);
+        contentWrapper.setId(R.id.content);
+
+        decorView.addView(contentWrapper);
         if (contentView != null) {
-            view.addView(contentView);
+            contentWrapper.addView(contentView);
         }
-        return view;
+        return decorView;
     }
 
     @Override public View peekDecorView() {
