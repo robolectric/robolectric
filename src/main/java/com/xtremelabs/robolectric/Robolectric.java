@@ -251,6 +251,7 @@ public class Robolectric {
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
                 ShadowScanResult.class,
+                ShadowScrollView.class,
                 ShadowSeekBar.class,
                 ShadowSensorManager.class,
                 ShadowService.class,
@@ -702,6 +703,10 @@ public class Robolectric {
 
     public static ShadowScanResult shadowOf(ScanResult instance) {
         return (ShadowScanResult) shadowOf_(instance);
+    }
+
+    public static ShadowScrollView shadowOf(ScrollView instance) {
+        return (ShadowScrollView) shadowOf_(instance);
     }
 
     public static ShadowSeekBar shadowOf(SeekBar instance) {

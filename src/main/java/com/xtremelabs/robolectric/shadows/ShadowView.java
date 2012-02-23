@@ -833,4 +833,14 @@ public class ShadowView {
     public void scrollTo(int x, int y) {
         this.scrollToCoordinates = new Point(x, y);
     }
+    
+    @Implementation
+    public int getScrollX() {
+        return scrollToCoordinates != null ? scrollToCoordinates.x : 0;
+    }
+
+    @Implementation
+    public int getScrollY() {
+        return scrollToCoordinates != null ? scrollToCoordinates.y : 0;
+    }
 }
