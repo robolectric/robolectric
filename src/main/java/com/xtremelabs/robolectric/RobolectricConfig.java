@@ -77,11 +77,14 @@ public class RobolectricConfig {
     private static void buildResourcePath(File baseDir, List<File> resources) {
         resources.add(new File(baseDir, "res"));
 
-        Properties properties = getProperties(new File(baseDir, "project.properties"));
-        String lib = properties == null ? null : properties.getProperty("android.library.reference.1");
-
-        if (lib != null) {
-            buildResourcePath(new File(baseDir, lib), resources);
+        Properties properties = getProperties(new File(baseDir, "src/test/project.properties"));
+        if (properties != null) {
+            int libRef = 1;
+            String lib;
+            while ( (lib = properties.getProperty("android.library.reference." + libRef)) != null) {
+                buildResourcePath(new File(baseDir, lib), resources);
+                libRef++;
+            }
         }
     }
 
