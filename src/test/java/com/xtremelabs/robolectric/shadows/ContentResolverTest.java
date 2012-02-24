@@ -1,30 +1,38 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.net.Uri;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.tester.android.database.TestCursor;
+import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.InputStream;
+import android.app.Activity;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.OperationApplicationException;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.RemoteException;
 
-import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.tester.android.database.TestCursor;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ContentResolverTest {
@@ -183,6 +191,38 @@ public class ContentResolverTest {
         assertThat(uri.uri.toString(), equalTo("bar"));
         assertFalse(uri.syncToNetwork);
         assertNull(uri.observer);
+    }
+    
+    @Test
+    public void applyBatch() throws RemoteException, OperationApplicationException {
+        String authority = "com.xtremelabs.robolectric";
+        ArrayList<ContentProviderOperation> resultOperations = shadowContentResolver.getContentProviderOperations(authority);
+        assertThat(resultOperations, notNullValue());
+        assertThat(resultOperations.size(), is(0));
+        
+        ContentProviderResult[] contentProviderResults = new ContentProviderResult[] {
+                new ContentProviderResult(1),
+                new ContentProviderResult(1),
+        };
+        shadowContentResolver.setContentProviderResult(contentProviderResults);
+        Uri uri = Uri.parse("content://com.xtremelabs.robolectric");
+        ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();
+        operations.add(ContentProviderOperation.newInsert(uri)
+                .withValue("column1", "foo")
+                .withValue("column2", 5)
+                .build());
+        operations.add(ContentProviderOperation.newUpdate(uri)
+                .withSelection("id_column", new String[] { "99" })
+                .withValue("column1", "bar")
+                .build());
+        operations.add(ContentProviderOperation.newDelete(uri)
+                .withSelection("id_column", new String[] { "11" })
+                .build());
+        ContentProviderResult[] result = contentResolver.applyBatch(authority, operations);
+        
+        resultOperations = shadowContentResolver.getContentProviderOperations(authority);
+        assertThat(resultOperations, equalTo(operations));
+        assertThat(result, equalTo(contentProviderResults));
     }
 
     class QueryParamTrackingTestCursor extends TestCursor {

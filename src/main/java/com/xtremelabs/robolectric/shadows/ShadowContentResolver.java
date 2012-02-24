@@ -1,5 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
 import android.content.ContentResolver;
 import android.content.ContentValues;
 import android.database.ContentObserver;
@@ -14,6 +16,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Implements(ContentResolver.class)
 public class ShadowContentResolver {
@@ -26,6 +29,8 @@ public class ShadowContentResolver {
     private final List<DeleteStatement> deleteStatements = new ArrayList<DeleteStatement>();
     private List<NotifiedUri> notifiedUris = new ArrayList<NotifiedUri>();
     private HashMap<Uri, TestCursor> uriCursorMap = new HashMap<Uri, TestCursor>();
+    private final Map<String, ArrayList<ContentProviderOperation>> contentProviderOperations = new HashMap<String, ArrayList<ContentProviderOperation>>();
+    private ContentProviderResult[] contentProviderResults;
 
     public static class NotifiedUri {
         public final Uri uri;
@@ -98,6 +103,12 @@ public class ShadowContentResolver {
     public void notifyChange(Uri uri, ContentObserver observer) {
         notifyChange(uri, observer, false);
     }
+    
+    @Implementation
+    public ContentProviderResult[] applyBatch(String authority, ArrayList<ContentProviderOperation> operations) {
+        contentProviderOperations.put(authority, operations);
+        return contentProviderResults;
+    }
 
     public void setCursor(TestCursor cursor) {
         this.cursor = cursor;
@@ -137,6 +148,17 @@ public class ShadowContentResolver {
     
     public List<NotifiedUri> getNotifiedUris() {
         return notifiedUris;
+    }
+    
+    public ArrayList<ContentProviderOperation> getContentProviderOperations(String authority) {
+        ArrayList<ContentProviderOperation> operations = contentProviderOperations.get(authority);
+        if (operations == null)
+            return new ArrayList<ContentProviderOperation>();
+        return operations;
+    }
+    
+    public void setContentProviderResult(ContentProviderResult[] contentProviderResults) {
+        this.contentProviderResults = contentProviderResults;
     }
 
     private TestCursor getCursor(Uri uri) {
