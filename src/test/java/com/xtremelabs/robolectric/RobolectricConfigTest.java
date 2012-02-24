@@ -66,6 +66,7 @@ public class RobolectricConfigTest {
     }
     
     @Test public void shouldLoadAllResourcesForLibraries() {
+        // This intentionally loads from the non standard resources/project.properties
         RobolectricConfig config = fromBaseDirWithLibraries(resourcesBaseDir());
 
         List<File> resourceFileDirs = config.getResourcePath();
