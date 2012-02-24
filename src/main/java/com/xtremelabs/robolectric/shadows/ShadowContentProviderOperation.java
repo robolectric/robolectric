@@ -46,7 +46,8 @@ public class ShadowContentProviderOperation {
         shadowBuilder.setDelete(true);
         return builder;
     }
-    
+   
+    @Implementation
     public Uri getUri() {
         return uri;
     }
