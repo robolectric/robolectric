@@ -86,6 +86,8 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public void removeView(View child) {
+        // Android's ViewGroup ignores the child when it is null. Do the same here.
+        if (child == null) return;
         shadowOf(child).parent = null;
         children.remove(child);
     }
