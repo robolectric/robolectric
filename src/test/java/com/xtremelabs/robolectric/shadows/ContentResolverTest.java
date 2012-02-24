@@ -1,28 +1,38 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.app.Activity;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.database.Cursor;
-import android.net.Uri;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.tester.android.database.TestCursor;
+import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import java.io.InputStream;
+import java.util.ArrayList;
+
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.InputStream;
+import android.app.Activity;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.OperationApplicationException;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.RemoteException;
 
-import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertFalse;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.tester.android.database.TestCursor;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ContentResolverTest {
@@ -47,6 +57,43 @@ public class ContentResolverTest {
         assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues()), equalTo(uri21));
         assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues()), equalTo(uri22));
     }
+    
+    @Test
+    public void insert_shouldTrackInsertStatements() throws Exception {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("foo", "bar");
+        contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
+        assertThat(shadowContentResolver.getInsertStatements().size(), is(1));
+        assertThat(shadowContentResolver.getInsertStatements().get(0).getUri(), equalTo(EXTERNAL_CONTENT_URI));
+        assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues().getAsString("foo"), equalTo("bar"));
+        
+        contentValues = new ContentValues();
+        contentValues.put("hello", "world");
+        contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
+        assertThat(shadowContentResolver.getInsertStatements().size(), is(2));
+        assertThat(shadowContentResolver.getInsertStatements().get(1).getContentValues().getAsString("hello"), equalTo("world"));
+    }
+    
+    @Test
+    public void insert_shouldTrackUpdateStatements() throws Exception {
+        ContentValues contentValues = new ContentValues();
+        contentValues.put("foo", "bar");
+        contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] { "awesome" });
+        assertThat(shadowContentResolver.getUpdateStatements().size(), is(1));
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getUri(), equalTo(EXTERNAL_CONTENT_URI));
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getContentValues().getAsString("foo"), equalTo("bar"));
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getWhere(), equalTo("robolectric"));
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getSelectionArgs(), equalTo(new String[] { "awesome" }));
+        
+        contentValues = new ContentValues();
+        contentValues.put("hello", "world");
+        contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, null, null);
+        assertThat(shadowContentResolver.getUpdateStatements().size(), is(2));
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getUri(), equalTo(EXTERNAL_CONTENT_URI));
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getContentValues().getAsString("hello"), equalTo("world"));
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getWhere(), nullValue());
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getSelectionArgs(), nullValue());
+    }
 
     @Test
     public void delete_shouldTrackDeletedUris() throws Exception {
@@ -59,6 +106,23 @@ public class ContentResolverTest {
         assertThat(contentResolver.delete(uri22, null, null), equalTo(1));
         assertThat(shadowContentResolver.getDeletedUris(), hasItem(uri22));
         assertThat(shadowContentResolver.getDeletedUris().size(), equalTo(2));
+    }
+    
+    @Test
+    public void delete_shouldTrackDeletedStatements() {
+        assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(0));
+
+        assertThat(contentResolver.delete(uri21, "id", new String[] { "5" }), equalTo(1));
+        assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(1));
+        assertThat(shadowContentResolver.getDeleteStatements().get(0).getUri(), equalTo(uri21));
+        assertThat(shadowContentResolver.getDeleteStatements().get(0).getWhere(), equalTo("id"));
+        assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0], equalTo("5"));
+
+        assertThat(contentResolver.delete(uri21, "foo", new String[] { "bar" }), equalTo(1));
+        assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(2));
+        assertThat(shadowContentResolver.getDeleteStatements().get(1).getUri(), equalTo(uri21));
+        assertThat(shadowContentResolver.getDeleteStatements().get(1).getWhere(), equalTo("foo"));
+        assertThat(shadowContentResolver.getDeleteStatements().get(1).getSelectionArgs()[0], equalTo("bar"));
     }
 
     @Test
@@ -127,6 +191,38 @@ public class ContentResolverTest {
         assertThat(uri.uri.toString(), equalTo("bar"));
         assertFalse(uri.syncToNetwork);
         assertNull(uri.observer);
+    }
+    
+    @Test
+    public void applyBatch() throws RemoteException, OperationApplicationException {
+        String authority = "com.xtremelabs.robolectric";
+        ArrayList<ContentProviderOperation> resultOperations = shadowContentResolver.getContentProviderOperations(authority);
+        assertThat(resultOperations, notNullValue());
+        assertThat(resultOperations.size(), is(0));
+        
+        ContentProviderResult[] contentProviderResults = new ContentProviderResult[] {
+                new ContentProviderResult(1),
+                new ContentProviderResult(1),
+        };
+        shadowContentResolver.setContentProviderResult(contentProviderResults);
+        Uri uri = Uri.parse("content://com.xtremelabs.robolectric");
+        ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();
+        operations.add(ContentProviderOperation.newInsert(uri)
+                .withValue("column1", "foo")
+                .withValue("column2", 5)
+                .build());
+        operations.add(ContentProviderOperation.newUpdate(uri)
+                .withSelection("id_column", new String[] { "99" })
+                .withValue("column1", "bar")
+                .build());
+        operations.add(ContentProviderOperation.newDelete(uri)
+                .withSelection("id_column", new String[] { "11" })
+                .build());
+        ContentProviderResult[] result = contentResolver.applyBatch(authority, operations);
+        
+        resultOperations = shadowContentResolver.getContentProviderOperations(authority);
+        assertThat(resultOperations, equalTo(operations));
+        assertThat(result, equalTo(contentProviderResults));
     }
 
     class QueryParamTrackingTestCursor extends TestCursor {

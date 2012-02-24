@@ -24,6 +24,16 @@ public class HandlerTest {
     private Transcript transcript;
     TestRunnable scratchRunnable = new TestRunnable();
 
+    private Handler.Callback callback = new Handler.Callback() {
+        @Override
+        public boolean handleMessage(Message msg) {
+            hasHandlerCallbackHandledMessage = true;
+            return false;
+        }
+    };
+
+    private Boolean hasHandlerCallbackHandledMessage = false;
+
     @Before
     public void setUp() throws Exception {
         transcript = new Transcript();
@@ -74,6 +84,13 @@ public class HandlerTest {
         shadowOf(looper2).idle();
 
         transcript.assertEventsSoFar("second thing");
+    }
+
+    @Test
+    public void shouldCallProvidedHandlerCallback() {
+        Handler handler = new Handler(callback);
+        handler.sendMessage(new Message());
+        assertTrue(hasHandlerCallbackHandledMessage);
     }
 
     @Test
@@ -175,20 +192,6 @@ public class HandlerTest {
         assertThat(task1.wasRun, equalTo(false));
         ShadowHandler.runMainLooperOneTask();
         assertThat(task1.wasRun, equalTo(true));
-    }
-
-    @Test
-    public void sendEmptyMessageHandler() {
-
-        final Handler handler = new Handler(new Handler.Callback() {
-
-            @Override
-            public boolean handleMessage(Message message) {
-                throw new UnsupportedOperationException("Method not implemented");
-            }
-
-        });
-        handler.sendEmptyMessage(0);
     }
 
     @Test

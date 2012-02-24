@@ -123,6 +123,29 @@ public abstract class DatabaseTestBase {
         assertThat(stringValueFromDatabase, equalTo(stringColumnValue));
         assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
     }
+    
+    @Test(expected = android.database.SQLException.class)
+    public void testInsertOrThrowWithSQLException() {
+        shDatabase.setThrowOnInsert(true);
+        database.insertOrThrow("table_name", null, new ContentValues());
+    }
+    
+    @Test
+    public void testInsertOrThrow() {
+        String stringColumnValue = "column_value";
+        byte[] byteColumnValue = new byte[]{1, 2, 3};
+        ContentValues values = new ContentValues();
+        values.put("first_column", stringColumnValue);
+        values.put("second_column", byteColumnValue);
+        database.insertOrThrow("table_name", null, values);
+        
+        Cursor cursor = database.rawQuery("select second_column, first_column from table_name", null);
+        assertThat(cursor.moveToFirst(), equalTo(true));
+        byte[] byteValueFromDatabase = cursor.getBlob(0);
+        String stringValueFromDatabase = cursor.getString(1);
+        assertThat(stringValueFromDatabase, equalTo(stringColumnValue));
+        assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
+    }
 
     @Test(expected = IllegalArgumentException.class)
     public void testRawQueryThrowsIndex0NullException() throws Exception {

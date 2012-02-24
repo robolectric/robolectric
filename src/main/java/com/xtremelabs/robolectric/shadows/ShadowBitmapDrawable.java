@@ -9,6 +9,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
+import static android.graphics.Shader.TileMode;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -19,6 +20,8 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     private String drawableCreateFromStreamSource;
 
     @RealObject private BitmapDrawable realBitmapDrawable;
+    private TileMode tileModeX;
+    private TileMode tileModeY;
 
     public void __constructor__(Bitmap bitmap) {
         this.bitmap = bitmap;
@@ -66,7 +69,34 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
         return drawableCreateFromStreamSource;
     }
 
-    @Override @Implementation
+    @Implementation
+    public void setTileModeX(TileMode mode) {
+        tileModeX = mode;
+    }
+
+    @Implementation
+    public TileMode getTileModeX() {
+        return tileModeX;
+    }
+
+    @Implementation
+    public void setTileModeY(TileMode mode) {
+        tileModeY = mode;
+    }
+
+    @Implementation
+    public TileMode getTileModeY() {
+        return tileModeY;
+    }
+    
+    @Implementation
+    public void setTileModeXY(TileMode modeX, TileMode modeY) {
+        setTileModeX(modeX);
+        setTileModeY(modeY);
+    }
+
+    @Override
+    @Implementation
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != ShadowBitmapDrawable.class) return false;
@@ -78,12 +108,14 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
         return super.equals(o);
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public int hashCode() {
         return bitmap != null ? bitmap.hashCode() : 0;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public String toString() {
         return "ShadowBitmapDrawable{" +
                 "bitmap=" + bitmap +

@@ -6,7 +6,9 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.*;
 import android.content.pm.ResolveInfo;
-import android.content.res.*;
+import android.content.res.AssetManager;
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.database.sqlite.*;
 import android.graphics.*;
 import android.graphics.drawable.*;
@@ -14,13 +16,20 @@ import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.location.Geocoder;
 import android.location.LocationManager;
-import android.media.*;
+import android.media.AudioManager;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
-import android.net.wifi.*;
+import android.net.wifi.ScanResult;
+import android.net.wifi.WifiConfiguration;
+import android.net.wifi.WifiInfo;
+import android.net.wifi.WifiManager;
 import android.os.*;
 import android.preference.*;
-import android.telephony.*;
+import android.telephony.PhoneNumberUtils;
+import android.telephony.SmsManager;
+import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
 import android.text.TextPaint;
 import android.text.format.DateFormat;
@@ -29,15 +38,20 @@ import android.util.SparseArray;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.*;
 import android.widget.*;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
-import com.xtremelabs.robolectric.tester.org.apache.http.*;
+import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
+import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
+import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
-import org.apache.http.*;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
 
 import java.lang.reflect.Field;
@@ -135,6 +149,9 @@ public class Robolectric {
                 ShadowConfiguration.class,
                 ShadowConnectivityManager.class,
                 ShadowContentProvider.class,
+                ShadowContentProviderOperation.class,
+                ShadowContentProviderOperationBuilder.class,
+                ShadowContentProviderResult.class,
                 ShadowContentResolver.class,
                 ShadowContentUris.class,
                 ShadowContentValues.class,
@@ -191,6 +208,7 @@ public class Robolectric {
                 ShadowMapController.class,
                 ShadowMapActivity.class,
                 ShadowMapView.class,
+                ShadowMarginLayoutParams.class,
                 ShadowMatrix.class,
                 ShadowMatrixCursor.class,
                 ShadowMediaPlayer.class,
@@ -236,6 +254,7 @@ public class Robolectric {
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
                 ShadowScanResult.class,
+                ShadowScrollView.class,
                 ShadowSeekBar.class,
                 ShadowSensorManager.class,
                 ShadowService.class,
@@ -266,6 +285,7 @@ public class Robolectric {
                 ShadowTextUtils.class,
                 ShadowTextView.class,
                 ShadowToast.class,
+                ShadowTranslateAnimation.class,
                 ShadowTypedArray.class,
                 ShadowTypedValue.class,
                 ShadowUriMatcher.class,
@@ -430,6 +450,18 @@ public class Robolectric {
 
     public static ShadowContentResolver shadowOf(ContentResolver instance) {
         return (ShadowContentResolver) shadowOf_(instance);
+    }
+    
+    public static ShadowContentProviderOperation shadowOf(ContentProviderOperation instance) {
+        return (ShadowContentProviderOperation) shadowOf_(instance);
+    }
+    
+    public static ShadowContentProviderOperationBuilder shadowOf(ContentProviderOperation.Builder instance) {
+        return (ShadowContentProviderOperationBuilder) shadowOf_(instance);
+    }
+    
+    public static ShadowContentProviderResult shadowOf(ContentProviderResult instance) {
+        return (ShadowContentProviderResult) shadowOf_(instance);
     }
 
     public static ShadowCookieSyncManager shadowOf(CookieSyncManager instance) {
@@ -619,7 +651,7 @@ public class Robolectric {
     public static ShadowPendingIntent shadowOf(PendingIntent instance) {
         return (ShadowPendingIntent) shadowOf_(instance);
     }
-    
+
     public static ShadowPhoneNumberUtils shadowOf(PhoneNumberUtils instance) {
         return (ShadowPhoneNumberUtils) shadowOf_(instance);
     }
@@ -688,6 +720,10 @@ public class Robolectric {
         return (ShadowScanResult) shadowOf_(instance);
     }
 
+    public static ShadowScrollView shadowOf(ScrollView instance) {
+        return (ShadowScrollView) shadowOf_(instance);
+    }
+
     public static ShadowSeekBar shadowOf(SeekBar instance) {
         return (ShadowSeekBar) shadowOf_(instance);
     }
@@ -707,7 +743,7 @@ public class Robolectric {
     public static ShadowSimpleCursorAdapter shadowOf(SimpleCursorAdapter instance) {
         return (ShadowSimpleCursorAdapter) shadowOf_(instance);
     }
-    
+
     public static ShadowSmsManager shadowOf(SmsManager instance) {
     	return (ShadowSmsManager) shadowOf_(instance);
     }
@@ -744,7 +780,7 @@ public class Robolectric {
     public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
         return (ShadowSslErrorHandler) shadowOf_(instance);
     }
-    
+
     public static ShadowStateListDrawable shadowOf(StateListDrawable instance) {
     	return (ShadowStateListDrawable) shadowOf_(instance);
     }
@@ -771,6 +807,10 @@ public class Robolectric {
 
     public static ShadowToast shadowOf(Toast instance) {
         return (ShadowToast) shadowOf_(instance);
+    }
+
+    public static ShadowTranslateAnimation shadowOf(TranslateAnimation instance) {
+        return (ShadowTranslateAnimation) shadowOf_(instance);
     }
 
     public static ShadowUriMatcher shadowOf(UriMatcher instance) {

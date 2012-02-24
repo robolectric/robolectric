@@ -17,16 +17,18 @@ import java.util.concurrent.TimeoutException;
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {
 
-	@RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
-    
-	private final FutureTask<Result> future;
-	private final BackgroundWorker worker;
-	
+    @RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
+
+    private final FutureTask<Result> future;
+    private final BackgroundWorker worker;
+    private AsyncTask.Status status = AsyncTask.Status.PENDING;
+
 	public ShadowAsyncTask() {
 		worker = new BackgroundWorker();
 		future = new FutureTask<Result>(worker) {
         	@Override
         	protected void done() {
+                status = AsyncTask.Status.FINISHED;
 				try {
 					final Result result = get();
 					Robolectric.getUiThreadScheduler().post(new Runnable() {
@@ -40,7 +42,6 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 							getBridge().onCancelled();
 						}
 					});
-					return;
 				} catch (InterruptedException e) {
 					// Ignore.
 				} catch (Throwable t) {
@@ -73,8 +74,9 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
     @Implementation
     public AsyncTask<Params, Progress, Result> execute(final Params... params) {
+        status = AsyncTask.Status.RUNNING;
         getBridge().onPreExecute();
-        
+
         worker.params = params;
 
         Robolectric.getBackgroundScheduler().post(new Runnable() {
@@ -82,8 +84,14 @@ public class ShadowAsyncTask<Params, Progress, Result> {
             	future.run();
             }
         });
-        
-        return null;
+
+        return realAsyncTask;
+    }
+
+
+    @Implementation
+    public AsyncTask.Status getStatus() {
+        return status;
     }
 
     /**
@@ -105,7 +113,7 @@ public class ShadowAsyncTask<Params, Progress, Result> {
     private ShadowAsyncTaskBridge<Params, Progress, Result> getBridge() {
         return new ShadowAsyncTaskBridge<Params, Progress, Result>(realAsyncTask);
     }
-    
+
     private final class BackgroundWorker implements Callable<Result> {
     	Params[] params;
 		@Override
