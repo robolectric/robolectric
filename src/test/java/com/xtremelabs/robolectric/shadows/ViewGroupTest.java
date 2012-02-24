@@ -63,6 +63,11 @@ public class ViewGroupTest {
     public void tearDown() throws Exception {
         System.setProperty("line.separator", defaultLineSeparator);
     }
+    
+    @Test
+    public void removeNullView_doesNothing() {
+        root.removeView(null);
+    }
 
     @Test
     public void testLayoutAnimationListener() {
