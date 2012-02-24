@@ -16,10 +16,10 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ContentProviderOperationTest {
-    private static final Uri URI = Uri.parse("content://com.xtremelabs.robolectric");
-    
+
     @Test
     public void newInsert() {
+        final Uri URI = Uri.parse("content://com.xtremelabs.robolectric");
         Builder builder = ContentProviderOperation.newInsert(URI);
         builder.withValue("stringValue", "bar");
         builder.withValue("intValue", 5);
@@ -33,9 +33,10 @@ public class ContentProviderOperationTest {
         assertThat(shadowOperation.getValues().get("stringValue").toString(), equalTo("bar"));
         assertThat(Integer.parseInt(shadowOperation.getValues().get("intValue").toString()), is(5));
     }
-    
+
     @Test
     public void newUpdate() {
+        final Uri URI = Uri.parse("content://com.xtremelabs.robolectric");
         Builder builder = ContentProviderOperation.newUpdate(URI);
         builder.withSelection("id_column", new String[] { "5" });
         ContentProviderOperation operation = builder.build();
@@ -46,9 +47,10 @@ public class ContentProviderOperationTest {
         assertThat(shadowOperation.isDelete(), is(false));
         assertThat(shadowOperation.getSelections().get("id_column"), equalTo(new String[] { "5" }));
     }
-    
+
     @Test
     public void newDelete() {
+        final Uri URI = Uri.parse("content://com.xtremelabs.robolectric");
         Builder builder = ContentProviderOperation.newDelete(URI);
         builder.withSelection("id_column", new String[] { "5" });
         ContentProviderOperation operation = builder.build();
