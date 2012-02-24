@@ -149,6 +149,8 @@ public class Robolectric {
                 ShadowConfiguration.class,
                 ShadowConnectivityManager.class,
                 ShadowContentProvider.class,
+                ShadowContentProviderOperation.class,
+                ShadowContentProviderOperationBuilder.class,
                 ShadowContentResolver.class,
                 ShadowContentUris.class,
                 ShadowContentValues.class,
@@ -447,6 +449,14 @@ public class Robolectric {
 
     public static ShadowContentResolver shadowOf(ContentResolver instance) {
         return (ShadowContentResolver) shadowOf_(instance);
+    }
+    
+    public static ShadowContentProviderOperation shadowOf(ContentProviderOperation instance) {
+        return (ShadowContentProviderOperation) shadowOf_(instance);
+    }
+    
+    public static ShadowContentProviderOperationBuilder shadowOf(ContentProviderOperation.Builder instance) {
+        return (ShadowContentProviderOperationBuilder) shadowOf_(instance);
     }
 
     public static ShadowCookieSyncManager shadowOf(CookieSyncManager instance) {
