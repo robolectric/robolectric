@@ -22,6 +22,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     @RealObject private BitmapDrawable realBitmapDrawable;
     private TileMode tileModeX;
     private TileMode tileModeY;
+    private String drawableCreateFromPath;
 
     public void __constructor__(Bitmap bitmap) {
         this.bitmap = bitmap;
@@ -67,6 +68,15 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
 
     public String getSource() {
         return drawableCreateFromStreamSource;
+    }
+    
+    //Used by ShadowDrawable.createFromPath()
+    public void setPath(String drawableCreateFromPath) {
+        this.drawableCreateFromPath = drawableCreateFromPath;
+    }
+    
+    public String getPath() {
+        return drawableCreateFromPath;
     }
 
     @Implementation
