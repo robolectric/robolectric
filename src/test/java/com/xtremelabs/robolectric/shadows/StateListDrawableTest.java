@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.R;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
+import android.util.StateSet;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,6 +26,19 @@ public class StateListDrawableTest {
 
         ShadowStateListDrawable shadow = shadowOf(stateListDrawable);
         Drawable drawableForState = shadow.getDrawableForState(states);
+        assertNotNull(drawableForState);
+        assertThat(((ShadowBitmapDrawable) shadowOf(drawableForState)).getPath(), is("/foo"));
+    }
+
+    @Test
+    public void testAddDrawableWithWildCardState() {
+        Drawable drawable = ShadowDrawable.createFromPath("/foo");
+
+        StateListDrawable stateListDrawable = new StateListDrawable();
+        stateListDrawable.addState(StateSet.WILD_CARD, drawable);
+
+        ShadowStateListDrawable shadow = shadowOf(stateListDrawable);
+        Drawable drawableForState = shadow.getDrawableForState(StateSet.WILD_CARD);
         assertNotNull(drawableForState);
         assertThat(((ShadowBitmapDrawable) shadowOf(drawableForState)).getPath(), is("/foo"));
     }

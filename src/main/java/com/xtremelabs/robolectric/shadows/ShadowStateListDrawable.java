@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
+import android.util.StateSet;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -46,9 +47,14 @@ public class ShadowStateListDrawable extends ShadowDrawable {
 
     private List<Integer> createStateList(int[] stateSet) {
         List<Integer> stateList = new ArrayList<Integer>();
-        for (int state : stateSet) {
-            stateList.add(state);
+        if (stateSet == StateSet.WILD_CARD) {
+            stateList.add(-1);
+        } else {
+            for (int state : stateSet) {
+                stateList.add(state);
+            }
         }
+
         return stateList;
     }
 }
