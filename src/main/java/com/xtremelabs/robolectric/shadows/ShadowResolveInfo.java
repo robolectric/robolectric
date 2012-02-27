@@ -28,10 +28,21 @@ public class ShadowResolveInfo {
 	 * @return
 	 */
 	public static ResolveInfo newResolveInfo( String displayName, String packageName ) {
+		return newResolveInfo( displayName, packageName, null);
+	}
+	
+	/**
+	 * Non-Android accessor used for creating ResolveInfo objects
+	 * @param displayName
+	 * @param packageName
+	 * @return
+	 */
+	public static ResolveInfo newResolveInfo( String displayName, String packageName, String activityName ) {
 			
 		ResolveInfo resInfo = new ResolveInfo();
 		ActivityInfo actInfo = new ActivityInfo();
 		actInfo.packageName = packageName;
+		actInfo.name = activityName;
 		resInfo.activityInfo = actInfo;
 		
 		ShadowResolveInfo shResolve = Robolectric.shadowOf(resInfo );

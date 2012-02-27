@@ -11,6 +11,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -61,5 +62,43 @@ public class SettingsTest {
 
         Settings.Secure.putInt(contentResolver, "property", 1);
         assertThat(Settings.Secure.getInt(contentResolver, "property", 0), equalTo(1));
+    }
+
+    @Test
+    public void testSystemGetString() throws Exception {
+        assertThat(Settings.System.getString(contentResolver, "property"), nullValue());
+
+        Settings.System.putString(contentResolver, "property", "value");
+        assertThat(Settings.System.getString(contentResolver, "property"), equalTo("value"));
+    }
+
+    @Test
+    public void testSystemGetLong() throws Exception {
+        assertThat(Settings.System.getLong(contentResolver, "property", 10L), equalTo(10L));
+        Settings.System.putLong(contentResolver, "property", 42L);
+        assertThat(Settings.System.getLong(contentResolver, "property"), equalTo(42L));
+        assertThat(Settings.System.getLong(contentResolver, "property", 10L), equalTo(42L));
+    }
+
+    @Test
+    public void testSystemGetFloat() throws Exception {
+        assertThat(Settings.System.getFloat(contentResolver, "property", 23.23f), equalTo(23.23f));
+        Settings.System.putFloat(contentResolver, "property", 42.42f);
+        assertThat(Settings.System.getFloat(contentResolver, "property", 10L), equalTo(42.42f));
+    }
+
+    @Test(expected = Settings.SettingNotFoundException.class)
+    public void testSystemGetLong_exception() throws Exception {
+        Settings.System.getLong(contentResolver, "property");
+    }
+
+    @Test(expected = Settings.SettingNotFoundException.class)
+    public void testSystemGetInt_exception() throws Exception {
+        Settings.System.getInt(contentResolver, "property");
+    }
+
+    @Test(expected = Settings.SettingNotFoundException.class)
+    public void testSystemGetFloat_exception() throws Exception {
+        Settings.System.getFloat(contentResolver, "property");
     }
 }

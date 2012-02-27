@@ -26,6 +26,7 @@ public class ShadowHandler {
     private Handler realHandler;
     private Looper looper = Looper.myLooper();
     private List<Message> messages = new ArrayList<Message>();
+    private Handler.Callback callback;
 
     public void __constructor__() {
         this.looper = Looper.myLooper();
@@ -33,6 +34,10 @@ public class ShadowHandler {
 
     public void __constructor__(Looper looper) {
         this.looper = looper;
+    }
+
+    public void __constructor__(Handler.Callback callback) {
+        this.callback = callback;
     }
 
     @Implementation
@@ -53,9 +58,31 @@ public class ShadowHandler {
     }
 
     @Implementation
+    public Message obtainMessage() {
+        return obtainMessage(0);
+    }
+
+    @Implementation
+    public Message obtainMessage(int what) {
+        return obtainMessage(what, null);
+    }
+
+    @Implementation
     public Message obtainMessage(int what, Object obj) {
+        return obtainMessage(what, 0, 0, obj);
+    }
+
+    @Implementation
+    public Message obtainMessage(int what, int arg1, int arg2) {
+        return obtainMessage(what, arg1, arg2, null);
+    }
+
+    @Implementation
+    public Message obtainMessage(int what, int arg1, int arg2, Object obj) {
         Message message = new Message();
         message.what = what;
+        message.arg1 = arg1;
+        message.arg2 = arg2;
         message.obj = obj;
         return message;
     }
@@ -72,12 +99,20 @@ public class ShadowHandler {
             @Override
             public void run() {
                 if (messages.contains(msg)) {
-                    realHandler.handleMessage(msg);
+                    routeMessage(msg);
                     messages.remove(msg);
                 }
             }
         }, delayMillis);
         return true;
+    }
+
+    private void routeMessage(Message msg) {
+        if(callback != null) {
+            callback.handleMessage(msg);
+        } else {
+            realHandler.handleMessage(msg);
+        }
     }
 
     @Implementation
@@ -91,7 +126,7 @@ public class ShadowHandler {
         msg.what = what;
         return sendMessageDelayed(msg, delayMillis);
     }
-    
+
     @Implementation
     public final Looper getLooper() {
     	return looper;
@@ -106,6 +141,16 @@ public class ShadowHandler {
     public final boolean hasMessages(int what) {
         for (Message message : messages) {
             if (message.what == what) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    @Implementation
+    public final boolean hasMessages(int what, Object object) {
+        for (Message message : messages) {
+            if(message.what == what && message.obj == object) {
                 return true;
             }
         }

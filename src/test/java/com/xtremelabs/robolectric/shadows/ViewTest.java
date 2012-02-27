@@ -10,25 +10,15 @@ import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.TestAnimationListener;
-import com.xtremelabs.robolectric.util.TestOnClickListener;
-import com.xtremelabs.robolectric.util.TestOnLongClickListener;
-import com.xtremelabs.robolectric.util.TestRunnable;
-import com.xtremelabs.robolectric.util.Transcript;
+import com.xtremelabs.robolectric.util.*;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewTest {
@@ -258,6 +248,20 @@ public class ViewTest {
     public void scrollTo_shouldStoreTheScrolledCoordinates() throws Exception {
         view.scrollTo(1, 2);
         assertThat(shadowOf(view).scrollToCoordinates, equalTo(new Point(1, 2)));
+    }
+
+    @Test
+    public void shouldScrollTo() throws Exception {
+        view.scrollTo(7, 6);
+
+        assertEquals(7, view.getScrollX());
+        assertEquals(6, view.getScrollY());
+    }
+
+    @Test
+    public void shouldGetScrollXAndY() {
+        assertEquals(0, view.getScrollX());
+        assertEquals(0, view.getScrollY());
     }
 
     private class TestAnimation extends Animation {

@@ -1,5 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.io.File;
+
 import android.os.Environment;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -19,4 +21,10 @@ public class ShadowEnvironment {
     public static void setExternalStorageState(String externalStorageState) {
         ShadowEnvironment.externalStorageState = externalStorageState;
     }
+    
+    @Implementation
+    public static File getExternalStorageDirectory() {
+		return ShadowContext.EXTERNAL_CACHE_DIR;
+    }
+    
 }

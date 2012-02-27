@@ -26,6 +26,7 @@ abstract public class ShadowContext {
     public static final File CACHE_DIR = new File(System.getProperty("java.io.tmpdir"), "android-cache");
     public static final File EXTERNAL_CACHE_DIR = new File(System.getProperty("java.io.tmpdir"), "android-external-cache");
     public static final File FILES_DIR = new File(System.getProperty("java.io.tmpdir"), "android-tmp");
+    public static final File EXTERNAL_FILES_DIR = new File(System.getProperty("java.io.tmpdir"), "android-external-tmp");
 
     @RealObject private Context realContext;
 
@@ -89,6 +90,12 @@ abstract public class ShadowContext {
         EXTERNAL_CACHE_DIR.mkdir();
         return EXTERNAL_CACHE_DIR;
     }
+    
+    @Implementation
+    public File getExternalFilesDir(String type) {
+        EXTERNAL_FILES_DIR.mkdirs();
+        return EXTERNAL_FILES_DIR;
+    }
 
     @Implementation
     public FileInputStream openFileInput(String path) throws FileNotFoundException {
@@ -106,6 +113,11 @@ abstract public class ShadowContext {
             throw new IllegalArgumentException("File " + name + " contains a path separator");
         }
         return new File(getFilesDir(), name);
+    }
+    
+    @Implementation
+    public boolean deleteFile(String name) {
+        return getFileStreamPath(name).delete();
     }
 
     /**

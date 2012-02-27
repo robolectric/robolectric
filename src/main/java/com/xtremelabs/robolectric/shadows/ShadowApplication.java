@@ -2,13 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
+import android.content.*;
 import android.content.res.Resources;
 import android.os.IBinder;
 import android.os.Looper;
@@ -22,11 +16,7 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.util.Scheduler;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -75,6 +65,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private List<Intent> stoppedServies = new ArrayList<Intent>();
     private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
+    private Map<String, Intent> stickyIntents = new HashMap<String, Intent>();
     private FakeHttpLayer fakeHttpLayer = new FakeHttpLayer();
     private Looper mainLooper = ShadowLooper.myLooper();
     private Scheduler backgroundScheduler = new Scheduler();
@@ -105,6 +96,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         ShadowApplication shadowApplication = shadowOf(application);
         if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
         shadowApplication.resourceLoader = resourceLoader;
+        shadowApplication.resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);        
         return application;
     }
 
@@ -125,8 +117,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     @Override
     @Implementation
     public Resources getResources() {
-        if (resources == null) {
-            resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);
+        if (resources == null ) {
+        	resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);
         }
         return resources;
     }
@@ -325,6 +317,12 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    @Implementation
+    public void sendStickyBroadcast(Intent intent) {
+        stickyIntents.put(intent.getAction(), intent);
+        sendBroadcast(intent);
+    }
+
     /**
      * Always returns {@code null}
      *
@@ -337,7 +335,23 @@ public class ShadowApplication extends ShadowContextWrapper {
     }
 
     Intent registerReceiverWithContext(BroadcastReceiver receiver, IntentFilter filter, Context context) {
-        registeredReceivers.add(new Wrapper(receiver, filter, context));
+        if (receiver != null) {
+            registeredReceivers.add(new Wrapper(receiver, filter, context));
+        }
+        return getStickyIntent(filter);
+    }
+
+    private Intent getStickyIntent(IntentFilter filter) {
+        for (Intent stickyIntent : stickyIntents.values()) {
+            String action = null;
+            for (int i = 0; i < filter.countActions(); i++) {
+                action = filter.getAction(i);
+                if (stickyIntent.getAction().equals(action)) {
+                    return stickyIntent;
+                }
+            }
+        }
+
         return null;
     }
 
@@ -458,6 +472,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     public void declareActionUnbindable(String action) {
         unbindableActions.add(action);
+    }
+
+    public void setSystemService(String key, Object service) {
+        systemServices.put(key, service);
     }
 
     public class Wrapper {

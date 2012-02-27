@@ -22,6 +22,14 @@ public class ShadowAlarmManager {
 
     @Implementation
     public void set(int type, long triggerAtTime, PendingIntent operation) {
+        Intent intent = shadowOf(operation).getSavedIntent();
+        for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
+            Intent scheduledIntent = shadowOf(scheduledAlarm.operation).getSavedIntent();
+            if (scheduledIntent.filterEquals(intent)) {
+                scheduledAlarms.remove(scheduledAlarm);
+                break;
+            }
+        }
         scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, operation));
     }
 

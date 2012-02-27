@@ -446,6 +446,11 @@ public class ShadowView {
     public void setOnFocusChangeListener(View.OnFocusChangeListener listener) {
         onFocusChangeListener = listener;
     }
+    
+    @Implementation
+    public View.OnFocusChangeListener getOnFocusChangeListener () {
+        return onFocusChangeListener;
+    }
 
     @Implementation
     public void invalidate() {
@@ -827,5 +832,15 @@ public class ShadowView {
     @Implementation
     public void scrollTo(int x, int y) {
         this.scrollToCoordinates = new Point(x, y);
+    }
+    
+    @Implementation
+    public int getScrollX() {
+        return scrollToCoordinates != null ? scrollToCoordinates.x : 0;
+    }
+
+    @Implementation
+    public int getScrollY() {
+        return scrollToCoordinates != null ? scrollToCoordinates.y : 0;
     }
 }

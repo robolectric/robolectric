@@ -14,7 +14,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 
@@ -107,5 +110,12 @@ public class ResourcesTest {
 
         Activity anotherActivity = new Activity();
         assertThat(anotherActivity.getResources().getDisplayMetrics().density, equalTo(1.5f));
+    }
+
+    @Test
+    public void displayMetricsShouldNotHaveLotsOfZeros() throws Exception {
+        Activity activity = new Activity();
+        assertThat(activity.getResources().getDisplayMetrics().heightPixels, equalTo(800));
+        assertThat(activity.getResources().getDisplayMetrics().widthPixels, equalTo(480));
     }
 }

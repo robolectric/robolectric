@@ -1,31 +1,27 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
-import java.io.InputStream;
-import java.lang.reflect.Field;
-import java.util.Locale;
-
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
-
+import android.view.Display;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
+
+import java.io.InputStream;
+import java.util.Locale;
+
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
@@ -37,7 +33,9 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 public class ShadowResources {
     private float density = 1.0f;
     Configuration configuration = null;
-    
+    private DisplayMetrics displayMetrics;
+    private Display display;
+
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
         ShadowResources shadowResources = shadowOf(resources);
         if (shadowResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
@@ -45,33 +43,34 @@ public class ShadowResources {
         return resources;
     }
 
-    @RealObject Resources realResources;
+    @RealObject
+    Resources realResources;
     private ResourceLoader resourceLoader;
 
     @Implementation
-    public  int getIdentifier(String name, String defType, String defPackage) {
+    public int getIdentifier(String name, String defType, String defPackage) {
         Integer index = 0;
-        
+
         ResourceExtractor resourceExtractor = resourceLoader.getResourceExtractor();
-        
+
         index = resourceExtractor.getResourceId(defType + "/" + name);
         if (index == null) {
             return 0;
         }
         return index;
     }
-    
+
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
         return resourceLoader.getColorValue(id);
     }
-   
+
     @Implementation
     public Configuration getConfiguration() {
-    	if (configuration==null) {
-    		configuration = new Configuration();
-        	configuration.setToDefaults();
-    	}
+        if (configuration == null) {
+            configuration = new Configuration();
+            configuration.setToDefaults();
+        }
         if (configuration.locale == null) {
             configuration.locale = Locale.getDefault();
         }
@@ -128,31 +127,49 @@ public class ShadowResources {
         this.density = density;
     }
 
+    public void setDisplay(Display display) {
+        this.display = display;
+        displayMetrics = null;
+    }
+
     @Implementation
     public DisplayMetrics getDisplayMetrics() {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
+        if (displayMetrics == null) {
+            if (display == null) {
+                display = Robolectric.newInstanceOf(Display.class);
+            }
+
+            displayMetrics = new DisplayMetrics();
+            display.getMetrics(displayMetrics);
+        }
         displayMetrics.density = this.density;
         return displayMetrics;
     }
 
-	@Implementation
+    @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
 
-		ResourceLoader resLoader = Robolectric.shadowOf( Robolectric.application ).getResourceLoader();
-		
-		// Check if this drawable is an XML drawable
-		Drawable xmlDrawable = resLoader.getXmlDrawable( drawableResourceId );
-		if( xmlDrawable != null ) { return xmlDrawable; }
-		
-		Drawable animDrawable = resLoader.getAnimDrawable( drawableResourceId );
-		if( animDrawable != null ) { return animDrawable; }
-		
-		Drawable colorDrawable = resLoader.getColorDrawable( drawableResourceId );
-		if( colorDrawable != null ) { return colorDrawable; }
+        ResourceLoader resLoader = Robolectric.shadowOf(Robolectric.application).getResourceLoader();
 
-		return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
+        // Check if this drawable is an XML drawable
+        Drawable xmlDrawable = resLoader.getXmlDrawable(drawableResourceId);
+        if (xmlDrawable != null) {
+            return xmlDrawable;
+        }
+
+        Drawable animDrawable = resLoader.getAnimDrawable(drawableResourceId);
+        if (animDrawable != null) {
+            return animDrawable;
+        }
+
+        Drawable colorDrawable = resLoader.getColorDrawable(drawableResourceId);
+        if (colorDrawable != null) {
+            return colorDrawable;
+        }
+
+        return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
     }
-    
+
     @Implementation
     public float getDimension(int id) throws Resources.NotFoundException {
         // todo: get this value from the xml resources and scale it by display metrics [xw 20101011]

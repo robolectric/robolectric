@@ -30,13 +30,13 @@ public class ShadowAbstractCursor {
     public int getCount() {
         return rowCount;
     }
-    
+
     @Implementation
     public boolean moveToFirst() {
         setPosition(0);
         return realAbstractCursor.getCount() > 0;
     }
-    
+
     @Implementation
     public boolean moveToLast() {
     	if( realAbstractCursor.getCount() == 0 ) {
@@ -103,6 +103,25 @@ public class ShadowAbstractCursor {
     @Implementation
     public String[] getColumnNames() {
         return columnNameArray;
+    }
+
+    @Implementation
+    public String getColumnName(int column) {
+        return columnNameArray[column];
+    }
+
+    @Implementation
+    public int getColumnIndex(String columnName) {
+        for (int i=0; i<columnNameArray.length; i++) {
+            if (columnName.equals(columnNameArray[i])) return i;
+        }
+        return -1;
+    }
+
+    @Implementation
+    public int getColumnIndexOrThrow(String columnName) {
+        int idx = getColumnIndex(columnName);
+        if (idx >= 0) return idx; else throw new IllegalArgumentException("column does not exist");
     }
 
     @Implementation

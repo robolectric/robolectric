@@ -46,9 +46,9 @@ public final class R {
         public static final int test_menu_1 = nextId++;
         public static final int test_menu_2 = nextId++;
         public static final int test_menu_3 = nextId++;
-        
+
         public static final int group_id_1 = nextId++;
-        
+
         public static final int test_submenu_1 = nextId++;
     }
 
@@ -109,6 +109,9 @@ public final class R {
         public static final int with_invalid_onclick = nextId++;
         public static final int text_views = nextId++;
         public static final int text_views_hints = nextId++;
+        public static final int toplevel_merge = nextId++;
+        public static final int tab_activity = nextId++;
+        public static final int different_screen_sizes = nextId++;
     }
 
     public static final class raw {

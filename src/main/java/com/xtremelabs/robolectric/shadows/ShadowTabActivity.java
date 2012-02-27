@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.TabActivity;
 import android.widget.TabHost;
+import android.widget.TabWidget;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -18,5 +19,10 @@ public class ShadowTabActivity extends ShadowActivityGroup {
     		tabhost = new TabHost(realTabActivity);
     	}
         return tabhost;
+    }
+
+    @Implementation
+    public TabWidget getTabWidget() {
+        return getTabHost().getTabWidget();
     }
 }

@@ -14,7 +14,6 @@ import org.junit.runner.RunWith;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Set;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -62,6 +61,17 @@ public class IntentTest {
         assertSame(intent, intent.putExtra("foo", array));
         assertEquals(1, intent.getIntArrayExtra("foo")[0]);
         assertEquals(2, intent.getIntArrayExtra("foo")[1]);
+    }
+    
+    @Test
+    public void testLongArrayExtra() throws Exception {
+        Intent intent = new Intent();
+        long[] array = new long[2];
+        array[0] = 1L;
+        array[1] = 2L;
+        assertSame(intent, intent.putExtra("foo", array));
+        assertEquals(1L, intent.getLongArrayExtra("foo")[0]);
+        assertEquals(2L, intent.getLongArrayExtra("foo")[1]);
     }
 
     @Test
@@ -323,16 +333,11 @@ public class IntentTest {
     @Test
     public void putStringArrayListExtra_addsListToExtras() {
         Intent intent = new Intent();
-        final List<String> strings = Arrays.asList("hi", "there");
-        final ShadowIntent shadowIntent = shadowOf(intent);
+        final ArrayList<String> strings = new ArrayList<String>(Arrays.asList("hi", "there"));
 
-        shadowIntent.putStringArrayListExtra("KEY", new ArrayList<String>(strings));
-
-        final ArrayList<String> stringArrayList = Robolectric.shadowOf(shadowIntent.getExtras()).getStringArrayList("KEY");
-        assertEquals(2, stringArrayList.size());
-        for (String shadowIntentString : stringArrayList) {
-            assertTrue(strings.contains(shadowIntentString));
-        }
+        intent.putStringArrayListExtra("KEY", strings);
+        assertThat(intent.getStringArrayListExtra("KEY"), equalTo(strings));
+        assertThat(Robolectric.shadowOf(intent.getExtras()).getStringArrayList("KEY"), equalTo(strings));
     }
 
     private static class TestSerializable implements Serializable {
