@@ -310,6 +310,42 @@ public class ContentResolverTest {
         assertTrue(ContentResolver.getMasterSyncAutomatically());
     }
 
+    @Test
+    public void shouldDelegateCallsToRegisteredProvider() throws Exception {
+        ShadowContentResolver.registerProvider(AUTHORITY, new ContentProvider() {
+            @Override public boolean onCreate() {
+                return false;
+            }
+            @Override public Cursor query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
+                return new TestCursor();
+            }
+            @Override public Uri insert(Uri uri, ContentValues values) {
+                return null;
+            }
+            @Override public int delete(Uri uri, String selection, String[] selectionArgs) {
+                return -1;
+            }
+            @Override public int update(Uri uri, ContentValues values, String selection, String[] selectionArgs) {
+                return -1;
+            }
+            @Override public String getType(Uri uri) {
+                return null;
+            }
+        });
+        final Uri uri = Uri.parse("content://"+AUTHORITY+"/some/path");
+        final Uri unrelated = Uri.parse("content://unrelated/some/path");
+
+        assertNotNull(contentResolver.query(uri, null, null, null, null));
+        assertNull(contentResolver.insert(uri, new ContentValues()));
+        assertThat(contentResolver.delete(uri, null, null), is(-1));
+        assertThat(contentResolver.update(uri, new ContentValues(), null, null), is(-1));
+
+        assertNull(contentResolver.query(unrelated, null, null, null, null));
+        assertNotNull(contentResolver.insert(unrelated, new ContentValues()));
+        assertThat(contentResolver.delete(unrelated, null, null), is(1));
+        assertThat(contentResolver.update(unrelated, new ContentValues(), null, null), is(0));
+    }
+
     static class QueryParamTrackingTestCursor extends TestCursor {
         public Uri uri;
         public String[] projection;
