@@ -1,22 +1,18 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.ContentProviderOperation;
-import android.content.ContentProviderResult;
-import android.content.ContentResolver;
-import android.content.ContentValues;
+import android.accounts.Account;
+import android.content.*;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Bundle;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.tester.android.database.TestCursor;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Implements(ContentResolver.class)
 public class ShadowContentResolver {
@@ -32,6 +28,16 @@ public class ShadowContentResolver {
     private final Map<String, ArrayList<ContentProviderOperation>> contentProviderOperations = new HashMap<String, ArrayList<ContentProviderOperation>>();
     private ContentProviderResult[] contentProviderResults;
 
+    private static final Map<String, Map<Account, Status>>  syncableAccounts =
+            new HashMap<String, Map<Account, Status>>();
+    private static boolean masterSyncAutomatically;
+
+
+    public static void reset() {
+        syncableAccounts.clear();
+        masterSyncAutomatically = false;
+    }
+
     public static class NotifiedUri {
         public final Uri uri;
         public final boolean syncToNetwork;
@@ -42,6 +48,14 @@ public class ShadowContentResolver {
             this.syncToNetwork = syncToNetwork;
             this.observer = observer;
         }
+    }
+
+    public static class Status {
+        public int syncRequests;
+        public int state = -1;
+        public boolean syncAutomatically;
+        public Bundle syncExtras;
+        public List<PeriodicSync> syncs = new ArrayList<PeriodicSync>();
     }
 
     @Implementation
@@ -65,7 +79,7 @@ public class ShadowContentResolver {
         insertStatements.add(insertStatement);
         return Uri.parse(url.toString() + "/" + nextDatabaseIdForInserts++);
     }
-    
+
     @Implementation
     public int update(Uri uri, ContentValues values, String where, String[] selectionArgs) {
         UpdateStatement updateStatement = new UpdateStatement(uri, new ContentValues(values), where, selectionArgs);
@@ -103,11 +117,105 @@ public class ShadowContentResolver {
     public void notifyChange(Uri uri, ContentObserver observer) {
         notifyChange(uri, observer, false);
     }
-    
+
     @Implementation
     public ContentProviderResult[] applyBatch(String authority, ArrayList<ContentProviderOperation> operations) {
         contentProviderOperations.put(authority, operations);
         return contentProviderResults;
+    }
+
+    @Implementation
+    public static void requestSync(Account account, String authority, Bundle extras) {
+        validateSyncExtrasBundle(extras);
+        Status status = getStatus(account, authority, true);
+        status.syncRequests++;
+        status.syncExtras = extras;
+    }
+
+    @Implementation
+    public static void setIsSyncable(Account account, String authority, int syncable) {
+        getStatus(account, authority, true).state = syncable;
+    }
+
+    @Implementation
+    public static int getIsSyncable(Account account, String authority) {
+        return getStatus(account, authority, true).state;
+    }
+
+    @Implementation
+    public static boolean getSyncAutomatically(Account account, String authority) {
+        return getStatus(account, authority, true).syncAutomatically;
+    }
+
+    @Implementation
+    public static void setSyncAutomatically(Account account, String authority, boolean sync) {
+        getStatus(account, authority, true).syncAutomatically = sync;
+    }
+
+    @Implementation
+    public static void addPeriodicSync(Account account, String authority, Bundle extras,
+                                       long pollFrequency) {
+
+        validateSyncExtrasBundle(extras);
+        getStatus(account, authority, true).syncs.add(new PeriodicSync(account, authority, extras, pollFrequency));
+    }
+
+    @Implementation
+    public static void removePeriodicSync(Account account, String authority, Bundle extras) {
+        validateSyncExtrasBundle(extras);
+        Status status = getStatus(account, authority);
+        if (status != null) status.syncs.clear();
+    }
+
+    @Implementation
+    public static List<PeriodicSync> getPeriodicSyncs(Account account, String authority) {
+        return getStatus(account, authority, true).syncs;
+    }
+
+    @Implementation
+    public static void validateSyncExtrasBundle(Bundle extras) {
+        for (String key : extras.keySet()) {
+            Object value = extras.get(key);
+            if (value == null) continue;
+            if (value instanceof Long) continue;
+            if (value instanceof Integer) continue;
+            if (value instanceof Boolean) continue;
+            if (value instanceof Float) continue;
+            if (value instanceof Double) continue;
+            if (value instanceof String) continue;
+            if (value instanceof Account) continue;
+            throw new IllegalArgumentException("unexpected value type: "
+                    + value.getClass().getName());
+        }
+    }
+
+    @Implementation
+    public static void setMasterSyncAutomatically(boolean sync) {
+        masterSyncAutomatically = sync;
+
+    }
+
+    @Implementation
+    public static boolean getMasterSyncAutomatically() {
+        return masterSyncAutomatically;
+    }
+
+    public static Status getStatus(Account account, String authority) {
+        return getStatus(account, authority, false);
+    }
+
+    public static Status getStatus(Account account, String authority, boolean create) {
+        Map<Account, Status> map = syncableAccounts.get(authority);
+        if (map == null) {
+            map = new HashMap<Account, Status>();
+            syncableAccounts.put(authority, map);
+        }
+        Status status = map.get(account);
+        if (status == null && create) {
+            status = new Status();
+            map.put(account, status);
+        }
+        return status;
     }
 
     public void setCursor(TestCursor cursor) {
@@ -121,7 +229,7 @@ public class ShadowContentResolver {
     public void setNextDatabaseIdForInserts(int nextId) {
         nextDatabaseIdForInserts = nextId;
     }
-    
+
     public void setNextDatabaseIdForUpdates(int nextId) {
         nextDatabaseIdForUpdates = nextId;
     }
@@ -129,7 +237,7 @@ public class ShadowContentResolver {
     public List<InsertStatement> getInsertStatements() {
         return insertStatements;
     }
-    
+
     public List<UpdateStatement> getUpdateStatements() {
         return updateStatements;
     }
@@ -145,18 +253,19 @@ public class ShadowContentResolver {
     public List<DeleteStatement> getDeleteStatements() {
         return deleteStatements;
     }
-    
+
     public List<NotifiedUri> getNotifiedUris() {
         return notifiedUris;
     }
-    
+
     public ArrayList<ContentProviderOperation> getContentProviderOperations(String authority) {
         ArrayList<ContentProviderOperation> operations = contentProviderOperations.get(authority);
         if (operations == null)
             return new ArrayList<ContentProviderOperation>();
         return operations;
     }
-    
+
+
     public void setContentProviderResult(ContentProviderResult[] contentProviderResults) {
         this.contentProviderResults = contentProviderResults;
     }
@@ -170,56 +279,56 @@ public class ShadowContentResolver {
             return null;
         }
     }
-    
-    public class InsertStatement {
+
+    public static class InsertStatement {
         private final Uri uri;
         private final ContentValues contentValues;
-        
+
         public InsertStatement(Uri uri, ContentValues contentValues) {
             this.uri = uri;
             this.contentValues = contentValues;
         }
-        
+
         public Uri getUri() {
             return uri;
         }
-        
+
         public ContentValues getContentValues() {
             return contentValues;
         }
     }
-    
-    public class UpdateStatement {
+
+    public static class UpdateStatement {
         private final Uri uri;
         private final ContentValues values;
         private final String where;
         private final String[] selectionArgs;
-        
+
         public UpdateStatement(Uri uri, ContentValues values, String where, String[] selectionArgs) {
             this.uri = uri;
             this.values = values;
             this.where = where;
             this.selectionArgs = selectionArgs;
         }
-        
+
         public Uri getUri() {
             return uri;
         }
-        
+
         public ContentValues getContentValues() {
             return values;
         }
-        
+
         public String getWhere() {
             return where;
         }
-        
+
         public String[] getSelectionArgs() {
             return selectionArgs;
         }
     }
 
-    public class DeleteStatement {
+    public static class DeleteStatement {
         private final Uri uri;
         private final String where;
         private final String[] selectionArgs;

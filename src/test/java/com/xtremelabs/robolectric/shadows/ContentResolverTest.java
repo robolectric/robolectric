@@ -8,25 +8,21 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.List;
 
+import android.accounts.Account;
+import android.content.*;
+import android.os.Bundle;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.app.Activity;
-import android.content.ContentProviderOperation;
-import android.content.ContentProviderResult;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.OperationApplicationException;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
@@ -36,11 +32,13 @@ import com.xtremelabs.robolectric.tester.android.database.TestCursor;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ContentResolverTest {
+    static final String AUTHORITY = "com.xtremelabs.robolectric";
 
     private ContentResolver contentResolver;
     private ShadowContentResolver shadowContentResolver;
     private Uri uri21;
     private Uri uri22;
+    private Account a, b;
 
     @Before
     public void setUp() throws Exception {
@@ -48,6 +46,9 @@ public class ContentResolverTest {
         shadowContentResolver = shadowOf(contentResolver);
         uri21 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/21");
         uri22 = Uri.parse(EXTERNAL_CONTENT_URI.toString() + "/22");
+
+        a = new Account("a", "type");
+        b = new Account("b", "type");
     }
 
     @Test
@@ -57,7 +58,7 @@ public class ContentResolverTest {
         assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues()), equalTo(uri21));
         assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues()), equalTo(uri22));
     }
-    
+
     @Test
     public void insert_shouldTrackInsertStatements() throws Exception {
         ContentValues contentValues = new ContentValues();
@@ -66,14 +67,14 @@ public class ContentResolverTest {
         assertThat(shadowContentResolver.getInsertStatements().size(), is(1));
         assertThat(shadowContentResolver.getInsertStatements().get(0).getUri(), equalTo(EXTERNAL_CONTENT_URI));
         assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues().getAsString("foo"), equalTo("bar"));
-        
+
         contentValues = new ContentValues();
         contentValues.put("hello", "world");
         contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
         assertThat(shadowContentResolver.getInsertStatements().size(), is(2));
         assertThat(shadowContentResolver.getInsertStatements().get(1).getContentValues().getAsString("hello"), equalTo("world"));
     }
-    
+
     @Test
     public void insert_shouldTrackUpdateStatements() throws Exception {
         ContentValues contentValues = new ContentValues();
@@ -84,7 +85,7 @@ public class ContentResolverTest {
         assertThat(shadowContentResolver.getUpdateStatements().get(0).getContentValues().getAsString("foo"), equalTo("bar"));
         assertThat(shadowContentResolver.getUpdateStatements().get(0).getWhere(), equalTo("robolectric"));
         assertThat(shadowContentResolver.getUpdateStatements().get(0).getSelectionArgs(), equalTo(new String[] { "awesome" }));
-        
+
         contentValues = new ContentValues();
         contentValues.put("hello", "world");
         contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, null, null);
@@ -107,7 +108,7 @@ public class ContentResolverTest {
         assertThat(shadowContentResolver.getDeletedUris(), hasItem(uri22));
         assertThat(shadowContentResolver.getDeletedUris().size(), equalTo(2));
     }
-    
+
     @Test
     public void delete_shouldTrackDeletedStatements() {
         assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(0));
@@ -192,14 +193,13 @@ public class ContentResolverTest {
         assertFalse(uri.syncToNetwork);
         assertNull(uri.observer);
     }
-    
+
     @Test
     public void applyBatch() throws RemoteException, OperationApplicationException {
-        String authority = "com.xtremelabs.robolectric";
-        ArrayList<ContentProviderOperation> resultOperations = shadowContentResolver.getContentProviderOperations(authority);
+        ArrayList<ContentProviderOperation> resultOperations = shadowContentResolver.getContentProviderOperations(AUTHORITY);
         assertThat(resultOperations, notNullValue());
         assertThat(resultOperations.size(), is(0));
-        
+
         ContentProviderResult[] contentProviderResults = new ContentProviderResult[] {
                 new ContentProviderResult(1),
                 new ContentProviderResult(1),
@@ -218,14 +218,99 @@ public class ContentResolverTest {
         operations.add(ContentProviderOperation.newDelete(uri)
                 .withSelection("id_column", new String[] { "11" })
                 .build());
-        ContentProviderResult[] result = contentResolver.applyBatch(authority, operations);
-        
-        resultOperations = shadowContentResolver.getContentProviderOperations(authority);
+        ContentProviderResult[] result = contentResolver.applyBatch(AUTHORITY, operations);
+
+        resultOperations = shadowContentResolver.getContentProviderOperations(AUTHORITY);
         assertThat(resultOperations, equalTo(operations));
         assertThat(result, equalTo(contentProviderResults));
     }
 
-    class QueryParamTrackingTestCursor extends TestCursor {
+    @Test
+    public void shouldKeepTrackOfSyncRequests() throws Exception {
+        ShadowContentResolver.Status status = ShadowContentResolver.getStatus(a, AUTHORITY, true);
+        assertNotNull(status);
+        assertThat(status.syncRequests, equalTo(0));
+        ContentResolver.requestSync(a, AUTHORITY, new Bundle());
+        assertThat(status.syncRequests, equalTo(1));
+        assertNotNull(status.syncExtras);
+    }
+
+    @Test
+    public void shouldSetIsSyncable() throws Exception {
+        assertThat(ContentResolver.getIsSyncable(a, AUTHORITY), equalTo(-1));
+        assertThat(ContentResolver.getIsSyncable(b, AUTHORITY), equalTo(-1));
+        ContentResolver.setIsSyncable(a, AUTHORITY, 1);
+        ContentResolver.setIsSyncable(b, AUTHORITY, 2);
+        assertThat(ContentResolver.getIsSyncable(a, AUTHORITY), equalTo(1));
+        assertThat(ContentResolver.getIsSyncable(b, AUTHORITY), equalTo(2));
+    }
+
+    @Test
+    public void shouldSetSyncAutomatically() throws Exception {
+        assertFalse(ContentResolver.getSyncAutomatically(a, AUTHORITY));
+        ContentResolver.setSyncAutomatically(a, AUTHORITY, true);
+        assertTrue(ContentResolver.getSyncAutomatically(a, AUTHORITY));
+    }
+
+    @Test
+    public void shouldAddPeriodicSync() throws Exception {
+        ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000l);
+        ShadowContentResolver.Status status = ShadowContentResolver.getStatus(a, AUTHORITY);
+        assertNotNull(status);
+        assertThat(status.syncs.size(), is(1));
+        assertThat(status.syncs.get(0).period, is(6000l));
+        assertNotNull(status.syncs.get(0).extras);
+    }
+
+    @Test
+    public void shouldRemovePeriodSync() throws Exception {
+        ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000l);
+        ContentResolver.removePeriodicSync(a, AUTHORITY, new Bundle());
+        assertThat(ShadowContentResolver.getStatus(a, AUTHORITY).syncs.size(), is(0));
+    }
+
+    @Test
+    public void shouldGetPeriodSyncs() throws Exception {
+        assertThat(ContentResolver.getPeriodicSyncs(a, AUTHORITY).size(), is(0));
+        ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000l);
+
+        List<PeriodicSync> syncs = ContentResolver.getPeriodicSyncs(a, AUTHORITY);
+        assertThat(syncs.size(), is(1));
+
+        PeriodicSync first = syncs.get(0);
+        assertThat(first.account, equalTo(a));
+        assertThat(first.authority, equalTo(AUTHORITY));
+        assertThat(first.period, equalTo(6000l));
+        assertNotNull(first.extras);
+    }
+
+    @Test
+    public void shouldValidateSyncExtras() throws Exception {
+        Bundle bundle = new Bundle();
+        bundle.putString("foo", "strings");
+        bundle.putLong("long", 10l);
+        bundle.putDouble("double", 10.0d);
+        bundle.putFloat("float", 10.0f);
+        bundle.putInt("int", 10);
+        bundle.putParcelable("account", a);
+        ContentResolver.validateSyncExtrasBundle(bundle);
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldValidateSyncExtrasAndThrow() throws Exception {
+        Bundle bundle = new Bundle();
+        bundle.putParcelable("intent", new Intent());
+        ContentResolver.validateSyncExtrasBundle(bundle);
+    }
+
+    @Test
+    public void shouldSetMasterSyncAutomatically() throws Exception {
+        assertFalse(ContentResolver.getMasterSyncAutomatically());
+        ContentResolver.setMasterSyncAutomatically(true);
+        assertTrue(ContentResolver.getMasterSyncAutomatically());
+    }
+
+    static class QueryParamTrackingTestCursor extends TestCursor {
         public Uri uri;
         public String[] projection;
         public String selection;

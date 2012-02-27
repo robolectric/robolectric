@@ -38,4 +38,20 @@ public class ShadowAccount {
         typeF.setAccessible(true);
         typeF.set(realObject, type);
     }
+
+    @Implementation
+    public boolean equals(Object o) {
+        if (o == this) return true;
+        if (!(o instanceof Account)) return false;
+        final Account other = (Account)o;
+        return realObject.name.equals(other.name) && realObject.type.equals(other.type);
+    }
+
+    @Implementation
+    public int hashCode() {
+        int result = 17;
+        result = 31 * result + realObject.name.hashCode();
+        result = 31 * result + realObject.type.hashCode();
+        return result;
+    }
 }
