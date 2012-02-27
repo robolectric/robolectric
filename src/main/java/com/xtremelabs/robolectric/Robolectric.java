@@ -277,6 +277,7 @@ public class Robolectric {
                 ShadowSslErrorHandler.class,
                 ShadowStateListDrawable.class,
                 ShadowSurfaceView.class,
+                ShadowSystemClock.class,
                 ShadowTabActivity.class,
                 ShadowTabHost.class,
                 ShadowTabSpec.class,
@@ -783,6 +784,10 @@ public class Robolectric {
 
     public static ShadowStateListDrawable shadowOf(StateListDrawable instance) {
     	return (ShadowStateListDrawable) shadowOf_(instance);
+    }
+
+    public static ShadowSystemClock shadowOf(SystemClock instance) {
+    	return (ShadowSystemClock) shadowOf_(instance);
     }
 
     public static ShadowTabHost shadowOf(TabHost instance) {
