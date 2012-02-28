@@ -286,6 +286,7 @@ public class Robolectric {
                 ShadowTextPaint.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
+                ShadowTime.class,
                 ShadowToast.class,
                 ShadowTranslateAnimation.class,
                 ShadowTypedArray.class,
