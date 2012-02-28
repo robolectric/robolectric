@@ -73,4 +73,11 @@ public class DrawableTest {
         assertThat(r.right, is(3));
         assertThat(r.bottom, is(4));
     }
+
+    @Test
+    public void createFromPath__shouldReturnDrawableWithSpecificPath() throws Exception {
+        Drawable drawable = ShadowDrawable.createFromPath("/foo");
+        assertNotNull(drawable);
+        assertEquals("/foo", ((ShadowBitmapDrawable) shadowOf(drawable)).getPath());
+    }
 }
