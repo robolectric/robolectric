@@ -35,6 +35,12 @@ public class ShadowContentProviderOperationBuilder {
     }
     
     @Implementation
+    public Builder withValueBackReference(String key, int previousResult) {
+        shadowContentProviderOperation.setWithValueBackReference(key, previousResult);
+        return realBuilder;
+    }
+    
+    @Implementation
     public ContentProviderOperation build() {
         return contentProviderOperation;
     }
@@ -77,5 +83,9 @@ public class ShadowContentProviderOperationBuilder {
     
     public void setDelete(boolean value) {
         shadowContentProviderOperation.setDelete(value);
+    }
+    
+    public int getWithValueBackReference(String key) {
+        return shadowContentProviderOperation.getWithValueBackReference(key);
     }
 }
