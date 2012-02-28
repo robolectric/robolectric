@@ -20,7 +20,7 @@ public class ShadowViewAnimator extends ShadowFrameLayout {
         setDisplayedChild(mWhichChild - 1);
     }
 
-	@Implementation
+    @Implementation
     public void setDisplayedChild(int whichChild) {
         mWhichChild = whichChild;
         if (whichChild >= getChildCount()) {
