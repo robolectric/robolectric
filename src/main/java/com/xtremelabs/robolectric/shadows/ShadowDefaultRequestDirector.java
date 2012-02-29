@@ -46,6 +46,8 @@ public class ShadowDefaultRequestDirector {
     protected UserTokenHandler userTokenHandler;
     protected HttpParams httpParams;
 
+    com.xtremelabs.robolectric.tester.org.apache.http.impl.client.DefaultRequestDirector redirector;
+
     public void __constructor__(
             Log log,
             HttpRequestExecutor requestExec,
@@ -73,6 +75,26 @@ public class ShadowDefaultRequestDirector {
         this.proxyAuthenticationHandler = proxyAuthHandler;
         this.userTokenHandler = userTokenHandler;
         this.httpParams = params;
+
+        try {
+            redirector = new com.xtremelabs.robolectric.tester.org.apache.http.impl.client.DefaultRequestDirector(
+                  log,
+                  requestExec,
+                  conman,
+                  reustrat,
+                  kastrat,
+                  rouplan,
+                  httpProcessor,
+                  retryHandler,
+                  redirectHandler,
+                  targetAuthHandler,
+                  proxyAuthHandler,
+                  userTokenHandler,
+                  params
+            );
+        } catch (IllegalArgumentException ignored) {
+            Robolectric.getFakeHttpLayer().interceptHttpRequests(true);
+        }
     }
 
     public void __constructor__(
@@ -123,7 +145,11 @@ public class ShadowDefaultRequestDirector {
 
     @Implementation
     public HttpResponse execute(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext) throws HttpException, IOException {
-        return Robolectric.getFakeHttpLayer().emulateRequest(httpHost, httpRequest, httpContext, realObject);
+        if (Robolectric.getFakeHttpLayer().isInterceptingHttpRequests()) {
+            return Robolectric.getFakeHttpLayer().emulateRequest(httpHost, httpRequest, httpContext, realObject);
+        } else {
+            return redirector.execute(httpHost, httpRequest, httpContext);
+        }
     }
 
     public Log getLog() {
@@ -177,6 +203,4 @@ public class ShadowDefaultRequestDirector {
     public HttpParams getHttpParams() {
         return httpParams;
     }
-
 }
-
