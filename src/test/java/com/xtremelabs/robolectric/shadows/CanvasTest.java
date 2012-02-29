@@ -1,12 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Path;
+import android.graphics.*;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
@@ -90,5 +84,26 @@ public class CanvasTest {
         assertThat(shadow.getPathPaintHistoryCount(), equalTo(1));
         assertThat(shadow.getDrawnPath(0), equalTo(path));
         assertThat(shadow.getDrawnPathPaint(0), equalTo(paint));
+    }
+
+    @Test
+    public void drawPath_shouldAppendDescriptionToBitmap() throws Exception {
+        Canvas canvas = new Canvas(targetBitmap);
+        Path path1 = new Path();
+        path1.lineTo(10, 10);
+        path1.moveTo(20, 15);
+        Path path2 = new Path();
+        path2.moveTo(100, 100);
+        path2.lineTo(150, 140);
+
+        Paint paint = new Paint();
+        canvas.drawPath(path1, paint);
+        canvas.drawPath(path2, paint);
+
+        assertEquals("Path " + shadowOf(path1).getPoints().toString() + "\n"
+                + "Path " + shadowOf(path2).getPoints().toString(), shadowOf(canvas).getDescription());
+
+        assertEquals("Path " + shadowOf(path1).getPoints().toString() + "\n"
+                + "Path " + shadowOf(path2).getPoints().toString(), shadowOf(targetBitmap).getDescription());
     }
 }
