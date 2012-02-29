@@ -72,7 +72,7 @@ public class ShadowAlarmManager {
         final Intent intentTypeToRemove = shadowOf(pendingIntent).getSavedIntent();
         for (ScheduledAlarm scheduledAlarm : new ArrayList<ScheduledAlarm>(scheduledAlarms)) {
             final Intent alarmIntent = shadowOf(scheduledAlarm.operation).getSavedIntent();
-            if (shadowOf(intentTypeToRemove).getIntentClass().equals(shadowOf(alarmIntent).getIntentClass())) {
+            if (intentTypeToRemove.filterEquals(alarmIntent)) {
                 scheduledAlarms.remove(scheduledAlarm);
             }
         }
