@@ -108,6 +108,7 @@ public class Robolectric {
                 ShadowAbsSeekBar.class,
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
+                ShadowAccount.class,
                 ShadowActivity.class,
                 ShadowActivityInfo.class,
                 ShadowActivityGroup.class,
@@ -149,6 +150,9 @@ public class Robolectric {
                 ShadowConfiguration.class,
                 ShadowConnectivityManager.class,
                 ShadowContentProvider.class,
+                ShadowContentProviderOperation.class,
+                ShadowContentProviderOperationBuilder.class,
+                ShadowContentProviderResult.class,
                 ShadowContentResolver.class,
                 ShadowContentUris.class,
                 ShadowContentValues.class,
@@ -227,6 +231,7 @@ public class Robolectric {
                 ShadowPasswordTransformationMethod.class,
                 ShadowPath.class,
                 ShadowPendingIntent.class,
+                ShadowPeriodicSync.class,
                 ShadowPhoneNumberUtils.class,
                 ShadowPoint.class,
                 ShadowPointF.class,
@@ -251,6 +256,7 @@ public class Robolectric {
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
                 ShadowScanResult.class,
+                ShadowScrollView.class,
                 ShadowSeekBar.class,
                 ShadowSensorManager.class,
                 ShadowService.class,
@@ -280,6 +286,7 @@ public class Robolectric {
                 ShadowTextPaint.class,
                 ShadowTextUtils.class,
                 ShadowTextView.class,
+                ShadowTime.class,
                 ShadowToast.class,
                 ShadowTranslateAnimation.class,
                 ShadowTypedArray.class,
@@ -314,6 +321,7 @@ public class Robolectric {
         ShadowContext.clearFilesAndCache();
         ShadowLooper.resetThreadLoopers();
         ShadowDialog.reset();
+        ShadowContentResolver.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -419,7 +427,7 @@ public class Robolectric {
     public static ShadowClipboardManager shadowOf(ClipboardManager instance) {
         return (ShadowClipboardManager) shadowOf_(instance);
     }
-    
+
     public static ShadowColor shadowOf(Color instance) {
         return (ShadowColor) shadowOf_(instance);
     }
@@ -446,6 +454,18 @@ public class Robolectric {
 
     public static ShadowContentResolver shadowOf(ContentResolver instance) {
         return (ShadowContentResolver) shadowOf_(instance);
+    }
+
+    public static ShadowContentProviderOperation shadowOf(ContentProviderOperation instance) {
+        return (ShadowContentProviderOperation) shadowOf_(instance);
+    }
+
+    public static ShadowContentProviderOperationBuilder shadowOf(ContentProviderOperation.Builder instance) {
+        return (ShadowContentProviderOperationBuilder) shadowOf_(instance);
+    }
+
+    public static ShadowContentProviderResult shadowOf(ContentProviderResult instance) {
+        return (ShadowContentProviderResult) shadowOf_(instance);
     }
 
     public static ShadowCookieSyncManager shadowOf(CookieSyncManager instance) {
@@ -702,6 +722,10 @@ public class Robolectric {
 
     public static ShadowScanResult shadowOf(ScanResult instance) {
         return (ShadowScanResult) shadowOf_(instance);
+    }
+
+    public static ShadowScrollView shadowOf(ScrollView instance) {
+        return (ShadowScrollView) shadowOf_(instance);
     }
 
     public static ShadowSeekBar shadowOf(SeekBar instance) {

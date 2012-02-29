@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
+import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import com.xtremelabs.robolectric.R;
@@ -90,5 +91,13 @@ public class BitmapDrawableTest {
     public void shouldStillHaveShadow() throws Exception {
         Drawable drawable = resources.getDrawable(R.drawable.an_image);
         assertEquals(R.drawable.an_image, ((ShadowBitmapDrawable) Robolectric.shadowOf(drawable)).getLoadedFromResourceId());
+    }
+
+    @Test
+    public void shouldSetTileModeXY() throws Exception {
+        BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
+        drawable.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.MIRROR);
+        assertEquals(Shader.TileMode.REPEAT, drawable.getTileModeX());
+        assertEquals(Shader.TileMode.MIRROR, drawable.getTileModeY());
     }
 }

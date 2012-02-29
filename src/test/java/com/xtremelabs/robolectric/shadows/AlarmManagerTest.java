@@ -96,6 +96,17 @@ public class AlarmManagerTest {
         assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
     }
 
+    @Test
+    public void cancel_removesMatchingPendingIntentsWithActions() {
+        Intent newIntent = new Intent("someAction");
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(Robolectric.application.getApplicationContext(), 0, newIntent, 0);
+        alarmManager.set(AlarmManager.RTC, 1337, pendingIntent);
+        assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
+        alarmManager.cancel(PendingIntent.getBroadcast(Robolectric.application, 0, new Intent("anotherAction"), 0));
+        assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
+        alarmManager.cancel(PendingIntent.getBroadcast(Robolectric.application, 0, new Intent("someAction"), 0));
+        assertEquals(0, shadowAlarmManager.getScheduledAlarms().size());
+    }
 
     private void assertScheduledAlarm(long now, PendingIntent pendingIntent,
                                       ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {

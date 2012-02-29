@@ -18,9 +18,11 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     private Bitmap bitmap;
     private ColorFilter colorFilter;
     private String drawableCreateFromStreamSource;
+    private String drawableCreateFromPath;
 
     @RealObject private BitmapDrawable realBitmapDrawable;
     private TileMode tileModeX;
+    private TileMode tileModeY;
 
     public void __constructor__(Bitmap bitmap) {
         this.bitmap = bitmap;
@@ -68,6 +70,15 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
         return drawableCreateFromStreamSource;
     }
 
+    //Used by ShadowDrawable.createFromPath()
+    public void setPath(String drawableCreateFromPath) {
+        this.drawableCreateFromPath = drawableCreateFromPath;
+    }
+
+    public String getPath() {
+        return drawableCreateFromPath;
+    }
+
     @Implementation
     public void setTileModeX(TileMode mode) {
         tileModeX = mode;
@@ -76,6 +87,22 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     @Implementation
     public TileMode getTileModeX() {
         return tileModeX;
+    }
+
+    @Implementation
+    public void setTileModeY(TileMode mode) {
+        tileModeY = mode;
+    }
+
+    @Implementation
+    public TileMode getTileModeY() {
+        return tileModeY;
+    }
+    
+    @Implementation
+    public void setTileModeXY(TileMode modeX, TileMode modeY) {
+        setTileModeX(modeX);
+        setTileModeY(modeY);
     }
 
     @Override
