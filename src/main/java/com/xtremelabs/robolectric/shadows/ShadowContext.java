@@ -93,8 +93,9 @@ abstract public class ShadowContext {
     
     @Implementation
     public File getExternalFilesDir(String type) {
-        EXTERNAL_FILES_DIR.mkdirs();
-        return EXTERNAL_FILES_DIR;
+    	File f = (type == null) ? EXTERNAL_FILES_DIR : new File( EXTERNAL_FILES_DIR, type );
+        f.mkdirs();
+        return f;
     }
 
     @Implementation
