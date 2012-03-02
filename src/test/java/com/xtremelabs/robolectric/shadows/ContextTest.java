@@ -36,13 +36,21 @@ public class ContextTest {
     
     @After
     public void after() {
-        File[] files = context.getFilesDir().listFiles();
-        for (File file : files)
-            file.delete();
-        files = context.getCacheDir().listFiles();
-        for (File file : files)
-            file.delete();
+    	deleteDir(context.getFilesDir());
+    	deleteDir(context.getCacheDir());
+    	deleteDir(context.getExternalCacheDir());
+    	deleteDir(context.getExternalFilesDir(null));
     }
+    
+    public void deleteDir(File path) {
+		if (path.isDirectory()) {
+			File[] files = path.listFiles();
+			for (File f : files) {
+				deleteDir(f);
+			}
+		}
+		path.delete();
+	}
 
     @Test
     public void shouldStubThemeStuff() throws Exception {
@@ -109,6 +117,13 @@ public class ContextTest {
     @Test
     public void getExternalFilesDir_shouldCreateDirectory() throws Exception {
         assertTrue(context.getExternalFilesDir(null).exists());
+    }
+    
+    @Test
+    public void getExternalFilesDir_shouldCreateNamedDirectory() throws Exception {
+    	File f = context.getExternalFilesDir("__test__");
+        assertTrue(f.exists());
+        assertTrue(f.getAbsolutePath().endsWith("__test__"));
     }
 
     @Test
