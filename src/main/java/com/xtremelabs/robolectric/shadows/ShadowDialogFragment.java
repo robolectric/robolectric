@@ -1,13 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Dialog;
+import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow implementation of the {@link DialogFragment}.
@@ -15,26 +15,31 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(DialogFragment.class)
 public class ShadowDialogFragment extends ShadowFragment {
 
-    private boolean isShowing;
+    private Dialog dialog;
 
     @Implementation
     public void show(FragmentManager manager, String tag) {
-        isShowing = true;
+        if (dialog == null) {
+            dialog = ((DialogFragment) realFragment).onCreateDialog(null);
+        }
+        dialog.show();
     }
 
     @Implementation
     public void dismiss() {
-        isShowing = false;
+        if (dialog != null) {
+            dialog.dismiss();
+        }
     }
 
     @Implementation
     public Dialog getDialog() {
-        Dialog dialog = newInstanceOf(Dialog.class);
-        ShadowDialog shadowDialog = shadowOf(dialog);
-        if (isShowing) {
-            shadowDialog.show();
-        }
         return dialog;
+    }
+
+    @Implementation
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        return newInstanceOf(Dialog.class);
     }
 
 }

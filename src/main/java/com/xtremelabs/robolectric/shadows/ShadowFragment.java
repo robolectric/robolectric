@@ -16,7 +16,7 @@ import com.xtremelabs.robolectric.internal.RealObject;
 @Implements(Fragment.class)
 public class ShadowFragment {
     @RealObject
-    private Fragment realFragment;
+    Fragment realFragment;
 
     private Bundle arguments;
     private FragmentActivity fragmentActivity;

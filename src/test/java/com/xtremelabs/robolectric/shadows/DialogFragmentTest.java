@@ -20,7 +20,6 @@ public class DialogFragmentTest {
         final ShadowDialogFragment shadowDialogFragment = shadowOf(dialogFragment);
         shadowDialogFragment.setActivity(new ContainerActivity());
 
-        assertTrue(!shadowDialogFragment.getDialog().isShowing());
         shadowDialogFragment.show(containerActivity.getSupportFragmentManager(), "TAG");
         assertTrue(shadowDialogFragment.getDialog().isShowing());
     }
