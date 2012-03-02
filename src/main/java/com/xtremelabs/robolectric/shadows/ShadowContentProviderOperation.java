@@ -15,6 +15,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 public class ShadowContentProviderOperation {
     private final Map<String, Object> values = new HashMap<String, Object>();
     private final Map<String, String[]> selections = new HashMap<String, String[]>();
+    private final Map<String, Integer> withValueBackReferences = new HashMap<String, Integer>();
     private Uri uri;
     private boolean isInsert;
     private boolean isUpdate;
@@ -86,5 +87,13 @@ public class ShadowContentProviderOperation {
     
     public void setDelete(boolean value) {
         isDelete = value;
+    }
+    
+    public void setWithValueBackReference(String key, int previousResult) {
+        withValueBackReferences.put(key, previousResult);
+    }
+    
+    public int getWithValueBackReference(String key) {
+        return withValueBackReferences.get(key);
     }
 }

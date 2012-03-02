@@ -7,10 +7,7 @@ import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
+import android.view.*;
 import android.view.animation.Animation;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -466,6 +463,14 @@ public class ShadowView {
     public boolean dispatchTouchEvent(MotionEvent event) {
         if (onTouchListener != null) {
             return onTouchListener.onTouch(realView, event);
+        }
+        return false;
+    }
+
+    @Implementation
+    public boolean dispatchKeyEvent(KeyEvent event ) {
+        if (onKeyListener != null) {
+            return onKeyListener.onKey(realView, event.getKeyCode(), event);
         }
         return false;
     }

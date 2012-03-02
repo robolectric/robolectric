@@ -42,6 +42,13 @@ public class ShadowDrawable {
     }
 
     @Implementation
+    public static Drawable createFromPath(String pathName) {
+        BitmapDrawable drawable = new BitmapDrawable(Robolectric.newInstanceOf(Bitmap.class));
+        shadowOf(drawable).setPath(pathName);
+        return drawable;
+    }
+
+    @Implementation
     public final Rect getBounds() {
         return bounds;
     }

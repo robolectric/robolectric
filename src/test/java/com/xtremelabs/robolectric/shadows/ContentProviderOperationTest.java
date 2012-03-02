@@ -33,6 +33,18 @@ public class ContentProviderOperationTest {
         assertThat(shadowOperation.getValues().get("stringValue").toString(), equalTo("bar"));
         assertThat(Integer.parseInt(shadowOperation.getValues().get("intValue").toString()), is(5));
     }
+    
+    @Test
+    public void newInsertWithValueBackReference() {
+        final Uri URI = Uri.parse("content://com.xtremelabs.robolectric");
+        Builder builder = ContentProviderOperation.newInsert(URI);
+        builder.withValueBackReference("my_id", 0);
+        ContentProviderOperation operation = builder.build();
+        ShadowContentProviderOperationBuilder shadowBuilder = Robolectric.shadowOf(builder);
+        ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(operation);
+        assertThat(shadowBuilder.getWithValueBackReference("my_id"), is(0));
+        assertThat(shadowOperation.getWithValueBackReference("my_id"), is(0));
+    }
 
     @Test
     public void newUpdate() {
