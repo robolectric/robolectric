@@ -55,6 +55,14 @@ public class ContentProviderOperationBuilderTest {
     }
     
     @Test
+    public void withValueBackReference() {
+        builder.withValueBackReference("foo", 5);
+        
+        int backReference = shadowBuilder.getWithValueBackReference("foo");
+        assertThat(backReference, is(5));
+    }
+    
+    @Test
     public void build() {
         ContentProviderOperation operation = builder.build();
         assertThat(operation, notNullValue());
