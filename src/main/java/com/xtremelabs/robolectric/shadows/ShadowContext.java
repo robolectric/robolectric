@@ -26,7 +26,7 @@ abstract public class ShadowContext {
     public static final File CACHE_DIR = new File(System.getProperty("java.io.tmpdir"), "android-cache");
     public static final File EXTERNAL_CACHE_DIR = new File(System.getProperty("java.io.tmpdir"), "android-external-cache");
     public static final File FILES_DIR = new File(System.getProperty("java.io.tmpdir"), "android-tmp");
-    public static final File EXTERNAL_FILES_DIR = new File(System.getProperty("java.io.tmpdir"), "android-external-tmp");
+    public static final File EXTERNAL_FILES_DIR = new File(System.getProperty("java.io.tmpdir"), "android-external-files");
 
     @RealObject private Context realContext;
 
@@ -93,8 +93,9 @@ abstract public class ShadowContext {
     
     @Implementation
     public File getExternalFilesDir(String type) {
-        EXTERNAL_FILES_DIR.mkdirs();
-        return EXTERNAL_FILES_DIR;
+    	File f = (type == null) ? EXTERNAL_FILES_DIR : new File( EXTERNAL_FILES_DIR, type );
+        f.mkdirs();
+        return f;
     }
 
     @Implementation
