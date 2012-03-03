@@ -41,8 +41,12 @@ public class ShadowTextView extends ShadowView {
     private int textAppearanceId;
     private TransformationMethod transformationMethod;
     private int inputType;
+    protected int selectionStart = 0;
+    protected int selectionEnd = 0;
 
     private List<TextWatcher> watchers = new ArrayList<TextWatcher>();
+    private List<Integer> previousKeyCodes = new ArrayList<Integer>();
+    private List<KeyEvent> previousKeyEvents = new ArrayList<KeyEvent>();
 
     @Override
     public void applyAttributes() {
@@ -71,6 +75,8 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public final void append(CharSequence text) {
+        boolean isSelectStartAtEnd = selectionStart == this.text.length();
+        boolean isSelectEndAtEnd = selectionEnd == this.text.length();
         CharSequence oldValue = this.text;
         StringBuffer sb = new StringBuffer(this.text);
         sb.append(text);
@@ -78,9 +84,15 @@ public class ShadowTextView extends ShadowView {
         sendBeforeTextChanged(sb.toString());
         this.text = sb.toString();
 
+        if (isSelectStartAtEnd) {
+            selectionStart = this.text.length();
+        }
+        if (isSelectEndAtEnd) {
+            selectionEnd = this.text.length();
+        }
+
         sendOnTextChanged(oldValue);
         sendAfterTextChanged();
-
     }
 
     @Implementation
@@ -247,6 +259,8 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        previousKeyCodes.add(keyCode);
+        previousKeyEvents.add(event);
         if (onKeyListener != null) {
             return onKeyListener.onKey(realView, keyCode, event);
         } else {
@@ -256,11 +270,21 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        previousKeyCodes.add(keyCode);
+        previousKeyEvents.add(event);
         if (onKeyListener != null) {
             return onKeyListener.onKey(realView, keyCode, event);
         } else {
             return false;
         }
+    }
+
+    public int getPreviousKeyCode(int index) {
+        return previousKeyCodes.get(index);
+    }
+
+    public KeyEvent getPreviousKeyEvent(int index) {
+        return previousKeyEvents.get(index);
     }
 
     @Implementation
@@ -424,6 +448,25 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public TextPaint getPaint() {
         return new TextPaint();
+    }
+
+    public void setSelection(int index) {
+        setSelection(index, index);
+    }
+
+    public void setSelection(int start, int end) {
+        selectionStart = start;
+        selectionEnd = end;
+    }
+
+    @Implementation
+    public int getSelectionStart() {
+        return selectionStart;
+    }
+
+    @Implementation
+    public int getSelectionEnd() {
+        return selectionEnd;
     }
 
     /**
