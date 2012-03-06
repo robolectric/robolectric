@@ -33,6 +33,7 @@ public class ShadowGeocoder {
     private boolean hasLatitude;
     private boolean hasLongitude;
     private boolean returnNoResults = false;
+    private boolean didResolution;
 
     @Implementation
     public List<Address> getFromLocation(double latitude, double longitude, int maxResults) throws IOException {
@@ -53,6 +54,7 @@ public class ShadowGeocoder {
 
     @Implementation
     public List<Address> getFromLocationName(String locationName, int maxResults) throws IOException {
+        didResolution = true;
         this.lastLocationName = locationName;
         if (shouldSimulateGeocodeException) {
             throw new IOException("Simulated geocode exception");
@@ -146,5 +148,9 @@ public class ShadowGeocoder {
     
     public void setReturnNoResults(boolean returnNoResults) {
         this.returnNoResults = returnNoResults;
+    }
+    
+    public boolean didResolution() {
+        return didResolution;
     }
 }
