@@ -17,4 +17,18 @@ public class NdefRecordTest {
 
         assertSame(ndefRecord.getPayload(), bytes);
     }
+    
+    @Test
+	public void getFieldsFromComplexConstructor()
+	{
+    	byte[] payloadBytes = "payload".getBytes();
+		byte[] sampleMimeTypeBytes = "sample/mimetype".getBytes();
+		byte[] idBytes = "id".getBytes();
+		short tnfCode = NdefRecord.TNF_MIME_MEDIA;
+		NdefRecord ndefRecord = new NdefRecord(tnfCode, sampleMimeTypeBytes, idBytes, payloadBytes);
+		assertSame(ndefRecord.getTnf(), tnfCode);
+		assertSame(ndefRecord.getType(), sampleMimeTypeBytes);
+		assertSame(ndefRecord.getId(), idBytes);
+		assertSame(ndefRecord.getPayload(), payloadBytes);
+	}
 }
