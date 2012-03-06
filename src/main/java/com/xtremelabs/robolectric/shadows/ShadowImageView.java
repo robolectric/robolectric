@@ -69,7 +69,9 @@ public class ShadowImageView extends ShadowView {
                 drawables[i] = buildDrawable(resourceIds[i]);
             }
 
-            return new LayerDrawable(drawables);
+            LayerDrawable layerDrawable = new LayerDrawable(drawables);
+            shadowOf(layerDrawable).setLoadedFromResourceId(resourceId);
+            return layerDrawable;
         } else {
             return new BitmapDrawable(BitmapFactory.decodeResource(
                     getResources(), resourceId));

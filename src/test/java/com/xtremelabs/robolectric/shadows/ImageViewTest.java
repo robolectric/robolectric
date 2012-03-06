@@ -17,10 +17,9 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.Robolectric.visualize;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ImageViewTest {
@@ -79,6 +78,7 @@ public class ImageViewTest {
         assertTrue("Drawable", imageView.getDrawable() instanceof Drawable);
         assertTrue("LayerDrawable",
                 imageView.getDrawable() instanceof LayerDrawable);
+        assertThat(shadowOf(imageView.getDrawable()).getLoadedFromResourceId(), is(R.drawable.rainbow));
     }
 
     @Test

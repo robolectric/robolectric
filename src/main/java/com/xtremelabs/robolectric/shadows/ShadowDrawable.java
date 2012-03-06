@@ -29,6 +29,7 @@ public class ShadowDrawable {
     private int alpha;
     private InputStream inputStream;
     private int level;
+    private int loadedFromResourceId = -1;
 
     @Implementation
     public static Drawable createFromStream(InputStream is, String srcName) {
@@ -160,5 +161,13 @@ public class ShadowDrawable {
 
     public static void reset() {
         corruptStreamSources.clear();
+    }
+
+    public int getLoadedFromResourceId() {
+        return loadedFromResourceId;
+    }
+
+    public void setLoadedFromResourceId(int resourceId) {
+        loadedFromResourceId = resourceId;
     }
 }
