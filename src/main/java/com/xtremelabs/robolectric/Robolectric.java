@@ -14,6 +14,7 @@ import android.graphics.*;
 import android.graphics.drawable.*;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
+import android.location.Address;
 import android.location.Geocoder;
 import android.location.LocationManager;
 import android.media.AudioManager;
@@ -350,6 +351,10 @@ public class Robolectric {
 
     public static ShadowAdapterView shadowOf(AdapterView instance) {
         return (ShadowAdapterView) shadowOf_(instance);
+    }
+
+    public static ShadowAddress shadowOf(Address instance) {
+        return (ShadowAddress) shadowOf_(instance);
     }
 
     public static ShadowAlarmManager shadowOf(AlarmManager instance) {
