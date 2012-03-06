@@ -3,19 +3,19 @@
     <modelVersion>4.0.0</modelVersion>
 
     <parent>
-        <groupId>org.sonatype.oss</groupId>
-        <artifactId>oss-parent</artifactId>
-        <version>5</version>
+        <groupId>com.shazam</groupId>
+        <artifactId>maven-root</artifactId>
+        <version>1</version>
     </parent>
 
-    <groupId>com.pivotallabs</groupId>
+    <groupId>com.shazam</groupId>
     <artifactId>robolectric</artifactId>
     <version>1.1-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>Robolectric</name>
     <description>An alternative Android testing framework.</description>
     <url>http://pivotal.github.com/robolectric/</url>
-
+	
     <dependencies>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -228,62 +228,6 @@
             </build>
         </profile>
     </profiles>
-
-    <scm>
-        <url>git@github.com:pivotal/robolectric.git</url>
-        <connection>scm:git:git://github.com/pivotal/robolectric.git</connection>
-        <developerConnection>scm:git:git@github.com:pivotal/robolectric.git</developerConnection>
-    </scm>
-
-    <ciManagement>
-        <system>Hudson</system>
-        <url>http://ci.robolectric.org/job/robolectric</url>
-    </ciManagement>
-
-    <developers>
-        <developer>
-            <id>xian</id>
-            <name>Christian Williams</name>
-            <email>xian@pivotallabs.com</email>
-            <organization>Pivotal Labs</organization>
-            <organizationUrl>http://pivotallabs.com/</organizationUrl>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>PST/PDT</timezone>
-        </developer>
-        <developer>
-            <id>tyler</id>
-            <name>Tyler Schultz</name>
-            <email>tyler@pivotallabs.com</email>
-            <organization>Pivotal Labs</organization>
-            <organizationUrl>http://pivotallabs.com/</organizationUrl>
-            <roles>
-                <role>Project Owner</role>
-                <role>Developer</role>
-            </roles>
-            <timezone>PST/PDT</timezone>
-        </developer>
-        <developer>
-            <id>phil</id>
-            <name>Phil Goodwin</name>
-            <email>phil@pivotallabs.com</email>
-            <organization>Pivotal Labs</organization>
-            <organizationUrl>http://pivotallabs.com/</organizationUrl>
-            <roles>
-                <role>Developer</role>
-            </roles>
-            <timezone>PST/PDT</timezone>
-        </developer>
-    </developers>
-
-    <mailingLists>
-        <mailingList>
-            <name>User List</name>
-            <post>robolectric@googlegroups.com</post>
-            <archive>http://groups.google.com/group/robolectric</archive>
-        </mailingList>
-    </mailingLists>
 
     <licenses>
         <license>

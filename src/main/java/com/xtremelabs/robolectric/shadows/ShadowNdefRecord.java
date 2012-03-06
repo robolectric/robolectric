@@ -10,14 +10,46 @@ public class ShadowNdefRecord {
     @RealObject
     private NdefRecord realNdefRecord;
 
-    private byte[] data;
+	private short tnf;
 
-    public void __constructor__(byte[] data) {
-        this.data = data;
+	private byte[] type;
+
+	private byte[] id;
+
+	private byte[] payload;
+
+    public void __constructor__(byte[] payload) {
+        this.payload = payload;
+    }
+    
+    public void __constructor__(short tnf,byte[] type,byte[] id,byte[] payload) {
+		this.tnf = tnf;
+		this.type = type;
+		this.id = id;
+		this.payload = payload;
     }
 
     @Implementation
     public byte[] getPayload() {
-        return data;
+        return payload;
     }
+
+    @Implementation
+    public short getTnf()
+	{
+		return tnf;
+	}
+
+    @Implementation
+	public byte[] getType()
+	{
+		return type;
+	}
+
+    @Implementation
+	public byte[] getId()
+	{
+		return id;
+	}
+
 }
