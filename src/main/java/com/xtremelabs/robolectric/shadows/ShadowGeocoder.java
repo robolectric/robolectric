@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 /**
  * A shadow for Geocoder that supports simulated responses and failures
  */
@@ -28,6 +30,10 @@ public class ShadowGeocoder {
     private double simulatedLatitude;
     private double simulatedLongitude;
     private boolean shouldSimulateGeocodeException;
+    private boolean hasLatitude;
+    private boolean hasLongitude;
+    private boolean returnNoResults = false;
+    private boolean didResolution;
 
     @Implementation
     public List<Address> getFromLocation(double latitude, double longitude, int maxResults) throws IOException {
@@ -37,7 +43,7 @@ public class ShadowGeocoder {
         if (shouldSimulateGeocodeException) {
             throw new IOException("Simulated geocode exception");
         }
-        Address address = new Address(Locale.getDefault());
+        Address address = makeAddress();
         address.setAddressLine(0, addressLine1);
         address.setLocality(city);
         address.setAdminArea(state);
@@ -48,14 +54,25 @@ public class ShadowGeocoder {
 
     @Implementation
     public List<Address> getFromLocationName(String locationName, int maxResults) throws IOException {
+        didResolution = true;
         this.lastLocationName = locationName;
         if (shouldSimulateGeocodeException) {
             throw new IOException("Simulated geocode exception");
         }
+        if (returnNoResults) {
+            return new ArrayList<Address>();
+        } else {
+            Address address = makeAddress();
+            address.setLatitude(simulatedLatitude);
+            address.setLongitude(simulatedLongitude);
+            return oneElementList(address);
+        }
+    }
+
+    private Address makeAddress() {
         Address address = new Address(Locale.getDefault());
-        address.setLatitude(simulatedLatitude);
-        address.setLongitude(simulatedLongitude);
-        return oneElementList(address);
+        shadowOf(address).setSimulatedHasLatLong(hasLatitude, hasLongitude);
+        return address;
     }
 
     /**
@@ -122,5 +139,18 @@ public class ShadowGeocoder {
         ArrayList<Address> addresses = new ArrayList<Address>();
         addresses.add(address);
         return addresses;
+    }
+
+    public void setSimulatedHasLatLong(boolean hasLatitude, boolean hasLongitude) {
+        this.hasLatitude = hasLatitude;
+        this.hasLongitude = hasLongitude;
+    }
+    
+    public void setReturnNoResults(boolean returnNoResults) {
+        this.returnNoResults = returnNoResults;
+    }
+    
+    public boolean didResolution() {
+        return didResolution;
     }
 }

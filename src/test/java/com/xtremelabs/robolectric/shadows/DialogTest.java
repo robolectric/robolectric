@@ -139,6 +139,13 @@ public class DialogTest {
         assertEquals(0, ShadowDialog.getShownDialogs().size());
     }
 
+    @Test
+    public void shouldPopulateListOfRecentDialogsInCorrectOrder() throws Exception {
+        new NestingTestDialog().show();
+        
+        assertEquals(TestDialog.class, ShadowDialog.getLatestDialog().getClass());
+    }
+
     private static class TestDialog extends Dialog {
         boolean onStartCalled = false;
         boolean wasDismissed =  false;
@@ -158,4 +165,15 @@ public class DialogTest {
         }
     }
 
+    private static class NestingTestDialog extends Dialog {
+        public NestingTestDialog() {
+            super(null);
+        };
+        
+        @Override
+        protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            new TestDialog().show();
+        }
+    }
 }
