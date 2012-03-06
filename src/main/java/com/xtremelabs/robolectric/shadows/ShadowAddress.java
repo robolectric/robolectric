@@ -15,6 +15,8 @@ public class ShadowAddress {
     private String countryCode;
     private double longitude;
     private double latitude;
+    private boolean hasLatitude;
+    private boolean hasLongitude;
 
     @Implementation
     public double getLatitude() {
@@ -84,5 +86,20 @@ public class ShadowAddress {
     @Implementation
     public void setCountryCode(String countryCode) {
         this.countryCode = countryCode;
+    }
+    
+    @Implementation
+    public boolean hasLatitude() {
+        return hasLatitude;
+    }
+
+    @Implementation
+    public boolean hasLongitude() {
+        return hasLongitude;
+    }
+
+    public void setSimulatedHasLatLong(boolean hasLatitude, boolean hasLongitude) {
+        this.hasLatitude = hasLatitude;
+        this.hasLongitude = hasLongitude;
     }
 }
