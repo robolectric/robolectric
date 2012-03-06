@@ -102,6 +102,8 @@ public class ShadowDialog {
 
     @Implementation
     public void show() {
+        setLatestDialog(this);
+        shownDialogs.add(realDialog);
         isShowing = true;
         try {
             if (!hasShownBefore) {
@@ -117,8 +119,6 @@ public class ShadowDialog {
             throw new RuntimeException(e);
         }
         hasShownBefore = true;
-        setLatestDialog(this);
-        shownDialogs.add(realDialog);
     }
 
     @Implementation
