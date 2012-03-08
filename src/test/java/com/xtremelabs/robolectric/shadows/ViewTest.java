@@ -5,6 +5,7 @@ import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
@@ -262,6 +263,13 @@ public class ViewTest {
     public void shouldGetScrollXAndY() {
         assertEquals(0, view.getScrollX());
         assertEquals(0, view.getScrollY());
+    }
+
+    @Test
+    public void getViewTreeObserver_shouldReturnTheSameObserverFromMultipleCalls() throws Exception {
+        ViewTreeObserver observer = view.getViewTreeObserver();
+        assertThat(observer, instanceOf(ViewTreeObserver.class));
+        assertThat(view.getViewTreeObserver(), sameInstance(observer));
     }
 
     private class TestAnimation extends Animation {

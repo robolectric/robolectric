@@ -302,6 +302,7 @@ public class Robolectric {
                 ShadowViewFlipper.class,
                 ShadowViewMeasureSpec.class,
                 ShadowViewStub.class,
+                ShadowViewTreeObserver.class,
                 ShadowWebSettings.class,
                 ShadowWebView.class,
                 ShadowWifiConfiguration.class,
@@ -840,6 +841,10 @@ public class Robolectric {
 
     public static ShadowViewFlipper shadowOf(ViewFlipper instance) {
         return (ShadowViewFlipper) shadowOf_(instance);
+    }
+
+    public static ShadowViewTreeObserver shadowOf(ViewTreeObserver instance) {
+        return (ShadowViewTreeObserver) shadowOf_(instance);
     }
 
     public static ShadowViewGroup shadowOf(ViewGroup instance) {
