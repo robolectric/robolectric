@@ -14,8 +14,7 @@ import java.util.Map;
 @Implements(NotificationManager.class)
 public class ShadowNotificationManager {
 
-    private Map<Integer, Notification> notifications = new HashMap<Integer, Notification>();
-    private Map<String, Integer> idForTag = new HashMap<String, Integer>();
+    private Map<Key, Notification> notifications = new HashMap<Key, Notification>();
 
     @Implementation
     public void notify(int id, Notification notification)
@@ -25,10 +24,7 @@ public class ShadowNotificationManager {
 
     @Implementation
     public void notify(String tag, int id, Notification notification) {
-        if (tag != null) {
-            idForTag.put(tag, id);
-        }
-        notifications.put(id, notification);
+        notifications.put(new Key(tag, id), notification);
     }
 
     @Implementation
@@ -39,35 +35,53 @@ public class ShadowNotificationManager {
 
     @Implementation
     public void cancel(String tag, int id) {
-        // I can't make sense of this method signature. I'm guessing that the id is optional and if it's bogus you are supposed to use the tag instead, but that references to both should be gone. PG
-        Integer tagId = idForTag.remove(tag);
-        if (notifications.containsKey(id)) {
-            notifications.remove(id);
-        } else {
-            notifications.remove(tagId);
+        Key key = new Key(tag, id);
+        if (notifications.containsKey(key)) {
+            notifications.remove(key);
         }
     }
 
     @Implementation
     public void cancelAll() {
         notifications.clear();
-        idForTag.clear();
     }
 
     public int size() {
         return notifications.size();
     }
 
-    public Notification getNotification(int id) {
-        return notifications.get(id);
-    }
-
-    public Notification getNotification(String tag) {
-        Integer id = idForTag.get(tag);
-        return notifications.get(id);
+    public Notification getNotification(String tag, int id) {
+        return notifications.get(new Key(tag, id));
     }
 
     public List<Notification> getAllNotifications() {
         return new ArrayList<Notification>(notifications.values());
+    }
+    
+    private static final class Key {
+        public final String tag;
+        public final int id;
+
+        private Key(String tag, int id) {
+            this.tag = tag;
+            this.id = id;
+        }
+
+        @Override
+        public int hashCode() {
+            int hashCode = 17;
+            hashCode = 37 * hashCode + (tag == null ? 0 : tag.hashCode());
+            hashCode = 37 * hashCode + id;
+            return hashCode;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (!(o instanceof Key)) return false;
+            Key other = (Key) o;
+            return (this.tag == null ? other.tag == null : this.tag.equals(other.tag))
+                   && this.id == other.id;
+            
+        }
     }
 }
