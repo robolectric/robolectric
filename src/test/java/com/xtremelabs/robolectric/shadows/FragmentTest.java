@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,6 +45,58 @@ public class FragmentTest {
         shadow.createView();
         assertEquals(bundleVal, fragment.argument);
     }
+    
+    
+    @Test
+    public void testGetFragmentManager() {
+        DummyFragment fragment = new DummyFragment();
+        final ShadowFragment shadow = shadowOf(fragment);
+        ContainerActivity activity = new ContainerActivity();
+        shadow.setActivity(activity);
+        assertNotNull(fragment.getFragmentManager());
+        assertSame(activity.getSupportFragmentManager(), fragment.getFragmentManager());
+    }
+    
+    @Test
+    public void testFragmentManagerBeginWithNoTagOrId() {
+        DummyFragment fragment = new DummyFragment();
+        ContainerActivity activity = new ContainerActivity();
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+        fragmentManager.beginTransaction().add(fragment, null).commit();
+        assertSame(activity, fragment.getActivity());
+        assertSame(fragmentManager, fragment.getFragmentManager());
+
+        assertEquals(0, fragment.getId());
+        assertNull(fragment.getTag());
+        
+        assertNull(fragmentManager.findFragmentById(0));
+        assertNull(fragmentManager.findFragmentByTag(null));
+
+        // Just don't blow up
+        fragmentManager.beginTransaction().remove(fragment).commit();
+    }
+    
+    @Test
+    public void testFragmentManagerBeginWithTagAndId() {
+        DummyFragment fragment = new DummyFragment();
+        ContainerActivity activity = new ContainerActivity();
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+        fragmentManager.beginTransaction().add(24, fragment, "fred").commit();
+
+        assertEquals(24, fragment.getId());
+        assertEquals("fred", fragment.getTag());
+        
+        Fragment byId = fragmentManager.findFragmentById(24);
+        Fragment byTag = fragmentManager.findFragmentByTag("fred");
+        
+        assertSame(fragment, byId);
+        assertSame(fragment, byTag);
+        
+        fragmentManager.beginTransaction().remove(fragment).commit();
+        assertNull(fragmentManager.findFragmentById(24));
+        assertNull(fragmentManager.findFragmentByTag("fred"));
+    }
+    
 
     @Test
     public void testVisibleAndAdded() throws Exception {
