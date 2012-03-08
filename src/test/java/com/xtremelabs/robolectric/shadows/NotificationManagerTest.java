@@ -27,11 +27,11 @@ public class NotificationManagerTest {
     public void testNotify() throws Exception {
         notificationManager.notify(1, notification1);
         assertEquals(1, shadowOf(notificationManager).size());
-        assertEquals(notification1, shadowOf(notificationManager).getNotification(1));
+        assertEquals(notification1, shadowOf(notificationManager).getNotification(null, 1));
 
         notificationManager.notify(31, notification2);
         assertEquals(2, shadowOf(notificationManager).size());
-        assertEquals(notification2, shadowOf(notificationManager).getNotification(31));
+        assertEquals(notification2, shadowOf(notificationManager).getNotification(null, 31));
     }
 
     @Test
@@ -40,28 +40,28 @@ public class NotificationManagerTest {
 
         notificationManager.notify(1, notification2);
         assertEquals(1, shadowOf(notificationManager).size());
-        assertEquals(notification2, shadowOf(notificationManager).getNotification(1));
+        assertEquals(notification2, shadowOf(notificationManager).getNotification(null, 1));
     }
 
     @Test
     public void testNotifyWithTag() throws Exception {
         notificationManager.notify("a tag", 1, notification1);
         assertEquals(1, shadowOf(notificationManager).size());
-        assertEquals(notification1, shadowOf(notificationManager).getNotification("a tag"));
+        assertEquals(notification1, shadowOf(notificationManager).getNotification("a tag", 1));
     }
 
     @Test
     public void notifyWithTag_shouldReturnNullForNullTag() throws Exception {
         notificationManager.notify("a tag", 1, notification1);
         assertEquals(1, shadowOf(notificationManager).size());
-        assertNull(shadowOf(notificationManager).getNotification(null));
+        assertNull(shadowOf(notificationManager).getNotification(null, 1));
     }
 
     @Test
     public void notifyWithTag_shouldReturnNullForUnknownTag() throws Exception {
         notificationManager.notify("a tag", 1, notification1);
         assertEquals(1, shadowOf(notificationManager).size());
-        assertNull(shadowOf(notificationManager).getNotification("unknown tag"));
+        assertNull(shadowOf(notificationManager).getNotification("unknown tag", 1));
     }
 
     @Test
@@ -70,7 +70,7 @@ public class NotificationManagerTest {
         notificationManager.cancel(1);
         
         assertEquals(0, shadowOf(notificationManager).size());
-        assertNull(shadowOf(notificationManager).getNotification(1));
+        assertNull(shadowOf(notificationManager).getNotification(null, 1));
     }
 
     @Test
@@ -79,8 +79,8 @@ public class NotificationManagerTest {
         notificationManager.cancel("a tag", 1);
 
         assertEquals(0, shadowOf(notificationManager).size());
-        assertNull(shadowOf(notificationManager).getNotification(1));
-        assertNull(shadowOf(notificationManager).getNotification("a tag"));
+        assertNull(shadowOf(notificationManager).getNotification(null, 1));
+        assertNull(shadowOf(notificationManager).getNotification("a tag", 1));
     }
 
     @Test
@@ -90,7 +90,7 @@ public class NotificationManagerTest {
         notificationManager.cancelAll();
 
         assertEquals(0, shadowOf(notificationManager).size());
-        assertNull(shadowOf(notificationManager).getNotification(1));
-        assertNull(shadowOf(notificationManager).getNotification(31));
+        assertNull(shadowOf(notificationManager).getNotification(null, 1));
+        assertNull(shadowOf(notificationManager).getNotification(null, 31));
     }
 }
