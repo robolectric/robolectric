@@ -57,6 +57,13 @@ public class ShadowService extends ShadowContextWrapper {
         lastForegroundNotification = notification;
     }
 
+    @Implementation
+    public final void stopForeground(boolean removeNotification) {
+        if (removeNotification) {
+            lastForegroundNotification = null;
+        }
+    }
+
     public Notification getLastForegroundNotification() {
         return lastForegroundNotification;
     }
