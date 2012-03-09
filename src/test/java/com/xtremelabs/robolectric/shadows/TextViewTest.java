@@ -313,6 +313,16 @@ public class TextViewTest {
         Assert.assertEquals(9, shadowOf(textView.getCompoundDrawables()[3]).getLoadedFromResourceId());
     }
 
+    @Test
+    public void testSetCompountDrawablesWithIntrinsicBounds_int_shouldNotCreateDrawablesForZero() throws Exception {
+        textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
+
+        Assert.assertNull(textView.getCompoundDrawables()[0]);
+        Assert.assertNull(textView.getCompoundDrawables()[1]);
+        Assert.assertNull(textView.getCompoundDrawables()[2]);
+        Assert.assertNull(textView.getCompoundDrawables()[3]);
+    }
+
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
         List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
         int numberBetweenOneAndTen = new Random().nextInt(10) + 1;

@@ -493,10 +493,10 @@ public class ShadowTextView extends ShadowView {
         }
 
         public CompoundDrawables(int left, int top, int right, int bottom) {
-            leftDrawable = ShadowDrawable.createFromResourceId(left);
-            topDrawable = ShadowDrawable.createFromResourceId(top);
-            rightDrawable = ShadowDrawable.createFromResourceId(right);
-            bottomDrawable = ShadowDrawable.createFromResourceId(bottom);
+            leftDrawable = left != 0 ? ShadowDrawable.createFromResourceId(left) : null;
+            topDrawable = top != 0 ? ShadowDrawable.createFromResourceId(top) : null;
+            rightDrawable = right != 0 ? ShadowDrawable.createFromResourceId(right) : null;
+            bottomDrawable = bottom != 0 ? ShadowDrawable.createFromResourceId(bottom) : null;
         }
 
         @Override
