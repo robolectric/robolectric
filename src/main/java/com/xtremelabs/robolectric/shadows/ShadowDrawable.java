@@ -49,6 +49,13 @@ public class ShadowDrawable {
         return drawable;
     }
 
+    public static Drawable createFromResourceId(int resourceId) {
+        Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
+        shadowOf(bitmap).setLoadedFromResourceId(resourceId);
+        BitmapDrawable drawable = new BitmapDrawable(bitmap);
+        return drawable;
+    }
+
     @Implementation
     public final Rect getBounds() {
         return bounds;

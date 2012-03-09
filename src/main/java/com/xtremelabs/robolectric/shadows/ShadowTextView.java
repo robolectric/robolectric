@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.view.View.VISIBLE;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -479,11 +480,6 @@ public class ShadowTextView extends ShadowView {
     }
 
     public static class CompoundDrawables {
-        public int left;
-        public int top;
-        public int right;
-        public int bottom;
-
         public Drawable leftDrawable;
         public Drawable topDrawable;
         public Drawable rightDrawable;
@@ -497,10 +493,10 @@ public class ShadowTextView extends ShadowView {
         }
 
         public CompoundDrawables(int left, int top, int right, int bottom) {
-            this.left = left;
-            this.top = top;
-            this.right = right;
-            this.bottom = bottom;
+            leftDrawable = ShadowDrawable.createFromResourceId(left);
+            topDrawable = ShadowDrawable.createFromResourceId(top);
+            rightDrawable = ShadowDrawable.createFromResourceId(right);
+            bottomDrawable = ShadowDrawable.createFromResourceId(bottom);
         }
 
         @Override
@@ -510,31 +506,47 @@ public class ShadowTextView extends ShadowView {
 
             CompoundDrawables that = (CompoundDrawables) o;
 
-            if (bottom != that.bottom) return false;
-            if (left != that.left) return false;
-            if (right != that.right) return false;
-            if (top != that.top) return false;
+            if (getBottom() != that.getBottom()) return false;
+            if (getLeft() != that.getLeft()) return false;
+            if (getRight() != that.getRight()) return false;
+            if (getTop() != that.getTop()) return false;
 
             return true;
         }
 
         @Override
         public int hashCode() {
-            int result = left;
-            result = 31 * result + top;
-            result = 31 * result + right;
-            result = 31 * result + bottom;
+            int result = getLeft();
+            result = 31 * result + getTop();
+            result = 31 * result + getRight();
+            result = 31 * result + getBottom();
             return result;
         }
 
         @Override
         public String toString() {
             return "CompoundDrawables{" +
-                    "left=" + left +
-                    ", top=" + top +
-                    ", right=" + right +
-                    ", bottom=" + bottom +
+                    "left=" + getLeft() +
+                    ", top=" + getTop() +
+                    ", right=" + getRight() +
+                    ", bottom=" + getBottom() +
                     '}';
+        }
+
+        public int getLeft() {
+            return shadowOf(leftDrawable).getLoadedFromResourceId();
+        }
+
+        public int getTop() {
+            return shadowOf(topDrawable).getLoadedFromResourceId();
+        }
+
+        public int getRight() {
+            return shadowOf(rightDrawable).getLoadedFromResourceId();
+        }
+
+        public int getBottom() {
+            return shadowOf(bottomDrawable).getLoadedFromResourceId();
         }
     }
 }

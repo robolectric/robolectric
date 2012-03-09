@@ -11,6 +11,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import junit.framework.Assert;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -300,6 +301,16 @@ public class TextViewTest {
         textView.append("3");
         assertEquals(3, textView.getSelectionEnd());
         assertEquals(0, textView.getSelectionStart());
+    }
+
+    @Test
+    public void testSetCompountDrawablesWithIntrinsicBounds_int_shouldCreateDrawablesWithResourceIds() throws Exception {
+        textView.setCompoundDrawablesWithIntrinsicBounds(6, 7, 8, 9);
+
+        Assert.assertEquals(6, shadowOf(textView.getCompoundDrawables()[0]).getLoadedFromResourceId());
+        Assert.assertEquals(7, shadowOf(textView.getCompoundDrawables()[1]).getLoadedFromResourceId());
+        Assert.assertEquals(8, shadowOf(textView.getCompoundDrawables()[2]).getLoadedFromResourceId());
+        Assert.assertEquals(9, shadowOf(textView.getCompoundDrawables()[3]).getLoadedFromResourceId());
     }
 
     private List<MockTextWatcher> anyNumberOfTextWatchers() {

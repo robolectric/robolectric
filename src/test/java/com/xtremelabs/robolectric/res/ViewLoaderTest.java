@@ -229,10 +229,10 @@ public class ViewLoaderTest {
         View mediaView = viewLoader.inflateView(context, "layout/main");
         ShadowTextView shadowTextView = shadowOf((TextView) mediaView.findViewById(R.id.title));
 
-        assertThat(shadowTextView.getCompoundDrawablesImpl().top, equalTo(R.drawable.an_image));
-        assertThat(shadowTextView.getCompoundDrawablesImpl().right, equalTo(R.drawable.an_other_image));
-        assertThat(shadowTextView.getCompoundDrawablesImpl().bottom, equalTo(R.drawable.third_image));
-        assertThat(shadowTextView.getCompoundDrawablesImpl().left, equalTo(R.drawable.fourth_image));
+        assertThat(shadowTextView.getCompoundDrawablesImpl().getTop(), equalTo(R.drawable.an_image));
+        assertThat(shadowTextView.getCompoundDrawablesImpl().getRight(), equalTo(R.drawable.an_other_image));
+        assertThat(shadowTextView.getCompoundDrawablesImpl().getBottom(), equalTo(R.drawable.third_image));
+        assertThat(shadowTextView.getCompoundDrawablesImpl().getLeft(), equalTo(R.drawable.fourth_image));
     }
 
     @Test

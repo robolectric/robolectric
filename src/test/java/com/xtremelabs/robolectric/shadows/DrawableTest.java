@@ -93,6 +93,13 @@ public class DrawableTest {
         assertThat(shadowDrawable.getLoadedFromResourceId(), is(99));
     }
 
+    @Test
+    public void testCreateFromResourceId_shouldSetTheId() throws Exception {
+        Drawable drawable = ShadowDrawable.createFromResourceId(34758);
+        ShadowDrawable shadowDrawable = shadowOf(drawable);
+        assertThat(shadowDrawable.getLoadedFromResourceId(), is(34758));
+    }
+
     private static class TestDrawable extends Drawable {
         @Override
         public void draw(Canvas canvas) {
