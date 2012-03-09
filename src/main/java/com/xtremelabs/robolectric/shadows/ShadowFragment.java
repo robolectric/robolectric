@@ -9,6 +9,8 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
+import java.lang.reflect.Field;
+
 /**
  * Shadow class for "Fragment".  Note that this is for the support package v4 version of "Fragment", not the android.app
  * one.
@@ -62,8 +64,25 @@ public class ShadowFragment {
         return view;
     }
 
+    @Implementation
+    public boolean isAdded() {
+        return fragmentActivity != null;
+    }
+
+    @Implementation
+    public boolean isVisible() {
+        return fragmentActivity != null;
+    }
+
     public void setActivity(FragmentActivity activity) {
         fragmentActivity = activity;
+        try {
+            Field field = Fragment.class.getDeclaredField("mActivity");
+            field.setAccessible(true);
+            field.set(realFragment, activity);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Unable to set mActivity field");
+        }
     }
 
     public void createView() {
