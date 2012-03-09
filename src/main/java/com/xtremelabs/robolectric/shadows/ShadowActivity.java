@@ -511,4 +511,8 @@ public class ShadowActivity extends ShadowContextWrapper {
         pendingTransitionEnterAnimResId = enterAnim;
         pendingTransitionExitAnimResId = exitAnim;
     }
+
+    protected Activity getRealActivity() {
+        return realActivity;
+    }
 }

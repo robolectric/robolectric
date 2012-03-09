@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.view.View;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -23,6 +24,9 @@ public class ShadowFragment {
     private Bundle arguments;
     private FragmentActivity fragmentActivity;
     private View view;
+
+    private int fragmentId;
+    private String tag; 
 
     @Implementation
     public void setArguments(Bundle bundle) {
@@ -63,6 +67,21 @@ public class ShadowFragment {
     public View getView() {
         return view;
     }
+    
+    @Implementation
+    public FragmentManager getFragmentManager() {
+        return getActivity().getSupportFragmentManager();
+    }
+    
+    @Implementation
+    public int getId() {
+        return fragmentId;
+    }
+
+    @Implementation
+    public String getTag() {
+        return tag;
+    }
 
     @Implementation
     public boolean isAdded() {
@@ -89,5 +108,13 @@ public class ShadowFragment {
         realFragment.onCreate(null);
         final FragmentActivity activity = getActivity();
         view = realFragment.onCreateView(activity.getLayoutInflater(), null, null);
+    }
+
+    public void setFragmentId(int fragmentId) {
+        this.fragmentId = fragmentId;
+    }
+    
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 }

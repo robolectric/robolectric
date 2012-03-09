@@ -2,12 +2,12 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class DialogFragmentTest {
@@ -17,11 +17,12 @@ public class DialogFragmentTest {
         DialogFragment dialogFragment = new DialogFragment();
 
         ContainerActivity containerActivity = new ContainerActivity();
-        final ShadowDialogFragment shadowDialogFragment = shadowOf(dialogFragment);
-        shadowDialogFragment.setActivity(new ContainerActivity());
 
-        shadowDialogFragment.show(containerActivity.getSupportFragmentManager(), "TAG");
-        assertTrue(shadowDialogFragment.getDialog().isShowing());
+        FragmentManager fragmentManager = containerActivity.getSupportFragmentManager();
+        dialogFragment.show(fragmentManager, "TAG");
+        assertTrue(dialogFragment.getDialog().isShowing());
+        assertSame(dialogFragment, fragmentManager.findFragmentByTag("TAG"));
+        assertSame(containerActivity, dialogFragment.getActivity());
     }
 
     @Test
@@ -29,14 +30,13 @@ public class DialogFragmentTest {
         DialogFragment dialogFragment = new DialogFragment();
 
         ContainerActivity containerActivity = new ContainerActivity();
-        final ShadowDialogFragment shadowDialogFragment = shadowOf(dialogFragment);
-        shadowDialogFragment.setActivity(new ContainerActivity());
-        shadowDialogFragment.show(containerActivity.getSupportFragmentManager(), "TAG");
-        assertTrue(shadowDialogFragment.getDialog().isShowing());
 
-        shadowDialogFragment.dismiss();
+        FragmentManager fragmentManager = containerActivity.getSupportFragmentManager();
+        dialogFragment.show(fragmentManager, "TAG");
+        dialogFragment.dismiss();
 
-        assertTrue(!shadowDialogFragment.getDialog().isShowing());
+        assertTrue(!dialogFragment.getDialog().isShowing());
+        assertNull(fragmentManager.findFragmentByTag("TAG"));
     }
 
     private static class ContainerActivity extends FragmentActivity {

@@ -13,6 +13,8 @@ import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 /**
  * Shadow for a FragmentActivity.  Note that this is for the support package v4 version of "FragmentActivity", not the
  * android.app one.
@@ -121,14 +123,22 @@ public class ShadowFragmentActivity extends ShadowActivity {
             }
 
             @Override
-            public FragmentTransaction add(int i, Fragment fragment) {
-                return add(i, fragment, null);
+            public FragmentTransaction add(int containerViewId, Fragment fragment) {
+                return add(containerViewId, fragment, null);
             }
 
             @Override
-            public FragmentTransaction add(int i, Fragment fragment, String s) {
-                tagLookup.put(s, fragment);
-                intLookup.put(i, fragment);
+            public FragmentTransaction add(int containerViewId, Fragment fragment, String tag) {
+                ShadowFragment shadowFragment = shadowOf(fragment);
+                if (containerViewId != 0){
+                    shadowFragment.setFragmentId(containerViewId);
+                    intLookup.put(containerViewId, fragment);
+                }
+                if (tag != null) {
+                    shadowFragment.setTag(tag);
+                    tagLookup.put(tag, fragment);
+                }
+                shadowFragment.setActivity((FragmentActivity) getRealActivity());
                 return this;
             }
 
@@ -144,7 +154,9 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
             @Override
             public FragmentTransaction remove(Fragment fragment) {
-                return null;
+                intLookup.remove(fragment.getId());
+                tagLookup.remove(fragment.getTag());
+                return this;
             }
 
             @Override
