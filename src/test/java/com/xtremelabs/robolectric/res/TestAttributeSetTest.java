@@ -45,6 +45,13 @@ public class TestAttributeSetTest {
     }
 
     @Test
+    public void getSystemAttributeResourceValue_shouldReturnDefaultValueForNullResourceId() throws Exception {
+        attributes.put("id", "@null");
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
+        assertEquals(0, testAttributeSet.getAttributeResourceValue("com.some.namespace", "id", 0));
+    }
+
+    @Test
     public void shouldCopeWithDefiningSystemIds() throws Exception {
         attributes.put("android:id", "@+id/text1");
 

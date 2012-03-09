@@ -14,15 +14,15 @@ public class TestAttributeSet implements AttributeSet {
     private AttrResourceLoader attrResourceLoader;
     private Class<? extends View> viewClass;
     private boolean isSystem = false;
-    
+
     /**
      * Names of attributes to be validated for i18n-safe values.
      */
     private static final String strictI18nAttrs[] = {
-    		"android:text",
-    		"android:title",
-    		"android:titleCondensed",
-    		"android:summary"
+            "android:text",
+            "android:title",
+            "android:titleCondensed",
+            "android:summary"
     };
 
     public TestAttributeSet() {
@@ -38,16 +38,16 @@ public class TestAttributeSet implements AttributeSet {
         this.isSystem = isSystem;
     }
 
-    public TestAttributeSet put(String name, String value) {
-        attributes.put(name, value);
-        return this;
-    }
-
     public TestAttributeSet(Map<String, String> attributes) {
         this.attributes = attributes;
         this.resourceExtractor = new ResourceExtractor();
         this.attrResourceLoader = new AttrResourceLoader(this.resourceExtractor);
         this.viewClass = null;
+    }
+
+    public TestAttributeSet put(String name, String value) {
+        attributes.put(name, value);
+        return this;
     }
 
     @Override
@@ -131,7 +131,11 @@ public class TestAttributeSet implements AttributeSet {
     @Override
     public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
         String value = getAttributeValueInMap(namespace, attribute);
-        return (value != null) ? resourceExtractor.getResourceId(value) : defaultValue;
+        Integer resourceId = defaultValue;
+        if (value != null) {
+            resourceId = resourceExtractor.getResourceId(value);
+        }
+        return resourceId == null ? defaultValue : resourceId;
     }
 
     @Override
@@ -175,18 +179,18 @@ public class TestAttributeSet implements AttributeSet {
     public int getStyleAttribute() {
         throw new UnsupportedOperationException();
     }
-    
+
     public void validateStrictI18n() {
-    	for (int i = 0; i < strictI18nAttrs.length; i++) {
-    		String key = strictI18nAttrs[i];
-    		if (attributes.containsKey(key)) {
-    			String value =  attributes.get(key);
-    			if (!value.startsWith("@string/")) {
-		    	    throw new I18nException("View class: " + (viewClass != null ? viewClass.getName() : "") + 
-		    	    		" has attribute: " + key + " with hardcoded value: \"" + value + "\" and is not i18n-safe.");
-    			}
-    	    }
-    	}
+        for (int i = 0; i < strictI18nAttrs.length; i++) {
+            String key = strictI18nAttrs[i];
+            if (attributes.containsKey(key)) {
+                String value = attributes.get(key);
+                if (!value.startsWith("@string/")) {
+                    throw new I18nException("View class: " + (viewClass != null ? viewClass.getName() : "") +
+                            " has attribute: " + key + " with hardcoded value: \"" + value + "\" and is not i18n-safe.");
+                }
+            }
+        }
     }
 
     private String getAttributeValueInMap(String namespace, String attribute) {
@@ -199,7 +203,7 @@ public class TestAttributeSet implements AttributeSet {
 
             if (mappedKeys[1].equals(attribute) && (
                     namespace == null || namespace != "android" ||
-                    (namespace.equals("android") && namespace.equals(mappedKeys[0])) )) {
+                            (namespace.equals("android") && namespace.equals(mappedKeys[0])))) {
                 value = attributes.get(key);
                 break;
             }
