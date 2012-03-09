@@ -28,52 +28,18 @@
  */
 package com.xtremelabs.robolectric.tester.org.apache.http.impl.client;
 
-import java.io.IOException;
-import java.io.InterruptedIOException;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.Locale;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
-
-import org.apache.http.annotation.NotThreadSafe;
-
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.apache.http.ConnectionReuseStrategy;
-import org.apache.http.Header;
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpEntityEnclosingRequest;
-import org.apache.http.HttpException;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.ProtocolException;
-import org.apache.http.ProtocolVersion;
-import org.apache.http.auth.AuthScheme;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.AuthState;
-import org.apache.http.auth.AuthenticationException;
-import org.apache.http.auth.Credentials;
-import org.apache.http.auth.MalformedChallengeException;
-import org.apache.http.client.AuthenticationHandler;
-import org.apache.http.client.RequestDirector;
-import org.apache.http.client.CredentialsProvider;
-import org.apache.http.client.HttpRequestRetryHandler;
-import org.apache.http.client.NonRepeatableRequestException;
-import org.apache.http.client.RedirectException;
-import org.apache.http.client.RedirectHandler;
-import org.apache.http.client.UserTokenHandler;
+import org.apache.http.*;
+import org.apache.http.annotation.NotThreadSafe;
+import org.apache.http.auth.*;
+import org.apache.http.client.*;
 import org.apache.http.client.methods.AbortableHttpRequest;
 import org.apache.http.client.params.ClientPNames;
 import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.client.utils.URIUtils;
-import org.apache.http.conn.BasicManagedEntity;
-import org.apache.http.conn.ClientConnectionManager;
-import org.apache.http.conn.ClientConnectionRequest;
-import org.apache.http.conn.ConnectionKeepAliveStrategy;
-import org.apache.http.conn.ManagedClientConnection;
+import org.apache.http.conn.*;
 import org.apache.http.conn.params.ConnManagerParams;
 import org.apache.http.conn.routing.BasicRouteDirector;
 import org.apache.http.conn.routing.HttpRoute;
@@ -93,6 +59,14 @@ import org.apache.http.protocol.ExecutionContext;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpProcessor;
 import org.apache.http.protocol.HttpRequestExecutor;
+
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.Locale;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Default implementation of {@link RequestDirector}.
@@ -474,7 +448,7 @@ public class DefaultRequestDirector implements RequestDirector {
                         if (retryReason != null) {
                             throw new NonRepeatableRequestException("Cannot retry request " +
                                 "with a non-repeatable request entity.  The cause lists the " +
-                                "reason the original request failed.", retryReason);
+                                "reason the original request failed: " + retryReason);
                         } else {
                             throw new NonRepeatableRequestException("Cannot retry request " +
                                     "with a non-repeatable request entity.");
