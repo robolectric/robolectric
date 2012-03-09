@@ -13,8 +13,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class FragmentTest {
@@ -45,7 +44,19 @@ public class FragmentTest {
         shadow.createView();
         assertEquals(bundleVal, fragment.argument);
     }
-    
+
+    @Test
+    public void testVisibleAndAdded() throws Exception {
+        DummyFragment fragment = new DummyFragment();
+        assertFalse(fragment.isAdded());
+        assertFalse(fragment.isVisible());
+
+        final ShadowFragment shadow = shadowOf(fragment);
+        shadow.setActivity(new ContainerActivity());
+        assertTrue(fragment.isAdded());
+        assertTrue(fragment.isVisible());
+    }
+
     private static class DummyFragment extends Fragment {
 
         public static final String ARG_KEY = "argy";
