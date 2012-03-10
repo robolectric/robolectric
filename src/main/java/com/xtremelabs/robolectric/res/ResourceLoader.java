@@ -58,10 +58,14 @@ public class ResourceLoader {
     private final ColorResourceLoader colorResourceLoader;
     private final DrawableResourceLoader drawableResourceLoader;
     private final RawResourceLoader rawResourceLoader;
+    private final DimenResourceLoader dimenResourceLoader;
     private boolean isInitialized = false;
     private boolean strictI18n = false;
 
     // TODO: get these value from the xml resources instead [xw 20101011]
+    /**
+     * @deprecated
+     */
     public final Map<Integer, Integer> dimensions = new HashMap<Integer, Integer>();
 
     public ResourceLoader(int sdkVersion, Class rClass, File resourceDir, File assetsDir) throws Exception {
@@ -79,6 +83,7 @@ public class ResourceLoader {
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
         drawableResourceLoader = new DrawableResourceLoader(resourceExtractor, resourceDir);
         rawResourceLoader = new RawResourceLoader(resourceExtractor, resourceDir);
+        dimenResourceLoader = new DimenResourceLoader(resourceExtractor);
 
         this.resourceDir = resourceDir;
     }
@@ -115,6 +120,7 @@ public class ResourceLoader {
                 loadStringResources(localValueResourceDir, systemValueResourceDir);
                 loadPluralsResources(localValueResourceDir, systemValueResourceDir);
                 loadValueResources(localValueResourceDir, systemValueResourceDir);
+                loadDimenResources(localValueResourceDir, systemValueResourceDir);
                 loadViewResources(systemResourceDir, resourceDir);
                 loadMenuResources(resourceDir);
                 loadDrawableResources(resourceDir);
@@ -151,6 +157,11 @@ public class ResourceLoader {
         loadValueResourcesFromDirs(valueResourceLoader, localResourceDir, systemValueResourceDir);
     }
 
+    private void loadDimenResources(File localResourceDir, File systemValueResourceDir) throws Exception {
+        DocumentLoader dimenResourceDocumentLoader = new DocumentLoader(this.dimenResourceLoader);
+        loadValueResourcesFromDirs(dimenResourceDocumentLoader, localResourceDir, systemValueResourceDir);
+    }
+    
     private void loadViewResources(File systemResourceDir, File xmlResourceDir) throws Exception {
         DocumentLoader viewDocumentLoader = new DocumentLoader(viewLoader);
         loadLayoutResourceXmlSubDirs(viewDocumentLoader, xmlResourceDir, false);
@@ -327,6 +338,7 @@ public class ResourceLoader {
         colorResourceLoader = null;
         drawableResourceLoader = null;
         rawResourceLoader = null;
+        dimenResourceLoader = null;
     }
 
     public static ResourceLoader getFrom(Context context) {
@@ -359,6 +371,11 @@ public class ResourceLoader {
     public String getPluralStringValue(int id, int quantity) {
         init();
         return pluralResourceLoader.getValue(id, quantity);
+    }
+    
+    public float getDimenValue(int id) {
+    	init();
+    	return dimenResourceLoader.getValue(id);
     }
     
     public boolean isDrawableXml(int resourceId) {
