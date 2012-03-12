@@ -373,6 +373,16 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
     
     @Implementation
+    public final void dismissDialog(int id) {
+        final Dialog dialog = dialogForId.get(id);
+        if (dialog == null) {
+            throw new IllegalArgumentException();
+        }
+
+        dialog.dismiss();
+    }
+
+    @Implementation
     public final void removeDialog(int id) {
         dialogForId.remove(id);
     }
