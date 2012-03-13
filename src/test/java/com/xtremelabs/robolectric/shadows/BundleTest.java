@@ -7,9 +7,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
+
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -80,5 +80,15 @@ public class BundleTest {
         bundle.putStringArray("foo", new String[] { "a" });
         Assert.assertArrayEquals(new String[] { "a" }, bundle.getStringArray("foo"));
         assertNull(bundle.getStringArray("bar"));
+    }
+    
+    @Test
+    public void testStringArrayList() {
+        ArrayList<String> list = new ArrayList<String>();
+        list.add("a");
+
+        bundle.putStringArrayList("foo", new ArrayList<String>(list));
+        Assert.assertEquals(list, bundle.getStringArrayList("foo"));
+        assertNull(bundle.getStringArrayList("bar"));
     }
 }
