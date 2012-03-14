@@ -20,29 +20,34 @@ import static org.junit.Assert.*;
 public class FragmentTest {
 
     @Test
-    public void testOnCreateView() throws Exception {
+    public void testOnCreateOnResumeOnCreateView() throws Exception {
         DummyFragment fragment = new DummyFragment();
-        final ShadowFragment shadow = shadowOf(fragment);
-        final ContainerActivity activity = new ContainerActivity();
-        shadow.setActivity(activity);
-        shadow.createView();
+        startFragment(fragment);
+
         assertNotNull(fragment.getActivity());
         assertNotNull(fragment.getView());
         TextView tacos = (TextView) fragment.getView().findViewById(R.id.tacos);
         assertNotNull(tacos);
         assertEquals("TACOS", tacos.getText());
+
+        assertEquals(1, fragment.created);
+        assertEquals(2, fragment.viewCreated);
+        assertEquals(3, fragment.resumed);
+
+        assertTrue(fragment.isResumed());
     }
 
-    @Test 
+    @Test
     public void testArguments() {
         DummyFragment fragment = new DummyFragment();
-        final ShadowFragment shadow = shadowOf(fragment);
-        shadow.setActivity(new ContainerActivity());
+
         final Bundle bundle = new Bundle();
         final int bundleVal = 15;
         bundle.putInt(DummyFragment.ARG_KEY, bundleVal);
-        shadow.setArguments(bundle);
-        shadow.createView();
+        fragment.setArguments(bundle);
+
+        startFragment(fragment);
+
         assertEquals(bundleVal, fragment.argument);
     }
     
@@ -110,11 +115,38 @@ public class FragmentTest {
         assertTrue(fragment.isVisible());
     }
 
+    @Test
+    public void testHeadlessFragmentOnCreateIsCalled() throws Exception {
+        DummyHeadlessFragment fragment = new DummyHeadlessFragment();
+        ContainerActivity activity = new ContainerActivity();
+        activity.getSupportFragmentManager().beginTransaction().add(fragment, null).commit();
+        assertTrue(fragment.created);
+    }
+    
+    @Test
+    public void testTargetFragment() throws Exception {
+        DummyFragment fragmentTarget = new DummyFragment();
+        DummyFragment fragment2 = new DummyFragment();
+
+        fragment2.setTargetFragment(fragmentTarget, 0);
+
+        assertSame(fragmentTarget, fragment2.getTargetFragment());
+    }
+
+    private void startFragment(DummyFragment fragment) {
+        new ContainerActivity().getSupportFragmentManager().beginTransaction().add(fragment, null).commit();
+    }
+
     private static class DummyFragment extends Fragment {
 
         public static final String ARG_KEY = "argy";
 
         private Object argument;
+        
+        private int serial;
+        private int created;
+        private int resumed;
+        private int viewCreated;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -122,11 +154,30 @@ public class FragmentTest {
             if (getArguments() != null) {
                 argument = getArguments().get(ARG_KEY);
             }
+
+            created = ++serial;
+        }
+
+        @Override
+        public void onResume() {
+            super.onResume();
+            resumed = ++serial;
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+            viewCreated = ++serial;
             return inflater.inflate(R.layout.fragment_contents, container, false);
+        }
+    }
+    
+    private static class DummyHeadlessFragment extends Fragment {
+        boolean created = false;
+        
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            created = true;
         }
     }
 
