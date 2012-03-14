@@ -53,6 +53,7 @@ public class TestWindow extends Window {
     }
 
     @Override public void setContentView(int layoutResID) {
+        this.contentView = getLayoutInflater().inflate(layoutResID, null);
     }
 
     @Override public void setContentView(View view) {
@@ -72,7 +73,7 @@ public class TestWindow extends Window {
     }
 
     @Override public LayoutInflater getLayoutInflater() {
-        return null;
+        return LayoutInflater.from(Robolectric.application);
     }
 
     @Override public void setTitle(CharSequence title) {
@@ -174,6 +175,11 @@ public class TestWindow extends Window {
 
     @Override public View peekDecorView() {
         return null;
+    }
+
+    @Override
+    public View findViewById(int id) {
+        return getDecorView().findViewById(id);
     }
 
     @Override public Bundle saveHierarchyState() {
