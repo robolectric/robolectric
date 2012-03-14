@@ -139,6 +139,9 @@ public class ShadowFragmentActivity extends ShadowActivity {
                     tagLookup.put(tag, fragment);
                 }
                 shadowFragment.setActivity((FragmentActivity) getRealActivity());
+                fragment.onCreate(null);
+                shadowFragment.createView();
+                shadowFragment.resume();
                 return this;
             }
 

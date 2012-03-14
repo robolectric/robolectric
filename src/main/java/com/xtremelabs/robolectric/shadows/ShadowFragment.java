@@ -26,7 +26,10 @@ public class ShadowFragment {
     private View view;
 
     private int fragmentId;
-    private String tag; 
+    private String tag;
+
+    private Fragment targetFragment;
+    private boolean resumed;
 
     @Implementation
     public void setArguments(Bundle bundle) {
@@ -93,6 +96,26 @@ public class ShadowFragment {
         return fragmentActivity != null;
     }
 
+    @Implementation
+    public Fragment getTargetFragment() {
+        return targetFragment;
+    }
+
+    @Implementation
+    public void setTargetFragment(Fragment targetFragment, int requestCode) {
+        this.targetFragment = targetFragment;
+    }
+    
+    public void resume() {
+        realFragment.onResume();
+        this.resumed = true;
+    }
+    
+    @Implementation
+    public boolean isResumed() {
+        return resumed;
+    }
+
     public void setActivity(FragmentActivity activity) {
         fragmentActivity = activity;
         try {
@@ -105,7 +128,6 @@ public class ShadowFragment {
     }
 
     public void createView() {
-        realFragment.onCreate(null);
         final FragmentActivity activity = getActivity();
         view = realFragment.onCreateView(activity.getLayoutInflater(), null, null);
     }
