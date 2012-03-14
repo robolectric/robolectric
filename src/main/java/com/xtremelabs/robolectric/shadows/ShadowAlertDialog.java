@@ -294,7 +294,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         @Implementation(i18nSafe=false)
         public AlertDialog.Builder setTitle(CharSequence title) {
-            this.title = title.toString();
+            this.title = title == null ? "" : title.toString();
             return realBuilder;
         }
 
@@ -312,7 +312,7 @@ public class ShadowAlertDialog extends ShadowDialog {
 
         @Implementation(i18nSafe=false)
         public AlertDialog.Builder setMessage(CharSequence message) {
-            this.message = message.toString();
+            this.message = message == null ? "" : message.toString();
             return realBuilder;
         }
 
