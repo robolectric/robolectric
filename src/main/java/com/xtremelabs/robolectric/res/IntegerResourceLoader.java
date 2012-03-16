@@ -15,11 +15,10 @@ public class IntegerResourceLoader extends XTagXmlResourceLoader implements Reso
 		return integerResolver.getValue( resourceName );
 	}
 
-	public int getValue( int resourceId, boolean isSystem ){
-		String resourceName = resourceExtractor.getResourceName( resourceId );
-		return getValue(resourceExtractor.getResourceId(resourceName, isSystem));
+	public int getValue( String resourceName, boolean isSystem ) {
+		return getValue( resourceExtractor.getResourceId( resourceName, isSystem ) );
 	}
-	
+
 	@Override
 	public Object convertRawValue( String rawValue ) {
 
@@ -32,7 +31,7 @@ public class IntegerResourceLoader extends XTagXmlResourceLoader implements Reso
 	}
 
 	@Override
-	protected void processNode( Node node, String name, boolean isSystem )  {
+	protected void processNode( Node node, String name, boolean isSystem ) {
 		integerResolver.processResource( name, node.getTextContent(), this, isSystem );
 	}
 

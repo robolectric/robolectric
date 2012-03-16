@@ -45,7 +45,7 @@ public abstract class XTagXmlResourceLoader extends XmlLoader {
 		for ( int i = 0; i < items.getLength(); i++ ) {
 			Node node = items.item( i );
 			String name = node.getAttributes().getNamedItem( "name" ).getNodeValue();
-			processNode( node, name, isSystem);
+			processNode( node, name, isSystem );
 		}
 
 	}
