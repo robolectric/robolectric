@@ -213,6 +213,7 @@ public class ViewLoader extends XmlLoader {
                 transaction.add(id, fragment, tag);
                 transaction.commit();
             } else {
+                // Note that ShadowFragmentActivity calls fragment.onCreate() in the other case.
                 fragment.onCreate(null);
             }
             return fragment.onCreateView(LayoutInflater.from(context), parent, null);
