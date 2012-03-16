@@ -182,6 +182,11 @@ public class ShadowResources {
     }
 
     @Implementation
+    public int getInteger(int id) throws Resources.NotFoundException {
+    	return resourceLoader.getIntegerValue( id );
+    }
+    
+    @Implementation
     public int getDimensionPixelSize(int id) throws Resources.NotFoundException {
         // The int value returned from here is probably going to be handed to TextView.setTextSize(),
         // which takes a float. Avoid int-to-float conversion errors by returning a value generated from this
