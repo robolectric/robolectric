@@ -48,12 +48,12 @@ public class ShadowHtml {
 
         @Override
         public int length() {
-            return 0;
+            return source.length();
         }
 
         @Override
         public char charAt(int i) {
-            return 0;
+            return source.charAt(i);
         }
 
         @Override

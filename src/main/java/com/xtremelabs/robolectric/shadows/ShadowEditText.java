@@ -15,8 +15,6 @@ import com.xtremelabs.robolectric.internal.Implements;
 public class ShadowEditText extends ShadowTextView {
 
     private int maxLength = Integer.MAX_VALUE;
-    private int selectionStart = 0;
-    private int selectionEnd = 0;
 
     public ShadowEditText() {
         focusable = true;
@@ -48,24 +46,15 @@ public class ShadowEditText extends ShadowTextView {
         return (Editable) text;
     }
 
+    @Override
     @Implementation
     public void setSelection(int index) {
-        setSelection(index, index);
+        super.setSelection(index);
     }
 
+    @Override
     @Implementation
     public void setSelection(int start, int end) {
-        selectionStart = start;
-        selectionEnd = end;
-    }
-    
-    @Implementation
-    public int getSelectionStart() {
-        return selectionStart;
-    }
-    
-    @Implementation
-    public int getSelectionEnd() {
-        return selectionEnd;
+        super.setSelection(start, end);
     }
 }

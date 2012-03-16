@@ -23,6 +23,7 @@ public class FakeHttpLayer {
     List<HttpEntityStub.ResponseRule> httpResponseRules = new ArrayList<HttpEntityStub.ResponseRule>();
     HttpResponse defaultHttpResponse;
     private HttpResponse defaultResponse;
+    private boolean interceptHttpRequests = true;
 
     public HttpRequestInfo getLastSentHttpRequestInfo() {
         List<HttpRequestInfo> requestInfos = Robolectric.getFakeHttpLayer().getSentHttpRequestInfos();
@@ -156,6 +157,20 @@ public class FakeHttpLayer {
 
     public void clearPendingHttpResponses() {
         pendingHttpResponses.clear();
+    }
+
+    /**
+     * You can disable Robolectric's fake HTTP layer temporarily
+     * by calling this method.
+     * @param interceptHttpRequests whether all HTTP requests should be
+     *                              intercepted (true by default)
+     */
+    public void interceptHttpRequests(boolean interceptHttpRequests) {
+        this.interceptHttpRequests = interceptHttpRequests;
+    }
+
+    public boolean isInterceptingHttpRequests() {
+        return interceptHttpRequests;
     }
 
     public static class RequestMatcherResponseRule implements HttpEntityStub.ResponseRule {

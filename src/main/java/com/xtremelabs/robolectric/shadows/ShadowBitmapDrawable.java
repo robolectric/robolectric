@@ -57,6 +57,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
      * @return resource id from which this {@code BitmapDrawable} was loaded
      * @deprecated use com.xtremelabs.robolectric.shadows.ShadowBitmap#getLoadedFromResourceId() instead.
      */
+    @Override
     public int getLoadedFromResourceId() {
         return shadowOf(bitmap).getLoadedFromResourceId();
     }

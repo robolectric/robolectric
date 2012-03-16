@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.view.View.VISIBLE;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -41,8 +42,12 @@ public class ShadowTextView extends ShadowView {
     private int textAppearanceId;
     private TransformationMethod transformationMethod;
     private int inputType;
+    protected int selectionStart = 0;
+    protected int selectionEnd = 0;
 
     private List<TextWatcher> watchers = new ArrayList<TextWatcher>();
+    private List<Integer> previousKeyCodes = new ArrayList<Integer>();
+    private List<KeyEvent> previousKeyEvents = new ArrayList<KeyEvent>();
 
     @Override
     public void applyAttributes() {
@@ -71,6 +76,8 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public final void append(CharSequence text) {
+        boolean isSelectStartAtEnd = selectionStart == this.text.length();
+        boolean isSelectEndAtEnd = selectionEnd == this.text.length();
         CharSequence oldValue = this.text;
         StringBuffer sb = new StringBuffer(this.text);
         sb.append(text);
@@ -78,9 +85,15 @@ public class ShadowTextView extends ShadowView {
         sendBeforeTextChanged(sb.toString());
         this.text = sb.toString();
 
+        if (isSelectStartAtEnd) {
+            selectionStart = this.text.length();
+        }
+        if (isSelectEndAtEnd) {
+            selectionEnd = this.text.length();
+        }
+
         sendOnTextChanged(oldValue);
         sendAfterTextChanged();
-
     }
 
     @Implementation
@@ -247,6 +260,8 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public boolean onKeyDown(int keyCode, KeyEvent event) {
+        previousKeyCodes.add(keyCode);
+        previousKeyEvents.add(event);
         if (onKeyListener != null) {
             return onKeyListener.onKey(realView, keyCode, event);
         } else {
@@ -256,11 +271,21 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public boolean onKeyUp(int keyCode, KeyEvent event) {
+        previousKeyCodes.add(keyCode);
+        previousKeyEvents.add(event);
         if (onKeyListener != null) {
             return onKeyListener.onKey(realView, keyCode, event);
         } else {
             return false;
         }
+    }
+
+    public int getPreviousKeyCode(int index) {
+        return previousKeyCodes.get(index);
+    }
+
+    public KeyEvent getPreviousKeyEvent(int index) {
+        return previousKeyEvents.get(index);
     }
 
     @Implementation
@@ -398,7 +423,9 @@ public class ShadowTextView extends ShadowView {
     }
 
     public void triggerEditorAction(int imeAction) {
-        onEditorActionListener.onEditorAction((TextView) realView, imeAction, null);
+        if (onEditorActionListener != null) {
+            onEditorActionListener.onEditorAction((TextView) realView, imeAction, null);
+        }
     }
 
     @Implementation
@@ -426,6 +453,25 @@ public class ShadowTextView extends ShadowView {
         return new TextPaint();
     }
 
+    public void setSelection(int index) {
+        setSelection(index, index);
+    }
+
+    public void setSelection(int start, int end) {
+        selectionStart = start;
+        selectionEnd = end;
+    }
+
+    @Implementation
+    public int getSelectionStart() {
+        return selectionStart;
+    }
+
+    @Implementation
+    public int getSelectionEnd() {
+        return selectionEnd;
+    }
+
     /**
      * @return the list of currently registered watchers/listeners
      */
@@ -434,11 +480,6 @@ public class ShadowTextView extends ShadowView {
     }
 
     public static class CompoundDrawables {
-        public int left;
-        public int top;
-        public int right;
-        public int bottom;
-
         public Drawable leftDrawable;
         public Drawable topDrawable;
         public Drawable rightDrawable;
@@ -452,10 +493,10 @@ public class ShadowTextView extends ShadowView {
         }
 
         public CompoundDrawables(int left, int top, int right, int bottom) {
-            this.left = left;
-            this.top = top;
-            this.right = right;
-            this.bottom = bottom;
+            leftDrawable = left != 0 ? ShadowDrawable.createFromResourceId(left) : null;
+            topDrawable = top != 0 ? ShadowDrawable.createFromResourceId(top) : null;
+            rightDrawable = right != 0 ? ShadowDrawable.createFromResourceId(right) : null;
+            bottomDrawable = bottom != 0 ? ShadowDrawable.createFromResourceId(bottom) : null;
         }
 
         @Override
@@ -465,31 +506,47 @@ public class ShadowTextView extends ShadowView {
 
             CompoundDrawables that = (CompoundDrawables) o;
 
-            if (bottom != that.bottom) return false;
-            if (left != that.left) return false;
-            if (right != that.right) return false;
-            if (top != that.top) return false;
+            if (getBottom() != that.getBottom()) return false;
+            if (getLeft() != that.getLeft()) return false;
+            if (getRight() != that.getRight()) return false;
+            if (getTop() != that.getTop()) return false;
 
             return true;
         }
 
         @Override
         public int hashCode() {
-            int result = left;
-            result = 31 * result + top;
-            result = 31 * result + right;
-            result = 31 * result + bottom;
+            int result = getLeft();
+            result = 31 * result + getTop();
+            result = 31 * result + getRight();
+            result = 31 * result + getBottom();
             return result;
         }
 
         @Override
         public String toString() {
             return "CompoundDrawables{" +
-                    "left=" + left +
-                    ", top=" + top +
-                    ", right=" + right +
-                    ", bottom=" + bottom +
+                    "left=" + getLeft() +
+                    ", top=" + getTop() +
+                    ", right=" + getRight() +
+                    ", bottom=" + getBottom() +
                     '}';
+        }
+
+        public int getLeft() {
+            return shadowOf(leftDrawable).getLoadedFromResourceId();
+        }
+
+        public int getTop() {
+            return shadowOf(topDrawable).getLoadedFromResourceId();
+        }
+
+        public int getRight() {
+            return shadowOf(rightDrawable).getLoadedFromResourceId();
+        }
+
+        public int getBottom() {
+            return shadowOf(bottomDrawable).getLoadedFromResourceId();
         }
     }
 }

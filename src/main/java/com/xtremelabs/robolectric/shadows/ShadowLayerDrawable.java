@@ -7,7 +7,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 @Implements(LayerDrawable.class)
-public class ShadowLayerDrawable {
+public class ShadowLayerDrawable extends ShadowDrawable {
     @RealObject
     protected LayerDrawable realLayerDrawable;
 

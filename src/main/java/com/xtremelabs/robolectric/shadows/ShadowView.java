@@ -20,6 +20,7 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.xtremelabs.robolectric.Robolectric.Reflection.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
@@ -70,6 +71,7 @@ public class ShadowView {
     private boolean didRequestLayout;
     private Drawable background;
     private Animation animation;
+    private ViewTreeObserver viewTreeObserver;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -175,7 +177,7 @@ public class ShadowView {
 
         return null;
     }
-    
+
     @Implementation
     public View findViewWithTag(Object obj) {
         if (obj.equals(this.getTag())) {
@@ -443,7 +445,7 @@ public class ShadowView {
     public void setOnFocusChangeListener(View.OnFocusChangeListener listener) {
         onFocusChangeListener = listener;
     }
-    
+
     @Implementation
     public View.OnFocusChangeListener getOnFocusChangeListener () {
         return onFocusChangeListener;
@@ -838,7 +840,7 @@ public class ShadowView {
     public void scrollTo(int x, int y) {
         this.scrollToCoordinates = new Point(x, y);
     }
-    
+
     @Implementation
     public int getScrollX() {
         return scrollToCoordinates != null ? scrollToCoordinates.x : 0;
@@ -847,5 +849,13 @@ public class ShadowView {
     @Implementation
     public int getScrollY() {
         return scrollToCoordinates != null ? scrollToCoordinates.y : 0;
+    }
+
+    @Implementation
+    public ViewTreeObserver getViewTreeObserver() {
+        if (viewTreeObserver == null) {
+            viewTreeObserver = newInstanceOf(ViewTreeObserver.class);
+        }
+        return viewTreeObserver;
     }
 }

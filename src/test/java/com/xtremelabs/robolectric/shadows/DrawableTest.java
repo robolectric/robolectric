@@ -1,7 +1,9 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.graphics.drawable.Drawable;
+import android.graphics.Canvas;
+import android.graphics.ColorFilter;
 import android.graphics.Rect;
+import android.graphics.drawable.Drawable;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,11 +15,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertFalse;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class DrawableTest {
@@ -79,5 +77,45 @@ public class DrawableTest {
         Drawable drawable = ShadowDrawable.createFromPath("/foo");
         assertNotNull(drawable);
         assertEquals("/foo", ((ShadowBitmapDrawable) shadowOf(drawable)).getPath());
+    }
+
+    @Test
+    public void testGetLoadedFromResourceId_shouldDefaultToNegativeOne() throws Exception {
+        Drawable drawable = new TestDrawable();
+        assertThat(shadowOf(drawable).getLoadedFromResourceId(), is(-1));
+    }
+
+    @Test
+    public void testSetLoadedFromResourceId() throws Exception {
+        Drawable drawable = new TestDrawable();
+        ShadowDrawable shadowDrawable = shadowOf(drawable);
+        shadowDrawable.setLoadedFromResourceId(99);
+        assertThat(shadowDrawable.getLoadedFromResourceId(), is(99));
+    }
+
+    @Test
+    public void testCreateFromResourceId_shouldSetTheId() throws Exception {
+        Drawable drawable = ShadowDrawable.createFromResourceId(34758);
+        ShadowDrawable shadowDrawable = shadowOf(drawable);
+        assertThat(shadowDrawable.getLoadedFromResourceId(), is(34758));
+    }
+
+    private static class TestDrawable extends Drawable {
+        @Override
+        public void draw(Canvas canvas) {
+        }
+
+        @Override
+        public void setAlpha(int alpha) {
+        }
+
+        @Override
+        public void setColorFilter(ColorFilter cf) {
+        }
+
+        @Override
+        public int getOpacity() {
+            return 0;
+        }
     }
 }
