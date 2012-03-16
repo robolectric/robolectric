@@ -14,11 +14,6 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.I18nException;
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -27,6 +22,10 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -208,15 +207,15 @@ public class ViewLoader extends XmlLoader {
             final int id = resourceExtractor.getResourceId(attributes.get("android:id"));
             final String tag = attributes.get("android:tag");
             final Fragment fragment = (Fragment) Class.forName(className).newInstance();
-            fragment.onCreate(null);
-            final View view = fragment.onCreateView(LayoutInflater.from(context), parent, null);
             if (context instanceof FragmentActivity) {
                 final FragmentManager fragmentMgr = ((FragmentActivity) context).getSupportFragmentManager();
                 final FragmentTransaction transaction = fragmentMgr.beginTransaction();
                 transaction.add(id, fragment, tag);
                 transaction.commit();
+            } else {
+                fragment.onCreate(null);
             }
-            return view;
+            return fragment.onCreateView(LayoutInflater.from(context), parent, null);
         }
 
         private void addToParent(ViewGroup parent, View view) {
