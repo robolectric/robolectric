@@ -122,7 +122,7 @@ public class ShadowResources {
     public CharSequence getText(int id) throws Resources.NotFoundException {
         return getString(id);
     }
-
+    
     public void setDensity(float density) {
         this.density = density;
     }
@@ -173,12 +173,19 @@ public class ShadowResources {
     @Implementation
     public float getDimension(int id) throws Resources.NotFoundException {
         // todo: get this value from the xml resources and scale it by display metrics [xw 20101011]
+    	// TODO: The fall-through implementation now gets value from XML resources.  resourceLoader.dimensions should be deprecated 
         if (resourceLoader.dimensions.containsKey(id)) {
             return resourceLoader.dimensions.get(id);
         }
-        return id - 0x7f000000;
+
+        return resourceLoader.getDimenValue(id);
     }
 
+    @Implementation
+    public int getInteger(int id) throws Resources.NotFoundException {
+    	return resourceLoader.getIntegerValue( id );
+    }
+    
     @Implementation
     public int getDimensionPixelSize(int id) throws Resources.NotFoundException {
         // The int value returned from here is probably going to be handed to TextView.setTextSize(),
@@ -208,6 +215,7 @@ public class ShadowResources {
      *
      * @param id    ID to set the dimension for
      * @param value value to be returned
+     * @deprecated
      */
     public void setDimension(int id, int value) {
         resourceLoader.dimensions.put(id, value);

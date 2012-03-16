@@ -61,9 +61,13 @@ public class ResourceExtractor {
     }
 
     public Integer getResourceId(String resourceName, boolean isSystemResource) {
-        if (resourceName == null) {
+        if (resourceName == null ) {
             return null;
         }
+        if (resourceName.equals("@null")) {
+        	return 0;
+        }
+        
         if (resourceName.startsWith("@+id")) {
             resourceName = resourceName.substring(2);
         } else if (resourceName.startsWith("@+android:id")) {
