@@ -50,6 +50,8 @@ public final class R {
         public static final int group_id_1 = nextId++;
 
         public static final int test_submenu_1 = nextId++;
+
+        public static final int fragment = nextId++;
     }
 
     public static final class string {
@@ -112,6 +114,7 @@ public final class R {
         public static final int toplevel_merge = nextId++;
         public static final int tab_activity = nextId++;
         public static final int different_screen_sizes = nextId++;
+        public static final int fragment_activity = nextId++;
     }
 
     public static final class raw {

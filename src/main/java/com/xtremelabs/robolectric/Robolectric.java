@@ -28,6 +28,8 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.*;
 import android.preference.*;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
@@ -177,6 +179,8 @@ public class Robolectric {
                 ShadowExpandableListView.class,
                 ShadowFilter.class,
                 ShadowFloatMath.class,
+                ShadowFragment.class,
+                ShadowFragmentActivity.class,
                 ShadowFrameLayout.class,
                 ShadowGallery.class,
                 ShadowGeocoder.class,
@@ -528,6 +532,14 @@ public class Robolectric {
 
     public static ShadowFilter shadowOf(Filter instance) {
         return (ShadowFilter) shadowOf_(instance);
+    }
+
+    public static ShadowFragment shadowOf(Fragment instance) {
+        return (ShadowFragment) shadowOf_(instance);
+    }
+
+    public static ShadowFragmentActivity shadowOf(FragmentActivity instance) {
+        return (ShadowFragmentActivity) shadowOf_(instance);
     }
 
     public static ShadowFrameLayout shadowOf(FrameLayout instance) {
