@@ -134,6 +134,7 @@ abstract public class ShadowContext {
         clearFiles(FILES_DIR);
         clearFiles(CACHE_DIR);
         clearFiles(EXTERNAL_CACHE_DIR);
+        clearFiles(EXTERNAL_FILES_DIR);
     }
 
     public static void clearFiles(File dir) {

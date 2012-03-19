@@ -28,4 +28,9 @@ public class ResourceExtractorTest {
     public void shouldPrefixAllSystemResourcesWithAndroid() throws Exception {
         assertThat(resourceExtractor.getResourceId("android:id/text1"), equalTo(android.R.id.text1));
     }
+    
+    @Test
+    public void shouldHandleNull() throws Exception {
+        assertThat(resourceExtractor.getLocalResourceId("@null"), equalTo(0));
+    }
 }

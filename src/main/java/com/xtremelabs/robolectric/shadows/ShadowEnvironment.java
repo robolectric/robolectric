@@ -24,7 +24,14 @@ public class ShadowEnvironment {
     
     @Implementation
     public static File getExternalStorageDirectory() {
+    	ShadowContext.EXTERNAL_CACHE_DIR.mkdirs();
 		return ShadowContext.EXTERNAL_CACHE_DIR;
     }
     
+    @Implementation
+    public static File getExternalStoragePublicDirectory(String type) {
+		File f = (type == null) ? ShadowContext.EXTERNAL_FILES_DIR : new File( ShadowContext.EXTERNAL_FILES_DIR, type );
+        f.mkdirs();
+        return f;
+    }
 }
