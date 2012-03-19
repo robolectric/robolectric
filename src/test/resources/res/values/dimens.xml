@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<dimen name="test_dp_dimen">8dp</dimen>
+	<dimen name="test_dip_dimen">20dip</dimen>
+	<dimen name="test_px_dimen">15px</dimen>
+	<dimen name="test_sp_dimen">5sp</dimen>
+</resources>

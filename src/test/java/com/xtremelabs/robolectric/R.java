@@ -132,11 +132,24 @@ public final class R {
     }
 
     public static final class styleable {
-        public static final int[] TitleBar = { id.textStyle };
+        public static final int[] TitleBar = {id.textStyle};
         public static final int TitleBar_textStyle = 0;
 
-        public static final int[] HeaderBar = { id.textStyle2, id.textStyle3 };
+        public static final int[] HeaderBar = {id.textStyle2, id.textStyle3};
         public static final int HeaderBar_textStyle2 = 0;
         public static final int HeaderBar_textStyle3 = 1;
+    }
+
+    public static final class dimen {
+        public static final int test_dp_dimen = nextId++;
+        public static final int test_dip_dimen = nextId++;
+        public static final int test_px_dimen = nextId++;
+        public static final int test_sp_dimen = nextId++;
+    }
+
+    public static final class integer {
+        public static final int test_non_integer = nextId++;
+        public static final int test_integer1 = nextId++;
+        public static final int test_integer2 = nextId++;
     }
 }

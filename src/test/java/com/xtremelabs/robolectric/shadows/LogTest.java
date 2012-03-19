@@ -2,10 +2,18 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.util.Log;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.ByteArrayOutputStream;
+import java.io.PrintStream;
+
 import static junit.framework.Assert.assertEquals;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class LogTest {
@@ -13,7 +21,7 @@ public class LogTest {
     public void d_shouldLogAppropriately() {
         Log.d("tag", "msg");
 
-        assertLogged(ShadowLog.LogType.debug, "tag", "msg", null);
+        assertLogged(Log.DEBUG, "tag", "msg", null);
     }
 
     @Test
@@ -22,14 +30,14 @@ public class LogTest {
 
         Log.d("tag", "msg", throwable);
 
-        assertLogged(ShadowLog.LogType.debug, "tag", "msg", throwable);
+        assertLogged(Log.DEBUG, "tag", "msg", throwable);
     }
 
     @Test
     public void e_shouldLogAppropriately() {
         Log.e("tag", "msg");
 
-        assertLogged(ShadowLog.LogType.error, "tag", "msg", null);
+        assertLogged(Log.ERROR, "tag", "msg", null);
     }
 
     @Test
@@ -38,14 +46,14 @@ public class LogTest {
 
         Log.e("tag", "msg", throwable);
 
-        assertLogged(ShadowLog.LogType.error, "tag", "msg", throwable);
+        assertLogged(Log.ERROR, "tag", "msg", throwable);
     }
 
     @Test
     public void i_shouldLogAppropriately() {
         Log.i("tag", "msg");
 
-        assertLogged(ShadowLog.LogType.info, "tag", "msg", null);
+        assertLogged(Log.INFO, "tag", "msg", null);
     }
 
     @Test
@@ -54,14 +62,14 @@ public class LogTest {
 
         Log.i("tag", "msg", throwable);
 
-        assertLogged(ShadowLog.LogType.info, "tag", "msg", throwable);
+        assertLogged(Log.INFO, "tag", "msg", throwable);
     }
 
     @Test
     public void v_shouldLogAppropriately() {
         Log.v("tag", "msg");
 
-        assertLogged(ShadowLog.LogType.verbose, "tag", "msg", null);
+        assertLogged(Log.VERBOSE, "tag", "msg", null);
     }
 
     @Test
@@ -70,14 +78,14 @@ public class LogTest {
 
         Log.v("tag", "msg", throwable);
 
-        assertLogged(ShadowLog.LogType.verbose, "tag", "msg", throwable);
+        assertLogged(Log.VERBOSE, "tag", "msg", throwable);
     }
 
     @Test
     public void w_shouldLogAppropriately() {
         Log.w("tag", "msg");
 
-        assertLogged(ShadowLog.LogType.warning, "tag", "msg", null);
+        assertLogged(Log.WARN, "tag", "msg", null);
     }
 
     @Test
@@ -86,14 +94,21 @@ public class LogTest {
 
         Log.w("tag", "msg", throwable);
 
-        assertLogged(ShadowLog.LogType.warning, "tag", "msg", throwable);
+        assertLogged(Log.WARN, "tag", "msg", throwable);
+    }
+
+    @Test
+    public void w_shouldLogAppropriately_withJustThrowable() {
+        Throwable throwable = new Throwable();
+        Log.w("tag", throwable);
+        assertLogged(Log.WARN, "tag", null, throwable);
     }
 
     @Test
     public void wtf_shouldLogAppropriately() {
         Log.wtf("tag", "msg");
 
-        assertLogged(ShadowLog.LogType.wtf, "tag", "msg", null);
+        assertLogged(Log.ASSERT, "tag", "msg", null);
     }
 
     @Test
@@ -102,10 +117,53 @@ public class LogTest {
 
         Log.wtf("tag", "msg", throwable);
 
-        assertLogged(ShadowLog.LogType.wtf, "tag", "msg", throwable);
+        assertLogged(Log.ASSERT, "tag", "msg", throwable);
     }
 
-    private void assertLogged(ShadowLog.LogType type, String tag, String msg, Throwable throwable) {
+    @Test
+    public void shouldLogToProvidedStream() throws Exception {
+        final ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        PrintStream old = ShadowLog.stream;
+        try {
+            ShadowLog.stream = new PrintStream(bos);
+            Log.d("tag", "msg");
+            assertThat(new String(bos.toByteArray()), equalTo("D/tag: msg\n"));
+
+            Log.w("tag", new RuntimeException());
+            assertTrue(new String(bos.toByteArray()).contains("RuntimeException"));
+        } finally {
+            ShadowLog.stream = old;
+        }
+    }
+
+    @Test
+    public void infoIsDefaultLoggableLevel() throws Exception {
+        PrintStream old = ShadowLog.stream;
+        ShadowLog.stream = null;
+        assertFalse(Log.isLoggable("FOO", Log.VERBOSE));
+        assertFalse(Log.isLoggable("FOO", Log.DEBUG));
+
+        assertTrue(Log.isLoggable("FOO", Log.INFO));
+        assertTrue(Log.isLoggable("FOO", Log.WARN));
+        assertTrue(Log.isLoggable("FOO", Log.ERROR));
+        assertTrue(Log.isLoggable("FOO", Log.ASSERT));
+        ShadowLog.stream = old;
+    }
+
+    @Test
+    public void shouldAlwaysBeLoggableIfStreamIsSpecified() throws Exception {
+        PrintStream old = ShadowLog.stream;
+        ShadowLog.stream = new PrintStream(new ByteArrayOutputStream());
+        assertTrue(Log.isLoggable("FOO", Log.VERBOSE));
+        assertTrue(Log.isLoggable("FOO", Log.DEBUG));
+        assertTrue(Log.isLoggable("FOO", Log.INFO));
+        assertTrue(Log.isLoggable("FOO", Log.WARN));
+        assertTrue(Log.isLoggable("FOO", Log.ERROR));
+        assertTrue(Log.isLoggable("FOO", Log.ASSERT));
+        ShadowLog.stream = old;
+    }
+
+    private void assertLogged(int type, String tag, String msg, Throwable throwable) {
         ShadowLog.LogItem lastLog = ShadowLog.getLogs().get(0);
         assertEquals(type, lastLog.type);
         assertEquals(msg, lastLog.msg);

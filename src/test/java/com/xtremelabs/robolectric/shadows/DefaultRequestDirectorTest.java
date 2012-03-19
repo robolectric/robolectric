@@ -344,6 +344,6 @@ public class DefaultRequestDirectorTest {
     public void shouldSupportRealHttpRequests() throws Exception {
         Robolectric.getFakeHttpLayer().interceptHttpRequests(false);
         DefaultHttpClient client = new DefaultHttpClient();
-        client.execute(new HttpGet("http://www.this-host-should-not-exist-123456790.org"));
+        client.execute(new HttpGet("http://www.this-host-should-not-exist-123456790.org:999"));
     }
 }

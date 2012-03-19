@@ -9,6 +9,7 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
+import com.xtremelabs.robolectric.shadows.ShadowLog;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
 import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
 import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
@@ -24,8 +25,7 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -47,7 +47,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     private ClassHandler classHandler;
     private RobolectricTestRunnerInterface delegate;
     private DatabaseMap databaseMap;
-    
+
 	// fields in the RobolectricTestRunner in the instrumented ClassLoader
     protected RobolectricConfig robolectricConfig;
 
@@ -104,7 +104,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
                 isInstrumented() ? null : getDefaultLoader(),
                 robolectricConfig, new SQLiteMap());
     }
-    
+
     /**
      * Call this constructor in subclasses in order to specify non-default configuration (e.g. location of the
      * AndroidManifest.xml file, resource directory, and DatabaseMap).
@@ -183,8 +183,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader classLoader, RobolectricConfig robolectricConfig) throws InitializationError {
         this(testClass, classHandler, classLoader, robolectricConfig, new SQLiteMap());
     }
-        
-    
+
+
     /**
      * This is not the constructor you are looking for... probably. This constructor creates a bridge between the test
      * runner called by JUnit and a second instance of the test runner that is loaded via the instrumenting class
@@ -203,15 +203,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      */
     protected RobolectricTestRunner(final Class<?> testClass, final ClassHandler classHandler, final RobolectricClassLoader classLoader, final RobolectricConfig robolectricConfig, final DatabaseMap map) throws InitializationError {
         super(isInstrumented() ? testClass : classLoader.bootstrap(testClass));
-                
+
         if (!isInstrumented()) {
             this.classHandler = classHandler;
             this.classLoader = classLoader;
             this.robolectricConfig = robolectricConfig;
             this.databaseMap = setupDatabaseMap(testClass, map);
-            
+
             Thread.currentThread().setContextClassLoader(classLoader);
-            
+
             delegateLoadingOf(Uri__FromAndroid.class.getName());
             delegateLoadingOf(RobolectricTestRunnerInterface.class.getName());
             delegateLoadingOf(RealObject.class.getName());
@@ -345,6 +345,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     public void setupApplicationState(final RobolectricConfig robolectricConfig) {
+        setupLogging();
         ResourceLoader resourceLoader = createResourceLoader(robolectricConfig);
 
         Robolectric.bindDefaultShadowClasses();
@@ -353,14 +354,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         resourceLoader.setLayoutQualifierSearchPath();
         Robolectric.resetStaticState();
         resetStaticState();
-        
+
         DatabaseConfig.setDatabaseMap(this.databaseMap);//Set static DatabaseMap in DBConfig
-        
+
         Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
     }
 
-    
-    
+
+
     /**
      * Override this method to bind your own shadow classes
      */
@@ -372,7 +373,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      */
     protected void resetStaticState() {
     }
-    
+
     /**
      * Sets Robolectric config to determine if Robolectric should blacklist API calls that are not
      * I18N/L10N-safe.
@@ -387,25 +388,25 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * <p/>
      *
      * By default, I18n-strict mode is disabled.
-     * 
+     *
      * @param method
      * @param robolectricConfig
      */
     private void setupI18nStrictState(Method method, RobolectricConfig robolectricConfig) {
     	// Global
     	boolean strictI18n = globalI18nStrictEnabled();
- 
+
     	// Test case class
     	Annotation[] annos = method.getDeclaringClass().getAnnotations();
     	strictI18n = lookForI18nAnnotations(strictI18n, annos);
-    	
+
     	// Test case methods
     	annos = method.getAnnotations();
     	strictI18n = lookForI18nAnnotations(strictI18n, annos);
 
 		robolectricConfig.setStrictI18n(strictI18n);
     }
-    
+
     /**
      * Default implementation of global switch for i18n-strict mode.
      * To enable i18n-strict mode globally, set the system property
@@ -414,7 +415,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * <p/>
      * Subclasses can override this method and establish their own policy
      * for enabling i18n-strict mode.
-     * 
+     *
      * @return
      */
     protected boolean globalI18nStrictEnabled() {
@@ -425,7 +426,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * As test methods are loaded by the delegate's class loader, the normal
  	 * method#isAnnotationPresent test fails. Look at string versions of the
      * annotation names to test for their presence.
-     * 
+     *
      * @param strictI18n
      * @param annos
      * @return
@@ -444,6 +445,31 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     	}
 		return strictI18n;
 	}
+
+    private void setupLogging() {
+        String logging = System.getProperty("robolectric.logging");
+        if (logging != null && ShadowLog.stream == null) {
+            PrintStream stream = null;
+            if ("stdout".equalsIgnoreCase(logging)) {
+                stream = System.out;
+            } else if ("stderr".equalsIgnoreCase(logging)) {
+                stream = System.err;
+            } else {
+                try {
+                    final PrintStream file = new PrintStream(new FileOutputStream(logging));
+                    stream = file;
+                    Runtime.getRuntime().addShutdownHook(new Thread() {
+                        @Override public void run() {
+                            try { file.close(); } catch (Exception ignored) { }
+                        }
+                    });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+            ShadowLog.stream = stream;
+        }
+    }
 
     /**
      * Override this method if you want to provide your own implementation of Application.
@@ -485,14 +511,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
         return projectPackage + ".R";
     }
-       
+
     /*
      * Specifies what database to use for testing (ex: H2 or Sqlite),
      * this will load H2 by default, the SQLite TestRunner version will override this.
      */
     protected DatabaseMap setupDatabaseMap(Class<?> testClass, DatabaseMap map) {
     	DatabaseMap dbMap = map;
-  
+
     	if (testClass.isAnnotationPresent(UsingDatabaseMap.class)) {
 	    	UsingDatabaseMap usingMap = testClass.getAnnotation(UsingDatabaseMap.class);
 	    	if(usingMap.value()!=null){
@@ -504,7 +530,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     	}
     	return dbMap;
     }
-    
+
     public DatabaseMap getDatabaseMap() {
 		return databaseMap;
 	}
@@ -512,5 +538,5 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 	public void setDatabaseMap(DatabaseMap databaseMap) {
 		this.databaseMap = databaseMap;
 	}
-	
+
 }
