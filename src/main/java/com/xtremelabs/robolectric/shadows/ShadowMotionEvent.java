@@ -131,6 +131,12 @@ public class ShadowMotionEvent {
         return 1.0f;
     }
 
+    @Implementation
+    public final void setLocation(float x, float y) {
+        this.x[0] = x;
+        this.y[0] = y;
+    }
+
     public MotionEvent setPointer2(float x, float y) {
         this.x[1] = x;
         this.y[1] = y;
