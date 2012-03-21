@@ -56,6 +56,14 @@ public class IntentTest {
     }
 
     @Test
+    public void testFloatExtra() throws Exception {
+        Intent intent = new Intent();
+        assertSame(intent, intent.putExtra("foo", 2f));
+        assertEquals(2f, intent.getExtras().get("foo"));
+        assertEquals(2f, intent.getFloatExtra("foo", -1));
+    }
+
+    @Test
     public void testIntArrayExtra() throws Exception {
         Intent intent = new Intent();
         int[] array = new int[2];
