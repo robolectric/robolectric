@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.R;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -141,6 +142,8 @@ public class ShadowFragmentActivity extends ShadowActivity {
                 shadowFragment.setActivity((FragmentActivity) getRealActivity());
                 fragment.onCreate(null);
                 shadowFragment.createView();
+                if (containerViewId == R.id.content) setContentView(fragment.getView());
+                fragment.onActivityCreated(null);
                 shadowFragment.resume();
                 return this;
             }

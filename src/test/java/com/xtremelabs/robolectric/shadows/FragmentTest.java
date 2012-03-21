@@ -22,7 +22,8 @@ public class FragmentTest {
     @Test
     public void testOnCreateOnResumeOnCreateView() throws Exception {
         DummyFragment fragment = new DummyFragment();
-        startFragment(fragment);
+        ContainerActivity activity = new ContainerActivity();
+        startFragment(activity, fragment);
 
         assertNotNull(fragment.getActivity());
         assertNotNull(fragment.getView());
@@ -32,9 +33,12 @@ public class FragmentTest {
 
         assertEquals(1, fragment.created);
         assertEquals(2, fragment.viewCreated);
-        assertEquals(3, fragment.resumed);
+        assertEquals(3, fragment.activityCreated);
+        assertEquals(4, fragment.resumed);
 
         assertTrue(fragment.isResumed());
+        
+        assertSame(fragment.getView(), shadowOf(activity).getContentView());
     }
 
     @Test
@@ -134,7 +138,13 @@ public class FragmentTest {
     }
 
     private void startFragment(DummyFragment fragment) {
-        new ContainerActivity().getSupportFragmentManager().beginTransaction().add(fragment, null).commit();
+        ContainerActivity containerActivity = new ContainerActivity();
+        startFragment(containerActivity, fragment);
+    }
+
+    private void startFragment(ContainerActivity containerActivity, DummyFragment fragment) {
+        containerActivity.getSupportFragmentManager().beginTransaction()
+                .add(android.R.id.content, fragment, null).commit();
     }
 
     private static class DummyFragment extends Fragment {
@@ -145,6 +155,7 @@ public class FragmentTest {
         
         private int serial;
         private int created;
+        private int activityCreated;
         private int resumed;
         private int viewCreated;
 
@@ -156,6 +167,12 @@ public class FragmentTest {
             }
 
             created = ++serial;
+        }
+
+        @Override
+        public void onActivityCreated(Bundle savedInstanceState) {
+            super.onActivityCreated(savedInstanceState);
+            activityCreated = ++serial;
         }
 
         @Override
