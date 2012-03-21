@@ -19,13 +19,8 @@ import java.util.Set;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class IntentTest {
@@ -171,6 +166,8 @@ public class IntentTest {
         intent.setClassName("package.name", thisClass.getName());
         assertSame(thisClass.getName(), intent.getComponent().getClassName());
         assertEquals("package.name", intent.getComponent().getPackageName());
+        ShadowIntent si = shadowOf(intent);
+        assertSame(si.getIntentClass(), thisClass);
     }
 
     @Test

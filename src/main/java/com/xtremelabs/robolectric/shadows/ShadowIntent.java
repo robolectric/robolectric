@@ -140,6 +140,11 @@ public class ShadowIntent {
     @Implementation
     public Intent setClassName(String packageName, String className) {
         componentName = new ComponentName(packageName, className);
+        try {
+            this.intentClass = Class.forName(className);
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
         return realIntent;
     }
 

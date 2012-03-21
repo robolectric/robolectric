@@ -71,4 +71,13 @@ public class MotionEventTest {
         assertEquals(1, event.findPointerIndex(1));
         assertEquals(-1, event.findPointerIndex(3));
     }
+
+    @Test
+    public void canSetMotionEventLocation() throws Exception {
+        assertEquals(5.0f, event.getX(), 0.0f);
+        assertEquals(10.0f, event.getY(), 0.0f);
+        shadowMotionEvent.setLocation(10.0f, 20.0f);
+        assertEquals(10.0f, event.getX(), 0.0f);
+        assertEquals(20.0f, event.getY(), 0.0f);
+    }
 }
