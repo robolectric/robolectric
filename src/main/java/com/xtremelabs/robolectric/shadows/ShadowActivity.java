@@ -33,7 +33,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextWrapper {
     @RealObject
-    private Activity realActivity;
+    protected Activity realActivity;
 
     private Intent intent;
     View contentView;
@@ -371,7 +371,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     public final void showDialog(int id) {
         showDialog(id, null);
     }
-    
+
     @Implementation
     public final void removeDialog(int id) {
         dialogForId.remove(id);
@@ -434,7 +434,7 @@ public class ShadowActivity extends ShadowContextWrapper {
         pendingTransitionEnterAnimResId = enterAnim;
         pendingTransitionExitAnimResId = exitAnim;
     }
-    
+
     public Dialog getDialogById(int dialogId) {
     	return dialogForId.get(dialogId);
     }
