@@ -127,5 +127,10 @@ public class TestFragmentManager extends FragmentManager {
         }
 
         shadowOf(fragment).setView(view);
+        shadowOf(fragment).setActivity(activity);
+    }
+
+    public HashMap<Integer, Fragment> getFragments() {
+        return new HashMap<Integer, Fragment>(fragmentsById);
     }
 }

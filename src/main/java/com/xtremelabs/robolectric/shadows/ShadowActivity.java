@@ -6,12 +6,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.View;
-import android.view.Window;
-import android.view.WindowManager;
+import android.view.*;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -371,7 +366,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     public final void showDialog(int id) {
         showDialog(id, null);
     }
-    
+
     @Implementation
     public final void removeDialog(int id) {
         dialogForId.remove(id);
@@ -434,8 +429,25 @@ public class ShadowActivity extends ShadowContextWrapper {
         pendingTransitionEnterAnimResId = enterAnim;
         pendingTransitionExitAnimResId = exitAnim;
     }
-    
+
     public Dialog getDialogById(int dialogId) {
-    	return dialogForId.get(dialogId);
+        return dialogForId.get(dialogId);
+    }
+
+    @Implementation
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        onRestoreInstanceState_forBogusActivityShadows(savedInstanceState);
+    }
+
+    protected void onRestoreInstanceState_forBogusActivityShadows(Bundle savedInstanceState) {
+    }
+
+    @Implementation
+    public void onSaveInstanceState(Bundle outState) {
+        onSaveInstanceState_forBogusActivityShadows(outState);
+    }
+
+    protected void onSaveInstanceState_forBogusActivityShadows(Bundle outState) {
+
     }
 }

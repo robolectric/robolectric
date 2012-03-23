@@ -92,6 +92,13 @@ public class FragmentManagerTest {
         // pass
     }
 
+    @Test
+    public void addFragment_shouldSetFragmentsActivity() throws Exception {
+        manager.addFragment(0, null, fragment, false);
+
+        assertSame(activity, fragment.getActivity());
+    }
+
     private static class TestFragmentActivity extends FragmentActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
