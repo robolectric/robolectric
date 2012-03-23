@@ -53,11 +53,18 @@ public class FragmentManagerTest {
     public void addFragment_shouldCallLifecycleMethods() throws Exception {
         manager.addFragment(View.NO_ID, null, fragment, false);
 
-        assertTrue(fragment.onAttachWasCalled);
+        fragment.transcript.assertEventsSoFar(
+                "onAttach",
+                "onCreate",
+                "onCreateView",
+                "onViewCreated",
+                "onActivityCreated"
+        );
+
         assertSame(activity, fragment.onAttachActivity);
-        assertTrue(fragment.onCreateWasCalled);
-        assertTrue(fragment.onCreateViewWasCalled);
         assertEquals(fragment.onCreateViewInflater, activity.getLayoutInflater());
+        assertSame(activity, fragment.getActivity());
+        assertNotNull(fragment.getView());
     }
 
     @Test
