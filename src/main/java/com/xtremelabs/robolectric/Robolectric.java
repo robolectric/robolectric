@@ -960,6 +960,15 @@ public class Robolectric {
     }
 
     /**
+     * Sets up an HTTP response to be returned by calls to Apache's {@code HttpClient} implementers.
+     *
+     * @param httpResponseGenerator an HttpResponseGenerator that will provide responses
+     */
+    public static void addPendingHttpResponse(HttpResponseGenerator httpResponseGenerator) {
+        getFakeHttpLayer().addPendingHttpResponse(httpResponseGenerator);
+    }
+
+    /**
      * Accessor to obtain HTTP requests made during the current test in the order in which they were made.
      *
      * @param index index of the request to retrieve.

@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.shadows.HttpResponseGenerator;
 import org.apache.http.*;
 import org.apache.http.client.RequestDirector;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
@@ -18,7 +19,7 @@ import java.util.Map;
 import java.util.regex.Pattern;
 
 public class FakeHttpLayer {
-    List<HttpResponse> pendingHttpResponses = new ArrayList<HttpResponse>();
+    List<HttpResponseGenerator> pendingHttpResponses = new ArrayList<HttpResponseGenerator>();
     List<HttpRequestInfo> httpRequestInfos = new ArrayList<HttpRequestInfo>();
     List<HttpEntityStub.ResponseRule> httpResponseRules = new ArrayList<HttpEntityStub.ResponseRule>();
     HttpResponse defaultHttpResponse;
@@ -37,8 +38,17 @@ public class FakeHttpLayer {
         addPendingHttpResponse(new TestHttpResponse(statusCode, responseBody, headers));
     }
 
-    public void addPendingHttpResponse(HttpResponse httpResponse) {
-        pendingHttpResponses.add(httpResponse);
+    public void addPendingHttpResponse(final HttpResponse httpResponse) {
+        addPendingHttpResponse(new HttpResponseGenerator() {
+            @Override
+            public HttpResponse getResponse(HttpRequest request) {
+                return httpResponse;
+            }
+        });
+    }
+
+    public void addPendingHttpResponse(HttpResponseGenerator httpResponseGenerator) {
+        pendingHttpResponses.add(httpResponseGenerator);
     }
 
     public void addHttpResponseRule(String method, String uri, HttpResponse response) {
@@ -81,7 +91,7 @@ public class FakeHttpLayer {
 
     private HttpResponse findResponse(HttpRequest httpRequest) throws HttpException, IOException {
         if (!pendingHttpResponses.isEmpty()) {
-            return pendingHttpResponses.remove(0);
+            return pendingHttpResponses.remove(0).getResponse(httpRequest);
         }
 
         for (HttpEntityStub.ResponseRule httpResponseRule : httpResponseRules) {

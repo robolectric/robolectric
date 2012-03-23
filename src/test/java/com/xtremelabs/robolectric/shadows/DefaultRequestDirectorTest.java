@@ -346,4 +346,20 @@ public class DefaultRequestDirectorTest {
         DefaultHttpClient client = new DefaultHttpClient();
         client.execute(new HttpGet("http://www.this-host-should-not-exist-123456790.org:999"));
     }
+
+    @Test
+    public void shouldReturnResponseFromHttpResponseGenerator() throws Exception {
+        Robolectric.addPendingHttpResponse(new HttpResponseGenerator() {
+            @Override
+            public HttpResponse getResponse(HttpRequest request) {
+                return new TestHttpResponse(200, "a happy response body");
+            }
+        });
+        HttpResponse response = requestDirector.execute(null, new HttpGet("http://example.com"), null);
+
+        assertNotNull(response);
+        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
+        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a happy response body"));
+    }
+
 }
