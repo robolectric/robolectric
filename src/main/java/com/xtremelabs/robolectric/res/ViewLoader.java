@@ -196,7 +196,6 @@ public class ViewLoader extends XmlLoader {
             }
 
             FragmentActivity activity = (FragmentActivity) context;
-            shadowOf(fragment).setActivity(activity);
 
             String tag = attributeSet.getAttributeValue("android", "tag");
             int id = attributeSet.getAttributeResourceValue("android", "id", 0);

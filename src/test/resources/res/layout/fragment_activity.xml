@@ -15,4 +15,9 @@
             android:name="com.xtremelabs.robolectric.shadows.TestFragment"
             />
 
+    <LinearLayout
+            android:id="@+id/dynamic_fragment_container"
+            />
+
+
 </LinearLayout>

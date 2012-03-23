@@ -111,14 +111,19 @@ public class TestFragmentManager extends FragmentManager {
         fragmentsById.put(containerViewId, fragment);
         fragmentsByTag.put(tag, fragment);
 
+        shadowOf(fragment).setActivity(activity);
         fragment.onAttach(activity);
         fragment.onCreate(null);
+
         ViewGroup container = null;
         if (shadowOf(activity).getContentView() != null) {
             container = (ViewGroup) activity.findViewById(containerViewId);
         }
 
         View view = fragment.onCreateView(activity.getLayoutInflater(), container, null);
+        shadowOf(fragment).setView(view);
+
+        fragment.onViewCreated(view, null);
         if (container != null) {
             if (replace) {
                 container.removeAllViews();
@@ -126,6 +131,10 @@ public class TestFragmentManager extends FragmentManager {
             container.addView(view);
         }
 
-        shadowOf(fragment).setView(view);
+        fragment.onActivityCreated(null);
+    }
+
+    public HashMap<Integer, Fragment> getFragments() {
+        return new HashMap<Integer, Fragment>(fragmentsById);
     }
 }
