@@ -161,6 +161,10 @@ public class ShadowActivity extends ShadowContextWrapper {
         finishWasCalled = true;
     }
 
+    public void resetIsFinishing() {
+        finishWasCalled = false;
+    }
+
     /**
      * @return whether {@link #finish()} was called
      */
