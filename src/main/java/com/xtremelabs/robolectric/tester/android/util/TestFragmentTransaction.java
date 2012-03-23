@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.tester.android.util;
 
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
@@ -143,7 +144,12 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     @Override
     public int commit() {
-        fragmentManager.addFragment(containerViewId, tag, fragment, isReplacing);
+        new Handler().post(new Runnable() {
+            @Override
+            public void run() {
+                fragmentManager.addFragment(containerViewId, tag, fragment, isReplacing);
+            }
+        });
         return 0;
     }
 

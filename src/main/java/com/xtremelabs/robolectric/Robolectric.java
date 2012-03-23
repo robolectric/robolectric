@@ -28,6 +28,7 @@ import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.os.*;
 import android.preference.*;
+import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.telephony.PhoneNumberUtils;
@@ -173,6 +174,7 @@ public class Robolectric {
                 ShadowDisplay.class,
                 ShadowDrawable.class,
                 ShadowDialog.class,
+                ShadowDialogFragment.class,
                 ShadowDialogPreference.class,
                 ShadowEditText.class,
                 ShadowEnvironment.class,
@@ -512,6 +514,10 @@ public class Robolectric {
 
     public static ShadowDialog shadowOf(Dialog instance) {
         return (ShadowDialog) shadowOf_(instance);
+    }
+
+    public static ShadowDialogFragment shadowOf(DialogFragment instance) {
+        return (ShadowDialogFragment) shadowOf_(instance);
     }
 
     public static ShadowDialogPreference shadowOf(DialogPreference instance) {
