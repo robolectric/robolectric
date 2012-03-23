@@ -28,7 +28,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextWrapper {
     @RealObject
-    private Activity realActivity;
+    protected Activity realActivity;
 
     private Intent intent;
     View contentView;

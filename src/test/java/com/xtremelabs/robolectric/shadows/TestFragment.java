@@ -7,6 +7,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.util.Transcript;
 
 public class TestFragment extends Fragment {
 
@@ -20,16 +21,20 @@ public class TestFragment extends Fragment {
     public boolean onStartWasCalled;
     public boolean onResumeWasCalled;
     public Activity onAttachActivity;
+    
+    Transcript transcript = new Transcript();
 
     @Override
     public void onAttach(Activity activity) {
         onAttachWasCalled = true;
         onAttachActivity = activity;
+        transcript.add("onAttach");
     }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         onCreateWasCalled = true;
+        transcript.add("onCreate");
     }
 
     @Override
@@ -38,21 +43,30 @@ public class TestFragment extends Fragment {
         onCreateViewInflater = inflater;
         onCreateViewReturnValue = new View(Robolectric.application.getApplicationContext());
         onCreateViewReturnValue.setId(FRAGMENT_VIEW_ID);
+        transcript.add("onCreateView");
         return onCreateViewReturnValue;
+    }
+
+    @Override
+    public void onViewCreated(View view, Bundle savedInstanceState) {
+        transcript.add("onViewCreated");
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         onActivityCreatedWasCalled = true;
+        transcript.add("onActivityCreated");
     }
 
     @Override
     public void onStart() {
         onStartWasCalled = true;
+        transcript.add("onStart");
     }
 
     @Override
     public void onResume() {
         onResumeWasCalled = true;
+        transcript.add("onResume");
     }
 }
