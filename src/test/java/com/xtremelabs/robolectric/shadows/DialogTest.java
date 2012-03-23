@@ -3,12 +3,15 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.widget.TextView;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
 import static junit.framework.Assert.*;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -146,6 +149,13 @@ public class DialogTest {
         assertEquals(TestDialog.class, ShadowDialog.getLatestDialog().getClass());
     }
 
+    @Test
+    public void shouldFindViewsWithinAContentViewThatWasPreviouslySet() throws Exception {
+        Dialog dialog = new Dialog(Robolectric.application);
+        dialog.setContentView(dialog.getLayoutInflater().inflate(R.layout.main, null));
+        assertInstanceOf(TextView.class, dialog.findViewById(R.id.title));
+    }
+    
     private static class TestDialog extends Dialog {
         boolean onStartCalled = false;
         boolean wasDismissed =  false;

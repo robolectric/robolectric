@@ -71,11 +71,16 @@ public class ShadowDialog {
     }
 
     @Implementation
+    public void setContentView(View view) {
+        inflatedView = view;
+    }
+
+    @Implementation
     public void setTitle(int stringResourceId) {
         this.title = context.getResources().getText(stringResourceId);
     }
 
-    @Implementation(i18nSafe=false)
+    @Implementation(i18nSafe = false)
     public void setTitle(CharSequence title) {
         this.title = title;
     }
@@ -110,7 +115,7 @@ public class ShadowDialog {
                 Method onCreateMethod = Dialog.class.getDeclaredMethod("onCreate", Bundle.class);
                 onCreateMethod.setAccessible(true);
                 onCreateMethod.invoke(realDialog, (Bundle) null);
-            }                
+            }
 
             Method onStartMethod = Dialog.class.getDeclaredMethod("onStart");
             onStartMethod.setAccessible(true);
@@ -143,10 +148,11 @@ public class ShadowDialog {
 
     @Implementation
     public View findViewById(int viewId) {
+        if (inflatedView != null) {
+            return inflatedView.findViewById(viewId);
+        }
         if (layoutId > 0 && context != null) {
-            if (inflatedView == null) {
-                inflatedView = ShadowLayoutInflater.from(context).inflate(layoutId, null);
-            }
+            inflatedView = ShadowLayoutInflater.from(context).inflate(layoutId, null);
             return inflatedView.findViewById(viewId);
         }
         return null;
@@ -160,14 +166,14 @@ public class ShadowDialog {
     public void setOnDismissListener(DialogInterface.OnDismissListener onDismissListener) {
         this.onDismissListener = onDismissListener;
     }
-    
+
     @Implementation
     public void setCancelable(boolean flag) {
-    	isCancelable = flag;
+        isCancelable = flag;
     }
-    
+
     public boolean isCancelable() {
-    	return isCancelable;
+        return isCancelable;
     }
 
     @Implementation
@@ -241,7 +247,7 @@ public class ShadowDialog {
                 }
             }
         }
-      return false;
+        return false;
     }
 
     public static List<Dialog> getShownDialogs() {
