@@ -34,8 +34,6 @@ public class ShadowFragmentActivity extends ShadowActivity {
     public void onSaveInstanceState_forBogusActivityShadows(Bundle outState) {
         // We cannot figure out how to pass the RobolectricWiring test without doing this incredibly
         // terrible looking hack.  I am very sorry.
-        super.onSaveInstanceState(outState);
-
         List<SerializedFragmentState> fragmentStates = new ArrayList<SerializedFragmentState>();
 
         for (Map.Entry<Integer, Fragment> entry : ((TestFragmentManager) fragmentManager).getFragments().entrySet()) {
@@ -49,8 +47,6 @@ public class ShadowFragmentActivity extends ShadowActivity {
     public void onRestoreInstanceState_forBogusActivityShadows(Bundle savedInstanceState) {
         // We cannot figure out how to pass the RobolectricWiring test without doing this incredibly
         // terrible looking hack.  I am very sorry.
-        super.onRestoreInstanceState(savedInstanceState);
-
         Object[] stuff = (Object[]) savedInstanceState.getSerializable(FRAGMENTS_TAG);
 
         for (Object o : stuff) {
