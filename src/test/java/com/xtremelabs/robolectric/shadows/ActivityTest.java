@@ -244,6 +244,29 @@ public class ActivityTest {
     }
 
     @Test
+    public void showDialog_shouldShowDialog() throws Exception {
+        final DialogCreatingActivity activity = new DialogCreatingActivity();
+        activity.showDialog(1);
+        Dialog dialog = ShadowDialog.getLatestDialog();
+        assertTrue(dialog.isShowing());
+    }
+
+    @Test
+    public void dismissDialog_shouldDismissPreviouslyShownDialog() throws Exception {
+        final DialogCreatingActivity activity = new DialogCreatingActivity();
+        activity.showDialog(1);
+        activity.dismissDialog(1);
+        Dialog dialog = ShadowDialog.getLatestDialog();
+        assertFalse(dialog.isShowing());
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void dismissDialog_shouldThrowExceptionIfDialogWasNotPreviouslyShown() throws Exception {
+        final DialogCreatingActivity activity = new DialogCreatingActivity();
+        activity.dismissDialog(1);
+    }
+
+    @Test
     public void removeDialog_shouldCreateDialogAgain() {
         final DialogCreatingActivity activity = new DialogCreatingActivity();
   
@@ -257,7 +280,7 @@ public class ActivityTest {
         Dialog secondDialog = ShadowDialog.getLatestDialog();
         
         assertNotSame("dialogs should not be the same instance", firstDialog, secondDialog);
-    }    
+    }
 
     @Test
     public void shouldCallOnCreateDialogFromShowDialog() {
