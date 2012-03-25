@@ -445,13 +445,4 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     protected void onRestoreInstanceState_forBogusActivityShadows(Bundle savedInstanceState) {
     }
-
-    @Implementation
-    public void onSaveInstanceState(Bundle outState) {
-        onSaveInstanceState_forBogusActivityShadows(outState);
-    }
-
-    protected void onSaveInstanceState_forBogusActivityShadows(Bundle outState) {
-
-    }
 }
