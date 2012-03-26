@@ -160,6 +160,16 @@ public class ShadowBundle {
     }
 
     @Implementation
+    public void putIntegerArrayList(String key, ArrayList<Integer> value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public ArrayList<Integer> getIntegerArrayList(String key) {
+        return (ArrayList<Integer>) map.get(key);
+    }
+
+    @Implementation
     public void putAll(Bundle bundle) {
     	map.putAll(((ShadowBundle) Robolectric.shadowOf_(bundle)).map);
     }

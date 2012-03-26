@@ -8,6 +8,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -351,6 +352,16 @@ public class IntentTest {
         intent.putStringArrayListExtra("KEY", strings);
         assertThat(intent.getStringArrayListExtra("KEY"), equalTo(strings));
         assertThat(Robolectric.shadowOf(intent.getExtras()).getStringArrayList("KEY"), equalTo(strings));
+    }
+    
+    @Test
+    public void putIntegerArrayListExtra_addsListToExtras() {
+        Intent intent = new Intent();
+        final ArrayList<Integer> integers = new ArrayList<Integer>(Arrays.asList(100, 200, 300));
+
+        intent.putIntegerArrayListExtra("KEY", integers);
+        assertThat(intent.getIntegerArrayListExtra("KEY"), equalTo(integers));
+        assertThat(Robolectric.shadowOf(intent.getExtras()).getIntegerArrayList("KEY"), equalTo(integers));
     }
 
     private static class TestSerializable implements Serializable {
