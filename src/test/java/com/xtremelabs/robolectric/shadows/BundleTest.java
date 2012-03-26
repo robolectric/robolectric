@@ -91,4 +91,14 @@ public class BundleTest {
         Assert.assertEquals(list, bundle.getStringArrayList("foo"));
         assertNull(bundle.getStringArrayList("bar"));
     }
+
+    @Test
+    public void testIntegerArrayList() {
+        ArrayList<Integer> list = new ArrayList<Integer>();
+        list.add(100);
+
+        bundle.putIntegerArrayList("foo", new ArrayList<Integer>(list));
+        Assert.assertEquals(list, bundle.getIntegerArrayList("foo"));
+        assertNull(bundle.getIntegerArrayList("bar"));
+    }
 }
