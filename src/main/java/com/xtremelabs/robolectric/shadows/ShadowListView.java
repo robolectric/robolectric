@@ -11,8 +11,6 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListView.class)
 public class ShadowListView extends ShadowAbsListView {
@@ -111,37 +109,6 @@ public class ShadowListView extends ShadowAbsListView {
     @Implementation
     public void removeViewAt(int index) {
         throw new UnsupportedOperationException();
-    }
-
-    public boolean performItemClick(int position) {
-        return realListView.performItemClick(realListView.getChildAt(position), position, realListView.getItemIdAtPosition(position));
-    }
-
-    public int findIndexOfItemContainingText(String targetText) {
-        for (int i = 0; i < realListView.getChildCount(); i++) {
-            View childView = realListView.getChildAt(i);
-            String innerText = shadowOf(childView).innerText();
-            if (innerText.contains(targetText)) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    public View findItemContainingText(String targetText) {
-        int itemIndex = findIndexOfItemContainingText(targetText);
-        if (itemIndex == -1) {
-            return null;
-        }
-        return realListView.getChildAt(itemIndex);
-    }
-
-    public void clickFirstItemContainingText(String targetText) {
-        int itemIndex = findIndexOfItemContainingText(targetText);
-        if (itemIndex == -1) {
-            throw new IllegalArgumentException("No item found containing text \"" + targetText + "\"");
-        }
-        performItemClick(itemIndex);
     }
 
     private void ensureAdapterNotSet(String view) {

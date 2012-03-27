@@ -12,6 +12,8 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
 public class ShadowAdapterView extends ShadowViewGroup {
@@ -247,6 +249,38 @@ public class ShadowAdapterView extends ShadowViewGroup {
             return true;
         }
         return false;
+    }
+
+    public boolean performItemClick(int position) {
+        return realAdapterView.performItemClick(realAdapterView.getChildAt(position),
+                position, realAdapterView.getItemIdAtPosition(position));
+    }
+
+    public int findIndexOfItemContainingText(String targetText) {
+        for (int i = 0; i < realAdapterView.getChildCount(); i++) {
+            View childView = realAdapterView.getChildAt(i);
+            String innerText = shadowOf(childView).innerText();
+            if (innerText.contains(targetText)) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public View findItemContainingText(String targetText) {
+        int itemIndex = findIndexOfItemContainingText(targetText);
+        if (itemIndex == -1) {
+            return null;
+        }
+        return realAdapterView.getChildAt(itemIndex);
+    }
+
+    public void clickFirstItemContainingText(String targetText) {
+        int itemIndex = findIndexOfItemContainingText(targetText);
+        if (itemIndex == -1) {
+            throw new IllegalArgumentException("No item found containing text \"" + targetText + "\"");
+        }
+        performItemClick(itemIndex);
     }
 
     @Implementation
