@@ -31,6 +31,7 @@ import android.preference.*;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.content.CursorLoader;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
@@ -168,6 +169,7 @@ public class Robolectric {
                 ShadowCriteria.class,
                 ShadowCountDownTimer.class,
                 ShadowCursorAdapter.class,
+                ShadowCursorLoader.class,
                 ShadowDatabaseUtils.class,
                 ShadowDateFormat.class,
                 ShadowDefaultRequestDirector.class,
@@ -502,6 +504,10 @@ public class Robolectric {
 
     public static ShadowCursorAdapter shadowOf(CursorAdapter instance) {
         return (ShadowCursorAdapter) shadowOf_(instance);
+    }
+    
+    public static ShadowCursorLoader shadowOf(CursorLoader instance) {
+        return (ShadowCursorLoader) shadowOf_(instance);
     }
 
     public static ShadowDateFormat shadowOf(DateFormat instance) {
