@@ -352,6 +352,11 @@ public class ShadowView {
     }
 
     @Implementation
+    public final int getMeasuredHeight() {
+        return getHeight();
+    }
+
+    @Implementation
     public final void layout(int l, int t, int r, int b) {
         left = l;
         top = t;
@@ -447,7 +452,7 @@ public class ShadowView {
     }
 
     @Implementation
-    public View.OnFocusChangeListener getOnFocusChangeListener () {
+    public View.OnFocusChangeListener getOnFocusChangeListener() {
         return onFocusChangeListener;
     }
 
@@ -470,7 +475,7 @@ public class ShadowView {
     }
 
     @Implementation
-    public boolean dispatchKeyEvent(KeyEvent event ) {
+    public boolean dispatchKeyEvent(KeyEvent event) {
         if (onKeyListener != null) {
             return onKeyListener.onKey(realView, event.getKeyCode(), event);
         }

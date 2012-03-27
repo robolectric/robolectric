@@ -136,7 +136,9 @@ public class TestFragmentManager extends FragmentManager {
             container.addView(view);
         }
 
+        // These calls happen in the FragmentActivity's onStart in real Android
         fragment.onActivityCreated(null);
+        fragment.onStart();
     }
 
     public HashMap<Integer, Fragment> getFragments() {
