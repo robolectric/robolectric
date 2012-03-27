@@ -1,5 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.util.List;
+
 import android.app.Activity;
 import android.appwidget.AppWidgetProvider;
 import android.content.BroadcastReceiver;
@@ -22,6 +24,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsEqual.equalTo;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -94,6 +97,18 @@ public class ContextWrapperTest {
 
         new ContextWrapper(Robolectric.application).unregisterReceiver(receiver);
     }
+	
+	@Test
+	public void broadcasts_shouldBeLogged()
+	{
+		Intent broadcastIntent = new Intent("foo");
+		contextWrapper.sendBroadcast(broadcastIntent);
+		
+		List<Intent> broadcastIntents = shadowOf(contextWrapper).getBroadcastIntents();
+		assertTrue(broadcastIntents.size() == 1);
+		assertEquals(broadcastIntent, broadcastIntents.get(0));
+	}
+	
 
     @Test
     public void shouldReturnSameApplicationEveryTime() throws Exception {
