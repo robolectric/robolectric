@@ -12,6 +12,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 public class ShadowFragment {
     protected View view;
     protected FragmentActivity activity;
+    private String tag;
 
     public void setView(View view) {
         this.view = view;
@@ -44,5 +45,14 @@ public class ShadowFragment {
     @Implementation
     final public FragmentManager getFragmentManager() {
         return activity.getSupportFragmentManager();
+    }
+
+    @Implementation
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 }
