@@ -93,4 +93,9 @@ public class ShadowMessage {
         m.obj = obj;
         return m;
     }
+
+    @Implementation
+    public void sendToTarget() {
+        target.sendMessage(message);
+    }
 }

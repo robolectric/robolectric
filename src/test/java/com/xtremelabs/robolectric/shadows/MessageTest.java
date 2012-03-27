@@ -129,4 +129,12 @@ public class MessageTest {
         assertThat(m.arg2, equalTo(arg2));
         assertThat(m.obj, equalTo(obj));
     }
+
+    @Test
+    public void testSendToTarget() throws Exception {
+        ShadowLooper.pauseMainLooper();
+        Handler h = new Handler();
+        Message.obtain(h, 123).sendToTarget();
+        assertTrue(h.hasMessages(123));
+    }
 }

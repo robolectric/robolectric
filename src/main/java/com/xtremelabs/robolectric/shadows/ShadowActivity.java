@@ -161,6 +161,10 @@ public class ShadowActivity extends ShadowContextWrapper {
         finishWasCalled = true;
     }
 
+    public void resetIsFinishing() {
+        finishWasCalled = false;
+    }
+
     /**
      * @return whether {@link #finish()} was called
      */
@@ -368,6 +372,16 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
 
     @Implementation
+    public final void dismissDialog(int id) {
+        final Dialog dialog = dialogForId.get(id);
+        if (dialog == null) {
+            throw new IllegalArgumentException();
+        }
+
+        dialog.dismiss();
+    }
+
+    @Implementation
     public final void removeDialog(int id) {
         dialogForId.remove(id);
     }
@@ -440,14 +454,5 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
 
     protected void onRestoreInstanceState_forBogusActivityShadows(Bundle savedInstanceState) {
-    }
-
-    @Implementation
-    public void onSaveInstanceState(Bundle outState) {
-        onSaveInstanceState_forBogusActivityShadows(outState);
-    }
-
-    protected void onSaveInstanceState_forBogusActivityShadows(Bundle outState) {
-
     }
 }

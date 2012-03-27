@@ -30,8 +30,8 @@ public class ShadowFragmentActivity extends ShadowActivity {
         return fragmentManager;
     }
 
-    @Override
-    public void onSaveInstanceState_forBogusActivityShadows(Bundle outState) {
+    @Implementation
+    public void onSaveInstanceState(Bundle outState) {
         // We cannot figure out how to pass the RobolectricWiring test without doing this incredibly
         // terrible looking hack.  I am very sorry.
         List<SerializedFragmentState> fragmentStates = new ArrayList<SerializedFragmentState>();

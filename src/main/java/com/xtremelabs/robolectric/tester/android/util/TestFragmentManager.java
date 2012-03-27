@@ -1,10 +1,7 @@
 package com.xtremelabs.robolectric.tester.android.util;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentTransaction;
+import android.support.v4.app.*;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -22,6 +19,10 @@ public class TestFragmentManager extends FragmentManager {
 
     public TestFragmentManager(FragmentActivity activity) {
         this.activity = activity;
+    }
+
+    public FragmentActivity getActivity() {
+        return activity;
     }
 
     @Override
@@ -107,6 +108,10 @@ public class TestFragmentManager extends FragmentManager {
     public void dump(String prefix, FileDescriptor fd, PrintWriter writer, String[] args) {
     }
 
+    public void addDialogFragment(String tag, DialogFragment fragment) {
+        fragmentsByTag.put(tag, fragment);
+    }
+
     public void addFragment(int containerViewId, String tag, Fragment fragment, boolean replace) {
         fragmentsById.put(containerViewId, fragment);
         fragmentsByTag.put(tag, fragment);
@@ -131,7 +136,9 @@ public class TestFragmentManager extends FragmentManager {
             container.addView(view);
         }
 
+        // These calls happen in the FragmentActivity's onStart in real Android
         fragment.onActivityCreated(null);
+        fragment.onStart();
     }
 
     public HashMap<Integer, Fragment> getFragments() {
