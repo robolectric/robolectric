@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 @Implements(FragmentActivity.class)
 public class ShadowFragmentActivity extends ShadowActivity {
     @RealObject
@@ -23,6 +25,31 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
     public void __constructor__() {
         fragmentManager = new TestFragmentManager(realObject);
+    }
+
+    @Implementation
+    public void onCreate(Bundle bundle) {
+        super.onCreate(bundle);
+
+        if (bundle != null && bundle.containsKey(FRAGMENTS_TAG)) {
+            Object[] fragments = (Object[]) bundle.getSerializable(FRAGMENTS_TAG);
+
+            for (Object o : fragments) {
+                SerializedFragmentState fragmentState = (SerializedFragmentState) o;
+
+                try {
+                    Fragment fragment = fragmentState.fragmentClass.newInstance();
+                    shadowOf(fragment).setSavedInstanceState(bundle);
+                    fragmentManager.beginTransaction()
+                            .add(fragmentState.containerId, fragment, fragmentState.tag)
+                            .commit();
+                } catch (InstantiationException e) {
+                    throw new RuntimeException(e);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 
     @Implementation
@@ -42,24 +69,4 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
         outState.putSerializable(FRAGMENTS_TAG, fragmentStates.toArray());
     }
-
-    @Override
-    public void onRestoreInstanceState_forBogusActivityShadows(Bundle savedInstanceState) {
-        // We cannot figure out how to pass the RobolectricWiring test without doing this incredibly
-        // terrible looking hack.  I am very sorry.
-        Object[] stuff = (Object[]) savedInstanceState.getSerializable(FRAGMENTS_TAG);
-
-        for (Object o : stuff) {
-            SerializedFragmentState fragmentState = (SerializedFragmentState) o;
-
-            try {
-                fragmentManager.beginTransaction().add(fragmentState.containerId, fragmentState.fragmentClass.newInstance(), fragmentState.tag).commit();
-            } catch (InstantiationException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-    }
-
 }

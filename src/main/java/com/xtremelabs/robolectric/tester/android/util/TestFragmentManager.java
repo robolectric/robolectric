@@ -4,6 +4,9 @@ import android.os.Bundle;
 import android.support.v4.app.*;
 import android.view.View;
 import android.view.ViewGroup;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.shadows.SerializedFragmentState;
+import com.xtremelabs.robolectric.shadows.ShadowFragmentActivity;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -96,6 +99,14 @@ public class TestFragmentManager extends FragmentManager {
 
     @Override
     public Fragment getFragment(Bundle bundle, String key) {
+        Object[] fragments = (Object[]) bundle.getSerializable(ShadowFragmentActivity.FRAGMENTS_TAG);
+        for (Object object : fragments) {
+            SerializedFragmentState fragment = (SerializedFragmentState) object;
+            if (fragment.tag.equals(key)) {
+                // TODO deserialize state
+                return Robolectric.newInstanceOf(fragment.fragmentClass);
+            }
+        }
         return null;
     }
 
@@ -115,6 +126,8 @@ public class TestFragmentManager extends FragmentManager {
     public void addFragment(int containerViewId, String tag, Fragment fragment, boolean replace) {
         fragmentsById.put(containerViewId, fragment);
         fragmentsByTag.put(tag, fragment);
+
+        shadowOf(fragment).setTag(tag);
 
         shadowOf(fragment).setActivity(activity);
         fragment.onAttach(activity);
@@ -137,7 +150,7 @@ public class TestFragmentManager extends FragmentManager {
         }
 
         // These calls happen in the FragmentActivity's onStart in real Android
-        fragment.onActivityCreated(null);
+        fragment.onActivityCreated(shadowOf(fragment).getSavedInstanceState());
         fragment.onStart();
     }
 

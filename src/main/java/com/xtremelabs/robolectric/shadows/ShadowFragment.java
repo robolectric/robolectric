@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -12,6 +13,8 @@ import com.xtremelabs.robolectric.internal.Implements;
 public class ShadowFragment {
     protected View view;
     protected FragmentActivity activity;
+    private String tag;
+    private Bundle savedInstanceState;
 
     public void setView(View view) {
         this.view = view;
@@ -44,5 +47,22 @@ public class ShadowFragment {
     @Implementation
     final public FragmentManager getFragmentManager() {
         return activity.getSupportFragmentManager();
+    }
+
+    @Implementation
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
+    }
+
+    public void setSavedInstanceState(Bundle savedInstanceState) {
+        this.savedInstanceState = savedInstanceState;
+    }
+
+    public Bundle getSavedInstanceState() {
+        return savedInstanceState;
     }
 }

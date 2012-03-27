@@ -13,6 +13,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
@@ -30,7 +32,7 @@ public class FragmentManagerTest {
     public void setUp() throws Exception {
         activity = new TestFragmentActivity();
         activity.onCreate(null);
-        manager = new TestFragmentManager(activity);
+        manager = (TestFragmentManager) activity.getSupportFragmentManager();
         fragment = new TestFragment();
         containerView = (ViewGroup) activity.findViewById(CONTAINER_VIEW_ID);
     }
@@ -76,6 +78,13 @@ public class FragmentManagerTest {
     }
 
     @Test
+    public void addFragment_shouldSetTheFragmentsTag() throws Exception {
+        manager.addFragment(View.NO_ID, "expected tag", fragment, false);
+
+        assertThat(fragment.getTag(), equalTo("expected tag"));
+    }
+
+    @Test
     public void addFragment_shouldInsertTheFragmentViewIntoTheContainerView() throws Exception {
         manager.addFragment(CONTAINER_VIEW_ID, null, fragment, false);
 
@@ -105,6 +114,25 @@ public class FragmentManagerTest {
         manager.addFragment(0, null, fragment, false);
 
         assertSame(activity, fragment.getActivity());
+    }
+
+    @Test
+    public void getFragment_whenBundleSavedByShadowFragmentActivity_shouldGetFragmentByTagFromBundle() throws Exception {
+        manager.addFragment(CONTAINER_VIEW_ID, "fragment tag", fragment, true);
+
+        Bundle outState = new Bundle();
+        shadowOf(activity).onSaveInstanceState(outState);
+
+        Fragment retrievedFragment = manager.getFragment(outState, "fragment tag");
+        assertEquals(TestFragment.class, retrievedFragment.getClass());
+    }
+
+    @Test
+    public void addFragment_shouldPassSavedInstanceStateToOnCreateMethodOfFragment() throws Exception {
+        shadowOf(fragment).setSavedInstanceState(new Bundle());
+        manager.addFragment(CONTAINER_VIEW_ID, null, fragment, true);
+
+        assertTrue(fragment.onActivityCreated_savedInstanceState != null);
     }
 
     private static class TestFragmentActivity extends FragmentActivity {
