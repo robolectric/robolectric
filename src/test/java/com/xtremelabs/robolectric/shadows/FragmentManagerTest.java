@@ -58,7 +58,8 @@ public class FragmentManagerTest {
                 "onCreate",
                 "onCreateView",
                 "onViewCreated",
-                "onActivityCreated"
+                "onActivityCreated",
+                "onStart"
         );
 
         assertSame(activity, fragment.onAttachActivity);
