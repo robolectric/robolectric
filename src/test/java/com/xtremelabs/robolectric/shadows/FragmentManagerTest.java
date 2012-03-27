@@ -127,6 +127,14 @@ public class FragmentManagerTest {
         assertEquals(TestFragment.class, retrievedFragment.getClass());
     }
 
+    @Test
+    public void addFragment_shouldPassSavedInstanceStateToOnCreateMethodOfFragment() throws Exception {
+        shadowOf(fragment).setSavedInstanceState(new Bundle());
+        manager.addFragment(CONTAINER_VIEW_ID, null, fragment, true);
+
+        assertTrue(fragment.onActivityCreated_savedInstanceState != null);
+    }
+
     private static class TestFragmentActivity extends FragmentActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {

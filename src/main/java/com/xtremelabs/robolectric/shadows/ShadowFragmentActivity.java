@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 @Implements(FragmentActivity.class)
 public class ShadowFragmentActivity extends ShadowActivity {
     @RealObject
@@ -53,7 +55,11 @@ public class ShadowFragmentActivity extends ShadowActivity {
             SerializedFragmentState fragmentState = (SerializedFragmentState) o;
 
             try {
-                fragmentManager.beginTransaction().add(fragmentState.containerId, fragmentState.fragmentClass.newInstance(), fragmentState.tag).commit();
+                Fragment fragment = fragmentState.fragmentClass.newInstance();
+                shadowOf(fragment).setSavedInstanceState(savedInstanceState);
+                fragmentManager.beginTransaction()
+                        .add(fragmentState.containerId, fragment, fragmentState.tag)
+                        .commit();
             } catch (InstantiationException e) {
                 throw new RuntimeException(e);
             } catch (IllegalAccessException e) {

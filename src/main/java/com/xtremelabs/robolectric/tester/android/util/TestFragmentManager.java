@@ -150,7 +150,7 @@ public class TestFragmentManager extends FragmentManager {
         }
 
         // These calls happen in the FragmentActivity's onStart in real Android
-        fragment.onActivityCreated(null);
+        fragment.onActivityCreated(shadowOf(fragment).getSavedInstanceState());
         fragment.onStart();
     }
 

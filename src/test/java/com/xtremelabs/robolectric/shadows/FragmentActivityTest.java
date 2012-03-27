@@ -12,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -102,6 +103,7 @@ public class FragmentActivityTest {
         TestFragment restoredFrag = (TestFragment) fragmentManager.getFragments().get(containerId);
         assertEquals(restoredFrag.getId(), dynamicFrag.getId());
         assertEquals(restoredFrag.getTag(), dynamicFrag.getTag());
+        assertEquals(bundle, shadowOf(restoredFrag).getSavedInstanceState());
     }
 
     private static class TestFragmentActivity extends FragmentActivity {

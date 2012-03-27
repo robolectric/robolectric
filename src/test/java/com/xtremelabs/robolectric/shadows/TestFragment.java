@@ -10,7 +10,6 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.util.Transcript;
 
 public class TestFragment extends Fragment {
-
     public static final int FRAGMENT_VIEW_ID = 2323;
     public boolean onAttachWasCalled;
     public boolean onCreateWasCalled;
@@ -21,7 +20,8 @@ public class TestFragment extends Fragment {
     public boolean onStartWasCalled;
     public boolean onResumeWasCalled;
     public Activity onAttachActivity;
-    
+    public Bundle onActivityCreated_savedInstanceState;
+
     Transcript transcript = new Transcript();
 
     @Override
@@ -55,6 +55,7 @@ public class TestFragment extends Fragment {
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         onActivityCreatedWasCalled = true;
+        onActivityCreated_savedInstanceState = savedInstanceState;
         transcript.add("onActivityCreated");
     }
 
