@@ -39,6 +39,8 @@ import java.util.Map;
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
+    /** Instrument loader name. We use it to check whether the current instance is instrumented. */
+    private static String instrumentLoaderName = RobolectricClassLoader.class.getName();
     private static RobolectricClassLoader defaultLoader;
     private static Map<RobolectricConfig, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RobolectricConfig, ResourceLoader>();
 
@@ -58,6 +60,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return defaultLoader;
     }
 
+    public static void setInstrumentLoaderName(final String name) {
+      instrumentLoaderName = name;
+    }
+    
     public static void setDefaultLoader(Loader robolectricClassLoader) {
     	//used by the RoboSpecs project to allow for mixed scala\java tests to be run with Maven Surefire (see the RoboSpecs project on github)
         if (defaultLoader == null) {
@@ -233,7 +239,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     protected static boolean isInstrumented() {
-        return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(RobolectricClassLoader.class.getName());
+        return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(instrumentLoaderName);
     }
 
     /**
