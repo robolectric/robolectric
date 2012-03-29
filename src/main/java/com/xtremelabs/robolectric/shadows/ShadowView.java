@@ -72,6 +72,7 @@ public class ShadowView {
     private Drawable background;
     private Animation animation;
     private ViewTreeObserver viewTreeObserver;
+    private MotionEvent lastTouchEvent;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -463,7 +464,8 @@ public class ShadowView {
 
     @Implementation
     public boolean onTouchEvent(MotionEvent event) {
-        return realView.onTouchEvent(event);
+        lastTouchEvent = event;
+        return false;
     }
 
     @Implementation
@@ -476,7 +478,11 @@ public class ShadowView {
         if (onTouchListener != null) {
             return onTouchListener.onTouch(realView, event);
         }
-        return onTouchEvent(event);
+        return realView.onTouchEvent(event);
+    }
+
+    public MotionEvent getLastTouchEvent() {
+        return lastTouchEvent;
     }
 
     @Implementation

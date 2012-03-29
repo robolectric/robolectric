@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.view.MotionEvent;
@@ -12,7 +13,11 @@ import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.*;
+import com.xtremelabs.robolectric.util.TestAnimationListener;
+import com.xtremelabs.robolectric.util.TestOnClickListener;
+import com.xtremelabs.robolectric.util.TestOnLongClickListener;
+import com.xtremelabs.robolectric.util.TestRunnable;
+import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +25,10 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewTest {
@@ -275,19 +283,28 @@ public class ViewTest {
 
     @Test
     public void dispatchTouchEvent_sendsMotionEventToOnTouchEvent() throws Exception {
-        final MotionEvent[] mutable = new MotionEvent[1];
-        View touchableView = new View(null) {
-            @Override
-            public boolean onTouchEvent(MotionEvent event) {
-                mutable[0] = event;
-                return false;
-            }
-        };
+        TouchableView touchableView = new TouchableView(null);
         MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
         touchableView.dispatchTouchEvent(event);
-        assertThat(mutable[0], sameInstance(event));
+        assertThat(touchableView.event, sameInstance(event));
+        view.dispatchTouchEvent(event);
+        assertThat(shadowOf(view).getLastTouchEvent(), sameInstance(event));
     }
 
     private class TestAnimation extends Animation {
+    }
+
+    static class TouchableView extends View {
+        MotionEvent event;
+
+        public TouchableView(Context context) {
+            super(context);
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            this.event = event;
+            return false;
+        }
     }
 }
