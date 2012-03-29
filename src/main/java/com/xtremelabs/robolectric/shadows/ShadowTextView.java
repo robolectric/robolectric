@@ -61,11 +61,11 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation(i18nSafe = false)
     public void setText(CharSequence text) {
-        sendBeforeTextChanged(text);
-
         if (text == null) {
             text = "";
         }
+
+        sendBeforeTextChanged(text);
 
         CharSequence oldValue = this.text;
         this.text = text;

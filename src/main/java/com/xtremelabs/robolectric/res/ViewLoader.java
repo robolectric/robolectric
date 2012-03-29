@@ -199,6 +199,9 @@ public class ViewLoader extends XmlLoader {
 
             String tag = attributeSet.getAttributeValue("android", "tag");
             int id = attributeSet.getAttributeResourceValue("android", "id", 0);
+            // TODO: this should probably be changed to call TestFragmentManager.addFragment so that the
+            // inflated fragments don't get started twice (once in the commit, and once in ShadowFragmentActivity's
+            // onStart()
             activity.getSupportFragmentManager().beginTransaction().add(id, fragment, tag).commit();
 
             View view = fragment.getView();

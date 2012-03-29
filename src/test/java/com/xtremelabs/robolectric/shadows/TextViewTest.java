@@ -179,6 +179,16 @@ public class TextViewTest {
     }
 
     @Test
+    public void givenATextViewWithATextWatcherAdded_WhenSettingNullText_ShouldNotifyTextWatcher() {
+        MockTextWatcher mockTextWatcher = new MockTextWatcher();
+        textView.addTextChangedListener(mockTextWatcher);
+
+        textView.setText(null);
+
+        assertEachTextWatcherEventWasInvoked(mockTextWatcher);
+    }
+
+    @Test
     public void givenATextViewWithMultipleTextWatchersAdded_WhenSettingText_ShouldNotifyEachTextWatcher() {
         List<MockTextWatcher> mockTextWatchers = anyNumberOfTextWatchers();
         for (MockTextWatcher textWatcher : mockTextWatchers) {

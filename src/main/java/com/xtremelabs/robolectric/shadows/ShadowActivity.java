@@ -192,6 +192,11 @@ public class ShadowActivity extends ShadowContextWrapper {
         Robolectric.getUiThreadScheduler().post(action);
     }
 
+    @Implementation
+    public void onCreate(Bundle bundle) {
+
+    }
+
     /**
      * Checks to see if {@code BroadcastListener}s are still registered.
      *
@@ -446,13 +451,5 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     public Dialog getDialogById(int dialogId) {
         return dialogForId.get(dialogId);
-    }
-
-    @Implementation
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        onRestoreInstanceState_forBogusActivityShadows(savedInstanceState);
-    }
-
-    protected void onRestoreInstanceState_forBogusActivityShadows(Bundle savedInstanceState) {
     }
 }

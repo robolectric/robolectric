@@ -12,7 +12,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static junit.framework.Assert.*;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static junit.framework.Assert.assertNull;
+import static junit.framework.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class FragmentActivityTest {
@@ -86,22 +89,44 @@ public class FragmentActivityTest {
     }
 
     @Test
-    public void onRestoreInstanceState_shouldRecreateFragments() throws Exception {
+    public void onCreate_shouldRecreateFragments() throws Exception {
         Bundle bundle = new Bundle();
         TestFragment dynamicFrag = new TestFragment();
         int containerId = 123;
         SerializedFragmentState fragmentState = new SerializedFragmentState(containerId, dynamicFrag);
         bundle.putSerializable(ShadowFragmentActivity.FRAGMENTS_TAG, new Object[]{fragmentState});
 
+        activity = new TestFragmentActivity();
+        activity.onCreate(bundle);
         TestFragmentManager fragmentManager = (TestFragmentManager) activity.getSupportFragmentManager();
-        assertEquals(fragmentManager.getFragments().size(), 1);
-
-        activity.onRestoreInstanceState(bundle);
-        assertEquals(fragmentManager.getFragments().size(), 2);
+        assertEquals(2, fragmentManager.getFragments().size());
 
         TestFragment restoredFrag = (TestFragment) fragmentManager.getFragments().get(containerId);
         assertEquals(restoredFrag.getId(), dynamicFrag.getId());
         assertEquals(restoredFrag.getTag(), dynamicFrag.getTag());
+        assertEquals(bundle, shadowOf(restoredFrag).getSavedInstanceState());
+        assertSame(activity, restoredFrag.onAttachActivity);
+        assertSame(activity, restoredFrag.getActivity());
+        assertNull(restoredFrag.getView());
+    }
+
+    @Test
+    public void onStart_shouldStartFragments() throws Exception {
+        Bundle bundle = new Bundle();
+        TestFragment dynamicFrag = new TestFragment();
+        int containerId = 123;
+        SerializedFragmentState fragmentState = new SerializedFragmentState(containerId, dynamicFrag);
+        bundle.putSerializable(ShadowFragmentActivity.FRAGMENTS_TAG, new Object[]{fragmentState});
+
+        activity = new TestFragmentActivity();
+        activity.onCreate(bundle);
+        shadowOf(activity).onStart();
+        TestFragmentManager fragmentManager = (TestFragmentManager) activity.getSupportFragmentManager();
+        assertEquals(2, fragmentManager.getFragments().size());
+        TestFragment restoredFrag = (TestFragment) fragmentManager.getFragments().get(containerId);
+
+        assertEquals(restoredFrag.onCreateViewInflater, activity.getLayoutInflater());
+        assertNotNull(restoredFrag.getView());
     }
 
     private static class TestFragmentActivity extends FragmentActivity {
@@ -114,11 +139,6 @@ public class FragmentActivityTest {
         @Override
         public void onSaveInstanceState(Bundle outState) {
             super.onSaveInstanceState(outState);
-        }
-
-        @Override
-        public void onRestoreInstanceState(Bundle savedInstanceState) {
-            super.onRestoreInstanceState(savedInstanceState);
         }
     }
 }
