@@ -156,6 +156,13 @@ public class ListViewTest {
     }
 
     @Test
+    public void smoothScrollBy_shouldBeRecorded() throws Exception {
+        listView.smoothScrollBy(42, 420);
+        assertThat(shadowOf(listView).getLastSmoothScrollByDistance(), equalTo(42));
+        assertThat(shadowOf(listView).getLastSmoothScrollByDuration(), equalTo(420));
+    }
+
+    @Test
     public void testPerformItemClick_ShouldFireOnItemClickListener() throws Exception {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
