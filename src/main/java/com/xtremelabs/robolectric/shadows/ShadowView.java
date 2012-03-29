@@ -462,6 +462,11 @@ public class ShadowView {
     }
 
     @Implementation
+    public boolean onTouchEvent(MotionEvent event) {
+        return realView.onTouchEvent(event);
+    }
+
+    @Implementation
     public void setOnTouchListener(View.OnTouchListener onTouchListener) {
         this.onTouchListener = onTouchListener;
     }
@@ -471,7 +476,7 @@ public class ShadowView {
         if (onTouchListener != null) {
             return onTouchListener.onTouch(realView, event);
         }
-        return false;
+        return onTouchEvent(event);
     }
 
     @Implementation

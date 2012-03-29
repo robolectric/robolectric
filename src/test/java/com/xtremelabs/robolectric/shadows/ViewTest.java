@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
@@ -270,6 +271,21 @@ public class ViewTest {
         ViewTreeObserver observer = view.getViewTreeObserver();
         assertThat(observer, instanceOf(ViewTreeObserver.class));
         assertThat(view.getViewTreeObserver(), sameInstance(observer));
+    }
+
+    @Test
+    public void dispatchTouchEvent_sendsMotionEventToOnTouchEvent() throws Exception {
+        final MotionEvent[] mutable = new MotionEvent[1];
+        View touchableView = new View(null) {
+            @Override
+            public boolean onTouchEvent(MotionEvent event) {
+                mutable[0] = event;
+                return false;
+            }
+        };
+        MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
+        touchableView.dispatchTouchEvent(event);
+        assertThat(mutable[0], sameInstance(event));
     }
 
     private class TestAnimation extends Animation {
