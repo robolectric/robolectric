@@ -20,7 +20,7 @@ public class ShadowFragmentActivity extends ShadowActivity {
     @RealObject
     FragmentActivity realObject;
 
-    private FragmentManager fragmentManager;
+    private TestFragmentManager fragmentManager;
     public static final String FRAGMENTS_TAG = "android:fragments";
 
     public void __constructor__() {
@@ -40,15 +40,21 @@ public class ShadowFragmentActivity extends ShadowActivity {
                 try {
                     Fragment fragment = fragmentState.fragmentClass.newInstance();
                     shadowOf(fragment).setSavedInstanceState(bundle);
-                    fragmentManager.beginTransaction()
-                            .add(fragmentState.containerId, fragment, fragmentState.tag)
-                            .commit();
+
+                    fragmentManager.addFragment(fragmentState.containerId, fragmentState.tag, fragment, true);
                 } catch (InstantiationException e) {
                     throw new RuntimeException(e);
                 } catch (IllegalAccessException e) {
                     throw new RuntimeException(e);
                 }
             }
+        }
+    }
+
+    @Implementation
+    public void onStart() {
+        for (Fragment fragment : fragmentManager.getFragments().values()) {
+            fragmentManager.startFragment(fragment);
         }
     }
 

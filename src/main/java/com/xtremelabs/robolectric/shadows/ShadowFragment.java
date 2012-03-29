@@ -15,6 +15,8 @@ public class ShadowFragment {
     protected FragmentActivity activity;
     private String tag;
     private Bundle savedInstanceState;
+    private int containerViewId;
+    private boolean shouldReplace;
 
     public void setView(View view) {
         this.view = view;
@@ -64,5 +66,21 @@ public class ShadowFragment {
 
     public Bundle getSavedInstanceState() {
         return savedInstanceState;
+    }
+
+    public void setContainerViewId(int containerViewId) {
+        this.containerViewId = containerViewId;
+    }
+
+    public int getContainerViewId() {
+        return containerViewId;
+    }
+
+    public void setShouldReplace(boolean shouldReplace) {
+        this.shouldReplace = shouldReplace;
+    }
+
+    public boolean getShouldReplace() {
+        return shouldReplace;
     }
 }

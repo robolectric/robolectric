@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -89,7 +90,7 @@ public class FragmentTransactionTest {
         private boolean addFragmentReplace;
 
         public MockTestFragmentManager() {
-            super(null);
+            super(new FragmentActivity());
         }
 
         @Override

@@ -57,16 +57,27 @@ public class FragmentManagerTest {
 
         fragment.transcript.assertEventsSoFar(
                 "onAttach",
-                "onCreate",
+                "onCreate"
+        );
+
+        assertSame(activity, fragment.onAttachActivity);
+        assertSame(activity, fragment.getActivity());
+    }
+
+    @Test
+    public void startFragment_shouldCallLifecycleMethods() throws Exception {
+        manager.addFragment(View.NO_ID, null, fragment, false);
+        fragment.transcript.clear();
+        manager.startFragment(fragment);
+
+        fragment.transcript.assertEventsSoFar(
                 "onCreateView",
                 "onViewCreated",
                 "onActivityCreated",
                 "onStart"
         );
 
-        assertSame(activity, fragment.onAttachActivity);
         assertEquals(fragment.onCreateViewInflater, activity.getLayoutInflater());
-        assertSame(activity, fragment.getActivity());
         assertNotNull(fragment.getView());
     }
 
@@ -85,8 +96,9 @@ public class FragmentManagerTest {
     }
 
     @Test
-    public void addFragment_shouldInsertTheFragmentViewIntoTheContainerView() throws Exception {
+    public void startFragment_shouldInsertTheFragmentViewIntoTheContainerView() throws Exception {
         manager.addFragment(CONTAINER_VIEW_ID, null, fragment, false);
+        manager.startFragment(fragment);
 
         View fragmentViewParent = (View) activity.findViewById(TestFragment.FRAGMENT_VIEW_ID).getParent();
         assertThat(activity.findViewById(TestFragment.FRAGMENT_VIEW_ID), sameInstance(fragment.onCreateViewReturnValue));
@@ -128,9 +140,10 @@ public class FragmentManagerTest {
     }
 
     @Test
-    public void addFragment_shouldPassSavedInstanceStateToOnCreateMethodOfFragment() throws Exception {
+    public void startFragment_shouldPassSavedInstanceStateToOnCreateMethodOfFragment() throws Exception {
         shadowOf(fragment).setSavedInstanceState(new Bundle());
         manager.addFragment(CONTAINER_VIEW_ID, null, fragment, true);
+        manager.startFragment(fragment);
 
         assertTrue(fragment.onActivityCreated_savedInstanceState != null);
     }

@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.shadows.SerializedFragmentState;
+import com.xtremelabs.robolectric.shadows.ShadowFragment;
 import com.xtremelabs.robolectric.shadows.ShadowFragmentActivity;
 
 import java.io.FileDescriptor;
@@ -128,29 +129,33 @@ public class TestFragmentManager extends FragmentManager {
         fragmentsByTag.put(tag, fragment);
 
         shadowOf(fragment).setTag(tag);
+        shadowOf(fragment).setContainerViewId(containerViewId);
+        shadowOf(fragment).setShouldReplace(replace);
 
         shadowOf(fragment).setActivity(activity);
         fragment.onAttach(activity);
         fragment.onCreate(null);
+    }
 
+    public void startFragment(Fragment fragment) {
         ViewGroup container = null;
+        ShadowFragment shadowFragment = shadowOf(fragment);
         if (shadowOf(activity).getContentView() != null) {
-            container = (ViewGroup) activity.findViewById(containerViewId);
+            container = (ViewGroup) activity.findViewById(shadowFragment.getContainerViewId());
         }
 
         View view = fragment.onCreateView(activity.getLayoutInflater(), container, null);
-        shadowOf(fragment).setView(view);
+        shadowFragment.setView(view);
 
         fragment.onViewCreated(view, null);
         if (container != null) {
-            if (replace) {
+            if (shadowFragment.getShouldReplace()) {
                 container.removeAllViews();
             }
             container.addView(view);
         }
 
-        // These calls happen in the FragmentActivity's onStart in real Android
-        fragment.onActivityCreated(shadowOf(fragment).getSavedInstanceState());
+        fragment.onActivityCreated(shadowFragment.getSavedInstanceState());
         fragment.onStart();
     }
 

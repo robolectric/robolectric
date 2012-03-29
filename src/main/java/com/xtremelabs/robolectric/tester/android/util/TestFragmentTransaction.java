@@ -148,6 +148,7 @@ public class TestFragmentTransaction extends FragmentTransaction {
             @Override
             public void run() {
                 fragmentManager.addFragment(containerViewId, tag, fragment, isReplacing);
+                fragmentManager.startFragment(fragment);
             }
         });
         return 0;
