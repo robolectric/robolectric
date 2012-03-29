@@ -291,6 +291,32 @@ public class ViewTest {
         assertThat(shadowOf(view).getLastTouchEvent(), sameInstance(event));
     }
 
+    @Test
+    public void dispatchTouchEvent_listensToTrueFromListener() throws Exception {
+        view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return true;
+            }
+        });
+        MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
+        view.dispatchTouchEvent(event);
+        assertThat(shadowOf(view).getLastTouchEvent(), nullValue());
+    }
+
+    @Test
+    public void dispatchTouchEvent_listensToFalseFromListener() throws Exception {
+        view.setOnTouchListener(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View view, MotionEvent motionEvent) {
+                return false;
+            }
+        });
+        MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
+        view.dispatchTouchEvent(event);
+        assertThat(shadowOf(view).getLastTouchEvent(), sameInstance(event));
+    }
+
     private class TestAnimation extends Animation {
     }
 

@@ -475,8 +475,8 @@ public class ShadowView {
 
     @Implementation
     public boolean dispatchTouchEvent(MotionEvent event) {
-        if (onTouchListener != null) {
-            return onTouchListener.onTouch(realView, event);
+        if (onTouchListener != null && onTouchListener.onTouch(realView, event)) {
+            return true;
         }
         return realView.onTouchEvent(event);
     }
