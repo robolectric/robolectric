@@ -1,7 +1,33 @@
 package com.xtremelabs.robolectric;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.PrintStream;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
+import java.util.Map;
+
+import javassist.Loader;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.Statement;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
 import android.app.Application;
 import android.net.Uri__FromAndroid;
+
 import com.xtremelabs.robolectric.bytecode.ClassHandler;
 import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
@@ -14,35 +40,16 @@ import com.xtremelabs.robolectric.util.DatabaseConfig;
 import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
 import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import com.xtremelabs.robolectric.util.SQLiteMap;
-import javassist.Loader;
-import org.junit.runners.BlockJUnit4ClassRunner;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.Statement;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.*;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Installs a {@link RobolectricClassLoader} and {@link com.xtremelabs.robolectric.res.ResourceLoader} in order to
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
-  	
+
     /** Instrument detector. We use it to check whether the current instance is instrumented. */
   	private static InstrumentDetector instrumentDetector = InstrumentDetector.DEFAULT;
-  	
+
     private static RobolectricClassLoader defaultLoader;
     private static Map<RobolectricConfig, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RobolectricConfig, ResourceLoader>();
 
@@ -65,8 +72,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     public static void setInstrumentDetector(final InstrumentDetector detector) {
       instrumentDetector = detector;
     }
-    
-    public static void setDefaultLoader(Loader robolectricClassLoader) {
+
+    public static void setDefaultLoader(final Loader robolectricClassLoader) {
     	//used by the RoboSpecs project to allow for mixed scala\java tests to be run with Maven Surefire (see the RoboSpecs project on github)
         if (defaultLoader == null) {
             defaultLoader = (RobolectricClassLoader)robolectricClassLoader;
@@ -80,7 +87,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      *
      * @param classOrPackageToBeInstrumented fully-qualified class or package name
      */
-    protected static void addClassOrPackageToInstrument(String classOrPackageToBeInstrumented) {
+    protected static void addClassOrPackageToInstrument(final String classOrPackageToBeInstrumented) {
         if (!isInstrumented()) {
             defaultLoader.addCustomShadowClass(classOrPackageToBeInstrumented);
         }
@@ -122,7 +129,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param databaseMap		the database mapping
      * @throws InitializationError if junit says so
      */
-    protected RobolectricTestRunner(Class<?> testClass, RobolectricConfig robolectricConfig, DatabaseMap databaseMap)
+    protected RobolectricTestRunner(final Class<?> testClass, final RobolectricConfig robolectricConfig, final DatabaseMap databaseMap)
             throws InitializationError {
         this(testClass,
                 isInstrumented() ? null : ShadowWrangler.getInstance(),
@@ -188,7 +195,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         this(testClass, new RobolectricConfig(new File(androidManifestPath), new File(resourceDirectory)));
     }
 
-    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader classLoader, RobolectricConfig robolectricConfig) throws InitializationError {
+    protected RobolectricTestRunner(final Class<?> testClass, final ClassHandler classHandler, final RobolectricClassLoader classLoader, final RobolectricConfig robolectricConfig) throws InitializationError {
         this(testClass, classHandler, classLoader, robolectricConfig, new SQLiteMap());
     }
 
@@ -228,13 +235,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             delegateLoadingOf(DatabaseMap.class.getName());
             delegateLoadingOf(android.R.class.getName());
 
-            Class<?> delegateClass = classLoader.bootstrap(this.getClass());
+            final Class<?> delegateClass = classLoader.bootstrap(this.getClass());
             try {
-                Constructor<?> constructorForDelegate = delegateClass.getConstructor(Class.class);
+                final Constructor<?> constructorForDelegate = delegateClass.getConstructor(Class.class);
                 this.delegate = (RobolectricTestRunnerInterface) constructorForDelegate.newInstance(classLoader.bootstrap(testClass));
                 this.delegate.setRobolectricConfig(robolectricConfig);
                 this.delegate.setDatabaseMap(databaseMap);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -256,17 +263,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         this.robolectricConfig = robolectricConfig;
     }
 
-    public static void setStaticValue(Class<?> clazz, String fieldName, Object value) {
+    public static void setStaticValue(final Class<?> clazz, final String fieldName, final Object value) {
         try {
-            Field field = clazz.getField(fieldName);
+            final Field field = clazz.getField(fieldName);
             field.setAccessible(true);
 
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
+            final Field modifiersField = Field.class.getDeclaredField("modifiers");
             modifiersField.setAccessible(true);
             modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
 
             field.set(null, value);
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
@@ -343,7 +350,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         if (delegate != null) {
             return delegate.createTest();
         } else {
-            Object test = super.createTest();
+            final Object test = super.createTest();
             prepareTest(test);
             return test;
         }
@@ -354,7 +361,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     public void setupApplicationState(final RobolectricConfig robolectricConfig) {
         setupLogging();
-        ResourceLoader resourceLoader = createResourceLoader(robolectricConfig);
+        final ResourceLoader resourceLoader = createResourceLoader(robolectricConfig);
 
         Robolectric.bindDefaultShadowClasses();
         bindShadowClasses();
@@ -400,7 +407,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param method
      * @param robolectricConfig
      */
-    private void setupI18nStrictState(Method method, RobolectricConfig robolectricConfig) {
+    private void setupI18nStrictState(final Method method, final RobolectricConfig robolectricConfig) {
     	// Global
     	boolean strictI18n = globalI18nStrictEnabled();
 
@@ -439,9 +446,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param annos
      * @return
      */
-	private boolean lookForI18nAnnotations(boolean strictI18n, Annotation[] annos) {
+	private boolean lookForI18nAnnotations(boolean strictI18n, final Annotation[] annos) {
 		for ( int i = 0; i < annos.length; i++ ) {
-    		String name = annos[i].annotationType().getName();
+    		final String name = annos[i].annotationType().getName();
     		if (name.equals("com.xtremelabs.robolectric.annotation.EnableStrictI18n")) {
     			strictI18n = true;
     			break;
@@ -455,7 +462,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 	}
 
     private void setupLogging() {
-        String logging = System.getProperty("robolectric.logging");
+        final String logging = System.getProperty("robolectric.logging");
         if (logging != null && ShadowLog.stream == null) {
             PrintStream stream = null;
             if ("stdout".equalsIgnoreCase(logging)) {
@@ -468,10 +475,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
                     stream = file;
                     Runtime.getRuntime().addShutdownHook(new Thread() {
                         @Override public void run() {
-                            try { file.close(); } catch (Exception ignored) { }
+                            try { file.close(); } catch (final Exception ignored) { }
                         }
                     });
-                } catch (IOException e) {
+                } catch (final IOException e) {
                     e.printStackTrace();
                 }
             }
@@ -497,11 +504,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             try {
                 robolectricConfig.validate();
 
-                String rClassName = robolectricConfig.getRClassName();
-                Class rClass = Class.forName(rClassName);
+                final String rClassName = robolectricConfig.getRClassName();
+                final Class rClass = Class.forName(rClassName);
                 resourceLoader = new ResourceLoader(robolectricConfig.getRealSdkVersion(), rClass, robolectricConfig.getResourceDirectory(), robolectricConfig.getAssetsDirectory());
                 resourceLoaderForRootAndDirectory.put(robolectricConfig, resourceLoader);
-            } catch (Exception e) {
+            } catch (final Exception e) {
                 throw new RuntimeException(e);
             }
         }
@@ -511,11 +518,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     private String findResourcePackageName(final File projectManifestFile) throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = db.parse(projectManifestFile);
+        final DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+        final DocumentBuilder db = dbf.newDocumentBuilder();
+        final Document doc = db.parse(projectManifestFile);
 
-        String projectPackage = doc.getElementsByTagName("manifest").item(0).getAttributes().getNamedItem("package").getTextContent();
+        final String projectPackage = doc.getElementsByTagName("manifest").item(0).getAttributes().getNamedItem("package").getTextContent();
 
         return projectPackage + ".R";
     }
@@ -524,11 +531,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * Specifies what database to use for testing (ex: H2 or Sqlite),
      * this will load H2 by default, the SQLite TestRunner version will override this.
      */
-    protected DatabaseMap setupDatabaseMap(Class<?> testClass, DatabaseMap map) {
+    protected DatabaseMap setupDatabaseMap(final Class<?> testClass, final DatabaseMap map) {
     	DatabaseMap dbMap = map;
 
     	if (testClass.isAnnotationPresent(UsingDatabaseMap.class)) {
-	    	UsingDatabaseMap usingMap = testClass.getAnnotation(UsingDatabaseMap.class);
+	    	final UsingDatabaseMap usingMap = testClass.getAnnotation(UsingDatabaseMap.class);
 	    	if(usingMap.value()!=null){
 	    		dbMap = Robolectric.newInstanceOf(usingMap.value());
 	    	} else {
@@ -543,28 +550,29 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 		return databaseMap;
 	}
 
-	public void setDatabaseMap(DatabaseMap databaseMap) {
+	@Override
+    public void setDatabaseMap(final DatabaseMap databaseMap) {
 		this.databaseMap = databaseMap;
 	}
 
-  	/**
-  	 * Detects whether current instance is already instrumented.
-  	 */
-  	public interface InstrumentDetector {
-  
-    	  /** Default detector. */
-    	  InstrumentDetector DEFAULT = new InstrumentDetector() {
-    	    @Override
-    	    public boolean isInstrumented() {
-    	      return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(RobolectricClassLoader.class.getName()); 
-    	    }
-    	  };
-    
-    	  /**
-    	   * @return true if current instance is already instrumented 
-    	   */
-    	  boolean isInstrumented();
-    	  
-  	}
-	
+	/**
+	 * Detects whether current instance is already instrumented.
+	 */
+	public interface InstrumentDetector {
+
+	    /** Default detector. */
+	    InstrumentDetector DEFAULT = new InstrumentDetector() {
+	        @Override
+	        public boolean isInstrumented() {
+	            return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(RobolectricClassLoader.class.getName());
+	        }
+	    };
+
+	    /**
+	     * @return true if current instance is already instrumented
+	     */
+	    boolean isInstrumented();
+
+	}
+
 }
