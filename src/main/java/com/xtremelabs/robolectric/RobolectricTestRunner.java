@@ -39,8 +39,10 @@ import java.util.Map;
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
+  	
     /** Instrument detector. We use it to check whether the current instance is instrumented. */
-    private static InstrumentDetector instrumentDetector = InstrumentDetector.DEFAULT;
+  	private static InstrumentDetector instrumentDetector = InstrumentDetector.DEFAULT;
+  	
     private static RobolectricClassLoader defaultLoader;
     private static Map<RobolectricConfig, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RobolectricConfig, ResourceLoader>();
 
@@ -545,23 +547,24 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 		this.databaseMap = databaseMap;
 	}
 
-	/**
-	 * Detects whether current instance is already instrumented.
-	 */
-	public interface InstrumentDetector {
-	  
-	  /** Default detector. */
-	  InstrumentDetector DEFAULT = new InstrumentDetector() {
-	    @Override
-	    public boolean isInstrumented() {
-	      return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(RobolectricClassLoader.class.getName()); 
-	    }
-	  };
-	  
-	  /**
-	   * @return true if current instance is already instrumented 
-	   */
-	  boolean isInstrumented();
-	}
+  	/**
+  	 * Detects whether current instance is already instrumented.
+  	 */
+  	public interface InstrumentDetector {
+  
+    	  /** Default detector. */
+    	  InstrumentDetector DEFAULT = new InstrumentDetector() {
+    	    @Override
+    	    public boolean isInstrumented() {
+    	      return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(RobolectricClassLoader.class.getName()); 
+    	    }
+    	  };
+    
+    	  /**
+    	   * @return true if current instance is already instrumented 
+    	   */
+    	  boolean isInstrumented();
+    	  
+  	}
 	
 }
