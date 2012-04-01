@@ -4,6 +4,7 @@ import android.widget.Spinner;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Spinner.class)
 public class ShadowSpinner extends ShadowAbsSpinner {
 
