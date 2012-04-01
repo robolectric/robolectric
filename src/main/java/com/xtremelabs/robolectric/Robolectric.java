@@ -245,6 +245,7 @@ public class Robolectric {
                 ShadowPhoneNumberUtils.class,
                 ShadowPoint.class,
                 ShadowPointF.class,
+                ShadowPopupWindow.class,
                 ShadowPowerManager.class,
                 ShadowPreference.class,
                 ShadowPreferenceActivity.class,
@@ -690,6 +691,10 @@ public class Robolectric {
 
     public static ShadowPhoneNumberUtils shadowOf(PhoneNumberUtils instance) {
         return (ShadowPhoneNumberUtils) shadowOf_(instance);
+    }
+
+    public static ShadowPopupWindow shadowOf(PopupWindow instance) {
+        return (ShadowPopupWindow) shadowOf_(instance);
     }
 
     public static ShadowPowerManager shadowOf(PowerManager instance) {
