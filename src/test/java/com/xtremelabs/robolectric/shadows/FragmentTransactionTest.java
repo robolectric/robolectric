@@ -15,7 +15,6 @@ import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class FragmentTransactionTest {
-
     private MockTestFragmentManager manager;
     private Fragment fragment;
     private FragmentTransaction txn;
