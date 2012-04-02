@@ -125,6 +125,7 @@ public class Robolectric {
                 ShadowAlertDialog.ShadowBuilder.class,
                 ShadowAndroidHttpClient.class,
                 ShadowAnimation.class,
+                ShadowAnimationDrawable.class,
                 ShadowAnimationUtils.class,
                 ShadowApplication.class,
                 ShadowAppWidgetManager.class,
