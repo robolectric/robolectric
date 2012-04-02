@@ -371,6 +371,12 @@ public class ActivityTest {
         assertTrue(shadowOf(activity).onKeyUpWasCalled());
         assertTrue(activity.isFinishing());
     }
+    
+    @Test
+    public void shouldGiveSharedPreferences() throws Exception {
+    	Activity activity = new Activity();
+    	assertNotNull(activity.getPreferences(activity.MODE_PRIVATE));
+    }
 
     private static class DialogCreatingActivity extends Activity {
         @Override
