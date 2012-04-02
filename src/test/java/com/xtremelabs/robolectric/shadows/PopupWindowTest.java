@@ -1,14 +1,17 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.graphics.drawable.BitmapDrawable;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.PopupWindow;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static android.view.MotionEvent.ACTION_DOWN;
+import static android.view.MotionEvent.obtain;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
@@ -67,14 +70,14 @@ public class PopupWindowTest {
 
     @Test
     public void testShowing() {
-        Robolectric.shadowOf(popupWindow).setShowing(true);
+        shadowOf(popupWindow).setShowing(true);
 
         assertTrue(popupWindow.isShowing());
     }
 
     @Test
     public void testDismiss() {
-        Robolectric.shadowOf(popupWindow).setShowing(true);
+        shadowOf(popupWindow).setShowing(true);
 
         assertTrue(popupWindow.isShowing());
 
@@ -89,6 +92,18 @@ public class PopupWindowTest {
         BitmapDrawable bitmapDrawable = new BitmapDrawable();
         popupWindow.setBackgroundDrawable(bitmapDrawable);
 
-        assertThat((BitmapDrawable)popupWindow.getBackground(), is(bitmapDrawable));
+        assertThat((BitmapDrawable) popupWindow.getBackground(), is(bitmapDrawable));
+    }
+
+    @Test
+    public void testTouchInterceptor() {
+        popupWindow.setTouchInterceptor(new View.OnTouchListener() {
+            @Override
+            public boolean onTouch(View v, MotionEvent event) {
+                return event.getAction() == ACTION_DOWN;
+            }
+        });
+
+        assertTrue(shadowOf(popupWindow).dispatchTouchEvent(obtain(1, 1, ACTION_DOWN, 1f, 1f, 0)));
     }
 }
