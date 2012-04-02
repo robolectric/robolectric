@@ -4,6 +4,7 @@ import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.widget.ImageView;
@@ -19,7 +20,9 @@ import static com.xtremelabs.robolectric.Robolectric.visualize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ImageViewTest {
@@ -72,6 +75,21 @@ public class ImageViewTest {
                 imageView.getDrawable() instanceof LayerDrawable);
     }
 
+    @Test
+    public void testSetAnimatedImage_drawable() {
+        imageView.setImageResource(R.drawable.animation_list);
+        Drawable animation = imageView.getDrawable();
+        assertTrue(animation instanceof Drawable);
+        assertTrue(animation instanceof AnimationDrawable);
+    }
+
+    @Test
+    public void testSetAnimationItem() throws Exception {
+        imageView.setImageResource(R.drawable.animation_list);
+        AnimationDrawable animation = (AnimationDrawable) imageView.getDrawable();
+        assertEquals(3, animation.getNumberOfFrames());
+    }
+    
     @Test
     public void testSetImageResource_layerDrawable() {
         imageView.setImageResource(R.drawable.rainbow);
