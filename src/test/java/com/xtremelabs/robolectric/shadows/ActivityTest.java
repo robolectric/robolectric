@@ -3,14 +3,15 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.app.Dialog;
 import android.appwidget.AppWidgetProvider;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
-
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
@@ -18,7 +19,6 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestRunnable;
 import com.xtremelabs.robolectric.util.Transcript;
-
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -370,6 +370,15 @@ public class ActivityTest {
         assertTrue(consumed);
         assertTrue(shadowOf(activity).onKeyUpWasCalled());
         assertTrue(activity.isFinishing());
+    }
+    
+    @Test
+    public void shouldGiveSharedPreferences() throws Exception {
+    	Activity activity = new Activity();
+        SharedPreferences preferences = activity.getPreferences(Context.MODE_PRIVATE);
+        assertNotNull(preferences);
+        preferences.edit().putString("foo", "bar").commit();
+        assertThat(activity.getPreferences(Context.MODE_PRIVATE).getString("foo", null), equalTo("bar"));
     }
 
     private static class DialogCreatingActivity extends Activity {
