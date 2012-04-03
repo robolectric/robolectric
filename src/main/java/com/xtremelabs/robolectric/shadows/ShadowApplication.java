@@ -63,6 +63,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private List<Intent> startedActivities = new ArrayList<Intent>();
     private List<Intent> startedServices = new ArrayList<Intent>();
     private List<Intent> stoppedServies = new ArrayList<Intent>();
+    private List<Intent> broadcastIntents = new ArrayList<Intent>();
     private List<ServiceConnection> unboundServiceConnections = new ArrayList<ServiceConnection>();
     private List<Wrapper> registeredReceivers = new ArrayList<Wrapper>();
     private Map<String, Intent> stickyIntents = new HashMap<String, Intent>();
@@ -308,6 +309,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     @Override
     @Implementation
     public void sendBroadcast(Intent intent) {
+        broadcastIntents.add(intent);
+		
         List<Wrapper> copy = new ArrayList<Wrapper>();
         copy.addAll(registeredReceivers);
         for (Wrapper wrapper : copy) {
@@ -315,6 +318,10 @@ public class ShadowApplication extends ShadowContextWrapper {
                 wrapper.broadcastReceiver.onReceive(realApplication, intent);
             }
         }
+    }
+	
+    public List<Intent> getBroadcastIntents() {
+        return broadcastIntents;
     }
 
     @Implementation

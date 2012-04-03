@@ -407,6 +407,11 @@ public class ResourceLoader {
 		return drawableResourceLoader.isXml( resourceId );
 	}
 
+    public boolean isAnimatableXml( int resourceId ) {
+        init();
+        return drawableResourceLoader.isAnimationDrawable( resourceId );
+    }
+
 	public int[] getDrawableIds( int resourceId ) {
 		init();
 		return drawableResourceLoader.getDrawableIds( resourceId );

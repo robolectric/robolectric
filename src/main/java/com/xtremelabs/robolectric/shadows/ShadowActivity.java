@@ -5,6 +5,7 @@ import android.app.Application;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.FrameLayout;
@@ -221,6 +222,11 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public int getRequestedOrientation() {
         return requestedOrientation;
+    }
+    
+    @Implementation
+    public SharedPreferences getPreferences(int mode) {
+    	return ShadowPreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     }
 
     /**

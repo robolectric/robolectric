@@ -19,7 +19,6 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.tester.android.content.TestSharedPreferences;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -38,7 +37,6 @@ public class ShadowContextWrapper extends ShadowContext {
 
     private String appName;
     private String packageName;
-    private ArrayList<Intent> broadcastIntents = new ArrayList<Intent>();
     private Set<String> grantedPermissions = new HashSet<String>();
 
     public void __constructor__(Context baseContext) {
@@ -73,11 +71,10 @@ public class ShadowContextWrapper extends ShadowContext {
     @Implementation
     public void sendBroadcast(Intent intent) {
         getApplicationContext().sendBroadcast(intent);
-        broadcastIntents.add(intent);
     }
 
     public List<Intent> getBroadcastIntents() {
-        return broadcastIntents;
+        return ((ShadowApplication) shadowOf(getApplicationContext())).getBroadcastIntents();
     }
 
     @Implementation

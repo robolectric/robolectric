@@ -85,6 +85,11 @@ public class ShadowListView extends ShadowAbsListView {
     }
 
     @Implementation
+    public int getFooterViewsCount() {
+        return footerViews.size();
+    }
+
+    @Implementation
     public void addFooterView(View footerView, Object data, boolean isSelectable) {
         ensureAdapterNotSet("footer");
         footerViews.add(footerView);

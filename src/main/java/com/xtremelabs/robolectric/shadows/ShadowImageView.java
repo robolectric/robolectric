@@ -4,6 +4,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
+import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
@@ -11,6 +12,7 @@ import android.widget.ImageView;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -60,18 +62,24 @@ public class ShadowImageView extends ShadowView {
      */
     protected Drawable buildDrawable(int resourceId) {
         if (isDrawableXml(resourceId)) {
-            int[] resourceIds = shadowOf(Robolectric.application)
-                    .getResourceLoader().getDrawableIds(resourceId);
-
+            ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
+            int[] resourceIds = resourceLoader.getDrawableIds(resourceId);
             Drawable[] drawables = new Drawable[resourceIds.length];
 
             for (int i = 0; i < resourceIds.length; i++) {
                 drawables[i] = buildDrawable(resourceIds[i]);
             }
-
-            LayerDrawable layerDrawable = new LayerDrawable(drawables);
-            shadowOf(layerDrawable).setLoadedFromResourceId(resourceId);
-            return layerDrawable;
+            if (resourceLoader.isAnimatableXml(resourceId)) {
+                AnimationDrawable animationDrawable = new AnimationDrawable();
+                for (Drawable drawable : drawables) {
+                    animationDrawable.addFrame(drawable, -1);
+                }
+                return animationDrawable;
+            } else {
+                LayerDrawable layerDrawable = new LayerDrawable(drawables);
+                shadowOf(layerDrawable).setLoadedFromResourceId(resourceId);
+                return layerDrawable;
+            }
         } else {
             return new BitmapDrawable(BitmapFactory.decodeResource(
                     getResources(), resourceId));
