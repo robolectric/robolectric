@@ -147,7 +147,7 @@ public class TestFragmentManager extends FragmentManager {
             container = (ViewGroup) activity.findViewById(shadowFragment.getContainerViewId());
         }
 
-        View view = fragment.onCreateView(activity.getLayoutInflater(), container, null);
+        View view = fragment.onCreateView(activity.getLayoutInflater(), container, shadowFragment.getSavedInstanceState());
         shadowFragment.setView(view);
 
         fragment.onViewCreated(view, null);

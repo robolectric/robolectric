@@ -66,7 +66,7 @@ public class ListViewTest {
         }
 
         try {
-            listView.addHeaderView(new View(null), null, false );
+            listView.addHeaderView(new View(null), null, false);
             fail();
         } catch (java.lang.IllegalStateException exception) {
             assertThat(exception.getMessage(), equalTo("Cannot add header view to list -- setAdapter has already been called"));
@@ -76,27 +76,27 @@ public class ListViewTest {
     @Test
     public void addHeaderView_ShouldRecordHeaders() throws Exception {
         View view0 = new View(null);
-        view0.setId( 0 );
+        view0.setId(0);
         View view1 = new View(null);
-        view1.setId( 1 );
+        view1.setId(1);
         View view2 = new View(null);
-        view2.setId( 2 );
+        view2.setId(2);
         View view3 = new View(null);
-        view3.setId( 3 );
+        view3.setId(3);
         listView.addHeaderView(view0);
         listView.addHeaderView(view1);
-        listView.addHeaderView( view2, null, false );
-        listView.addHeaderView( view3, null, false );
-        assertThat( listView.getHeaderViewsCount(), equalTo( 4 ) );
+        listView.addHeaderView(view2, null, false);
+        listView.addHeaderView(view3, null, false);
+        assertThat(listView.getHeaderViewsCount(), equalTo(4));
         assertThat(shadowOf(listView).getHeaderViews().get(0), sameInstance(view0));
         assertThat(shadowOf(listView).getHeaderViews().get(1), sameInstance(view1));
         assertThat(shadowOf(listView).getHeaderViews().get(2), sameInstance(view2));
         assertThat(shadowOf(listView).getHeaderViews().get(3), sameInstance(view3));
 
-        assertThat( listView.findViewById( 0 ), notNullValue() );
-        assertThat( listView.findViewById( 1 ), notNullValue() );
-        assertThat( listView.findViewById( 2 ), notNullValue() );
-        assertThat( listView.findViewById( 3 ), notNullValue() );
+        assertThat(listView.findViewById(0), notNullValue());
+        assertThat(listView.findViewById(1), notNullValue());
+        assertThat(listView.findViewById(2), notNullValue());
+        assertThat(listView.findViewById(3), notNullValue());
     }
 
     @Test
@@ -156,6 +156,24 @@ public class ListViewTest {
     }
 
     @Test
+    public void testGetFooterViewsCount() throws Exception {
+        listView.addHeaderView(new View(null));
+        listView.addFooterView(new View(null));
+        listView.addFooterView(new View(null));
+
+        prepareListWithThreeItems();
+
+        assertThat(listView.getFooterViewsCount(), equalTo(2));
+    }
+
+    @Test
+    public void smoothScrollBy_shouldBeRecorded() throws Exception {
+        listView.smoothScrollBy(42, 420);
+        assertThat(shadowOf(listView).getLastSmoothScrollByDistance(), equalTo(42));
+        assertThat(shadowOf(listView).getLastSmoothScrollByDuration(), equalTo(420));
+    }
+
+    @Test
     public void testPerformItemClick_ShouldFireOnItemClickListener() throws Exception {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -206,14 +224,14 @@ public class ListViewTest {
 
     @Test
     public void clickItemContainingText_shouldPerformItemClickOnList_arrayAdapter() throws Exception {
-    	ArrayList<String> adapterFileList = new ArrayList<String>();
-    	adapterFileList.add("Item 1");
-    	adapterFileList.add("Item 2");
-    	adapterFileList.add("Item 3");
-    	final ArrayAdapter<String> adapter = new ArrayAdapter<String>(null, android.R.layout.simple_list_item_1, adapterFileList);
-    	listView.setAdapter(adapter);
+        ArrayList<String> adapterFileList = new ArrayList<String>();
+        adapterFileList.add("Item 1");
+        adapterFileList.add("Item 2");
+        adapterFileList.add("Item 3");
+        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(null, android.R.layout.simple_list_item_1, adapterFileList);
+        listView.setAdapter(adapter);
         ShadowHandler.idleMainLooper();
-    	ShadowListView shadowListView = shadowOf(listView);
+        ShadowListView shadowListView = shadowOf(listView);
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
@@ -315,11 +333,15 @@ public class ListViewTest {
     public void revalidate_withALazyAdapterShouldWork() {
         ListAdapter lazyAdapter = new ListAdapter() {
             List<String> lazyItems = Arrays.asList("a", "b", "c");
-            @Override public View getView(int position, View convertView, ViewGroup parent) {
+
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
                 if (items.isEmpty()) items.addAll(lazyItems);
                 return super.getView(position, convertView, parent);
             }
-            @Override public int getCount() {
+
+            @Override
+            public int getCount() {
                 return lazyItems.size();
             }
         };
@@ -370,7 +392,8 @@ public class ListViewTest {
             return 0;
         }
 
-        @Override public View getView(int position, View convertView, ViewGroup parent) {
+        @Override
+        public View getView(int position, View convertView, ViewGroup parent) {
             LinearLayout linearLayout = new LinearLayout(null);
             linearLayout.addView(new View(null));
             return linearLayout;

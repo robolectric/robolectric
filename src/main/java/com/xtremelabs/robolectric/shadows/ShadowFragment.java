@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -17,6 +18,7 @@ public class ShadowFragment {
     private Bundle savedInstanceState;
     private int containerViewId;
     private boolean shouldReplace;
+    private Bundle arguments;
 
     public void setView(View view) {
         this.view = view;
@@ -56,6 +58,11 @@ public class ShadowFragment {
         return tag;
     }
 
+    @Implementation
+    public Resources getResources() {
+        return getActivity().getResources();
+    }
+
     public void setTag(String tag) {
         this.tag = tag;
     }
@@ -83,4 +90,15 @@ public class ShadowFragment {
     public boolean getShouldReplace() {
         return shouldReplace;
     }
+
+    @Implementation
+    public Bundle getArguments() {
+        return arguments;
+    }
+
+    @Implementation
+    public void setArguments(Bundle arguments) {
+        this.arguments = arguments;
+    }
+
 }

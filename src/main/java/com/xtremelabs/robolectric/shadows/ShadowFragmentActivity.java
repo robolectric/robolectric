@@ -70,7 +70,9 @@ public class ShadowFragmentActivity extends ShadowActivity {
         List<SerializedFragmentState> fragmentStates = new ArrayList<SerializedFragmentState>();
 
         for (Map.Entry<Integer, Fragment> entry : ((TestFragmentManager) fragmentManager).getFragments().entrySet()) {
-            fragmentStates.add(new SerializedFragmentState(entry.getKey(), entry.getValue()));
+            Fragment fragment = entry.getValue();
+            fragment.onSaveInstanceState(outState);
+            fragmentStates.add(new SerializedFragmentState(entry.getKey(), fragment));
         }
 
         outState.putSerializable(FRAGMENTS_TAG, fragmentStates.toArray());
