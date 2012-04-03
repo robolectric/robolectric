@@ -89,6 +89,17 @@ public class FragmentActivityTest {
     }
 
     @Test
+    public void onSaveInstanceState_shouldCallOnSaveInstanceStateOnFragments() throws Exception {
+        TestFragment fragment = new TestFragment();
+        int fragment_container = R.id.dynamic_fragment_container;
+        activity.getSupportFragmentManager().beginTransaction().add(fragment_container, fragment).commit();
+        Bundle outState = new Bundle();
+        activity.onSaveInstanceState(outState);
+
+        assertTrue(fragment.onSaveInstanceStateWasCalled);
+    }
+
+    @Test
     public void onCreate_shouldRecreateFragments() throws Exception {
         Bundle bundle = new Bundle();
         TestFragment dynamicFrag = new TestFragment();
