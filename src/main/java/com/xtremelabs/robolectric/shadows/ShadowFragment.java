@@ -17,6 +17,7 @@ public class ShadowFragment {
     private Bundle savedInstanceState;
     private int containerViewId;
     private boolean shouldReplace;
+    private Bundle arguments;
 
     public void setView(View view) {
         this.view = view;
@@ -83,4 +84,15 @@ public class ShadowFragment {
     public boolean getShouldReplace() {
         return shouldReplace;
     }
+
+    @Implementation
+    public Bundle getArguments() {
+        return arguments;
+    }
+
+    @Implementation
+    public void setArguments(Bundle arguments) {
+        this.arguments = arguments;
+    }
+
 }
