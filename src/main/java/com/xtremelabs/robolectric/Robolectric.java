@@ -209,6 +209,7 @@ public class Robolectric {
                 ShadowLayoutInflater.class,
                 ShadowLayoutParams.class,
                 ShadowLinearLayout.class,
+                ShadowRelativeLayout.class,
                 ShadowListActivity.class,
                 ShadowListPreference.class,
                 ShadowListView.class,
