@@ -18,13 +18,55 @@ public class FragmentTransactionTest {
 
     private MockTestFragmentManager manager;
     private Fragment fragment;
-    private FragmentTransaction txn;
+    private TestFragmentTransaction txn;
+    private String tag;
+    private int id;
 
     @Before
     public void setUp() throws Exception {
         manager = new MockTestFragmentManager();
         txn = new TestFragmentTransaction(manager);
         fragment = new TestFragment();
+        tag = "tag";
+        id = 111;
+    }
+
+    @Test
+    public void testGetters() throws Exception {
+        txn.add(fragment, tag);
+        assertSame(fragment, txn.getFragment());
+        assertSame(tag, txn.getTag());
+        assertEquals(View.NO_ID, txn.getContainerViewId());
+
+        txn.add(id, fragment);
+        assertEquals(id, txn.getContainerViewId());
+        assertSame(fragment, txn.getFragment());
+
+        txn.add(id, fragment, tag);
+        assertEquals(id, txn.getContainerViewId());
+        assertSame(fragment, txn.getFragment());
+        assertSame(tag, txn.getTag());
+        assertFalse(txn.isReplacing());
+
+        txn.replace(id, fragment);
+        assertEquals(id, txn.getContainerViewId());
+        assertSame(fragment, txn.getFragment());
+        assertTrue(txn.isReplacing());
+
+        txn.replace(id, fragment, tag);
+        assertEquals(id, txn.getContainerViewId());
+        assertSame(fragment, txn.getFragment());
+        assertSame(tag, txn.getTag());
+        assertTrue(txn.isReplacing());
+    }
+
+    @Test
+    public void testAddToBackStack() throws Exception {
+        assertFalse(txn.isAddedToBackStack());
+        FragmentTransaction returnedTransaction = txn.addToBackStack("name");
+        assertSame(txn, returnedTransaction);
+        assertTrue(txn.isAddedToBackStack());
+        assertEquals("name", txn.getBackStackName());
     }
 
     @Test

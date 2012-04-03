@@ -11,7 +11,9 @@ import com.xtremelabs.robolectric.shadows.ShadowFragmentActivity;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -20,6 +22,7 @@ public class TestFragmentManager extends FragmentManager {
     private Map<Integer, Fragment> fragmentsById = new HashMap<Integer, Fragment>();
     private Map<String, Fragment> fragmentsByTag = new HashMap<String, Fragment>();
     private FragmentActivity activity;
+    private List<TestFragmentTransaction> transactions = new ArrayList<TestFragmentTransaction>();
 
     public TestFragmentManager(FragmentActivity activity) {
         this.activity = activity;
@@ -161,5 +164,15 @@ public class TestFragmentManager extends FragmentManager {
 
     public HashMap<Integer, Fragment> getFragments() {
         return new HashMap<Integer, Fragment>(fragmentsById);
+    }
+
+    public List<TestFragmentTransaction> getCommittedTransactions() {
+        return transactions;
+    }
+
+    public void commitTransaction(TestFragmentTransaction t) {
+        transactions.add(t);
+        addFragment(t.getContainerViewId(), t.getTag(), t.getFragment(), t.isReplacing());
+        startFragment(t.getFragment());
     }
 }
