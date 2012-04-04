@@ -5,6 +5,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.webkit.WebView;
 import android.widget.*;
 import com.google.android.maps.MapView;
@@ -24,7 +25,6 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.*;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -334,6 +334,21 @@ public class ViewLoaderTest {
     	viewLoader.inflateView(context,"layout/text_views");
     }
 
+    @Test
+    public void testLoadRelativeLayout() throws Exception {
+        ViewGroup parentView = (ViewGroup) viewLoader.inflateView(context, "layout/title");
+        RelativeLayout title = (RelativeLayout)parentView.findViewById(R.id.title);
+        assertTrue(title != null);
+    }
+
+    @Test
+    public void testCustomTitle() throws Exception {
+    	TitleActivity activity = new TitleActivity();
+    	activity.onCreate(null);
+    	RelativeLayout title = (RelativeLayout)activity.findViewById(R.id.title);
+    	assertTrue(title != null);
+    }
+
     public static class ClickActivity extends Activity {
         public boolean clicked = false;
 
@@ -344,6 +359,14 @@ public class ViewLoaderTest {
 
         public void onButtonClick(View v) {
             clicked = true;
+        }
+    }
+    
+    public static class TitleActivity extends Activity {
+        @Override protected void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            setContentView(R.layout.main);
+            getWindow().setFeatureInt(Window.FEATURE_CUSTOM_TITLE, R.layout.title);
         }
     }
 }
