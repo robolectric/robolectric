@@ -7,15 +7,16 @@
 Thanks JetBrains! As of IntelliJ 10.5 makes developing Android applications with Robolectric easy.
 
 ### Maven
-This is by far the easiest installation method.
+This is by far the easiest installation method. Get started by [creating a maven based android project](maven-quick-start.html):
 
-1. Open IntelliJ
-2. Select File &rarr; Open Project... &rarr; select the `pom.xml`.
+1. [Create a maven based android project](maven-quick-start.html)
+2. Open IntelliJ
+3. Select File &rarr; Open Project... &rarr; select `pom.xml`.
 
 ![](images/intellij.jpg)
 
 ### Git Submodules
-[Android IntelliJ Starter](https://github.com/pivotal/AndroidIntelliJStarter) is a "template" which configures Robolectric as a [git submodule](http://kernel.org/pub/software/scm/git/docs/git-submodule.html "git-submodule(1)"). This is especially useful if you plan on forking Robolectric.
+[Android IntelliJ Starter](https://github.com/pivotal/AndroidIntelliJStarter) is an Android project generator which configures Robolectric as a [git submodule](http://kernel.org/pub/software/scm/git/docs/git-submodule.html "git-submodule(1)"). This is especially useful if you plan on forking Robolectric.
 
 ------
 
