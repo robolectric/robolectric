@@ -7,7 +7,7 @@
 Thanks JetBrains! As of IntelliJ 10.5 makes developing Android applications with Robolectric easy.
 
 ### Maven
-This is by far the easiest installation method. Get started by [creating a maven based android project](maven-quick-start.html):
+This is by far the easiest installation method.
 
 1. [Create a maven based android project](maven-quick-start.html)
 2. Open IntelliJ
