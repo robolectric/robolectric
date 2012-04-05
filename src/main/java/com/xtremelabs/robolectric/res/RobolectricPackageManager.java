@@ -70,7 +70,8 @@ public class RobolectricPackageManager extends StubPackageManager {
 
     @Override 
     public List<ResolveInfo> queryIntentActivities( Intent intent, int flags ) {
-    	return resolveList.get( intent );
+    	List<ResolveInfo> result = resolveList.get( intent );
+    	return (result == null) ? new ArrayList<ResolveInfo>() : result;
     }
     
     @Override
