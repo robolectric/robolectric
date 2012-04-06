@@ -78,8 +78,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     @Override
     public ResolveInfo resolveActivity(Intent intent, int flags) {
     	List<ResolveInfo> candidates = queryIntentActivities(intent, flags);
-    	if (candidates == null) { return null; }
-    	return candidates.get(0);
+    	return candidates.isEmpty() ? null : candidates.get(0);
     }
     
     public void addResolveInfoForIntent( Intent intent, List<ResolveInfo> info ) {

@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
+import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
@@ -86,6 +87,28 @@ public class RobolectricPackageManagerTest {
 		assertThat(activities, notNullValue());
 		assertThat(activities.size(), equalTo(1));
 		assertThat(activities.get(0).nonLocalizedLabel.toString(), equalTo(TEST_PACKAGE_LABEL));
+	}
+	
+	@Test
+	public void resolveActivity__Match() throws Exception {
+		Intent i = new Intent(Intent.ACTION_MAIN, null);
+		i.addCategory(Intent.CATEGORY_LAUNCHER);
+		
+		List<ResolveInfo> resolved = new ArrayList<ResolveInfo>();
+		ResolveInfo info = new ResolveInfo();
+		info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
+		resolved.add(info);
+		
+		rpm.addResolveInfoForIntent(i, resolved);
+		
+		assertThat( rpm.resolveActivity(i, 0), sameInstance(info) );
+	}
+	
+	@Test
+	public void resolveActivity__NoMatch() throws Exception {
+		Intent i = new Intent();
+		i.setComponent( new ComponentName("foo.bar", "No Activity") );
+		assertThat( rpm.resolveActivity(i, 0), nullValue() ); 
 	}
 	
 	@Test
