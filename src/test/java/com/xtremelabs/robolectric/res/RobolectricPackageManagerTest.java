@@ -15,6 +15,8 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -84,5 +86,16 @@ public class RobolectricPackageManagerTest {
 		assertThat(activities, notNullValue());
 		assertThat(activities.size(), equalTo(1));
 		assertThat(activities.get(0).nonLocalizedLabel.toString(), equalTo(TEST_PACKAGE_LABEL));
+	}
+	
+	@Test
+	public void queryActivityIcons__Match() throws Exception {
+		Intent i = rpm.getLaunchIntentForPackage( TEST_PACKAGE_NAME );
+		Drawable d = new BitmapDrawable();
+		
+		rpm.addActivityIcon(i, d);
+		
+		assertThat( rpm.getActivityIcon( i ), sameInstance(d) );
+		assertThat( rpm.getActivityIcon( i.getComponent() ), sameInstance(d) );
 	}
 }
