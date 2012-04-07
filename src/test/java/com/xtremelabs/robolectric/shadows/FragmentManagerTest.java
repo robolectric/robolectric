@@ -130,6 +130,14 @@ public class FragmentManagerTest {
     }
 
     @Test
+    public void addFragment_shouldPassTheSavedInstanceStateToOnCreate() throws Exception {
+        Bundle bundle = new Bundle();
+        shadowOf(fragment).setSavedInstanceState(bundle);
+        manager.addFragment(0, null, fragment, false);
+        assertSame(bundle, fragment.onCreateSavedInstanceState);
+    }
+
+    @Test
     public void getFragment_whenBundleSavedByShadowFragmentActivity_shouldGetFragmentByTagFromBundle() throws Exception {
         manager.addFragment(CONTAINER_VIEW_ID, "fragment tag", fragment, true);
 

@@ -137,7 +137,7 @@ public class TestFragmentManager extends FragmentManager {
 
         shadowOf(fragment).setActivity(activity);
         fragment.onAttach(activity);
-        fragment.onCreate(null);
+        fragment.onCreate(shadowOf(fragment).getSavedInstanceState());
     }
 
     public void startFragment(Fragment fragment) {

@@ -37,6 +37,15 @@ public class BundleTest {
     }
     
     @Test
+    public void testSize() {
+        assertEquals(0, bundle.size());
+        bundle.putInt("foo", 5);
+        assertEquals(1, bundle.size());
+        bundle.putInt("bar", 5);
+        assertEquals(2, bundle.size());
+    }
+
+    @Test
     public void testLong() {
         bundle.putLong("foo", 5);
         assertEquals(5, bundle.getLong("foo"));

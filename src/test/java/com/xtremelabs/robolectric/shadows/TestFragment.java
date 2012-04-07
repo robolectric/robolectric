@@ -22,6 +22,7 @@ public class TestFragment extends Fragment {
     public boolean onSaveInstanceStateWasCalled;
     public Activity onAttachActivity;
     public Bundle onActivityCreated_savedInstanceState;
+    public Bundle onCreateSavedInstanceState;
 
     Transcript transcript = new Transcript();
 
@@ -36,6 +37,7 @@ public class TestFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         onCreateWasCalled = true;
         transcript.add("onCreate");
+        onCreateSavedInstanceState = savedInstanceState;
     }
 
     @Override
