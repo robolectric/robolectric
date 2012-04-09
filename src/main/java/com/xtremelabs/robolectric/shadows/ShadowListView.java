@@ -1,16 +1,16 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.util.SparseBooleanArray;
 import android.view.View;
-import android.widget.AdapterView;
 import android.widget.ListAdapter;
 import android.widget.ListView;
+
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ListView.class)
@@ -58,12 +58,27 @@ public class ShadowListView extends ShadowAbsListView {
     @Implementation
     @Override
     public boolean performItemClick(View view, int position, long id) {
-        AdapterView.OnItemClickListener onItemClickListener = getOnItemClickListener();
-        if (onItemClickListener != null) {
-            onItemClickListener.onItemClick(realListView, view, position, id);
-            return true;
+    	
+    	boolean handled = false;
+
+        if (choiceMode != ListView.CHOICE_MODE_NONE) {
+            handled = true;
+
+            if (choiceMode == ListView.CHOICE_MODE_MULTIPLE) {
+                boolean newValue = !checkedItemPositions.get(position, false);
+                checkedItemPositions.put(position, newValue);
+            } else {
+                boolean newValue = !checkedItemPositions.get(position, false);
+                if (newValue) {
+                	checkedItemPositions.clear();
+                	checkedItemPositions.put(position, true);
+                } 
+            }
         }
-        return false;
+
+        handled |= super.performItemClick(view, position, id);
+
+        return handled;
     }
 
     @Implementation

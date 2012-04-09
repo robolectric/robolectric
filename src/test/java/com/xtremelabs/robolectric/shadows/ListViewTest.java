@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
@@ -429,6 +430,45 @@ public class ListViewTest {
 		assertNull(listView.getCheckedItemPositions());
 	}
 	
+	@Test
+	public void givenItemIsNotCheckedAndChoiceModeIsSingle_whenPerformingItemClick_thenItemShouldBeChecked() {
+		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE);
+		int positionToClick = 0;
+		
+		listView.performItemClick(null, positionToClick, 0);
+		
+		assertThat(listView.getCheckedItemPosition(), equalTo(0));
+	}
+	
+	@Test
+	public void givenItemIsCheckedAndChoiceModeIsSingle_whenPerformingItemClick_thenItemShouldBeChecked() {
+		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemChecked();
+		
+		listView.performItemClick(null, checkedItemPosition, 0);
+		
+		assertThat(listView.getCheckedItemPosition(), equalTo(checkedItemPosition));
+	}
+	
+	@Test
+	public void givenItemIsNotCheckedAndChoiceModeIsMultiple_whenPerformingItemClick_thenItemShouldBeChecked() {
+		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+		int positionToClick = 0;
+		SparseBooleanArray expectedCheckedItemPositions = new SparseBooleanArray();
+		expectedCheckedItemPositions.put(positionToClick, true);
+		
+		listView.performItemClick(null, positionToClick, 0);
+		
+		assertThat(listView.getCheckedItemPositions(), equalTo(expectedCheckedItemPositions));
+	}
+	
+	@Test
+	public void givenItemIsCheckedAndChoiceModeIsMultiple_whenPerformingItemClick_thenItemShouldNotBeChecked() {
+		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemChecked();
+		
+		listView.performItemClick(null, checkedItemPosition, 0);
+
+		assertFalse(listView.getCheckedItemPositions().get(checkedItemPosition));
+	}
 	
 	private ListAdapterBuilder prepareListAdapter() {
 		return new ListAdapterBuilder();
