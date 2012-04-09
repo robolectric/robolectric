@@ -40,7 +40,7 @@ public class ShadowFragment {
 
     @Implementation
     public void startActivity(Intent intent) {
-        activity.startActivity(intent);
+        new FragmentActivity().startActivity(intent);
     }
 
     @Implementation

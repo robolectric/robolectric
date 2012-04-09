@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -11,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -123,6 +125,15 @@ public class FragmentTransactionTest {
         assertTrue(manager.addFragmentReplace);
     }
 
+    @Test
+    public void startActivity_shouldNotDelegateToParentActivity() throws Exception {
+        // because for some reason that's not what Android does in real life
+        StartActivityTrackingActivity trackingActivity = new StartActivityTrackingActivity();
+        shadowOf(fragment).setActivity(trackingActivity);
+        fragment.startActivity(null);
+        assertFalse(trackingActivity.startActivityWasCalled);
+    }
+
     private static class MockTestFragmentManager extends TestFragmentManager {
         private boolean addFragmentWasCalled;
         private int addFragmentContainerViewId;
@@ -141,6 +152,16 @@ public class FragmentTransactionTest {
             addFragmentTag = tag;
             addFragmentFragment = fragment;
             addFragmentReplace = replace;
+        }
+    }
+
+    private static class StartActivityTrackingActivity extends FragmentActivity {
+        boolean startActivityWasCalled;
+
+        @Override
+        public void startActivity(Intent intent) {
+            super.startActivity(intent);
+            startActivityWasCalled = true;
         }
     }
 }
