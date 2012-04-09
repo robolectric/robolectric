@@ -17,12 +17,16 @@
 
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.util.Arrays;
+
 import android.util.SparseArray;
+
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
-
-import java.util.HashMap;
-import java.util.Map;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 /**
  * Shadow implementation of SparseArray. Basically copied & pasted the
@@ -39,6 +43,9 @@ public class ShadowSparseArray<E> {
     private static final Object DELETED = new Object();
     private boolean mGarbage = false;
 
+    @RealObject 
+    private SparseArray<E> realObject;
+    
     public void __constructor__() {
         __constructor__(10);
     }
@@ -372,6 +379,16 @@ public class ShadowSparseArray<E> {
         return need;
     }
 
+    @Implementation
+    @Override
+    public boolean equals(Object o) {
+    	if (o == null || o.getClass() != realObject.getClass())
+    		return false;
+    	
+    	ShadowSparseArray<?> target = (ShadowSparseArray<?>)shadowOf((SparseArray<?>)o);
+    	return Arrays.equals(mKeys, target.mKeys) && Arrays.deepEquals(mValues, target.mValues);
+    }
+    
     private int[] mKeys;
     private Object[] mValues;
     private int mSize;

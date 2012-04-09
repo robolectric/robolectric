@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.util.SparseBooleanArray;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListAdapter;
@@ -20,6 +21,9 @@ public class ShadowListView extends ShadowAbsListView {
     private List<View> headerViews = new ArrayList<View>();
     private List<View> footerViews = new ArrayList<View>();
 
+    private int choiceMode;
+    private SparseBooleanArray checkedItemPositions = new SparseBooleanArray();
+    
     @Implementation
     @Override
     public View findViewById(int id) {
@@ -154,4 +158,42 @@ public class ShadowListView extends ShadowAbsListView {
             addView(footerView);
         }
     }
+    
+    @Implementation
+	public int getChoiceMode() {
+		return choiceMode;
+	}
+	
+    @Implementation
+	public void setChoiceMode(int choiceMode) {
+		this.choiceMode = choiceMode;
+	}
+	
+    @Implementation
+	public void setItemChecked(int position, boolean value) {
+		if(choiceMode == ListView.CHOICE_MODE_SINGLE)
+		{
+			checkedItemPositions.clear();
+			checkedItemPositions.put(position, value);
+		} else if(choiceMode == ListView.CHOICE_MODE_MULTIPLE)
+		{
+			checkedItemPositions.put(position, value);
+		}
+	}
+	
+    @Implementation
+	public int getCheckedItemPosition() {
+    	if (choiceMode != ListView.CHOICE_MODE_SINGLE || checkedItemPositions.size() != 1)
+    		return ListView.INVALID_POSITION;
+    	
+		return checkedItemPositions.keyAt(0);
+	}
+	
+    @Implementation
+	public SparseBooleanArray getCheckedItemPositions() {
+    	if (choiceMode == ListView.CHOICE_MODE_NONE)
+    		return null;
+    	
+		return checkedItemPositions;
+	}
 }

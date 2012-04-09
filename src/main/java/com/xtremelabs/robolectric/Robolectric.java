@@ -1,5 +1,15 @@
 package com.xtremelabs.robolectric;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultRequestDirector;
+
 import android.app.Activity;
 import android.app.ActivityGroup;
 import android.app.ActivityManager;
@@ -92,6 +102,7 @@ import android.text.TextPaint;
 import android.text.format.DateFormat;
 import android.text.method.PasswordTransformationMethod;
 import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -138,6 +149,7 @@ import android.widget.VideoView;
 import android.widget.ViewAnimator;
 import android.widget.ViewFlipper;
 import android.widget.ZoomButtonsController;
+
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
@@ -145,15 +157,6 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultRequestDirector;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
 
 public class Robolectric {
     public static Application application;
@@ -371,6 +374,7 @@ public class Robolectric {
                 ShadowSmsManager.class,
                 ShadowSpannableStringBuilder.class,
                 ShadowSparseArray.class,
+                ShadowSparseBooleanArray.class,
                 ShadowSpinner.class,
                 ShadowSyncResult.class,
                 ShadowSyncResult.ShadowSyncStats.class,
@@ -885,6 +889,15 @@ public class Robolectric {
     public static ShadowSmsManager shadowOf(SmsManager instance) {
     	return (ShadowSmsManager) shadowOf_(instance);
     }
+    
+    public static <E> ShadowSparseArray<E> shadowOf(SparseArray<E> other) {
+    	//noinspection unchecked
+    	return (ShadowSparseArray<E>) Robolectric.shadowOf_(other);
+    }
+    
+    public static ShadowSparseBooleanArray shadowOf(SparseBooleanArray other) {
+    	return (ShadowSparseBooleanArray) Robolectric.shadowOf_(other);
+    }
 
     public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
         return (ShadowSQLiteCursor) Robolectric.shadowOf_(other);
@@ -909,12 +922,7 @@ public class Robolectric {
     public static ShadowSQLiteStatement shadowOf(SQLiteStatement other) {
         return (ShadowSQLiteStatement) Robolectric.shadowOf_(other);
     }
-
-    public static <E> ShadowSparseArray<E> shadowOf(SparseArray<E> other) {
-        //noinspection unchecked
-        return (ShadowSparseArray<E>) Robolectric.shadowOf_(other);
-    }
-
+    
     public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
         return (ShadowSslErrorHandler) shadowOf_(instance);
     }
