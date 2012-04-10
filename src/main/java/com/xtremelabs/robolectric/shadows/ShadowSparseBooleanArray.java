@@ -33,11 +33,6 @@ public class ShadowSparseBooleanArray
 	}
 
 	@Implementation
-	public void remove(int key) {
-		sparseArray.remove(key);
-	}
-
-	@Implementation
 	public void put(int key, boolean value) {
 		sparseArray.put(key, value);
 	}
@@ -55,11 +50,6 @@ public class ShadowSparseBooleanArray
 	@Implementation
 	public boolean valueAt(int index) {
 		return sparseArray.valueAt(index);
-	}
-
-	@Implementation
-	public void setValueAt(int index, boolean value) {
-		sparseArray.setValueAt(index, value);
 	}
 
 	@Implementation
