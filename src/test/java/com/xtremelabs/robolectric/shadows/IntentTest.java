@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Bundle;
 import android.os.Parcel;
 import android.os.Parcelable;
 import com.xtremelabs.robolectric.Robolectric;
@@ -140,6 +141,15 @@ public class IntentTest {
         assertEquals(2L, shadowOf(intent).getExtras().get("foo"));
         assertEquals(2L, intent.getLongExtra("foo", -1));
         assertEquals(-1L, intent.getLongExtra("bar", -1));
+    }
+    
+    @Test
+    public void testBundleExtra() throws Exception {
+        Intent intent = new Intent();
+        Bundle bundle = new Bundle();
+        bundle.putInt("bar", 5);
+        assertSame(intent, intent.putExtra("foo", bundle));
+        assertEquals(5, intent.getBundleExtra("foo").getInt("bar"));
     }
 
     @Test
