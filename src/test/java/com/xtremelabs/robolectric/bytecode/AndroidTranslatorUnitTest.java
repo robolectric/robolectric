@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.bytecode;
 
-import com.xtremelabs.robolectric.internal.Instrument;
 import javassist.ClassPool;
 import javassist.CtClass;
 import org.junit.Before;
@@ -98,7 +97,7 @@ public class AndroidTranslatorUnitTest {
 
     @Test
     public void shouldInstrumentDefaultRequestDirector() throws Exception {
-        assertTrue(androidTranslator.shouldInstrument(classPool.get("org.apache.http.impl.client.DefaultRequestDirector")));
+        assertTrue(androidTranslator.shouldInstrument(classPool.makeClass("org.apache.http.impl.client.DefaultRequestDirector")));
     }
 
     @Test
@@ -114,18 +113,9 @@ public class AndroidTranslatorUnitTest {
 
     @Test
     public void shouldInstumentAndroidCoreClasses() throws Exception {
-        assertTrue(androidTranslator.shouldInstrument(classPool.get("android.content.Intent")));
+        assertTrue(androidTranslator.shouldInstrument(classPool.makeClass("android.content.Intent")));
         assertTrue(androidTranslator.shouldInstrument(classPool.makeClass("android.and.now.for.something.completely.different")));
 
-    }
-    @Test
-    public void shouldInstrumentExplicitlyAnnotatedClasses() throws Exception {
-        assertTrue(androidTranslator.shouldInstrument(classPool.get("com.xtremelabs.robolectric.bytecode.AndroidTranslatorUnitTest$InstrumentMe")));
-    }
-
-    @Test
-    public void shouldNotInstrumentInterfaces() throws Exception {
-        assertFalse(androidTranslator.shouldInstrument(classPool.get("com.xtremelabs.robolectric.bytecode.AndroidTranslatorUnitTest$DontInstrumentMe")));
     }
 
     @Test
@@ -137,18 +127,6 @@ public class AndroidTranslatorUnitTest {
     public void shouldAddCustomShadowClass() throws Exception {
         androidTranslator.addCustomShadowClass("my.custom.Klazz");
         assertTrue(androidTranslator.shouldInstrument(classPool.makeClass("my.custom.Klazz")));
-    }
-
-    @Test
-    public void testOnLoadWithInstrumentedClass() throws Exception {
-        ClassHandler handler = mock(ClassHandler.class);
-        ClassCache cache = mock(ClassCache.class);
-
-        AndroidTranslator translator = new AndroidTranslator(handler, cache);
-        translator.onLoad(classPool, "android.content.Intent");
-
-        verify(handler).instrument(any(CtClass.class));
-        verify(cache).addClass(eq("android.content.Intent"), (byte[]) anyObject());
     }
 
     @Test
@@ -168,12 +146,6 @@ public class AndroidTranslatorUnitTest {
     public void shouldThrowIllegalStateIfClassCacheIsWriting() throws Exception {
         ClassCache cache = mock(ClassCache.class);
         when(cache.isWriting()).thenReturn(true);
-        new AndroidTranslator(null, cache).onLoad(classPool, "android.content.Intent");
+        new AndroidTranslator(null, cache).onLoad(classPool, "java.lang.Object");
     }
-
-    @Instrument @SuppressWarnings("UnusedDeclaration")
-    class InstrumentMe { }
-
-    @SuppressWarnings("UnusedDeclaration")
-    interface DontInstrumentMe { }
 }
