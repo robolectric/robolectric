@@ -1,11 +1,16 @@
 package com.xtremelabs.robolectric.bytecode;
 
+import com.xtremelabs.robolectric.internal.Instrument;
 import javassist.ClassPool;
 import javassist.CtClass;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyObject;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
 
 public class AndroidTranslatorUnitTest {
     private ClassPool classPool;
@@ -90,4 +95,85 @@ public class AndroidTranslatorUnitTest {
                 "if (x != null) return ((java.lang.Boolean) x).booleanValue();\n" +
                 "return super.equals($1);}\n", methodBody);
     }
+
+    @Test
+    public void shouldInstrumentDefaultRequestDirector() throws Exception {
+        assertTrue(androidTranslator.shouldInstrument(classPool.get("org.apache.http.impl.client.DefaultRequestDirector")));
+    }
+
+    @Test
+    public void shouldInstrumentGoogleMapsClasses() throws Exception {
+        assertTrue(androidTranslator.shouldInstrument(classPool.makeClass("com.google.android.maps.SomeMapsClass")));
+    }
+
+    @Test
+    public void shouldNotInstrumentCoreJdkClasses() throws Exception {
+        assertFalse(androidTranslator.shouldInstrument(classPool.get("java.lang.Object")));
+        assertFalse(androidTranslator.shouldInstrument(classPool.get("java.lang.String")));
+    }
+
+    @Test
+    public void shouldInstumentAndroidCoreClasses() throws Exception {
+        assertTrue(androidTranslator.shouldInstrument(classPool.get("android.content.Intent")));
+        assertTrue(androidTranslator.shouldInstrument(classPool.makeClass("android.and.now.for.something.completely.different")));
+
+    }
+    @Test
+    public void shouldInstrumentExplicitlyAnnotatedClasses() throws Exception {
+        assertTrue(androidTranslator.shouldInstrument(classPool.get("com.xtremelabs.robolectric.bytecode.AndroidTranslatorUnitTest$InstrumentMe")));
+    }
+
+    @Test
+    public void shouldNotInstrumentInterfaces() throws Exception {
+        assertFalse(androidTranslator.shouldInstrument(classPool.get("com.xtremelabs.robolectric.bytecode.AndroidTranslatorUnitTest$DontInstrumentMe")));
+    }
+
+    @Test
+    public void shouldNotInstrumentAndroidSupportClasses() throws Exception {
+        assertFalse(androidTranslator.shouldInstrument(classPool.makeClass("android.support.v4.LocalBroadcastManager")));
+    }
+
+    @Test
+    public void shouldAddCustomShadowClass() throws Exception {
+        androidTranslator.addCustomShadowClass("my.custom.Klazz");
+        assertTrue(androidTranslator.shouldInstrument(classPool.makeClass("my.custom.Klazz")));
+    }
+
+    @Test
+    public void testOnLoadWithInstrumentedClass() throws Exception {
+        ClassHandler handler = mock(ClassHandler.class);
+        ClassCache cache = mock(ClassCache.class);
+
+        AndroidTranslator translator = new AndroidTranslator(handler, cache);
+        translator.onLoad(classPool, "android.content.Intent");
+
+        verify(handler).instrument(any(CtClass.class));
+        verify(cache).addClass(eq("android.content.Intent"), (byte[]) anyObject());
+    }
+
+    @Test
+    public void testOnLoadWithNonInstrumentedClass() throws Exception {
+        ClassHandler handler = mock(ClassHandler.class);
+        ClassCache cache = mock(ClassCache.class);
+
+        AndroidTranslator translator = new AndroidTranslator(handler, cache);
+
+        translator.onLoad(classPool, "java.lang.Object");
+        verify(cache).isWriting();
+        verifyNoMoreInteractions(cache);
+        verifyZeroInteractions(handler);
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void shouldThrowIllegalStateIfClassCacheIsWriting() throws Exception {
+        ClassCache cache = mock(ClassCache.class);
+        when(cache.isWriting()).thenReturn(true);
+        new AndroidTranslator(null, cache).onLoad(classPool, "android.content.Intent");
+    }
+
+    @Instrument @SuppressWarnings("UnusedDeclaration")
+    class InstrumentMe { }
+
+    @SuppressWarnings("UnusedDeclaration")
+    interface DontInstrumentMe { }
 }
