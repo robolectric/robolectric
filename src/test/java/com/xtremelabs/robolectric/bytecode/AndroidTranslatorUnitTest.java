@@ -129,8 +129,8 @@ public class AndroidTranslatorUnitTest {
     }
 
     @Test
-    public void shouldNotInstrumentAndroidSupportClasses() throws Exception {
-        assertFalse(androidTranslator.shouldInstrument(classPool.makeClass("android.support.v4.LocalBroadcastManager")));
+    public void shouldNotInstrumentLocalBroadcastManager() throws Exception {
+        assertFalse(androidTranslator.shouldInstrument(classPool.makeClass("android.support.v4.content.LocalBroadcastManager")));
     }
 
     @Test

@@ -428,6 +428,7 @@ public class Robolectric {
         ShadowLooper.resetThreadLoopers();
         ShadowDialog.reset();
         ShadowContentResolver.reset();
+        ShadowLocalBroadcastManager.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -601,7 +602,7 @@ public class Robolectric {
     public static ShadowCursorAdapter shadowOf(CursorAdapter instance) {
         return (ShadowCursorAdapter) shadowOf_(instance);
     }
-    
+
     public static ShadowCursorLoader shadowOf(CursorLoader instance) {
         return (ShadowCursorLoader) shadowOf_(instance);
     }
@@ -1272,7 +1273,7 @@ public class Robolectric {
 
         public static void setFinalStaticField(Class classWhichContainsField, String fieldName, Object newValue) {
             try {
-                Field field = classWhichContainsField.getField(fieldName);
+                Field field = classWhichContainsField.getDeclaredField(fieldName);
                 field.setAccessible(true);
 
                 Field modifiersField = Field.class.getDeclaredField("modifiers");

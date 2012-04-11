@@ -22,15 +22,18 @@ public class AndroidTranslator implements Translator {
     private ClassHandler classHandler;
     private ClassCache classCache;
     private final List<String> instrumentingList = new ArrayList<String>();
+    private final List<String> instrumentingExcludeList = new ArrayList<String>();
 
     public AndroidTranslator(ClassHandler classHandler, ClassCache classCache) {
         this.classHandler = classHandler;
         this.classCache = classCache;
 
-        // Initialize list
+        // Initialize lists
         instrumentingList.add("android.");
         instrumentingList.add("com.google.android.maps");
         instrumentingList.add("org.apache.http.impl.client.DefaultRequestDirector");
+
+        instrumentingExcludeList.add("android.support.v4.content.LocalBroadcastManager");
     }
 
     public AndroidTranslator(ClassHandler classHandler, ClassCache classCache, List<String> customShadowClassNames) {
@@ -110,9 +113,14 @@ public class AndroidTranslator implements Translator {
     /* package */ boolean shouldInstrument(CtClass ctClass) {
         if (ctClass.hasAnnotation(Instrument.class)) {
             return true;
-        } else if (ctClass.isInterface() || ctClass.hasAnnotation(DoNotInstrument.class) || ctClass.getName().startsWith("android.support.")) {
+        } else if (ctClass.isInterface() || ctClass.hasAnnotation(DoNotInstrument.class)) {
             return false;
         } else {
+            for (String klassName : instrumentingExcludeList) {
+                if (ctClass.getName().startsWith(klassName)) {
+                    return false;
+                }
+            }
             for (String klassName : instrumentingList) {
                 if (ctClass.getName().startsWith(klassName)) {
                     return true;
