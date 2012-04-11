@@ -56,6 +56,56 @@ public class ShadowTime {
         set(System.currentTimeMillis());
     }
 
+	
+   
+	@Implementation
+    public static boolean isEpoch(Time time) {
+        long millis = time.toMillis(true);
+        return getJulianDay(millis, 0) == Time.EPOCH_JULIAN_DAY;
+    }
+
+	//TODO: implement DateUtils shadow
+	private static final long SECOND_IN_MILLIS = 1000;
+    private static final long MINUTE_IN_MILLIS = SECOND_IN_MILLIS * 60;
+    private static final long HOUR_IN_MILLIS = MINUTE_IN_MILLIS * 60;
+    private static final long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
+    private static final long WEEK_IN_MILLIS = DAY_IN_MILLIS * 7;
+	
+    @Implementation
+    public static int getJulianDay(long millis, long gmtoff) {
+        long offsetMillis = gmtoff * 1000;
+		long julianDay = (millis + offsetMillis) / DAY_IN_MILLIS;
+		//TODO: implement DateUtils shadow
+        //long julianDay = (millis + offsetMillis) / DateUtils.DAY_IN_MILLIS;
+        return (int) julianDay + Time.EPOCH_JULIAN_DAY;
+    }
+	
+	@Implementation
+	 public long setJulianDay(int julianDay) {
+	 
+        // Don't bother with the GMT offset since we don't know the correct
+        // value for the given Julian day.  Just get close and then adjust
+        // the day.
+        
+		//TODO: implement DateUtils shadow
+		//long millis = (julianDay - EPOCH_JULIAN_DAY) * DateUtils.DAY_IN_MILLIS;
+		long millis = (julianDay - Time.EPOCH_JULIAN_DAY) * DAY_IN_MILLIS;
+        set(millis);
+
+        // Figure out how close we are to the requested Julian day.
+        // We can't be off by more than a day.
+        int approximateDay = getJulianDay(millis, time.gmtoff);
+        int diff = julianDay - approximateDay;
+        time.monthDay += diff;
+
+        // Set the time to 12am and re-normalize.
+        time.hour = 0;
+        time.minute = 0;
+        time.second = 0;
+        millis = time.normalize(true);
+        return millis;
+    }
+	
     @Implementation
     public void set(long millis) {
         Calendar c = getCalendar();
