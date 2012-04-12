@@ -433,11 +433,11 @@ public class ListViewTest {
 	@Test
 	public void givenItemIsNotCheckedAndChoiceModeIsSingle_whenPerformingItemClick_thenItemShouldBeChecked() {
 		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		int positionToClick = 0;
+		int positionToClick = anyListIndex();
 		
 		listView.performItemClick(null, positionToClick, 0);
 		
-		assertThat(listView.getCheckedItemPosition(), equalTo(0));
+		assertThat(listView.getCheckedItemPosition(), equalTo(positionToClick));
 	}
 	
 	@Test
@@ -452,7 +452,7 @@ public class ListViewTest {
 	@Test
 	public void givenItemIsNotCheckedAndChoiceModeIsMultiple_whenPerformingItemClick_thenItemShouldBeChecked() {
 		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-		int positionToClick = 0;
+		int positionToClick = anyListIndex();
 		SparseBooleanArray expectedCheckedItemPositions = new SparseBooleanArray();
 		expectedCheckedItemPositions.put(positionToClick, true);
 		
@@ -487,6 +487,10 @@ public class ListViewTest {
 
         return shadowOf(listView);
     }
+    
+    private int anyListIndex() {
+		return new Random().nextInt(3);
+	}
     
     private static class ListAdapter extends BaseAdapter {
         public List<String> items = new ArrayList<String>();
@@ -530,14 +534,14 @@ public class ListViewTest {
     	}
     	
     	public ListAdapterBuilder withAnyItemChecked() {
-        	checkedItemPosition = new Random().nextInt(3);
+        	checkedItemPosition = anyListIndex();
         	listView.setItemChecked(checkedItemPosition, true);
         	return this;
         }
     	
     	public void withAnyItemsChecked() {
     		checkedItemPositions = new SparseBooleanArray();
-    		int numberOfSelections = new Random().nextInt(3) + 1;
+    		int numberOfSelections = anyListIndex() + 1;
     		for (int i = 0; i < numberOfSelections; i++) {
     			checkedItemPositions.put(i, true);
     			listView.setItemChecked(i, true);
