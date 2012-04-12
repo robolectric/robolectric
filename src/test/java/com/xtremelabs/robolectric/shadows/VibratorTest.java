@@ -30,6 +30,7 @@ public class VibratorTest {
     public void vibrateMilliseconds() {
         vibrator.vibrate(5000);
         
+        assertThat(shadowVibrator.isVibrating(), is(true));
         assertThat(shadowVibrator.getMilliseconds(), equalTo(5000L));
     }
     
@@ -38,14 +39,19 @@ public class VibratorTest {
         long[] pattern = new long[] { 0, 200 };
         vibrator.vibrate(pattern, 2);
         
+        assertThat(shadowVibrator.isVibrating(), is(true));
         assertThat(shadowVibrator.getPattern(), equalTo(pattern));
         assertThat(shadowVibrator.getRepeat(), equalTo(2));
     }
     
     @Test
     public void cancelled() {
+        vibrator.vibrate(5000);
+        assertThat(shadowVibrator.isVibrating(), is(true));
         assertThat(shadowVibrator.isCancelled(), is(false));
         vibrator.cancel();
+        
+        assertThat(shadowVibrator.isVibrating(), is(false));
         assertThat(shadowVibrator.isCancelled(), is(true));
     }
 }
