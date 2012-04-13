@@ -71,6 +71,7 @@ import android.os.Looper;
 import android.os.Parcel;
 import android.os.PowerManager;
 import android.os.ResultReceiver;
+import android.os.Vibrator;
 import android.preference.DialogPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
@@ -397,6 +398,7 @@ public class Robolectric {
                 ShadowTypedValue.class,
                 ShadowUriMatcher.class,
                 ShadowURLSpan.class,
+                ShadowVibrator.class,
                 ShadowVideoView.class,
                 ShadowView.class,
                 ShadowViewAnimator.class,
@@ -982,6 +984,10 @@ public class Robolectric {
 
     public static ShadowViewGroup shadowOf(ViewGroup instance) {
         return (ShadowViewGroup) shadowOf_(instance);
+    }
+    
+    public static ShadowVibrator shadowOf(Vibrator instance) {
+        return (ShadowVibrator) shadowOf_(instance);
     }
 
     public static ShadowVideoView shadowOf(VideoView instance) {
