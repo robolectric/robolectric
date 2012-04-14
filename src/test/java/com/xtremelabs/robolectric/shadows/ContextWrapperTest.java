@@ -14,6 +14,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.List;
+
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -23,6 +25,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ContextWrapperTest {
@@ -94,6 +97,17 @@ public class ContextWrapperTest {
 
         new ContextWrapper(Robolectric.application).unregisterReceiver(receiver);
     }
+	
+	@Test
+	public void broadcasts_shouldBeLogged() {
+		Intent broadcastIntent = new Intent("foo");
+		contextWrapper.sendBroadcast(broadcastIntent);
+		
+		List<Intent> broadcastIntents = shadowOf(contextWrapper).getBroadcastIntents();
+		assertTrue(broadcastIntents.size() == 1);
+		assertEquals(broadcastIntent, broadcastIntents.get(0));
+	}
+	
 
     @Test
     public void shouldReturnSameApplicationEveryTime() throws Exception {

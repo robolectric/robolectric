@@ -21,23 +21,26 @@ public class AndroidTranslator implements Translator {
 
     private ClassHandler classHandler;
     private ClassCache classCache;
-    private static final ArrayList<String> instrumentingList = new ArrayList<String>();
+    private final List<String> instrumentingList = new ArrayList<String>();
+    private final List<String> instrumentingExcludeList = new ArrayList<String>();
 
     public AndroidTranslator(ClassHandler classHandler, ClassCache classCache) {
         this.classHandler = classHandler;
         this.classCache = classCache;
-        
-        // Initialize list
+
+        // Initialize lists
         instrumentingList.add("android.");
         instrumentingList.add("com.google.android.maps");
         instrumentingList.add("org.apache.http.impl.client.DefaultRequestDirector");
+
+        instrumentingExcludeList.add("android.support.v4.content.LocalBroadcastManager");
     }
-    
+
     public AndroidTranslator(ClassHandler classHandler, ClassCache classCache, List<String> customShadowClassNames) {
-    	this(classHandler, classCache);
-    	if ( customShadowClassNames != null && !customShadowClassNames.isEmpty() ) {
-        	instrumentingList.addAll(customShadowClassNames);    		
-    	}
+        this(classHandler, classCache);
+        if (customShadowClassNames != null && !customShadowClassNames.isEmpty()) {
+            instrumentingList.addAll(customShadowClassNames);
+        }
     }
 
     public void addCustomShadowClass(String customShadowClassName) {
@@ -87,22 +90,12 @@ public class AndroidTranslator implements Translator {
         } catch (NotFoundException e) {
             throw new IgnorableClassNotFoundException(e);
         }
-        
-        boolean wantsToBeInstrumented = ctClass.hasAnnotation(Instrument.class);
-        if (!wantsToBeInstrumented) {
-        	for (String klassName : instrumentingList) {
-        		wantsToBeInstrumented = className.startsWith(klassName);
-        		if (wantsToBeInstrumented) break;
-        	}
-        }
-                
-        if (wantsToBeInstrumented && !ctClass.hasAnnotation(DoNotInstrument.class)) {
+
+        if (shouldInstrument(ctClass)) {
             int modifiers = ctClass.getModifiers();
             if (Modifier.isFinal(modifiers)) {
                 ctClass.setModifiers(modifiers & ~Modifier.FINAL);
             }
-
-            if (ctClass.isInterface()) return;
 
             classHandler.instrument(ctClass);
 
@@ -114,6 +107,26 @@ public class AndroidTranslator implements Translator {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        }
+    }
+
+    /* package */ boolean shouldInstrument(CtClass ctClass) {
+        if (ctClass.hasAnnotation(Instrument.class)) {
+            return true;
+        } else if (ctClass.isInterface() || ctClass.hasAnnotation(DoNotInstrument.class)) {
+            return false;
+        } else {
+            for (String klassName : instrumentingExcludeList) {
+                if (ctClass.getName().startsWith(klassName)) {
+                    return false;
+                }
+            }
+            for (String klassName : instrumentingList) {
+                if (ctClass.getName().startsWith(klassName)) {
+                    return true;
+                }
+            }
+            return false;
         }
     }
 

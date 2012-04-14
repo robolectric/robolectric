@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.graphics.Typeface;
 import android.text.*;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
@@ -10,6 +11,7 @@ import android.view.KeyEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import junit.framework.Assert;
 import org.hamcrest.CoreMatchers;
@@ -331,6 +333,13 @@ public class TextViewTest {
         Assert.assertNull(textView.getCompoundDrawables()[1]);
         Assert.assertNull(textView.getCompoundDrawables()[2]);
         Assert.assertNull(textView.getCompoundDrawables()[3]);
+    }
+
+    @Test
+    public void canSetAndGetTypeface() throws Exception {
+        Typeface typeface = Robolectric.newInstanceOf(Typeface.class);
+        textView.setTypeface(typeface);
+        Assert.assertEquals(typeface, textView.getTypeface());
     }
 
     private List<MockTextWatcher> anyNumberOfTextWatchers() {

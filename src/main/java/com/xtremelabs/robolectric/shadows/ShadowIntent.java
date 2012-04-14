@@ -253,6 +253,12 @@ public class ShadowIntent {
     }
     
     @Implementation
+    public Intent putExtra(String key, Bundle value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+    
+    @Implementation
     public Intent putExtra(String key, boolean value) {
         extras.put(key, value);
         return realIntent;
@@ -378,6 +384,11 @@ public class ShadowIntent {
     public double getDoubleExtra(String name, double defaultValue) {
         Double foundValue = (Double) extras.get(name);
         return foundValue == null ? defaultValue : foundValue;
+    }
+    
+    @Implementation
+    public Bundle getBundleExtra(String name) { 
+        return (Bundle) extras.get(name);
     }
 
     @Implementation

@@ -41,6 +41,7 @@ public class ShadowDialog {
     private boolean isCancelable = true;
     private boolean hasShownBefore;
     private static final ArrayList<Dialog> shownDialogs = new ArrayList<Dialog>();
+    private boolean isCancelableOnTouchOutside;
 
     public static void reset() {
         setLatestDialog(null);
@@ -172,8 +173,17 @@ public class ShadowDialog {
         isCancelable = flag;
     }
 
+    @Implementation
+    public void setCanceledOnTouchOutside(boolean flag) {
+        isCancelableOnTouchOutside = flag;
+    }
+
     public boolean isCancelable() {
         return isCancelable;
+    }
+
+    public boolean isCancelableOnTouchOutside() {
+        return isCancelableOnTouchOutside;
     }
 
     @Implementation
@@ -201,11 +211,11 @@ public class ShadowDialog {
         return window;
     }
 
+
     @Implementation
     public LayoutInflater getLayoutInflater() {
         return LayoutInflater.from(realDialog.getContext());
     }
-
 
     public int getLayoutId() {
         return layoutId;

@@ -23,9 +23,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.FileDescriptor;
+import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
+import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
@@ -220,6 +222,16 @@ public class ApplicationTest {
 
         shadowOf(Robolectric.application).assertNoBroadcastListenersOfActionRegistered(activity, "Bar");
     }
+    
+    @Test
+	public void broadcasts_shouldBeLogged() {
+		Intent broadcastIntent = new Intent("foo");
+		Robolectric.application.sendBroadcast(broadcastIntent);
+		
+		List<Intent> broadcastIntents = shadowOf(Robolectric.application).getBroadcastIntents();
+		assertTrue(broadcastIntents.size() == 1);
+		assertEquals(broadcastIntent, broadcastIntents.get(0));
+	}
 
     private static class NullBinder implements IBinder {
         @Override

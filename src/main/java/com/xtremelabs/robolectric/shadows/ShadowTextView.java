@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
@@ -26,7 +27,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 @Implements(TextView.class)
 public class ShadowTextView extends ShadowView {
     private CharSequence text = "";
-    private CompoundDrawables compoundDrawablesImpl;
+    private CompoundDrawables compoundDrawablesImpl = new CompoundDrawables(0, 0, 0, 0);
     private Integer textColorHexValue;
     private Integer hintColorHexValue;
     private float textSize = 14.0f;
@@ -44,6 +45,7 @@ public class ShadowTextView extends ShadowView {
     private int inputType;
     protected int selectionStart = 0;
     protected int selectionEnd = 0;
+    private Typeface typeface;
 
     private List<TextWatcher> watchers = new ArrayList<TextWatcher>();
     private List<Integer> previousKeyCodes = new ArrayList<Integer>();
@@ -128,6 +130,16 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public CharSequence getText() {
         return text;
+    }
+
+    @Implementation
+    public Typeface getTypeface() {
+        return typeface;
+    }
+
+    @Implementation
+    public void setTypeface(Typeface typeface) {
+        this.typeface = typeface;
     }
 
     @Implementation

@@ -19,8 +19,10 @@ public class TestFragment extends Fragment {
     public View onCreateViewReturnValue;
     public boolean onStartWasCalled;
     public boolean onResumeWasCalled;
+    public boolean onSaveInstanceStateWasCalled;
     public Activity onAttachActivity;
     public Bundle onActivityCreated_savedInstanceState;
+    public Bundle onCreateSavedInstanceState;
 
     Transcript transcript = new Transcript();
 
@@ -35,6 +37,7 @@ public class TestFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         onCreateWasCalled = true;
         transcript.add("onCreate");
+        onCreateSavedInstanceState = savedInstanceState;
     }
 
     @Override
@@ -69,5 +72,10 @@ public class TestFragment extends Fragment {
     public void onResume() {
         onResumeWasCalled = true;
         transcript.add("onResume");
+    }
+
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        onSaveInstanceStateWasCalled = true;
     }
 }

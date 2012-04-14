@@ -16,6 +16,8 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
  */
 @Implements(DialogFragment.class)
 public class ShadowDialogFragment extends ShadowFragment {
+    private static DialogFragment latestDialogFragment;
+
     private Dialog dialog;
 
     @RealObject
@@ -41,6 +43,8 @@ public class ShadowDialogFragment extends ShadowFragment {
         realDialogFragment.onActivityCreated(null);
         realDialogFragment.onStart();
         realDialogFragment.onResume();
+
+        latestDialogFragment = realDialogFragment;
     }
 
     @Implementation
@@ -60,5 +64,9 @@ public class ShadowDialogFragment extends ShadowFragment {
     @Implementation
     public Dialog getDialog() {
         return dialog;
+    }
+
+    public static DialogFragment getLatestDialogFragment() {
+        return latestDialogFragment;
     }
 }

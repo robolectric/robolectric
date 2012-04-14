@@ -199,6 +199,11 @@ public class ShadowBundle {
         return map.keySet();
     }
 
+    @Implementation
+    public int size() {
+        return map.size();
+    }
+
     @Override @Implementation
     public boolean equals(Object o) {
         if (o == null) return false;

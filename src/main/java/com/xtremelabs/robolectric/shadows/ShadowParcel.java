@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.os.Bundle;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -37,7 +38,7 @@ public class ShadowParcel {
     public void writeLong(long i) {
         parcelData.add(i);
     }
-    
+
     @Implementation
     @SuppressWarnings("unchecked")
     public void writeByte( byte b ) {
@@ -56,12 +57,27 @@ public class ShadowParcel {
 
     @Implementation
     public byte readByte() {
-        return index < parcelData.size() ? (Byte) parcelData.get(index++) : 0;    	
+        return index < parcelData.size() ? (Byte) parcelData.get(index++) : 0;
     }
-    
+
     @Implementation
     public long readLong() {
         return index < parcelData.size() ? (Long) parcelData.get(index++) : 0;
+    }
+
+    @Implementation
+    public Bundle readBundle() {
+        return index < parcelData.size() ? (Bundle) parcelData.get(index++) : null;
+    }
+
+    @Implementation
+    public Bundle readBundle(ClassLoader loader) {
+        return readBundle();
+    }
+
+    @Implementation
+    public void writeBundle(Bundle bundle) {
+        parcelData.add(bundle);
     }
 
     @Implementation

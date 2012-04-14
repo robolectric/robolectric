@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -129,6 +130,14 @@ public class FragmentManagerTest {
     }
 
     @Test
+    public void addFragment_shouldPassTheSavedInstanceStateToOnCreate() throws Exception {
+        Bundle bundle = new Bundle();
+        shadowOf(fragment).setSavedInstanceState(bundle);
+        manager.addFragment(0, null, fragment, false);
+        assertSame(bundle, fragment.onCreateSavedInstanceState);
+    }
+
+    @Test
     public void getFragment_whenBundleSavedByShadowFragmentActivity_shouldGetFragmentByTagFromBundle() throws Exception {
         manager.addFragment(CONTAINER_VIEW_ID, "fragment tag", fragment, true);
 
@@ -146,6 +155,25 @@ public class FragmentManagerTest {
         manager.startFragment(fragment);
 
         assertTrue(fragment.onActivityCreated_savedInstanceState != null);
+    }
+
+    @Test
+    public void getCommittedTransactions_shouldReturnListOfOnlyCommittedTransactions() throws Exception {
+        assertTrue(manager.getCommittedTransactions().isEmpty());
+
+        FragmentTransaction transaction = manager.beginTransaction();
+        assertTrue(manager.getCommittedTransactions().isEmpty());
+
+        transaction.add(new Fragment(), "tag");
+        transaction.commit();
+        assertEquals(1, manager.getCommittedTransactions().size());
+        assertSame(transaction, manager.getCommittedTransactions().get(0));
+
+        FragmentTransaction anotherTransaction = manager.beginTransaction();
+        anotherTransaction.add(new Fragment(), "tag");
+        anotherTransaction.commit();
+        assertEquals(2, manager.getCommittedTransactions().size());
+        assertSame(anotherTransaction, manager.getCommittedTransactions().get(1));
     }
 
     private static class TestFragmentActivity extends FragmentActivity {

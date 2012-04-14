@@ -11,7 +11,9 @@ public class TestFragmentTransaction extends FragmentTransaction {
     private int containerViewId;
     private String tag;
     private Fragment fragment;
-    private boolean isReplacing;
+    private boolean replacing;
+    private boolean addedToBackStack;
+    private String backStackName;
 
     public TestFragmentTransaction(TestFragmentManager fragmentManager) {
         this.fragmentManager = fragmentManager;
@@ -19,17 +21,12 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     @Override
     public FragmentTransaction add(Fragment fragment, String tag) {
-        this.containerViewId = View.NO_ID;
-        this.tag = tag;
-        this.fragment = fragment;
-        return this;
+        return add(View.NO_ID, fragment, tag);
     }
 
     @Override
     public FragmentTransaction add(int containerViewId, Fragment fragment) {
-        this.containerViewId = containerViewId;
-        this.fragment = fragment;
-        return this;
+        return add(containerViewId, fragment, null);
     }
 
     @Override
@@ -42,10 +39,7 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     @Override
     public FragmentTransaction replace(int containerViewId, Fragment fragment) {
-        this.containerViewId = containerViewId;
-        this.fragment = fragment;
-        this.isReplacing = true;
-        return this;
+        return replace(containerViewId, fragment, null);
     }
 
     @Override
@@ -53,7 +47,7 @@ public class TestFragmentTransaction extends FragmentTransaction {
         this.containerViewId = containerViewId;
         this.tag = tag;
         this.fragment = fragment;
-        this.isReplacing = true;
+        this.replacing = true;
         return this;
     }
 
@@ -109,7 +103,9 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     @Override
     public FragmentTransaction addToBackStack(String name) {
-        return null;
+        backStackName = name;
+        addedToBackStack = true;
+        return this;
     }
 
     @Override
@@ -147,8 +143,7 @@ public class TestFragmentTransaction extends FragmentTransaction {
         new Handler().post(new Runnable() {
             @Override
             public void run() {
-                fragmentManager.addFragment(containerViewId, tag, fragment, isReplacing);
-                fragmentManager.startFragment(fragment);
+                fragmentManager.commitTransaction(TestFragmentTransaction.this);
             }
         });
         return 0;
@@ -157,5 +152,29 @@ public class TestFragmentTransaction extends FragmentTransaction {
     @Override
     public int commitAllowingStateLoss() {
         return 0;
+    }
+
+    public boolean isAddedToBackStack() {
+        return addedToBackStack;
+    }
+
+    public int getContainerViewId() {
+        return containerViewId;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public Fragment getFragment() {
+        return fragment;
+    }
+
+    public boolean isReplacing() {
+        return replacing;
+    }
+
+    public String getBackStackName() {
+        return backStackName;
     }
 }

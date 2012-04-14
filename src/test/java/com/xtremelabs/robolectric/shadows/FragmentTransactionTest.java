@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.Intent;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -11,20 +12,62 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class FragmentTransactionTest {
-
     private MockTestFragmentManager manager;
     private Fragment fragment;
-    private FragmentTransaction txn;
+    private TestFragmentTransaction txn;
+    private String tag;
+    private int id;
 
     @Before
     public void setUp() throws Exception {
         manager = new MockTestFragmentManager();
         txn = new TestFragmentTransaction(manager);
         fragment = new TestFragment();
+        tag = "tag";
+        id = 111;
+    }
+
+    @Test
+    public void testGetters() throws Exception {
+        txn.add(fragment, tag);
+        assertSame(fragment, txn.getFragment());
+        assertSame(tag, txn.getTag());
+        assertEquals(View.NO_ID, txn.getContainerViewId());
+
+        txn.add(id, fragment);
+        assertEquals(id, txn.getContainerViewId());
+        assertSame(fragment, txn.getFragment());
+
+        txn.add(id, fragment, tag);
+        assertEquals(id, txn.getContainerViewId());
+        assertSame(fragment, txn.getFragment());
+        assertSame(tag, txn.getTag());
+        assertFalse(txn.isReplacing());
+
+        txn.replace(id, fragment);
+        assertEquals(id, txn.getContainerViewId());
+        assertSame(fragment, txn.getFragment());
+        assertTrue(txn.isReplacing());
+
+        txn.replace(id, fragment, tag);
+        assertEquals(id, txn.getContainerViewId());
+        assertSame(fragment, txn.getFragment());
+        assertSame(tag, txn.getTag());
+        assertTrue(txn.isReplacing());
+    }
+
+    @Test
+    public void testAddToBackStack() throws Exception {
+        assertFalse(txn.isAddedToBackStack());
+        FragmentTransaction returnedTransaction = txn.addToBackStack("name");
+        assertSame(txn, returnedTransaction);
+        assertTrue(txn.isAddedToBackStack());
+        assertEquals("name", txn.getBackStackName());
     }
 
     @Test
@@ -82,6 +125,15 @@ public class FragmentTransactionTest {
         assertTrue(manager.addFragmentReplace);
     }
 
+    @Test
+    public void startActivity_shouldNotDelegateToParentActivity() throws Exception {
+        // because for some reason that's not what Android does in real life
+        StartActivityTrackingActivity trackingActivity = new StartActivityTrackingActivity();
+        shadowOf(fragment).setActivity(trackingActivity);
+        fragment.startActivity(null);
+        assertFalse(trackingActivity.startActivityWasCalled);
+    }
+
     private static class MockTestFragmentManager extends TestFragmentManager {
         private boolean addFragmentWasCalled;
         private int addFragmentContainerViewId;
@@ -100,6 +152,16 @@ public class FragmentTransactionTest {
             addFragmentTag = tag;
             addFragmentFragment = fragment;
             addFragmentReplace = replace;
+        }
+    }
+
+    private static class StartActivityTrackingActivity extends FragmentActivity {
+        boolean startActivityWasCalled;
+
+        @Override
+        public void startActivity(Intent intent) {
+            super.startActivity(intent);
+            startActivityWasCalled = true;
         }
     }
 }

@@ -1,11 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.*;
 import android.location.Location;
 import android.os.Bundle;
-
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
 /**
  * Shadow of {@code Location} that treats it primarily as a data-holder
@@ -34,9 +34,22 @@ public class ShadowLocation {
     
     private Bundle extras = new Bundle();
 
+    public void __constructor__(Location l) {
+        set(l);
+    }
+
     public void __constructor__(String provider) {
     	this.provider = provider;
     	time = System.currentTimeMillis();
+    }
+
+    @Implementation
+    public void set(Location l) {
+        time = l.getTime();
+        provider = l.getProvider();
+        latitude = l.getLatitude();
+        longitude = l.getLongitude();
+        accuracy = l.getAccuracy();
     }
 
     @Implementation
