@@ -414,6 +414,7 @@ public class Robolectric {
                 ShadowWifiConfiguration.class,
                 ShadowWifiInfo.class,
                 ShadowWifiManager.class,
+                ShadowWifiManager.ShadowWifiLock.class,
                 ShadowWindow.class,
                 ShadowZoomButtonsController.class
         );
@@ -985,7 +986,7 @@ public class Robolectric {
     public static ShadowViewGroup shadowOf(ViewGroup instance) {
         return (ShadowViewGroup) shadowOf_(instance);
     }
-    
+
     public static ShadowVibrator shadowOf(Vibrator instance) {
         return (ShadowVibrator) shadowOf_(instance);
     }
