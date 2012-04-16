@@ -340,6 +340,7 @@ public class Robolectric {
                 ShadowPointF.class,
                 ShadowPopupWindow.class,
                 ShadowPowerManager.class,
+                ShadowPowerManager.ShadowWakeLock.class,
                 ShadowPreference.class,
                 ShadowPreferenceActivity.class,
                 ShadowPreferenceCategory.class,
