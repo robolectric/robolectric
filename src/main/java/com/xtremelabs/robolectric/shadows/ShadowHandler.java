@@ -160,13 +160,20 @@ public class ShadowHandler {
 
     @Implementation
     public final void removeMessages(int what) {
+        removeMessages(what, null);
+    }
+
+    @Implementation
+    public final void removeMessages(int what, Object object) {
         for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext(); ) {
             Message message = iterator.next();
-            if (message.what == what) {
+            if (message.what == what && (object == null || object.equals(message.obj))) {
                 iterator.remove();
             }
         }
     }
+
+
 
     /**
      * @deprecated use {@link #idleMainLooper()} instead
