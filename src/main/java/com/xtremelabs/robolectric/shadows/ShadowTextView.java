@@ -27,7 +27,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 @Implements(TextView.class)
 public class ShadowTextView extends ShadowView {
     private CharSequence text = "";
-    private CompoundDrawables compoundDrawablesImpl;
+    private CompoundDrawables compoundDrawablesImpl = new CompoundDrawables(0, 0, 0, 0);
     private Integer textColorHexValue;
     private Integer hintColorHexValue;
     private float textSize = 14.0f;

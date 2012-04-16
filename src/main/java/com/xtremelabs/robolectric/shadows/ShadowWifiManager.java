@@ -99,6 +99,16 @@ public class ShadowWifiManager {
         return true;
     }
 
+    @Implementation
+    public WifiManager.WifiLock createWifiLock(int lockType, java.lang.String tag) {
+        return Robolectric.newInstanceOf(WifiManager.WifiLock.class);
+    }
+
+    @Implementation
+    public WifiManager.WifiLock createWifiLock(java.lang.String tag) {
+        return createWifiLock(WifiManager.WIFI_MODE_FULL, tag);
+    }
+
     public void setAccessWifiStatePermission(boolean accessWifiStatePermission) {
         this.accessWifiStatePermission = accessWifiStatePermission;
     }
@@ -115,5 +125,42 @@ public class ShadowWifiManager {
 
     public Pair<Integer, Boolean> getLastEnabledNetwork() {
         return lastEnabledNetwork;
+    }
+
+
+    @Implements(WifiManager.WifiLock.class)
+    public static class ShadowWifiLock {
+        private int refCount;
+        private boolean refCounted = true;
+        private boolean locked;
+        public static final int MAX_ACTIVE_LOCKS = 50;
+
+        @Implementation
+        public synchronized void acquire() {
+            if (refCounted) {
+                if (++refCount >= MAX_ACTIVE_LOCKS) throw new UnsupportedOperationException("Exceeded maximum number of wifi locks");
+            } else {
+                locked = true;
+            }
+        }
+
+        @Implementation
+        public synchronized void release() {
+            if (refCounted) {
+                if (--refCount < 0) throw new RuntimeException("WifiLock under-locked");
+            } else {
+                locked = false;
+            }
+        }
+
+        @Implementation
+        public synchronized boolean isHeld() {
+            return refCounted ? refCount > 0 : locked;
+        }
+
+        @Implementation
+        public void setReferenceCounted(boolean refCounted) {
+            this.refCounted = refCounted;
+        }
     }
 }
