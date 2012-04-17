@@ -21,6 +21,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -70,7 +72,7 @@ public class WifiManagerTest {
         lastEnabled = shadowWifiManager.getLastEnabledNetwork();
         assertThat(lastEnabled, equalTo(new Pair<Integer, Boolean>(777, false)));
     }
-    
+
     @Test
     public void shouldReturnSetScanResults() throws Exception {
         List<ScanResult> scanResults = new ArrayList<ScanResult>();
@@ -131,9 +133,45 @@ public class WifiManagerTest {
         assertThat(shadowWifiManager.wasSaved, equalTo(true));
     }
 
-    //TODO?
-//    @Test
-//    public void shouldEnableTheNetwork() throws Exception {
-//
-//    }
+    @Test
+    public void shouldCreateWifiLock() throws Exception {
+        assertNotNull(wifiManager.createWifiLock("TAG"));
+        assertNotNull(wifiManager.createWifiLock(1, "TAG"));
+    }
+
+    @Test
+    public void shouldAcquireAndReleaseWifilockRefCounted() throws Exception {
+        WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
+        lock.acquire();
+        lock.acquire();
+        assertTrue(lock.isHeld());
+        lock.release();
+        assertTrue(lock.isHeld());
+        lock.release();
+        assertFalse(lock.isHeld());
+    }
+
+    @Test
+    public void shouldAcquireAndReleaseWifilockNonRefCounted() throws Exception {
+        WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
+        lock.setReferenceCounted(false);
+        lock.acquire();
+        assertTrue(lock.isHeld());
+        lock.acquire();
+        assertTrue(lock.isHeld());
+        lock.release();
+        assertFalse(lock.isHeld());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void shouldThrowRuntimeExceptionIfLockisUnderlocked() throws Exception {
+        WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
+        lock.release();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void shouldThrowUnsupportedOperationIfLockisOverlocked() throws Exception {
+        WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
+        for (int i=0; i<ShadowWifiManager.ShadowWifiLock.MAX_ACTIVE_LOCKS; i++) lock.acquire();
+    }
 }

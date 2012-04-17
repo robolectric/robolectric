@@ -228,6 +228,25 @@ public class HandlerTest {
     }
 
     @Test
+    public void removeMessage_withSpecifiedObject() throws Exception {
+        Robolectric.pauseMainLooper();
+        Handler handler = new Handler();
+        Message.obtain(handler, 123, "foo").sendToTarget();
+        Message.obtain(handler, 123, "bar").sendToTarget();
+
+        assertThat(handler.hasMessages(123), equalTo(true));
+        assertThat(handler.hasMessages(123, "foo"), equalTo(true));
+        assertThat(handler.hasMessages(123, "bar"), equalTo(true));
+        assertThat(handler.hasMessages(123, "baz"), equalTo(false));
+
+        handler.removeMessages(123, "foo");
+        assertThat(handler.hasMessages(123), equalTo(true));
+
+        handler.removeMessages(123, "bar");
+        assertThat(handler.hasMessages(123), equalTo(false));
+    }
+
+    @Test
     public void testHasMessagesWithWhatAndObject() {
         Robolectric.pauseMainLooper();
         Object testObject = new Object();

@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.Intent;
+import android.os.Bundle;
 import android.os.Parcel;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -100,7 +101,7 @@ public class ParcelTest {
 		parcel.writeByte( val );
 		assertThat( parcel.readByte(), equalTo( val ) );
 	}
-	
+
 	@Test
 	public void testReadWriteMultipleBytes() {
 		for( byte i = Byte.MIN_VALUE; i < Byte.MAX_VALUE; ++i ) {
@@ -108,12 +109,12 @@ public class ParcelTest {
 		}
 		for( byte i = Byte.MIN_VALUE; i < Byte.MAX_VALUE; ++i ) {
 			assertThat( parcel.readByte(), equalTo( i ) );
-		}		
+		}
 		// now try to read past the number of items written and see what happens
 		assertThat( parcel.readByte(), equalTo( (byte) 0 ) );
 	}
-		
-	
+
+
 	@Test
 	public void testReadWriteStringInt() {
 		for( int i = 0; i < 10; ++i ) {
@@ -198,5 +199,21 @@ public class ParcelTest {
 
         Intent i2 = parcel.readParcelable(Intent.class.getClassLoader());
         assertEquals(i1, i2);
+    }
+
+    @Test
+    public void testReadWriteBundle() {
+        Bundle b1 = new Bundle();
+        b1.putString("hello", "world");
+        parcel.writeBundle(b1);
+        Bundle b2 = parcel.readBundle();
+
+        assertEquals(b1, b2);
+        assertEquals("world", b2.getString("hello"));
+
+        parcel.writeBundle(b1);
+        b2 = parcel.readBundle(null /* ClassLoader */);
+        assertEquals(b1, b2);
+        assertEquals("world", b2.getString("hello"));
     }
 }

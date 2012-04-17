@@ -11,9 +11,9 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
+import android.graphics.drawable.Drawable;
 
 import com.xtremelabs.robolectric.RobolectricConfig;
-import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
 
 public class RobolectricPackageManager extends StubPackageManager {
@@ -21,7 +21,8 @@ public class RobolectricPackageManager extends StubPackageManager {
     private Map<String, PackageInfo> packageList;
     private Map<Intent, List<ResolveInfo>> resolveList = new HashMap<Intent, List<ResolveInfo>>();
     private Map<ComponentName, ComponentState> componentList = new HashMap<ComponentName,ComponentState>();
-    
+    private Map<ComponentName, Drawable> drawableList = new HashMap<ComponentName, Drawable>();
+
     private ContextWrapper contextWrapper;
     private RobolectricConfig config;
     private ApplicationInfo applicationInfo;
@@ -70,18 +71,36 @@ public class RobolectricPackageManager extends StubPackageManager {
 
     @Override 
     public List<ResolveInfo> queryIntentActivities( Intent intent, int flags ) {
-    	return resolveList.get( intent );
+    	List<ResolveInfo> result = resolveList.get( intent );
+    	return (result == null) ? new ArrayList<ResolveInfo>() : result;
     }
     
     @Override
     public ResolveInfo resolveActivity(Intent intent, int flags) {
     	List<ResolveInfo> candidates = queryIntentActivities(intent, flags);
-    	if (candidates == null) { return null; }
-    	return candidates.get(0);
+    	return candidates.isEmpty() ? null : candidates.get(0);
     }
     
     public void addResolveInfoForIntent( Intent intent, List<ResolveInfo> info ) {
     	resolveList.put( intent, info );
+    }
+    
+    @Override
+    public Drawable getActivityIcon(Intent intent) {
+    	return drawableList.get(intent.getComponent());
+    }
+ 
+    @Override
+    public Drawable getActivityIcon(ComponentName componentName) {
+    	return drawableList.get(componentName);
+    }
+    
+    public void addActivityIcon( ComponentName component, Drawable d ) {
+    	drawableList.put( component, d);
+    }
+    
+    public void addActivityIcon( Intent intent, Drawable d ) {
+    	drawableList.put( intent.getComponent(), d);
     }
     
 	@Override

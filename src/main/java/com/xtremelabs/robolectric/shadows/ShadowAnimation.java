@@ -22,6 +22,7 @@ public class ShadowAnimation {
     private int repeatCount;
     private int repeatMode;
     private long startOffset;
+    private boolean fillAfter;
 
     @RealObject
     private Animation realAnimation;
@@ -100,6 +101,16 @@ public class ShadowAnimation {
     @Implementation
     public long getStartOffset() {
         return startOffset;
+    }
+
+    @Implementation
+    public void setFillAfter(boolean fillAfter) {
+        this.fillAfter = fillAfter;
+    }
+
+    @Implementation
+    public boolean getFillAfter() {
+        return fillAfter;
     }
 
     /**
