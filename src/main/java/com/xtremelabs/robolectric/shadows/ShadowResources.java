@@ -7,6 +7,7 @@ import android.content.res.TypedArray;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.NinePatchDrawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -151,7 +152,6 @@ public class ShadowResources {
 
         ResourceLoader resLoader = Robolectric.shadowOf(Robolectric.application).getResourceLoader();
 
-        // Check if this drawable is an XML drawable
         Drawable xmlDrawable = resLoader.getXmlDrawable(drawableResourceId);
         if (xmlDrawable != null) {
             return xmlDrawable;
@@ -165,6 +165,10 @@ public class ShadowResources {
         Drawable colorDrawable = resLoader.getColorDrawable(drawableResourceId);
         if (colorDrawable != null) {
             return colorDrawable;
+        }
+        
+        if (resLoader.isNinePatchDrawable(drawableResourceId)) {
+        	return new NinePatchDrawable(realResources, null);
         }
 
         return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));

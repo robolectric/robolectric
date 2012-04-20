@@ -5,6 +5,7 @@ import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.NinePatchDrawable;
 import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
@@ -16,9 +17,7 @@ import com.xtremelabs.robolectric.util.PropertiesHelper;
 
 import java.io.*;
 import java.lang.reflect.Field;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -62,6 +61,8 @@ public class ResourceLoader {
 	private final IntegerResourceLoader integerResourceLoader;
 	private boolean isInitialized = false;
 	private boolean strictI18n = false;
+	
+	private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
 
 	// TODO: get these value from the xml resources instead [xw 20101011]
 	/**
@@ -111,7 +112,7 @@ public class ResourceLoader {
 		if ( isInitialized ) {
 			return;
 		}
-
+		
 		try {
 			if ( resourceDir != null ) {
 				viewLoader = new ViewLoader( resourceExtractor, attrResourceLoader );
@@ -136,7 +137,8 @@ public class ResourceLoader {
 				loadMenuResources( resourceDir );
 				loadDrawableResources( resourceDir );
 				loadPreferenceResources( preferenceDir );
-
+				
+				listNinePatchResources(ninePatchDrawableIds, resourceDir);
 			} else {
 				viewLoader = null;
 				menuLoader = null;
@@ -459,6 +461,34 @@ public class ResourceLoader {
 		}
 
 		return null;
+	}
+	
+	public boolean isNinePatchDrawable(int drawableResourceId) {
+		return ninePatchDrawableIds.contains(drawableResourceId);
+	}
+	
+	/**
+	 * Returns a collection of resource IDs for all nine-patch drawables
+	 * in the project.
+	 * 
+	 * @param resourceIds
+	 * @param dir
+	 */
+	private void listNinePatchResources(Set<Integer> resourceIds, File dir) {
+		File[] files = dir.listFiles();
+		if (files != null) {
+			for (File f : files) {
+				if (f.isDirectory() && isDrawableDirectory(f.getPath())) {
+					listNinePatchResources(resourceIds, f);
+				} else {
+					String name = f.getName();
+					if (name.endsWith(".9.png")) {
+						String[] tokens = name.split("\\.9\\.png$");
+						resourceIds.add(resourceExtractor.getResourceId("@drawable/" + tokens[0]));
+					}
+				}
+			}
+		}
 	}
 
 	public InputStream getRawValue( int id ) {
