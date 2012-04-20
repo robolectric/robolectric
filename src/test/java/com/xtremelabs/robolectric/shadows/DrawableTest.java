@@ -100,6 +100,15 @@ public class DrawableTest {
         assertThat(shadowDrawable.getLoadedFromResourceId(), is(34758));
     }
 
+    @Test
+    public void testWasSelfInvalidated() throws Exception {
+        Drawable drawable = ShadowDrawable.createFromResourceId(34758);
+        ShadowDrawable shadowDrawable = shadowOf(drawable);
+        assertFalse(shadowDrawable.wasInvalidated());
+        drawable.invalidateSelf();
+        assertTrue(shadowDrawable.wasInvalidated());
+    }
+
     private static class TestDrawable extends Drawable {
         @Override
         public void draw(Canvas canvas) {

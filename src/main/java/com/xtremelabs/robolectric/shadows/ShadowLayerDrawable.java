@@ -6,12 +6,16 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Implements(LayerDrawable.class)
 public class ShadowLayerDrawable extends ShadowDrawable {
     @RealObject
     protected LayerDrawable realLayerDrawable;
 
     protected Drawable[] drawables;
+    private Map<Integer, Integer> indexForId = new HashMap<Integer, Integer>();
 
     public void __constructor__(Drawable[] drawables) {
         this.drawables = drawables;
@@ -29,5 +33,19 @@ public class ShadowLayerDrawable extends ShadowDrawable {
     		d = drawables[ idx ];
     	}
     	return d;
+    }
+
+    @Implementation
+    public boolean setDrawableByLayerId(int id, Drawable drawable) {
+        if (!indexForId.containsKey(id)) {
+            return false;
+        }
+        drawables[indexForId.get(id)] = drawable;
+        return true;
+    }
+
+    @Implementation
+    public void setId(int index, int id) {
+        indexForId.put(id, index);
     }
 }
