@@ -22,7 +22,7 @@ public class ShadowFrameLayout extends ShadowViewGroup {
     }
     
     @Implementation
-    protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
     	int width = MeasureSpec.getSize(widthMeasureSpec);
     	int height = MeasureSpec.getSize(heightMeasureSpec);
     	
