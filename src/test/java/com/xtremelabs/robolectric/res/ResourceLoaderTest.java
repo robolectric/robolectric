@@ -100,5 +100,7 @@ public class ResourceLoaderTest {
         assertThat(resourceLoader.isNinePatchDrawable(R.drawable.l2_yellow), equalTo(false));
         assertThat(resourceLoader.isNinePatchDrawable(R.drawable.state_drawable), equalTo(false));
         assertThat(resourceLoader.isNinePatchDrawable(R.drawable.animation_list), equalTo(false));
+        assertThat(resourceLoader.isNinePatchDrawable(0), equalTo(false));
+        assertThat(resourceLoader.isNinePatchDrawable(-1), equalTo(false));
     }
 }
