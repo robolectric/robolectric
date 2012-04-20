@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.drawable.AnimationDrawable;
@@ -14,7 +15,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
@@ -28,9 +33,9 @@ public class ResourcesTest {
 	@Before
 	public void setup() {
 		resources = new Activity().getResources();
-		shadowApp = shadowOf( Robolectric.application );		
+		shadowApp = shadowOf( Robolectric.application );
 	}
-	
+
     @Test(expected = Resources.NotFoundException.class)
     public void getStringArray_shouldThrowExceptionIfNotFound() throws Exception {
         resources.getStringArray(-1);
@@ -72,7 +77,7 @@ public class ResourcesTest {
     	shadowApp.getResourceLoader().setLocalRClass( null );
     	assertThat( resources.getDrawable( TestR.anim.test_anim_1 ), instanceOf( BitmapDrawable.class ) );
     }
-    
+
     /**
      * given an R.anim.id value, will return an AnimationDrawable
      */
@@ -81,14 +86,32 @@ public class ResourcesTest {
     	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
     	assertThat( resources.getDrawable( TestR.anim.test_anim_1 ), instanceOf( AnimationDrawable.class ) );
     }
-    
+
     /**
      * given an R.color.id value, will return a ColorDrawable
      */
     @Test
     public void testGetColorDrawable() {
     	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
-    	assertThat( resources.getDrawable( TestR.color.test_color_1 ), instanceOf( ColorDrawable.class ) );    	
+    	assertThat( resources.getDrawable( TestR.color.test_color_1 ), instanceOf( ColorDrawable.class ) );
+    }
+
+    /**
+     * given an R.color.id value, will return a Color
+     */
+    @Test
+    public void testGetColor() {
+        shadowApp.getResourceLoader().setLocalRClass( TestR.class );
+        assertThat( resources.getColor( TestR.color.test_color_1 ), not( 0 ) );
+    }
+
+    /**
+     * given an R.color.id value, will return a ColorStateList
+     */
+    @Test
+    public void testGetColorStateList() {
+        shadowApp.getResourceLoader().setLocalRClass( TestR.class );
+        assertThat( resources.getColorStateList( TestR.color.test_color_1 ), instanceOf( ColorStateList.class ) );
     }
 
     /**
@@ -97,16 +120,16 @@ public class ResourcesTest {
     @Test
     public void testGetBitmapDrawable() {
     	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
-    	assertThat( resources.getDrawable( TestR.drawable.test_drawable_1 ), instanceOf( BitmapDrawable.class ) );    	    	    	
+    	assertThat( resources.getDrawable( TestR.drawable.test_drawable_1 ), instanceOf( BitmapDrawable.class ) );
     }
-    
+
     /**
-     * given a value that doesn't in one of R's inner classes, will return a BitmapDrawable 
+     * given a value that doesn't in one of R's inner classes, will return a BitmapDrawable
      */
     @Test
     public void testGetBitmapDrawableForUnknownId() {
     	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
-    	assertThat( resources.getDrawable( Integer.MAX_VALUE ), instanceOf( BitmapDrawable.class ) );    	    	
+    	assertThat( resources.getDrawable( Integer.MAX_VALUE ), instanceOf( BitmapDrawable.class ) );
     }
     @Test
     public void testDensity() {

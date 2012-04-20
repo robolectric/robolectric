@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.res.AssetManager;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -78,6 +79,11 @@ public class ShadowResources {
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
         return resourceLoader.getColorValue(id);
+    }
+
+    @Implementation
+    public ColorStateList getColorStateList(int id) {
+        return new ColorStateList(null, null);
     }
 
     @Implementation
