@@ -11,20 +11,24 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertSame;
+import static org.junit.Assert.*;
 
 /**
  * ShadowLayerDrawableTest
  */
 @RunWith(WithTestDefaultsRunner.class)
 public class LayerDrawableTest {
-    /** drawables */
+    /**
+     * drawables
+     */
     protected Drawable drawable1000;
     protected Drawable drawable2000;
     protected Drawable drawable3000;
+    protected Drawable drawable4000;
 
-    /** drawables */
+    /**
+     * drawables
+     */
     protected Drawable[] drawables;
 
     @Before
@@ -35,8 +39,10 @@ public class LayerDrawableTest {
                 Robolectric.application.getResources(), 0x00002000));
         drawable3000 = new BitmapDrawable(BitmapFactory.decodeResource(
                 Robolectric.application.getResources(), 0x00003000));
+        drawable4000 = new BitmapDrawable(BitmapFactory.decodeResource(
+                Robolectric.application.getResources(), 0x00004000));
 
-        drawables = new Drawable[] { drawable1000, drawable2000, drawable3000 };
+        drawables = new Drawable[]{drawable1000, drawable2000, drawable3000};
     }
 
     @Test
@@ -49,5 +55,49 @@ public class LayerDrawableTest {
     public void testGetNumberOfLayers() {
         LayerDrawable layerDrawable = new LayerDrawable(drawables);
         assertEquals("count", 3, layerDrawable.getNumberOfLayers());
+    }
+
+    @Test
+    public void testSetDrawableByLayerId1() throws Exception {
+        LayerDrawable layerDrawable = new LayerDrawable(drawables);
+        int index = 1;
+        int layerId = 345;
+        layerDrawable.setId(index, layerId);
+
+        layerDrawable.setDrawableByLayerId(layerId, drawable4000);
+
+        assertEquals(shadowOf(drawable4000).getLoadedFromResourceId(),
+                shadowOf(layerDrawable.getDrawable(index)).getLoadedFromResourceId());
+    }
+
+    @Test
+    public void testSetDrawableByLayerId2() throws Exception {
+        LayerDrawable layerDrawable = new LayerDrawable(drawables);
+        int index = 0;
+        int layerId = 345;
+        layerDrawable.setId(index, layerId);
+
+        layerDrawable.setDrawableByLayerId(layerId, drawable4000);
+
+        assertEquals(shadowOf(drawable4000).getLoadedFromResourceId(),
+                shadowOf(layerDrawable.getDrawable(index)).getLoadedFromResourceId());
+    }
+
+    @Test
+    public void setDrawableByLayerId_shouldReturnFalseIfIdNotFound() throws Exception {
+        LayerDrawable layerDrawable = new LayerDrawable(drawables);
+        boolean ret = layerDrawable.setDrawableByLayerId(123, drawable4000);
+        assertFalse(ret);
+    }
+
+    @Test
+    public void setDrawableByLayerId_shouldReturnTrueIfIdWasFound() throws Exception {
+        LayerDrawable layerDrawable = new LayerDrawable(drawables);
+        int index = 0;
+        int layerId = 345;
+        layerDrawable.setId(index, layerId);
+
+        boolean ret = layerDrawable.setDrawableByLayerId(layerId, drawable4000);
+        assertTrue(ret);
     }
 }
