@@ -43,12 +43,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.StateListDrawable;
+import android.graphics.drawable.*;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.location.Address;
@@ -477,6 +472,10 @@ public class Robolectric {
 
     public static ShadowAnimation shadowOf(Animation instance) {
         return (ShadowAnimation) shadowOf_(instance);
+    }
+
+    public static ShadowAnimationDrawable shadowOf(AnimationDrawable instance) {
+        return (ShadowAnimationDrawable) shadowOf_(instance);
     }
 
     public static ShadowAnimationUtils shadowOf(AnimationUtils instance) {
