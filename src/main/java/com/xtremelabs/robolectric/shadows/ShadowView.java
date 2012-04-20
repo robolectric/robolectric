@@ -73,6 +73,7 @@ public class ShadowView {
     private Animation animation;
     private ViewTreeObserver viewTreeObserver;
     private MotionEvent lastTouchEvent;
+    private int nextFocusDownId = View.NO_ID;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -430,6 +431,16 @@ public class ShadowView {
         if (onFocusChangeListener != null) {
             onFocusChangeListener.onFocusChange(realView, hasFocus);
         }
+    }
+
+    @Implementation
+    public int getNextFocusDownId() {
+        return nextFocusDownId;
+    }
+
+    @Implementation
+    public void setNextFocusDownId(int nextFocusDownId) {
+        this.nextFocusDownId = nextFocusDownId;
     }
 
     @Implementation
