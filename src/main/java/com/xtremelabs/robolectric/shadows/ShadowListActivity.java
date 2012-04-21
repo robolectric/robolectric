@@ -1,7 +1,9 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.R;
 import android.app.ListActivity;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -43,17 +45,15 @@ public class ShadowListActivity extends ShadowActivity {
         return listAdapter;
     }
 
+    /**
+     * Copied wholesale from Android ListActivity source.
+     */
     private ListView findListView(View parent) {
-        if (parent instanceof ListView) {
-            return (ListView) parent;
+        listView = (ListView)findViewById(android.R.id.list);
+        if (listView == null) {
+            throw new RuntimeException("Your content must have a ListView whose id attribute is 'android.R.id.list'");
         }
-        ShadowViewGroup shadowViewGroup = (ShadowViewGroup) shadowOf(parent);
-        for (int i = 0; i < shadowViewGroup.getChildCount(); i++) {
-            ListView listView = findListView(shadowViewGroup.getChildAt(i));
-            if (listView != null) {
-                return listView;
-            }
-        }
-        return null;
+
+        return listView;
     }
 }
