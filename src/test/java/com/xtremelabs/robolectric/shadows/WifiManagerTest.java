@@ -177,34 +177,31 @@ public class WifiManagerTest {
     }
     
     @Test
-    public void shouldCalculateSignalLevelSetBefore()
-    {	
-    	ShadowWifiManager.setSignalLevelInPercent(0.5f);
-    	assertEquals(2, WifiManager.calculateSignalLevel(0, 5));
-    	assertEquals(2, WifiManager.calculateSignalLevel(2, 5));
-    	
-    	ShadowWifiManager.setSignalLevelInPercent(0.9f);
-    	assertEquals(3, WifiManager.calculateSignalLevel(0, 5));
-    	assertEquals(3, WifiManager.calculateSignalLevel(2, 5));
-    	
-    	ShadowWifiManager.setSignalLevelInPercent(1f);
-    	assertEquals(3, WifiManager.calculateSignalLevel(0, 4));
-    	assertEquals(3, WifiManager.calculateSignalLevel(2, 4));
-    	
-    	ShadowWifiManager.setSignalLevelInPercent(0);
-    	assertEquals(0, WifiManager.calculateSignalLevel(0, 5));
-    	assertEquals(0, WifiManager.calculateSignalLevel(2, 5));
+    public void shouldCalculateSignalLevelSetBefore() {
+        ShadowWifiManager.setSignalLevelInPercent(0.5f);
+        assertEquals(2, WifiManager.calculateSignalLevel(0, 5));
+        assertEquals(2, WifiManager.calculateSignalLevel(2, 5));
+
+        ShadowWifiManager.setSignalLevelInPercent(0.9f);
+        assertEquals(3, WifiManager.calculateSignalLevel(0, 5));
+        assertEquals(3, WifiManager.calculateSignalLevel(2, 5));
+
+        ShadowWifiManager.setSignalLevelInPercent(1f);
+        assertEquals(3, WifiManager.calculateSignalLevel(0, 4));
+        assertEquals(3, WifiManager.calculateSignalLevel(2, 4));
+
+        ShadowWifiManager.setSignalLevelInPercent(0);
+        assertEquals(0, WifiManager.calculateSignalLevel(0, 5));
+        assertEquals(0, WifiManager.calculateSignalLevel(2, 5));
     }
     
-    @Test(expected = InvalidParameterException.class)
-    public void shouldThrowInvalidParameterExceptionWhenSignalLevelToLow()
-    {
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowIllegalArgumentExceptionWhenSignalLevelToLow() {
     	ShadowWifiManager.setSignalLevelInPercent(-0.01f);
     }
     
-    @Test(expected = InvalidParameterException.class)
-    public void shouldThrowInvalidParameterExceptionWhenSignalLevelToHigh()
-    {
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowIllegalArgumentExceptionWhenSignalLevelToHigh() {
     	ShadowWifiManager.setSignalLevelInPercent(1.01f);
     }
 }

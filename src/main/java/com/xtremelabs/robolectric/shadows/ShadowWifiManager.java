@@ -9,7 +9,6 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
-import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -21,7 +20,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(WifiManager.class)
 public class ShadowWifiManager {
     private static float sSignalLevelInPercent=1f;
-	private boolean accessWifiStatePermission = true;
+    private boolean accessWifiStatePermission = true;
     private boolean wifiEnabled = true;
     private WifiInfo wifiInfo;
     private List<ScanResult> scanResults;
@@ -113,16 +112,16 @@ public class ShadowWifiManager {
     
     @Implementation
     public static int calculateSignalLevel (int rssi, int numLevels)
-    {    	
-    	return (int)(sSignalLevelInPercent*(numLevels-1));
+    {
+        return (int)(sSignalLevelInPercent*(numLevels-1));
     }
     
-    public static void setSignalLevelInPercent(float level)
-    {
-    	if(level < 0 || level > 1)
-    		throw new InvalidParameterException("level needs to be between 0 and 1");
-    	
-    	sSignalLevelInPercent = level;
+    public static void setSignalLevelInPercent(float level) {
+        if (level < 0 || level > 1) {
+            throw new IllegalArgumentException(
+                    "level needs to be between 0 and 1");
+        }
+        sSignalLevelInPercent = level;
     }
 
     public void setAccessWifiStatePermission(boolean accessWifiStatePermission) {
