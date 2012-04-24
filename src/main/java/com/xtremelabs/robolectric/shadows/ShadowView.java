@@ -74,6 +74,7 @@ public class ShadowView {
     private ViewTreeObserver viewTreeObserver;
     private MotionEvent lastTouchEvent;
     private int nextFocusDownId = View.NO_ID;
+    private CharSequence contentDescription = null;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -99,6 +100,7 @@ public class ShadowView {
         applyBackgroundAttribute();
         applyTagAttribute();
         applyOnClickAttribute();
+        applyContentDescriptionAttribute();
     }
 
     @Implementation
@@ -142,6 +144,11 @@ public class ShadowView {
         }
     }
 
+    @Implementation(i18nSafe = false)
+    public void setContentDescription(CharSequence contentDescription) {
+        this.contentDescription = contentDescription;
+    }
+
     @Implementation
     public boolean isFocusable() {
         return focusable;
@@ -150,6 +157,11 @@ public class ShadowView {
     @Implementation
     public int getId() {
         return id;
+    }
+
+    @Implementation
+    public CharSequence getContentDescription() {
+        return contentDescription;
     }
 
     /**
@@ -777,6 +789,17 @@ public class ShadowView {
                 }
             }
         });
+    }
+
+    private void applyContentDescriptionAttribute() {
+        String contentDescription = attributeSet.getAttributeValue("android", "contentDescription");
+        if (contentDescription != null) {
+            if (contentDescription.startsWith("@string/")) {
+                int resId = attributeSet.getAttributeResourceValue("android", "contentDescription", 0);
+                contentDescription = context.getResources().getString(resId);
+            }
+            setContentDescription(contentDescription);
+        }
     }
 
     private boolean noParentHasFocus(View view) {
