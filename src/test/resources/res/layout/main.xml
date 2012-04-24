@@ -22,6 +22,7 @@
             android:textSize="14dip"
             android:textColor="#fff"
             android:enabled="false"
+            android:contentDescription="@string/howdy"
             />
 
     <TextView
