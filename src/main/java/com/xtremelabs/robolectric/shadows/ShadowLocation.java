@@ -46,8 +46,8 @@ public class ShadowLocation {
     }
 
     public void __constructor__(String provider) {
-    	this.provider = provider;
-    	time = System.currentTimeMillis();
+        this.provider = provider;
+        time = System.currentTimeMillis();
     }
 
     @Implementation
@@ -89,20 +89,20 @@ public class ShadowLocation {
 
     @Implementation
     public float getAccuracy() {
-		return accuracy;
-	}
+        return accuracy;
+    }
     
     @Implementation
     public void setAccuracy(float accuracy) {
-		this.accuracy = accuracy;
-		this.hasAccuracy = true;
-	}
+        this.accuracy = accuracy;
+        this.hasAccuracy = true;
+    }
     
     @Implementation
     public void removeAccuracy()
     {
-    	this.accuracy = 0.0f;
-    	this.hasAccuracy = false;
+        this.accuracy = 0.0f;
+        this.hasAccuracy = false;
     }
 
     @Implementation
@@ -112,20 +112,20 @@ public class ShadowLocation {
 
     @Implementation
     public double getAltitude() {
-		return altitude;
-	}
+        return altitude;
+    }
     
     @Implementation
     public void setAltitude(double altitude) {
-		this.altitude = altitude;
-		this.hasAltitude = true;
-	}
+        this.altitude = altitude;
+        this.hasAltitude = true;
+    }
 
     @Implementation
     public void removeAltitude()
     {
-    	this.altitude = 0.0d;
-    	this.hasAltitude = false;
+        this.altitude = 0.0d;
+        this.hasAltitude = false;
     }
 
     @Implementation
@@ -135,20 +135,20 @@ public class ShadowLocation {
     
     @Implementation
     public float getBearing() {
-		return bearing;
-	}
+        return bearing;
+    }
     
     @Implementation
     public void setBearing(float bearing) {
-		this.bearing = bearing;
-		this.hasBearing = true;
-	}
+        this.bearing = bearing;
+        this.hasBearing = true;
+    }
     
     @Implementation
     void removeBearing()
     {
-    	this.bearing = 0.0f;
-    	this.hasBearing = false;
+        this.bearing = 0.0f;
+        this.hasBearing = false;
     }
     
     @Implementation
@@ -179,20 +179,20 @@ public class ShadowLocation {
     
     @Implementation
     public float getSpeed() {
-		return speed;
-	}
+        return speed;
+    }
     
     @Implementation
     public void setSpeed(float speed) {
-		this.speed = speed;
-		this.hasSpeed = true;
-	}
+        this.speed = speed;
+        this.hasSpeed = true;
+    }
     
     @Implementation
     public void removeSpeed()
     {
-    	this.hasSpeed = false;
-    	this.speed = 0.0f;
+        this.hasSpeed = false;
+        this.speed = 0.0f;
     }
 
     @Implementation
