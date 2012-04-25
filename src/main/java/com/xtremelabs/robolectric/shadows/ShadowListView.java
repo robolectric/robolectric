@@ -23,7 +23,7 @@ public class ShadowListView extends ShadowAbsListView {
 
     private int choiceMode;
     private SparseBooleanArray checkedItemPositions = new SparseBooleanArray();
-    
+
     @Implementation
     @Override
     public View findViewById(int id) {
@@ -58,9 +58,7 @@ public class ShadowListView extends ShadowAbsListView {
     @Implementation
     @Override
     public boolean performItemClick(View view, int position, long id) {
-    	
-    	boolean handled = false;
-
+        boolean handled = false;
         if (choiceMode != ListView.CHOICE_MODE_NONE) {
             handled = true;
 
@@ -72,12 +70,11 @@ public class ShadowListView extends ShadowAbsListView {
                 if (newValue) {
                 	checkedItemPositions.clear();
                 	checkedItemPositions.put(position, true);
-                } 
+                }
             }
         }
 
         handled |= super.performItemClick(view, position, id);
-
         return handled;
     }
 
@@ -173,42 +170,40 @@ public class ShadowListView extends ShadowAbsListView {
             addView(footerView);
         }
     }
-    
+
     @Implementation
-	public int getChoiceMode() {
-		return choiceMode;
-	}
-	
+    public int getChoiceMode() {
+        return choiceMode;
+    }
+
     @Implementation
-	public void setChoiceMode(int choiceMode) {
-		this.choiceMode = choiceMode;
-	}
-	
+    public void setChoiceMode(int choiceMode) {
+        this.choiceMode = choiceMode;
+    }
+
     @Implementation
-	public void setItemChecked(int position, boolean value) {
-		if(choiceMode == ListView.CHOICE_MODE_SINGLE)
-		{
-			checkedItemPositions.clear();
-			checkedItemPositions.put(position, value);
-		} else if(choiceMode == ListView.CHOICE_MODE_MULTIPLE)
-		{
-			checkedItemPositions.put(position, value);
-		}
-	}
-	
+    public void setItemChecked(int position, boolean value) {
+        if (choiceMode == ListView.CHOICE_MODE_SINGLE) {
+            checkedItemPositions.clear();
+            checkedItemPositions.put(position, value);
+        } else if (choiceMode == ListView.CHOICE_MODE_MULTIPLE) {
+            checkedItemPositions.put(position, value);
+        }
+    }
+
     @Implementation
-	public int getCheckedItemPosition() {
-    	if (choiceMode != ListView.CHOICE_MODE_SINGLE || checkedItemPositions.size() != 1)
-    		return ListView.INVALID_POSITION;
-    	
-		return checkedItemPositions.keyAt(0);
-	}
-	
+    public int getCheckedItemPosition() {
+        if (choiceMode != ListView.CHOICE_MODE_SINGLE || checkedItemPositions.size() != 1)
+            return ListView.INVALID_POSITION;
+
+        return checkedItemPositions.keyAt(0);
+    }
+
     @Implementation
-	public SparseBooleanArray getCheckedItemPositions() {
-    	if (choiceMode == ListView.CHOICE_MODE_NONE)
-    		return null;
-    	
-		return checkedItemPositions;
-	}
+    public SparseBooleanArray getCheckedItemPositions() {
+        if (choiceMode == ListView.CHOICE_MODE_NONE)
+            return null;
+
+        return checkedItemPositions;
+    }
 }

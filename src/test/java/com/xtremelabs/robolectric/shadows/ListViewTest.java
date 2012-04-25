@@ -35,12 +35,12 @@ import com.xtremelabs.robolectric.util.Transcript;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ListViewTest {
-    
-	private Transcript transcript;
+
+    private Transcript transcript;
     private ListView listView;
-	private int checkedItemPosition;
-	private SparseBooleanArray checkedItemPositions;
-	public int lastCheckedPosition;
+    private int checkedItemPosition;
+    private SparseBooleanArray checkedItemPositions;
+    private int lastCheckedPosition;
 
     @Before
     public void setUp() throws Exception {
@@ -371,109 +371,109 @@ public class ListViewTest {
     }
 
     @Test
-	public void givenChoiceModeIsSingle_whenGettingCheckedItemPosition_thenReturnPosition() {
-    	prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemChecked();
-    	
-		assertThat(listView.getCheckedItemPosition(), is(checkedItemPosition));
-	}
-    
+    public void givenChoiceModeIsSingle_whenGettingCheckedItemPosition_thenReturnPosition() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemChecked();
+
+        assertThat(listView.getCheckedItemPosition(), is(checkedItemPosition));
+    }
+
     @Test
-	public void givenChoiceModeIsMultiple_whenGettingCheckedItemPosition_thenReturnInvalidPosition() {
-		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemChecked();
-		
-		assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
-	}
-    
-	@Test
-	public void givenChoiceModeIsNone_whenGettingCheckedItemPosition_thenReturnInvalidPosition() {
-		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_NONE);
-		
-		assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
-	}
-    
-	@Test
-	public void givenNoItemsChecked_whenGettingCheckedItemOisition_thenReturnInvalidPosition() {
-		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		
-		assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
-	}
-	
-	@Test
-	public void givenChoiceModeIsSingleAndAnItemIsChecked_whenSettingChoiceModeToNone_thenGetCheckedItemPositionShouldReturnInvalidPosition() {
-    	prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemChecked();
-    	
-    	listView.setChoiceMode(ListView.CHOICE_MODE_NONE);
-    	
-		assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
-	}
-	
-	@Test
-	public void givenChoiceModeIsMultipleAndMultipleItemsAreChecked_whenGettingCheckedItemPositions_thenReturnCheckedPositions() {
-		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemsChecked();
-		
-		assertThat(listView.getCheckedItemPositions(), equalTo(checkedItemPositions));
-	}
-	
-	@Test
-	public void givenChoiceModeIsSingleAndMultipleItemsAreChecked_whenGettingCheckedItemPositions_thenReturnOnlyTheLastCheckedPosition() {
-		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemsChecked();
-		SparseBooleanArray expectedCheckedItemPositions = new SparseBooleanArray();
-		expectedCheckedItemPositions.put(lastCheckedPosition, true);
-		
-		assertThat(listView.getCheckedItemPositions(), equalTo(expectedCheckedItemPositions));
-	}
-	
-	@Test
-	public void givenChoiceModeIsNoneAndMultipleItemsAreChecked_whenGettingCheckedItemPositions_thenReturnNull() {
-		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_NONE).withAnyItemsChecked();
+    public void givenChoiceModeIsMultiple_whenGettingCheckedItemPosition_thenReturnInvalidPosition() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemChecked();
 
-		assertNull(listView.getCheckedItemPositions());
-	}
-	
-	@Test
-	public void givenItemIsNotCheckedAndChoiceModeIsSingle_whenPerformingItemClick_thenItemShouldBeChecked() {
-		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE);
-		int positionToClick = anyListIndex();
-		
-		listView.performItemClick(null, positionToClick, 0);
-		
-		assertThat(listView.getCheckedItemPosition(), equalTo(positionToClick));
-	}
-	
-	@Test
-	public void givenItemIsCheckedAndChoiceModeIsSingle_whenPerformingItemClick_thenItemShouldBeChecked() {
-		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemChecked();
-		
-		listView.performItemClick(null, checkedItemPosition, 0);
-		
-		assertThat(listView.getCheckedItemPosition(), equalTo(checkedItemPosition));
-	}
-	
-	@Test
-	public void givenItemIsNotCheckedAndChoiceModeIsMultiple_whenPerformingItemClick_thenItemShouldBeChecked() {
-		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-		int positionToClick = anyListIndex();
-		SparseBooleanArray expectedCheckedItemPositions = new SparseBooleanArray();
-		expectedCheckedItemPositions.put(positionToClick, true);
-		
-		listView.performItemClick(null, positionToClick, 0);
-		
-		assertThat(listView.getCheckedItemPositions(), equalTo(expectedCheckedItemPositions));
-	}
-	
-	@Test
-	public void givenItemIsCheckedAndChoiceModeIsMultiple_whenPerformingItemClick_thenItemShouldNotBeChecked() {
-		prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemChecked();
-		
-		listView.performItemClick(null, checkedItemPosition, 0);
+        assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
+    }
 
-		assertFalse(listView.getCheckedItemPositions().get(checkedItemPosition));
-	}
-	
-	private ListAdapterBuilder prepareListAdapter() {
-		return new ListAdapterBuilder();
-	}
-	
+    @Test
+    public void givenChoiceModeIsNone_whenGettingCheckedItemPosition_thenReturnInvalidPosition() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_NONE);
+
+        assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
+    }
+
+    @Test
+    public void givenNoItemsChecked_whenGettingCheckedItemOisition_thenReturnInvalidPosition() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+        assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
+    }
+
+    @Test
+    public void givenChoiceModeIsSingleAndAnItemIsChecked_whenSettingChoiceModeToNone_thenGetCheckedItemPositionShouldReturnInvalidPosition() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemChecked();
+
+        listView.setChoiceMode(ListView.CHOICE_MODE_NONE);
+
+        assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
+    }
+
+    @Test
+    public void givenChoiceModeIsMultipleAndMultipleItemsAreChecked_whenGettingCheckedItemPositions_thenReturnCheckedPositions() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemsChecked();
+
+        assertThat(listView.getCheckedItemPositions(), equalTo(checkedItemPositions));
+    }
+
+    @Test
+    public void givenChoiceModeIsSingleAndMultipleItemsAreChecked_whenGettingCheckedItemPositions_thenReturnOnlyTheLastCheckedPosition() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemsChecked();
+        SparseBooleanArray expectedCheckedItemPositions = new SparseBooleanArray();
+        expectedCheckedItemPositions.put(lastCheckedPosition, true);
+
+        assertThat(listView.getCheckedItemPositions(), equalTo(expectedCheckedItemPositions));
+    }
+
+    @Test
+    public void givenChoiceModeIsNoneAndMultipleItemsAreChecked_whenGettingCheckedItemPositions_thenReturnNull() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_NONE).withAnyItemsChecked();
+
+        assertNull(listView.getCheckedItemPositions());
+    }
+
+    @Test
+    public void givenItemIsNotCheckedAndChoiceModeIsSingle_whenPerformingItemClick_thenItemShouldBeChecked() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        int positionToClick = anyListIndex();
+
+        listView.performItemClick(null, positionToClick, 0);
+
+        assertThat(listView.getCheckedItemPosition(), equalTo(positionToClick));
+    }
+
+    @Test
+    public void givenItemIsCheckedAndChoiceModeIsSingle_whenPerformingItemClick_thenItemShouldBeChecked() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemChecked();
+
+        listView.performItemClick(null, checkedItemPosition, 0);
+
+        assertThat(listView.getCheckedItemPosition(), equalTo(checkedItemPosition));
+    }
+
+    @Test
+    public void givenItemIsNotCheckedAndChoiceModeIsMultiple_whenPerformingItemClick_thenItemShouldBeChecked() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        int positionToClick = anyListIndex();
+        SparseBooleanArray expectedCheckedItemPositions = new SparseBooleanArray();
+        expectedCheckedItemPositions.put(positionToClick, true);
+
+        listView.performItemClick(null, positionToClick, 0);
+
+        assertThat(listView.getCheckedItemPositions(), equalTo(expectedCheckedItemPositions));
+    }
+
+    @Test
+    public void givenItemIsCheckedAndChoiceModeIsMultiple_whenPerformingItemClick_thenItemShouldNotBeChecked() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemChecked();
+
+        listView.performItemClick(null, checkedItemPosition, 0);
+
+        assertFalse(listView.getCheckedItemPositions().get(checkedItemPosition));
+    }
+
+    private ListAdapterBuilder prepareListAdapter() {
+        return new ListAdapterBuilder();
+    }
+
     private ListAdapter prepareWithListAdapter() {
         ListAdapter adapter = new ListAdapter("a", "b", "c");
         listView.setAdapter(adapter);
@@ -487,11 +487,11 @@ public class ListViewTest {
 
         return shadowOf(listView);
     }
-    
+
     private int anyListIndex() {
 		return new Random().nextInt(3);
 	}
-    
+
     private static class ListAdapter extends BaseAdapter {
         public List<String> items = new ArrayList<String>();
 
@@ -523,34 +523,34 @@ public class ListViewTest {
     }
 
     public class ListAdapterBuilder {
-    	
-    	public ListAdapterBuilder() {
-    		prepareListWithThreeItems();
-    	}
 
-		public ListAdapterBuilder withChoiceMode(int choiceMode) {
-    		listView.setChoiceMode(choiceMode);
-    		return this;
-    	}
-    	
-    	public ListAdapterBuilder withAnyItemChecked() {
-        	checkedItemPosition = anyListIndex();
-        	listView.setItemChecked(checkedItemPosition, true);
-        	return this;
+        public ListAdapterBuilder() {
+            prepareListWithThreeItems();
         }
-    	
-    	public void withAnyItemsChecked() {
-    		checkedItemPositions = new SparseBooleanArray();
-    		int numberOfSelections = anyListIndex() + 1;
-    		for (int i = 0; i < numberOfSelections; i++) {
-    			checkedItemPositions.put(i, true);
-    			listView.setItemChecked(i, true);
-    			lastCheckedPosition = i;
-    		}
-    			
-    	}
-	}
-    
+
+        public ListAdapterBuilder withChoiceMode(int choiceMode) {
+            listView.setChoiceMode(choiceMode);
+            return this;
+        }
+
+        public ListAdapterBuilder withAnyItemChecked() {
+            checkedItemPosition = anyListIndex();
+            listView.setItemChecked(checkedItemPosition, true);
+            return this;
+        }
+
+        public void withAnyItemsChecked() {
+            checkedItemPositions = new SparseBooleanArray();
+            int numberOfSelections = anyListIndex() + 1;
+            for (int i = 0; i < numberOfSelections; i++) {
+                checkedItemPositions.put(i, true);
+                listView.setItemChecked(i, true);
+                lastCheckedPosition = i;
+            }
+
+        }
+    }
+
     private class TranscriptAdapter extends BaseAdapter {
         @Override
         public int getCount() {

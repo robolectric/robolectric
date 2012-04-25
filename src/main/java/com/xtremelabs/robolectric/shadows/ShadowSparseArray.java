@@ -43,9 +43,9 @@ public class ShadowSparseArray<E> {
     private static final Object DELETED = new Object();
     private boolean mGarbage = false;
 
-    @RealObject 
+    @RealObject
     private SparseArray<E> realObject;
-    
+
     public void __constructor__() {
         __constructor__(10);
     }
@@ -370,7 +370,7 @@ public class ShadowSparseArray<E> {
     public static int idealIntArraySize(int need) {
         return idealByteArraySize(need * 4) / 4;
     }
-    
+
     public static int idealByteArraySize(int need) {
         for (int i = 4; i < 32; i++)
             if (need <= (1 << i) - 12)
@@ -382,13 +382,13 @@ public class ShadowSparseArray<E> {
     @Implementation
     @Override
     public boolean equals(Object o) {
-    	if (o == null || o.getClass() != realObject.getClass())
-    		return false;
-    	
-    	ShadowSparseArray<?> target = (ShadowSparseArray<?>)shadowOf((SparseArray<?>)o);
-    	return Arrays.equals(mKeys, target.mKeys) && Arrays.deepEquals(mValues, target.mValues);
+        if (o == null || o.getClass() != realObject.getClass())
+            return false;
+
+        ShadowSparseArray<?> target = (ShadowSparseArray<?>) shadowOf((SparseArray<?>) o);
+        return Arrays.equals(mKeys, target.mKeys) && Arrays.deepEquals(mValues, target.mValues);
     }
-    
+
     private int[] mKeys;
     private Object[] mValues;
     private int mSize;
