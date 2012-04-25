@@ -11,6 +11,7 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.*;
 
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -173,6 +174,11 @@ public class ContentResolverTest {
     @Test
     public void openInputStream_shouldReturnAnInputStream() throws Exception {
         assertThat(contentResolver.openInputStream(uri21), CoreMatchers.instanceOf(InputStream.class));
+    }
+
+    @Test
+    public void openOutputStream_shouldReturnAnOutputStream() throws Exception {
+        assertThat(contentResolver.openOutputStream(uri21), CoreMatchers.instanceOf(OutputStream.class));
     }
 
     @Test
