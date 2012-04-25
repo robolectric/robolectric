@@ -9,7 +9,6 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class TimeTest {
@@ -184,5 +183,56 @@ public class TimeTest {
         Time t = new Time();
         assertEquals("1970-01-01T00:00:00.000+00:00", t.format3339(false));
         assertEquals("1970-01-01", t.format3339(true));
+    }
+
+    @Test
+    public void testIsEpoch() throws Exception {
+        Time t = new Time();
+        boolean isEpoch = Time.isEpoch(t);
+        assertEquals(true, isEpoch);
+    }
+
+    @Test
+    public void testGetJulianDay() throws Exception {
+        Time time = new Time();
+
+        time.set(0, 0, 0, 12, 5, 2008);
+        time.timezone = "Australia/Sydney";
+        long millis = time.normalize(true);
+
+        // This is the Julian day for 12am for this day of the year
+        int julianDay = Time.getJulianDay(millis, time.gmtoff);
+
+        // Change the time during the day and check that we get the same
+        // Julian day.
+        for (int hour = 0; hour < 24; hour++) {
+            for (int minute = 0; minute < 60; minute += 15) {
+                time.set(0, minute, hour, 12, 5, 2008);
+                millis = time.normalize(true);
+                int day = Time.getJulianDay(millis, time.gmtoff);
+
+                assertEquals(day, julianDay);
+            }
+        }
+    }
+
+    @Test
+    public void testSetJulianDay() throws Exception {
+        Time time = new Time();
+        time.set(0, 0, 0, 12, 5, 2008);
+        time.timezone = "Australia/Sydney";
+        long millis = time.normalize(true);
+
+        int julianDay = Time.getJulianDay(millis, time.gmtoff);
+        time.setJulianDay(julianDay);
+
+        assertTrue(time.hour == 0 || time.hour == 1);
+        assertEquals(0, time.minute);
+        assertEquals(0, time.second);
+
+        millis = time.toMillis(false);
+        int day = Time.getJulianDay(millis, time.gmtoff);
+
+        assertEquals(day, julianDay);
     }
 }
