@@ -50,6 +50,7 @@ public class ShadowMessage {
         message.arg1 = m.arg1;
         message.arg2 = m.arg2;
         message.obj = m.obj;
+        message.what = m.what;
         message.setData(m.getData());
         message.setTarget(m.getTarget());
     }
