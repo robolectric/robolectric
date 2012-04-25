@@ -27,7 +27,7 @@ public class ShadowLocation {
     private boolean hasAltitude;
     private boolean hasBearing;
     private boolean hasSpeed;
-    
+
     // Cache the inputs and outputs of computeDistanceAndBearing
     // so calls to distanceTo() and bearingTo() can share work
     private double mLat1 = 0.0;
@@ -37,8 +37,8 @@ public class ShadowLocation {
     private float mDistance = 0.0f;
     private float mInitialBearing = 0.0f;
     // Scratchpad
-    private float[] mResults = new float[2];
-    
+    private final float[] mResults = new float[2];
+
     private Bundle extras = new Bundle();
 
     public void __constructor__(Location l) {
@@ -60,7 +60,7 @@ public class ShadowLocation {
         bearing = l.getBearing();
         altitude = l.getAltitude();
         speed = l.getSpeed();
-        
+
         hasAccuracy = l.hasAccuracy();
         hasAltitude = l.hasAltitude();
         hasBearing = l.hasBearing();
@@ -91,16 +91,15 @@ public class ShadowLocation {
     public float getAccuracy() {
         return accuracy;
     }
-    
+
     @Implementation
     public void setAccuracy(float accuracy) {
         this.accuracy = accuracy;
         this.hasAccuracy = true;
     }
-    
+
     @Implementation
-    public void removeAccuracy()
-    {
+    public void removeAccuracy() {
         this.accuracy = 0.0f;
         this.hasAccuracy = false;
     }
@@ -114,7 +113,7 @@ public class ShadowLocation {
     public double getAltitude() {
         return altitude;
     }
-    
+
     @Implementation
     public void setAltitude(double altitude) {
         this.altitude = altitude;
@@ -122,8 +121,7 @@ public class ShadowLocation {
     }
 
     @Implementation
-    public void removeAltitude()
-    {
+    public void removeAltitude() {
         this.altitude = 0.0d;
         this.hasAltitude = false;
     }
@@ -132,31 +130,30 @@ public class ShadowLocation {
     public boolean hasAltitude() {
         return hasAltitude;
     }
-    
+
     @Implementation
     public float getBearing() {
         return bearing;
     }
-    
+
     @Implementation
     public void setBearing(float bearing) {
         this.bearing = bearing;
         this.hasBearing = true;
     }
-    
+
     @Implementation
-    void removeBearing()
-    {
+    public void removeBearing() {
         this.bearing = 0.0f;
         this.hasBearing = false;
     }
-    
+
     @Implementation
     public boolean hasBearing() {
         return hasBearing;
     }
 
-    
+
     @Implementation
     public double getLatitude() {
         return latitude;
@@ -176,21 +173,20 @@ public class ShadowLocation {
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
-    
+
     @Implementation
     public float getSpeed() {
         return speed;
     }
-    
+
     @Implementation
     public void setSpeed(float speed) {
         this.speed = speed;
         this.hasSpeed = true;
     }
-    
+
     @Implementation
-    public void removeSpeed()
-    {
+    public void removeSpeed() {
         this.hasSpeed = false;
         this.speed = 0.0f;
     }
@@ -199,7 +195,7 @@ public class ShadowLocation {
     public boolean hasSpeed() {
         return hasSpeed;
     }
-    
+
     @Override @Implementation
     public boolean equals(Object o) {
         if (o == null) return false;
@@ -215,7 +211,6 @@ public class ShadowLocation {
         if (time != that.time) return false;
         if (provider != null ? !provider.equals(that.provider) : that.provider != null) return false;
         if (accuracy != that.accuracy) return false;
-
         return true;
     }
 
@@ -244,7 +239,7 @@ public class ShadowLocation {
                 ", accuracy=" + accuracy +
                 '}';
     }
-    
+
     private static void computeDistanceAndBearing(double lat1, double lon1,
             double lat2, double lon2, float[] results) {
         // Based on http://www.ngs.noaa.gov/PUBS_LIB/inverse.pdf
