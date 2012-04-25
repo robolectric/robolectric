@@ -352,6 +352,7 @@ public class ViewTest {
 
         @Override
         protected void onAnimationEnd() {
+            super.onAnimationEnd();
             onAnimationEndWasCalled = true;
         }
     }
