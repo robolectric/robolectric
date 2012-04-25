@@ -8,202 +8,229 @@ import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
+/**
+ * A Cursor for testing.
+ *
+ * @author Eric Pabst (epabst@gmail.com)
+ *         Date: 3/7/11
+ *         Time: 6:25 AM
+ */
 public class TestCursor implements Cursor {
+    private int position = -1;
+    private final List<Map<String, Object>> rows;
+    private boolean closed = false;
+
+    public TestCursor(List<Map<String, Object>> rows) {
+        this.rows = rows;
+    }
+
     @Override
     public int getCount() {
-        throw new UnsupportedOperationException();
+        return rows.size();
     }
 
     @Override
     public int getPosition() {
-        throw new UnsupportedOperationException();
+        return position;
     }
 
     @Override
     public boolean move(int offset) {
-        throw new UnsupportedOperationException();
+        return moveToPosition(position + offset);
     }
 
     @Override
     public boolean moveToPosition(int position) {
-        throw new UnsupportedOperationException();
+        this.position = Math.min(Math.max(position, -1), getCount());
+        return (position < getCount() && position >= 0);
     }
 
     @Override
     public boolean moveToFirst() {
-        throw new UnsupportedOperationException();
+        return moveToPosition(0);
     }
 
     @Override
     public boolean moveToLast() {
-        throw new UnsupportedOperationException();
+        return moveToPosition(getCount() - 1);
     }
 
     @Override
     public boolean moveToNext() {
-        throw new UnsupportedOperationException();
+        return moveToPosition(position + 1);
     }
 
     @Override
     public boolean moveToPrevious() {
-        throw new UnsupportedOperationException();
+        return moveToPosition(position - 1);
     }
 
     @Override
     public boolean isFirst() {
-        throw new UnsupportedOperationException();
+        return position == 0;
     }
 
     @Override
     public boolean isLast() {
-        throw new UnsupportedOperationException();
+        return position == getCount() - 1;
     }
 
     @Override
     public boolean isBeforeFirst() {
-        throw new UnsupportedOperationException();
+        return position < 0;
     }
 
     @Override
     public boolean isAfterLast() {
-        throw new UnsupportedOperationException();
+        return position >= getCount();
     }
 
     @Override
     public int getColumnIndex(String columnName) {
-        throw new UnsupportedOperationException();
+        return new ArrayList<String>(getRow().keySet()).indexOf(columnName);
     }
 
     @Override
     public int getColumnIndexOrThrow(String columnName) throws IllegalArgumentException {
-        throw new UnsupportedOperationException();
+        int index = new ArrayList<String>(getRow().keySet()).indexOf(columnName);
+        if (index < 0) throw new IllegalArgumentException("Column not found: " + columnName);
+        return index;
     }
 
     @Override
     public String getColumnName(int columnIndex) {
-        throw new UnsupportedOperationException();
+        return new ArrayList<String>(getRow().keySet()).get(columnIndex);
+    }
+
+    private Map<String, Object> getRow() {
+        return rows.get(position);
     }
 
     @Override
     public String[] getColumnNames() {
-        throw new UnsupportedOperationException();
+        ArrayList<String> columnNames = getColumnNameList();
+        return columnNames.toArray(new String[columnNames.size()]);
+    }
+
+    private ArrayList<String> getColumnNameList() {
+        return new ArrayList<String>(getRow().keySet());
     }
 
     @Override
     public int getColumnCount() {
-        throw new UnsupportedOperationException();
+        return getRow().size();
     }
 
     @Override
     public byte[] getBlob(int columnIndex) {
-        throw new UnsupportedOperationException();
+        return (byte[]) getValue(columnIndex);
+    }
+
+    private Object getValue(int columnIndex) {
+        return getRow().get(getColumnName(columnIndex));
     }
 
     @Override
     public String getString(int columnIndex) {
-        throw new UnsupportedOperationException();
+        return (String) getValue(columnIndex);
     }
 
     @Override
     public void copyStringToBuffer(int columnIndex, CharArrayBuffer buffer) {
-        throw new UnsupportedOperationException();
+        char[] source = getString(columnIndex).toCharArray();
+        int count = Math.min(source.length, buffer.data.length);
+        System.arraycopy(source, 0, buffer.data, 0, count);
+        buffer.sizeCopied = count;
     }
 
     @Override
     public short getShort(int columnIndex) {
-        throw new UnsupportedOperationException();
+        return ((Number) getValue(columnIndex)).shortValue();
     }
 
     @Override
     public int getInt(int columnIndex) {
-        throw new UnsupportedOperationException();
+        return ((Number) getValue(columnIndex)).intValue();
     }
 
     @Override
     public long getLong(int columnIndex) {
-        throw new UnsupportedOperationException();
+        return ((Number) getValue(columnIndex)).longValue();
     }
 
     @Override
     public float getFloat(int columnIndex) {
-        throw new UnsupportedOperationException();
+        return ((Number) getValue(columnIndex)).floatValue();
     }
 
     @Override
     public double getDouble(int columnIndex) {
-        throw new UnsupportedOperationException();
+        return ((Number) getValue(columnIndex)).doubleValue();
     }
 
     @Override
     public boolean isNull(int columnIndex) {
-        throw new UnsupportedOperationException();
+        return getValue(columnIndex) == null;
     }
 
     @Override
     public void deactivate() {
-        throw new UnsupportedOperationException();
     }
 
     @Override
     public boolean requery() {
-        throw new UnsupportedOperationException();
+        return true;
     }
 
     @Override
     public void close() {
-        throw new UnsupportedOperationException();
+        closed = true;
     }
 
     @Override
     public boolean isClosed() {
-        throw new UnsupportedOperationException();
+        return closed;
     }
 
     @Override
     public void registerContentObserver(ContentObserver observer) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("not implemented yet");
     }
 
     @Override
     public void unregisterContentObserver(ContentObserver observer) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
     public void registerDataSetObserver(DataSetObserver observer) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("not implemented yet");
     }
 
     @Override
     public void unregisterDataSetObserver(DataSetObserver observer) {
-        throw new UnsupportedOperationException();
     }
 
     @Override
     public void setNotificationUri(ContentResolver cr, Uri uri) {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("not implemented yet");
     }
 
     @Override
     public boolean getWantsAllOnMoveCalls() {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("not implemented yet");
     }
 
     @Override
     public Bundle getExtras() {
-        throw new UnsupportedOperationException();
+        throw new UnsupportedOperationException("not implemented yet");
     }
 
     @Override
     public Bundle respond(Bundle extras) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Mimics ContentResolver.query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder)
-     **/
-    public void setQuery(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
-        // Override this in your subclass if you care to implement any of the other methods
-        // based on the query that was performed.
+        throw new UnsupportedOperationException("not implemented yet");
     }
 }
