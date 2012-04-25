@@ -18,6 +18,11 @@ public class ShadowTime {
     @RealObject
     private Time time;
 
+    private static final long SECOND_IN_MILLIS = 1000;
+    private static final long MINUTE_IN_MILLIS = SECOND_IN_MILLIS * 60;
+    private static final long HOUR_IN_MILLIS = MINUTE_IN_MILLIS * 60;
+    private static final long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
+
     public void __constructor__() {
         __constructor__(getCurrentTimezone());
     }
@@ -56,17 +61,55 @@ public class ShadowTime {
         set(System.currentTimeMillis());
     }
 
+
+    @Implementation
+    public static boolean isEpoch(Time time) {
+        long millis = time.toMillis(true);
+        return getJulianDay(millis, 0) == Time.EPOCH_JULIAN_DAY;
+    }
+
+
+    @Implementation
+    public static int getJulianDay(long millis, long gmtoff) {
+        long offsetMillis = gmtoff * 1000;
+        long julianDay = (millis + offsetMillis) / DAY_IN_MILLIS;
+        return (int) julianDay + Time.EPOCH_JULIAN_DAY;
+    }
+
+    @Implementation
+    public long setJulianDay(int julianDay) {
+        // Don't bother with the GMT offset since we don't know the correct
+        // value for the given Julian day.  Just get close and then adjust
+        // the day.
+        //long millis = (julianDay - EPOCH_JULIAN_DAY) * DateUtils.DAY_IN_MILLIS;
+        long millis = (julianDay - Time.EPOCH_JULIAN_DAY) * DAY_IN_MILLIS;
+        set(millis);
+
+        // Figure out how close we are to the requested Julian day.
+        // We can't be off by more than a day.
+        int approximateDay = getJulianDay(millis, time.gmtoff);
+        int diff = julianDay - approximateDay;
+        time.monthDay += diff;
+
+        // Set the time to 12am and re-normalize.
+        time.hour = 0;
+        time.minute = 0;
+        time.second = 0;
+        millis = time.normalize(true);
+        return millis;
+    }
+
     @Implementation
     public void set(long millis) {
         Calendar c = getCalendar();
         c.setTimeInMillis(millis);
         set(
-            c.get(Calendar.SECOND),
-            c.get(Calendar.MINUTE),
-            c.get(Calendar.HOUR_OF_DAY),
-            c.get(Calendar.DAY_OF_MONTH),
-            c.get(Calendar.MONTH),
-            c.get(Calendar.YEAR)
+                c.get(Calendar.SECOND),
+                c.get(Calendar.MINUTE),
+                c.get(Calendar.HOUR_OF_DAY),
+                c.get(Calendar.DAY_OF_MONTH),
+                c.get(Calendar.MONTH),
+                c.get(Calendar.YEAR)
         );
     }
 
@@ -187,7 +230,7 @@ public class ShadowTime {
         } else {
             String base = format("%Y-%m-%dT%H:%M:%S.000");
             String sign = (time.gmtoff < 0) ? "-" : "+";
-            int offset = (int)Math.abs(time.gmtoff);
+            int offset = (int) Math.abs(time.gmtoff);
             int minutes = (offset % 3600) / 60;
             int hours = offset / 3600;
             return String.format("%s%s%02d:%02d", base, sign, hours, minutes);

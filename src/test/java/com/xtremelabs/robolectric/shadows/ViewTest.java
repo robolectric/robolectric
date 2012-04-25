@@ -317,6 +317,14 @@ public class ViewTest {
         assertThat(shadowOf(view).getLastTouchEvent(), sameInstance(event));
     }
 
+    @Test
+    public void test_nextFocusDownId() throws Exception {
+        assertEquals(View.NO_ID, view.getNextFocusDownId());
+
+        view.setNextFocusDownId(R.id.icon);
+        assertEquals(R.id.icon, view.getNextFocusDownId());
+    }
+
     private static class TestAnimation extends Animation {
     }
 

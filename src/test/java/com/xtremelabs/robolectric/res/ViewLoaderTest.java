@@ -268,6 +268,12 @@ public class ViewLoaderTest {
     }
 
     @Test
+    public void testContentDescriptionIsSet() throws Exception {
+        View mediaView = viewLoader.inflateView(context, "layout/main");
+        assertThat(mediaView.findViewById(R.id.time).getContentDescription().toString(), equalTo("Howdy"));
+    }
+
+    @Test
     public void testViewBackgroundIdIsSet() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/main");
         ImageView imageView = (ImageView) mediaView.findViewById(R.id.image);
