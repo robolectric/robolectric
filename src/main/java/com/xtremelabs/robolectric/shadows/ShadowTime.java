@@ -18,6 +18,11 @@ public class ShadowTime {
     @RealObject
     private Time time;
 
+    private static final long SECOND_IN_MILLIS = 1000;
+    private static final long MINUTE_IN_MILLIS = SECOND_IN_MILLIS * 60;
+    private static final long HOUR_IN_MILLIS = MINUTE_IN_MILLIS * 60;
+    private static final long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
+
     public void __constructor__() {
         __constructor__(getCurrentTimezone());
     }
@@ -63,26 +68,16 @@ public class ShadowTime {
         return getJulianDay(millis, 0) == Time.EPOCH_JULIAN_DAY;
     }
 
-    //TODO: implement DateUtils shadow
-    private static final long SECOND_IN_MILLIS = 1000;
-    private static final long MINUTE_IN_MILLIS = SECOND_IN_MILLIS * 60;
-    private static final long HOUR_IN_MILLIS = MINUTE_IN_MILLIS * 60;
-    private static final long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
-    private static final long WEEK_IN_MILLIS = DAY_IN_MILLIS * 7;
 
     @Implementation
     public static int getJulianDay(long millis, long gmtoff) {
         long offsetMillis = gmtoff * 1000;
         long julianDay = (millis + offsetMillis) / DAY_IN_MILLIS;
-
-        //TODO: implement DateUtils shadow
-        //long julianDay = (millis + offsetMillis) / DateUtils.DAY_IN_MILLIS;
         return (int) julianDay + Time.EPOCH_JULIAN_DAY;
     }
 
     @Implementation
     public long setJulianDay(int julianDay) {
-        //TODO: implement DateUtils shadow
         // Don't bother with the GMT offset since we don't know the correct
         // value for the given Julian day.  Just get close and then adjust
         // the day.
