@@ -50,7 +50,7 @@ public class PreferenceActivityTest {
 	@Test
 	public void shouldLoadPreferenceScreen() {
 		activity.addPreferencesFromResource(R.xml.preferences);
-		assertThat(activity.getPreferenceScreen().getPreferenceCount(), equalTo(6));
+		assertThat(activity.getPreferenceScreen().getPreferenceCount(), equalTo(7));
 	}
 
     @Test
@@ -58,6 +58,8 @@ public class PreferenceActivityTest {
         activity.addPreferencesFromResource(R.xml.preferences);
         assertNotNull(activity.findPreference("category"));
         assertNotNull(activity.findPreference("inside_category"));
+        assertNotNull(activity.findPreference("screen"));
+        assertNotNull(activity.findPreference("inside_screen"));
         assertNotNull(activity.findPreference("checkbox"));
         assertNotNull(activity.findPreference("edit_text"));
         assertNotNull(activity.findPreference("list"));
