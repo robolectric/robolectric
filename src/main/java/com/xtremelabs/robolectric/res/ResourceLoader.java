@@ -5,7 +5,6 @@ import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.NinePatchDrawable;
 import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
@@ -63,12 +62,6 @@ public class ResourceLoader {
 	private boolean strictI18n = false;
 	
 	private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
-
-	// TODO: get these value from the xml resources instead [xw 20101011]
-	/**
-	 * @deprecated
-	 */
-	public final Map< Integer, Integer > dimensions = new HashMap< Integer, Integer >();
 
 	public ResourceLoader( int sdkVersion, Class rClass, File resourceDir, File assetsDir ) throws Exception {
 		this.sdkVersion = sdkVersion;

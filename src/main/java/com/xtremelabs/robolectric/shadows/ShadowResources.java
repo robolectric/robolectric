@@ -176,12 +176,6 @@ public class ShadowResources {
 
     @Implementation
     public float getDimension(int id) throws Resources.NotFoundException {
-        // todo: get this value from the xml resources and scale it by display metrics [xw 20101011]
-    	// TODO: The fall-through implementation now gets value from XML resources.  resourceLoader.dimensions should be deprecated 
-        if (resourceLoader.dimensions.containsKey(id)) {
-            return resourceLoader.dimensions.get(id);
-        }
-
         return resourceLoader.getDimenValue(id);
     }
 
@@ -212,17 +206,6 @@ public class ShadowResources {
     @Implementation
     public final android.content.res.Resources.Theme newTheme() {
         return newInstanceOf(Resources.Theme.class);
-    }
-
-    /**
-     * Non-Android accessor that sets the value to be returned by {@link #getDimension(int)}
-     *
-     * @param id    ID to set the dimension for
-     * @param value value to be returned
-     * @deprecated
-     */
-    public void setDimension(int id, int value) {
-        resourceLoader.dimensions.put(id, value);
     }
 
     @Implements(Resources.Theme.class)
