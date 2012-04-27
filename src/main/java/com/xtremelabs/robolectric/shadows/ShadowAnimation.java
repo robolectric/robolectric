@@ -23,6 +23,7 @@ public class ShadowAnimation {
     private int repeatMode;
     private long startOffset;
     private int loadedFromResourceId = -1;
+    private boolean fillAfter;
 
     @RealObject
     private Animation realAnimation;
@@ -101,6 +102,16 @@ public class ShadowAnimation {
     @Implementation
     public long getStartOffset() {
         return startOffset;
+    }
+
+    @Implementation
+    public void setFillAfter(boolean fillAfter) {
+        this.fillAfter = fillAfter;
+    }
+
+    @Implementation
+    public boolean getFillAfter() {
+        return fillAfter;
     }
 
     /**

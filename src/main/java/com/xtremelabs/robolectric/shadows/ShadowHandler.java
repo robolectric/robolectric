@@ -84,6 +84,7 @@ public class ShadowHandler {
         message.arg1 = arg1;
         message.arg2 = arg2;
         message.obj = obj;
+        message.setTarget(realHandler);
         return message;
     }
 
@@ -129,7 +130,7 @@ public class ShadowHandler {
 
     @Implementation
     public final Looper getLooper() {
-    	return looper;
+        return looper;
     }
 
     @Implementation
@@ -160,13 +161,20 @@ public class ShadowHandler {
 
     @Implementation
     public final void removeMessages(int what) {
+        removeMessages(what, null);
+    }
+
+    @Implementation
+    public final void removeMessages(int what, Object object) {
         for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext(); ) {
             Message message = iterator.next();
-            if (message.what == what) {
+            if (message.what == what && (object == null || object.equals(message.obj))) {
                 iterator.remove();
             }
         }
     }
+
+
 
     /**
      * @deprecated use {@link #idleMainLooper()} instead

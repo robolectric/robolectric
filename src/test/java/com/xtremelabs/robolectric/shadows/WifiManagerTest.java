@@ -10,6 +10,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.security.InvalidParameterException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,6 +22,8 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -70,7 +73,7 @@ public class WifiManagerTest {
         lastEnabled = shadowWifiManager.getLastEnabledNetwork();
         assertThat(lastEnabled, equalTo(new Pair<Integer, Boolean>(777, false)));
     }
-    
+
     @Test
     public void shouldReturnSetScanResults() throws Exception {
         List<ScanResult> scanResults = new ArrayList<ScanResult>();
@@ -131,9 +134,74 @@ public class WifiManagerTest {
         assertThat(shadowWifiManager.wasSaved, equalTo(true));
     }
 
-    //TODO?
-//    @Test
-//    public void shouldEnableTheNetwork() throws Exception {
-//
-//    }
+    @Test
+    public void shouldCreateWifiLock() throws Exception {
+        assertNotNull(wifiManager.createWifiLock("TAG"));
+        assertNotNull(wifiManager.createWifiLock(1, "TAG"));
+    }
+
+    @Test
+    public void shouldAcquireAndReleaseWifilockRefCounted() throws Exception {
+        WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
+        lock.acquire();
+        lock.acquire();
+        assertTrue(lock.isHeld());
+        lock.release();
+        assertTrue(lock.isHeld());
+        lock.release();
+        assertFalse(lock.isHeld());
+    }
+
+    @Test
+    public void shouldAcquireAndReleaseWifilockNonRefCounted() throws Exception {
+        WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
+        lock.setReferenceCounted(false);
+        lock.acquire();
+        assertTrue(lock.isHeld());
+        lock.acquire();
+        assertTrue(lock.isHeld());
+        lock.release();
+        assertFalse(lock.isHeld());
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void shouldThrowRuntimeExceptionIfLockisUnderlocked() throws Exception {
+        WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
+        lock.release();
+    }
+
+    @Test(expected = UnsupportedOperationException.class)
+    public void shouldThrowUnsupportedOperationIfLockisOverlocked() throws Exception {
+        WifiManager.WifiLock lock = wifiManager.createWifiLock("TAG");
+        for (int i=0; i<ShadowWifiManager.ShadowWifiLock.MAX_ACTIVE_LOCKS; i++) lock.acquire();
+    }
+    
+    @Test
+    public void shouldCalculateSignalLevelSetBefore() {
+        ShadowWifiManager.setSignalLevelInPercent(0.5f);
+        assertEquals(2, WifiManager.calculateSignalLevel(0, 5));
+        assertEquals(2, WifiManager.calculateSignalLevel(2, 5));
+
+        ShadowWifiManager.setSignalLevelInPercent(0.9f);
+        assertEquals(3, WifiManager.calculateSignalLevel(0, 5));
+        assertEquals(3, WifiManager.calculateSignalLevel(2, 5));
+
+        ShadowWifiManager.setSignalLevelInPercent(1f);
+        assertEquals(3, WifiManager.calculateSignalLevel(0, 4));
+        assertEquals(3, WifiManager.calculateSignalLevel(2, 4));
+
+        ShadowWifiManager.setSignalLevelInPercent(0);
+        assertEquals(0, WifiManager.calculateSignalLevel(0, 5));
+        assertEquals(0, WifiManager.calculateSignalLevel(2, 5));
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowIllegalArgumentExceptionWhenSignalLevelToLow() {
+    	ShadowWifiManager.setSignalLevelInPercent(-0.01f);
+    }
+    
+    @Test(expected = IllegalArgumentException.class)
+    public void shouldThrowIllegalArgumentExceptionWhenSignalLevelToHigh() {
+    	ShadowWifiManager.setSignalLevelInPercent(1.01f);
+    }
 }
