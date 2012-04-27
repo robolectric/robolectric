@@ -1,5 +1,27 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import android.util.SparseBooleanArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
@@ -7,26 +29,18 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Transcript;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ListViewTest {
+
     private Transcript transcript;
     private ListView listView;
+    private int checkedItemPosition;
+    private SparseBooleanArray checkedItemPositions;
+    private int lastCheckedPosition;
 
     @Before
     public void setUp() throws Exception {
@@ -356,6 +370,110 @@ public class ListViewTest {
         assertThat(shadowOf(listView).getSmoothScrolledPosition(), equalTo(10));
     }
 
+    @Test
+    public void givenChoiceModeIsSingle_whenGettingCheckedItemPosition_thenReturnPosition() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemChecked();
+
+        assertThat(listView.getCheckedItemPosition(), is(checkedItemPosition));
+    }
+
+    @Test
+    public void givenChoiceModeIsMultiple_whenGettingCheckedItemPosition_thenReturnInvalidPosition() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemChecked();
+
+        assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
+    }
+
+    @Test
+    public void givenChoiceModeIsNone_whenGettingCheckedItemPosition_thenReturnInvalidPosition() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_NONE);
+
+        assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
+    }
+
+    @Test
+    public void givenNoItemsChecked_whenGettingCheckedItemOisition_thenReturnInvalidPosition() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE);
+
+        assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
+    }
+
+    @Test
+    public void givenChoiceModeIsSingleAndAnItemIsChecked_whenSettingChoiceModeToNone_thenGetCheckedItemPositionShouldReturnInvalidPosition() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemChecked();
+
+        listView.setChoiceMode(ListView.CHOICE_MODE_NONE);
+
+        assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
+    }
+
+    @Test
+    public void givenChoiceModeIsMultipleAndMultipleItemsAreChecked_whenGettingCheckedItemPositions_thenReturnCheckedPositions() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemsChecked();
+
+        assertThat(listView.getCheckedItemPositions(), equalTo(checkedItemPositions));
+    }
+
+    @Test
+    public void givenChoiceModeIsSingleAndMultipleItemsAreChecked_whenGettingCheckedItemPositions_thenReturnOnlyTheLastCheckedPosition() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemsChecked();
+        SparseBooleanArray expectedCheckedItemPositions = new SparseBooleanArray();
+        expectedCheckedItemPositions.put(lastCheckedPosition, true);
+
+        assertThat(listView.getCheckedItemPositions(), equalTo(expectedCheckedItemPositions));
+    }
+
+    @Test
+    public void givenChoiceModeIsNoneAndMultipleItemsAreChecked_whenGettingCheckedItemPositions_thenReturnNull() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_NONE).withAnyItemsChecked();
+
+        assertNull(listView.getCheckedItemPositions());
+    }
+
+    @Test
+    public void givenItemIsNotCheckedAndChoiceModeIsSingle_whenPerformingItemClick_thenItemShouldBeChecked() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE);
+        int positionToClick = anyListIndex();
+
+        listView.performItemClick(null, positionToClick, 0);
+
+        assertThat(listView.getCheckedItemPosition(), equalTo(positionToClick));
+    }
+
+    @Test
+    public void givenItemIsCheckedAndChoiceModeIsSingle_whenPerformingItemClick_thenItemShouldBeChecked() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemChecked();
+
+        listView.performItemClick(null, checkedItemPosition, 0);
+
+        assertThat(listView.getCheckedItemPosition(), equalTo(checkedItemPosition));
+    }
+
+    @Test
+    public void givenItemIsNotCheckedAndChoiceModeIsMultiple_whenPerformingItemClick_thenItemShouldBeChecked() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        int positionToClick = anyListIndex();
+        SparseBooleanArray expectedCheckedItemPositions = new SparseBooleanArray();
+        expectedCheckedItemPositions.put(positionToClick, true);
+
+        listView.performItemClick(null, positionToClick, 0);
+
+        assertThat(listView.getCheckedItemPositions(), equalTo(expectedCheckedItemPositions));
+    }
+
+    @Test
+    public void givenItemIsCheckedAndChoiceModeIsMultiple_whenPerformingItemClick_thenItemShouldNotBeChecked() {
+        prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemChecked();
+
+        listView.performItemClick(null, checkedItemPosition, 0);
+
+        assertFalse(listView.getCheckedItemPositions().get(checkedItemPosition));
+    }
+
+    private ListAdapterBuilder prepareListAdapter() {
+        return new ListAdapterBuilder();
+    }
+
     private ListAdapter prepareWithListAdapter() {
         ListAdapter adapter = new ListAdapter("a", "b", "c");
         listView.setAdapter(adapter);
@@ -369,6 +487,10 @@ public class ListViewTest {
 
         return shadowOf(listView);
     }
+
+    private int anyListIndex() {
+		return new Random().nextInt(3);
+	}
 
     private static class ListAdapter extends BaseAdapter {
         public List<String> items = new ArrayList<String>();
@@ -397,6 +519,35 @@ public class ListViewTest {
             LinearLayout linearLayout = new LinearLayout(null);
             linearLayout.addView(new View(null));
             return linearLayout;
+        }
+    }
+
+    public class ListAdapterBuilder {
+
+        public ListAdapterBuilder() {
+            prepareListWithThreeItems();
+        }
+
+        public ListAdapterBuilder withChoiceMode(int choiceMode) {
+            listView.setChoiceMode(choiceMode);
+            return this;
+        }
+
+        public ListAdapterBuilder withAnyItemChecked() {
+            checkedItemPosition = anyListIndex();
+            listView.setItemChecked(checkedItemPosition, true);
+            return this;
+        }
+
+        public void withAnyItemsChecked() {
+            checkedItemPositions = new SparseBooleanArray();
+            int numberOfSelections = anyListIndex() + 1;
+            for (int i = 0; i < numberOfSelections; i++) {
+                checkedItemPositions.put(i, true);
+                listView.setItemChecked(i, true);
+                lastCheckedPosition = i;
+            }
+
         }
     }
 

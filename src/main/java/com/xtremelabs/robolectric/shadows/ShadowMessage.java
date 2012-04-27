@@ -21,7 +21,7 @@ public class ShadowMessage {
     public void setData(Bundle data) {
         this.data = data;
     }
-    
+
     @Implementation
     public void setTarget(Handler target) {
         this.target = target;
@@ -39,7 +39,7 @@ public class ShadowMessage {
         }
         return data;
     }
-    
+
     @Implementation
     public Handler getTarget() {
         return target;
@@ -51,6 +51,7 @@ public class ShadowMessage {
         message.arg2 = m.arg2;
         message.obj = m.obj;
         message.setData(m.getData());
+        message.setTarget(m.getTarget());
     }
 
     @Implementation
