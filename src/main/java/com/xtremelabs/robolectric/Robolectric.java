@@ -115,6 +115,7 @@ import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
 import android.webkit.JsPromptResult;
 import android.webkit.JsResult;
+import android.webkit.MimeTypeMap;
 import android.webkit.SslErrorHandler;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -318,6 +319,7 @@ public class Robolectric {
                 ShadowMediaStore.ShadowImages.ShadowMedia.class,
                 ShadowMenuInflater.class,
                 ShadowMessage.class,
+                ShadowMimeTypeMap.class,
                 ShadowMotionEvent.class,
                 ShadowNotification.class,
                 ShadowNdefMessage.class,
@@ -756,6 +758,10 @@ public class Robolectric {
 
     public static ShadowMenuInflater shadowOf(MenuInflater instance) {
         return (ShadowMenuInflater) shadowOf_(instance);
+    }
+    
+    public static ShadowMimeTypeMap shadowOf(MimeTypeMap instance) {
+        return (ShadowMimeTypeMap) shadowOf_(instance);
     }
 
     public static ShadowMotionEvent shadowOf(MotionEvent other) {
