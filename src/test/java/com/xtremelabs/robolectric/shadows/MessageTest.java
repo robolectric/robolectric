@@ -64,7 +64,7 @@ public class MessageTest {
         assertThat(m2.obj, equalTo(m.obj));
         assertThat(m2.what, equalTo(m.what));
         assertThat(m2.getData(), equalTo(m.getData()));
-        assertThat(m2.getTarget(), equalTo(m.getTarget()));
+        assertNull(m2.getTarget());
     }
 
     @Test
@@ -132,6 +132,26 @@ public class MessageTest {
         assertThat(m.arg1, equalTo(arg1));
         assertThat(m.arg2, equalTo(arg2));
         assertThat(m.obj, equalTo(obj));
+    }
+
+    @Test
+    public void testObtainWithMessage() throws Exception {
+        Bundle b = new Bundle();
+        Message m = new Message();
+        m.arg1 = 10;
+        m.arg2 = 42;
+        m.obj = "obj";
+        m.what = 24;
+        m.setData(b);
+        m.setTarget(new Handler());
+        Message m2 = Message.obtain(m);
+
+        assertThat(m2.arg1, equalTo(m.arg1));
+        assertThat(m2.arg2, equalTo(m.arg2));
+        assertThat(m2.obj, equalTo(m.obj));
+        assertThat(m2.what, equalTo(m.what));
+        assertThat(m2.getData(), equalTo(m.getData()));
+        assertThat(m2.getTarget(), equalTo(m.getTarget()));
     }
 
     @Test
