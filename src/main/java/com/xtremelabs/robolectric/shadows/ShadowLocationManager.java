@@ -1,13 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
@@ -17,10 +9,11 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Looper;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+
+import java.util.*;
 
 /**
  * Shadow of {@code LocationManager} that provides for the simulation of different location providers being enabled and
@@ -38,6 +31,7 @@ public class ShadowLocationManager {
     private boolean lastBestProviderEnabled;
     private String bestEnabledProvider, bestDisabledProvider;
     private final List<LocationListener> requestLocationUdpateListeners = new ArrayList<LocationListener>();
+    private final Map<LocationListener, Set<String>> requestLocationUpdateListenersMap = new HashMap<LocationListener, Set<String>>();
 
     @Implementation
     public boolean isProviderEnabled(String provider) {
@@ -212,6 +206,10 @@ public class ShadowLocationManager {
     @Implementation
     public void requestLocationUpdates(String provider, long minTime, float minDistance, LocationListener listener) {
         requestLocationUdpateListeners.add(listener);
+        if (!requestLocationUpdateListenersMap.containsKey(listener)) {
+            requestLocationUpdateListenersMap.put(listener, new HashSet<String>());
+        }
+        requestLocationUpdateListenersMap.get(listener).add(provider);
     }
 
     @Implementation
@@ -359,6 +357,10 @@ public class ShadowLocationManager {
 
     public Map<PendingIntent, String> getRequestLocationUdpateProviderPendingIntents() {
         return requestLocationUdpateProviderPendingIntents;
+    }
+
+    public Collection<String> getProvidersForListener(LocationListener listener) {
+        return requestLocationUpdateListenersMap.get(listener);
     }
 
     final private class LocationProviderEntry implements Map.Entry<Boolean, List<Criteria>> {
