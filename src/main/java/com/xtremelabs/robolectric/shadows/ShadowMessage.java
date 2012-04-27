@@ -50,8 +50,8 @@ public class ShadowMessage {
         message.arg1 = m.arg1;
         message.arg2 = m.arg2;
         message.obj = m.obj;
+        message.what = m.what;
         message.setData(m.getData());
-        message.setTarget(m.getTarget());
     }
 
     @Implementation
@@ -92,6 +92,14 @@ public class ShadowMessage {
     public static Message obtain(Handler h, int what, int arg1, int arg2, Object obj) {
         Message m = obtain(h, what, arg1, arg2);
         m.obj = obj;
+        return m;
+    }
+
+    @Implementation
+    public static Message obtain(Message msg) {
+        Message m = new Message();
+        m.copyFrom(msg);
+        m.setTarget(msg.getTarget());
         return m;
     }
 
