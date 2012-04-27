@@ -7,6 +7,7 @@ import android.content.res.TypedArray;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.NinePatchDrawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -151,7 +152,6 @@ public class ShadowResources {
 
         ResourceLoader resLoader = Robolectric.shadowOf(Robolectric.application).getResourceLoader();
 
-        // Check if this drawable is an XML drawable
         Drawable xmlDrawable = resLoader.getXmlDrawable(drawableResourceId);
         if (xmlDrawable != null) {
             return xmlDrawable;
@@ -166,18 +166,16 @@ public class ShadowResources {
         if (colorDrawable != null) {
             return colorDrawable;
         }
+        
+        if (resLoader.isNinePatchDrawable(drawableResourceId)) {
+        	return new NinePatchDrawable(realResources, null);
+        }
 
         return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
     }
 
     @Implementation
     public float getDimension(int id) throws Resources.NotFoundException {
-        // todo: get this value from the xml resources and scale it by display metrics [xw 20101011]
-    	// TODO: The fall-through implementation now gets value from XML resources.  resourceLoader.dimensions should be deprecated 
-        if (resourceLoader.dimensions.containsKey(id)) {
-            return resourceLoader.dimensions.get(id);
-        }
-
         return resourceLoader.getDimenValue(id);
     }
 
@@ -208,17 +206,6 @@ public class ShadowResources {
     @Implementation
     public final android.content.res.Resources.Theme newTheme() {
         return newInstanceOf(Resources.Theme.class);
-    }
-
-    /**
-     * Non-Android accessor that sets the value to be returned by {@link #getDimension(int)}
-     *
-     * @param id    ID to set the dimension for
-     * @param value value to be returned
-     * @deprecated
-     */
-    public void setDimension(int id, int value) {
-        resourceLoader.dimensions.put(id, value);
     }
 
     @Implements(Resources.Theme.class)

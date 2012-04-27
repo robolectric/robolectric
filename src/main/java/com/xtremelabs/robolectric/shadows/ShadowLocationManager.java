@@ -1,13 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import android.app.PendingIntent;
 import android.app.PendingIntent.CanceledException;
 import android.content.Intent;
@@ -17,10 +9,11 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Looper;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+
+import java.util.*;
 
 /**
  * Shadow of {@code LocationManager} that provides for the simulation of different location providers being enabled and
@@ -37,7 +30,7 @@ public class ShadowLocationManager {
     private Criteria lastBestProviderCriteria;
     private boolean lastBestProviderEnabled;
     private String bestEnabledProvider, bestDisabledProvider;
-    private final List<LocationListener> requestLocationUdpateListeners = new ArrayList<LocationListener>();
+    private final Map<LocationListener, Set<String>> requestLocationUpdateListenersMap = new LinkedHashMap<LocationListener, Set<String>>();
 
     @Implementation
     public boolean isProviderEnabled(String provider) {
@@ -79,7 +72,7 @@ public class ShadowLocationManager {
         providerEntry.enabled = isEnabled;
         providerEntry.criteria = criteria;
         providersEnabled.put(provider, providerEntry);
-        List<LocationListener> locationUpdateListeners = requestLocationUdpateListeners;
+        List<LocationListener> locationUpdateListeners = new ArrayList<LocationListener>(requestLocationUpdateListenersMap.keySet());
         for (LocationListener locationUpdateListener : locationUpdateListeners) {
             if (isEnabled) {
                 locationUpdateListener.onProviderEnabled(provider);
@@ -211,13 +204,20 @@ public class ShadowLocationManager {
 
     @Implementation
     public void requestLocationUpdates(String provider, long minTime, float minDistance, LocationListener listener) {
-        requestLocationUdpateListeners.add(listener);
+        addLocationListener(provider, listener);
+    }
+
+    private void addLocationListener(String provider, LocationListener listener) {
+        if (!requestLocationUpdateListenersMap.containsKey(listener)) {
+            requestLocationUpdateListenersMap.put(listener, new HashSet<String>());
+        }
+        requestLocationUpdateListenersMap.get(listener).add(provider);
     }
 
     @Implementation
     public void requestLocationUpdates(String provider, long minTime, float minDistance, LocationListener listener,
             Looper looper) {
-        requestLocationUdpateListeners.add(listener);
+        addLocationListener(provider, listener);
     }
 
     @Implementation
@@ -246,7 +246,7 @@ public class ShadowLocationManager {
 
     @Implementation
     public void removeUpdates(LocationListener listener) {
-        while (requestLocationUdpateListeners.remove(listener));
+        requestLocationUpdateListenersMap.remove(listener);
     }
 
     @Implementation
@@ -350,7 +350,7 @@ public class ShadowLocationManager {
      * @return lastRequestedLocationUpdatesLocationListener
      */
     public List<LocationListener> getRequestLocationUpdateListeners() {
-        return requestLocationUdpateListeners;
+        return new ArrayList<LocationListener>(requestLocationUpdateListenersMap.keySet());
     }
 
     public Map<PendingIntent, Criteria> getRequestLocationUdpateCriteriaPendingIntents() {
@@ -359,6 +359,11 @@ public class ShadowLocationManager {
 
     public Map<PendingIntent, String> getRequestLocationUdpateProviderPendingIntents() {
         return requestLocationUdpateProviderPendingIntents;
+    }
+
+    public Collection<String> getProvidersForListener(LocationListener listener) {
+        Set<String> providers = requestLocationUpdateListenersMap.get(listener);
+        return providers == null ? Collections.<String>emptyList() : new ArrayList<String>(providers);
     }
 
     final private class LocationProviderEntry implements Map.Entry<Boolean, List<Criteria>> {

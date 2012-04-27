@@ -908,4 +908,21 @@ public class ShadowView {
         }
         return viewTreeObserver;
     }
+
+    @Implementation
+    public void onAnimationEnd() {
+    }
+
+    /*
+     * Non-Android accessor.
+     */
+    public void finishedAnimation() {
+        try {
+            Method onAnimationEnd = realView.getClass().getDeclaredMethod("onAnimationEnd", new Class[0]);
+            onAnimationEnd.setAccessible(true);
+            onAnimationEnd.invoke(realView);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

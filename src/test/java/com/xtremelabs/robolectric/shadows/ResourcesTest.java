@@ -6,8 +6,11 @@ import android.content.res.Resources;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.NinePatchDrawable;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.util.TestR;
 import org.junit.Before;
 import org.junit.Test;
@@ -90,6 +93,14 @@ public class ResourcesTest {
     public void testGetBitmapDrawable() {
     	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
     	assertThat( resources.getDrawable( TestR.drawable.test_drawable_1 ), instanceOf( BitmapDrawable.class ) );    	    	    	
+    }
+    
+    /**
+     * given an R.drawable.id value, will return a NinePatchDrawable for .9.png file
+     */
+    @Test
+    public void testGetNinePatchDrawable() {
+    	assertThat( resources.getDrawable( R.drawable.nine_patch_drawable ), instanceOf( NinePatchDrawable.class ) );  
     }
     
     /**

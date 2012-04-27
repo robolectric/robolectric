@@ -91,4 +91,16 @@ public class ResourceLoaderTest {
         assertThat(textView.getText().toString(), equalTo("default"));
         resourceLoader.setLayoutQualifierSearchPath("land"); // testing if this pollutes the other test
     }
+    
+    @Test
+    public void shouldIdentifyNinePatchDrawables() {
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+
+        assertThat(resourceLoader.isNinePatchDrawable(R.drawable.nine_patch_drawable), equalTo(true));
+        assertThat(resourceLoader.isNinePatchDrawable(R.drawable.l2_yellow), equalTo(false));
+        assertThat(resourceLoader.isNinePatchDrawable(R.drawable.state_drawable), equalTo(false));
+        assertThat(resourceLoader.isNinePatchDrawable(R.drawable.animation_list), equalTo(false));
+        assertThat(resourceLoader.isNinePatchDrawable(0), equalTo(false));
+        assertThat(resourceLoader.isNinePatchDrawable(-1), equalTo(false));
+    }
 }
