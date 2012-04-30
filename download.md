@@ -1,6 +1,6 @@
- ---
-  layout: default
-  title: Downloads
+---
+layout: default
+title: Downloads
 ---
 
 ## Downloads
