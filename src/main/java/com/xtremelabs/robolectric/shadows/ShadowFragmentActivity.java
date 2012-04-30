@@ -150,12 +150,16 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
             @Override
             public FragmentTransaction replace(int i, Fragment fragment) {
-                return null;
+                remove(fragment);
+                add(i, fragment, null);
+                return this;
             }
 
             @Override
-            public FragmentTransaction replace(int i, Fragment fragment, String s) {
-                return null;
+            public FragmentTransaction replace(int i, Fragment fragment, String tag) {
+                remove(fragment);
+                add(i, fragment, tag);
+                return this;
             }
 
             @Override
@@ -167,22 +171,22 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
             @Override
             public FragmentTransaction hide(Fragment fragment) {
-                return null;
+                return this;
             }
 
             @Override
             public FragmentTransaction show(Fragment fragment) {
-                return null;
+                return this;
             }
 
             @Override
             public FragmentTransaction detach(Fragment fragment) {
-                return null;
+                return this;
             }
 
             @Override
             public FragmentTransaction attach(Fragment fragment) {
-                return null;
+                return this;
             }
 
             @Override
@@ -192,27 +196,27 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
             @Override
             public FragmentTransaction setCustomAnimations(int i, int i1) {
-                return null;
+                return this;
             }
 
             @Override
             public FragmentTransaction setCustomAnimations(int i, int i1, int i2, int i3) {
-                return null;
+                return this;
             }
 
             @Override
             public FragmentTransaction setTransition(int i) {
-                return null;
+                return this;
             }
 
             @Override
             public FragmentTransaction setTransitionStyle(int i) {
-                return null;
+                return this;
             }
 
             @Override
             public FragmentTransaction addToBackStack(String s) {
-                return null;
+                return this;
             }
 
             @Override
@@ -222,27 +226,27 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
             @Override
             public FragmentTransaction disallowAddToBackStack() {
-                return null;
+                return this;
             }
 
             @Override
             public FragmentTransaction setBreadCrumbTitle(int i) {
-                return null;
+                return this;
             }
 
             @Override
             public FragmentTransaction setBreadCrumbTitle(CharSequence charSequence) {
-                return null;
+                return this;
             }
 
             @Override
             public FragmentTransaction setBreadCrumbShortTitle(int i) {
-                return null;
+                return this;
             }
 
             @Override
             public FragmentTransaction setBreadCrumbShortTitle(CharSequence charSequence) {
-                return null;
+                return this;
             }
 
             @Override
