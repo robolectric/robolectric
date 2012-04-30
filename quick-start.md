@@ -50,7 +50,9 @@ dependencies section of your <code>pom.xml</code>:
 ### Using IntelliJ:
 * It just works!
 
-<b>&gt;&gt; <a href="intellij-quick-start.html">Detailed step-by-step IntelliJ instructions</a></b> in case it doesn't.
+<b>&gt;&gt; <a href="intellij-quick-start.html">Detailed step-by-step IntelliJ instructions</a></b>
+
+in case it doesn't.
 
 ### Using Eclipse:
 

@@ -119,6 +119,7 @@ Your tests will *not* run without this step. Your resources will not be found.
 - Name: "MyActivityTest"
 - Click "Finish"
 - Add the following source:
+
 {% highlight java %}
 package com.example;
 
