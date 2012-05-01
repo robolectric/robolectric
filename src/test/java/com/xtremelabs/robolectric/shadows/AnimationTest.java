@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.R;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.Transformation;
@@ -115,7 +116,18 @@ public class AnimationTest {
         animation.setStartOffset(500l);
         assertThat(animation.getStartOffset(), equalTo(500l));
     }
+    
+    @Test(expected=IllegalStateException.class)
+    public void testNotLoadedFromResourceId() throws Exception {
+        shadow.getLoadedFromResourceId();
+    }
 
+    @Test
+    public void testLoadedFromResourceId() throws Exception {
+        shadow.setLoadedFromResourceId(R.anim.fade_in);
+        assertThat(shadow.getLoadedFromResourceId(), equalTo(R.anim.fade_in));
+    }
+    
 	private class TestAnimation extends Animation {
         float interpolatedTime;
         Transformation t;

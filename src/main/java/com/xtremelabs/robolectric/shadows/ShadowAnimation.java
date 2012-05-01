@@ -22,6 +22,7 @@ public class ShadowAnimation {
     private int repeatCount;
     private int repeatMode;
     private long startOffset;
+    private int loadedFromResourceId = -1;
     private boolean fillAfter;
 
     @RealObject
@@ -141,5 +142,15 @@ public class ShadowAnimation {
         new ShadowAnimationBridge(realAnimation).applyTransformation(1.0f, new Transformation());
     }
 
+    public void setLoadedFromResourceId(int loadedFromResourceId) {
+        this.loadedFromResourceId = loadedFromResourceId;
+    }
+
+    public int getLoadedFromResourceId() {
+        if (loadedFromResourceId == -1) {
+            throw new IllegalStateException("not loaded from a resource");
+        }
+        return loadedFromResourceId;
+    }
 
 }
