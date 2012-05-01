@@ -204,6 +204,7 @@ public class Robolectric {
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowAccount.class,
+                ShadowAccountManager.class,
                 ShadowActivity.class,
                 ShadowActivityInfo.class,
                 ShadowActivityGroup.class,
@@ -893,12 +894,12 @@ public class Robolectric {
     public static ShadowSmsManager shadowOf(SmsManager instance) {
     	return (ShadowSmsManager) shadowOf_(instance);
     }
-    
+
     public static <E> ShadowSparseArray<E> shadowOf(SparseArray<E> other) {
     	//noinspection unchecked
     	return (ShadowSparseArray<E>) Robolectric.shadowOf_(other);
     }
-    
+
     public static ShadowSparseBooleanArray shadowOf(SparseBooleanArray other) {
     	return (ShadowSparseBooleanArray) Robolectric.shadowOf_(other);
     }
@@ -926,7 +927,7 @@ public class Robolectric {
     public static ShadowSQLiteStatement shadowOf(SQLiteStatement other) {
         return (ShadowSQLiteStatement) Robolectric.shadowOf_(other);
     }
-    
+
     public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
         return (ShadowSslErrorHandler) shadowOf_(instance);
     }
