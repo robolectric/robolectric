@@ -40,6 +40,16 @@ public class ShadowParcel {
     }
 
     @Implementation
+    public void writeFloat(float f) {
+        parcelData.add(f);
+    }
+
+    @Implementation
+    public void writeDouble(double f) {
+        parcelData.add(f);
+    }
+
+    @Implementation
     @SuppressWarnings("unchecked")
     public void writeByte( byte b ) {
     	parcelData.add( b );
@@ -53,6 +63,16 @@ public class ShadowParcel {
     @Implementation
     public int readInt() {
         return index < parcelData.size() ? (Integer) parcelData.get(index++) : 0;
+    }
+
+    @Implementation
+    public float readFloat() {
+        return index < parcelData.size() ? (Float) parcelData.get(index++) : 0;
+    }
+
+    @Implementation
+    public double readDouble() {
+        return index < parcelData.size() ? (Double) parcelData.get(index++) : 0;
     }
 
     @Implementation
@@ -90,6 +110,85 @@ public class ShadowParcel {
         return index < parcelData.size() ? (Parcelable) parcelData.get(index++) : null;
     }
 
+    @Implementation
+    public void readFloatArray(float[] val) {
+        int n = readInt();
+        if (val.length != n) throw new RuntimeException("bad array lengths");
+        for (int i = 0; i< val.length; i++) {
+            val[i] = readFloat();
+        }
+    }
+
+    @Implementation
+    public void writeFloatArray(float[] val) {
+        writeInt(val.length);
+        for (float f : val) writeFloat(f);
+    }
+
+    @Implementation
+    public void writeDoubleArray(double[] val) {
+        writeInt(val.length);
+        for (double f : val) writeDouble(f);
+    }
+
+    @Implementation
+    public void readDoubleArray(double[] val) {
+        int n = readInt();
+        if (val.length != n) throw new RuntimeException("bad array lengths");
+        for (int i = 0; i< val.length; i++) {
+            val[i] = readDouble();
+        }
+    }
+
+    @Implementation
+    public void writeIntArray(int[] val) {
+        writeInt(val.length);
+        for (int f : val) writeInt(f);
+    }
+
+    @Implementation
+    public void readIntArray(int[] val) {
+        int n = readInt();
+        if (val.length != n) throw new RuntimeException("bad array lengths");
+        for (int i = 0; i< val.length; i++) {
+            val[i] = readInt();
+        }
+    }
+
+    @Implementation
+    public void writeLongArray(long[] val) {
+        writeInt(val.length);
+        for (long f : val) writeLong(f);
+    }
+
+    @Implementation
+    public void readLongArray(long[] val) {
+        int n = readInt();
+        if (val.length != n) throw new RuntimeException("bad array lengths");
+        for (int i = 0; i< val.length; i++) {
+            val[i] = readLong();
+        }
+    }
+
+    @Implementation
+    public void writeStringArray(String[] val) {
+        writeInt(val.length);
+        for (String f : val) writeString(f);
+    }
+
+    @Implementation
+    public void readStringArray(String[] val) {
+        int n = readInt();
+        if (val.length != n) throw new RuntimeException("bad array lengths");
+        for (int i = 0; i< val.length; i++) {
+            val[i] = readString();
+        }
+    }
+
+
+
+
+
     public int getIndex() {
         return index;
     }
@@ -97,4 +196,5 @@ public class ShadowParcel {
     public List getParcelData() {
         return parcelData;
     }
+
 }
