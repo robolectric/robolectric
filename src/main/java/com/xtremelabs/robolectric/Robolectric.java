@@ -319,6 +319,7 @@ public class Robolectric {
                 ShadowMediaStore.ShadowImages.ShadowMedia.class,
                 ShadowMenuInflater.class,
                 ShadowMessage.class,
+                ShadowMessenger.class,
                 ShadowMotionEvent.class,
                 ShadowNotification.class,
                 ShadowNdefMessage.class,
