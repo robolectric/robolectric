@@ -351,6 +351,7 @@ public class Robolectric {
                 ShadowRadioGroup.class,
                 ShadowRatingBar.class,
                 ShadowRect.class,
+                ShadowRelativeLayout.class,
                 ShadowResolveInfo.class,
                 ShadowRemoteCallbackList.class,
                 ShadowRemoteViews.class,

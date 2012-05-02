@@ -14,6 +14,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
+
 import com.xtremelabs.robolectric.Robolectric;
 
 public class TestWindow extends Window {
@@ -22,11 +24,19 @@ public class TestWindow extends Window {
     public int featureDrawableResourceFeatureId;
     public int featureDrawableResourceResId;
     public int softInputMode;
+    public int mFeatureIntId;
+    public int mFeatureIntValue;
+
     private TestWindowManager windowManager;
 
+    private DecorView mDecor;
+
+    private LayoutInflater mLayoutInflater;
+    
     public TestWindow(Context context) {
         super(context);
         windowManager = new TestWindowManager();
+        mLayoutInflater = LayoutInflater.from(context);
     }
 
     @Override public boolean requestFeature(int featureId) {
@@ -128,6 +138,8 @@ public class TestWindow extends Window {
     }
 
     @Override public void setFeatureInt(int featureId, int value) {
+    	mFeatureIntId = featureId;
+    	mFeatureIntValue = value;
     }
 
     @Override public void takeKeyEvents(boolean get) {
@@ -145,10 +157,28 @@ public class TestWindow extends Window {
         return false;
     }
 
-    @Override public View getDecorView() {
-        return new View(Robolectric.application);
+    @Override
+    public View findViewById(int id) {
+        return getDecorView().findViewById(id);
     }
 
+    @Override public View getDecorView() {
+    	if(mDecor == null){
+    		buildDecorView();
+    	}
+        return mDecor;
+    }
+
+    private void buildDecorView(){
+    	if (mDecor == null) {
+    		mDecor = new DecorView(Robolectric.application);
+    	}
+    	if (mFeatureIntId == Window.FEATURE_CUSTOM_TITLE){
+    		View featureView = mLayoutInflater.inflate(mFeatureIntValue, null);
+    		mDecor.addView(featureView, new ViewGroup.LayoutParams(ViewGroup.LayoutParams.FILL_PARENT, ViewGroup.LayoutParams.FILL_PARENT));
+    	}
+    }
+    
     @Override public View peekDecorView() {
         return null;
     }
@@ -182,5 +212,11 @@ public class TestWindow extends Window {
 
     @Override public void setSoftInputMode(int softInputMode) {
         this.softInputMode = softInputMode;
+    }
+    
+    private final class DecorView extends FrameLayout{
+    	public DecorView (Context context){
+    		super(context);
+    	}
     }
 }

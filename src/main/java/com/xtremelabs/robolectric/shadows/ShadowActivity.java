@@ -138,13 +138,17 @@ public class ShadowActivity extends ShadowContextWrapper {
      */
     @Implementation
     public View findViewById(int id) {
-        if (contentView != null) {
-            return contentView.findViewById(id);
-        } else {
-            System.out.println("WARNING: you probably should have called setContentView() first");
-            Thread.dumpStack();
-            return null;
-        }
+    	View ret = getWindow().findViewById(id);
+    	if (ret == null){
+        	if (contentView != null) {
+                ret = contentView.findViewById(id);
+            } else {
+                System.out.println("WARNING: you probably should have called setContentView() first");
+                Thread.dumpStack();
+                ret = null;
+            }
+    	}
+    	return ret;
     }
 
     @Implementation
