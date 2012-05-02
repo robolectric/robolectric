@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -23,10 +24,10 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Context.class)
 abstract public class ShadowContext {
-    public static final File CACHE_DIR = new File(System.getProperty("java.io.tmpdir"), "android-cache");
-    public static final File EXTERNAL_CACHE_DIR = new File(System.getProperty("java.io.tmpdir"), "android-external-cache");
-    public static final File FILES_DIR = new File(System.getProperty("java.io.tmpdir"), "android-tmp");
-    public static final File EXTERNAL_FILES_DIR = new File(System.getProperty("java.io.tmpdir"), "android-external-files");
+    public static final File CACHE_DIR = createTempDir("android-cache");
+    public static final File EXTERNAL_CACHE_DIR = createTempDir("android-external-cache");
+    public static final File FILES_DIR = createTempDir("android-tmp");
+    public static final File EXTERNAL_FILES_DIR = createTempDir("android-external-files");
 
     @RealObject private Context realContext;
 
@@ -90,7 +91,7 @@ abstract public class ShadowContext {
         EXTERNAL_CACHE_DIR.mkdir();
         return EXTERNAL_CACHE_DIR;
     }
-    
+
     @Implementation
     public File getExternalFilesDir(String type) {
     	File f = (type == null) ? EXTERNAL_FILES_DIR : new File( EXTERNAL_FILES_DIR, type );
@@ -115,7 +116,7 @@ abstract public class ShadowContext {
         }
         return new File(getFilesDir(), name);
     }
-    
+
     @Implementation
     public boolean deleteFile(String name) {
         return getFileStreamPath(name).delete();
@@ -148,6 +149,19 @@ abstract public class ShadowContext {
                     f.delete();
                 }
             }
+        }
+    }
+
+    private static File createTempDir(String name) {
+        try {
+            File tmp = File.createTempFile(name, "robolectric");
+            if (!tmp.delete()) throw new IOException("could not delete "+tmp);
+            if (!tmp.mkdirs()) throw new IOException("could not create "+tmp);
+            tmp.deleteOnExit();
+
+            return tmp;
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
     }
 }
