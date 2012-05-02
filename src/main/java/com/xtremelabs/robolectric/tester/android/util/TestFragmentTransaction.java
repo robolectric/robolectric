@@ -14,6 +14,8 @@ public class TestFragmentTransaction extends FragmentTransaction {
     private boolean replacing;
     private boolean addedToBackStack;
     private String backStackName;
+    private int lastEnterAnimation;
+    private int lastExitAnimation;
 
     public TestFragmentTransaction(TestFragmentManager fragmentManager) {
         this.fragmentManager = fragmentManager;
@@ -83,7 +85,9 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     @Override
     public FragmentTransaction setCustomAnimations(int enter, int exit) {
-        return null;
+        this.lastEnterAnimation = enter;
+        this.lastExitAnimation = exit;
+        return this;
     }
 
     @Override
@@ -176,5 +180,13 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     public String getBackStackName() {
         return backStackName;
+    }
+
+    public int getLastEnterAnimation() {
+        return lastEnterAnimation;
+    }
+
+    public int getLastExitAnimation() {
+        return lastExitAnimation;
     }
 }
