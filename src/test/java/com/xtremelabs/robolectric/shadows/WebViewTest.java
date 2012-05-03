@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.graphics.Picture;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -79,6 +80,20 @@ public class WebViewTest {
         assertThat(shadowWebView.getWebChromeClient(), nullValue());
         webView.setWebChromeClient(webChromeClient);
         assertThat(shadowWebView.getWebChromeClient(), sameInstance(webChromeClient));
+    }
+    
+    @Test
+    public void shouldRecordPictureListener() {
+    	WebView.PictureListener pictureListener = new WebView.PictureListener() {	
+			@Override
+			public void onNewPicture(WebView view, Picture picture) {
+				;
+			}
+		};
+		
+		assertThat(shadowWebView.getPictureListener(), nullValue());
+		webView.setPictureListener(pictureListener);
+		assertThat(shadowWebView.getPictureListener(), sameInstance(pictureListener));
     }
 
     @Test
