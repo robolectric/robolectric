@@ -189,4 +189,8 @@ public class TestFragmentTransaction extends FragmentTransaction {
     public int getLastExitAnimation() {
         return lastExitAnimation;
     }
+
+    public TestFragmentManager getManager() {
+        return fragmentManager;
+    }
 }

@@ -53,6 +53,25 @@ public class DialogFragmentTest {
     }
 
     @Test
+    public void show_whenPassedATransaction_shouldCallShowWithManager() throws Exception {
+        dialogFragment.show(fragmentManager.beginTransaction(), "this is a tag");
+
+        dialogFragment.transcript.assertEventsSoFar(
+                "onAttach",
+                "onCreate",
+                "onCreateDialog",
+                "onCreateView",
+                "onViewCreated",
+                "onActivityCreated",
+                "onStart",
+                "onResume"
+        );
+
+        assertNotNull(dialogFragment.getActivity());
+        assertSame(activity, dialogFragment.onAttachActivity);
+    }
+
+    @Test
     public void show_shouldShowDialogThatWasReturnedFromOnCreateDialog_whenOnCreateDialogReturnsADialog() throws Exception {
         Dialog dialogFromOnCreateDialog = new Dialog(activity);
         dialogFragment.returnThisDialogFromOnCreateDialog(dialogFromOnCreateDialog);
