@@ -224,6 +224,7 @@ public class Robolectric {
                 ShadowAssetManager.class,
                 ShadowAsyncTask.class,
                 ShadowAudioManager.class,
+                ShadowBase64.class,
                 ShadowBaseAdapter.class,
                 ShadowBitmap.class,
                 ShadowBitmapDrawable.class,
