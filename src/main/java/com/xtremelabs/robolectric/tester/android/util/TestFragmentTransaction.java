@@ -12,6 +12,8 @@ public class TestFragmentTransaction extends FragmentTransaction {
     private String tag;
     private Fragment fragment;
     private boolean replacing;
+    private boolean starting;
+    private boolean removing;
     private boolean addedToBackStack;
     private String backStackName;
     private int lastEnterAnimation;
@@ -36,6 +38,7 @@ public class TestFragmentTransaction extends FragmentTransaction {
         this.containerViewId = containerViewId;
         this.tag = tag;
         this.fragment = fragment;
+        this.starting = true;
         return this;
     }
 
@@ -50,12 +53,15 @@ public class TestFragmentTransaction extends FragmentTransaction {
         this.tag = tag;
         this.fragment = fragment;
         this.replacing = true;
+        this.starting = true;
         return this;
     }
 
     @Override
     public FragmentTransaction remove(Fragment fragment) {
-        return null;
+        this.fragment = fragment;
+        this.removing = true;
+        return this;
     }
 
     @Override
@@ -176,6 +182,14 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     public boolean isReplacing() {
         return replacing;
+    }
+
+    public boolean isStarting() {
+        return starting;
+    }
+
+    public boolean isRemoving() {
+        return removing;
     }
 
     public String getBackStackName() {

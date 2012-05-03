@@ -5,6 +5,7 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -99,6 +100,19 @@ public class DialogFragmentTest {
         dialogFragment.show(fragmentManager, "tag");
         
         dialogFragment.dismiss();
+
+        Dialog dialog = ShadowDialog.getLatestDialog();
+        assertFalse(dialog.isShowing());
+        assertTrue(shadowOf(dialog).hasBeenDismissed());
+    }
+
+    @Test
+    public void removeUsingTransaction_shouldDismissTheDialog() throws Exception {
+        dialogFragment.show(fragmentManager, null);
+
+        FragmentTransaction t = fragmentManager.beginTransaction();
+        t.remove(dialogFragment);
+        t.commit();
 
         Dialog dialog = ShadowDialog.getLatestDialog();
         assertFalse(dialog.isShowing());

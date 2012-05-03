@@ -172,7 +172,15 @@ public class TestFragmentManager extends FragmentManager {
 
     public void commitTransaction(TestFragmentTransaction t) {
         transactions.add(t);
-        addFragment(t.getContainerViewId(), t.getTag(), t.getFragment(), t.isReplacing());
-        startFragment(t.getFragment());
+        if (t.isStarting()) {
+            addFragment(t.getContainerViewId(), t.getTag(), t.getFragment(), t.isReplacing());
+            startFragment(t.getFragment());
+        }
+        if (t.isRemoving()) {
+            Fragment fragment = t.getFragment();
+            if (fragment instanceof DialogFragment) {
+                ((DialogFragment)fragment).dismiss();
+            }
+        }
     }
 }
