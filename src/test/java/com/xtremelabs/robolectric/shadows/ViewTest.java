@@ -13,11 +13,7 @@ import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.TestAnimationListener;
-import com.xtremelabs.robolectric.util.TestOnClickListener;
-import com.xtremelabs.robolectric.util.TestOnLongClickListener;
-import com.xtremelabs.robolectric.util.TestRunnable;
-import com.xtremelabs.robolectric.util.Transcript;
+import com.xtremelabs.robolectric.util.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,10 +21,7 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewTest {
@@ -317,6 +310,22 @@ public class ViewTest {
         assertThat(shadowOf(view).getLastTouchEvent(), sameInstance(event));
     }
 
+    @Test
+    public void test_nextFocusDownId() throws Exception {
+        assertEquals(View.NO_ID, view.getNextFocusDownId());
+
+        view.setNextFocusDownId(R.id.icon);
+        assertEquals(R.id.icon, view.getNextFocusDownId());
+    }
+
+    @Test
+    public void dispatchOnAnimationEnd() throws Exception {
+        TestView view1 = new TestView(new Activity());
+        assertFalse(view1.onAnimationEndWasCalled);
+        shadowOf(view1).finishedAnimation();
+        assertTrue(view1.onAnimationEndWasCalled);
+    }
+
     private static class TestAnimation extends Animation {
     }
 
@@ -331,6 +340,20 @@ public class ViewTest {
         public boolean onTouchEvent(MotionEvent event) {
             this.event = event;
             return false;
+        }
+    }
+
+    private static class TestView extends View {
+        boolean onAnimationEndWasCalled;
+
+        public TestView(Context context) {
+            super(context);
+        }
+
+        @Override
+        protected void onAnimationEnd() {
+            super.onAnimationEnd();
+            onAnimationEndWasCalled = true;
         }
     }
 }

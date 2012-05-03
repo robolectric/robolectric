@@ -103,6 +103,7 @@ public final class R {
         public static final int rainbow = nextId++;
         public static final int state_drawable = nextId++;
         public static final int animation_list = nextId++;
+        public static final int nine_patch_drawable = nextId++;
     }
 
     public static final class layout {

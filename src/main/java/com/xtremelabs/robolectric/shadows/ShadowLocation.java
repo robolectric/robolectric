@@ -20,7 +20,14 @@ public class ShadowLocation {
     private double latitude;
     private double longitude;
     private float accuracy;
-    
+    private float bearing;
+    private double altitude;
+    private float speed;
+    private boolean hasAccuracy;
+    private boolean hasAltitude;
+    private boolean hasBearing;
+    private boolean hasSpeed;
+
     // Cache the inputs and outputs of computeDistanceAndBearing
     // so calls to distanceTo() and bearingTo() can share work
     private double mLat1 = 0.0;
@@ -30,8 +37,8 @@ public class ShadowLocation {
     private float mDistance = 0.0f;
     private float mInitialBearing = 0.0f;
     // Scratchpad
-    private float[] mResults = new float[2];
-    
+    private final float[] mResults = new float[2];
+
     private Bundle extras = new Bundle();
 
     public void __constructor__(Location l) {
@@ -39,8 +46,8 @@ public class ShadowLocation {
     }
 
     public void __constructor__(String provider) {
-    	this.provider = provider;
-    	time = System.currentTimeMillis();
+        this.provider = provider;
+        time = System.currentTimeMillis();
     }
 
     @Implementation
@@ -50,6 +57,14 @@ public class ShadowLocation {
         latitude = l.getLatitude();
         longitude = l.getLongitude();
         accuracy = l.getAccuracy();
+        bearing = l.getBearing();
+        altitude = l.getAltitude();
+        speed = l.getSpeed();
+
+        hasAccuracy = l.hasAccuracy();
+        hasAltitude = l.hasAltitude();
+        hasBearing = l.hasBearing();
+        hasSpeed = l.hasSpeed();
     }
 
     @Implementation
@@ -73,6 +88,73 @@ public class ShadowLocation {
     }
 
     @Implementation
+    public float getAccuracy() {
+        return accuracy;
+    }
+
+    @Implementation
+    public void setAccuracy(float accuracy) {
+        this.accuracy = accuracy;
+        this.hasAccuracy = true;
+    }
+
+    @Implementation
+    public void removeAccuracy() {
+        this.accuracy = 0.0f;
+        this.hasAccuracy = false;
+    }
+
+    @Implementation
+    public boolean hasAccuracy() {
+        return hasAccuracy;
+    }
+
+    @Implementation
+    public double getAltitude() {
+        return altitude;
+    }
+
+    @Implementation
+    public void setAltitude(double altitude) {
+        this.altitude = altitude;
+        this.hasAltitude = true;
+    }
+
+    @Implementation
+    public void removeAltitude() {
+        this.altitude = 0.0d;
+        this.hasAltitude = false;
+    }
+
+    @Implementation
+    public boolean hasAltitude() {
+        return hasAltitude;
+    }
+
+    @Implementation
+    public float getBearing() {
+        return bearing;
+    }
+
+    @Implementation
+    public void setBearing(float bearing) {
+        this.bearing = bearing;
+        this.hasBearing = true;
+    }
+
+    @Implementation
+    public void removeBearing() {
+        this.bearing = 0.0f;
+        this.hasBearing = false;
+    }
+
+    @Implementation
+    public boolean hasBearing() {
+        return hasBearing;
+    }
+
+
+    @Implementation
     public double getLatitude() {
         return latitude;
     }
@@ -93,15 +175,27 @@ public class ShadowLocation {
     }
 
     @Implementation
-    public float getAccuracy() {
-		return accuracy;
-	}
-    
+    public float getSpeed() {
+        return speed;
+    }
+
     @Implementation
-    public void setAccuracy(float accuracy) {
-		this.accuracy = accuracy;
-	}
-    
+    public void setSpeed(float speed) {
+        this.speed = speed;
+        this.hasSpeed = true;
+    }
+
+    @Implementation
+    public void removeSpeed() {
+        this.hasSpeed = false;
+        this.speed = 0.0f;
+    }
+
+    @Implementation
+    public boolean hasSpeed() {
+        return hasSpeed;
+    }
+
     @Override @Implementation
     public boolean equals(Object o) {
         if (o == null) return false;
@@ -117,7 +211,6 @@ public class ShadowLocation {
         if (time != that.time) return false;
         if (provider != null ? !provider.equals(that.provider) : that.provider != null) return false;
         if (accuracy != that.accuracy) return false;
-
         return true;
     }
 
@@ -146,7 +239,7 @@ public class ShadowLocation {
                 ", accuracy=" + accuracy +
                 '}';
     }
-    
+
     private static void computeDistanceAndBearing(double lat1, double lon1,
             double lat2, double lon2, float[] results) {
         // Based on http://www.ngs.noaa.gov/PUBS_LIB/inverse.pdf

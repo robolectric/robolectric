@@ -261,6 +261,20 @@ public class HandlerTest {
     }
 
     @Test
+    public void testSendToTarget() {
+        Robolectric.pauseMainLooper();
+        Object testObject = new Object();
+        Handler handler = new Handler();
+        Message message = handler.obtainMessage(123, testObject);
+
+        assertThat(handler, equalTo(message.getTarget()));
+
+        message.sendToTarget();
+
+        assertTrue(handler.hasMessages(123, testObject));
+    }
+
+    @Test
     public void removeMessages_removesFromLooperQueueAsWell() {
         final boolean[] wasRun = new boolean[1];
         Robolectric.pauseMainLooper();

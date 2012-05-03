@@ -434,10 +434,11 @@ public class ShadowTextView extends ShadowView {
         this.onEditorActionListener = onEditorActionListener;
     }
 
-    public void triggerEditorAction(int imeAction) {
+    public boolean triggerEditorAction(int imeAction) {
         if (onEditorActionListener != null) {
-            onEditorActionListener.onEditorAction((TextView) realView, imeAction, null);
+            return onEditorActionListener.onEditorAction((TextView) realView, imeAction, null);
         }
+        return false;
     }
 
     @Implementation

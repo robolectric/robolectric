@@ -30,6 +30,7 @@ public class ShadowDrawable {
     private InputStream inputStream;
     private int level;
     private int loadedFromResourceId = -1;
+    private boolean wasInvalidated;
 
     @Implementation
     public static Drawable createFromStream(InputStream is, String srcName) {
@@ -162,6 +163,11 @@ public class ShadowDrawable {
         this.alpha = alpha;
     }
 
+    @Implementation
+    public void invalidateSelf() {
+        wasInvalidated = true;
+    }
+
     public int getAlpha() {
         return alpha;
     }
@@ -176,5 +182,9 @@ public class ShadowDrawable {
 
     public void setLoadedFromResourceId(int resourceId) {
         loadedFromResourceId = resourceId;
+    }
+
+    public boolean wasInvalidated() {
+        return wasInvalidated;
     }
 }

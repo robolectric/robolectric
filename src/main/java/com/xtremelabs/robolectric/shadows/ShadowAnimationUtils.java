@@ -5,7 +5,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 
-
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -15,6 +15,8 @@ public class ShadowAnimationUtils {
 	
 	@Implementation
 	public static Animation loadAnimation(Context context, int id) {
-		return new TranslateAnimation(0, 0, 30, 0);
+		Animation anim = new TranslateAnimation(0, 0, 30, 0);
+		Robolectric.shadowOf(anim).setLoadedFromResourceId(id);
+		return anim; 
 	}
 }

@@ -31,4 +31,8 @@ public class FragmentTest {
         assertEquals("Hello", hello);
     }
 
+    @Test(expected = IllegalStateException.class)
+    public void unattachedFragmentsCannotGetResources() throws Exception {
+        new TestFragment().getResources();
+    }
 }

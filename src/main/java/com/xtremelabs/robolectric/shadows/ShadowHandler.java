@@ -84,6 +84,7 @@ public class ShadowHandler {
         message.arg1 = arg1;
         message.arg2 = arg2;
         message.obj = obj;
+        message.setTarget(realHandler);
         return message;
     }
 
@@ -129,7 +130,7 @@ public class ShadowHandler {
 
     @Implementation
     public final Looper getLooper() {
-    	return looper;
+        return looper;
     }
 
     @Implementation
