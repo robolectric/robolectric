@@ -18,6 +18,7 @@ public class TestFragmentTransaction extends FragmentTransaction {
     private String backStackName;
     private int lastEnterAnimation;
     private int lastExitAnimation;
+    private Fragment fragmentToRemove;
 
     public TestFragmentTransaction(TestFragmentManager fragmentManager) {
         this.fragmentManager = fragmentManager;
@@ -59,7 +60,7 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     @Override
     public FragmentTransaction remove(Fragment fragment) {
-        this.fragment = fragment;
+        this.fragmentToRemove = fragment;
         this.removing = true;
         return this;
     }
@@ -206,5 +207,9 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     public TestFragmentManager getManager() {
         return fragmentManager;
+    }
+
+    public Fragment getFragmentToRemove() {
+        return fragmentToRemove;
     }
 }
