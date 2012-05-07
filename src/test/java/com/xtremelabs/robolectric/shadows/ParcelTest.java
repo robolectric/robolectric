@@ -14,6 +14,9 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import java.util.Arrays;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ParcelTest {
@@ -83,7 +86,59 @@ public class ParcelTest {
 		assertThat( parcel.readInt(), equalTo( val ) );
 	}
 
-	@Test
+    @Test
+    public void testReadWriteIntArray() throws Exception {
+        final int[] ints = {1, 2 };
+        parcel.writeIntArray(ints);
+        final int[] ints2 = new int[ints.length];
+        parcel.readIntArray(ints2);
+        assertTrue(Arrays.equals(ints, ints2));
+    }
+
+    @Test
+    public void testReadWriteLongArray() throws Exception {
+        final long[] longs = {1, 2 };
+        parcel.writeLongArray(longs);
+        final long[] longs2 = new long[longs.length];
+        parcel.readLongArray(longs2);
+        assertTrue(Arrays.equals(longs, longs2));
+    }
+
+    @Test
+    public void testReadWriteSingleFloat() {
+        float val = 5.2f;
+        parcel.writeFloat(val);
+        assertThat(parcel.readFloat(), equalTo(val));
+    }
+
+    @Test
+    public void testReadWriteFloatArray() throws Exception {
+        final float[] floats = {1.1f, 2.0f};
+        parcel.writeFloatArray(floats);
+        final float[] floats2 = new float[floats.length];
+        parcel.readFloatArray(floats2);
+        assertTrue(Arrays.equals(floats, floats2));
+    }
+
+    @Test
+    public void testReadWriteDoubleArray() throws Exception {
+        final double[] doubles = {1.1f, 2.0f};
+        parcel.writeDoubleArray(doubles);
+        final double[] doubles2 = new double[doubles.length];
+        parcel.readDoubleArray(doubles2);
+        assertTrue(Arrays.equals(doubles, doubles2));
+    }
+
+    @Test
+    public void testReadWriteStringArray() throws Exception {
+        final String[] strings = { "foo", "bar" };
+        parcel.writeStringArray(strings);
+        final String[] strings2 = new String[strings.length];
+        parcel.readStringArray(strings2);
+        assertTrue(Arrays.equals(strings, strings2));
+    }
+
+    @Test
 	public void testReadWriteMultipleInts() {
 		for( int i = 0; i < 10; ++i ) {
 			parcel.writeInt( i );

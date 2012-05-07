@@ -131,13 +131,14 @@ public class TestFragmentManager extends FragmentManager {
         fragmentsById.put(containerViewId, fragment);
         fragmentsByTag.put(tag, fragment);
 
-        shadowOf(fragment).setTag(tag);
-        shadowOf(fragment).setContainerViewId(containerViewId);
-        shadowOf(fragment).setShouldReplace(replace);
+        ShadowFragment shadowFragment = shadowOf(fragment);
+        shadowFragment.setTag(tag);
+        shadowFragment.setContainerViewId(containerViewId);
+        shadowFragment.setShouldReplace(replace);
+        shadowFragment.setActivity(activity);
 
-        shadowOf(fragment).setActivity(activity);
         fragment.onAttach(activity);
-        fragment.onCreate(shadowOf(fragment).getSavedInstanceState());
+        fragment.onCreate(shadowFragment.getSavedInstanceState());
     }
 
     public void startFragment(Fragment fragment) {
@@ -172,7 +173,15 @@ public class TestFragmentManager extends FragmentManager {
 
     public void commitTransaction(TestFragmentTransaction t) {
         transactions.add(t);
-        addFragment(t.getContainerViewId(), t.getTag(), t.getFragment(), t.isReplacing());
-        startFragment(t.getFragment());
+        if (t.isStarting()) {
+            addFragment(t.getContainerViewId(), t.getTag(), t.getFragment(), t.isReplacing());
+            startFragment(t.getFragment());
+        }
+        if (t.isRemoving()) {
+            Fragment fragment = t.getFragmentToRemove();
+            if (fragment instanceof DialogFragment) {
+                ((DialogFragment)fragment).dismiss();
+            }
+        }
     }
 }
