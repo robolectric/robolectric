@@ -33,6 +33,19 @@ public class ShadowAlarmManager {
         scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, operation));
     }
 
+	@Implementation
+	public void setRepeating (int type, long triggerAtTime, long interval, PendingIntent operation){
+		Intent intent = shadowOf(operation).getSavedIntent();
+		for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
+			Intent scheduledIntent = shadowOf(scheduledAlarm.operation).getSavedIntent();
+			if (scheduledIntent.filterEquals(intent)) {
+				scheduledAlarms.remove(scheduledAlarm);
+				break;
+			}
+		}
+		scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, interval, operation));
+	}
+
     /**
      * Non-Android accessor consumes and returns the next scheduled alarm on the
      * AlarmManager's stack.
