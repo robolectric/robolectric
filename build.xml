@@ -221,4 +221,29 @@
             <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google_inc_-10/libs/maps.jar" />
         </exec>
     </target>
+
+    <!-- used by travis-ci -->
+    <target name="prepare-travis-ci" description="Prepare for travis ci build">
+      <mkdir dir="tmp"/>
+      <get src="http://dl.google.com/android/android-sdk_r18-linux.tgz" dest="tmp" skipexisting="true"/>
+      <untar src="tmp/android-sdk_r18-linux.tgz" compression="gzip" dest="tmp/sdk"/>
+      <echo file="tmp/install-sdk">#!/bin/sh -e
+          ANDROID="tmp/sdk/android-sdk-linux/tools/android"
+          chmod +x $ANDROID
+          SDKS=$($ANDROID list sdk | awk \
+                    '/SDK Platform.* API 10/ || /Google APIs, Android API 10, revision 2/ \
+                    { s=s "," int($1) } \
+                    END { print substr(s, 2, length(s)) }' \
+                )
+          $ANDROID update sdk --no-ui --filter $SDKS
+      </echo>
+      <chmod file="tmp/install-sdk" perm="u+x"/>
+      <exec executable="tmp/install-sdk"/>
+      <propertyfile file="local.properties">
+        <entry key="sdk.dir" value="${basedir}/tmp/sdk/android-sdk-linux/"/>
+      </propertyfile>
+      <exec executable="mvn">
+          <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=tmp/sdk/android-sdk-linux/add-ons/addon-google_apis-google-10/libs/maps.jar"/>
+      </exec>
+    </target>
 </project>
