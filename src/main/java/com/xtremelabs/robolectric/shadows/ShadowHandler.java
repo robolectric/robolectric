@@ -108,6 +108,20 @@ public class ShadowHandler {
         return true;
     }
 
+    private final boolean sendMessageToFrontDelayed(final Message msg, long delayMillis) {
+        messages.add(0, msg);
+        postAtFrontOfQueue(new Runnable() {
+            @Override
+            public void run() {
+                if (messages.contains(msg)) {
+                    routeMessage(msg);
+                    messages.remove(msg);
+                }
+            }
+        });
+        return true;
+    }
+
     private void routeMessage(Message msg) {
         if(callback != null) {
             callback.handleMessage(msg);
@@ -126,6 +140,11 @@ public class ShadowHandler {
         final Message msg = new Message();
         msg.what = what;
         return sendMessageDelayed(msg, delayMillis);
+    }
+
+    @Implementation
+    public final boolean sendMessageAtFrontOfQueue(Message msg) {
+        return sendMessageToFrontDelayed(msg, 0L);
     }
 
     @Implementation
