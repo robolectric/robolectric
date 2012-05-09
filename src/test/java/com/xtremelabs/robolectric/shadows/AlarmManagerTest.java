@@ -45,10 +45,26 @@ public class AlarmManagerTest {
         ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
         assertThat(scheduledAlarm, notNullValue());
     }
+
+    @Test
+    public void shouldSupportSetRepeating() throws Exception {
+        assertThat(shadowAlarmManager.getNextScheduledAlarm(), nullValue());
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, AlarmManager.INTERVAL_HOUR,
+                                  PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+
+        ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
+        assertThat(scheduledAlarm, notNullValue());
+    }
     @Test
     public void setShouldReplaceDuplicates() {
         alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
         alarmManager.set(AlarmManager.ELAPSED_REALTIME, 0, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+        assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
+    }
+    @Test
+    public void setRepeatingShouldReplaceDuplicates() {
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, AlarmManager.INTERVAL_HOUR, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, 0, AlarmManager.INTERVAL_HOUR, PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0));
         assertEquals(1, shadowAlarmManager.getScheduledAlarms().size());
     }
 
@@ -63,6 +79,19 @@ public class AlarmManagerTest {
         ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
         assertThat(shadowAlarmManager.getNextScheduledAlarm(), nullValue());
         assertScheduledAlarm(now, pendingIntent, scheduledAlarm);
+    }
+
+    @Test
+    public void shouldSupportGetNextScheduledAlarmForRepeatingAlarms() throws Exception {
+        assertThat(shadowAlarmManager.getNextScheduledAlarm(), nullValue());
+
+        long now = new Date().getTime();
+        PendingIntent pendingIntent = PendingIntent.getActivity(activity, 0, new Intent(activity, activity.getClass()), 0);
+        alarmManager.setRepeating(AlarmManager.ELAPSED_REALTIME, now, AlarmManager.INTERVAL_HOUR, pendingIntent);
+
+        ShadowAlarmManager.ScheduledAlarm scheduledAlarm = shadowAlarmManager.getNextScheduledAlarm();
+        assertThat(shadowAlarmManager.getNextScheduledAlarm(), nullValue());
+        assertRepeatingScheduledAlarm(now, AlarmManager.INTERVAL_HOUR, pendingIntent, scheduledAlarm);
     }
 
     @Test
@@ -110,12 +139,17 @@ public class AlarmManagerTest {
 
     private void assertScheduledAlarm(long now, PendingIntent pendingIntent,
                                       ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
+	    assertRepeatingScheduledAlarm(now, 0L, pendingIntent, scheduledAlarm);
+    }
+
+    private void assertRepeatingScheduledAlarm(long now, long interval, PendingIntent pendingIntent,
+                                      ShadowAlarmManager.ScheduledAlarm scheduledAlarm) {
         assertThat(scheduledAlarm, notNullValue());
         assertThat(scheduledAlarm.operation, notNullValue());
         assertThat(scheduledAlarm.operation, sameInstance(pendingIntent));
         assertThat(scheduledAlarm.type, equalTo(AlarmManager.ELAPSED_REALTIME));
         assertThat(scheduledAlarm.triggerAtTime, equalTo(now));
-        assertThat(scheduledAlarm.interval, equalTo(0L));
+        assertThat(scheduledAlarm.interval, equalTo(interval));
     }
 
     private static class MyActivity extends Activity {
