@@ -148,6 +148,9 @@ public class LocationManagerTest {
 
         assertEquals(listOfExpectedProvidersForListener1, new HashSet<String>(shadowLocationManager.getProvidersForListener(listener1)));
         assertEquals(listOfExpectedProvidersForListener2, new HashSet<String>(shadowLocationManager.getProvidersForListener(listener2)));
+
+        locationManager.removeUpdates(listener1);
+        assertEquals(0, shadowLocationManager.getProvidersForListener(listener1).size());
     }
 
     @Test

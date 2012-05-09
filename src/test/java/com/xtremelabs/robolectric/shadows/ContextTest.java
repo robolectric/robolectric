@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Context;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
+import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,10 +16,7 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -30,10 +28,18 @@ public class ContextTest {
     @Before
     public void setUp() throws Exception {
         context = new Activity();
-        assertThat(context.getFilesDir().listFiles().length, is(0));
-        assertThat(context.getCacheDir().listFiles().length, is(0));
+        deleteDir(context.getFilesDir());
+        deleteDir(context.getCacheDir());
+
+        File[] files = context.getFilesDir().listFiles();
+        assertNotNull(files);
+        assertThat(files.length, is(0));
+
+        File[] cachedFiles = context.getFilesDir().listFiles();
+        assertNotNull(cachedFiles);
+        assertThat(cachedFiles.length, is(0));
     }
-    
+
     @After
     public void after() {
     	deleteDir(context.getFilesDir());
@@ -41,10 +47,11 @@ public class ContextTest {
     	deleteDir(context.getExternalCacheDir());
     	deleteDir(context.getExternalFilesDir(null));
     }
-    
+
     public void deleteDir(File path) {
 		if (path.isDirectory()) {
 			File[] files = path.listFiles();
+            assertNotNull(files);
 			for (File f : files) {
 				deleteDir(f);
 			}
@@ -75,8 +82,7 @@ public class ContextTest {
         assertNotNull(context.getCacheDir());
         File cacheTest = new File(context.getCacheDir(), "__test__");
 
-        assertThat(cacheTest,
-                        equalTo(new File(new File(System.getProperty("java.io.tmpdir"), "android-cache"), "__test__")));
+        assertThat(cacheTest.getPath(), CoreMatchers.containsString("android-cache"));
 
         FileOutputStream fos = null;
         try {
@@ -94,9 +100,8 @@ public class ContextTest {
         assertNotNull(context.getExternalCacheDir());
         File cacheTest = new File(context.getExternalCacheDir(), "__test__");
 
-        assertThat(cacheTest,
-                equalTo(new File(new File(System.getProperty("java.io.tmpdir"), "android-external-cache"), "__test__")));
-        
+        assertThat(cacheTest.getPath(), containsString("android-external-cache"));
+
         FileOutputStream fos = null;
         try {
             fos = new FileOutputStream(cacheTest);
@@ -113,12 +118,12 @@ public class ContextTest {
     public void getFilesDir_shouldCreateDirectory() throws Exception {
         assertTrue(context.getFilesDir().exists());
     }
-    
+
     @Test
     public void getExternalFilesDir_shouldCreateDirectory() throws Exception {
         assertTrue(context.getExternalFilesDir(null).exists());
     }
-    
+
     @Test
     public void getExternalFilesDir_shouldCreateNamedDirectory() throws Exception {
     	File f = context.getExternalFilesDir("__test__");
@@ -138,7 +143,7 @@ public class ContextTest {
         FileInputStream fileInputStream = null;
         try {
             fileInputStream = context.openFileInput("__test__");
-    
+
             byte[] bytes = new byte[fileContents.length()];
             fileInputStream.read(bytes);
             assertThat(bytes, equalTo(fileContents.getBytes()));
@@ -193,7 +198,7 @@ public class ContextTest {
                 fos.close();
         }
     }
-    
+
     @Test
     public void deleteFile_shouldReturnTrue() throws IOException {
         File filesDir = context.getFilesDir();
@@ -203,7 +208,7 @@ public class ContextTest {
         successfully = context.deleteFile(file.getName());
         assertThat(successfully, is(true));
     }
-    
+
     @Test
     public void deleteFile_shouldReturnFalse() throws IOException {
         File filesDir = context.getFilesDir();

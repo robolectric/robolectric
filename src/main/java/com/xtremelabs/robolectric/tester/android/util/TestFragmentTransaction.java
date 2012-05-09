@@ -12,8 +12,13 @@ public class TestFragmentTransaction extends FragmentTransaction {
     private String tag;
     private Fragment fragment;
     private boolean replacing;
+    private boolean starting;
+    private boolean removing;
     private boolean addedToBackStack;
     private String backStackName;
+    private int lastEnterAnimation;
+    private int lastExitAnimation;
+    private Fragment fragmentToRemove;
 
     public TestFragmentTransaction(TestFragmentManager fragmentManager) {
         this.fragmentManager = fragmentManager;
@@ -34,6 +39,7 @@ public class TestFragmentTransaction extends FragmentTransaction {
         this.containerViewId = containerViewId;
         this.tag = tag;
         this.fragment = fragment;
+        this.starting = true;
         return this;
     }
 
@@ -48,12 +54,15 @@ public class TestFragmentTransaction extends FragmentTransaction {
         this.tag = tag;
         this.fragment = fragment;
         this.replacing = true;
+        this.starting = true;
         return this;
     }
 
     @Override
     public FragmentTransaction remove(Fragment fragment) {
-        return null;
+        this.fragmentToRemove = fragment;
+        this.removing = true;
+        return this;
     }
 
     @Override
@@ -83,7 +92,9 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     @Override
     public FragmentTransaction setCustomAnimations(int enter, int exit) {
-        return null;
+        this.lastEnterAnimation = enter;
+        this.lastExitAnimation = exit;
+        return this;
     }
 
     @Override
@@ -174,7 +185,31 @@ public class TestFragmentTransaction extends FragmentTransaction {
         return replacing;
     }
 
+    public boolean isStarting() {
+        return starting;
+    }
+
+    public boolean isRemoving() {
+        return removing;
+    }
+
     public String getBackStackName() {
         return backStackName;
+    }
+
+    public int getLastEnterAnimation() {
+        return lastEnterAnimation;
+    }
+
+    public int getLastExitAnimation() {
+        return lastExitAnimation;
+    }
+
+    public TestFragmentManager getManager() {
+        return fragmentManager;
+    }
+
+    public Fragment getFragmentToRemove() {
+        return fragmentToRemove;
     }
 }
