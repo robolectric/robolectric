@@ -19,7 +19,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(ViewGroup.class)
 public class ShadowViewGroup extends ShadowView {
     private List<View> children = new ArrayList<View>();
-	private AnimationListener animListener;
+    private AnimationListener animListener;
     private boolean disallowInterceptTouchEvent = false;
 
     @Implementation
@@ -37,14 +37,14 @@ public class ShadowViewGroup extends ShadowView {
         }
         return null;
     }
-    
+
     @Implementation
     @Override
     public View findViewWithTag(Object obj) {
-        if (obj.equals(this.getTag())) {
+        if (obj.equals(realView.getTag())) {
             return realView;
         }
-        
+
         for (View child : children) {
             View found = child.findViewWithTag(obj);
             if (found != null) {
@@ -57,7 +57,7 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public void addView(View child) {
-        ((ViewGroup)realView).addView(child, -1);
+        ((ViewGroup) realView).addView(child, -1);
     }
 
     @Implementation
@@ -69,19 +69,20 @@ public class ShadowViewGroup extends ShadowView {
         }
         shadowOf(child).parent = this;
     }
+
     @Implementation
     public void addView(View child, int width, int height) {
-        ((ViewGroup)realView).addView(child, -1);
+        ((ViewGroup) realView).addView(child, -1);
     }
 
     @Implementation
     public void addView(View child, ViewGroup.LayoutParams params) {
-        ((ViewGroup)realView).addView(child, -1);
+        ((ViewGroup) realView).addView(child, -1);
     }
 
     @Implementation
     public void addView(View child, int index, ViewGroup.LayoutParams params) {
-        ((ViewGroup)realView).addView(child, index);
+        ((ViewGroup) realView).addView(child, index);
     }
 
     @Implementation
@@ -118,7 +119,8 @@ public class ShadowViewGroup extends ShadowView {
         shadowOf(children.remove(position)).parent = null;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public boolean hasFocus() {
         if (super.hasFocus()) return true;
 
@@ -167,7 +169,8 @@ public class ShadowViewGroup extends ShadowView {
     /**
      * Non-Android method that dumps the state of this {@code ViewGroup} to {@code System.out}
      */
-    @Override public void dump(PrintStream out, int indent) {
+    @Override
+    public void dump(PrintStream out, int indent) {
         dumpFirstPart(out, indent);
         if (children.size() > 0) {
             out.println(">");
@@ -182,15 +185,15 @@ public class ShadowViewGroup extends ShadowView {
             out.println("/>");
         }
     }
-    
+
     @Implementation
-    public void setLayoutAnimationListener( AnimationListener listener ) {
-    	animListener = listener;
+    public void setLayoutAnimationListener(AnimationListener listener) {
+        animListener = listener;
     }
-    
+
     @Implementation
     public AnimationListener getLayoutAnimationListener() {
-    	return animListener;
+        return animListener;
     }
 
     @Implementation
