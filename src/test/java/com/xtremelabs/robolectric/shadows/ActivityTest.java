@@ -28,16 +28,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ActivityTest {
-
     @Test(expected = IllegalStateException.class)
     public void shouldComplainIfActivityIsDestroyedWithRegisteredBroadcastReceivers() throws Exception {
         DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
@@ -67,7 +63,8 @@ public class ActivityTest {
     public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity() throws Exception {
         final Transcript transcript = new Transcript();
         Activity activity = new Activity() {
-            @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+            @Override
+            protected void onActivityResult(int requestCode, int resultCode, Intent data) {
                 transcript.add("onActivityResult called with requestCode " + requestCode + ", resultCode " + resultCode + ", intent data " + data.getData());
             }
         };
@@ -75,14 +72,15 @@ public class ActivityTest {
         activity.startActivityForResult(new Intent().setType("image/*"), 456);
 
         shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
-            new Intent().setData(Uri.parse("content:foo")));
+                new Intent().setData(Uri.parse("content:foo")));
         transcript.assertEventsSoFar("onActivityResult called with requestCode 456, resultCode -1, intent data content:foo");
     }
 
     @Test
     public void startActivityForResultAndReceiveResult_whenNoIntentMatches_shouldThrowException() throws Exception {
         Activity activity = new Activity() {
-            @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+            @Override
+            protected void onActivityResult(int requestCode, int resultCode, Intent data) {
                 throw new IllegalStateException("should not be called");
             }
         };
@@ -191,7 +189,9 @@ public class ActivityTest {
         final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
 
         new Dialog(activity) {
-            {  activity.dialog = this; }
+            {
+                activity.dialog = this;
+            }
 
             @Override
             public void show() {
@@ -205,15 +205,16 @@ public class ActivityTest {
         assertTrue(activity.preparedDialog);
         assertTrue(dialogWasShown.get());
     }
-    
-  
+
     @Test
     public void showDialog_shouldCreatePrepareAndShowDialogWithBundle() {
         final DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
         final AtomicBoolean dialogWasShown = new AtomicBoolean(false);
 
         new Dialog(activity) {
-            {  activity.dialog = this; }
+            {
+                activity.dialog = this;
+            }
 
             @Override
             public void show() {
@@ -269,16 +270,16 @@ public class ActivityTest {
     @Test
     public void removeDialog_shouldCreateDialogAgain() {
         final DialogCreatingActivity activity = new DialogCreatingActivity();
-  
+
         activity.showDialog(1);
         Dialog firstDialog = ShadowDialog.getLatestDialog();
-        
+
         activity.removeDialog(1);
         assertNull(Robolectric.shadowOf(activity).getDialogById(1));
 
         activity.showDialog(1);
         Dialog secondDialog = ShadowDialog.getLatestDialog();
-        
+
         assertNotSame("dialogs should not be the same instance", firstDialog, secondDialog);
     }
 
@@ -299,7 +300,7 @@ public class ActivityTest {
         assertTrue(shadowActivity.isFinishing());
     }
 
-   @Test
+    @Test
     public void shouldSupportCurrentFocus() {
         DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
         ShadowActivity shadow = shadowOf(activity);
@@ -310,13 +311,13 @@ public class ActivityTest {
         assertEquals(view, shadow.getCurrentFocus());
     }
 
-        @Test
+    @Test
     public void shouldSetOrientation() {
         DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
-        activity.setRequestedOrientation( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT );
-        assertThat( activity.getRequestedOrientation(), equalTo( ActivityInfo.SCREEN_ORIENTATION_PORTRAIT ) );
+        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertThat(activity.getRequestedOrientation(), equalTo(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT));
     }
-    
+
     @Test
     public void retrieveIdOfResource() {
         Activity activity = new Activity();
@@ -327,7 +328,7 @@ public class ActivityTest {
 
         int id = activity.getResources().getIdentifier("hello", "string", "com.xtremelabs.robolectric");
         assertTrue(id > 0);
-        
+
         String hello = activity.getResources().getString(id);
         assertEquals("Hello", hello);
     }
@@ -347,9 +348,9 @@ public class ActivityTest {
 
         View contentView = shadowOf(activity).getContentView();
         assertInstanceOf(FrameLayout.class, contentView);
-        assertThat(((FrameLayout)contentView).getChildCount(), equalTo(2));
+        assertThat(((FrameLayout) contentView).getChildCount(), equalTo(2));
     }
-    
+
     @Test
     public void onKeyUp_recordsThatItWasCalled() throws Exception {
         Activity activity = new Activity();
@@ -361,7 +362,7 @@ public class ActivityTest {
         shadowOf(activity).resetKeyUpWasCalled();
         assertFalse(shadowOf(activity).onKeyUpWasCalled());
     }
-    
+
     @Test
     public void onKeyUp_callsOnBackPressedWhichFinishesTheActivity() throws Exception {
         Activity activity = new Activity();
@@ -371,14 +372,24 @@ public class ActivityTest {
         assertTrue(shadowOf(activity).onKeyUpWasCalled());
         assertTrue(activity.isFinishing());
     }
-    
+
     @Test
     public void shouldGiveSharedPreferences() throws Exception {
-    	Activity activity = new Activity();
+        Activity activity = new Activity();
         SharedPreferences preferences = activity.getPreferences(Context.MODE_PRIVATE);
         assertNotNull(preferences);
         preferences.edit().putString("foo", "bar").commit();
         assertThat(activity.getPreferences(Context.MODE_PRIVATE).getString("foo", null), equalTo("bar"));
+    }
+
+    @Test
+    public void shouldFindContentViewContainer() throws Exception {
+        Activity activity = new Activity();
+        View contentView = new View(activity);
+        activity.setContentView(contentView);
+
+        FrameLayout contentViewContainer = (FrameLayout) activity.findViewById(android.R.id.content);
+        assertThat(contentViewContainer.getChildAt(0), is(contentView));
     }
 
     private static class DialogCreatingActivity extends Activity {
@@ -394,7 +405,8 @@ public class ActivityTest {
         public boolean preparedDialogWithBundle = false;
         public Dialog dialog = null;
 
-        @Override protected void onDestroy() {
+        @Override
+        protected void onDestroy() {
             super.onDestroy();
         }
 

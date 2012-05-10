@@ -130,7 +130,7 @@ public class TimeTest {
 
     @Test
     public void shouldHaveParse() throws Exception {
-        Time t = new Time();
+        Time t = new Time("Europe/Berlin");
         assertFalse(t.parse("20081013T160000"));
         assertEquals(2008, t.year);
         assertEquals(9, t.month);
@@ -180,7 +180,7 @@ public class TimeTest {
 
     @Test
     public void shouldFormat3339() throws Exception {
-        Time t = new Time();
+        Time t = new Time("Europe/Berlin");
         assertEquals("1970-01-01T00:00:00.000+00:00", t.format3339(false));
         assertEquals("1970-01-01", t.format3339(true));
     }

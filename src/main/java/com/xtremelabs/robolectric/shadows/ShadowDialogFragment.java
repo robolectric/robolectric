@@ -4,10 +4,12 @@ import android.app.Dialog;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.tester.android.util.TestFragmentManager;
+import com.xtremelabs.robolectric.tester.android.util.TestFragmentTransaction;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -22,6 +24,12 @@ public class ShadowDialogFragment extends ShadowFragment {
 
     @RealObject
     private DialogFragment realDialogFragment;
+
+    @Implementation
+    public int show(FragmentTransaction transaction, String tag) {
+        show(((TestFragmentTransaction)transaction).getManager(), tag);
+        return 0;
+    }
 
     @Implementation
     public void show(FragmentManager manager, String tag) {

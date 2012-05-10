@@ -194,8 +194,8 @@ public class ShadowTime {
         } else {
             tz = TimeZone.getTimeZone(time.timezone);
         }
-        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
-        SimpleDateFormat dfShort = new SimpleDateFormat("yyyyMMdd");
+        SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd'T'HHmmss", Locale.ENGLISH);
+        SimpleDateFormat dfShort = new SimpleDateFormat("yyyyMMdd", Locale.ENGLISH);
         df.setTimeZone(tz);
         dfShort.setTimeZone(tz);
         time.timezone = tz.getID();
@@ -213,7 +213,9 @@ public class ShadowTime {
 
     @Implementation
     public String format(String format) {
-        return new Strftime(format, Locale.getDefault()).format(new Date(toMillis(false)));
+        Strftime strftime = new Strftime(format, Locale.getDefault());
+        strftime.setTimeZone(TimeZone.getTimeZone(time.timezone));
+        return strftime.format(new Date(toMillis(false)));
     }
 
     @Implementation
