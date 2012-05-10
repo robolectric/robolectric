@@ -9,6 +9,7 @@ import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.database.CursorWrapper;
 import android.database.sqlite.*;
 import android.graphics.*;
 import android.graphics.drawable.*;
@@ -175,6 +176,7 @@ public class Robolectric {
                 ShadowCountDownTimer.class,
                 ShadowCursorAdapter.class,
                 ShadowCursorLoader.class,
+                ShadowCursorWrapper.class,
                 ShadowDatabaseUtils.class,
                 ShadowDateFormat.class,
                 ShadowDefaultRequestDirector.class,
@@ -529,6 +531,10 @@ public class Robolectric {
 
     public static ShadowCursorLoader shadowOf(CursorLoader instance) {
         return (ShadowCursorLoader) shadowOf_(instance);
+    }
+
+    public static ShadowCursorWrapper shadowOf(CursorWrapper instance) {
+        return (ShadowCursorWrapper) shadowOf_(instance);
     }
 
     public static ShadowDateFormat shadowOf(DateFormat instance) {
