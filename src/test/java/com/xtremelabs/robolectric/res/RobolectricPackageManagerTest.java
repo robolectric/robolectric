@@ -15,6 +15,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -121,4 +122,19 @@ public class RobolectricPackageManagerTest {
 		assertThat( rpm.getActivityIcon( i ), sameInstance(d) );
 		assertThat( rpm.getActivityIcon( i.getComponent() ), sameInstance(d) );
 	}
+	
+	@Test
+	public void hasSystemFeature() throws Exception {
+		// uninitialized
+		assertThat(rpm.hasSystemFeature( PackageManager.FEATURE_CAMERA), equalTo(false) );
+		
+		// positive
+		rpm.setSystemFeature(PackageManager.FEATURE_CAMERA, true);
+		assertThat(rpm.hasSystemFeature( PackageManager.FEATURE_CAMERA), equalTo(true) );		
+
+		// negative
+		rpm.setSystemFeature(PackageManager.FEATURE_CAMERA, false);
+		assertThat(rpm.hasSystemFeature( PackageManager.FEATURE_CAMERA), equalTo(false) );		
+	}
+
 }
