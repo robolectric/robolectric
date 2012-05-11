@@ -285,6 +285,7 @@ public class Robolectric {
                 ShadowSimpleCursorAdapter.class,
                 ShadowShapeDrawable.class,
                 ShadowSmsManager.class,
+                ShadowSpannableString.class,
                 ShadowSpannableStringBuilder.class,
                 ShadowSparseArray.class,
                 ShadowSparseBooleanArray.class,

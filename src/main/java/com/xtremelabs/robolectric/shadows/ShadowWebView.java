@@ -32,6 +32,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     private int goBackInvocations = 0;
     private ShadowWebView.LoadData lastLoadData;
     private LoadDataWithBaseURL lastLoadDataWithBaseURL;
+    private WebView.PictureListener pictureListener;
 
     @Override
     public void __constructor__(Context context, AttributeSet attributeSet) {
@@ -79,6 +80,15 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
 
     public WebViewClient getWebViewClient() {
         return webViewClient;
+    }
+    
+    @Implementation
+    public void setPictureListener(WebView.PictureListener listener) {
+    	pictureListener = listener;
+    }
+    
+    public WebView.PictureListener getPictureListener() {
+    	return pictureListener;
     }
 
     @Implementation

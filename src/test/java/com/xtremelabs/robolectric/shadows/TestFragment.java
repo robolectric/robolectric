@@ -20,6 +20,7 @@ public class TestFragment extends Fragment {
     public boolean onStartWasCalled;
     public boolean onResumeWasCalled;
     public boolean onSaveInstanceStateWasCalled;
+    public boolean onPauseWasCalled;
     public Activity onAttachActivity;
     public Bundle onActivityCreated_savedInstanceState;
     public Bundle onCreateSavedInstanceState;
@@ -77,5 +78,10 @@ public class TestFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         onSaveInstanceStateWasCalled = true;
+    }
+
+    @Override
+    public void onPause() {
+        onPauseWasCalled = true;
     }
 }
