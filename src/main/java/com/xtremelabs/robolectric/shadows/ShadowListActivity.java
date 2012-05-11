@@ -25,7 +25,7 @@ public class ShadowListActivity extends ShadowActivity {
     @Implementation
     public ListView getListView() {
         if (listView == null) {
-            if ((listView = findListView(contentView)) == null) {
+            if ((listView = findListView(getContentView())) == null) {
                 throw new RuntimeException("No ListView found under content view");
             }
         }
@@ -39,7 +39,7 @@ public class ShadowListActivity extends ShadowActivity {
     @Implementation
     public void setListAdapter(ListAdapter listAdapter) {
         this.listAdapter = listAdapter;
-        ListView lv = findListView(contentView);
+        ListView lv = findListView(getContentView());
         if (lv != null) {
             lv.setOnItemClickListener(new AdapterView.OnItemClickListener() {
                 @Override

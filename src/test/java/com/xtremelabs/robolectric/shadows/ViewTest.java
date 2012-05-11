@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -114,7 +115,6 @@ public class ViewTest {
 
         assertTrue(clickListener.clicked);
     }
-
 
     @Test
     public void checkedClick_shouldClickOnView() throws Exception {
@@ -238,13 +238,22 @@ public class ViewTest {
         assertThat(listener.wasRepeatCalled, equalTo(false));
         assertThat(listener.wasEndCalled, equalTo(true));
     }
-    
+
     @Test
-    public void shouldfindViewWithTag() {
-    	String tagged = "tagged";
-    	String tagged2 = "tagged";
-    	view.setTag(tagged);
-    	assertThat(view.findViewWithTag(tagged2),sameInstance(view));
+    public void shouldFindViewWithTag() {
+        view.setTag("tagged");
+        assertThat(view.findViewWithTag("tagged"), sameInstance(view));
+    }
+
+    @Test
+    public void shouldFindViewWithTag_whenViewOverridesGetTag() throws Exception {
+        View view = new View(Robolectric.application) {
+            @Override
+            public Object getTag() {
+                return "blarg";
+            }
+        };
+        assertThat(view.findViewWithTag("blarg"), sameInstance(view));
     }
 
     @Test

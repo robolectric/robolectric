@@ -155,11 +155,6 @@ public class ShadowAdapterView extends ShadowViewGroup {
         automaticallyUpdateRowViews = shouldUpdate;
     }
 
-    /**
-     * Non-Android accessor.
-     *
-     * @return the index of the selected item
-     */
     @Implementation
     public int getSelectedItemPosition() {
         return selectedPosition;
