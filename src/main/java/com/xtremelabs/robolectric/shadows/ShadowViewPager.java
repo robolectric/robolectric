@@ -25,6 +25,7 @@ public class ShadowViewPager extends ShadowViewGroup {
                 dataSetChanged();
             }
         });
+        dataSetChanged();
     }
 
     @Implementation
