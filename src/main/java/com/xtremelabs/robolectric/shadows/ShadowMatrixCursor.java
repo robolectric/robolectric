@@ -57,6 +57,11 @@ public class ShadowMatrixCursor extends ShadowAbstractCursor {
     }
 
     @Implementation
+    public byte[] getBlob(int column) {
+        return (byte[]) get(column);
+    }
+
+    @Implementation
     public boolean isNull(int column) {
         return get(column) == null;
     }

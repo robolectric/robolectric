@@ -51,6 +51,17 @@ public class MatrixCursorTest {
         assertThat(cursor.getColumnIndex("z"), equalTo(-1));
     }
 
+    @Test
+    public void shouldDefineGetBlob() throws Exception {
+        byte[] blob = { 1, 2, 3, 4 };
+
+        MatrixCursor cursor = new MatrixCursor(new String[] { "a" });
+        cursor.addRow(new Object[] { blob });
+        assertTrue(cursor.moveToFirst());
+
+        assertThat(cursor.getBlob(0), equalTo(blob));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void shouldDefineGetColumnNameOrThrow() throws Exception {
         MatrixCursor cursor = new MatrixCursor(new String[] { "a", "b", "c"});
