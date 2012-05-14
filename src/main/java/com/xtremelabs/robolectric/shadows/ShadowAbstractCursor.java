@@ -25,6 +25,7 @@ public class ShadowAbstractCursor {
     protected Map<Integer, Map<String, Object>> rows = new HashMap<Integer, Map<String, Object>>();
     protected int rowCount;
     protected Uri notificationUri;
+	protected boolean mClosed;
 
     @Implementation
     public int getCount() {
@@ -154,11 +155,23 @@ public class ShadowAbstractCursor {
         notificationUri = notifyUri;
     }
 
-    /**
+	@Implementation
+	public boolean isClosed() {
+		return mClosed;
+	}
+
+	@Implementation
+	public void close() {
+		mClosed = true;
+	}
+
+	/**
      * Returns the Uri set by {@code setNotificationUri()}.  Method included for testing
      * pre-API 11 projects.
      */
     public Uri getNotificationUri_Compatibility() {
         return notificationUri;
     }
+
+
 }
