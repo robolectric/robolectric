@@ -149,6 +149,7 @@ public class Robolectric {
                 ShadowCameraParameters.class,
                 ShadowCameraSize.class,
                 ShadowCanvas.class,
+                ShadowCheckedTextView.class,
                 ShadowClipboardManager.class,
                 ShadowColor.class,
                 ShadowColorDrawable.class,
