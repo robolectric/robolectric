@@ -12,6 +12,7 @@ import com.xtremelabs.robolectric.tester.android.database.TestCursor;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.*;
 
 @Implements(ContentResolver.class)
@@ -70,6 +71,21 @@ public class ShadowContentResolver {
             @Override
             public String toString() {
                 return "stream for " + uri;
+            }
+        };
+    }
+    
+    @Implementation
+    public final OutputStream openOutputStream(final Uri uri) {
+        return new OutputStream() {
+            
+            @Override
+            public void write(int arg0) throws IOException {                
+            }
+
+            @Override
+            public String toString() {
+                return "outputstream for " + uri;
             }
         };
     }
