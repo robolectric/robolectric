@@ -10,6 +10,7 @@ import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
 
+import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.ActivityGroup;
 import android.app.ActivityManager;
@@ -204,6 +205,7 @@ public class Robolectric {
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowAccount.class,
+                ShadowAccountManager.class,
                 ShadowActivity.class,
                 ShadowActivityInfo.class,
                 ShadowActivityGroup.class,
@@ -448,6 +450,10 @@ public class Robolectric {
         return (ShadowAbsSeekBar) shadowOf_(instance);
     }
 
+    public static ShadowAccountManager shadowOf(AccountManager instance) {
+        return (ShadowAccountManager) shadowOf_(instance);
+    }
+    
     public static ShadowActivity shadowOf(Activity instance) {
         return (ShadowActivity) shadowOf_(instance);
     }
