@@ -45,6 +45,7 @@ import android.text.method.PasswordTransformationMethod;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.*;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
@@ -161,6 +162,7 @@ public class Robolectric {
                 ShadowAlarmManager.class,
                 ShadowAlertDialog.class,
                 ShadowAlertDialog.ShadowBuilder.class,
+                ShadowAlphaAnimation.class,
                 ShadowAndroidHttpClient.class,
                 ShadowAnimation.class,
                 ShadowAnimationDrawable.class,
@@ -425,6 +427,10 @@ public class Robolectric {
 
     public static ShadowAlertDialog shadowOf(AlertDialog instance) {
         return (ShadowAlertDialog) shadowOf_(instance);
+    }
+
+    public static ShadowAlphaAnimation shadowOf(AlphaAnimation instance) {
+        return (ShadowAlphaAnimation) shadowOf_(instance);
     }
 
     public static ShadowAnimation shadowOf(Animation instance) {
