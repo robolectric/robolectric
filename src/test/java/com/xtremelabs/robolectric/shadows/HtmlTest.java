@@ -12,6 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -36,4 +37,16 @@ public class HtmlTest {
         editText.setText(Html.fromHtml("<b>some</b> html text"));
         assertThat(editText.getText().toString(), equalTo("<b>some</b> html text"));
     }
+    
+    @Test
+    public void shouldThrowNullPointerExceptionWhenNullStringEncountered() throws Exception {
+    	NullPointerException npe = null;
+    	try {
+    		Html.fromHtml(null);
+    	} catch (NullPointerException e) {
+    		npe = e;
+    	}
+    	assertThat(npe, notNullValue());
+    }
+
 }
