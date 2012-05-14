@@ -11,6 +11,14 @@ public class ShadowHtml {
 
     @Implementation
     public static Spanned fromHtml(String source) {
+		if (source == null) {
+			/*
+			 * Mimic the behavior of the real fromHtml() method. It uses a
+			 * StringReader that throws a NullPointerException when a null
+			 * string is passed in.
+			 */
+			throw new NullPointerException();
+		}
         return new SpannedThatActsLikeString(source);
     }
 
