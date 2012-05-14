@@ -32,7 +32,8 @@ public class ShadowActivity extends ShadowContextWrapper {
     protected Activity realActivity;
 
     private Intent intent;
-    View contentView;
+    private FrameLayout contentViewContainer;
+    private View contentView;
     private int orientation;
     private int resultCode;
     private Intent resultIntent;
@@ -138,6 +139,9 @@ public class ShadowActivity extends ShadowContextWrapper {
      */
     @Implementation
     public View findViewById(int id) {
+        if (id == android.R.id.content) {
+            return getContentViewContainer();
+        }
         if (contentView != null) {
             return contentView.findViewById(id);
         } else {
@@ -145,6 +149,14 @@ public class ShadowActivity extends ShadowContextWrapper {
             Thread.dumpStack();
             return null;
         }
+    }
+
+    private View getContentViewContainer() {
+        if (contentViewContainer == null) {
+            contentViewContainer = new FrameLayout(realActivity);
+        }
+        contentViewContainer.addView(contentView, 0);
+        return contentViewContainer;
     }
 
     @Implementation

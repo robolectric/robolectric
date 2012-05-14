@@ -59,6 +59,13 @@ public class ShadowFragmentActivity extends ShadowActivity {
     }
 
     @Implementation
+    public void onPause() {
+        for(Fragment fragment : fragmentManager.getFragments().values()) {
+            fragment.onPause();
+        }
+    }
+
+    @Implementation
     public FragmentManager getSupportFragmentManager() {
         return fragmentManager;
     }

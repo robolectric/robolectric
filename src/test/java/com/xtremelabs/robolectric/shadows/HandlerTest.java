@@ -195,6 +195,29 @@ public class HandlerTest {
     }
 
     @Test
+    public void testSendMessageAtFrontOfQueueThenRunMainLooperOneMsgAtATime_shouldRunFrontOfQueueMsgFirst() throws Exception {
+        Handler handler = new Handler();
+
+        ShadowLooper.pauseMainLooper();
+        // Post two messages to handler. Handle first message and confirm that msg posted
+        // to front is removed.
+        handler.obtainMessage(123).sendToTarget();
+        Message frontMsg = handler.obtainMessage(345);
+        boolean result = handler.sendMessageAtFrontOfQueue(frontMsg);
+
+        assertTrue(result);
+
+        assertTrue(handler.hasMessages(123));
+        assertTrue(handler.hasMessages(345));
+        ShadowHandler.runMainLooperOneTask();
+        assertTrue(handler.hasMessages(123));
+        assertFalse(handler.hasMessages(345));
+        ShadowHandler.runMainLooperOneTask();
+        assertFalse(handler.hasMessages(123));
+        assertFalse(handler.hasMessages(345));
+    }
+
+    @Test
     public void sendEmptyMessage_addMessageToQueue() {
         Robolectric.pauseMainLooper();
         Handler handler = new Handler();

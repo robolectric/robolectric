@@ -142,6 +142,12 @@ public class FragmentActivityTest {
         assertNotNull(restoredFrag.getView());
     }
 
+    @Test
+    public void onPause_shouldPauseTheFragment() throws Exception {
+        activity.onPause();
+        assertTrue(fragment.onPauseWasCalled);
+    }
+
     private static class TestFragmentActivity extends FragmentActivity {
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -152,6 +158,11 @@ public class FragmentActivityTest {
         @Override
         public void onSaveInstanceState(Bundle outState) {
             super.onSaveInstanceState(outState);
+        }
+
+        @Override
+        public void onPause() {
+            super.onPause();
         }
     }
 }

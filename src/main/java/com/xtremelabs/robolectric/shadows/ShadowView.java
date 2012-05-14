@@ -194,7 +194,7 @@ public class ShadowView {
 
     @Implementation
     public View findViewWithTag(Object obj) {
-        if (obj.equals(this.getTag())) {
+        if (obj.equals(realView.getTag())) {
             return realView;
         }
 

@@ -7,6 +7,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,9 +20,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static junit.framework.Assert.assertEquals;
+
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewPagerTest {
-
     private Context context;
     private ViewPager viewPager;
     private FragmentManager fragmentManager;
@@ -38,9 +40,34 @@ public class ViewPagerTest {
     }
 
     @Test
-    public void setAdapter_shouldCreateFirstView() throws Exception {
-        MockPagerAdapter adapter = new MockPagerAdapter(fragmentManager);
+    public void setAdapter_shouldCreateFirstView_ifThereIsData() throws Exception {
+        OneItemPagerAdapter adapter = new OneItemPagerAdapter(fragmentManager);
         viewPager.setAdapter(adapter);
+
+        Assert.assertSame(viewPager.getChildAt(0), adapter.createdFragment.getView());
+    }
+
+    @Test
+    public void setAdapter_shouldNotBlowUp_ifThereIsNoData() throws Exception {
+        PagerAdapter adapter = new MockEmptyPagerAdapter(fragmentManager);
+        viewPager.setAdapter(adapter);
+        //pass
+    }
+
+    @Test
+    public void setAdapter_shouldInvokeTheRealPagerAdaptersRegisterDataSetObserver() throws Exception {
+        ItemAddingPagerAdapter adapter = new ItemAddingPagerAdapter(fragmentManager);
+        viewPager.setAdapter(adapter);
+    }
+
+    @Test
+    public void shouldUpdateWhenAdapterNotifiesDataSetChanged() throws Exception {
+        ItemAddingPagerAdapter adapter = new ItemAddingPagerAdapter(fragmentManager);
+        viewPager.setAdapter(adapter);
+
+        assertEquals(0, viewPager.getChildCount());
+        adapter.addItem();
+        adapter.notifyDataSetChanged();
 
         Assert.assertSame(viewPager.getChildAt(0), adapter.createdFragment.getView());
     }
@@ -59,10 +86,10 @@ public class ViewPagerTest {
         }
     }
 
-    private class MockPagerAdapter extends FragmentPagerAdapter {
+    private class OneItemPagerAdapter extends FragmentPagerAdapter {
         private Fragment createdFragment;
 
-        public MockPagerAdapter(FragmentManager fm) {
+        public OneItemPagerAdapter(FragmentManager fm) {
             super(fm);
         }
 
@@ -76,7 +103,46 @@ public class ViewPagerTest {
             createdFragment = new MockFragment();
             return createdFragment;
         }
+    }
 
+    private class ItemAddingPagerAdapter extends FragmentPagerAdapter {
+        private Fragment createdFragment;
+        int itemCount = 0;
+
+        public ItemAddingPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public int getCount() {
+            return itemCount;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            createdFragment = new MockFragment();
+            return createdFragment;
+        }
+
+        public void addItem() {
+            ++itemCount;
+        }
+    }
+
+    private class MockEmptyPagerAdapter extends FragmentPagerAdapter {
+        public MockEmptyPagerAdapter(FragmentManager fm) {
+            super(fm);
+        }
+
+        @Override
+        public int getCount() {
+            return 0;
+        }
+
+        @Override
+        public Fragment getItem(int position) {
+            return null;
+        }
     }
 
     private class MockFragment extends Fragment {
