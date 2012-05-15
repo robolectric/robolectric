@@ -40,7 +40,7 @@ public class ShadowViewPager extends ShadowViewGroup {
         int count = adapter.getCount();
         if (count > 0) {
             adapter.startUpdate(realViewPager);
-            Object item = adapter.instantiateItem(realViewPager, count);
+            Object item = adapter.instantiateItem(realViewPager, 0);
             adapter.setPrimaryItem(realViewPager, 0, item);
             adapter.finishUpdate(realViewPager);
         }
