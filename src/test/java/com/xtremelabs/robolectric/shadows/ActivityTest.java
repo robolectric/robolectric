@@ -392,6 +392,92 @@ public class ActivityTest {
         assertThat(contentViewContainer.getChildAt(0), is(contentView));
     }
 
+    @Test
+    public void recreateGoesThroughFullLifeCycle() throws Exception {
+        TestActivity activity = new TestActivity();
+
+        ShadowActivity shadow = shadowOf(activity);
+        shadow.recreate();
+
+        activity.transcript.assertEventsSoFar(
+                "onSaveInstanceState",
+                "onPause",
+                "onStop",
+                "onRetainNonConfigurationInstance",
+                "onDestroy",
+                "onCreate",
+                "onStart",
+                "onRestoreInstanceState",
+                "onResume"
+        );
+
+        Integer storedValue = (Integer) activity.getLastNonConfigurationInstance();
+        assertEquals(5, storedValue.intValue());
+    }
+
+    private static class TestActivity extends Activity {
+        Transcript transcript = new Transcript();
+
+        @Override
+        public void onSaveInstanceState(Bundle outState) {
+            transcript.add("onSaveInstanceState");
+            outState.putString("TestActivityKey", "TestActivityValue");
+            super.onSaveInstanceState(outState);
+        }
+
+        @Override
+        public void onRestoreInstanceState(Bundle savedInstanceState) {
+            transcript.add("onRestoreInstanceState");
+            assertTrue(savedInstanceState.containsKey("TestActivityKey"));
+            assertEquals("TestActivityValue", savedInstanceState.getString("TestActivityKey"));
+            super.onRestoreInstanceState(savedInstanceState);
+        }
+
+        @Override
+        public Object onRetainNonConfigurationInstance() {
+            transcript.add("onRetainNonConfigurationInstance");
+            return new Integer(5);
+        }
+
+        @Override
+        public void onPause() {
+            transcript.add("onPause");
+            super.onPause();
+        }
+
+        @Override
+        public void onDestroy() {
+            transcript.add("onDestroy");
+            super.onDestroy();
+        }
+
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            transcript.add("onCreate");
+            assertTrue(savedInstanceState.containsKey("TestActivityKey"));
+            assertEquals("TestActivityValue", savedInstanceState.getString("TestActivityKey"));
+            super.onCreate(savedInstanceState);
+        }
+
+        @Override
+        public void onStart() {
+            transcript.add("onStart");
+            super.onStart();
+        }
+
+        @Override
+        public void onStop() {
+            transcript.add("onStop");
+            super.onStop();
+        }
+
+        @Override
+        public void onResume() {
+            transcript.add("onResume");
+            super.onResume();
+        }
+    }
+
     private static class DialogCreatingActivity extends Activity {
         @Override
         protected Dialog onCreateDialog(int id) {
