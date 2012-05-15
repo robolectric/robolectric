@@ -29,5 +29,11 @@ public class ShadowMediaStore {
         
         Robolectric.Reflection.setFinalStaticField(MediaStore.Images.Media.class, "INTERNAL_CONTENT_URI",
                 Uri.parse("content://media/internal/images/media"));
+
+        Robolectric.Reflection.setFinalStaticField(MediaStore.Video.Media.class, "EXTERNAL_CONTENT_URI",
+                Uri.parse("content://media/external/video/media"));
+        
+        Robolectric.Reflection.setFinalStaticField(MediaStore.Video.Media.class, "INTERNAL_CONTENT_URI",
+                Uri.parse("content://media/internal/video/media"));
     }
 }

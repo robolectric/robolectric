@@ -36,4 +36,9 @@ public class HtmlTest {
         editText.setText(Html.fromHtml("<b>some</b> html text"));
         assertThat(editText.getText().toString(), equalTo("<b>some</b> html text"));
     }
+
+    @Test(expected = NullPointerException.class)
+    public void shouldThrowNullPointerExceptionWhenNullStringEncountered() throws Exception {
+        Html.fromHtml(null);
+    }
 }
