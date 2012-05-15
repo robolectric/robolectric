@@ -28,32 +28,37 @@ public class ShadowMatrixCursor extends ShadowAbstractCursor {
 
     @Implementation
     public String getString(int column) {
-        return (String) get(column);
+        return get(column).toString();
     }
 
     @Implementation
     public long getLong(int column) {
-        return (Long) get(column);
+        return ((Number) get(column)).longValue();
     }
 
     @Implementation
     public short getShort(int column) {
-        return (Short) get(column);
+        return ((Number) get(column)).shortValue();
     }
 
     @Implementation
     public int getInt(int column) {
-        return (Integer) get(column);
+        return ((Number) get(column)).intValue();
     }
 
     @Implementation
     public float getFloat(int column) {
-        return (Float) get(column);
+        return ((Number) get(column)).floatValue();
     }
 
     @Implementation
     public double getDouble(int column) {
-        return (Double) get(column);
+        return ((Number) get(column)).doubleValue();
+    }
+
+    @Implementation
+    public byte[] getBlob(int column) {
+        return (byte[]) get(column);
     }
 
     @Implementation
