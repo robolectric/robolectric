@@ -51,6 +51,38 @@ public class MatrixCursorTest {
         assertThat(cursor.getColumnIndex("z"), equalTo(-1));
     }
 
+    @Test
+    public void shouldDefineGetBlob() throws Exception {
+        byte[] blob = { 1, 2, 3, 4 };
+
+        MatrixCursor cursor = new MatrixCursor(new String[] { "a" });
+        cursor.addRow(new Object[] { blob });
+        assertTrue(cursor.moveToFirst());
+
+        assertThat(cursor.getBlob(0), equalTo(blob));
+    }
+
+    @Test
+    public void shouldAllowTypeFlexibility() throws Exception {
+        MatrixCursor cursor = new MatrixCursor(new String[] { "a", "b", "c" });
+        cursor.addRow(new Object[] { 42, 3.3 });
+        assertTrue(cursor.moveToFirst());
+
+        assertThat(cursor.getString(0), equalTo("42"));
+        assertThat(cursor.getShort(0), equalTo((short) 42));
+        assertThat(cursor.getInt(0), equalTo(42));
+        assertThat(cursor.getLong(0), equalTo(42L));
+        assertThat(cursor.getFloat(0), equalTo(42.0F));
+        assertThat(cursor.getDouble(0), equalTo(42.0));
+
+        assertThat(cursor.getString(1), equalTo("3.3"));
+        assertThat(cursor.getShort(1), equalTo((short) 3));
+        assertThat(cursor.getInt(1), equalTo(3));
+        assertThat(cursor.getLong(1), equalTo(3L));
+        assertThat(cursor.getFloat(1), equalTo(3.3F));
+        assertThat(cursor.getDouble(1), equalTo(3.3));
+    }
+
     @Test(expected = IllegalArgumentException.class)
     public void shouldDefineGetColumnNameOrThrow() throws Exception {
         MatrixCursor cursor = new MatrixCursor(new String[] { "a", "b", "c"});
