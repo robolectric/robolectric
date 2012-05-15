@@ -235,7 +235,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     public int getRequestedOrientation() {
         return requestedOrientation;
     }
-    
+
     @Implementation
     public SharedPreferences getPreferences(int mode) {
     	return ShadowPreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -469,5 +469,53 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     public Dialog getDialogById(int dialogId) {
         return dialogForId.get(dialogId);
+    }
+
+    public void recreate() {
+        try {
+            Bundle outState = new Bundle();
+            Method method = Activity.class.getDeclaredMethod("onSaveInstanceState", Bundle.class);
+            method.setAccessible(true);
+            method.invoke(realActivity, outState);
+
+            method = Activity.class.getDeclaredMethod("onPause");
+            method.setAccessible(true);
+            method.invoke(realActivity);
+
+            method = Activity.class.getDeclaredMethod("onStop");
+            method.setAccessible(true);
+            method.invoke(realActivity);
+
+            method = Activity.class.getDeclaredMethod("onRetainNonConfigurationInstance");
+            method.setAccessible(true);
+            Object nonConfigInstance = method.invoke(realActivity);
+            setLastNonConfigurationInstance(nonConfigInstance);
+
+            method = Activity.class.getDeclaredMethod("onDestroy");
+            method.setAccessible(true);
+            method.invoke(realActivity);
+
+            method = Activity.class.getDeclaredMethod("onCreate", Bundle.class);
+            method.setAccessible(true);
+            method.invoke(realActivity, outState);
+
+            method = Activity.class.getDeclaredMethod("onStart");
+            method.setAccessible(true);
+            method.invoke(realActivity);
+
+            method = Activity.class.getDeclaredMethod("onRestoreInstanceState", Bundle.class);
+            method.setAccessible(true);
+            method.invoke(realActivity, outState);
+
+            method = Activity.class.getDeclaredMethod("onResume");
+            method.setAccessible(true);
+            method.invoke(realActivity);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 }
