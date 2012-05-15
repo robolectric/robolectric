@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.database.DataSetObserver;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
+import android.view.View;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -15,6 +16,7 @@ public class ShadowViewPager extends ShadowViewGroup {
     private ViewPager realViewPager;
 
     private PagerAdapter adapter;
+    private int currentItem;
 
     @Implementation
     public void setAdapter(PagerAdapter adapter) {
@@ -38,9 +40,23 @@ public class ShadowViewPager extends ShadowViewGroup {
         int count = adapter.getCount();
         if (count > 0) {
             adapter.startUpdate(realViewPager);
-            Object item = adapter.instantiateItem(realViewPager, 0);
+            Object item = adapter.instantiateItem(realViewPager, count);
             adapter.setPrimaryItem(realViewPager, 0, item);
             adapter.finishUpdate(realViewPager);
         }
+    }
+
+    @Implementation
+    public int getCurrentItem() {
+        return currentItem;
+    }
+
+    @Implementation
+    public void setCurrentItem(int item) {
+        currentItem = item;
+    }
+
+    public View getCurrentView() {
+        return getChildAt(getCurrentItem());
     }
 }
