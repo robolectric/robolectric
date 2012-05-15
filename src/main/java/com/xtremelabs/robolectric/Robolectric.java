@@ -51,43 +51,8 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
-import android.webkit.JsPromptResult;
-import android.webkit.JsResult;
-import android.webkit.MimeTypeMap;
-import android.webkit.SslErrorHandler;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.widget.AbsListView;
-import android.widget.AbsSeekBar;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.CheckedTextView;
-import android.widget.CursorAdapter;
-import android.widget.ExpandableListView;
-import android.widget.Filter;
-import android.widget.FrameLayout;
-import android.widget.Gallery;
-import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.PopupWindow;
-import android.widget.ProgressBar;
-import android.widget.RatingBar;
-import android.widget.RemoteViews;
-import android.widget.ResourceCursorAdapter;
-import android.widget.ScrollView;
-import android.widget.SeekBar;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TabHost;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.VideoView;
-import android.widget.ViewAnimator;
-import android.widget.ViewFlipper;
-import android.widget.ZoomButtonsController;
-
+import android.webkit.*;
+import android.widget.*;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
@@ -254,6 +219,7 @@ public class Robolectric {
                 ShadowLayoutInflater.class,
                 ShadowLayoutParams.class,
                 ShadowLinearLayout.class,
+                ShadowLinkMovementMethod.class,
                 ShadowListActivity.class,
                 ShadowListPreference.class,
                 ShadowListView.class,
