@@ -63,6 +63,7 @@ import android.widget.AbsListView;
 import android.widget.AbsSeekBar;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.CheckedTextView;
 import android.widget.CursorAdapter;
 import android.widget.ExpandableListView;
 import android.widget.Filter;
@@ -502,6 +503,10 @@ public class Robolectric {
 
     public static ShadowCanvas shadowOf(Canvas instance) {
         return (ShadowCanvas) shadowOf_(instance);
+    }
+
+    public static ShadowCheckedTextView shadowOf(CheckedTextView instance) {
+        return (ShadowCheckedTextView) shadowOf_(instance);
     }
 
     public static ShadowClipboardManager shadowOf(ClipboardManager instance) {
