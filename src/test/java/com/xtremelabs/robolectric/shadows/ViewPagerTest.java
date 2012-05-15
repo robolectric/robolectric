@@ -88,7 +88,7 @@ public class ViewPagerTest {
         adapter.notifyDataSetChanged();
 
         viewPager.setCurrentItem(0);
-        assertEquals(1, shadowOf(viewPager).getCurrentView().getTag());
+        assertEquals(0, shadowOf(viewPager).getCurrentView().getTag());
         viewPager.setCurrentItem(1);
         assertEquals(1, shadowOf(viewPager).getCurrentView().getTag());
     }
