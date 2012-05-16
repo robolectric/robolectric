@@ -1,32 +1,29 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNull;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContextWrapper;
 import android.content.DialogInterface;
 import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
+
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNull;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AlertDialogTest {
@@ -122,6 +119,51 @@ public class AlertDialogTest {
 
         AlertDialog alert = builder.create();
         assertThat(shadowOf(alert).getCustomTitleView(), equalTo((View) view));
+    }
+    
+    @Test
+    public void shouldSetThePositiveButtonAfterCreation() throws Exception {
+        final AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
+            .setPositiveButton("Positive", null).create();
+        
+        TestDialogOnClickListener listener = new TestDialogOnClickListener();
+        alertDialog.setButton(AlertDialog.BUTTON_POSITIVE, "More Positive", listener);
+        
+        final Button positiveButton = shadowOf(alertDialog).getButton(AlertDialog.BUTTON_POSITIVE);
+        positiveButton.performClick();
+        
+        assertThat(positiveButton.getText().toString(), equalTo("More Positive"));
+        assertThat(listener.clickedItem, equalTo(AlertDialog.BUTTON_POSITIVE));
+    }
+    
+    @Test
+    public void shouldSetTheNegativeButtonAfterCreation() throws Exception {
+        final AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
+            .setNegativeButton("Negative", null).create();
+        
+        TestDialogOnClickListener listener = new TestDialogOnClickListener();
+        alertDialog.setButton(AlertDialog.BUTTON_NEGATIVE, "More Negative", listener);
+        
+        final Button negativeButton = shadowOf(alertDialog).getButton(AlertDialog.BUTTON_NEGATIVE);
+        negativeButton.performClick();
+        
+        assertThat(negativeButton.getText().toString(), equalTo("More Negative"));
+        assertThat(listener.clickedItem, equalTo(AlertDialog.BUTTON_NEGATIVE));
+    }
+    
+    @Test
+    public void shouldSetTheNeutralButtonAfterCreation() throws Exception {
+        final AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
+            .setNegativeButton("Neutral", null).create();
+        
+        TestDialogOnClickListener listener = new TestDialogOnClickListener();
+        alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, "Still Neutral", listener);
+        
+        final Button neutralButton = shadowOf(alertDialog).getButton(AlertDialog.BUTTON_NEUTRAL);
+        neutralButton.performClick();
+        
+        assertThat(neutralButton.getText().toString(), equalTo("Still Neutral"));
+        assertThat(listener.clickedItem, equalTo(AlertDialog.BUTTON_NEUTRAL));
     }
 
     @Test
