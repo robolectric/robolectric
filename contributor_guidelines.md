@@ -30,7 +30,6 @@ public class ShadowView {
         this.onTouchListener = onTouchListener;
     }
 
-    @Implementation
     public View findViewWithTag(Object obj) {
         if (obj.equals(realView.getTag())) {
             return realView;
