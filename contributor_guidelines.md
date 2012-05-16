@@ -32,9 +32,6 @@ public class ShadowView {
 
     @Override
     public View findViewWithTag(Object obj) {
-        if (obj.equals(realView.getTag())) {
-            return realView;
-        }
         return null;
     }
 }
