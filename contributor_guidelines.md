@@ -31,8 +31,7 @@ public class ShadowView {
         this.onTouchListener = onTouchListener;
     }
 
-    @Implementation
-    public boolean dispatchTouchEvent(MotionEvent event) {
+   public boolean dispatchTouchEvent(MotionEvent event) {
         if (onTouchListener != null) {
             return onTouchListener.onTouch(realView, event);
         }
