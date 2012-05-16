@@ -5,10 +5,6 @@ title: Contributor Guidelines
 
 #Coding Guidelines
 
-* Functionality should have appropriate unit tests.
-* Code can be copied from Android source when appropriate.
-* Follow the code formatting standard.
-
 ## Functionality should have appropriate unit tests
 
 Robolectric is a unit testing framework and it is important that Robolectric itself be very well tested. All classes should have unit test classes. All public methods should have unit tests. Those classes and methods should have their possible states well tested. Copied Android source should at least have "smoke tests" that assure the copied functionality is wired up correctly. Pull requests introducing untested functionality should not accepted, and reviewers should give appropriate feedback to the submitter.
@@ -25,7 +21,7 @@ This is essentially the IntelliJ default Java style.
 * Curly braces for everything: if, else, etc.
 * One line of white space between methods
 
-## Sample code for reference:
+### Sample code for reference:
 {% highlight java %}
 @Implements(View.class)
 public class ShadowView {
