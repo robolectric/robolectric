@@ -23,6 +23,7 @@ This is essentially the IntelliJ default Java style.
 
 ### Sample code for reference:
 {% highlight java %}
+
 @Implements(View.class)
 public class ShadowView {
     @Implementation
@@ -37,16 +38,6 @@ public class ShadowView {
         }
         return false;
     }
-
-    private void applyVisibilityAttribute() {
-        String visibility = attributeSet.getAttributeValue("android", "visibility");
-        if (visibility != null) {
-            if (visibility.equals("gone")) {
-                setVisibility(View.GONE);
-            } else if (visibility.equals("invisible")) {
-                setVisibility(View.INVISIBLE);
-            }
-        }
-    }
 }
+
 {% endhighlight %}
