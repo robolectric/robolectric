@@ -9,9 +9,13 @@ import android.support.v4.app.FragmentManager;
 import android.view.View;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 @Implements(Fragment.class)
 public class ShadowFragment {
+    @RealObject
+    protected Fragment realFragment;
+
     protected View view;
     protected FragmentActivity activity;
     private String tag;
