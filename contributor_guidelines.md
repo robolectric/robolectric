@@ -23,7 +23,6 @@ This is essentially the IntelliJ default Java style.
 
 ### Sample code for reference:
 {% highlight java %}
-
 @Implements(View.class)
 public class ShadowView {
     @Implementation
@@ -31,12 +30,12 @@ public class ShadowView {
         this.onTouchListener = onTouchListener;
     }
 
-   public boolean dispatchTouchEvent(MotionEvent event) {
-        if (onTouchListener != null) {
-            return onTouchListener.onTouch(realView, event);
+    @Implementation
+    public View findViewWithTag(Object obj) {
+        if (obj.equals(realView.getTag())) {
+            return realView;
         }
-        return false;
+        return null;
     }
 }
-
 {% endhighlight %}
