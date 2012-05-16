@@ -30,6 +30,14 @@ public class ShadowView {
     public void setOnTouchListener(View.OnTouchListener onTouchListener) {
         this.onTouchListener = onTouchListener;
     }
+
+    @Implementation
+    public boolean dispatchTouchEvent(MotionEvent event) {
+        if (onTouchListener != null) {
+            return onTouchListener.onTouch(realView, event);
+        }
+        return false;
+    }
 }
 
 {% endhighlight %}
