@@ -8,7 +8,7 @@ import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 
 
 @RunWith(WithTestDefaultsRunner.class)
-public class RobolectricTestRunnerClassLoaderSetupToFixBuild {
+public class RobolectricTestRunnerClassLoaderSetup {
 
     @Test
     public void testUsingClassLoader() throws ClassNotFoundException {
