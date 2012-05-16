@@ -29,7 +29,6 @@ This is essentially the IntelliJ default Java style.
 {% highlight java %}
 @Implements(View.class)
 public class ShadowView {
-    ...
     @Implementation
     public void setOnTouchListener(View.OnTouchListener onTouchListener) {
         this.onTouchListener = onTouchListener;
