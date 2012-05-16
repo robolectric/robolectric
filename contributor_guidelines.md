@@ -20,24 +20,3 @@ This is essentially the IntelliJ default Java style.
 * Indenting: http://en.wikipedia.org/wiki/Indent_style#Variant:_1TBS with four spaces, not two.
 * Curly braces for everything: if, else, etc.
 * One line of white space between methods
-
-### Sample code for reference:
-<code>
-
-    @Implements(View.class)
-	public class ShadowView {
-	    @Implementation
-	    public void setOnTouchListener(View.OnTouchListener onTouchListener) {
-	        this.onTouchListener = onTouchListener;
-	    }
-
-		@Override
-	    public View findViewWithTag(Object obj) {
-	        if (obj.equals(realView.getTag())) {
-	            return realView;
-	        }
-	        return null;
-	    }
-	}
-
-</code>
