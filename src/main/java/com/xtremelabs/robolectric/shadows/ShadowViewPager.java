@@ -37,9 +37,9 @@ public class ShadowViewPager extends ShadowViewGroup {
 
     @Implementation
     public void dataSetChanged() {
-        while (getChildCount() < adapter.getCount()) {
+        for (int i = getChildCount(); i < adapter.getCount(); i++) {
             adapter.startUpdate(realViewPager);
-            Object item = adapter.instantiateItem(realViewPager, getChildCount());
+            Object item = adapter.instantiateItem(realViewPager, i);
             adapter.setPrimaryItem(realViewPager, 0, item);
             adapter.finishUpdate(realViewPager);
         }
