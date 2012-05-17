@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
@@ -174,6 +175,20 @@ public class FragmentManagerTest {
         anotherTransaction.commit();
         assertEquals(2, manager.getCommittedTransactions().size());
         assertSame(anotherTransaction, manager.getCommittedTransactions().get(1));
+    }
+
+    @Test
+    public void shouldBeAbleToCommitTransactions_whenTheFragmentHasNoView() throws Exception {
+        TestFragment fragment = new TestFragment() {
+            @Override
+            public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+                return null;
+            }
+        };
+
+        activity.getSupportFragmentManager().beginTransaction().add(CONTAINER_VIEW_ID, fragment).commit();
+
+        assertSame(fragment, activity.getSupportFragmentManager().findFragmentById(CONTAINER_VIEW_ID));
     }
 
     private static class TestFragmentActivity extends FragmentActivity {
