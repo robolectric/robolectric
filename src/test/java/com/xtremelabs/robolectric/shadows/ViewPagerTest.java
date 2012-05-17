@@ -78,6 +78,22 @@ public class ViewPagerTest {
     }
 
     @Test
+    public void shouldRequestItemsWhenAdapterNotifiesDataSetChanged() throws Exception {
+        ItemAddingPagerAdapter adapter = new ItemAddingPagerAdapter(fragmentManager);
+        viewPager.setAdapter(adapter);
+
+        assertEquals(0, viewPager.getChildCount());
+        adapter.addItem();
+        adapter.addItem();
+        adapter.notifyDataSetChanged();
+
+        viewPager.setCurrentItem(0);
+        assertEquals(0, shadowOf(viewPager).getCurrentView().getTag());
+        viewPager.setCurrentItem(1);
+        assertEquals(1, shadowOf(viewPager).getCurrentView().getTag());
+    }
+
+    @Test
     public void shouldSetAndRetrieveTheCurrentView() throws Exception {
         ItemAddingPagerAdapter adapter = new ItemAddingPagerAdapter(fragmentManager);
         viewPager.setAdapter(adapter);
@@ -144,7 +160,7 @@ public class ViewPagerTest {
 
         @Override
         public Fragment getItem(int position) {
-            createdFragment = new MockFragment();
+            createdFragment = new MockFragment(position);
             return createdFragment;
         }
 
@@ -170,9 +186,21 @@ public class ViewPagerTest {
     }
 
     private class MockFragment extends Fragment {
+        private final int position;
+
+        public MockFragment(int position) {
+            this.position = position;
+        }
+
+        public MockFragment() {
+            this(0);
+        }
+
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return new Button(context);
+            Button button = new Button(context);
+            button.setTag(position);
+            return button;
         }
     }
 }

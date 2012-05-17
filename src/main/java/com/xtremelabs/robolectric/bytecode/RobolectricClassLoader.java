@@ -14,16 +14,16 @@ public class RobolectricClassLoader extends javassist.Loader {
     private AndroidTranslator androidTranslator;
 
     public RobolectricClassLoader(ClassHandler classHandler) {
-    	this(classHandler, null);
+        this(classHandler, null);
     }
-    
+
     public RobolectricClassLoader(ClassHandler classHandler, List<String> customClassNames) {
         super(RobolectricClassLoader.class.getClassLoader(), null);
 
         delegateLoadingOf(AndroidTranslator.class.getName());
         delegateLoadingOf(ClassHandler.class.getName());
 
-        final String classCachePath = System.getProperty("cached.roboelectric.classes.path");
+        final String classCachePath = System.getProperty("cached.robolectric.classes.path");
         final File classCacheDirectory;
         if (null == classCachePath || "".equals(classCachePath.trim())) {
             classCacheDirectory = new File("./tmp");
@@ -51,8 +51,8 @@ public class RobolectricClassLoader extends javassist.Loader {
 
     @Override
     public Class loadClass(String name) throws ClassNotFoundException {
-        boolean shouldComeFromThisClassLoader = !(name.startsWith("org.junit") || name.startsWith("org.hamcrest")  
-        		|| name.startsWith("org.specs2") || name.startsWith("scala.")); //org.specs2 and scala. allows for android projects with mixed scala\java tests to be run with Maven Surefire (see the RoboSpecs project on github)
+        boolean shouldComeFromThisClassLoader = !(name.startsWith("org.junit") || name.startsWith("org.hamcrest")
+                || name.startsWith("org.specs2") || name.startsWith("scala.")); //org.specs2 and scala. allows for android projects with mixed scala\java tests to be run with Maven Surefire (see the RoboSpecs project on github)
 
         Class<?> theClass;
         if (shouldComeFromThisClassLoader) {
@@ -74,7 +74,8 @@ public class RobolectricClassLoader extends javassist.Loader {
         }
     }
 
-    @Override protected Class findClass(String name) throws ClassNotFoundException {
+    @Override
+    protected Class findClass(String name) throws ClassNotFoundException {
         byte[] classBytes = classCache.getClassBytesFor(name);
         if (classBytes != null) {
             return defineClass(name, classBytes, 0, classBytes.length);
