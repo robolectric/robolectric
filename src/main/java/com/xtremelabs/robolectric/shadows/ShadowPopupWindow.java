@@ -139,6 +139,7 @@ public class ShadowPopupWindow {
     public void showAsDropDown(View anchor) {
         LinearLayout container = new LinearLayout(context);
         container.addView(contentView);
+        container.setBackgroundDrawable(background);
         windowManager.addView(container, null);
     }
 
