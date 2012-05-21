@@ -1,8 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -22,6 +25,14 @@ public class ShadowPopupWindow {
     private boolean showing;
     private Drawable background;
     private View.OnTouchListener onTouchInterceptor;
+    private WindowManager windowManager;
+    private Context context;
+
+    public void __constructor__(View contentView, int width, int height, boolean focusable) {
+        this.contentView = contentView;
+        context = contentView.getContext();
+        windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    }
 
     @Implementation
     public void setContentView(View contentView) {
@@ -115,6 +126,13 @@ public class ShadowPopupWindow {
     @Implementation
     public void setTouchInterceptor(android.view.View.OnTouchListener l) {
         onTouchInterceptor = l;
+    }
+
+    @Implementation
+    public void showAsDropDown(View anchor) {
+        LinearLayout container = new LinearLayout(context);
+        container.addView(contentView);
+        windowManager.addView(container, null);
     }
 
     public boolean dispatchTouchEvent(MotionEvent e) {
