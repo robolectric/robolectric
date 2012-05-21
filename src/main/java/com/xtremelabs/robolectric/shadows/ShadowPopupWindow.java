@@ -28,10 +28,17 @@ public class ShadowPopupWindow {
     private WindowManager windowManager;
     private Context context;
 
-    public void __constructor__(View contentView, int width, int height, boolean focusable) {
+    public void __constructor__(View contentView) {
         this.contentView = contentView;
         context = contentView.getContext();
         windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    }
+
+    public void __constructor__(View contentView, int width, int height, boolean focusable) {
+        __constructor__(contentView);
+        this.width = width;
+        this.height = height;
+        this.focusable = focusable;
     }
 
     @Implementation
