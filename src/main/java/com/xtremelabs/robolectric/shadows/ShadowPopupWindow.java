@@ -27,6 +27,8 @@ public class ShadowPopupWindow {
     private View.OnTouchListener onTouchInterceptor;
     private Context context;
     private LinearLayout containerView;
+    private int xOffset;
+    private int yOffset;
 
     public void __constructor__(View contentView) {
         setContentView(contentView);
@@ -146,11 +148,26 @@ public class ShadowPopupWindow {
         getWindowManager().addView(containerView, null);
     }
 
+    @Implementation
+    public void showAsDropDown(View anchor, int xoff, int yoff) {
+        xOffset = xoff;
+        yOffset = yoff;
+        showAsDropDown(anchor);
+    }
+
     public boolean dispatchTouchEvent(MotionEvent e) {
         return onTouchInterceptor != null && onTouchInterceptor.onTouch(realPopupWindow.getContentView(), e);
     }
 
     private WindowManager getWindowManager() {
         return (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    }
+
+    public int getXOffset() {
+        return xOffset;
+    }
+
+    public int getYOffset() {
+        return yOffset;
     }
 }

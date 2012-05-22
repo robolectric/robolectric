@@ -21,7 +21,9 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertSame;
 import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.*;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(Enclosed.class)
 public class PopupWindowTest {
@@ -139,6 +141,14 @@ public class PopupWindowTest {
             PopupWindow popupWindow = new PopupWindow(contentView, 0, 0, true);
             popupWindow.showAsDropDown(anchor);
             assertNotNull(windowManager.getViews().get(0).findViewById(R.id.content_view));
+        }
+
+        @Test
+        public void showAsDropdownWithOffsets_setsOffsetFields() throws Exception {
+            PopupWindow popupWindow = new PopupWindow(contentView, 0, 0, true);
+            popupWindow.showAsDropDown(anchor, 56, 69);
+            assertEquals(shadowOf(popupWindow).getXOffset(), 56);
+            assertEquals(shadowOf(popupWindow).getYOffset(), 69);
         }
 
         @Test
