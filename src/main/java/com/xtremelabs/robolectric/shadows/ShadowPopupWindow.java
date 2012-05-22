@@ -25,14 +25,12 @@ public class ShadowPopupWindow {
     private boolean showing;
     private Drawable background;
     private View.OnTouchListener onTouchInterceptor;
-    private WindowManager windowManager;
     private Context context;
     private LinearLayout containerView;
 
     public void __constructor__(View contentView) {
-        this.contentView = contentView;
-        context = contentView.getContext();
-        windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        setContentView(contentView);
+        getWindowManager();
     }
 
     public void __constructor__(View contentView, int width, int height, boolean focusable) {
@@ -45,6 +43,7 @@ public class ShadowPopupWindow {
     @Implementation
     public void setContentView(View contentView) {
         this.contentView = contentView;
+        context = contentView.getContext();
     }
 
     @Implementation
@@ -118,7 +117,9 @@ public class ShadowPopupWindow {
 
     @Implementation
     public void dismiss() {
-        windowManager.removeView(containerView);
+        if (context != null) {
+            getWindowManager().removeView(containerView);
+        }
         showing = false;
     }
 
@@ -142,10 +143,14 @@ public class ShadowPopupWindow {
         containerView = new LinearLayout(context);
         containerView.addView(contentView);
         containerView.setBackgroundDrawable(background);
-        windowManager.addView(containerView, null);
+        getWindowManager().addView(containerView, null);
     }
 
     public boolean dispatchTouchEvent(MotionEvent e) {
         return onTouchInterceptor != null && onTouchInterceptor.onTouch(realPopupWindow.getContentView(), e);
+    }
+
+    private WindowManager getWindowManager() {
+        return (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
     }
 }
