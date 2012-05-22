@@ -27,6 +27,7 @@ public class ShadowPopupWindow {
     private View.OnTouchListener onTouchInterceptor;
     private WindowManager windowManager;
     private Context context;
+    private LinearLayout containerView;
 
     public void __constructor__(View contentView) {
         this.contentView = contentView;
@@ -117,6 +118,7 @@ public class ShadowPopupWindow {
 
     @Implementation
     public void dismiss() {
+        windowManager.removeView(containerView);
         showing = false;
     }
 
@@ -137,10 +139,10 @@ public class ShadowPopupWindow {
 
     @Implementation
     public void showAsDropDown(View anchor) {
-        LinearLayout container = new LinearLayout(context);
-        container.addView(contentView);
-        container.setBackgroundDrawable(background);
-        windowManager.addView(container, null);
+        containerView = new LinearLayout(context);
+        containerView.addView(contentView);
+        containerView.setBackgroundDrawable(background);
+        windowManager.addView(containerView, null);
     }
 
     public boolean dispatchTouchEvent(MotionEvent e) {

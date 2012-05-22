@@ -21,7 +21,8 @@ public class TestWindowManager implements WindowManager {
     }
 
     @Override
-    public void removeView(View arg0) {
+    public void removeView(View view) {
+        views.remove(view);
     }
 
     @Override

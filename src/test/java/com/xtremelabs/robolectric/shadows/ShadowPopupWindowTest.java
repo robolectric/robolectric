@@ -12,8 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertSame;
+import static junit.framework.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ShadowPopupWindowTest {
@@ -51,5 +50,13 @@ public class ShadowPopupWindowTest {
         popupWindow.setBackgroundDrawable(background);
         popupWindow.showAsDropDown(anchor);
         assertSame(background, windowManager.getViews().get(0).getBackground());
+    }
+
+    @Test
+    public void dismiss_removesContainerFromWindowManager() throws Exception {
+        PopupWindow popupWindow = new PopupWindow(contentView);
+        popupWindow.showAsDropDown(anchor);
+        popupWindow.dismiss();
+        assertEquals(0, windowManager.getViews().size());
     }
 }
