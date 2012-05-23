@@ -9,7 +9,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 @Implements(FragmentPagerAdapter.class)
-public class ShadowFragmentPagerAdapter {
+public class ShadowFragmentPagerAdapter extends ShadowPagerAdapter{
     @RealObject
     private FragmentPagerAdapter realAdapter;
 

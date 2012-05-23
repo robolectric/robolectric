@@ -23,6 +23,11 @@ public class ColorResourceLoaderTest {
     }
 
     @Test
+    public void shouldHandleNonColorResourcesWithoutCrashing() throws Exception {
+        assertThat(colorResourceLoader.getValue(R.drawable.l0_red), equalTo(-0x000001));
+    }
+
+    @Test
     public void testStringsAreResolved() throws Exception {
         assertThat(colorResourceLoader.getValue(R.color.black), equalTo(0x000000));
         assertThat(colorResourceLoader.getValue(R.color.white), equalTo(0xffffff));

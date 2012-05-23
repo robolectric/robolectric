@@ -70,11 +70,14 @@ public class ShadowAdapterView extends ShadowViewGroup {
     private void invalidateAndScheduleUpdate() {
         valid = false;
         itemCount = adapter == null ? 0 : adapter.getCount();
-        updateEmptyStatus(itemCount == 0);
+        if (mEmptyView != null) {
+            updateEmptyStatus(itemCount == 0);
+        }
 
-        if (hasOnItemSelectedListener() && itemCount == 0)
+        if (hasOnItemSelectedListener() && itemCount == 0) {
             onItemSelectedListener.onNothingSelected(realAdapterView);
-        
+        }
+
         new Handler().post(new Runnable() {
             @Override
             public void run() {
@@ -115,7 +118,9 @@ public class ShadowAdapterView extends ShadowViewGroup {
 //                this.onLayout(false, mLeft, mTop, mRight, mBottom);
 //            }
         } else {
-            if (mEmptyView != null) mEmptyView.setVisibility(View.GONE);
+            if (mEmptyView != null) {
+                mEmptyView.setVisibility(View.GONE);
+            }
             setVisibility(View.VISIBLE);
         }
     }
@@ -202,6 +207,11 @@ public class ShadowAdapterView extends ShadowViewGroup {
     }
 
     @Implementation
+    public AdapterView.OnItemLongClickListener getOnItemLongClickListener() {
+        return onItemLongClickListener;
+    }
+
+    @Implementation
     public Object getItemAtPosition(int position) {
         Adapter adapter = getAdapter();
         return (adapter == null || position < 0) ? null : adapter.getItem(position);
@@ -216,7 +226,7 @@ public class ShadowAdapterView extends ShadowViewGroup {
     @Implementation
     public void setSelection(final int position) {
         selectedPosition = position;
-        
+
         if (selectedPosition >= 0) {
             new Handler().post(new Runnable() {
                 @Override
@@ -303,8 +313,8 @@ public class ShadowAdapterView extends ShadowViewGroup {
             for (int i = 0; i < adapter.getCount() - ignoreRowsAtEndOfList; i++) {
                 View view = adapter.getView(i, null, realAdapterView);
                 // don't add null views
-                if( view != null ) {
-                	addView(view);
+                if (view != null) {
+                    addView(view);
                 }
                 newItems.add(adapter.getItem(i));
             }

@@ -1,8 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
+import android.widget.LinearLayout;
 import android.widget.PopupWindow;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -22,10 +25,27 @@ public class ShadowPopupWindow {
     private boolean showing;
     private Drawable background;
     private View.OnTouchListener onTouchInterceptor;
+    private Context context;
+    private LinearLayout containerView;
+    private int xOffset;
+    private int yOffset;
+
+    public void __constructor__(View contentView) {
+        setContentView(contentView);
+        getWindowManager();
+    }
+
+    public void __constructor__(View contentView, int width, int height, boolean focusable) {
+        __constructor__(contentView);
+        this.width = width;
+        this.height = height;
+        this.focusable = focusable;
+    }
 
     @Implementation
     public void setContentView(View contentView) {
         this.contentView = contentView;
+        context = contentView.getContext();
     }
 
     @Implementation
@@ -99,6 +119,9 @@ public class ShadowPopupWindow {
 
     @Implementation
     public void dismiss() {
+        if (context != null) {
+            getWindowManager().removeView(containerView);
+        }
         showing = false;
     }
 
@@ -117,7 +140,34 @@ public class ShadowPopupWindow {
         onTouchInterceptor = l;
     }
 
+    @Implementation
+    public void showAsDropDown(View anchor) {
+        containerView = new LinearLayout(context);
+        containerView.addView(contentView);
+        containerView.setBackgroundDrawable(background);
+        getWindowManager().addView(containerView, null);
+    }
+
+    @Implementation
+    public void showAsDropDown(View anchor, int xoff, int yoff) {
+        xOffset = xoff;
+        yOffset = yoff;
+        showAsDropDown(anchor);
+    }
+
     public boolean dispatchTouchEvent(MotionEvent e) {
         return onTouchInterceptor != null && onTouchInterceptor.onTouch(realPopupWindow.getContentView(), e);
+    }
+
+    private WindowManager getWindowManager() {
+        return (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+    }
+
+    public int getXOffset() {
+        return xOffset;
+    }
+
+    public int getYOffset() {
+        return yOffset;
     }
 }
