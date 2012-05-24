@@ -20,5 +20,6 @@ local.properties
 *.iml
 *.ipr
 *.orig
+*.swp
 *~
 \#*\#
