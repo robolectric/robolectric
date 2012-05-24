@@ -471,6 +471,33 @@ public class ShadowActivity extends ShadowContextWrapper {
         return dialogForId.get(dialogId);
     }
 
+    public void create() {
+        try {
+            Bundle noInstanceState = null;
+            Method method = Activity.class.getDeclaredMethod("onCreate", Bundle.class);
+            method.setAccessible(true);
+            method.invoke(realActivity, noInstanceState);
+
+            method = Activity.class.getDeclaredMethod("onStart");
+            method.setAccessible(true);
+            method.invoke(realActivity);
+
+            method = Activity.class.getDeclaredMethod("onPostCreate", Bundle.class);
+            method.setAccessible(true);
+            method.invoke(realActivity, noInstanceState);
+
+            method = Activity.class.getDeclaredMethod("onResume");
+            method.setAccessible(true);
+            method.invoke(realActivity);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public void recreate() {
         try {
             Bundle outState = new Bundle();
