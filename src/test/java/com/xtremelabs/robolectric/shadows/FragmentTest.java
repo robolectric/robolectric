@@ -33,11 +33,12 @@ public class FragmentTest {
 
         assertEquals(1, fragment.created);
         assertEquals(2, fragment.viewCreated);
-        assertEquals(3, fragment.activityCreated);
-        assertEquals(4, fragment.resumed);
+        assertEquals(3, fragment.onViewCreated);
+        assertEquals(4, fragment.activityCreated);
+        assertEquals(5, fragment.resumed);
 
         assertTrue(fragment.isResumed());
-        
+
         assertSame(fragment.getView(), shadowOf(activity).getContentView());
     }
 
@@ -54,8 +55,7 @@ public class FragmentTest {
 
         assertEquals(bundleVal, fragment.argument);
     }
-    
-    
+
     @Test
     public void testGetFragmentManager() {
         DummyFragment fragment = new DummyFragment();
@@ -65,7 +65,7 @@ public class FragmentTest {
         assertNotNull(fragment.getFragmentManager());
         assertSame(activity.getSupportFragmentManager(), fragment.getFragmentManager());
     }
-    
+
     @Test
     public void testFragmentManagerBeginWithNoTagOrId() {
         DummyFragment fragment = new DummyFragment();
@@ -77,14 +77,14 @@ public class FragmentTest {
 
         assertEquals(0, fragment.getId());
         assertNull(fragment.getTag());
-        
+
         assertNull(fragmentManager.findFragmentById(0));
         assertNull(fragmentManager.findFragmentByTag(null));
 
         // Just don't blow up
         fragmentManager.beginTransaction().remove(fragment).commit();
     }
-    
+
     @Test
     public void testFragmentManagerBeginWithTagAndId() {
         DummyFragment fragment = new DummyFragment();
@@ -94,18 +94,17 @@ public class FragmentTest {
 
         assertEquals(24, fragment.getId());
         assertEquals("fred", fragment.getTag());
-        
+
         Fragment byId = fragmentManager.findFragmentById(24);
         Fragment byTag = fragmentManager.findFragmentByTag("fred");
-        
+
         assertSame(fragment, byId);
         assertSame(fragment, byTag);
-        
+
         fragmentManager.beginTransaction().remove(fragment).commit();
         assertNull(fragmentManager.findFragmentById(24));
         assertNull(fragmentManager.findFragmentByTag("fred"));
     }
-    
 
     @Test
     public void testVisibleAndAdded() throws Exception {
@@ -126,7 +125,7 @@ public class FragmentTest {
         activity.getSupportFragmentManager().beginTransaction().add(fragment, null).commit();
         assertTrue(fragment.created);
     }
-    
+
     @Test
     public void testTargetFragment() throws Exception {
         DummyFragment fragmentTarget = new DummyFragment();
@@ -152,12 +151,13 @@ public class FragmentTest {
         public static final String ARG_KEY = "argy";
 
         private Object argument;
-        
+
         private int serial;
         private int created;
         private int activityCreated;
         private int resumed;
         private int viewCreated;
+        private int onViewCreated;
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -186,11 +186,17 @@ public class FragmentTest {
             viewCreated = ++serial;
             return inflater.inflate(R.layout.fragment_contents, container, false);
         }
+
+        @Override
+        public void onViewCreated(View view, Bundle savedInstanceState) {
+            super.onViewCreated(view, savedInstanceState);
+            onViewCreated = ++serial;
+        }
     }
-    
+
     private static class DummyHeadlessFragment extends Fragment {
         boolean created = false;
-        
+
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
@@ -199,6 +205,6 @@ public class FragmentTest {
     }
 
     private static class ContainerActivity extends FragmentActivity {
-        
+
     }
 }

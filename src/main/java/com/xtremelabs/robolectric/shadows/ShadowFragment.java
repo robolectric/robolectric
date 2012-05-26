@@ -70,12 +70,12 @@ public class ShadowFragment {
     public View getView() {
         return view;
     }
-    
+
     @Implementation
     public FragmentManager getFragmentManager() {
         return getActivity().getSupportFragmentManager();
     }
-    
+
     @Implementation
     public int getId() {
         return fragmentId;
@@ -105,12 +105,12 @@ public class ShadowFragment {
     public void setTargetFragment(Fragment targetFragment, int requestCode) {
         this.targetFragment = targetFragment;
     }
-    
+
     public void resume() {
         realFragment.onResume();
         this.resumed = true;
     }
-    
+
     @Implementation
     public boolean isResumed() {
         return resumed;
@@ -130,12 +130,13 @@ public class ShadowFragment {
     public void createView() {
         final FragmentActivity activity = getActivity();
         view = realFragment.onCreateView(activity.getLayoutInflater(), null, null);
+        realFragment.onViewCreated(view, null);
     }
 
     public void setFragmentId(int fragmentId) {
         this.fragmentId = fragmentId;
     }
-    
+
     public void setTag(String tag) {
         this.tag = tag;
     }
