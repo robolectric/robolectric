@@ -56,6 +56,11 @@ public class ShadowTextView extends ShadowView {
     }
 
     @Implementation(i18nSafe=false)
+    public final void append(CharSequence text) {
+        setText(getText().toString() + text);
+    }
+
+    @Implementation(i18nSafe=false)
     public void setText(CharSequence text) {
     	sendBeforeTextChanged(text);
 
