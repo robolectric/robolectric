@@ -240,6 +240,13 @@ public class TextViewTest {
         assertNotNull(textView.getPaint());
     }
 
+    @Test
+    public void testNoArgAppend() {
+        textView.setText("a");
+        textView.append("b");
+        assertThat(textView.getText().toString(), equalTo("ab"));
+    }
+
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
 		List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
 		int numberBetweenOneAndTen = new Random().nextInt(10) + 1;
