@@ -53,6 +53,7 @@ public final class R {
 
         public static final int fragment = nextId++;
         public static final int dynamic_fragment_container = nextId++;
+        public static final int content_view = nextId++;
     }
 
     public static final class string {

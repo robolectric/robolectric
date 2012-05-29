@@ -8,6 +8,7 @@ import android.text.method.MovementMethod;
 import android.text.style.URLSpan;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
@@ -19,19 +20,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
 import static junit.framework.Assert.assertFalse;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -342,6 +339,24 @@ public class TextViewTest {
         Assert.assertEquals(typeface, textView.getTypeface());
     }
 
+    @Test
+    public void onTouchEvent_shouldCallMovementMethodOnTouchEventWithSetMotionEvent() throws Exception {
+        TestMovementMethod testMovementMethod = new TestMovementMethod();
+
+        textView.setMovementMethod(testMovementMethod);
+        MotionEvent event = MotionEvent.obtain(0, 0, 0, 0, 0, 0);
+        textView.dispatchTouchEvent(event);
+
+        assertEquals(testMovementMethod.event, event);
+    }
+
+    @Test
+    public void canSetAndGetLayout() throws Exception {
+        StaticLayout layout = new StaticLayout(null, null, 0, null, 0, 0, true);
+        shadowOf(textView).setLayout(layout);
+        assertEquals(textView.getLayout(), layout);
+    }
+
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
         List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
         int numberBetweenOneAndTen = new Random().nextInt(10) + 1;
@@ -400,5 +415,50 @@ public class TextViewTest {
             afterTextChangeArgument = s;
         }
 
+    }
+
+    private static class TestMovementMethod implements MovementMethod {
+        public MotionEvent event;
+        public boolean touchEventWasCalled;
+
+        @Override
+        public void initialize(TextView widget, Spannable text) {
+        }
+
+        @Override
+        public boolean onKeyDown(TextView widget, Spannable text, int keyCode, KeyEvent event) {
+            return false;
+        }
+
+        @Override
+        public boolean onKeyUp(TextView widget, Spannable text, int keyCode, KeyEvent event) {
+            return false;
+        }
+
+        @Override
+        public boolean onKeyOther(TextView view, Spannable text, KeyEvent event) {
+            return false;
+        }
+
+        @Override
+        public void onTakeFocus(TextView widget, Spannable text, int direction) {
+        }
+
+        @Override
+        public boolean onTrackballEvent(TextView widget, Spannable text, MotionEvent event) {
+            return false;
+        }
+
+        @Override
+        public boolean onTouchEvent(TextView widget, Spannable text, MotionEvent event) {
+            this.event = event;
+            touchEventWasCalled = true;
+            return false;
+        }
+
+        @Override
+        public boolean canSelectArbitrarily() {
+            return false;
+        }
     }
 }

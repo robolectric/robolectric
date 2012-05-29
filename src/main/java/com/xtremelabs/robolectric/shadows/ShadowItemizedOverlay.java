@@ -3,24 +3,41 @@ package com.xtremelabs.robolectric.shadows;
 import android.graphics.drawable.Drawable;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
+import com.google.android.maps.ShadowItemizedOverlayBridge;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
+
+import java.util.ArrayList;
 
 /**
- * Shadow for {@code ItemizedOverlay} that just keeps track of what has been called and enables the return value for
+ * Shadow for {@code ItemizedOverlay} that keeps track of what has been called and enables the return value for
  * {@link #hitTest(com.google.android.maps.OverlayItem, android.graphics.drawable.Drawable, int, int)} to be set up by
  * tests.
  */
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(ItemizedOverlay.class)
-public class ShadowItemizedOverlay {
+public class ShadowItemizedOverlay<Item extends OverlayItem> {
     private boolean isPopulated;
     private boolean shouldHit;
     private boolean lastFocusedIndexWasReset;
+    private ArrayList<Item> items = new ArrayList<Item>();
+
+    @RealObject
+    private ItemizedOverlay<Item> realObject;
 
     @Implementation
     public final void populate() {
         isPopulated = true;
+
+        items.clear();
+        for (int i = 0; i < realObject.size(); i++) {
+            items.add(getBridge().createItem(i));
+        }
+    }
+
+    @Implementation
+    public final Item getItem(int position) {
+        return items.get(position);
     }
 
     @Implementation
@@ -67,5 +84,9 @@ public class ShadowItemizedOverlay {
      */
     public void setShouldHit(boolean shouldHit) {
         this.shouldHit = shouldHit;
+    }
+
+    private ShadowItemizedOverlayBridge<Item> getBridge() {
+        return new ShadowItemizedOverlayBridge<Item>(realObject);
     }
 }

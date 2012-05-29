@@ -20,6 +20,7 @@ import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.database.CursorWrapper;
 import android.database.sqlite.*;
 import android.graphics.*;
 import android.graphics.drawable.*;
@@ -56,6 +57,7 @@ import android.text.method.PasswordTransformationMethod;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.*;
+import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.view.animation.TranslateAnimation;
@@ -130,6 +132,7 @@ public class Robolectric {
                 ShadowAlarmManager.class,
                 ShadowAlertDialog.class,
                 ShadowAlertDialog.ShadowBuilder.class,
+                ShadowAlphaAnimation.class,
                 ShadowAndroidHttpClient.class,
                 ShadowAnimation.class,
                 ShadowAnimationDrawable.class,
@@ -152,6 +155,7 @@ public class Robolectric {
                 ShadowCameraParameters.class,
                 ShadowCameraSize.class,
                 ShadowCanvas.class,
+                ShadowCheckedTextView.class,
                 ShadowClipboardManager.class,
                 ShadowColor.class,
                 ShadowColorDrawable.class,
@@ -178,6 +182,7 @@ public class Robolectric {
                 ShadowCountDownTimer.class,
                 ShadowCursorAdapter.class,
                 ShadowCursorLoader.class,
+                ShadowCursorWrapper.class,
                 ShadowDatabaseUtils.class,
                 ShadowDateFormat.class,
                 ShadowDefaultRequestDirector.class,
@@ -217,6 +222,7 @@ public class Robolectric {
                 ShadowLayoutInflater.class,
                 ShadowLayoutParams.class,
                 ShadowLinearLayout.class,
+                ShadowLinkMovementMethod.class,
                 ShadowListActivity.class,
                 ShadowListPreference.class,
                 ShadowListView.class,
@@ -236,6 +242,7 @@ public class Robolectric {
                 ShadowMenuInflater.class,
                 ShadowMessage.class,
                 ShadowMessenger.class,
+                ShadowMimeTypeMap.class,
                 ShadowMotionEvent.class,
                 ShadowNotification.class,
                 ShadowNdefMessage.class,
@@ -352,6 +359,7 @@ public class Robolectric {
         ShadowDialog.reset();
         ShadowContentResolver.reset();
         ShadowLocalBroadcastManager.reset();
+        ShadowMimeTypeMap.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -396,6 +404,10 @@ public class Robolectric {
 
     public static ShadowAlertDialog shadowOf(AlertDialog instance) {
         return (ShadowAlertDialog) shadowOf_(instance);
+    }
+
+    public static ShadowAlphaAnimation shadowOf(AlphaAnimation instance) {
+        return (ShadowAlphaAnimation) shadowOf_(instance);
     }
 
     public static ShadowAnimation shadowOf(Animation instance) {
@@ -464,6 +476,10 @@ public class Robolectric {
 
     public static ShadowCanvas shadowOf(Canvas instance) {
         return (ShadowCanvas) shadowOf_(instance);
+    }
+
+    public static ShadowCheckedTextView shadowOf(CheckedTextView instance) {
+        return (ShadowCheckedTextView) shadowOf_(instance);
     }
 
     public static ShadowClipboardManager shadowOf(ClipboardManager instance) {
@@ -536,6 +552,10 @@ public class Robolectric {
 
     public static ShadowCursorLoader shadowOf(CursorLoader instance) {
         return (ShadowCursorLoader) shadowOf_(instance);
+    }
+
+    public static ShadowCursorWrapper shadowOf(CursorWrapper instance) {
+        return (ShadowCursorWrapper) shadowOf_(instance);
     }
 
     public static ShadowDateFormat shadowOf(DateFormat instance) {
@@ -682,6 +702,10 @@ public class Robolectric {
         return (ShadowMenuInflater) shadowOf_(instance);
     }
 
+    public static ShadowMimeTypeMap shadowOf(MimeTypeMap instance) {
+        return (ShadowMimeTypeMap) shadowOf_(instance);
+    }
+
     public static ShadowMotionEvent shadowOf(MotionEvent other) {
         return (ShadowMotionEvent) Robolectric.shadowOf_(other);
     }
@@ -819,16 +843,16 @@ public class Robolectric {
     }
 
     public static ShadowSmsManager shadowOf(SmsManager instance) {
-    	return (ShadowSmsManager) shadowOf_(instance);
+        return (ShadowSmsManager) shadowOf_(instance);
     }
-    
+
     public static <E> ShadowSparseArray<E> shadowOf(SparseArray<E> other) {
-    	//noinspection unchecked
-    	return (ShadowSparseArray<E>) Robolectric.shadowOf_(other);
+        //noinspection unchecked
+        return (ShadowSparseArray<E>) Robolectric.shadowOf_(other);
     }
-    
+
     public static ShadowSparseBooleanArray shadowOf(SparseBooleanArray other) {
-    	return (ShadowSparseBooleanArray) Robolectric.shadowOf_(other);
+        return (ShadowSparseBooleanArray) Robolectric.shadowOf_(other);
     }
 
     public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
@@ -854,13 +878,13 @@ public class Robolectric {
     public static ShadowSQLiteStatement shadowOf(SQLiteStatement other) {
         return (ShadowSQLiteStatement) Robolectric.shadowOf_(other);
     }
-    
+
     public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
         return (ShadowSslErrorHandler) shadowOf_(instance);
     }
 
     public static ShadowStateListDrawable shadowOf(StateListDrawable instance) {
-    	return (ShadowStateListDrawable) shadowOf_(instance);
+        return (ShadowStateListDrawable) shadowOf_(instance);
     }
 
     public static ShadowTabHost shadowOf(TabHost instance) {
@@ -1002,7 +1026,7 @@ public class Robolectric {
      * @param statusCode   the status code of the response
      * @param responseBody the body of the response
      * @param contentType  the contentType of the response
-     * @deprecated         use {@link #addPendingHttpResponse(int, String, Header...)} instead
+     * @deprecated use {@link #addPendingHttpResponse(int, String, Header...)} instead
      */
     public static void addPendingHttpResponseWithContentType(int statusCode, String responseBody, Header contentType) {
         getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody, contentType);
@@ -1231,5 +1255,4 @@ public class Robolectric {
             }
         }
     }
-
 }

@@ -156,7 +156,9 @@ public class TestFragmentManager extends FragmentManager {
             if (shadowFragment.getShouldReplace()) {
                 container.removeAllViews();
             }
-            container.addView(view);
+            if (view != null) {
+                container.addView(view);
+            }
         }
 
         fragment.onActivityCreated(shadowFragment.getSavedInstanceState());

@@ -97,6 +97,41 @@ public class ShadowAlertDialog extends ShadowDialog {
         }
         throw new RuntimeException("Only positive, negative, or neutral button choices are recognized");
     }
+    
+    @Implementation
+    public void setButton(int whichButton, CharSequence text, DialogInterface.OnClickListener listener) {
+        switch (whichButton) {
+            case AlertDialog.BUTTON_POSITIVE:
+                positiveButton = createButton(context, realAlertDialog, whichButton, text, listener);
+                return;
+            case AlertDialog.BUTTON_NEGATIVE:
+                negativeButton = createButton(context, realAlertDialog, whichButton, text, listener);
+                return;
+            case AlertDialog.BUTTON_NEUTRAL:
+                neutralButton = createButton(context, realAlertDialog, whichButton, text, listener);
+                return;
+        }
+        throw new RuntimeException("Only positive, negative, or neutral button choices are recognized");
+    }
+
+    private static Button createButton(final Context context, final DialogInterface dialog, final int which, CharSequence text, final DialogInterface.OnClickListener listener) {
+        if (text == null && listener == null) {
+            return null;
+        }
+        Button button = new Button(context);
+        Robolectric.shadowOf(button).setText(text); // use shadow to skip
+                                                    // i18n-strict checking
+        button.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (listener != null) {
+                    listener.onClick(dialog, which);
+                }
+                dialog.dismiss();
+            }
+        });
+        return button;
+    }
 
     @Implementation
     public ListView getListView() {
@@ -412,9 +447,9 @@ public class ShadowAlertDialog extends ShadowDialog {
             latestAlertDialog.multiChoiceClickListener = multiChoiceClickListener;
             latestAlertDialog.checkedItems = checkedItems;
             latestAlertDialog.setView(view);
-            latestAlertDialog.positiveButton = createButton(realDialog, AlertDialog.BUTTON_POSITIVE, positiveText, positiveListener);
-            latestAlertDialog.negativeButton = createButton(realDialog, AlertDialog.BUTTON_NEGATIVE, negativeText, negativeListener);
-            latestAlertDialog.neutralButton = createButton(realDialog, AlertDialog.BUTTON_NEUTRAL, neutralText, neutralListener);
+            latestAlertDialog.positiveButton = createButton(context, realDialog, AlertDialog.BUTTON_POSITIVE, positiveText, positiveListener);
+            latestAlertDialog.negativeButton = createButton(context, realDialog, AlertDialog.BUTTON_NEGATIVE, negativeText, negativeListener);
+            latestAlertDialog.neutralButton = createButton(context, realDialog, AlertDialog.BUTTON_NEUTRAL, neutralText, neutralListener);
             latestAlertDialog.setCancelable(isCancelable);
             latestAlertDialog.customTitleView = customTitleView;
             return realDialog;
@@ -425,24 +460,6 @@ public class ShadowAlertDialog extends ShadowDialog {
             AlertDialog dialog = realBuilder.create();
             dialog.show();
             return dialog;
-        }
-
-        private Button createButton(final DialogInterface dialog, final int which, CharSequence text, final DialogInterface.OnClickListener listener) {
-            if (text == null && listener == null) {
-                return null;
-            }
-            Button button = new Button(context);
-            Robolectric.shadowOf(button).setText(text);		// use shadow to skip i18n-strict checking
-            button.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (listener != null) {
-                        listener.onClick(dialog, which);
-                    }
-                    dialog.dismiss();
-                }
-            });
-            return button;
         }
 
         protected Context getContext() {

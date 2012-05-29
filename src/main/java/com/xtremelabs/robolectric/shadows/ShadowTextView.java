@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.text.TextWatcher;
@@ -11,6 +12,7 @@ import android.text.method.TransformationMethod;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
 import android.view.KeyEvent;
+import android.view.MotionEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -50,6 +52,7 @@ public class ShadowTextView extends ShadowView {
     private List<TextWatcher> watchers = new ArrayList<TextWatcher>();
     private List<Integer> previousKeyCodes = new ArrayList<Integer>();
     private List<KeyEvent> previousKeyEvents = new ArrayList<KeyEvent>();
+    private Layout layout;
 
     @Override
     public void applyAttributes() {
@@ -466,6 +469,11 @@ public class ShadowTextView extends ShadowView {
         return new TextPaint();
     }
 
+    @Implementation
+    public Layout getLayout() {
+        return this.layout;
+    }
+
     public void setSelection(int index) {
         setSelection(index, index);
     }
@@ -485,11 +493,30 @@ public class ShadowTextView extends ShadowView {
         return selectionEnd;
     }
 
+    @Implementation
+    public boolean onTouchEvent(MotionEvent event) {
+        boolean superResult = super.onTouchEvent(event);
+
+        if (movementMethod != null) {
+            boolean handled = movementMethod.onTouchEvent(null, null, event);
+
+            if (handled) {
+                return true;
+            }
+        }
+
+        return superResult;
+    }
+
     /**
      * @return the list of currently registered watchers/listeners
      */
     public List<TextWatcher> getWatchers() {
         return watchers;
+    }
+
+    public void setLayout(Layout layout) {
+        this.layout = layout;
     }
 
     public static class CompoundDrawables {
