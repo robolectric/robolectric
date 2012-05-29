@@ -134,6 +134,31 @@ public class FragmentTransactionTest {
         assertFalse(trackingActivity.startActivityWasCalled);
     }
 
+    @Test
+    public void commit_shouldNotActLikeCommitAllowingStateLoss() throws Exception {
+        txn.add(fragment, "tag1").commit();
+        assertFalse(txn.isCommittedAllowingStateLoss());
+    }
+
+    @Test
+    public void commitAllowingStateLoss_shouldCommitAndSetAFlag() throws Exception {
+        txn.add(fragment, "tag1").commitAllowingStateLoss();
+
+        assertTrue(manager.addFragmentWasCalled);
+        assertEquals(manager.addFragmentContainerViewId, View.NO_ID);
+        assertEquals(manager.addFragmentTag, "tag1");
+        assertSame(manager.addFragmentFragment, fragment);
+
+        assertTrue(txn.isCommittedAllowingStateLoss());
+    }
+
+    @Test
+    public void attach_shouldCauseFragmentToBecomeAttached() throws Exception {
+        shadowOf(fragment).setAttached(false);
+        txn.attach(fragment).commit();
+        assertTrue(shadowOf(fragment).isAttached());
+    }
+
     private static class MockTestFragmentManager extends TestFragmentManager {
         private boolean addFragmentWasCalled;
         private int addFragmentContainerViewId;

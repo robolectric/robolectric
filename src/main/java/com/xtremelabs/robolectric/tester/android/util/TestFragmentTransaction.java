@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.tester.android.util;
 
-import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;
 import android.view.View;
@@ -19,6 +18,8 @@ public class TestFragmentTransaction extends FragmentTransaction {
     private int lastEnterAnimation;
     private int lastExitAnimation;
     private Fragment fragmentToRemove;
+    private boolean committedAllowingStateLoss;
+    private Fragment fragmentToAttach;
 
     public TestFragmentTransaction(TestFragmentManager fragmentManager) {
         this.fragmentManager = fragmentManager;
@@ -82,7 +83,8 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     @Override
     public FragmentTransaction attach(Fragment fragment) {
-        return null;
+        fragmentToAttach = fragment;
+        return this;
     }
 
     @Override
@@ -151,18 +153,14 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     @Override
     public int commit() {
-        new Handler().post(new Runnable() {
-            @Override
-            public void run() {
-                fragmentManager.commitTransaction(TestFragmentTransaction.this);
-            }
-        });
+        fragmentManager.commitLater(this);
         return 0;
     }
 
     @Override
     public int commitAllowingStateLoss() {
-        return 0;
+        committedAllowingStateLoss = true;
+        return commit();
     }
 
     public boolean isAddedToBackStack() {
@@ -211,5 +209,17 @@ public class TestFragmentTransaction extends FragmentTransaction {
 
     public Fragment getFragmentToRemove() {
         return fragmentToRemove;
+    }
+
+    public boolean isCommittedAllowingStateLoss() {
+        return committedAllowingStateLoss;
+    }
+
+    public boolean isAttaching() {
+        return fragmentToAttach != null;
+    }
+
+    public Fragment getFragmentToAttach() {
+        return fragmentToAttach;
     }
 }
