@@ -33,6 +33,7 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.app.ListFragment;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -221,6 +222,7 @@ public class Robolectric {
                 ShadowLinearLayout.class,
                 ShadowLinkMovementMethod.class,
                 ShadowListActivity.class,
+                ShadowListFragment.class,
                 ShadowListPreference.class,
                 ShadowListView.class,
                 ShadowLocation.class,
@@ -661,6 +663,10 @@ public class Robolectric {
 
     public static ShadowListActivity shadowOf(ListActivity instance) {
         return (ShadowListActivity) shadowOf_(instance);
+    }
+
+    public static ShadowListFragment shadowOf(ListFragment instance) {
+        return (ShadowListFragment) shadowOf_(instance);
     }
 
     public static ShadowListPreference shadowOf(ListPreference instance) {
