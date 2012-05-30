@@ -13,6 +13,7 @@ public class ShadowViewPager extends ShadowViewGroup {
 
     private PagerAdapter adapter;
     private int currentItem;
+    private ViewPager.OnPageChangeListener onPageChangeListener;
 
     @Implementation
     public void setAdapter(PagerAdapter adapter) {
@@ -30,7 +31,15 @@ public class ShadowViewPager extends ShadowViewGroup {
     }
 
     @Implementation
-    public void setCurrentItem(int item) {
-        currentItem = item;
+    public void setOnPageChangeListener(ViewPager.OnPageChangeListener listener) {
+        onPageChangeListener = listener;
+    }
+
+    @Implementation
+    public void setCurrentItem(int position) {
+        if (onPageChangeListener != null) {
+            onPageChangeListener.onPageSelected(position);
+        }
+        currentItem = position;
     }
 }
