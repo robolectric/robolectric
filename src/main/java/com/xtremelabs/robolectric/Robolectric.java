@@ -695,6 +695,10 @@ public class Robolectric {
         return (ShadowMenuInflater) shadowOf_(instance);
     }
 
+    public static ShadowMessage shadowOf(Message instance) {
+        return (ShadowMessage) shadowOf_(instance);
+    }
+
     public static ShadowMimeTypeMap shadowOf(MimeTypeMap instance) {
         return (ShadowMimeTypeMap) shadowOf_(instance);
     }
