@@ -3,17 +3,31 @@ package com.xtremelabs.robolectric.shadows;
 import android.database.CursorIndexOutOfBoundsException;
 import android.database.MatrixCursor;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class MatrixCursorTest {
-    @Test
+
+	private MatrixCursor singleColumnSingleNullValueMatrixCursor;
+
+	@Before
+	public void setUp() throws Exception
+	{
+		singleColumnSingleNullValueMatrixCursor = new MatrixCursor(new String[]{"a"});
+		singleColumnSingleNullValueMatrixCursor.addRow(new Object[] { null });
+		singleColumnSingleNullValueMatrixCursor.moveToFirst();
+	}
+
+	@Test
     public void shouldAddRows() throws Exception {
         MatrixCursor cursor = new MatrixCursor(new String[] { "a", "b", "c"});
         cursor.addRow(new Object[] { "foo", 10L, 0.1f });
@@ -110,4 +124,40 @@ public class MatrixCursorTest {
         cursor.moveToNext();
         cursor.getString(0);
     }
+
+	@Test
+	public void returnsNullWhenGettingStringFromNullColumn()
+	{
+		assertThat(singleColumnSingleNullValueMatrixCursor.getString(0), is(nullValue()));
+	}
+
+	@Test
+	public void returnsZeroWhenGettingIntFromNullColumn()
+	{
+		assertThat(singleColumnSingleNullValueMatrixCursor.getInt(0), is(equalTo(0)));
+	}
+
+	@Test
+	public void returnsZeroWhenGettingLongFromNullColumn()
+	{
+		assertThat(singleColumnSingleNullValueMatrixCursor.getLong(0), is(equalTo(0L)));
+	}
+
+	@Test
+	public void returnsZeroWhenGettingShortFromNullColumn()
+	{
+		assertThat(singleColumnSingleNullValueMatrixCursor.getShort(0), is(equalTo((short)0)));
+	}
+
+	@Test
+	public void returnsZeroWhenGettingFloatFromNullColumn()
+	{
+		assertThat(singleColumnSingleNullValueMatrixCursor.getFloat(0), is(equalTo(0.0f)));
+	}
+
+	@Test
+	public void returnsZeroWhenGettingDoubleFromNullColumn()
+	{
+		assertThat(singleColumnSingleNullValueMatrixCursor.getDouble(0), is(equalTo(0.0)));
+	}
 }
