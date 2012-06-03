@@ -1,9 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.database.CursorIndexOutOfBoundsException;
-import android.database.MatrixCursor;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+
+import android.database.CursorIndexOutOfBoundsException;
+import android.database.MatrixCursor;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,38 +29,38 @@ public class ShadowMatrixCursor extends ShadowAbstractCursor {
 
     @Implementation
     public String getString(int column) {
-		Object columnValue = get(column);
-		return columnValue == null ? null : columnValue.toString();
+        Object columnValue = get(column);
+        return columnValue == null ? null : columnValue.toString();
     }
 
     @Implementation
     public long getLong(int column) {
-		Number numberValue = (Number) get(column);
-		return numberValue == null ? 0 : numberValue.longValue();
+        Number numberValue = (Number) get(column);
+        return numberValue == null ? 0 : numberValue.longValue();
     }
 
     @Implementation
     public short getShort(int column) {
-		Number numberValue = (Number) get(column);
-		return numberValue == null ? 0 : numberValue.shortValue();
+        Number numberValue = (Number) get(column);
+        return numberValue == null ? 0 : numberValue.shortValue();
     }
 
     @Implementation
     public int getInt(int column) {
-		Number numberValue = (Number) get(column);
-		return numberValue == null ? 0 : numberValue.intValue();
+        Number numberValue = (Number) get(column);
+        return numberValue == null ? 0 : numberValue.intValue();
     }
 
     @Implementation
     public float getFloat(int column) {
-		Number numberValue = (Number) get(column);
-		return numberValue == null ? 0.0f : numberValue.floatValue();
+        Number numberValue = (Number) get(column);
+        return numberValue == null ? 0.0f : numberValue.floatValue();
     }
 
     @Implementation
     public double getDouble(int column) {
-		Number numberValue = (Number) get(column);
-		return numberValue == null ? 0.0 : numberValue.doubleValue();
+        Number numberValue = (Number) get(column);
+        return numberValue == null ? 0.0 : numberValue.doubleValue();
     }
 
     @Implementation
