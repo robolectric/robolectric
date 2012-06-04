@@ -310,6 +310,7 @@ public class Robolectric {
                 ShadowSQLiteQueryBuilder.class,
                 ShadowSslErrorHandler.class,
                 ShadowStateListDrawable.class,
+                ShadowStatFs.class,
                 ShadowSurfaceView.class,
                 ShadowTabActivity.class,
                 ShadowTabHost.class,
@@ -360,6 +361,7 @@ public class Robolectric {
         ShadowContentResolver.reset();
         ShadowLocalBroadcastManager.reset();
         ShadowMimeTypeMap.reset();
+        ShadowStatFs.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -700,6 +702,10 @@ public class Robolectric {
 
     public static ShadowMenuInflater shadowOf(MenuInflater instance) {
         return (ShadowMenuInflater) shadowOf_(instance);
+    }
+
+    public static ShadowMessage shadowOf(Message instance) {
+        return (ShadowMessage) shadowOf_(instance);
     }
 
     public static ShadowMimeTypeMap shadowOf(MimeTypeMap instance) {

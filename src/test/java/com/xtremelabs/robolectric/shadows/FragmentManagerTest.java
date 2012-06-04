@@ -1,6 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
@@ -9,8 +11,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.FrameLayout;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.tester.android.util.TestFragmentManager;
+import com.xtremelabs.robolectric.util.Scheduler;
+import com.xtremelabs.robolectric.util.TestRunnable;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -189,6 +194,46 @@ public class FragmentManagerTest {
         activity.getSupportFragmentManager().beginTransaction().add(CONTAINER_VIEW_ID, fragment).commit();
 
         assertSame(fragment, activity.getSupportFragmentManager().findFragmentById(CONTAINER_VIEW_ID));
+    }
+
+    @Test
+    public void executePendingTransactions_shouldRunPendingCommitsAsIfTheMainLooperWereNotPaused() throws Exception {
+        Robolectric.pauseMainLooper();
+        Scheduler scheduler = shadowOf(Looper.getMainLooper()).getScheduler();
+        Fragment fragment2 = new Fragment();
+
+        TestRunnable otherEnqueuedTask = new TestRunnable();
+        new Handler(Looper.getMainLooper()).post(otherEnqueuedTask);
+
+        manager.beginTransaction().add(fragment, "fragment1").commit();
+        manager.beginTransaction().add(fragment2, "fragment2").commit();
+
+        assertEquals(3, scheduler.enqueuedTaskCount());
+        assertNull(manager.findFragmentByTag("fragment1"));
+        assertNull(manager.findFragmentByTag("fragment2"));
+
+        boolean ranSomeTransactions = manager.executePendingTransactions();
+        assertTrue(ranSomeTransactions);
+        assertSame(fragment, manager.findFragmentByTag("fragment1"));
+        assertSame(fragment2, manager.findFragmentByTag("fragment2"));
+        assertEquals(1, scheduler.enqueuedTaskCount());
+
+        assertFalse(otherEnqueuedTask.wasRun);
+        Robolectric.unPauseMainLooper();
+        assertTrue(otherEnqueuedTask.wasRun);
+
+        ranSomeTransactions = manager.executePendingTransactions();
+        assertFalse(ranSomeTransactions);
+    }
+
+    @Test
+    public void executePendingTransactions_shouldAvoidRunningTransactionsThatWereAlreadyRun() throws Exception {
+        manager.beginTransaction().add(fragment, "tag").commit();
+        assertEquals(1, manager.getCommittedTransactions().size());
+
+        boolean ranSomeTransactions = manager.executePendingTransactions();
+        assertFalse(ranSomeTransactions);
+        assertEquals(1, manager.getCommittedTransactions().size());
     }
 
     private static class TestFragmentActivity extends FragmentActivity {

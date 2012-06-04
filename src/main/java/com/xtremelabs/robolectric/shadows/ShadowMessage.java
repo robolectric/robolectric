@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -13,6 +14,7 @@ import android.os.Message;
 public class ShadowMessage {
     private Bundle data;
     private Handler target;
+    private long when;
 
     @RealObject
     private Message message;
@@ -106,5 +108,14 @@ public class ShadowMessage {
     @Implementation
     public void sendToTarget() {
         target.sendMessage(message);
+    }
+
+    @Implementation
+    public long getWhen() {
+        return when;
+    }
+
+    public void setWhen(long when) {
+        this.when = when;
     }
 }

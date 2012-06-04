@@ -98,6 +98,13 @@ public class ApplicationTest {
     }
 
     @Test
+    public void packageManager_shouldKnowApplicationName() throws Exception {
+        Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithAppName.xml")).resolveApplication();
+        assertEquals("com.xtremelabs.robolectric.TestApplication",
+                application.getPackageManager().getApplicationInfo("com.xtremelabs.robolectric", 0).name);
+    }
+
+    @Test
     public void bindServiceShouldCallOnServiceConnectedWhenNotPaused() {
         Robolectric.pauseMainLooper();
         ComponentName expectedComponentName = new ComponentName("", "");

@@ -37,6 +37,12 @@ public class ApplicationResolverTest {
         Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
         assertEquals("com.wacka.wa", application.getPackageName());
     }
+    
+    @Test
+    public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
+        Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithAppName.xml")).resolveApplication();
+        assertEquals("com.xtremelabs.robolectric.TestApplication", application.getApplicationInfo().name);
+    }
 
     @Test
     public void shouldRegisterReceiversFromTheManifest() throws Exception {
