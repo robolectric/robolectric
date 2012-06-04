@@ -61,7 +61,7 @@ public class ContextTest {
     
     @Test
     public void shouldGetApplicationDataDirectory() throws IOException {
-        File dataDir = new File(context.getFilesDir(), "data");
+        File dataDir = new File(ShadowContext.FILES_DIR, "data");
         assertThat(dataDir.mkdir(), is(true));
 
         dataDir = context.getDir("data", Context.MODE_PRIVATE);
