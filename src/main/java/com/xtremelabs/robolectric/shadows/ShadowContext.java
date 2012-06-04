@@ -34,7 +34,11 @@ abstract public class ShadowContext {
     @Implementation
     public File getDir(String name, int mode) {
         // TODO: honor operating mode.
-        return FILES_DIR;
+        File file = new File(FILES_DIR, name);
+        if (!file.exists()) {
+            file.mkdir();
+        }
+        return file;
     }
 
     @Implementation
