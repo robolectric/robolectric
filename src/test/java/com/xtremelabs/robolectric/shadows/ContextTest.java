@@ -58,6 +58,11 @@ public class ContextTest {
 		}
 		path.delete();
 	}
+    
+    @Test
+    public void shouldGetApplicationDataDirectory() {
+        assertThat(context.getDir("data", Context.MODE_PRIVATE), not(nullValue()));
+    }
 
     @Test
     public void shouldStubThemeStuff() throws Exception {
