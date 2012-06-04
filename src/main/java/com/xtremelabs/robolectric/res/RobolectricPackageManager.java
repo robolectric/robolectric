@@ -53,6 +53,7 @@ public class RobolectricPackageManager extends StubPackageManager {
                 applicationInfo.targetSdkVersion = config.getSdkVersion();
                 applicationInfo.packageName = config.getPackageName();
                 applicationInfo.processName = config.getProcessName();
+                applicationInfo.name = config.getApplicationName();
             }
             return applicationInfo;
         }
