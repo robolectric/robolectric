@@ -1,7 +1,5 @@
 package com.xtremelabs.robolectric;
 
-import java.util.StringTokenizer;
-
 import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
@@ -32,6 +30,8 @@ public class ApplicationResolver {
 
         ShadowApplication shadowApplication = shadowOf(application);
         shadowApplication.setPackageName(packageName);
+        shadowApplication.setApplicationName(applicationName);
+
         shadowApplication.setPackageManager(new RobolectricPackageManager(application, config));
         registerBroadcastReceivers(shadowApplication);
 
