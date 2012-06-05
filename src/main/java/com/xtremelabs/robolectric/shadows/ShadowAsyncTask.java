@@ -1,28 +1,26 @@
 package com.xtremelabs.robolectric.shadows;
 
+import java.util.concurrent.*;
+
 import android.os.AsyncTask;
 import android.os.ShadowAsyncTaskBridge;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {
 
     @RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
-
+    
+    public static final int EXECUTE_USING_EXECUTOR = 1;
     private final FutureTask<Result> future;
     private final BackgroundWorker worker;
     private AsyncTask.Status status = AsyncTask.Status.PENDING;
-
+    private int executor = 0;
+    
 	public ShadowAsyncTask() {
 		worker = new BackgroundWorker();
 		future = new FutureTask<Result>(worker) {
@@ -88,6 +86,11 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         return realAsyncTask;
     }
 
+    @Implementation
+    public AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec, final Params... params) {
+    	executor = EXECUTE_USING_EXECUTOR;
+    	return this.execute( params );
+    }
 
     @Implementation
     public AsyncTask.Status getStatus() {
@@ -121,4 +124,8 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 			return getBridge().doInBackground(params);
 		}
 	}
+    
+    public final int getExecuteType(){
+    	return executor;
+    }
 }

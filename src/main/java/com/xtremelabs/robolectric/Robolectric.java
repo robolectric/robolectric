@@ -439,6 +439,11 @@ public class Robolectric {
     public static ShadowAssetManager shadowOf(AssetManager instance) {
         return (ShadowAssetManager) Robolectric.shadowOf_(instance);
     }
+    
+    @SuppressWarnings("rawtypes")
+	public static ShadowAsyncTask shadowOf(AsyncTask instance){
+    	return (ShadowAsyncTask) Robolectric.shadowOf_( instance );
+    }
 
     public static ShadowAudioManager shadowOf(AudioManager instance) {
         return (ShadowAudioManager) shadowOf_(instance);
