@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.os.Bundle;
+import android.os.Parcelable;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import junit.framework.AssertionFailedError;
 import org.junit.Assert;
@@ -183,6 +184,17 @@ public class BundleTest {
 
         Assert.assertArrayEquals(arr, bundle.getShortArray("foo"));
         assertNull(bundle.getShortArray("bar"));
+    }
+
+    @Test
+    public void testParcelableArray() {
+        Bundle innerBundle = new Bundle();
+        innerBundle.putInt("value", 1);
+        Parcelable[] arr = new Parcelable[] { innerBundle };
+        bundle.putParcelableArray("foo", arr);
+
+        Assert.assertArrayEquals(arr, bundle.getParcelableArray("foo"));
+        assertNull(bundle.getParcelableArray("bar"));
     }
 
     private void assertArrayEquals(double[] expected, double[] actual) {

@@ -150,6 +150,16 @@ public class ShadowBundle {
     }
 
     @Implementation
+    public Parcelable[] getParcelableArray(String key) {
+        return (Parcelable[]) map.get(key);
+    }
+
+    @Implementation
+    public void putParcelableArray(String key, Parcelable[] value) {
+        map.put(key, value);
+    }
+
+    @Implementation
     public void putStringArrayList(String key, ArrayList<String> value) {
         map.put(key, value);
     }
