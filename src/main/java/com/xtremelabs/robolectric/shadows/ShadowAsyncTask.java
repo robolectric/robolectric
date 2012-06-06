@@ -86,8 +86,8 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         return realAsyncTask;
     }
 
-    @Implementation
-    public AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec, final Params... params) {
+    /* @Implementation */
+    public final AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec, Params... params) {
     	executor = EXECUTE_USING_EXECUTOR;
     	return this.execute( params );
     }
