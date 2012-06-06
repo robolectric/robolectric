@@ -15,11 +15,9 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
     @RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
     
-    public static final int EXECUTE_USING_EXECUTOR = 1;
     private final FutureTask<Result> future;
     private final BackgroundWorker worker;
     private AsyncTask.Status status = AsyncTask.Status.PENDING;
-    private int executor = 0;
     
 	public ShadowAsyncTask() {
 		worker = new BackgroundWorker();
@@ -86,12 +84,6 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         return realAsyncTask;
     }
 
-    /* @Implementation */
-    public final AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec, Params... params) {
-    	executor = EXECUTE_USING_EXECUTOR;
-    	return this.execute( params );
-    }
-
     @Implementation
     public AsyncTask.Status getStatus() {
         return status;
@@ -125,7 +117,4 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 		}
 	}
     
-    public final int getExecuteType(){
-    	return executor;
-    }
 }
