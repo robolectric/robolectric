@@ -883,6 +883,7 @@ public class ShadowView {
     public void clearAnimation() {
         if (animation != null) {
             animation.cancel();
+            animation = null;
         }
     }
 
