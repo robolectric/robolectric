@@ -21,6 +21,10 @@ public class ShadowViewAnimator extends ShadowViewGroup {
     @Implementation
     public void setDisplayedChild(int whichChild) {
         currentChild = whichChild;
+        for (int i = getChildCount() - 1; i >= 0; i--) {
+            View child = getChildAt(i);
+            child.setVisibility(i == whichChild ? View.VISIBLE : View.GONE);
+        }
     }
 
     @Implementation
