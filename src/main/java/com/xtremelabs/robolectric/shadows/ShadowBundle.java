@@ -19,6 +19,10 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 public class ShadowBundle {
     Map<String, Object> map = new HashMap<String, Object>();
 
+    public void __constructor__(Bundle b) {
+        putAll(b);
+    }
+
     @Implementation
     public Object get(String key) {
         return map.get(key);

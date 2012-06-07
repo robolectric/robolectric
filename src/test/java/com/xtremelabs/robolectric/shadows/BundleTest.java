@@ -197,6 +197,14 @@ public class BundleTest {
         assertNull(bundle.getParcelableArray("bar"));
     }
 
+    @Test
+    public void testCopyConstructor() {
+        bundle.putInt("value", 1);
+        Bundle copiedBundle = new Bundle(bundle);
+
+        Assert.assertEquals(copiedBundle, bundle);
+    }
+
     private void assertArrayEquals(double[] expected, double[] actual) {
         if (expected != null && actual == null) {
             throw new AssertionFailedError();
