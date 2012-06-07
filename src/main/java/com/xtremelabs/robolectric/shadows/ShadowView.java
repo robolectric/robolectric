@@ -395,9 +395,14 @@ public class ShadowView {
     		Method onMeasureMethod = realView.getClass().getDeclaredMethod("onMeasure", Integer.TYPE, Integer.TYPE );
     		onMeasureMethod.setAccessible(true);
     		onMeasureMethod.invoke( realView, widthMeasureSpec, heightMeasureSpec );
-    	} catch ( NoSuchMethodException e ) { throw new RuntimeException(e); }
-    	  catch ( IllegalAccessException e ) { throw new RuntimeException(e); }
-     	  catch ( InvocationTargetException e ) { throw new RuntimeException(e); } 
+    	} catch ( NoSuchMethodException e ) { 
+    		// use default shadow implementation
+    		onMeasure(widthMeasureSpec, heightMeasureSpec);
+    	} catch ( IllegalAccessException e ) { 
+    		throw new RuntimeException(e);
+    	} catch ( InvocationTargetException e ) { 
+    		throw new RuntimeException(e); 
+    	} 
     }
     
     @Implementation
