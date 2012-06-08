@@ -103,8 +103,8 @@ public class ShadowHandler {
             @Override
             public void run() {
                 if (messages.contains(msg)) {
-                    routeMessage(msg);
                     messages.remove(msg);
+                    routeMessage(msg);
                 }
             }
         }, delayMillis);
@@ -139,8 +139,8 @@ public class ShadowHandler {
             @Override
             public void run() {
                 if (messages.contains(msg)) {
-                    routeMessage(msg);
                     messages.remove(msg);
+                    routeMessage(msg);
                 }
             }
         });

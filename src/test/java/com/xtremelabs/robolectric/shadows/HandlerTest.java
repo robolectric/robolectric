@@ -370,6 +370,19 @@ public class HandlerTest {
         assertThat(m2.getWhen(), equalTo(16000l));
     }
 
+    @Test
+    public void shouldRemoveMessageFromQueueBeforeDispatching() throws Exception {
+        Handler h = new Handler(Looper.myLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                assertFalse(hasMessages(0));
+            }
+        };
+        h.sendEmptyMessage(0);
+        h.sendMessageAtFrontOfQueue(h.obtainMessage());
+    }
+
+
     private class Say implements Runnable {
         private String event;
 
