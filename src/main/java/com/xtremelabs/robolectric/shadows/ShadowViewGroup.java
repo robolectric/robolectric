@@ -1,17 +1,16 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.Animation.AnimationListener;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.animation.Animation.AnimationListener;
-
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow for {@code ViewGroup} that simulates its implementation
@@ -20,7 +19,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 @Implements(ViewGroup.class)
 public class ShadowViewGroup extends ShadowView {
     private List<View> children = new ArrayList<View>();
-	private AnimationListener animListener;
+    private AnimationListener animListener;
 
     @Implementation
     @Override
@@ -37,14 +36,14 @@ public class ShadowViewGroup extends ShadowView {
         }
         return null;
     }
-    
+
     @Implementation
     @Override
     public View findViewWithTag(Object obj) {
         if (obj.equals(this.getTag())) {
             return realView;
         }
-        
+
         for (View child : children) {
             View found = child.findViewWithTag(obj);
             if (found != null) {
@@ -57,7 +56,8 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public void addView(View child) {
-        ((ViewGroup)realView).addView(child, -1);
+        ((ViewGroup) realView).addView(child, -1);
+        setChildLayoutParams(child);
     }
 
     @Implementation
@@ -68,20 +68,29 @@ public class ShadowViewGroup extends ShadowView {
             children.add(index, child);
         }
         shadowOf(child).parent = this;
+        setChildLayoutParams(child);
     }
+
+    protected void setChildLayoutParams(View child) {
+        shadowOf(child).setLayoutParams(new ViewGroup.LayoutParams(0, 0));
+    }
+
     @Implementation
     public void addView(View child, int width, int height) {
-        ((ViewGroup)realView).addView(child, -1);
+        ((ViewGroup) realView).addView(child, -1);
+        setChildLayoutParams(child);
     }
 
     @Implementation
     public void addView(View child, ViewGroup.LayoutParams params) {
-        ((ViewGroup)realView).addView(child, -1);
+        ((ViewGroup) realView).addView(child, -1);
+        setChildLayoutParams(child);
     }
 
     @Implementation
     public void addView(View child, int index, ViewGroup.LayoutParams params) {
-        ((ViewGroup)realView).addView(child, index);
+        ((ViewGroup) realView).addView(child, index);
+        setChildLayoutParams(child);
     }
 
     @Implementation
@@ -126,7 +135,8 @@ public class ShadowViewGroup extends ShadowView {
         shadowOf(children.remove(position)).parent = null;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public boolean hasFocus() {
         if (super.hasFocus()) return true;
 
@@ -175,7 +185,8 @@ public class ShadowViewGroup extends ShadowView {
     /**
      * Non-Android method that dumps the state of this {@code ViewGroup} to {@code System.out}
      */
-    @Override public void dump(PrintStream out, int indent) {
+    @Override
+    public void dump(PrintStream out, int indent) {
         dumpFirstPart(out, indent);
         if (children.size() > 0) {
             out.println(">");
@@ -190,18 +201,18 @@ public class ShadowViewGroup extends ShadowView {
             out.println("/>");
         }
     }
-    
+
     @Implementation
-    public void setLayoutAnimationListener( AnimationListener listener ) {
-    	animListener = listener;
-    }
-    
-    @Implementation
-    public AnimationListener getLayoutAnimationListener() {
-    	return animListener;
+    public void setLayoutAnimationListener(AnimationListener listener) {
+        animListener = listener;
     }
 
-    private boolean isValidIndex(int i){
+    @Implementation
+    public AnimationListener getLayoutAnimationListener() {
+        return animListener;
+    }
+
+    private boolean isValidIndex(int i) {
         return i >= 0 && i < children.size();
     }
 }

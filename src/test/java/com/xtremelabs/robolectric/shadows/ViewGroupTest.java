@@ -19,8 +19,7 @@ import java.io.File;
 import java.io.PrintStream;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -36,7 +35,8 @@ public class ViewGroupTest {
     private View child3a;
     private View child3b;
 
-    @Before public void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         Application context = new Application();
         ShadowApplication.bind(context, new ResourceLoader(10, R.class, (File) null, null));
 
@@ -63,7 +63,7 @@ public class ViewGroupTest {
     public void tearDown() throws Exception {
         System.setProperty("line.separator", defaultLineSeparator);
     }
-    
+
     @Test
     public void removeNullView_doesNothing() {
         root.removeView(null);
@@ -71,19 +71,24 @@ public class ViewGroupTest {
 
     @Test
     public void testLayoutAnimationListener() {
-    	assertThat( root.getLayoutAnimationListener(), nullValue() );
-    	root.setLayoutAnimationListener( new AnimationListener() {
-    		 @Override
-    		 public void onAnimationEnd( Animation a ) { }
-    		 @Override
-    		 public void onAnimationRepeat(Animation a ) { }
-    		 @Override
-    		 public void onAnimationStart(Animation a ) { }
-    	 });
-    	 
-    	assertThat( root.getLayoutAnimationListener(), notNullValue() ); 
+        assertThat(root.getLayoutAnimationListener(), nullValue());
+        root.setLayoutAnimationListener(new AnimationListener() {
+            @Override
+            public void onAnimationEnd(Animation a) {
+            }
+
+            @Override
+            public void onAnimationRepeat(Animation a) {
+            }
+
+            @Override
+            public void onAnimationStart(Animation a) {
+            }
+        });
+
+        assertThat(root.getLayoutAnimationListener(), notNullValue());
     }
-    
+
     @Test
     public void testRemoveChildAt() throws Exception {
         root.removeViewAt(1);
@@ -105,67 +110,67 @@ public class ViewGroupTest {
         assertThat(root.getChildAt(1), sameInstance((View) child3));
         assertThat(root.getChildAt(2), sameInstance(child2));
     }
-    
+
     @Test
     public void shouldfindViewWithTag() {
-    	 root.removeAllViews();
-    	 String tag1 = "tag1";
-    	 String tag2 = "tag2";
-    	 String tag3 = "tag3";
-    	 child1.setTag(tag1);
-    	 child2.setTag(tag2);
-    	 child3.setTag(tag3);
-         root.addView(child1);
-         root.addView(child2);
-         root.addView(child3, 1);
-         assertThat(root.findViewWithTag("tag1"), sameInstance(child1));
-         assertThat(root.findViewWithTag("tag2"), sameInstance((View) child2));
-         assertThat((ViewGroup)root.findViewWithTag("tag3"), sameInstance(child3));
+        root.removeAllViews();
+        String tag1 = "tag1";
+        String tag2 = "tag2";
+        String tag3 = "tag3";
+        child1.setTag(tag1);
+        child2.setTag(tag2);
+        child3.setTag(tag3);
+        root.addView(child1);
+        root.addView(child2);
+        root.addView(child3, 1);
+        assertThat(root.findViewWithTag("tag1"), sameInstance(child1));
+        assertThat(root.findViewWithTag("tag2"), sameInstance((View) child2));
+        assertThat((ViewGroup) root.findViewWithTag("tag3"), sameInstance(child3));
     }
-    
+
     @Test
     public void shouldNotfindViewWithTagReturnNull() {
-    	 root.removeAllViews();
-    	 String tag1 = "tag1";
-    	 String tag2 = "tag2";
-    	 String tag3 = "tag3";
-    	 child1.setTag(tag1);
-    	 child2.setTag(tag2);
-    	 child3.setTag(tag3);
-         root.addView(child1);
-         root.addView(child2);
-         root.addView(child3, 1);
-         assertThat(root.findViewWithTag("tag21"), equalTo(null));
-         assertThat((ViewGroup)root.findViewWithTag("tag23"), equalTo(null));
+        root.removeAllViews();
+        String tag1 = "tag1";
+        String tag2 = "tag2";
+        String tag3 = "tag3";
+        child1.setTag(tag1);
+        child2.setTag(tag2);
+        child3.setTag(tag3);
+        root.addView(child1);
+        root.addView(child2);
+        root.addView(child3, 1);
+        assertThat(root.findViewWithTag("tag21"), equalTo(null));
+        assertThat((ViewGroup) root.findViewWithTag("tag23"), equalTo(null));
     }
-    
+
     @Test
     public void shouldfindViewWithTagFromCorrectViewGroup() {
-    	 root.removeAllViews();
-    	 String tag1 = "tag1";
-    	 String tag2 = "tag2";
-    	 String tag3 = "tag3";
-    	 child1.setTag(tag1);
-    	 child2.setTag(tag2);
-    	 child3.setTag(tag3);
-         root.addView(child1);
-         root.addView(child2);
-         root.addView(child3);
-         
-         child3a.setTag(tag1);
-         child3b.setTag(tag2);
-         
-         //can find views by tag from root
-         assertThat(root.findViewWithTag("tag1"), sameInstance(child1));
-         assertThat(root.findViewWithTag("tag2"), sameInstance((View) child2));
-         assertThat((ViewGroup)root.findViewWithTag("tag3"), sameInstance(child3));
-         
-         //can find views by tag from child3
-         assertThat(child3.findViewWithTag("tag1"), sameInstance(child3a));
-         assertThat(child3.findViewWithTag("tag2"), sameInstance(child3b));
+        root.removeAllViews();
+        String tag1 = "tag1";
+        String tag2 = "tag2";
+        String tag3 = "tag3";
+        child1.setTag(tag1);
+        child2.setTag(tag2);
+        child3.setTag(tag3);
+        root.addView(child1);
+        root.addView(child2);
+        root.addView(child3);
+
+        child3a.setTag(tag1);
+        child3b.setTag(tag2);
+
+        //can find views by tag from root
+        assertThat(root.findViewWithTag("tag1"), sameInstance(child1));
+        assertThat(root.findViewWithTag("tag2"), sameInstance((View) child2));
+        assertThat((ViewGroup) root.findViewWithTag("tag3"), sameInstance(child3));
+
+        //can find views by tag from child3
+        assertThat(child3.findViewWithTag("tag1"), sameInstance(child3a));
+        assertThat(child3.findViewWithTag("tag2"), sameInstance(child3b));
     }
-    
-    
+
+
     @Test
     public void hasFocus_shouldReturnTrueIfAnyChildHasFocus() throws Exception {
         assertFalse(root.hasFocus());
@@ -223,5 +228,11 @@ public class ViewGroupTest {
         assertThat(root.getChildAt(13), nullValue());
         assertThat(root.getChildAt(3), nullValue());
         assertThat(root.getChildAt(-1), nullValue());
+    }
+
+    @Test
+    public void layoutParams_shouldBeViewGroupLayoutParams() {
+        assertThat(child1.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
+        assertThat(child1.getLayoutParams(), instanceOf(ViewGroup.LayoutParams.class));
     }
 }

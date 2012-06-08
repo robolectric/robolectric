@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.view.View;
 import android.widget.AbsoluteLayout;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -9,7 +10,8 @@ import com.xtremelabs.robolectric.internal.RealObject;
 public class ShadowAbsoluteLayout extends ShadowViewGroup {
     @Implements(AbsoluteLayout.LayoutParams.class)
     public static class ShadowLayoutParams {
-        @RealObject AbsoluteLayout.LayoutParams realLayoutParams;
+        @RealObject
+        AbsoluteLayout.LayoutParams realLayoutParams;
 
         public void __constructor__(int width, int height, int x, int y) {
             realLayoutParams.width = width;
@@ -17,5 +19,10 @@ public class ShadowAbsoluteLayout extends ShadowViewGroup {
             realLayoutParams.x = x;
             realLayoutParams.y = y;
         }
+    }
+
+    @Override
+    protected void setChildLayoutParams(View child) {
+        child.setLayoutParams(new AbsoluteLayout.LayoutParams(0, 0, 0, 0));
     }
 }
