@@ -109,6 +109,26 @@ public class BundleTest {
     }
 
     @Test
+    public void testRemove() {
+        bundle.putFloat("foo", 5f);
+        bundle.putFloat("foo2", 5f);
+
+        bundle.remove("foo");
+
+        assertFalse(bundle.containsKey("foo"));
+        assertTrue(bundle.containsKey("foo2"));
+    }
+
+    @Test
+    public void testClear() {
+        bundle.putFloat("foo", 5f);
+
+        bundle.clear();
+
+        assertEquals(0, bundle.size());
+    }
+
+    @Test
     public void testIsEmpty() {
         assertTrue(bundle.isEmpty());
         bundle.putBoolean("foo", true);

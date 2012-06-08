@@ -24,6 +24,16 @@ public class ShadowBundle {
     }
 
     @Implementation
+    public void clear() {
+        map.clear();
+    }
+
+    @Implementation
+    public void remove(String key) {
+        map.remove(key);
+    }
+
+    @Implementation
     public Object get(String key) {
         return map.get(key);
     }
