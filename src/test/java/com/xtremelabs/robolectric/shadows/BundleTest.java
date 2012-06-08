@@ -80,6 +80,35 @@ public class BundleTest {
     }
 
     @Test
+    public void testGetOfWrongType() {
+        bundle.putFloat("foo", 5f);
+        assertEquals(0, bundle.getChar("foo"));
+        assertEquals(null, bundle.getCharArray("foo"));
+        assertEquals(0, bundle.getInt("foo"));
+        assertEquals(null, bundle.getIntArray("foo"));
+        assertEquals(null, bundle.getIntegerArrayList("foo"));
+        assertEquals(0, bundle.getShort("foo"));
+        assertEquals(null, bundle.getShortArray("foo"));
+        assertEquals(false, bundle.getBoolean("foo"));
+        assertEquals(null, bundle.getBooleanArray("foo"));
+        assertEquals(0, bundle.getLong("foo"));
+        assertEquals(null, bundle.getLongArray("foo"));
+        assertEquals(null, bundle.getFloatArray("foo"));
+        assertEquals(0, bundle.getDouble("foo"), 0.005);
+        assertEquals(null, bundle.getDoubleArray("foo"));
+        assertEquals(null, bundle.getString("foo"));
+        assertEquals(null, bundle.getStringArray("foo"));
+        assertEquals(null, bundle.getStringArrayList("foo"));
+        assertEquals(null, bundle.getBundle("foo"));
+        assertEquals(null, bundle.getParcelable("foo"));
+        assertEquals(null, bundle.getParcelableArray("foo"));
+        assertEquals(null, bundle.getParcelableArrayList("foo"));
+
+        bundle.putInt("foo", 1);
+        assertEquals(0, bundle.getFloat("foo"), 0.005f);
+    }
+
+    @Test
     public void testIsEmpty() {
         assertTrue(bundle.isEmpty());
         bundle.putBoolean("foo", true);
