@@ -13,4 +13,9 @@ public class ShadowTypedArray {
     public Resources getResources() {
         return Robolectric.application.getResources();
     }
+
+    @Implementation
+    public int getInt(int index, int defValue) {
+        return defValue;
+    }
 }
