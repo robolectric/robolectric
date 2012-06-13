@@ -11,6 +11,34 @@
     <description>An alternative Android testing framework.</description>
     <url>http://pivotal.github.com/robolectric/</url>
 
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.sourceEncoding>UTF-8</project.reporting.sourceEncoding>
+
+        <!-- Deployment Repository URLs (override in ~/.m2/settings.xml profile) -->
+        <robolectric.repo.id>example-nexus</robolectric.repo.id>
+        <robolectric.repo.url>http://example.com/releases</robolectric.repo.url>
+        <robolectric.snapshot.repo.id>example-nexus</robolectric.snapshot.repo.id>
+        <robolectric.snapshot.repo.url>http://example.com/snapshots</robolectric.snapshot.repo.url>
+    </properties>
+
+    <distributionManagement>
+        <repository>
+            <id>${robolectric.repo.id}</id>
+            <url>${robolectric.repo.url}</url>
+        </repository>
+        <snapshotRepository>
+            <id>${robolectric.snapshot.repo.id}</id>
+            <url>${robolectric.snapshot.repo.url}</url>
+        </snapshotRepository>
+    </distributionManagement>
+
+    <scm>
+        <url>git@github.com:square/robolectric.git</url>
+        <connection>scm:git:git://github.com/square/robolectric.git</connection>
+        <developerConnection>scm:git:git@github.com:square/robolectric.git</developerConnection>
+    </scm>
+
     <dependencies>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -188,12 +216,6 @@
             </plugin>
         </plugins>
     </build>
-
-    <scm>
-        <url>git@github.com:square/robolectric.git</url>
-        <connection>scm:git:git://github.com/square/robolectric.git</connection>
-        <developerConnection>scm:git:git@github.com:square/robolectric.git</developerConnection>
-    </scm>
 
     <licenses>
         <license>
