@@ -125,7 +125,7 @@ public class ResourceLoader {
 				loadPluralsResources( localValueResourceDir, systemValueResourceDir );
 				loadValueResources( localValueResourceDir, systemValueResourceDir );
 				loadDimenResources( localValueResourceDir, systemValueResourceDir );
-				loadIntegerResource( localValueResourceDir, systemResourceDir );
+				loadIntegerResource( localValueResourceDir, systemValueResourceDir );
 				loadViewResources( systemResourceDir, resourceDir );
 				loadMenuResources( resourceDir );
 				loadDrawableResources( resourceDir );
