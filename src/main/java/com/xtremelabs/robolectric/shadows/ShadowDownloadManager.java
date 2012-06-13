@@ -140,6 +140,11 @@ public class ShadowDownloadManager {
 
     private class ResultCursor extends TestCursor {
 
+        private static final int COLUMN_INDEX_LOCAL_FILENAME = 0;
+        private static final int COLUMN_INDEX_DESCRIPTION = 1;
+        private static final int COLUMN_INDEX_REASON = 2;
+        private static final int COLUMN_INDEX_STATUS = 3;
+
         public List<DownloadManager.Request> requests = new ArrayList<DownloadManager.Request>();
         private int positionIndex;
         private boolean closed;
@@ -162,13 +167,13 @@ public class ShadowDownloadManager {
             checkClosed();
 
             if (DownloadManager.COLUMN_LOCAL_FILENAME.equals(columnName)) {
-                return 0;
+                return COLUMN_INDEX_LOCAL_FILENAME;
             } else if (DownloadManager.COLUMN_DESCRIPTION.equals(columnName)) {
-                return 1;
+                return COLUMN_INDEX_DESCRIPTION;
             } else if (DownloadManager.COLUMN_REASON.equals(columnName)) {
-                return 2;
+                return COLUMN_INDEX_REASON;
             } else if (DownloadManager.COLUMN_STATUS.equals(columnName)) {
-                return 3;
+                return COLUMN_INDEX_STATUS;
             }
 
             return 0;
@@ -180,15 +185,20 @@ public class ShadowDownloadManager {
         }
 
         @Override
+        public boolean isClosed() {
+            return closed;
+        }
+
+        @Override
         public String getString(int columnIndex) {
             checkClosed();
             ShadowRequest request = shadowOf_(requests.get(positionIndex));
             switch (columnIndex) {
-                case 0:
+                case COLUMN_INDEX_LOCAL_FILENAME:
                     return "local file name not implemented";
-                case 1:
+                case COLUMN_INDEX_DESCRIPTION:
                     return request.getDescription().toString();
-                case 2:
+                case COLUMN_INDEX_REASON:
                     return "reason not implemented";
             }
 
@@ -199,7 +209,7 @@ public class ShadowDownloadManager {
         public int getInt(int columnIndex) {
             checkClosed();
             ShadowRequest request = shadowOf_(requests.get(positionIndex));
-            if (columnIndex == 3) {
+            if (columnIndex == COLUMN_INDEX_STATUS) {
                 return request.getStatus();
             }
             return 0;
