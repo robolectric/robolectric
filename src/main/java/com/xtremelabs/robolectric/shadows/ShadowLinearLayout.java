@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -13,5 +14,10 @@ public class ShadowLinearLayout extends ShadowViewGroup {
     @Override
     public ViewGroup.LayoutParams getLayoutParams() {
         return layoutParams;
+    }
+
+    @Override
+    protected void setChildLayoutParams(View child) {
+        child.setLayoutParams(new LinearLayout.LayoutParams(0, 0));
     }
 }
