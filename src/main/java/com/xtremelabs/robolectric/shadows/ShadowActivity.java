@@ -376,17 +376,10 @@ public class ShadowActivity extends ShadowContextWrapper {
         if (requestCode == null) {
             throw new RuntimeException("No intent matches " + requestIntent + " among " + intentRequestCodeMap.keySet());
         }
-        try {
-            Method method = Activity.class.getDeclaredMethod("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class);
-            method.setAccessible(true);
-            method.invoke(realActivity, requestCode, resultCode, resultIntent);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
+
+        final ActivityInvoker invoker = new ActivityInvoker();
+        invoker.call("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class)
+            .with(requestCode, resultCode, resultIntent);
     }
 
     @Implementation
@@ -417,26 +410,15 @@ public class ShadowActivity extends ShadowContextWrapper {
         dialog = dialogForId.get(id);
 
         if (dialog == null) {
-            try {
-                Method method = Activity.class.getDeclaredMethod("onCreateDialog", Integer.TYPE);
-                method.setAccessible(true);
-                dialog = (Dialog) method.invoke(realActivity, id);
+            final ActivityInvoker invoker = new ActivityInvoker();
+            dialog = (Dialog) invoker.call("onCreateDialog", Integer.TYPE).with(id);
 
-                if (bundle == null) {
-                    method = Activity.class.getDeclaredMethod("onPrepareDialog", Integer.TYPE, Dialog.class);
-                    method.setAccessible(true);
-                    method.invoke(realActivity, id, dialog);
-                } else {
-                    method = Activity.class.getDeclaredMethod("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class);
-                    method.setAccessible(true);
-                    method.invoke(realActivity, id, dialog, bundle);
-                }
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
+            if (bundle == null) {
+                invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class)
+                    .with(id, dialog);
+            } else {
+                invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class)
+                    .with(id, dialog, bundle);
             }
 
             dialogForId.put(id, dialog);
@@ -471,51 +453,61 @@ public class ShadowActivity extends ShadowContextWrapper {
         return dialogForId.get(dialogId);
     }
 
+    public void create() {
+        final ActivityInvoker invoker = new ActivityInvoker();
+
+        final Bundle noInstanceState = null;
+        invoker.call("onCreate", Bundle.class).with(noInstanceState);
+        invoker.call("onStart").withNothing();
+        invoker.call("onPostCreate", Bundle.class).with(noInstanceState);
+        invoker.call("onResume").withNothing();
+    }
+
     public void recreate() {
-        try {
-            Bundle outState = new Bundle();
-            Method method = Activity.class.getDeclaredMethod("onSaveInstanceState", Bundle.class);
-            method.setAccessible(true);
-            method.invoke(realActivity, outState);
+        Bundle outState = new Bundle();
+        final ActivityInvoker invoker = new ActivityInvoker();
 
-            method = Activity.class.getDeclaredMethod("onPause");
-            method.setAccessible(true);
-            method.invoke(realActivity);
+        invoker.call("onSaveInstanceState", Bundle.class).with(outState);
+        invoker.call("onPause").withNothing();
+        invoker.call("onStop").withNothing();
 
-            method = Activity.class.getDeclaredMethod("onStop");
-            method.setAccessible(true);
-            method.invoke(realActivity);
+        Object nonConfigInstance = invoker.call("onRetainNonConfigurationInstance").withNothing();
+        setLastNonConfigurationInstance(nonConfigInstance);
 
-            method = Activity.class.getDeclaredMethod("onRetainNonConfigurationInstance");
-            method.setAccessible(true);
-            Object nonConfigInstance = method.invoke(realActivity);
-            setLastNonConfigurationInstance(nonConfigInstance);
+        invoker.call("onDestroy").withNothing();
+        invoker.call("onCreate", Bundle.class).with(outState);
+        invoker.call("onStart").withNothing();
+        invoker.call("onRestoreInstanceState", Bundle.class).with(outState);
+        invoker.call("onResume").withNothing();
+    }
 
-            method = Activity.class.getDeclaredMethod("onDestroy");
-            method.setAccessible(true);
-            method.invoke(realActivity);
+    private final class ActivityInvoker {
+        private Method method;
 
-            method = Activity.class.getDeclaredMethod("onCreate", Bundle.class);
-            method.setAccessible(true);
-            method.invoke(realActivity, outState);
+        public ActivityInvoker call(final String methodName, final Class ...argumentClasses) {
+            try {
+                method = Activity.class.getDeclaredMethod(methodName, argumentClasses);
+                method.setAccessible(true);
+                return this;
+            } catch(NoSuchMethodException e) {
+                throw new RuntimeException(e);
+            }
+        }
 
-            method = Activity.class.getDeclaredMethod("onStart");
-            method.setAccessible(true);
-            method.invoke(realActivity);
+        public Object withNothing() {
+            return with();
+        }
 
-            method = Activity.class.getDeclaredMethod("onRestoreInstanceState", Bundle.class);
-            method.setAccessible(true);
-            method.invoke(realActivity, outState);
-
-            method = Activity.class.getDeclaredMethod("onResume");
-            method.setAccessible(true);
-            method.invoke(realActivity);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+        public Object with(final Object ...parameters) {
+            try {
+                return method.invoke(realActivity, parameters);
+            } catch(IllegalAccessException e) {
+                throw new RuntimeException(e);
+            } catch(IllegalArgumentException e) {
+                throw new RuntimeException(e);
+            } catch(InvocationTargetException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 }
