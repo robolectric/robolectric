@@ -11,4 +11,9 @@ public class ShadowPhoneNumberUtils {
     public static java.lang.String formatNumber(java.lang.String source) {
         return source + "-formatted";
     }
+
+    @Implementation
+    public static java.lang.String stripSeparators(java.lang.String source) {
+        return source + "-stripped";
+    }
 }
