@@ -1,24 +1,29 @@
-bin/
-out/
-.idea/workspace.xml
-.idea/libraries/
-.idea/modules.xml
-.idea/vcs.xml
-.idea/compiler.xml
-.idea/misc.xml
-.idea/.name
-robolectric.iml
-tmp/
-target/
-pages
-.DS_Store
-local.properties
-.project
+# Eclipse
 .classpath
+.project
 .settings
-*.iws
+eclipsebin
+
+# Ant
+bin
+gen
+build
+out
+lib
+
+# Maven
+target
+pom.xml.*
+release.properties
+
+# IntelliJ
+.idea
 *.iml
+*.iws
 *.ipr
-*.orig
-*~
-\#*\#
+classes
+
+# Mac
+.DS_Store
+
+tmp
