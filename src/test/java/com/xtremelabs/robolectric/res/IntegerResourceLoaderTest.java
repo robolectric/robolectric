@@ -15,20 +15,21 @@ public class IntegerResourceLoaderTest {
 
 	@Before
 	public void setup() throws Exception {
-		ResourceExtractor extractor = new ResourceExtractor();
-		extractor.addLocalRClass( R.class );
-		extractor.addSystemRClass( android.R.class );
-		
-		resourceLoader = new IntegerResourceLoader( extractor );
+        ResourceExtractor extractor = new ResourceExtractor();
+        extractor.addLocalRClass( R.class );
+        extractor.addSystemRClass( android.R.class );
+
+        resourceLoader = new IntegerResourceLoader( extractor );
         DocumentLoader documentLoader = new DocumentLoader(resourceLoader);
 
         documentLoader.loadResourceXmlDir(resourceFile("res", "values"));
-	}
+    }
 
 	@Test
 	public void testIntegersAreResolved() {
-
 		assertThat( resourceLoader.getValue( R.integer.test_integer1 ), equalTo( 2000 ) );
 		assertThat( resourceLoader.getValue( R.integer.test_integer2 ), equalTo( 9 ) );
-	}
+        assertThat( resourceLoader.getValue( R.integer.test_large_hex), equalTo( 0xFFFF0000 ) );
+    }
+
 }

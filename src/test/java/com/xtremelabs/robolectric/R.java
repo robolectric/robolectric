@@ -155,5 +155,6 @@ public final class R {
         public static final int test_non_integer = nextId++;
         public static final int test_integer1 = nextId++;
         public static final int test_integer2 = nextId++;
+        public static final int test_large_hex = nextId++;
     }
 }
