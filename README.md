@@ -1,10 +1,21 @@
-<a name="README">[Robolectric](http://pivotal.github.com/robolectric/index.html)</a>
-=======
+Robolectric
+===========
 
-**An Android Testing Framework**
+**Note** This is a fork of Pivotal's Robolectric which is NOT compatible.
+Please see [their project][1] for the canonical source.
 
-Robolectric can be built using either Maven or Ant. Both Eclipse (with the M2Eclipse plug-in) and
-IntelliJ can import the pom.xml file and will automatically generate their project files from it.
 
-For more information about how to use Robolectric on your project, extend its functionality, and join the community of
-contributors, please see: [http://pivotal.github.com/robolectric/index.html](http://pivotal.github.com/robolectric/index.html)
+
+Compilation
+-----------
+
+Maven version 3 or newer is required.
+
+```
+mvn clean package
+```
+
+
+
+
+ [1]: http://pivotal.github.com/robolectric
