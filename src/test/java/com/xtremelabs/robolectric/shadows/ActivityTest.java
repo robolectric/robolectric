@@ -393,6 +393,21 @@ public class ActivityTest {
     }
 
     @Test
+      public void createGoesThroughFullLifeCycle() throws Exception {
+        TestActivity activity = new TestActivity();
+
+        shadowOf(activity).create();
+
+        activity.transcript.assertEventsSoFar(
+                "onCreate",
+                "onStart",
+                "onPostCreate",
+                "onResume"
+        );
+    }
+
+
+    @Test
     public void recreateGoesThroughFullLifeCycle() throws Exception {
         TestActivity activity = new TestActivity();
 
@@ -418,8 +433,11 @@ public class ActivityTest {
     private static class TestActivity extends Activity {
         Transcript transcript = new Transcript();
 
+        private boolean isRecreating = false;
+
         @Override
         public void onSaveInstanceState(Bundle outState) {
+            isRecreating = true;
             transcript.add("onSaveInstanceState");
             outState.putString("TestActivityKey", "TestActivityValue");
             super.onSaveInstanceState(outState);
@@ -454,8 +472,12 @@ public class ActivityTest {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             transcript.add("onCreate");
-            assertTrue(savedInstanceState.containsKey("TestActivityKey"));
-            assertEquals("TestActivityValue", savedInstanceState.getString("TestActivityKey"));
+
+            if( isRecreating ) {
+                assertTrue(savedInstanceState.containsKey("TestActivityKey"));
+                assertEquals("TestActivityValue", savedInstanceState.getString("TestActivityKey"));
+            }
+
             super.onCreate(savedInstanceState);
         }
 
@@ -463,6 +485,12 @@ public class ActivityTest {
         public void onStart() {
             transcript.add("onStart");
             super.onStart();
+        }
+
+        @Override
+        public void onPostCreate(Bundle savedInstanceState) {
+            transcript.add("onPostCreate");
+            super.onPostCreate(savedInstanceState);
         }
 
         @Override
