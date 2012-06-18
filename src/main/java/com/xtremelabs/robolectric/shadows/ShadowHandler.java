@@ -49,14 +49,12 @@ public class ShadowHandler {
 
     @Implementation
     public boolean postDelayed(Runnable r, long delayMillis) {
-        shadowOf(looper).post(r, delayMillis);
-        return true;
+        return shadowOf(looper).post(r, delayMillis);
     }
 
     @Implementation
     public final boolean postAtFrontOfQueue(Runnable runnable) {
-        shadowOf(looper).postAtFrontOfQueue(runnable);
-        return true;
+        return shadowOf(looper).postAtFrontOfQueue(runnable);
     }
 
     @Implementation
