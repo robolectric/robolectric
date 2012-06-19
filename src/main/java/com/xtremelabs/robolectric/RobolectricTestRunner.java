@@ -28,9 +28,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import java.io.*;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,10 +37,10 @@ import java.util.Map;
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
-  	
+
     /** Instrument detector. We use it to check whether the current instance is instrumented. */
   	private static InstrumentDetector instrumentDetector = InstrumentDetector.DEFAULT;
-  	
+
     private static RobolectricClassLoader defaultLoader;
     private static Map<RobolectricConfig, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RobolectricConfig, ResourceLoader>();
 
@@ -65,7 +63,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     public static void setInstrumentDetector(final InstrumentDetector detector) {
       instrumentDetector = detector;
     }
-    
+
     public static void setDefaultLoader(Loader robolectricClassLoader) {
     	//used by the RoboSpecs project to allow for mixed scala\java tests to be run with Maven Surefire (see the RoboSpecs project on github)
         if (defaultLoader == null) {
@@ -256,19 +254,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         this.robolectricConfig = robolectricConfig;
     }
 
+    /** @deprecated use {@link Robolectric.Reflection#setFinalStaticField(Class, String, Object)} */
     public static void setStaticValue(Class<?> clazz, String fieldName, Object value) {
-        try {
-            Field field = clazz.getField(fieldName);
-            field.setAccessible(true);
-
-            Field modifiersField = Field.class.getDeclaredField("modifiers");
-            modifiersField.setAccessible(true);
-            modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
-
-            field.set(null, value);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        Robolectric.Reflection.setFinalStaticField(clazz, fieldName, value);
     }
 
     protected void delegateLoadingOf(final String className) {
@@ -556,15 +544,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 	    InstrumentDetector DEFAULT = new InstrumentDetector() {
 	        @Override
 	        public boolean isInstrumented() {
-	            return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(RobolectricClassLoader.class.getName()); 
+	            return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(RobolectricClassLoader.class.getName());
 	        }
 	    };
 
 	    /**
-	     * @return true if current instance is already instrumented 
+	     * @return true if current instance is already instrumented
 	     */
 	    boolean isInstrumented();
 
 	}
-	
+
 }
