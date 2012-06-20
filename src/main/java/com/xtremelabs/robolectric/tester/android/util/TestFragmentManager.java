@@ -1,6 +1,8 @@
 package com.xtremelabs.robolectric.tester.android.util;
 
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.support.v4.app.*;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,6 +25,7 @@ public class TestFragmentManager extends FragmentManager {
     private Map<String, Fragment> fragmentsByTag = new HashMap<String, Fragment>();
     private FragmentActivity activity;
     private List<TestFragmentTransaction> transactions = new ArrayList<TestFragmentTransaction>();
+    private List<Runnable> transactionsToRunLater = new ArrayList<Runnable>();
 
     public TestFragmentManager(FragmentActivity activity) {
         this.activity = activity;
@@ -39,6 +42,13 @@ public class TestFragmentManager extends FragmentManager {
 
     @Override
     public boolean executePendingTransactions() {
+        if (transactionsToRunLater.size() > 0) {
+            for (Runnable runnable : new ArrayList<Runnable>(transactionsToRunLater)) {
+                runnable.run();
+                shadowOf(Looper.getMainLooper()).getScheduler().remove(runnable);
+            }
+            return true;
+        }
         return false;
     }
 
@@ -185,5 +195,20 @@ public class TestFragmentManager extends FragmentManager {
                 ((DialogFragment)fragment).dismiss();
             }
         }
+        if (t.isAttaching()) {
+            shadowOf(t.getFragmentToAttach()).setAttached(true);
+        }
+    }
+
+    void commitLater(final TestFragmentTransaction testFragmentTransaction) {
+        Runnable transactionCommit = new Runnable() {
+            @Override
+            public void run() {
+                commitTransaction(testFragmentTransaction);
+                transactionsToRunLater.remove(this);
+            }
+        };
+        transactionsToRunLater.add(transactionCommit);
+        new Handler().post(transactionCommit);
     }
 }

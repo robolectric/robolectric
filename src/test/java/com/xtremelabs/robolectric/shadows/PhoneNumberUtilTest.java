@@ -14,4 +14,10 @@ public class PhoneNumberUtilTest {
     public void testFormatNumber() {
         assertThat(PhoneNumberUtils.formatNumber("12345678901"), equalTo("12345678901-formatted"));
     }
+
+    @Test
+    public void testStripSeparators() {
+        assertThat(PhoneNumberUtils.stripSeparators("12345678901"), equalTo("12345678901-stripped"));
+    }
+        
 }

@@ -18,11 +18,11 @@ import java.util.concurrent.TimeoutException;
 public class ShadowAsyncTask<Params, Progress, Result> {
 
     @RealObject private AsyncTask<Params, Progress, Result> realAsyncTask;
-
+    
     private final FutureTask<Result> future;
     private final BackgroundWorker worker;
     private AsyncTask.Status status = AsyncTask.Status.PENDING;
-
+    
 	public ShadowAsyncTask() {
 		worker = new BackgroundWorker();
 		future = new FutureTask<Result>(worker) {
@@ -87,7 +87,6 @@ public class ShadowAsyncTask<Params, Progress, Result> {
 
         return realAsyncTask;
     }
-
 
     @Implementation
     public AsyncTask.Status getStatus() {

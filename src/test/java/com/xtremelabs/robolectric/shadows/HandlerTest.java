@@ -19,6 +19,9 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @RunWith(WithTestDefaultsRunner.class)
 public class HandlerTest {
     private Transcript transcript;
@@ -339,6 +342,46 @@ public class HandlerTest {
         assertThat(m4.arg2, equalTo(3));
         assertThat(m4.obj, equalTo((Object)"foo"));
     }
+
+    @Test
+    public void shouldSetWhenOnMessage() throws Exception {
+        final List<Message>  msgs = new ArrayList<Message>();
+        Handler h = new Handler(new Handler.Callback() {
+            @Override
+            public boolean handleMessage(Message msg) {
+                msgs.add(msg);
+                return false;
+            }
+        });
+
+        h.sendEmptyMessage(0);
+        h.sendEmptyMessageDelayed(0, 4000l);
+        Robolectric.getUiThreadScheduler().advanceToLastPostedRunnable();
+        h.sendEmptyMessageDelayed(0, 12000l);
+        Robolectric.getUiThreadScheduler().advanceToLastPostedRunnable();
+        assertThat(msgs.size(), equalTo(3));
+
+        Message m0 = msgs.get(0);
+        Message m1 = msgs.get(1);
+        Message m2 = msgs.get(2);
+
+        assertThat(m0.getWhen(), equalTo(0l));
+        assertThat(m1.getWhen(), equalTo(4000l));
+        assertThat(m2.getWhen(), equalTo(16000l));
+    }
+
+    @Test
+    public void shouldRemoveMessageFromQueueBeforeDispatching() throws Exception {
+        Handler h = new Handler(Looper.myLooper()) {
+            @Override
+            public void handleMessage(Message msg) {
+                assertFalse(hasMessages(0));
+            }
+        };
+        h.sendEmptyMessage(0);
+        h.sendMessageAtFrontOfQueue(h.obtainMessage());
+    }
+
 
     private class Say implements Runnable {
         private String event;

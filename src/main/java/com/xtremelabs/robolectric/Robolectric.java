@@ -1,5 +1,16 @@
 package com.xtremelabs.robolectric;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultRequestDirector;
+
+import android.accounts.AccountManager;
 import android.app.*;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
@@ -60,15 +71,6 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultRequestDirector;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
 
 public class Robolectric {
     public static Application application;
@@ -120,6 +122,7 @@ public class Robolectric {
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
                 ShadowAccount.class,
+                ShadowAccountManager.class,
                 ShadowActivity.class,
                 ShadowActivityInfo.class,
                 ShadowActivityGroup.class,
@@ -307,6 +310,7 @@ public class Robolectric {
                 ShadowSQLiteQueryBuilder.class,
                 ShadowSslErrorHandler.class,
                 ShadowStateListDrawable.class,
+                ShadowStatFs.class,
                 ShadowSurfaceView.class,
                 ShadowTabActivity.class,
                 ShadowTabHost.class,
@@ -357,6 +361,7 @@ public class Robolectric {
         ShadowContentResolver.reset();
         ShadowLocalBroadcastManager.reset();
         ShadowMimeTypeMap.reset();
+        ShadowStatFs.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
@@ -371,6 +376,10 @@ public class Robolectric {
         return (ShadowAbsSeekBar) shadowOf_(instance);
     }
 
+    public static ShadowAccountManager shadowOf(AccountManager instance) {
+        return (ShadowAccountManager) shadowOf_(instance);
+    }
+    
     public static ShadowActivity shadowOf(Activity instance) {
         return (ShadowActivity) shadowOf_(instance);
     }
@@ -429,6 +438,11 @@ public class Robolectric {
 
     public static ShadowAssetManager shadowOf(AssetManager instance) {
         return (ShadowAssetManager) Robolectric.shadowOf_(instance);
+    }
+    
+    @SuppressWarnings("rawtypes")
+	public static ShadowAsyncTask shadowOf(AsyncTask instance){
+    	return (ShadowAsyncTask) Robolectric.shadowOf_( instance );
     }
 
     public static ShadowAudioManager shadowOf(AudioManager instance) {
@@ -693,6 +707,10 @@ public class Robolectric {
 
     public static ShadowMenuInflater shadowOf(MenuInflater instance) {
         return (ShadowMenuInflater) shadowOf_(instance);
+    }
+
+    public static ShadowMessage shadowOf(Message instance) {
+        return (ShadowMessage) shadowOf_(instance);
     }
 
     public static ShadowMimeTypeMap shadowOf(MimeTypeMap instance) {

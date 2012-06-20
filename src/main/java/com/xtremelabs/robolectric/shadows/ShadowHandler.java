@@ -3,6 +3,8 @@ package com.xtremelabs.robolectric.shadows;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -47,14 +49,12 @@ public class ShadowHandler {
 
     @Implementation
     public boolean postDelayed(Runnable r, long delayMillis) {
-        shadowOf(looper).post(r, delayMillis);
-        return true;
+        return shadowOf(looper).post(r, delayMillis);
     }
 
     @Implementation
     public final boolean postAtFrontOfQueue(Runnable runnable) {
-        shadowOf(looper).postAtFrontOfQueue(runnable);
-        return true;
+        return shadowOf(looper).postAtFrontOfQueue(runnable);
     }
 
     @Implementation
@@ -95,30 +95,17 @@ public class ShadowHandler {
 
     @Implementation
     public final boolean sendMessageDelayed(final Message msg, long delayMillis) {
+        Robolectric.shadowOf(msg).setWhen(Robolectric.shadowOf(looper).getScheduler().getCurrentTime()+delayMillis);
         messages.add(msg);
         postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (messages.contains(msg)) {
-                    routeMessage(msg);
                     messages.remove(msg);
+                    routeMessage(msg);
                 }
             }
         }, delayMillis);
-        return true;
-    }
-
-    private final boolean sendMessageToFrontDelayed(final Message msg, long delayMillis) {
-        messages.add(0, msg);
-        postAtFrontOfQueue(new Runnable() {
-            @Override
-            public void run() {
-                if (messages.contains(msg)) {
-                    routeMessage(msg);
-                    messages.remove(msg);
-                }
-            }
-        });
         return true;
     }
 
@@ -143,8 +130,19 @@ public class ShadowHandler {
     }
 
     @Implementation
-    public final boolean sendMessageAtFrontOfQueue(Message msg) {
-        return sendMessageToFrontDelayed(msg, 0L);
+    public final boolean sendMessageAtFrontOfQueue(final Message msg) {
+        Robolectric.shadowOf(msg).setWhen(Robolectric.shadowOf(looper).getScheduler().getCurrentTime());
+        messages.add(0, msg);
+        postAtFrontOfQueue(new Runnable() {
+            @Override
+            public void run() {
+                if (messages.contains(msg)) {
+                    messages.remove(msg);
+                    routeMessage(msg);
+                }
+            }
+        });
+        return true;
     }
 
     @Implementation

@@ -1,11 +1,14 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.os.Handler;
+import android.os.HandlerThread;
 import android.os.Looper;
+
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -56,4 +59,43 @@ public class LooperTest {
         assertNotSame(mainLooper, thread1Looper[0]);
     }
 
+    @Test(expected = RuntimeException.class)
+    public void shouldThrowRuntimeExceptionIfTryingToQuitMainLooper() throws Exception {
+        Looper.getMainLooper().quit();
+    }
+
+    @Test
+    public void shouldNotQueueMessagesIfLooperIsQuit() throws Exception {
+        HandlerThread ht = new HandlerThread("test1");
+        ht.start();
+        Looper looper = ht.getLooper();
+        looper.quit();
+        assertTrue(shadowOf(looper).hasQuit());
+        assertFalse(shadowOf(looper).post(new Runnable() {
+            @Override public void run() { }
+        }, 0));
+
+        assertFalse(shadowOf(looper).postAtFrontOfQueue(new Runnable() {
+            @Override
+            public void run() {
+            }
+        }));
+        assertFalse(shadowOf(looper).getScheduler().areAnyRunnable());
+    }
+
+    @Test
+    public void shouldThrowawayRunnableQueueIfLooperQuits() throws Exception {
+        HandlerThread ht = new HandlerThread("test1");
+        ht.start();
+        Looper looper = ht.getLooper();
+        shadowOf(looper).pause();
+        shadowOf(looper).post(new Runnable() {
+            @Override
+            public void run() {
+            }
+        }, 0);
+        looper.quit();
+        assertTrue(shadowOf(looper).hasQuit());
+        assertFalse(shadowOf(looper).getScheduler().areAnyRunnable());
+    }
 }
