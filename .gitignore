@@ -27,3 +27,4 @@ classes
 .DS_Store
 
 tmp
+local.properties
