@@ -107,6 +107,82 @@ public class FragmentTest {
     }
 
     @Test
+    public void testFragmentManagerPopNothing() {
+        DummyFragment fragment = new DummyFragment();
+        ContainerActivity activity = new ContainerActivity();
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+        fragmentManager.beginTransaction().add(24, fragment, "fred").commit();
+
+      assertEmptyBackStack(fragmentManager);
+    }
+
+    private void assertEmptyBackStack(FragmentManager fragmentManager) {
+      assertEquals(0, fragmentManager.getBackStackEntryCount());
+      assertFalse(fragmentManager.popBackStackImmediate());
+      assertFalse(fragmentManager.popBackStackImmediate("fred", 0));
+      assertFalse(fragmentManager.popBackStackImmediate("fred", FragmentManager.POP_BACK_STACK_INCLUSIVE));
+    }
+
+    @Test
+    public void testFragmentManagerPopSimple() {
+        ContainerActivity activity = new ContainerActivity();
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+        fragmentManager.beginTransaction().add(24, new DummyFragment(), "fred").addToBackStack("fred").commit();
+
+        assertEquals(1, fragmentManager.getBackStackEntryCount());
+        assertTrue(fragmentManager.popBackStackImmediate());
+
+        assertEmptyBackStack(fragmentManager);
+    }
+
+    @Test
+    public void testFragmentManagerPopByName() {
+        ContainerActivity activity = new ContainerActivity();
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+        assertEquals(0,
+            fragmentManager.beginTransaction().add(24, new DummyFragment(), "fred").addToBackStack("fred").commit());
+        assertEquals(1,
+            fragmentManager.beginTransaction().add(24, new DummyFragment(), "barney").addToBackStack("barney").commit());
+        assertEquals(2,
+            fragmentManager.beginTransaction().add(24, new DummyFragment(), "wilma").addToBackStack("wilma").commit());
+
+        assertEquals(3, fragmentManager.getBackStackEntryCount());
+        assertTrue(fragmentManager.popBackStackImmediate("fred", 0));
+
+        assertEquals(1, fragmentManager.getBackStackEntryCount());
+    }
+
+    @Test
+    public void testFragmentManagerPopByNameInclusive() {
+        ContainerActivity activity = new ContainerActivity();
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+        assertEquals(0,
+            fragmentManager.beginTransaction().add(24, new DummyFragment(), "fred").addToBackStack("fred").commit());
+        assertEquals(1,
+            fragmentManager.beginTransaction().add(24, new DummyFragment(), "barney").addToBackStack("barney").commit());
+        assertEquals(2,
+            fragmentManager.beginTransaction().add(24, new DummyFragment(), "wilma").addToBackStack("wilma").commit());
+
+        assertEquals(3, fragmentManager.getBackStackEntryCount());
+        assertTrue(fragmentManager.popBackStackImmediate("fred", FragmentManager.POP_BACK_STACK_INCLUSIVE));
+
+        assertEmptyBackStack(fragmentManager);
+    }
+
+    @Test
+    public void testFragmentManagerGetBackStackEntry() {
+        ContainerActivity activity = new ContainerActivity();
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+        fragmentManager.beginTransaction().add(24, new DummyFragment(), "fred").addToBackStack("fred").commit();
+        fragmentManager.beginTransaction().add(24, new DummyFragment(), "barney").addToBackStack("barney").commit();
+        fragmentManager.beginTransaction().add(24, new DummyFragment(), "wilma").addToBackStack("wilma").commit();
+
+        assertEquals("wilma", fragmentManager.getBackStackEntryAt(2).getName());
+        assertEquals("barney", fragmentManager.getBackStackEntryAt(1).getName());
+        assertEquals("fred", fragmentManager.getBackStackEntryAt(0).getName());
+    }
+
+    @Test
     public void testVisibleAndAdded() throws Exception {
         DummyFragment fragment = new DummyFragment();
         assertFalse(fragment.isAdded());
