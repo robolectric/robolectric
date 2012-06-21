@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -212,6 +213,27 @@ public class FragmentTest {
         assertSame(fragmentTarget, fragment2.getTargetFragment());
     }
 
+    @Test
+    public void testReplaceFragmentOnDestroyedActivity() throws Exception {
+        DummyHeadlessFragment fragment = new DummyHeadlessFragment();
+        ContainerActivity activity = new ContainerActivity();
+        activity.destroy();
+        FragmentTransaction transaction = activity.getSupportFragmentManager().beginTransaction().add(fragment, null);
+        try {
+            transaction.commit();
+            fail("Should not be able to commit fragment on destroyed activity");
+        } catch (IllegalStateException e) {
+            // Expected.
+        }
+
+        try {
+            transaction.commitAllowingStateLoss();
+            fail("Should not be able to commit fragment on destroyed activity");
+        } catch (IllegalStateException e) {
+            // Expected.
+        }
+    }
+
     private void startFragment(DummyFragment fragment) {
         ContainerActivity containerActivity = new ContainerActivity();
         startFragment(containerActivity, fragment);
@@ -281,6 +303,8 @@ public class FragmentTest {
     }
 
     private static class ContainerActivity extends FragmentActivity {
-
+        public void destroy() {
+            onDestroy();
+        }
     }
 }
