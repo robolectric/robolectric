@@ -25,19 +25,26 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowFragmentActivity extends ShadowActivity {
 
     FragmentManager fragmentManager = new FragmentManagerImpl();
+    private boolean destroyed;
 
     @Implementation
     public FragmentManager getSupportFragmentManager() {
         return fragmentManager;
     }
 
+    @Override @Implementation
+    public void onDestroy() {
+        super.onDestroy();
+        destroyed = true;
+    }
+
     private class FragmentManagerImpl extends FragmentManager {
         Map<String, Fragment> tagLookup = new HashMap<String, Fragment>();
         Map<Integer, Fragment> intLookup = new HashMap<Integer, Fragment>();
 
-      Stack<BackStackEntry> backStack = new Stack<BackStackEntry>();
+        Stack<BackStackEntry> backStack = new Stack<BackStackEntry>();
 
-      @Override
+        @Override
         public FragmentTransaction beginTransaction() {
             return new FragmentTransactionImpl();
         }
@@ -76,14 +83,14 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
         @Override
         public boolean popBackStackImmediate(String s, int flags) {
-            for (int i = backStack.size()-1; i >= 0; i--) {
-              BackStackEntry entry = backStack.get(i);
-              if (s.equals(entry.getName())) {
-                int j = backStack.size()-1;
-                while (j-- > i) backStack.pop();
-                if (flags == POP_BACK_STACK_INCLUSIVE) backStack.pop();
-                return true;
-              }
+            for (int i = backStack.size() - 1; i >= 0; i--) {
+                BackStackEntry entry = backStack.get(i);
+                if (s.equals(entry.getName())) {
+                    int j = backStack.size() - 1;
+                    while (j-- > i) backStack.pop();
+                    if (flags == POP_BACK_STACK_INCLUSIVE) backStack.pop();
+                    return true;
+                }
             }
             return false;
         }
@@ -134,9 +141,9 @@ public class ShadowFragmentActivity extends ShadowActivity {
         }
 
         private class FragmentTransactionImpl extends FragmentTransaction {
-          private BackStackRecord backStackEntry;
+            private BackStackRecord backStackEntry;
 
-          @Override
+            @Override
             public FragmentTransaction add(Fragment fragment, String s) {
                 return add(0, fragment, s);
             }
@@ -149,7 +156,7 @@ public class ShadowFragmentActivity extends ShadowActivity {
             @Override
             public FragmentTransaction add(int containerViewId, Fragment fragment, String tag) {
                 ShadowFragment shadowFragment = shadowOf(fragment);
-                if (containerViewId != 0){
+                if (containerViewId != 0) {
                     shadowFragment.setFragmentId(containerViewId);
                     intLookup.put(containerViewId, fragment);
                 }
@@ -234,7 +241,7 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
             @Override
             public FragmentTransaction addToBackStack(final String s) {
-              backStackEntry = new BackStackRecord(s);
+                backStackEntry = new BackStackRecord(s);
 
                 return this;
             }
@@ -271,6 +278,7 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
             @Override
             public int commit() {
+                if (destroyed) throw new IllegalStateException("Can't commit transaction on destroyed activity");
                 if (backStackEntry == null) return -1;
 
                 BackStackRecord entry = backStackEntry;
@@ -281,41 +289,47 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
             @Override
             public int commitAllowingStateLoss() {
-                return 0;
+                return commit();
             }
 
-          private class BackStackRecord implements BackStackEntry {
-            private final String s;
+            private class BackStackRecord implements BackStackEntry {
+                private final String s;
 
-            public BackStackRecord(String s) {
-              this.s = s;
-            }
+                public BackStackRecord(String s) {
+                    this.s = s;
+                }
 
-            @Override public int getId() {
-              if (backStack.contains(this)) return backStack.indexOf(this);
-              return -1;
-            }
+                @Override
+                public int getId() {
+                    if (backStack.contains(this)) return backStack.indexOf(this);
+                    return -1;
+                }
 
-            @Override public String getName() {
-              return s;
-            }
+                @Override
+                public String getName() {
+                    return s;
+                }
 
-            @Override public int getBreadCrumbTitleRes() {
-              return -1;
-            }
+                @Override
+                public int getBreadCrumbTitleRes() {
+                    return -1;
+                }
 
-            @Override public int getBreadCrumbShortTitleRes() {
-              throw new UnsupportedOperationException();
-            }
+                @Override
+                public int getBreadCrumbShortTitleRes() {
+                    throw new UnsupportedOperationException();
+                }
 
-            @Override public CharSequence getBreadCrumbTitle() {
-              throw new UnsupportedOperationException();
-            }
+                @Override
+                public CharSequence getBreadCrumbTitle() {
+                    throw new UnsupportedOperationException();
+                }
 
-            @Override public CharSequence getBreadCrumbShortTitle() {
-              throw new UnsupportedOperationException();
+                @Override
+                public CharSequence getBreadCrumbShortTitle() {
+                    throw new UnsupportedOperationException();
+                }
             }
-          }
         }
     }
 }
