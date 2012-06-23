@@ -30,10 +30,8 @@ public class IntegerResourceLoader extends XpathResourceXmlLoader implements Res
     }
 
     @Override public Object convertRawValue(String rawValue) {
-        if (rawValue != null && rawValue.startsWith("0x")) { // Hex strings are apparently valid.
-            long color = Long.parseLong(rawValue.substring(2), 16);
-            return (int) color;
-        }
-        return Integer.parseInt(rawValue);
+        // This string could contain hex values, so we're going to use the "decode" method.  Since Android can send us
+        // an unsigned int larger than what Integer.decode is ok with, we parse it as a Long and convert down.
+        return Long.decode(rawValue).intValue();
     }
 }
