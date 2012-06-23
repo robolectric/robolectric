@@ -50,6 +50,7 @@ public class ResourceLoader {
     private MenuLoader menuLoader;
     private PreferenceLoader preferenceLoader;
     private final StringResourceLoader stringResourceLoader;
+    private final IntegerResourceLoader integerResourceLoader;
     private final PluralResourceLoader pluralResourceLoader;
     private final StringArrayResourceLoader stringArrayResourceLoader;
     private final AttrResourceLoader attrResourceLoader;
@@ -68,7 +69,7 @@ public class ResourceLoader {
     }
 
     private static List<File> safeFileList(File resourceDir) {
-        return resourceDir == null ? Collections.<File> emptyList()  : Collections.singletonList(resourceDir);
+        return resourceDir == null ? Collections.<File> emptyList() : Collections.singletonList(resourceDir);
     }
 
     public ResourceLoader(int sdkVersion, Class rClass, List<File> resourcePath, File assetsDir) throws Exception {
@@ -80,6 +81,7 @@ public class ResourceLoader {
         resourceExtractor.addSystemRClass(R.class);
 
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
+        integerResourceLoader = new IntegerResourceLoader(resourceExtractor);
         pluralResourceLoader = new PluralResourceLoader(resourceExtractor, stringResourceLoader);
         stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
         colorResourceLoader = new ColorResourceLoader(resourceExtractor);
@@ -117,6 +119,7 @@ public class ResourceLoader {
                 File systemValueResourceDir = getValueResourceDir(systemResourceDir);
 
                 loadStringResources(systemValueResourceDir, stringResourceLoader, true);
+                loadIntegerResources(systemValueResourceDir, integerResourceLoader, true);
                 loadPluralsResources(systemValueResourceDir, true);
                 loadValueResources(systemValueResourceDir, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader, true);
                 loadViewResources(systemResourceDir, viewLoader, true);
@@ -127,6 +130,7 @@ public class ResourceLoader {
                     File preferenceDir = getPreferenceResourceDir(resourceDir);
 
                     loadStringResources(localValueResourceDir, stringResourceLoader, false);
+                    loadIntegerResources(localValueResourceDir, integerResourceLoader, false);
                     loadPluralsResources(localValueResourceDir, false);
                     loadValueResources(localValueResourceDir, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader, false);
                     loadViewResources(resourceDir, viewLoader, false);
@@ -153,6 +157,11 @@ public class ResourceLoader {
     private void loadStringResources(File resourceDir, StringResourceLoader stringResourceLoader, boolean system) throws Exception {
         DocumentLoader stringResourceDocumentLoader = new DocumentLoader(stringResourceLoader);
         loadValueResourcesFromDirs(stringResourceDocumentLoader, resourceDir, system);
+    }
+
+    private void loadIntegerResources(File resourceDir, IntegerResourceLoader integerResourceLoader, boolean system) throws Exception {
+        DocumentLoader integerResourceDocumentLoader = new DocumentLoader(integerResourceLoader);
+        loadValueResourcesFromDirs(integerResourceDocumentLoader, resourceDir, system);
     }
 
     private void loadPluralsResources(File resourceDir, boolean system) throws Exception {
@@ -337,6 +346,7 @@ public class ResourceLoader {
         resourceExtractor = new ResourceExtractor();
         resourcePath = Collections.emptyList();
         this.stringResourceLoader = stringResourceLoader;
+        this.integerResourceLoader = null;
         pluralResourceLoader = null;
         viewLoader = null;
         stringArrayResourceLoader = null;
@@ -382,6 +392,15 @@ public class ResourceLoader {
         if (value != null) return value;
 
         return null;
+    }
+
+    public int getIntegerValue(int id) {
+        init();
+
+        Integer value = integerResourceLoader.getValue(id);
+        if (value != null) return value;
+
+        return 0;
     }
 
     public String getPluralStringValue(int id, int quantity) {

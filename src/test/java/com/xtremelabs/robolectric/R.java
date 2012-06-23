@@ -69,6 +69,13 @@ public final class R {
         public static final int copy = nextId++;
     }
 
+    public static final class integer {
+        public static final int meaning_of_life = nextId++;
+        public static final int loneliest_number = nextId++;
+        public static final int there_can_be_only = nextId++;
+        public static final int hex_int = nextId++;
+    }
+
     public static final class plurals {
         public static final int beer = nextId++;
     }

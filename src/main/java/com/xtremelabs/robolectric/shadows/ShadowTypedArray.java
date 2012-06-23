@@ -18,4 +18,9 @@ public class ShadowTypedArray {
     public int getInt(int index, int defValue) {
         return defValue;
     }
+
+    @Implementation
+    public int getInteger(int index, int defValue) {
+        return defValue;
+    }
 }
