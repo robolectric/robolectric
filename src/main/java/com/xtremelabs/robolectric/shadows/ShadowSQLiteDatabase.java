@@ -194,10 +194,23 @@ public class ShadowSQLiteDatabase  {
         }
     }
 
+    public static void deleteAllDatabases() {
+        synchronized (staticLock) {
+            List<String> paths = new ArrayList<String>(connections.keySet());
+            for (String path : paths) {
+                deleteDatabase(path);
+            }
+        }
+    }
+
     public static void deleteDatabase(String path) {
         synchronized (staticLock) {
             if (sqliteDatabaseMap.containsKey(path)) {
-                throw new RuntimeException("Must first close any open databases");
+                List<ShadowSQLiteDatabase> openDatabases =
+                        new ArrayList<ShadowSQLiteDatabase>(sqliteDatabaseMap.get(path));
+                for (ShadowSQLiteDatabase db : openDatabases) {
+                    db.close();
+                }
             }
             Connection connection = connections.remove(path);
             if (connection != null) {
