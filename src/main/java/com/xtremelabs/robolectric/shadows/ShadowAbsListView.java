@@ -10,6 +10,7 @@ public class ShadowAbsListView extends ShadowAdapterView {
     private int smoothScrolledPosition;
     private int lastSmoothScrollByDistance;
     private int lastSmoothScrollByDuration;
+    private int choiceMode;
 
     @Implementation
     public void setOnScrollListener(AbsListView.OnScrollListener l) {
@@ -25,6 +26,15 @@ public class ShadowAbsListView extends ShadowAdapterView {
     public void smoothScrollBy(int distance, int duration) {
         this.lastSmoothScrollByDistance = distance;
         this.lastSmoothScrollByDuration = duration;
+    }
+
+    public void setChoiceMode(int choiceMode) {
+    	this.choiceMode = choiceMode;
+    }
+    
+    @Implementation
+    public int getChoiceMode() {
+    	return choiceMode;
     }
 
     /**
