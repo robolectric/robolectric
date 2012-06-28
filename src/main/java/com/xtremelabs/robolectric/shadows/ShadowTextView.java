@@ -36,6 +36,7 @@ public class ShadowTextView extends ShadowView {
     private boolean autoLinkPhoneNumbers;
     private int autoLinkMask;
     private CharSequence hintText;
+    private CharSequence errorText;
     private int compoundDrawablePadding;
     private MovementMethod movementMethod;
     private boolean linksClickable;
@@ -332,6 +333,16 @@ public class ShadowTextView extends ShadowView {
     @Override
     public String innerText() {
         return (text == null || getVisibility() != VISIBLE) ? "" : text.toString();
+    }
+    
+    @Implementation
+    public void setError(CharSequence error) {
+      errorText = error;
+    }
+    
+    @Implementation
+    public CharSequence getError() {
+      return errorText;
     }
 
     @Override
