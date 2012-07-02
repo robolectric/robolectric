@@ -58,6 +58,27 @@ public class ContextTest {
 		}
 		path.delete();
 	}
+    
+    @Test
+    public void shouldGetApplicationDataDirectory() throws IOException {
+        File dataDir = new File(ShadowContext.FILES_DIR, "data");
+        assertThat(dataDir.mkdir(), is(true));
+
+        dataDir = context.getDir("data", Context.MODE_PRIVATE);
+        assertThat(dataDir, not(nullValue()));
+        assertThat(dataDir.exists(), is(true));
+    }
+
+
+    @Test
+    public void shouldCreateIfDoesNotExistAndGetApplicationDataDirectory() {
+        File dataDir = new File(ShadowContext.FILES_DIR, "data");
+        assertThat(dataDir.exists(), is(false));
+
+        dataDir = context.getDir("data", Context.MODE_PRIVATE);
+        assertThat(dataDir, not(nullValue()));
+        assertThat(dataDir.exists(), is(true));
+    }
 
     @Test
     public void shouldStubThemeStuff() throws Exception {

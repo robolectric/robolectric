@@ -32,6 +32,16 @@ abstract public class ShadowContext {
     @RealObject private Context realContext;
 
     @Implementation
+    public File getDir(String name, int mode) {
+        // TODO: honor operating mode.
+        File file = new File(FILES_DIR, name);
+        if (!file.exists()) {
+            file.mkdir();
+        }
+        return file;
+    }
+
+    @Implementation
     public String getString(int resId) {
         return realContext.getResources().getString(resId);
     }
