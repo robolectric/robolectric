@@ -31,4 +31,10 @@ public class TextUtilsTest {
       assertThat(TextUtils.join(",", new String[] { "1", "2", "3" }), equalTo("1,2,3"));
       assertThat(TextUtils.join(",", Arrays.asList("1", "2", "3")), equalTo("1,2,3"));
     }
+
+    @Test
+    public void testIsDigitsOnly() throws Exception {
+        assertThat(TextUtils.isDigitsOnly("123456"), equalTo(true));
+        assertThat(TextUtils.isDigitsOnly("124a56"), equalTo(false));
+    }
 }
