@@ -19,7 +19,6 @@ import android.content.pm.ResolveInfo;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -76,12 +75,10 @@ public class RobolectricPackageManagerTest {
         Intent i = new Intent(Intent.ACTION_MAIN, null);
         i.addCategory(Intent.CATEGORY_LAUNCHER);
 
-        List<ResolveInfo> resolved = new ArrayList<ResolveInfo>();
         ResolveInfo info = new ResolveInfo();
         info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
-        resolved.add(info);
 
-        rpm.addResolveInfoForIntent(i, resolved);
+        rpm.addResolveInfoForIntent(i, info);
 
         List<ResolveInfo> activities = rpm.queryIntentActivities(i, 0);
         assertThat(activities, notNullValue());
@@ -91,15 +88,10 @@ public class RobolectricPackageManagerTest {
 
     @Test
     public void resolveActivity__Match() throws Exception {
-        Intent i = new Intent(Intent.ACTION_MAIN, null);
-        i.addCategory(Intent.CATEGORY_LAUNCHER);
-
-        List<ResolveInfo> resolved = new ArrayList<ResolveInfo>();
+        Intent i = new Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER);
         ResolveInfo info = new ResolveInfo();
         info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
-        resolved.add(info);
-
-        rpm.addResolveInfoForIntent(i, resolved);
+        rpm.addResolveInfoForIntent(i, info);
 
         assertThat(rpm.resolveActivity(i, 0), sameInstance(info));
     }
@@ -109,6 +101,25 @@ public class RobolectricPackageManagerTest {
         Intent i = new Intent();
         i.setComponent(new ComponentName("foo.bar", "No Activity"));
         assertThat(rpm.resolveActivity(i, 0), nullValue());
+    }
+
+    @Test
+    public void resolveService__Match() throws Exception {
+        Intent i = new Intent(Intent.ACTION_MAIN, null);
+        i.addCategory(Intent.CATEGORY_LAUNCHER);
+
+        ResolveInfo info = new ResolveInfo();
+        info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
+        rpm.addResolveInfoForIntent(i, info);
+
+        assertThat(rpm.resolveService(i, 0), sameInstance(info));
+    }
+
+    @Test
+    public void resolveService__NoMatch() throws Exception {
+        Intent i = new Intent();
+        i.setComponent(new ComponentName("foo.bar", "No Activity"));
+        assertThat(rpm.resolveService(i, 0), nullValue());
     }
 
     @Test
