@@ -9,6 +9,8 @@ import static org.junit.Assert.assertThat;
 
 import java.util.HashMap;
 
+import org.hamcrest.CoreMatchers;
+import org.hamcrest.MatcherAssert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -208,17 +210,52 @@ public class PreferenceTest {
 		assertThat( shadow.click(), equalTo(true)); 		
 		assertThat( clicked, equalTo(true)); 		
 	}
-	
+
 	@Test
-	public void shouldCallChangeListener() {
+	public void shouldRecordCallChangeListenerValue() {
 		Integer[] values = { 0, 1, 2, 2011 };
-		
-		for(Integer newValue : values) {			
-			assertThat(preference.callChangeListener(newValue), equalTo(true));
-			assertThat(shadow.getCallChangeListenerValue(), sameInstance((Object)newValue));
+		preference.setOnPreferenceChangeListener(null);
+
+		for(Integer newValue : values) {
+			assertThat("Case " + newValue, preference.callChangeListener(newValue), equalTo(true));
+			assertThat("Case " + newValue, shadow.getCallChangeListenerValue(), sameInstance((Object)newValue));
 		}
 	}
-	
+
+	@Test
+	public void shouldInvokeCallChangeListenerIfSet() {
+		Integer[] values = { 0, 1, 2, 2011 };
+		Preference.OnPreferenceChangeListener oddFilteringListener =
+				new Preference.OnPreferenceChangeListener() {
+					@Override
+					public boolean onPreferenceChange(Preference preference, Object o) {
+						return ((Integer) o) % 2 == 0; // Accept even changes only.
+					}
+				};
+		for(Integer newValue : values) {
+			preference.setOnPreferenceChangeListener(oddFilteringListener);
+			boolean changed = oddFilteringListener.onPreferenceChange(null, newValue);
+
+			assertThat("Case " + newValue, preference.callChangeListener(newValue), equalTo(changed));
+			assertThat("Case " + newValue, shadow.getCallChangeListenerValue(), sameInstance((Object) newValue));
+		}
+	}
+
+	@Test
+	public void shouldRememberOnChangeListener() {
+		Preference.OnPreferenceChangeListener onPreferenceChangeListener = new Preference.OnPreferenceChangeListener() {
+			@Override
+			public boolean onPreferenceChange(Preference preference, Object o)
+			{
+				throw new RuntimeException("Unimplemented");
+			}
+		};
+
+		preference.setOnPreferenceChangeListener(onPreferenceChangeListener);
+		assertThat(shadow.getOnPreferenceChangeListener(), sameInstance(onPreferenceChangeListener));
+	}
+
+
 	@Test
 	public void shouldReturnIntent() {
 		assertThat( preference.getIntent(), nullValue() );
@@ -229,8 +266,8 @@ public class PreferenceTest {
 	@Test
 	public void shouldRememberDependency() {
 		assertThat( preference.getDependency(), nullValue() );
-		preference.setDependency( "TEST_PREF_KEY" );
-		assertThat( preference.getDependency(), notNullValue() );
+		preference.setDependency("TEST_PREF_KEY");
+		assertThat(preference.getDependency(), notNullValue());
 		assertThat( preference.getDependency(), equalTo("TEST_PREF_KEY") );
 	}
 
