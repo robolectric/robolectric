@@ -34,8 +34,10 @@ public class ShadowApplication extends ShadowContextWrapper {
     private static final Map<String, String> SYSTEM_SERVICE_MAP = new HashMap<String, String>();
 
     static {
-        // note that this one is different!
+        // note that these three are different!
         SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "com.xtremelabs.robolectric.tester.android.view.TestWindowManager");
+        SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.TestVibrator");
+        SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.TestSensorManager");
 
         // the rest are as mapped in docs...
         SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "android.view.LayoutInflater");
@@ -47,9 +49,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         SYSTEM_SERVICE_MAP.put(Context.KEYGUARD_SERVICE, "android.app.KeyguardManager");
         SYSTEM_SERVICE_MAP.put(Context.LOCATION_SERVICE, "android.location.LocationManager");
         SYSTEM_SERVICE_MAP.put(Context.SEARCH_SERVICE, "android.app.SearchManager");
-        SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.SensorManager");
         SYSTEM_SERVICE_MAP.put(Context.STORAGE_SERVICE, "android.os.storage.StorageManager");
-        SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.Vibrator");
         SYSTEM_SERVICE_MAP.put(Context.CONNECTIVITY_SERVICE, "android.net.ConnectivityManager");
         SYSTEM_SERVICE_MAP.put(Context.WIFI_SERVICE, "android.net.wifi.WifiManager");
         SYSTEM_SERVICE_MAP.put(Context.AUDIO_SERVICE, "android.media.AudioManager");
