@@ -137,6 +137,7 @@ public class ResourceLoader {
                     loadMenuResources(resourceDir, menuLoader);
                     loadDrawableResources(resourceDir);
                     loadPreferenceResources(preferenceDir);
+                    loadOtherResources(resourceDir);
 
                     rawResourceLoaders.add(rawResourceLoader);
                 }
@@ -194,6 +195,9 @@ public class ResourceLoader {
             DocumentLoader preferenceDocumentLoader = new DocumentLoader(preferenceLoader);
             preferenceDocumentLoader.loadResourceXmlDir(xmlResourceDir);
         }
+    }
+
+    protected void loadOtherResources(File xmlResourceDir) {
     }
 
     private void loadLayoutResourceXmlSubDirs(DocumentLoader layoutDocumentLoader, File xmlResourceDir, boolean isSystem) throws Exception {
