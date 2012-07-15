@@ -357,6 +357,13 @@ public class TextViewTest {
         assertEquals(textView.getLayout(), layout);
     }
 
+    @Test
+    public void canSetAndGetInputFilters() throws Exception {
+        final InputFilter[] expectedFilters = new InputFilter[] { new InputFilter.LengthFilter(1) };
+        textView.setFilters(expectedFilters);
+        assertThat(textView.getFilters(), is(expectedFilters));
+    }
+
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
         List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
         int numberBetweenOneAndTen = new Random().nextInt(10) + 1;

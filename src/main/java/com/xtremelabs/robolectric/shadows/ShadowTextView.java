@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.text.InputFilter;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
@@ -48,6 +49,7 @@ public class ShadowTextView extends ShadowView {
     protected int selectionStart = 0;
     protected int selectionEnd = 0;
     private Typeface typeface;
+    private InputFilter[] inputFilters;
 
     private List<TextWatcher> watchers = new ArrayList<TextWatcher>();
     private List<Integer> previousKeyCodes = new ArrayList<Integer>();
@@ -491,6 +493,16 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public int getSelectionEnd() {
         return selectionEnd;
+    }
+
+    @Implementation
+    public void setFilters(InputFilter[] inputFilters) {
+        this.inputFilters = inputFilters;
+    }
+
+    @Implementation
+    public InputFilter[] getFilters() {
+        return this.inputFilters;
     }
 
     @Implementation
