@@ -1,5 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -9,8 +11,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
 import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.matchers.StartedMatcher;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -234,6 +240,46 @@ public class FragmentTest {
         }
     }
 
+    @Test
+    public void startActivity_shouldPassThroughToContainerActivity() throws Exception {
+        DummyFragment fragment = new DummyFragment();
+        ContainerActivity activity = new ContainerActivity();
+        startFragment(activity, fragment);
+        Intent intent = new Intent(activity, DummyStartedActivity.class);
+        fragment.startActivity(intent);
+        assertThat(activity, new StartedMatcher(intent));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void startActivity_shouldThrowExceptionIfContainerIsNull() throws Exception {
+        DummyFragment fragment = new DummyFragment();
+        ContainerActivity activity = new ContainerActivity();
+        startFragment(activity, fragment);
+        Intent intent = new Intent(activity, DummyStartedActivity.class);
+        Robolectric.shadowOf(fragment).setActivity(null);
+        fragment.startActivity(intent);
+    }
+
+    @Test
+    public void startActivityForResult_shouldPassThroughToContainerActivity() throws Exception {
+        DummyFragment fragment = new DummyFragment();
+        ContainerActivity activity = new ContainerActivity();
+        startFragment(activity, fragment);
+        Intent intent = new Intent(activity, DummyStartedActivity.class);
+        fragment.startActivityForResult(intent, 0);
+        assertThat(activity, new StartedMatcher(intent));
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void startActivityForResult_shouldThrowExceptionIfContainerIsNull() throws Exception {
+        DummyFragment fragment = new DummyFragment();
+        ContainerActivity activity = new ContainerActivity();
+        startFragment(activity, fragment);
+        Intent intent = new Intent(activity, DummyStartedActivity.class);
+        Robolectric.shadowOf(fragment).setActivity(null);
+        fragment.startActivityForResult(intent, 0);
+    }
+
     private void startFragment(DummyFragment fragment) {
         ContainerActivity containerActivity = new ContainerActivity();
         startFragment(containerActivity, fragment);
@@ -306,5 +352,9 @@ public class FragmentTest {
         public void destroy() {
             onDestroy();
         }
+    }
+
+    private static class DummyStartedActivity extends Activity {
+        // Intentionally empty. Used to test starting a new activity from a fragment.
     }
 }

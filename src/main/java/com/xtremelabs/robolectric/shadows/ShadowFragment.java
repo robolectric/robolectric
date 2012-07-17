@@ -1,11 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
 import android.view.View;
+
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -16,6 +18,7 @@ import java.lang.reflect.Field;
  * Shadow class for "Fragment".  Note that this is for the support package v4 version of "Fragment", not the android.app
  * one.
  */
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Fragment.class)
 public class ShadowFragment {
     @RealObject
@@ -109,6 +112,22 @@ public class ShadowFragment {
     public void resume() {
         realFragment.onResume();
         this.resumed = true;
+    }
+
+    @Implementation
+    public void startActivity(Intent intent) {
+        if (fragmentActivity == null) {
+            throw new IllegalStateException("Fragment " + this + " not attached to Activity");
+        }
+        fragmentActivity.startActivity(intent);
+    }
+
+    @Implementation
+    public void startActivityForResult(Intent intent, int requestCode) {
+        if (fragmentActivity == null) {
+            throw new IllegalStateException("Fragment " + this + " not attached to Activity");
+        }
+        fragmentActivity.startActivityForResult(intent, requestCode);
     }
 
     @Implementation
