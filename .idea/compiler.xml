@@ -2,10 +2,11 @@
 <project version="4">
   <component name="CompilerConfiguration">
     <option name="DEFAULT_COMPILER" value="Javac" />
-    <resourceExtensions>
-      <entry name=".+\.(properties|xml|html|dtd|tld)" />
-      <entry name=".+\.(gif|png|jpeg|jpg)" />
-    </resourceExtensions>
+    <excludeFromCompile>
+      <directory url="file://$PROJECT_DIR$/src/test/gen" includeSubdirectories="true" />
+      <directory url="file://$PROJECT_DIR$/src/main/gen" includeSubdirectories="true" />
+    </excludeFromCompile>
+    <resourceExtensions />
     <wildcardResourcePatterns>
       <entry name="?*.properties" />
       <entry name="?*.xml" />
