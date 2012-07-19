@@ -6,6 +6,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.FrameLayout;
@@ -21,6 +22,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import javassist.bytecode.Mnemonic;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -53,6 +56,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     private Map<Integer, Dialog> dialogForId = new HashMap<Integer, Dialog>();
     private CharSequence title;
     private boolean onKeyUpWasCalled;
+    private ArrayList<Cursor> managedCusors = new ArrayList<Cursor>();
 
     @Implementation
     public final Application getApplication() {
@@ -480,7 +484,21 @@ public class ShadowActivity extends ShadowContextWrapper {
         invoker.call("onRestoreInstanceState", Bundle.class).with(outState);
         invoker.call("onResume").withNothing();
     }
+    
+    @Implementation
+    public void startManagingCursor(Cursor c) {
+    	managedCusors.add(c);
+    }    
 
+    @Implementation
+    public void stopManagingCursor(Cursor c) {
+    	managedCusors.remove(c);
+    }
+    
+    public List<Cursor> getManagedCursors() {
+    	return managedCusors;
+    }
+    
     private final class ActivityInvoker {
         private Method method;
 
