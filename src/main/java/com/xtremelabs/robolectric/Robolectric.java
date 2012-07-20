@@ -192,6 +192,7 @@ public class Robolectric {
                 ShadowDialogFragment.class,
                 ShadowDialogPreference.class,
                 ShadowEditText.class,
+                ShadowEditTextPreference.class,
                 ShadowEnvironment.class,
                 ShadowExpandableListView.class,
                 ShadowFilter.class,
@@ -583,6 +584,10 @@ public class Robolectric {
 
     public static ShadowDialogPreference shadowOf(DialogPreference instance) {
         return (ShadowDialogPreference) shadowOf_(instance);
+    }
+
+    public static ShadowEditTextPreference shadowOf(EditTextPreference instance) {
+    	return (ShadowEditTextPreference) shadowOf_(instance);
     }
 
     public static ShadowDrawable shadowOf(Drawable instance) {
