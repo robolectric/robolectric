@@ -27,6 +27,7 @@ import java.util.Random;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -355,6 +356,19 @@ public class TextViewTest {
         StaticLayout layout = new StaticLayout(null, null, 0, null, 0, 0, true);
         shadowOf(textView).setLayout(layout);
         assertEquals(textView.getLayout(), layout);
+    }
+
+    @Test
+    public void testHasSelectionReturnsTrue() {
+        textView.setText("1");
+        shadowOf(textView).setSelection(0, 0);
+        assertTrue(textView.hasSelection());
+    }
+
+    @Test
+    public void testHasSelectionReturnsFalse() {
+        textView.setText("1");
+        assertFalse(textView.hasSelection());
     }
 
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
