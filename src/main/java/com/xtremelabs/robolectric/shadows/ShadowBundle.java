@@ -110,7 +110,34 @@ public class ShadowBundle {
     @Implementation
     public boolean getBoolean(String key, boolean defaultValue) {
         Object value = map.get(key);
-        return value == null || !(value instanceof Boolean)  ? defaultValue : (Boolean) value;
+        return value == null || !(value instanceof Boolean) ? defaultValue : (Boolean) value;
+    }
+
+    @Implementation
+    public void putChar(String key, char value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public char getChar(String key) {
+        return getChar(key, (char) 0);
+    }
+
+    @Implementation
+    public char getChar(String key, char defaultValue) {
+        Object value = map.get(key);
+        return value == null || !(value instanceof Character) ? defaultValue : (Character) value;
+    }
+
+    @Implementation
+    public void putCharSequence(String key, CharSequence value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public CharSequence getCharSequence(String key) {
+        Object value = map.get(key);
+        return value == null || !(value instanceof CharSequence) ? null : (CharSequence) value;
     }
 
     @Implementation
@@ -182,6 +209,17 @@ public class ShadowBundle {
     public ArrayList<String> getStringArrayList(String key) {
         Object value = map.get(key);
         return value == null || !(value instanceof ArrayList) ? null : (ArrayList<String>) value;
+    }
+
+    @Implementation
+    public void putCharSequenceArrayList(String key, ArrayList<CharSequence> value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public ArrayList<CharSequence> getCharSequenceArrayList(String key) {
+        Object value = map.get(key);
+        return value == null || !(value instanceof ArrayList) ? null : (ArrayList<CharSequence>) value;
     }
 
     @Implementation
@@ -308,6 +346,17 @@ public class ShadowBundle {
     public String[] getStringArray(String key) {
         Object value = map.get(key);
         return value == null || !(value instanceof String[]) ? null : (String[]) value;
+    }
+
+    @Implementation
+    public void putCharSequenceArray(String key, CharSequence[] value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public CharSequence[] getCharSequenceArray(String key) {
+        Object value = map.get(key);
+        return value == null || !(value instanceof CharSequence[]) ? null : (CharSequence[]) value;
     }
 
     @Implementation
