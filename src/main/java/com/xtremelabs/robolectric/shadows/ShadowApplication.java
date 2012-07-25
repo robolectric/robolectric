@@ -17,6 +17,7 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.util.Scheduler;
 
 import java.util.*;
+import java.lang.reflect.Modifier;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -33,6 +34,12 @@ public class ShadowApplication extends ShadowContextWrapper {
         // note that this one is different!
         SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "com.xtremelabs.robolectric.tester.android.view.TestWindowManager");
 
+        // android.os.Vibrator became an abstract class in jellybean
+        if (Modifier.isAbstract(android.os.Vibrator.class.getModifiers())) {
+          SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.NullVibrator");
+        } else {
+          SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.Vibrator");
+        }
         // the rest are as mapped in docs...
         SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "android.view.LayoutInflater");
         SYSTEM_SERVICE_MAP.put(Context.ACTIVITY_SERVICE, "android.app.ActivityManager");
@@ -45,7 +52,6 @@ public class ShadowApplication extends ShadowContextWrapper {
         SYSTEM_SERVICE_MAP.put(Context.SEARCH_SERVICE, "android.app.SearchManager");
         SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.SensorManager");
         SYSTEM_SERVICE_MAP.put(Context.STORAGE_SERVICE, "android.os.storage.StorageManager");
-        SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.Vibrator");
         SYSTEM_SERVICE_MAP.put(Context.CONNECTIVITY_SERVICE, "android.net.ConnectivityManager");
         SYSTEM_SERVICE_MAP.put(Context.WIFI_SERVICE, "android.net.wifi.WifiManager");
         SYSTEM_SERVICE_MAP.put(Context.AUDIO_SERVICE, "android.media.AudioManager");

@@ -29,6 +29,7 @@ public class SQLiteOpenHelperTest {
     public void testInitialGetReadableDatabase() throws Exception {
         SQLiteDatabase database = helper.getReadableDatabase();
         assertInitialDB(database);
+        database.close();
     }
 
     @Test
@@ -38,6 +39,7 @@ public class SQLiteOpenHelperTest {
         database = helper.getReadableDatabase();
 
         assertSubsequentDB(database);
+        database.close();
     }
 
     @Test
@@ -46,12 +48,14 @@ public class SQLiteOpenHelperTest {
         SQLiteDatabase db2 = helper.getReadableDatabase();
 
         assertThat(db1, sameInstance(db2));
+        db1.close();
     }
 
     @Test
     public void testInitialGetWritableDatabase() throws Exception {
         SQLiteDatabase database = helper.getWritableDatabase();
         assertInitialDB(database);
+        database.close();
     }
 
     @Test
@@ -60,6 +64,7 @@ public class SQLiteOpenHelperTest {
         helper.reset();
 
         assertSubsequentDB(helper.getWritableDatabase());
+        helper.getWritableDatabase().close();
     }
 
     @Test
@@ -68,6 +73,7 @@ public class SQLiteOpenHelperTest {
         SQLiteDatabase db2 = helper.getWritableDatabase();
 
         assertThat(db1, sameInstance(db2));
+        db1.close();
     }
 
     @Test

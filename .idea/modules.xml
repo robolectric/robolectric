@@ -2,8 +2,8 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/robolectric.iml" filepath="$PROJECT_DIR$/robolectric.iml" />
-      <module fileurl="file://$PROJECT_DIR$/robolectric-gh-pages.iml" filepath="$PROJECT_DIR$/robolectric-gh-pages.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/main/Main.iml" filepath="$PROJECT_DIR$/src/main/Main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/src/test/Test.iml" filepath="$PROJECT_DIR$/src/test/Test.iml" />
     </modules>
   </component>
 </project>

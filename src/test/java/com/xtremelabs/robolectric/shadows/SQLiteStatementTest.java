@@ -33,6 +33,7 @@ public class SQLiteStatementTest {
     @After
     public void tearDown() throws Exception {
         database.close();
+        ShadowSQLiteDatabase.deleteDatabase("path");
     }
 
     @Test

@@ -17,13 +17,12 @@ import com.xtremelabs.robolectric.internal.RealObject;
 public class ShadowSQLiteOpenHelper {
 
     @RealObject private SQLiteOpenHelper realHelper;
-    private static SQLiteDatabase database;
+
+    private String name;
+    private SQLiteDatabase database;
 
     public void __constructor__(Context context, String name, CursorFactory factory, int version) {
-        if (database != null) {
-            database.close();
-        }
-        database = null;
+        this.name = name;
     }
 
     @Implementation
@@ -37,7 +36,7 @@ public class ShadowSQLiteOpenHelper {
     @Implementation
     public synchronized SQLiteDatabase getReadableDatabase() {
         if (database == null) {
-            database = SQLiteDatabase.openDatabase("path", null, 0);
+            database = SQLiteDatabase.openDatabase(name, null, 0);
             realHelper.onCreate(database);
         }
 
@@ -48,7 +47,7 @@ public class ShadowSQLiteOpenHelper {
     @Implementation
     public synchronized SQLiteDatabase getWritableDatabase() {
         if (database == null) {
-            database = SQLiteDatabase.openDatabase("path", null, 0);
+            database = SQLiteDatabase.openDatabase(name, null, 0);
             realHelper.onCreate(database);
         }
 

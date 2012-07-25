@@ -323,4 +323,12 @@ public class ShadowBundle {
     public int hashCode() {
         return map != null ? map.hashCode() : 0;
     }
+
+    @Override @Implementation
+    public Object clone() throws CloneNotSupportedException {
+        Bundle clone = Robolectric.newInstanceOf(Bundle.class);
+        ShadowBundle shadowBundle = Robolectric.shadowOf(clone);
+        shadowBundle.map = new HashMap<String, Object>(map);
+        return clone;
+    }
 }

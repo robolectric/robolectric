@@ -76,6 +76,8 @@ public abstract class DatabaseTestBase {
     @After
     public void tearDown() throws Exception {
         database.close();
+        ShadowSQLiteDatabase.deleteDatabase("path");
+
     }
 
     @Test()
@@ -541,7 +543,7 @@ public abstract class DatabaseTestBase {
             database.setTransactionSuccessful();
             fail("didn't receive the expected IllegalStateException");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage(), equalTo("transaction already successfully"));
+            assertThat(e.getMessage(), equalTo("setTransactionSuccessful may only be called once per call to beginTransaction"));
         }
     }
 
