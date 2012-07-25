@@ -460,5 +460,11 @@ public class TextViewTest {
         public boolean canSelectArbitrarily() {
             return false;
         }
+
+		@Override
+		public boolean onGenericMotionEvent(TextView widget, Spannable text,
+				MotionEvent event) {
+			return false;
+		}
     }
 }

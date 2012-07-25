@@ -278,5 +278,9 @@ public class ApplicationTest {
         public boolean unlinkToDeath(DeathRecipient recipient, int flags) {
             return false;
         }
+
+		@Override
+		public void dumpAsync(FileDescriptor fd, String[] args) throws RemoteException {
+		}
     }
 }
