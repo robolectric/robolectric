@@ -180,7 +180,7 @@ public class ShadowIntent {
     @Implementation
     public Intent putExtras(Bundle src) {
         ShadowBundle srcShadowBundle = Robolectric.shadowOf_(src);
-        extras = new HashMap<String, Object>(srcShadowBundle.map);
+        extras = new HashMap<String, Object>(srcShadowBundle.mMap);
         return realIntent;
     }
     
@@ -194,7 +194,7 @@ public class ShadowIntent {
     @Implementation
     public Bundle getExtras() {
         Bundle bundle = new Bundle();
-        ((ShadowBundle) Robolectric.shadowOf_(bundle)).map.putAll(extras);
+        ((ShadowBundle) Robolectric.shadowOf_(bundle)).mMap.putAll(extras);
         return bundle;
     }
     

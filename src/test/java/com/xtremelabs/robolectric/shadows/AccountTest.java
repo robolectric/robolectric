@@ -26,6 +26,7 @@ public class AccountTest {
         Parcel p = Parcel.obtain();
         p.writeString("name");
         p.writeString("type");
+        p.setDataPosition(0);
 
         Account account = new Account(p);
         assertThat(account.name, equalTo("name"));
