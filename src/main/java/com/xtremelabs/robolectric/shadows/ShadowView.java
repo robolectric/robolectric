@@ -643,30 +643,22 @@ public class ShadowView {
         wasInvalidated = false;
     }
 
-    /**
-     * Non-Android accessor.
-     */
+    @Implementation
     public void setLeft(int left) {
         this.left = left;
     }
 
-    /**
-     * Non-Android accessor.
-     */
+    @Implementation
     public void setTop(int top) {
         this.top = top;
     }
 
-    /**
-     * Non-Android accessor.
-     */
+    @Implementation
     public void setRight(int right) {
         this.right = right;
     }
 
-    /**
-     * Non-Android accessor.
-     */
+    @Implementation
     public void setBottom(int bottom) {
         this.bottom = bottom;
     }

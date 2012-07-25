@@ -210,6 +210,7 @@ public class ShadowCursorWrapper implements Cursor {
 		return 0;
 	}
 
+    @Implementation
 	public Cursor getWrappedCursor() {
         return wrappedCursor;
     }
