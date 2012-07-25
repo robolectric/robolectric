@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.tester.android.text;
 
 import android.text.ClipboardManager;
 
+@SuppressWarnings("deprecation")
 public class TestClipboardManager extends ClipboardManager {
 
     private CharSequence text;
