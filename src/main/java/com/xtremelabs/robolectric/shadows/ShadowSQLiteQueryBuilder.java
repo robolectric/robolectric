@@ -68,7 +68,7 @@ public class ShadowSQLiteQueryBuilder {
     }
 
     private static void conditionallyAppend(StringBuilder sb, String keyword, String value) {
-        if (value != null) {
+        if (!TextUtils.isEmpty(value)) {
             sb.append(keyword);
             sb.append(value);
         }
