@@ -98,4 +98,9 @@ public class LooperTest {
         assertTrue(shadowOf(looper).hasQuit());
         assertFalse(shadowOf(looper).getScheduler().areAnyRunnable());
     }
+    
+    @Test
+    public void testLoopThread() {
+    	assertTrue(shadowOf(Looper.getMainLooper()).getThread() == Thread.currentThread());
+    }
 }
