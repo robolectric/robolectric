@@ -7,7 +7,8 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -16,7 +17,15 @@ public class BaseAdapterTest {
     public void shouldRecordNotifyDataSetChanged() throws Exception {
         BaseAdapter adapter = new TestBaseAdapter();
         adapter.notifyDataSetChanged();
-        assertTrue(((ShadowBaseAdapter) shadowOf_(adapter)).notifyDataSetChangedWasCalled());
+        assertTrue(shadowOf(adapter).wasNotifyDataSetChangedCalled());
+    }
+
+    @Test
+    public void canResetNotifyDataSetChangedFlag() throws Exception {
+        BaseAdapter adapter = new TestBaseAdapter();
+        adapter.notifyDataSetChanged();
+        shadowOf(adapter).clearWasDataSetChangedCalledFlag();
+        assertFalse(shadowOf(adapter).wasNotifyDataSetChangedCalled());
     }
 
     private static class TestBaseAdapter extends BaseAdapter {

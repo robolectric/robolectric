@@ -14,7 +14,7 @@ import java.util.List;
 public class ShadowBaseAdapter {
 	@RealObject private BaseAdapter realBaseAdapter;
     private final List<DataSetObserver> dataSetObservers = new ArrayList<DataSetObserver>();
-    private boolean notifyDataSetChangedWasCalled;
+    private boolean wasNotifyDataSetChangedCalled;
 
     @Implementation
     public boolean isEmpty() {
@@ -56,7 +56,7 @@ public class ShadowBaseAdapter {
      */
     @Implementation
     public void notifyDataSetChanged() {
-        notifyDataSetChangedWasCalled = true;
+        wasNotifyDataSetChangedCalled = true;
         for (DataSetObserver dataSetObserver : dataSetObservers) {
             dataSetObserver.onChanged();
         }
@@ -72,7 +72,11 @@ public class ShadowBaseAdapter {
         }
     }
 
-    public boolean notifyDataSetChangedWasCalled() {
-        return notifyDataSetChangedWasCalled;
+    public void clearWasDataSetChangedCalledFlag() {
+        wasNotifyDataSetChangedCalled = false;
+    }
+
+    public boolean wasNotifyDataSetChangedCalled() {
+        return wasNotifyDataSetChangedCalled;
     }
 }
