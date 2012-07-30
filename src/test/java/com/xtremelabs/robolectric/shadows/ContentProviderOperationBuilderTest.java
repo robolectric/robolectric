@@ -3,39 +3,29 @@ package com.xtremelabs.robolectric.shadows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-import java.util.Map;
-
-import org.junit.Before;
+import android.content.ContentValues;
+import android.net.Uri;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.content.ContentProviderOperation;
-import android.content.ContentProviderOperation.Builder;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ContentProviderOperationBuilderTest {
-    private Builder builder;
-    private ShadowContentProviderOperationBuilder shadowBuilder;
-    
-    @Before
-    public void before() {
-        builder = Robolectric.newInstanceOf(Builder.class);
-        shadowBuilder = Robolectric.shadowOf(builder);
-    }
-    
     @Test
     public void withValue() {
-        builder
+        ContentProviderOperation.Builder builder = ContentProviderOperation.newInsert(Uri.EMPTY)
             .withValue("stringTest", "bar")
             .withValue("intTest", 5)
             .withValue("longTest", 10L);
-        
-        Map<String, Object> values = shadowBuilder.getValues();
+
+        ContentValues values = Robolectric.shadowOf(builder).getValues();
         assertThat(values.size(), is(3));
         assertThat(values.get("stringTest").toString(), equalTo("bar"));
         assertThat(Integer.parseInt(values.get("intTest").toString()), equalTo(5));
@@ -44,27 +34,33 @@ public class ContentProviderOperationBuilderTest {
     
     @Test
     public void withSelection() {
-        builder
-            .withSelection("first", new String[] { "a", "b" })
-            .withSelection("second", new String[] { "c", "d" });
-        
-        Map<String, String[]> selections = shadowBuilder.getSelections();
-        assertThat(selections.size(), is(2));
-        assertThat(selections.get("first"), equalTo(new String[] { "a", "b" }));
-        assertThat(selections.get("second"), equalTo(new String[] { "c", "d" }));
+        ContentProviderOperation.Builder builder = ContentProviderOperation.newUpdate(Uri.EMPTY)
+            .withSelection("a=? AND b=?", new String[]{"a", "b"});
+
+
+        ShadowContentProviderOperationBuilder shadowBuilder = Robolectric.shadowOf(builder);
+        assertEquals("a=? AND b=?", shadowBuilder.getSelection());
+        assertEquals(2, shadowBuilder.getSelectionArgs().length);
+        assertEquals("a", shadowBuilder.getSelectionArgs()[0]);
+        assertEquals("b", shadowBuilder.getSelectionArgs()[1]);
     }
     
     @Test
     public void withValueBackReference() {
+        ContentProviderOperation.Builder builder = ContentProviderOperation.newUpdate(Uri.EMPTY)
+                .withSelection("a=? AND b=?", new String[]{"a", "b"});
         builder.withValueBackReference("foo", 5);
-        
-        int backReference = shadowBuilder.getWithValueBackReference("foo");
-        assertThat(backReference, is(5));
+
+        ShadowContentProviderOperationBuilder shadowBuilder = Robolectric.shadowOf(builder);
+        ContentValues values = shadowBuilder.getValuesBackReferences();
+        assertEquals(5, values.get("foo"));
     }
     
     @Test
     public void build() {
-        ContentProviderOperation operation = builder.build();
+        ContentProviderOperation operation = ContentProviderOperation.newUpdate(Uri.EMPTY)
+                .withValue("foo", "bar")
+                .build();
         assertThat(operation, notNullValue());
     }
 }

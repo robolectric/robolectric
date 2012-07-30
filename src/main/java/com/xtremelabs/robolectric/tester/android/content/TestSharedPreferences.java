@@ -149,21 +149,30 @@ public class TestSharedPreferences implements SharedPreferences {
         @Override
         public boolean commit() {
             Map<String, Object> previousContent = content.get(filename);
+            Set<String> keys = new HashSet<String>();
             if (shouldClearOnCommit) {
                 previousContent.clear();
             } else {
                 for (String key : editsThatNeedCommit.keySet()) {
+                    keys.add(key);
                     previousContent.put(key, editsThatNeedCommit.get(key));
                 }
                 for (String key : editsThatNeedRemove) {
+                    keys.add(key);
                     previousContent.remove(key);
                 }
             }
 
             for (String key : editsThatNeedCommit.keySet()) {
+                keys.add(key);
                 previousContent.put(key, editsThatNeedCommit.get(key));
             }
 
+            for (OnSharedPreferenceChangeListener l : listeners) {
+                for (String key : keys) {
+                    l.onSharedPreferenceChanged(TestSharedPreferences.this, key);
+                }
+            }
             return true;
         }
 

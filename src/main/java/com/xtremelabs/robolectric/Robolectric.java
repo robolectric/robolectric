@@ -77,6 +77,7 @@ public class Robolectric {
         return RobolectricInternals.newInstanceOf(clazz);
     }
 
+
     public static Object newInstanceOf(String className) {
         try {
             Class<?> clazz = Class.forName(className);
@@ -163,6 +164,7 @@ public class Robolectric {
                 ShadowCompoundButton.class,
                 ShadowConfiguration.class,
                 ShadowConnectivityManager.class,
+                ShadowContentObserver.class,
                 ShadowContentProvider.class,
                 ShadowContentProviderOperation.class,
                 ShadowContentProviderOperationBuilder.class,
