@@ -467,6 +467,7 @@ public class ShadowActivity extends ShadowContextWrapper {
         invoker.call("onResume").withNothing();
     }
 
+    @Implementation
     public void recreate() {
         Bundle outState = new Bundle();
         final ActivityInvoker invoker = new ActivityInvoker();

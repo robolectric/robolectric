@@ -19,6 +19,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowLooper {
     private static ThreadLocal<Looper> looperForThread = makeThreadLocalLoopers();
     private Scheduler scheduler = new Scheduler();
+    private Thread myThread = Thread.currentThread();
 
     boolean quit;
 
@@ -70,6 +71,11 @@ public class ShadowLooper {
         }
     }
 
+    @Implementation
+    public Thread getThread() {
+    	return myThread;
+    }
+    
     public boolean hasQuit() {
         return quit;
     }

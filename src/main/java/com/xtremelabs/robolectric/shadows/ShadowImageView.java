@@ -126,6 +126,7 @@ public class ShadowImageView extends ShadowView {
         return imageDrawable;
     }
 
+    @Implementation
     public int getAlpha() {
         return alpha;
     }
