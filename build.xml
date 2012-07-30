@@ -222,6 +222,9 @@
         <exec executable="mvn">
             <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google_inc_-10/libs/maps.jar" />
         </exec>
+        <exec executable="mvn">
+            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google-10/libs/maps.jar" />
+        </exec>
     </target>
 
     <!-- used by travis-ci -->
