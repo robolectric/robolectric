@@ -108,10 +108,7 @@ import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.view.animation.AlphaAnimation;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
-import android.view.animation.TranslateAnimation;
+import android.view.animation.*;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -231,6 +228,7 @@ public class Robolectric {
                 ShadowAndroidHttpClient.class,
                 ShadowAnimation.class,
                 ShadowAnimationDrawable.class,
+                ShadowAnimationSet.class,
                 ShadowAnimationUtils.class,
                 ShadowApplication.class,
                 ShadowAppWidgetManager.class,
@@ -515,6 +513,10 @@ public class Robolectric {
         return (ShadowAnimationDrawable) shadowOf_(instance);
     }
 
+    public static ShadowAnimationSet shadowOf(AnimationSet instance) {
+        return (ShadowAnimationSet) shadowOf_(instance);
+    }
+    
     public static ShadowAnimationUtils shadowOf(AnimationUtils instance) {
         return (ShadowAnimationUtils) shadowOf_(instance);
     }

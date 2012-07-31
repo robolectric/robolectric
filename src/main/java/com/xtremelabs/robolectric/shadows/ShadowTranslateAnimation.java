@@ -16,6 +16,18 @@ public class ShadowTranslateAnimation extends ShadowAnimation {
     private int toYType;
     private float toYValue;
 
+    public void __constructor__(float fromXValue, float toXValue,
+             float fromYValue, float toYValue) {
+	    this.fromXType = TranslateAnimation.ABSOLUTE;
+	    this.fromXValue = fromXValue;
+	    this.toXType = TranslateAnimation.ABSOLUTE;
+	    this.toXValue = toXValue;
+	    this.fromYType = TranslateAnimation.ABSOLUTE;
+	    this.fromYValue = fromYValue;
+	    this.toYType = TranslateAnimation.ABSOLUTE;
+	    this.toYValue = toYValue;
+	}
+    
     public void __constructor__(int fromXType, float fromXValue, int toXType, float toXValue,
                 int fromYType, float fromYValue, int toYType, float toYValue) {
         this.fromXType = fromXType;
