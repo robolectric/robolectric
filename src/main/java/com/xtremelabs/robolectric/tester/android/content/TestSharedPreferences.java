@@ -171,5 +171,15 @@ public class TestSharedPreferences implements SharedPreferences {
         public void apply() {
             commit();
         }
+
+		@Override
+		public Editor putStringSet(String key, Set<String> values) {
+			return this;
+		}
     }
+
+	@Override
+	public Set<String> getStringSet(String key, Set<String> defValues) {
+		return null;
+	}
 }

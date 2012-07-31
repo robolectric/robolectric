@@ -289,4 +289,10 @@ public class StubPackageManager extends PackageManager {
     @Override public boolean isSafeMode() {
         return false;
     }
+
+	@Override public void verifyPendingInstall(int id, int verificationCode) {
+	}
+
+	@Override public void setInstallerPackageName(String targetPackage, String installerPackageName) {
+	}
 }

@@ -183,4 +183,15 @@ public class TestWindow extends Window {
     @Override public void setSoftInputMode(int softInputMode) {
         this.softInputMode = softInputMode;
     }
+
+	@Override public void invalidatePanelMenu(int featureId) {
+	}
+
+	@Override public boolean superDispatchKeyShortcutEvent(KeyEvent event) {
+		return false;
+	}
+
+	@Override public boolean superDispatchGenericMotionEvent(MotionEvent event) {
+		return false;
+	}
 }
