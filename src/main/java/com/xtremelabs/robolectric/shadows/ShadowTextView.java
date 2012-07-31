@@ -45,8 +45,8 @@ public class ShadowTextView extends ShadowView {
     private int textAppearanceId;
     private TransformationMethod transformationMethod;
     private int inputType;
-    protected int selectionStart = 0;
-    protected int selectionEnd = 0;
+    protected int selectionStart = -1;
+    protected int selectionEnd = -1;
     private Typeface typeface;
 
     private List<TextWatcher> watchers = new ArrayList<TextWatcher>();
@@ -491,6 +491,11 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public int getSelectionEnd() {
         return selectionEnd;
+    }
+
+    @Implementation
+    public boolean hasSelection() {
+        return selectionStart >= 0 && selectionEnd >= 0;
     }
 
     @Implementation
