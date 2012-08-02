@@ -46,4 +46,13 @@ public class ShadowTextUtils {
         }
         return true;
     }
+    
+    @Implementation
+    public static String[] split(String text, String expression) {
+    	if(text.length() == 0) {
+    		return new String[]{};
+    	}
+    	
+    	return text.split(expression);
+    }
 }

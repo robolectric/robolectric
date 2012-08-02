@@ -53,6 +53,14 @@ public class BitmapFactoryTest {
     }
 
     @Test
+    public void decodeResource_canTakeOptions() throws Exception {
+    	BitmapFactory.Options options = new BitmapFactory.Options();
+    	options.inSampleSize = 100;
+        Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image, options);
+        assertEquals(true, shadowOf(bitmap).getDescription().contains("inSampleSize=100"));
+    }
+    
+    @Test
     public void decodeFile_shouldGetWidthAndHeightFromHints() throws Exception {
         ShadowBitmapFactory.provideWidthAndHeightHints("/some/file.jpg", 123, 456);
 

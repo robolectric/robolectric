@@ -462,7 +462,8 @@ public class ShadowAlertDialog extends ShadowDialog {
             return dialog;
         }
 
-        protected Context getContext() {
+        @Implementation
+        public Context getContext() {
             return context;
         }
     }

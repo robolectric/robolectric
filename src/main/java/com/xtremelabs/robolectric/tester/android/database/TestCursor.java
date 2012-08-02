@@ -199,7 +199,12 @@ public class TestCursor implements Cursor {
         throw new UnsupportedOperationException();
     }
 
-    /**
+	@Override
+	public int getType(int columnIndex) {
+        throw new UnsupportedOperationException();
+	}
+
+	/**
      * Mimics ContentResolver.query(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder)
      **/
     public void setQuery(Uri uri, String[] projection, String selection, String[] selectionArgs, String sortOrder) {
