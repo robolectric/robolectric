@@ -141,7 +141,7 @@ public class FakeHttpLayer {
      * logging real HTTP requests, so that functional/integration tests can verify if those were made, without
      * messing with the fake http layer to actually perform the http call, instead of returning a mocked response.
      *
-     * If you are
+     * If you are just using mocked http calls, you should not even notice this method here.
      *
      * @param requestInfo
      */
