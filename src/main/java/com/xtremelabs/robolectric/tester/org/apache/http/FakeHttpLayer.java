@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 public class FakeHttpLayer {
     List<HttpResponseGenerator> pendingHttpResponses = new ArrayList<HttpResponseGenerator>();
     List<HttpRequestInfo> httpRequestInfos = new ArrayList<HttpRequestInfo>();
+    List<HttpResponse> httpResponses = new ArrayList<HttpResponse>();
     List<HttpEntityStub.ResponseRule> httpResponseRules = new ArrayList<HttpEntityStub.ResponseRule>();
     HttpResponse defaultHttpResponse;
     private HttpResponse defaultResponse;
@@ -179,6 +180,19 @@ public class FakeHttpLayer {
 
     public void clearPendingHttpResponses() {
         pendingHttpResponses.clear();
+    }
+
+    public List<HttpResponse> getHttpResponses() {
+        return new ArrayList<HttpResponse>(httpResponses);
+    }
+
+    public void addHttpResponse(HttpResponse response) {
+        this.httpResponses.add(response);
+    }
+
+    public HttpResponse getLastHttpResponse() {
+        if (httpResponses.isEmpty()) return null;
+        return httpResponses.get(httpResponses.size()-1) ;
     }
 
     /**
