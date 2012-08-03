@@ -119,8 +119,7 @@ public class FakeHttpLayer {
             }
         }
 
-        httpRequestInfos.add(new HttpRequestInfo(httpRequest, httpHost, httpContext, requestDirector));
-
+        addRequestInfo(new HttpRequestInfo(httpRequest, httpHost, httpContext, requestDirector));
         return httpResponse;
     }
 
@@ -134,6 +133,19 @@ public class FakeHttpLayer {
 
     public void clearRequestInfos() {
         httpRequestInfos.clear();
+    }
+
+    /**
+     * This method is not supposed to be consumed by tests. This exists solely for the purpose of
+     * logging real HTTP requests, so that functional/integration tests can verify if those were made, without
+     * messing with the fake http layer to actually perform the http call, instead of returning a mocked response.
+     *
+     * If you are
+     *
+     * @param requestInfo
+     */
+    public void addRequestInfo(HttpRequestInfo requestInfo) {
+        httpRequestInfos.add(requestInfo);
     }
 
     public boolean hasResponseRules() {
