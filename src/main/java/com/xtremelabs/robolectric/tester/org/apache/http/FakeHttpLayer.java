@@ -121,6 +121,7 @@ public class FakeHttpLayer {
         }
 
         addRequestInfo(new HttpRequestInfo(httpRequest, httpHost, httpContext, requestDirector));
+        addHttpResponse(httpResponse);
         return httpResponse;
     }
 
@@ -182,17 +183,44 @@ public class FakeHttpLayer {
         pendingHttpResponses.clear();
     }
 
+    /**
+     * This method return a list containing all the HTTP responses logged by the fake http layer, be it
+     * mocked http responses, be it real http calls (if {code}interceptHttpRequests{/code} is set to false).
+     *
+     * It doesn't make much sense to call this method if said property is set to true, as you yourself are
+     * providing the response, but it's here nonetheless.
+     *
+     * @return List of all HTTP Responses logged by the fake http layer.
+     */
     public List<HttpResponse> getHttpResponses() {
         return new ArrayList<HttpResponse>(httpResponses);
     }
 
+    /**
+     * As a consumer of the fake http call, you should never call this method. This should be used solely
+     * by components that exercises http calls.
+     *
+     * @param response The final response received by the server
+     */
     public void addHttpResponse(HttpResponse response) {
         this.httpResponses.add(response);
     }
 
+    /**
+     * Helper method that returns the latest received response from the server.
+     * @return The latest HTTP response or null, if no responses are available
+     */
     public HttpResponse getLastHttpResponse() {
         if (httpResponses.isEmpty()) return null;
         return httpResponses.get(httpResponses.size()-1) ;
+    }
+
+    /**
+     * Call this method if you want to ensure that there's no http responses logged from this point until
+     * the next response arrives. Helpful to ensure that the state is "clear" before actions are executed.
+     */
+    public void clearHttpResponses() {
+        this.httpResponses.clear();
     }
 
     /**
