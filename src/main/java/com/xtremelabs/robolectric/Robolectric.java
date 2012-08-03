@@ -43,6 +43,7 @@ import android.text.ClipboardManager;
 import android.text.TextPaint;
 import android.text.format.DateFormat;
 import android.text.method.PasswordTransformationMethod;
+import android.util.Base64;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
 import android.view.*;
@@ -142,6 +143,7 @@ public class Robolectric {
                 ShadowAsyncTask.class,
                 ShadowAudioManager.class,
                 ShadowBaseAdapter.class,
+                ShadowBase64.class,
                 ShadowBitmap.class,
                 ShadowBitmapDrawable.class,
                 ShadowBitmapFactory.class,
@@ -437,6 +439,10 @@ public class Robolectric {
 
     public static ShadowAudioManager shadowOf(AudioManager instance) {
         return (ShadowAudioManager) shadowOf_(instance);
+    }
+
+    public static ShadowBase64 shadowOf(Base64 base64) {
+        return (ShadowBase64) shadowOf_(base64);
     }
 
     public static ShadowBitmap shadowOf(Bitmap other) {
