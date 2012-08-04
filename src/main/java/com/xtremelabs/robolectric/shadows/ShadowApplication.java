@@ -30,15 +30,15 @@ public class ShadowApplication extends ShadowContextWrapper {
     private static final Map<String, String> SYSTEM_SERVICE_MAP = new HashMap<String, String>();
 
     static {
-        // note that this one is different!
+        // note that these are different!
         SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "com.xtremelabs.robolectric.tester.android.view.TestWindowManager");
+        SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "com.xtremelabs.robolectric.tester.android.text.TestClipboardManager");
 
         // the rest are as mapped in docs...
         SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "android.view.LayoutInflater");
         SYSTEM_SERVICE_MAP.put(Context.ACTIVITY_SERVICE, "android.app.ActivityManager");
         SYSTEM_SERVICE_MAP.put(Context.POWER_SERVICE, "android.os.PowerManager");
         SYSTEM_SERVICE_MAP.put(Context.ALARM_SERVICE, "android.app.AlarmManager");
-        SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.text.ClipboardManager");
         SYSTEM_SERVICE_MAP.put(Context.NOTIFICATION_SERVICE, "android.app.NotificationManager");
         SYSTEM_SERVICE_MAP.put(Context.KEYGUARD_SERVICE, "android.app.KeyguardManager");
         SYSTEM_SERVICE_MAP.put(Context.LOCATION_SERVICE, "android.location.LocationManager");

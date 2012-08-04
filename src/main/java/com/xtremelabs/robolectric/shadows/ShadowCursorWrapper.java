@@ -204,8 +204,14 @@ public class ShadowCursorWrapper implements Cursor {
     public Bundle respond(Bundle bundle) {
         return wrappedCursor.respond(bundle);
     }
+    
+    @Implementation
+	public int getType(int columnIndex) {
+		return 0;
+	}
 
-    public Cursor getWrappedCursor() {
+    @Implementation
+	public Cursor getWrappedCursor() {
         return wrappedCursor;
     }
 

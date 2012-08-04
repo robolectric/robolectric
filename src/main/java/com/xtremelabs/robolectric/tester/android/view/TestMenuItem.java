@@ -5,9 +5,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import android.app.Application;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.view.ContextMenu;
-import android.view.MenuItem;
-import android.view.SubMenu;
+import android.view.*;
 
 public class TestMenuItem implements MenuItem {
 
@@ -198,4 +196,58 @@ public class TestMenuItem implements MenuItem {
             Robolectric.application.startActivity(intent);
         }
     }
+
+	@Override
+	public void setShowAsAction(int actionEnum) {
+	}
+
+	@Override
+	public MenuItem setShowAsActionFlags(int actionEnum) {
+		return null;
+	}
+
+	@Override
+	public MenuItem setActionView(View view) {
+		return null;
+	}
+
+	@Override
+	public MenuItem setActionView(int resId) {
+		return null;
+	}
+
+	@Override
+	public View getActionView() {
+		return null;
+	}
+
+	@Override
+	public MenuItem setActionProvider(ActionProvider actionProvider) {
+		return null;
+	}
+
+	@Override
+	public ActionProvider getActionProvider() {
+		return null;
+	}
+
+	@Override
+	public boolean expandActionView() {
+		return false;
+	}
+
+	@Override
+	public boolean collapseActionView() {
+		return false;
+	}
+
+	@Override
+	public boolean isActionViewExpanded() {
+		return false;
+	}
+
+	@Override
+	public MenuItem setOnActionExpandListener(OnActionExpandListener listener) {
+		return null;
+	}
 }
