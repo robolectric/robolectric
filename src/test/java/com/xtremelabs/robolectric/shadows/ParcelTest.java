@@ -297,4 +297,17 @@ public class ParcelTest {
         assertEquals(1, rehydrated.size());
         assertEquals(23, rehydrated.get(0).contents);
     }
+
+    @Test
+    public void testReadAndWriteStringList() throws Exception {
+        ArrayList<String> original = new ArrayList<String>();
+        ArrayList<String> rehydrated = new ArrayList<String>();
+        original.add("str1");
+        original.add("str2");
+        parcel.writeStringList(original);
+        parcel.readStringList(rehydrated);
+        assertEquals(2, rehydrated.size());
+        assertEquals("str1", rehydrated.get(0));
+        assertEquals("str2", rehydrated.get(1));
+    }
 }

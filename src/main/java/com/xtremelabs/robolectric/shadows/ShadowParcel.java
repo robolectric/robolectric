@@ -181,16 +181,47 @@ public class ShadowParcel {
     }
 
     @Implementation
-    public void readStringArray(String[] val) {
+    public void readStringArray(String[] dest) {
         int n = readInt();
-        if (val.length != n) throw new RuntimeException("bad array lengths");
-        for (int i = 0; i < val.length; i++) {
-            val[i] = readString();
+        if (dest.length != n) throw new RuntimeException("bad array lengths");
+        for (int i = 0; i < dest.length; i++) {
+            dest[i] = readString();
         }
     }
 
     @Implementation
-    public final ArrayList<String> createStringArrayList() {
+    public void writeStringList(List<String> strings) {
+        if (strings == null) {
+            writeInt(-1);
+            return;
+        }
+        int count = strings.size();
+        int i=0;
+        writeInt(count);
+        while (i < count) {
+            writeString(strings.get(i));
+            i++;
+        }
+    }
+
+    @Implementation
+    public void readStringList(List<String> list) {
+        int listSizeBeforeChange = list.size();
+        int addCount = readInt();
+        int i = 0;
+        for (; i < listSizeBeforeChange && i < addCount; i++) {
+            list.set(i, readString());
+        }
+        for (; i<addCount; i++) {
+            list.add(readString());
+        }
+        for (; i<listSizeBeforeChange; i++) {
+            list.remove(addCount);
+        }
+    }
+
+    @Implementation
+    public ArrayList<String> createStringArrayList() {
         int n = readInt();
         if (n < 0) {
             return null;
@@ -225,7 +256,7 @@ public class ShadowParcel {
     }
 
     @Implementation
-    public final void writeTypedList(List val) {
+    public void writeTypedList(List val) {
         if (val == null) {
             writeInt(-1);
             return;
