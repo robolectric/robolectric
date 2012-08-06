@@ -6,6 +6,7 @@ import android.os.Bundle;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,6 +16,9 @@ import java.util.List;
 public class ShadowParcel {
     private ArrayList parcelData = new ArrayList();
     private int index = 0;
+
+    @RealObject
+    private Parcel realParcel;
 
     @Implementation
     public static Parcel obtain() {
@@ -51,8 +55,8 @@ public class ShadowParcel {
 
     @Implementation
     @SuppressWarnings("unchecked")
-    public void writeByte( byte b ) {
-    	parcelData.add( b );
+    public void writeByte(byte b) {
+        parcelData.add(b);
     }
 
     @Implementation
@@ -114,7 +118,7 @@ public class ShadowParcel {
     public void readFloatArray(float[] val) {
         int n = readInt();
         if (val.length != n) throw new RuntimeException("bad array lengths");
-        for (int i = 0; i< val.length; i++) {
+        for (int i = 0; i < val.length; i++) {
             val[i] = readFloat();
         }
     }
@@ -135,7 +139,7 @@ public class ShadowParcel {
     public void readDoubleArray(double[] val) {
         int n = readInt();
         if (val.length != n) throw new RuntimeException("bad array lengths");
-        for (int i = 0; i< val.length; i++) {
+        for (int i = 0; i < val.length; i++) {
             val[i] = readDouble();
         }
     }
@@ -150,7 +154,7 @@ public class ShadowParcel {
     public void readIntArray(int[] val) {
         int n = readInt();
         if (val.length != n) throw new RuntimeException("bad array lengths");
-        for (int i = 0; i< val.length; i++) {
+        for (int i = 0; i < val.length; i++) {
             val[i] = readInt();
         }
     }
@@ -165,7 +169,7 @@ public class ShadowParcel {
     public void readLongArray(long[] val) {
         int n = readInt();
         if (val.length != n) throw new RuntimeException("bad array lengths");
-        for (int i = 0; i< val.length; i++) {
+        for (int i = 0; i < val.length; i++) {
             val[i] = readLong();
         }
     }
@@ -177,17 +181,101 @@ public class ShadowParcel {
     }
 
     @Implementation
-    public void readStringArray(String[] val) {
+    public void readStringArray(String[] dest) {
         int n = readInt();
-        if (val.length != n) throw new RuntimeException("bad array lengths");
-        for (int i = 0; i< val.length; i++) {
-            val[i] = readString();
+        if (dest.length != n) throw new RuntimeException("bad array lengths");
+        for (int i = 0; i < dest.length; i++) {
+            dest[i] = readString();
         }
     }
 
+    @Implementation
+    public void writeStringList(List<String> strings) {
+        if (strings == null) {
+            writeInt(-1);
+            return;
+        }
+        int count = strings.size();
+        int i=0;
+        writeInt(count);
+        while (i < count) {
+            writeString(strings.get(i));
+            i++;
+        }
+    }
 
+    @Implementation
+    public void readStringList(List<String> list) {
+        int listSizeBeforeChange = list.size();
+        int addCount = readInt();
+        int i = 0;
+        for (; i < listSizeBeforeChange && i < addCount; i++) {
+            list.set(i, readString());
+        }
+        for (; i<addCount; i++) {
+            list.add(readString());
+        }
+        for (; i<listSizeBeforeChange; i++) {
+            list.remove(addCount);
+        }
+    }
 
+    @Implementation
+    public ArrayList<String> createStringArrayList() {
+        int n = readInt();
+        if (n < 0) {
+            return null;
+        }
 
+        ArrayList<String> l = new ArrayList<String>(n);
+        while (n > 0) {
+            l.add(readString());
+            n--;
+        }
+        return l;
+    }
+
+    @Implementation
+    public ArrayList createTypedArrayList(Parcelable.Creator c) {
+        int n = readInt();
+        if (n < 0) {
+            return null;
+        }
+
+        ArrayList l = new ArrayList(n);
+
+        while (n > 0) {
+            if (readInt() != 0) {
+                l.add(c.createFromParcel(realParcel));
+            } else {
+                l.add(null);
+            }
+            n--;
+        }
+        return l;
+    }
+
+    @Implementation
+    public void writeTypedList(List val) {
+        if (val == null) {
+            writeInt(-1);
+            return;
+        }
+
+        int n = val.size();
+        int i = 0;
+        writeInt(n);
+        while (i < n) {
+            Object item = val.get(i);
+            if (item != null) {
+                writeInt(1);
+                ((Parcelable) item).writeToParcel(realParcel, 0);
+            } else {
+                writeInt(0);
+            }
+            i++;
+        }
+    }
 
     public int getIndex() {
         return index;
