@@ -416,6 +416,15 @@ public class ShadowApplication extends ShadowContextWrapper {
         }
     }
 
+    public boolean hasReceiverForIntent(Intent intent) {
+        for (Wrapper wrapper : registeredReceivers) {
+            if (wrapper.intentFilter.matchAction(intent.getAction())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Non-Android accessor.
      *

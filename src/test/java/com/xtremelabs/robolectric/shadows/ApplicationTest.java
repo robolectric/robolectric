@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
+import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -28,6 +29,7 @@ import java.util.List;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
@@ -229,7 +231,17 @@ public class ApplicationTest {
 
         shadowOf(Robolectric.application).assertNoBroadcastListenersOfActionRegistered(activity, "Bar");
     }
-    
+
+    @Test
+    public void canAnswerIfReceiverIsRegisteredForIntent() throws Exception {
+        BroadcastReceiver expectedReceiver = new TestBroadcastReceiver();
+        ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+        assertFalse(shadowApplication.hasReceiverForIntent(new Intent("Foo")));
+        Robolectric.application.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
+
+        assertTrue(shadowApplication.hasReceiverForIntent(new Intent("Foo")));
+    }
+
     @Test
 	public void broadcasts_shouldBeLogged() {
 		Intent broadcastIntent = new Intent("foo");
