@@ -11,6 +11,8 @@ public class ShadowListPreference extends ShadowDialogPreference {
 	CharSequence[] entries;
 	CharSequence[] entryValues;
 	
+	String value;
+	
 	@Implementation
 	public CharSequence[] getEntries() {
 		return entries;
@@ -39,5 +41,15 @@ public class ShadowListPreference extends ShadowDialogPreference {
 	@Implementation
 	public void setEntryValues(int entryValuesResId) {
 		this.entryValues = context.getResources().getStringArray(entryValuesResId);
+	}
+	
+	@Implementation
+	public void setValue(String value) {
+		this.value = value;
+	}
+	
+	@Implementation
+	public String getValue() {
+		return value;
 	}
 }

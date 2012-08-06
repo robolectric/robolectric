@@ -9,6 +9,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -62,5 +63,12 @@ public class ListPreferenceTest {
 		assertThat(listPreference.getEntryValues(), nullValue());
 		listPreference.setEntryValues(R.array.greetings);
 		assertThat(listPreference.getEntryValues(), notNullValue());			
+	}
+	
+	@Test
+	public void shouldSetValue() {
+		assertThat(listPreference.getValue(), nullValue());
+		listPreference.setValue("testing");
+		assertThat(listPreference.getValue(), equalTo("testing"));
 	}
 }
