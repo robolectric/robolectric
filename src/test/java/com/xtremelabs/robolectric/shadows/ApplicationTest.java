@@ -32,7 +32,9 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -168,52 +170,52 @@ public class ApplicationTest {
         assertNull(service.service);
         assertNull(shadowApplication.peekNextStartedService());
     }
-    
-    @Test 
+
+    @Test
     public void shouldHaveStoppedServiceIntentAndIndicateServiceWasntRunning() {
-    	ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
-    	
-    	Activity activity = new Activity();
-    	
-    	Intent intent = getSomeActionIntent("some.action");
-    	
-    	boolean wasRunning = activity.stopService(intent);
-    	
-    	assertFalse(wasRunning);
-    	assertEquals(intent, shadowApplication.getNextStoppedService());
+        ShadowApplication shadowApplication = Robolectric.shadowOf(Robolectric.application);
+
+        Activity activity = new Activity();
+
+        Intent intent = getSomeActionIntent("some.action");
+
+        boolean wasRunning = activity.stopService(intent);
+
+        assertFalse(wasRunning);
+        assertEquals(intent, shadowApplication.getNextStoppedService());
     }
-    
+
     private Intent getSomeActionIntent(String action) {
-    	Intent intent = new Intent();
-    	intent.setAction(action);
-    	return intent;
+        Intent intent = new Intent();
+        intent.setAction(action);
+        return intent;
     }
-    
+
     @Test
     public void shouldHaveStoppedServiceIntentAndIndicateServiceWasRunning() {
-    	ShadowApplication shadowApplication = shadowOf(Robolectric.application);
-    	
-    	Activity activity = new Activity();
-    	
-    	Intent intent = getSomeActionIntent("some.action");
-    	
-    	activity.startService(intent);
-    	
-    	boolean wasRunning = activity.stopService(intent);
-    	
-    	assertTrue(wasRunning);
-    	assertEquals(intent, shadowApplication.getNextStoppedService());
+        ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+
+        Activity activity = new Activity();
+
+        Intent intent = getSomeActionIntent("some.action");
+
+        activity.startService(intent);
+
+        boolean wasRunning = activity.stopService(intent);
+
+        assertTrue(wasRunning);
+        assertEquals(intent, shadowApplication.getNextStoppedService());
     }
-    
+
     @Test
     public void shouldClearStartedServiceIntents() {
-    	ShadowApplication shadowApplication = shadowOf(Robolectric.application);
-    	shadowApplication.startService(getSomeActionIntent("some.action"));
-    	shadowApplication.startService(getSomeActionIntent("another.action"));
-    	
-    	shadowApplication.clearStartedServices();
-    	
-    	assertNull(shadowApplication.getNextStartedService());
+        ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+        shadowApplication.startService(getSomeActionIntent("some.action"));
+        shadowApplication.startService(getSomeActionIntent("another.action"));
+
+        shadowApplication.clearStartedServices();
+
+        assertNull(shadowApplication.getNextStartedService());
     }
 
     @Test(expected = IllegalStateException.class)
@@ -243,14 +245,25 @@ public class ApplicationTest {
     }
 
     @Test
-	public void broadcasts_shouldBeLogged() {
-		Intent broadcastIntent = new Intent("foo");
-		Robolectric.application.sendBroadcast(broadcastIntent);
-		
-		List<Intent> broadcastIntents = shadowOf(Robolectric.application).getBroadcastIntents();
-		assertTrue(broadcastIntents.size() == 1);
-		assertEquals(broadcastIntent, broadcastIntents.get(0));
-	}
+    public void canFindAllReceiversForAnIntent() throws Exception {
+        BroadcastReceiver expectedReceiver = new TestBroadcastReceiver();
+        ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+        assertFalse(shadowApplication.hasReceiverForIntent(new Intent("Foo")));
+        Robolectric.application.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
+        Robolectric.application.registerReceiver(expectedReceiver, new IntentFilter("Foo"));
+
+        assertTrue(shadowApplication.getReceiversForIntent(new Intent("Foo")).size() == 2);
+    }
+
+    @Test
+    public void broadcasts_shouldBeLogged() {
+        Intent broadcastIntent = new Intent("foo");
+        Robolectric.application.sendBroadcast(broadcastIntent);
+
+        List<Intent> broadcastIntents = shadowOf(Robolectric.application).getBroadcastIntents();
+        assertTrue(broadcastIntents.size() == 1);
+        assertEquals(broadcastIntent, broadcastIntents.get(0));
+    }
 
     private static class NullBinder implements IBinder {
         @Override
@@ -291,8 +304,8 @@ public class ApplicationTest {
             return false;
         }
 
-		@Override
-		public void dumpAsync(FileDescriptor fd, String[] args) throws RemoteException {
-		}
+        @Override
+        public void dumpAsync(FileDescriptor fd, String[] args) throws RemoteException {
+        }
     }
 }

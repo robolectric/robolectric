@@ -2,7 +2,13 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.os.IBinder;
 import android.os.Looper;
@@ -16,7 +22,11 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.util.Scheduler;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -423,6 +433,16 @@ public class ShadowApplication extends ShadowContextWrapper {
             }
         }
         return false;
+    }
+
+    public List<BroadcastReceiver> getReceiversForIntent(Intent intent) {
+        ArrayList<BroadcastReceiver> broadcastReceivers = new ArrayList<BroadcastReceiver>();
+        for (Wrapper wrapper : registeredReceivers) {
+            if (wrapper.intentFilter.matchAction(intent.getAction())) {
+                broadcastReceivers.add(wrapper.getBroadcastReceiver());
+            }
+        }
+        return broadcastReceivers;
     }
 
     /**
