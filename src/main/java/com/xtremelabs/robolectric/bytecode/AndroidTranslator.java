@@ -372,6 +372,23 @@ public class AndroidTranslator implements Translator {
         boolean returnsVoid = returnType.isVoid();
         String className = ctClass.getName();
 
+        /*
+            METHOD BODY TEMPLATE:
+
+            if (!RobolectricInternals.shouldCallDirectly(isStatic ? class : this)) {
+                Object x = RobolectricInternals.methodInvoked(
+                    <className>.class, "<methodName>", isStatic ? null : this,
+                    <paramTypes>,
+                    <params>
+                );
+                if (x != null) {
+                    return ((<returnClass>)x)<unboxing>;
+                }
+                <optional super call or return default (null/0)>;
+            }
+
+        */
+
         String methodBody;
         StringBuilder buf = new StringBuilder();
         buf.append("if (!");
