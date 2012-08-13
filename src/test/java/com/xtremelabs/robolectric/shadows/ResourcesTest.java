@@ -1,5 +1,16 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
@@ -8,20 +19,12 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.NinePatchDrawable;
 
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.RobolectricTestRunnerTest.RunnerForTesting;
+import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.util.TestR;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
 
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -77,6 +80,13 @@ public class ResourcesTest {
     	assertThat( resources.getDrawable( TestR.anim.test_anim_1 ), instanceOf( AnimationDrawable.class ) );
     }
     
+    @Test
+    @Values( locale="fr" )
+    public void testGetResourceFromSpecificLocale(){
+    	String hello=resources.getString( R.string.hello );
+    	assertThat( hello, equalTo( "Bonjour" ) );
+    }
+    
     /**
      * given an R.color.id value, will return a ColorDrawable
      */
@@ -129,4 +139,6 @@ public class ResourcesTest {
         assertThat(activity.getResources().getDisplayMetrics().heightPixels, equalTo(800));
         assertThat(activity.getResources().getDisplayMetrics().widthPixels, equalTo(480));
     }
+    
+ 
 }
