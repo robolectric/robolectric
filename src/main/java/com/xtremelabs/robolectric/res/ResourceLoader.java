@@ -6,6 +6,7 @@ import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceScreen;
+import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
@@ -60,13 +61,20 @@ public class ResourceLoader {
 	private final IntegerResourceLoader integerResourceLoader;
 	private boolean isInitialized = false;
 	private boolean strictI18n = false;
+	private String locale="";
 	
 	private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
 
-	public ResourceLoader( int sdkVersion, Class rClass, File resourceDir, File assetsDir ) throws Exception {
+	public ResourceLoader(  int sdkVersion, Class rClass, File resourceDir, File assetsDir ) throws Exception {
+		this( sdkVersion, rClass, resourceDir, assetsDir, "");
+	}
+	
+	public ResourceLoader( int sdkVersion, Class rClass, File resourceDir, File assetsDir, String locale ) throws Exception {
 		this.sdkVersion = sdkVersion;
 		this.assetsDir = assetsDir;
 		this.rClass = rClass;
+		this.locale = locale;
+		
 		resourceExtractor = new ResourceExtractor();
 		resourceExtractor.addLocalRClass( rClass );
 		resourceExtractor.addSystemRClass( R.class );
@@ -236,7 +244,15 @@ public class ResourceLoader {
 	}
 
 	private File getValueResourceDir( File xmlResourceDir ) {
-		return xmlResourceDir != null ? new File( xmlResourceDir, "values" ) : null;
+		String valuesDir = "values";
+		if( !TextUtils.isEmpty( locale ) ){
+			valuesDir += "-"+ locale;
+		}
+		File result = ( xmlResourceDir != null ) ? new File( xmlResourceDir, valuesDir ) : null;
+		if( result == null || !result.exists() ){
+			throw new RuntimeException("Couldn't find value resource directory: " + result.getAbsolutePath() );
+		}
+		return result;
 	}
 
 	private File getPreferenceResourceDir( File xmlResourceDir ) {

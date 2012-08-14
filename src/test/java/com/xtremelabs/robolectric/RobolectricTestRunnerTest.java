@@ -7,23 +7,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
 
-import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
-import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.shadows.ShadowActivity;
-import com.xtremelabs.robolectric.shadows.ShadowApplication;
-
 import android.app.Activity;
 import android.app.Application;
-import android.content.ComponentName;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.KeyEvent;
-import android.view.Menu;
-import android.view.MenuItem;
-import android.view.SubMenu;
 import android.widget.TextView;
+
+import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
+import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
+import com.xtremelabs.robolectric.annotation.Values;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 
 @RunWith(RobolectricTestRunnerTest.RunnerForTesting.class)
 public class RobolectricTestRunnerTest {
@@ -53,6 +44,12 @@ public class RobolectricTestRunnerTest {
     @DisableStrictI18n
     public void internalBeforeTest_clearsI18nStrictModeFromProperty() {
     	assertFalse(RunnerForTesting.instance.robolectricConfig.getStrictI18n());
+    }
+    
+    @Test
+    @Values( locale="fr")
+    public void internalBeforeTest_setLocale(){
+    	assertEquals( RunnerForTesting.instance.robolectricConfig.getLocale(), "fr" );
     }
     
     @Test
