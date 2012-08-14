@@ -259,7 +259,7 @@ public class RobolectricConfig {
     	return this.locale;
     }
     
-    public boolean isLocaleChanges() {
+    public boolean isLocaleChanged() {
     	return !locale.equals( oldLocale );
     }
     

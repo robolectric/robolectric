@@ -510,7 +510,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     private ResourceLoader createResourceLoader(final RobolectricConfig robolectricConfig) {
         ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(robolectricConfig);
         // When locale has changed, reload the resource files.
-        if (resourceLoader == null || robolectricConfig.isLocaleChanges() ) {
+        if (resourceLoader == null || robolectricConfig.isLocaleChanged() ) {
             try {
                 robolectricConfig.validate();
 
