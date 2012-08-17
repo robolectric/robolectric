@@ -33,6 +33,8 @@ public class ShadowResources {
     private DisplayMetrics displayMetrics;
     private Display display;
 
+    private static Resources system = null;
+
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
         ShadowResources shadowResources = shadowOf(resources);
         if (shadowResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
@@ -251,5 +253,14 @@ public class ShadowResources {
         public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
             return newInstanceOf(TypedArray.class);
         }
+    }
+
+    @Implementation
+    public static Resources getSystem() {
+        if (system == null) {
+            system = new Resources(null, null, null);
+        }
+
+        return system;
     }
 }
