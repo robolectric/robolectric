@@ -149,4 +149,14 @@ public class ResourcesTest {
         assertThat(activity.getResources().getDisplayMetrics().heightPixels, equalTo(800));
         assertThat(activity.getResources().getDisplayMetrics().widthPixels, equalTo(480));
     }
+
+    @Test
+    public void getSystemShouldReturnSystemResources() throws Exception {
+        assertThat(Resources.getSystem(), instanceOf(Resources.class));
+    }
+
+    @Test
+    public void multipleCallsToGetSystemShouldReturnSameInstance() throws Exception {
+        assertThat(Resources.getSystem(), equalTo(Resources.getSystem()));
+    }
 }
