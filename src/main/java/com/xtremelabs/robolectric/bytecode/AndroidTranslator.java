@@ -322,11 +322,19 @@ public class AndroidTranslator implements Translator {
             } else {
                 ctMethod.insertBefore("{\n" + methodBody + "}\n");
             }
+            
+            wrapMethodInvocation(ctMethod, isStatic);
+            
         } catch (Exception e) {
             throw new RuntimeException("problem instrumenting " + describeBefore, e);
         }
     }
 
+    private static void wrapMethodInvocation(CtMethod ctMethod, boolean isStatic) throws CannotCompileException {
+    	ctMethod.insertAfter(RobolectricInternals.class.getName() + ".onMethodInvocationFinish(" 
+    			+ (isStatic ? "null" : "this") + ");", true);
+    }
+    
     private CtMethod makeNewMethod(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, String methodName, CtClass[] paramTypes, String methodBody) throws CannotCompileException, NotFoundException {
         return CtNewMethod.make(
                 ctMethod.getModifiers(),

@@ -20,7 +20,7 @@ public class RobolectricInternals {
     };
 
     private static class Vars {
-        Object callDirectly;
+        DirectCallPolicy directCallPolicy = DirectCallPolicy.NOP;
     }
 
     public static <T> T newInstanceOf(Class<T> clazz) {
@@ -79,32 +79,25 @@ public class RobolectricInternals {
     public static <T> T directlyOn(T shadowedObject) {
         Vars vars = ALL_VARS.get();
 
-        if (vars.callDirectly != null) {
-            Object expectedInstance = vars.callDirectly;
-            vars.callDirectly = null;
-            throw new RuntimeException("already expecting a direct call on <" + expectedInstance + "> but here's a new request for <" + shadowedObject + ">");
+        if (vars.directCallPolicy != DirectCallPolicy.NOP) {
+            throw new DirectCallPolicy.DirectCallException("Direct call policy is already set: " + vars.directCallPolicy);
         }
 
-        vars.callDirectly = shadowedObject;
+        vars.directCallPolicy = new DirectCallPolicy.OneShotDirectCallPolicy(shadowedObject);
         return shadowedObject;
     }
 
     public static boolean shouldCallDirectly(Object directInstance) {
         Vars vars = ALL_VARS.get();
-        if (vars.callDirectly != null) {
-            if (vars.callDirectly != directInstance) {
-                Object expectedInstance = vars.callDirectly;
-                vars.callDirectly = null;
-                throw new RuntimeException("expected to perform direct call on <" + expectedInstance + "> but got <" + directInstance + ">");
-            } else {
-                vars.callDirectly = null;
-            }
-            return true;
-        } else {
-            return false;
-        }
+        return vars.directCallPolicy.shouldCallDirectly(directInstance);
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
+    public static void onMethodInvocationFinish(final Object instance) {
+        Vars vars = ALL_VARS.get();
+        vars.directCallPolicy = vars.directCallPolicy.onMethodInvocationFinished(instance);
+    }
+    
     @SuppressWarnings({"UnusedDeclaration"})
     public static Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Throwable {
         try {
