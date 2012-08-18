@@ -313,17 +313,19 @@ public class AndroidTranslator implements Translator {
                 newMethod.setModifiers(newModifiers);
                 if (wasDeclaredInClass) {
                     ctMethod.insertBefore("{\n" + methodBody + "}\n");
+                    wrapMethodInvocation(ctMethod, isStatic);
                 } else {
+                    wrapMethodInvocation(newMethod, isStatic);
                     ctClass.addMethod(newMethod);
                 }
             } else if (wasAbstract || wasNative) {
                 CtMethod newMethod = makeNewMethod(ctClass, ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + "\n}");
                 ctMethod.setBody(newMethod, null);
+                wrapMethodInvocation(ctMethod, isStatic);
             } else {
                 ctMethod.insertBefore("{\n" + methodBody + "}\n");
+                wrapMethodInvocation(ctMethod, isStatic);
             }
-            
-            wrapMethodInvocation(ctMethod, isStatic);
             
         } catch (Exception e) {
             throw new RuntimeException("problem instrumenting " + describeBefore, e);
