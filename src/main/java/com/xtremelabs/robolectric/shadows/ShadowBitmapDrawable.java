@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -21,6 +22,10 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     @RealObject private BitmapDrawable realBitmapDrawable;
 
     public void __constructor__(Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
+    public void __constructor__(Resources resources, Bitmap bitmap) {
         this.bitmap = bitmap;
     }
 
