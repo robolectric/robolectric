@@ -23,4 +23,9 @@ public class ShadowTypedArray {
     public int getInteger(int index, int defValue) {
         return defValue;
     }
+
+    @Implementation
+    public int getResourceId(int index, int defValue) {
+        return defValue;
+    }
 }
