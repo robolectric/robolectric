@@ -69,21 +69,21 @@ public interface DirectCallPolicy {
             if (directInstance == null) { throw new DirectCallException("Direct call target cannot be null, use class instance for static calls"); }
             this.expectedInstance = directInstance;
         }
-        
+
         @Override
         public boolean shouldCallDirectly(Object target) {
             if (expectedInstance == null) { return false; }
-            
+
             if (expectedInstance != target) {
                 Object expected = expectedInstance;
                 expectedInstance = null;
                 throw new DirectCallException("expected to perform direct call on <" + expected + "> but got <" + target + ">");
             }
-            
+
             return true;
         }
     }
-    
+
     /** Direct call is performed once only. */
     public static class OneShotDirectCallPolicy extends SafeDirectCallPolicy {
 
@@ -102,22 +102,22 @@ public interface DirectCallPolicy {
         public DirectCallPolicy onMethodInvocationFinished(Object target) {
             return NOP;
         }
-        
+
         @Override
         public boolean checkForChange(DirectCallPolicy previousPolicy) {
             // first setup
             if (previousPolicy == NOP) { return true; }
-            
+
             // twice setup
             if (previousPolicy instanceof OneShotDirectCallPolicy) {
                 throw new DirectCallException("already expecting a direct call on <" + ((OneShotDirectCallPolicy) previousPolicy).expectedInstance + "> but here's a new request for <" + expectedInstance + ">");
             }
-            
+
             // we are inside full stack direct call => do not change anything
             if (previousPolicy instanceof FullStackDirectCallPolicy && ((FullStackDirectCallPolicy) previousPolicy).checkWeAreDeepInsideStack()) {
                 return false;
             }
-            
+
             // unexpected
             throw new DirectCallException("Direct call policy is already set to " + previousPolicy);
         }
@@ -132,7 +132,7 @@ public interface DirectCallPolicy {
         public FullStackDirectCallPolicy(final Object directInstance) {
             super(directInstance);
         }
-        
+
         @Override
         public boolean shouldCallDirectly(Object target) {
             boolean result = depth == -1 ? super.shouldCallDirectly(target) : true;
@@ -146,7 +146,7 @@ public interface DirectCallPolicy {
                 // error happened
                 return NOP;
             }
-            
+
             if (depth < 0) {
                 throw new DirectCallException("Stack depth is negative: " + depth + ", target: " + expectedInstance);
             }
@@ -162,21 +162,21 @@ public interface DirectCallPolicy {
         boolean checkWeAreDeepInsideStack() {
             return depth >= 0;
         }
-        
+
         @Override
         public boolean checkForChange(DirectCallPolicy previousPolicy) {
             // first setup
             if (previousPolicy == NOP) { return true; }
-            
+
             // we are inside full stack direct call => do not change anything
             if (previousPolicy instanceof FullStackDirectCallPolicy && ((FullStackDirectCallPolicy) previousPolicy).checkWeAreDeepInsideStack()) {
                 return false;
             }
-            
+
             // unexpected, bad setup
             throw new DirectCallException("Direct call policy is already set to " + previousPolicy);
         }
-        
+
     }
 
 }
