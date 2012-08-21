@@ -1,5 +1,9 @@
 package com.xtremelabs.robolectric.bytecode;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+
 /**
  * Policy that defined how direct calls are handled. Policy is thread local.
  */
@@ -126,16 +130,94 @@ public interface DirectCallPolicy {
     /** Direct call is performed within the invocation full stack. */
     public static class FullStackDirectCallPolicy extends SafeDirectCallPolicy {
 
+        /** Include static calls. */
+        private final boolean withStatics;
+        /** Include list. */
+        private final List<String> includeList;
+        
         /** Stack depth. */
         private int depth = -1;
 
-        public FullStackDirectCallPolicy(final Object directInstance) {
+        public static class Builder<T> {
+            private boolean statics;
+            private List<String> includeList;
+            private final T target;
+            
+            private Builder(final T target) {
+                if (target == null) { throw new IllegalArgumentException("Direct target is null"); }
+                this.target = target;
+            }
+            
+            public Builder<T> withStatics(boolean statics) {
+                this.statics = statics;
+                return this;
+            }
+            
+            private void ensureIncludeList() {
+                if (includeList == null) {
+                    includeList = new ArrayList<String>();
+                }
+            }
+            
+            public Builder<T> include(final List<String> packages) {
+                if (packages != null && !packages.isEmpty()) {
+                    ensureIncludeList();
+                    includeList.addAll(packages);
+                }
+                return this;
+            }
+            
+            public Builder<T> include(final Class<?>... classes) {
+                if (classes != null && classes.length != 0) {
+                    ensureIncludeList();
+                    for (Class<?> clazz : classes) {
+                        includeList.add(clazz.getName());
+                    }
+                }
+                return this;
+            }
+            
+            public T getTarget() {
+                return target;
+            }
+            
+            public FullStackDirectCallPolicy create() {
+                return new FullStackDirectCallPolicy(target, statics, includeList);
+            }
+            
+        }
+        
+        private FullStackDirectCallPolicy(final Object directInstance, final boolean withStatics, final List<String> includeList) {
             super(directInstance);
+            this.includeList = includeList;
+            this.withStatics = withStatics;
         }
 
+        public static FullStackDirectCallPolicy withTarget(final Object target) {
+            return build(target).create();
+        }
+        
+        public static <T> Builder<T> build(final T target) {
+            return new Builder<T>(target);
+        }
+        
+        private boolean isClassIncluded(final String name) {
+            for (String pckg : includeList) {
+                if (name.startsWith(pckg)) { return true; }
+            }
+            return false;
+        }
+        
+        private boolean shouldBeDirect(final Object target) {
+            return expectedInstance == target
+                    || (target instanceof Class<?> && withStatics) // static call, we do not instrument Class
+                    || (includeList != null && isClassIncluded(target.getClass().getName())); 
+        }
+        
         @Override
         public boolean shouldCallDirectly(Object target) {
             boolean result = depth == -1 ? super.shouldCallDirectly(target) : true;
+            result &= shouldBeDirect(target);
             if (result) { ++depth; }
             return result;
         }
@@ -150,10 +232,7 @@ public interface DirectCallPolicy {
             if (depth < 0) {
                 throw new DirectCallException("Stack depth is negative: " + depth + ", target: " + expectedInstance);
             }
-            if (depth-- == 0) {
-                if (target != expectedInstance) {
-                    throw new DirectCallException("Unexpected state: stack should have been collapsed on <" + expectedInstance + ">, but got <" + target + ">");
-                }
+            if (shouldBeDirect(target) && depth-- == 0) {
                 return NOP;
             }
             return this;

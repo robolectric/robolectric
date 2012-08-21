@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.bytecode;
 
 import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.DirectCallException;
+import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.FullStackDirectCallPolicy;
 import com.xtremelabs.robolectric.internal.Implements;
 
 import java.lang.reflect.Constructor;
@@ -95,10 +96,16 @@ public class RobolectricInternals {
     }
 
     public static <T> T directlyOnFullStack(T shadowedObject) {
-        setupDirectCallPolicy(new DirectCallPolicy.FullStackDirectCallPolicy(shadowedObject));
+        setupDirectCallPolicy(FullStackDirectCallPolicy.withTarget(shadowedObject));
         return shadowedObject;
     }
-    
+
+    public static <T> T directlyOnFullStack(FullStackDirectCallPolicy.Builder<T> builder) {
+        FullStackDirectCallPolicy policy = builder.create();
+        setupDirectCallPolicy(policy);
+        return builder.getTarget();
+    }
+
     public static boolean shouldCallDirectly(Object directInstance) {
         Vars vars = ALL_VARS.get();
         try {

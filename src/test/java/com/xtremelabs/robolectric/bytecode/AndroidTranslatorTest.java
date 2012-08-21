@@ -10,6 +10,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
 import java.lang.reflect.Constructor;
+import java.util.Arrays;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +27,8 @@ import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.bytecode.foo.Foo2;
+import com.xtremelabs.robolectric.bytecode.foo.ShadowFoo2;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.Instrument;
@@ -189,6 +192,37 @@ public class AndroidTranslatorTest {
         assertThat(foo.callGetName(), equalTo("shadow"));
     }
 
+    @Test
+    public void testDirectlyOnFullStack_IncludeClasses() throws Exception {
+        Robolectric.bindShadowClass(ShadowFoo.class);
+        Robolectric.bindShadowClass(ShadowFoo2.class);
+
+        Foo foo = new Foo("");
+        Foo2 foo2 = new Foo2();
+        // instrumented call
+        assertFalse(foo2.crossCallFooDirectly(foo));
+        // one shot direct call
+        assertFalse(directlyOn(foo2).crossCallFooDirectly(foo));
+        // simple full stack
+        assertFalse(directlyOnFullStack(foo2).crossCallFooDirectly(foo));
+        
+        // include class
+        assertTrue(
+            directlyOnFullStack(
+                DirectCallPolicy.FullStackDirectCallPolicy.build(foo2)
+                    .include(Foo.class)
+            ).crossCallFooDirectly(foo)
+        );
+        
+        // include package
+        assertTrue(
+            directlyOnFullStack(
+                DirectCallPolicy.FullStackDirectCallPolicy.build(foo2)
+                    .include(Arrays.asList(Foo.class.getPackage().getName()))
+            ).crossCallFooDirectly(foo)
+        );
+    }
+    
     @Test
     public void testDirectlyOnFullStack_Statics() throws Exception {
         View.resolveSize(0, 0);

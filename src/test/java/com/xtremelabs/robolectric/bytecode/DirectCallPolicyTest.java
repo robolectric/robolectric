@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 
 import android.content.Context;
 import android.support.v4.content.Loader;
+import android.util.Log;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -53,25 +54,28 @@ public class DirectCallPolicyTest {
 	@Test(expected = DirectCallException.class)
 	public void fullStackShouldExpectDirectCallBeforeMethodInvocationFinished() {
 	    Object target = new Object();
-	    new FullStackDirectCallPolicy(target).onMethodInvocationFinished(target);
+	    FullStackDirectCallPolicy.withTarget(target).onMethodInvocationFinished(target);
 	}
 	
 	@Test
 	public void testGeneralFullStackBehavior() {
 	    Object target = new Object();
-	    FullStackDirectCallPolicy fullStack = new FullStackDirectCallPolicy(target);
+	    FullStackDirectCallPolicy fullStack = FullStackDirectCallPolicy.withTarget(target);
         assertTrue(fullStack.shouldCallDirectly(target));
         
         // go deeper
+        assertTrue(fullStack.shouldCallDirectly(target));
         Object another = new Object();
-        assertTrue(fullStack.shouldCallDirectly(another));
+        assertFalse(fullStack.shouldCallDirectly(another));
         // go deeper, static call
-        assertTrue(fullStack.shouldCallDirectly(null));
+        assertFalse(fullStack.shouldCallDirectly(null));
         
         // pop, static call
         assertSame(fullStack, fullStack.onMethodInvocationFinished(null));
         // pop
         assertSame(fullStack, fullStack.onMethodInvocationFinished(another));
+        // pop, affect
+        assertSame(fullStack, fullStack.onMethodInvocationFinished(target));
         
         assertSame(DirectCallPolicy.NOP, fullStack.onMethodInvocationFinished(target));
 	}
@@ -79,7 +83,7 @@ public class DirectCallPolicyTest {
     @Test
     public void ignoreOneShotWithInFullStack() {
         Object target = new Object(); 
-        FullStackDirectCallPolicy fullStack = new FullStackDirectCallPolicy(target);
+        FullStackDirectCallPolicy fullStack = FullStackDirectCallPolicy.withTarget(target);
         assertTrue(fullStack.shouldCallDirectly(target));
         OneShotDirectCallPolicy oneShot = new OneShotDirectCallPolicy(new Object());
         assertFalse(oneShot.checkForChange(fullStack));
@@ -87,15 +91,15 @@ public class DirectCallPolicyTest {
     @Test
     public void ignoreFullStackWithInFullStack() {
         Object target = new Object(); 
-        FullStackDirectCallPolicy fullStack = new FullStackDirectCallPolicy(target);
+        FullStackDirectCallPolicy fullStack = FullStackDirectCallPolicy.withTarget(target);
         assertTrue(fullStack.shouldCallDirectly(target));
-        FullStackDirectCallPolicy fullStack2 = new FullStackDirectCallPolicy(new Object());
+        FullStackDirectCallPolicy fullStack2 = FullStackDirectCallPolicy.withTarget(new Object());
         assertFalse(fullStack2.checkForChange(fullStack));
     }
 
     @Test
     public void nopShouldAcceptChanges() {
-        assertTrue(DirectCallPolicy.NOP.checkForChange(new FullStackDirectCallPolicy(new Object())));
+        assertTrue(DirectCallPolicy.NOP.checkForChange(FullStackDirectCallPolicy.withTarget(new Object())));
         assertTrue(DirectCallPolicy.NOP.checkForChange(new OneShotDirectCallPolicy(new Object())));
     }
     
@@ -108,7 +112,7 @@ public class DirectCallPolicyTest {
     
     @Test(expected = DirectCallException.class)
     public void fullStackShouldCheckSettings() {
-        FullStackDirectCallPolicy fullStack = new FullStackDirectCallPolicy(new Object());
+        FullStackDirectCallPolicy fullStack = FullStackDirectCallPolicy.withTarget(new Object());
         fullStack.shouldCallDirectly(new Object());
     }
 
@@ -121,6 +125,27 @@ public class DirectCallPolicyTest {
         
         Robolectric.directlyOnFullStack(loader).startLoading();
         assertTrue(loader.isForced());
+    }
+
+    @Test
+    public void testFullStack_WithStatics() {
+        CustomLoaderWithLogger loader = new CustomLoaderWithLogger(Robolectric.application);
+
+        // Use instrumented Log class
+        Robolectric.directlyOnFullStack(loader).startLoading();
+        assertTrue(loader.isForced());
+        
+        // Include static calls
+        Exception e = null;
+        try {
+            Robolectric.directlyOnFullStack(
+                    FullStackDirectCallPolicy.build(loader).withStatics(true)
+            ).startLoading();
+        } catch (Exception e1) {
+            e = e1;
+        }
+        assertNotNull(e);
+        assertEquals("Stub!", e.getMessage());
     }
     
     /** Loader for testing. */
@@ -148,4 +173,19 @@ public class DirectCallPolicyTest {
         
     }
     
+    /** Loader for testing. */
+    public static class CustomLoaderWithLogger extends CustomLoader {
+
+        public CustomLoaderWithLogger(Context context) {
+            super(context);
+        }
+        
+        @Override
+        protected void onForceLoad() {
+            super.onForceLoad();
+            Log.i("CustomLoaderWithLogger", "Forced");
+        }
+        
+    }
+
 }
