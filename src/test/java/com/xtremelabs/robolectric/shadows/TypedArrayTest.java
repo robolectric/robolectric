@@ -38,4 +38,9 @@ public class TypedArrayTest {
     public void getResourceId_shouldReturnDefaultValue() throws Exception {
         assertThat(context.obtainStyledAttributes(null).getResourceId(1, -1), equalTo(-1));
     }
+
+    @Test
+    public void getDimension_shouldReturnDefaultValue() throws Exception {
+        assertThat(context.obtainStyledAttributes(null).getDimension(1, -1f), equalTo(-1f));
+    }
 }

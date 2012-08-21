@@ -28,4 +28,9 @@ public class ShadowTypedArray {
     public int getResourceId(int index, int defValue) {
         return defValue;
     }
+
+    @Implementation
+    public float getDimension(int index, float defValue) {
+        return defValue;
+    }
 }
