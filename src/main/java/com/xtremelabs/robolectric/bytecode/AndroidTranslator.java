@@ -33,8 +33,7 @@ public class AndroidTranslator implements Translator {
         instrumentingList.add("com.google.android.maps");
         instrumentingList.add("org.apache.http.impl.client.DefaultRequestDirector");
 
-//        instrumentingExcludeList.add("android.support.v4.content.LocalBroadcastManager");
-        instrumentingExcludeList.add("android.support.v4.content.");
+        instrumentingExcludeList.add("android.support.v4.content.LocalBroadcastManager");
         
         instrumentingExcludeList.add("android.support.v4.app.NotificationCompat");
         instrumentingExcludeList.add("android.support.v4.util.LruCache");
@@ -336,7 +335,7 @@ public class AndroidTranslator implements Translator {
 
     private static void wrapMethodInvocation(CtMethod ctMethod, boolean isStatic) throws CannotCompileException {
     	ctMethod.insertAfter(RobolectricInternals.class.getName() + ".onMethodInvocationFinish(" 
-    			+ (isStatic ? "null" : "this") + ");", true);
+    			+ (isStatic ? ctMethod.getDeclaringClass().getName() + ".class" : "this") + ");", true);
     }
     
     private CtMethod makeNewMethod(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, String methodName, CtClass[] paramTypes, String methodBody) throws CannotCompileException, NotFoundException {

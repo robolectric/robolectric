@@ -66,6 +66,7 @@ public interface DirectCallPolicy {
         Object expectedInstance;
 
         public SafeDirectCallPolicy(Object directInstance) {
+            if (directInstance == null) { throw new DirectCallException("Direct call target cannot be null, use class instance for static calls"); }
             this.expectedInstance = directInstance;
         }
         
@@ -113,7 +114,7 @@ public interface DirectCallPolicy {
             }
             
             // we are inside full stack direct call => do not change anything
-            if (previousPolicy instanceof FullStackDirectCallPolicy) {
+            if (previousPolicy instanceof FullStackDirectCallPolicy && ((FullStackDirectCallPolicy) previousPolicy).checkWeAreDeepInsideStack()) {
                 return false;
             }
             
@@ -141,6 +142,11 @@ public interface DirectCallPolicy {
 
         @Override
         public DirectCallPolicy onMethodInvocationFinished(Object target) {
+            if (expectedInstance == null) {
+                // error happened
+                return NOP;
+            }
+            
             if (depth < 0) {
                 throw new DirectCallException("Stack depth is negative: " + depth + ", target: " + expectedInstance);
             }
@@ -153,13 +159,17 @@ public interface DirectCallPolicy {
             return this;
         }
 
+        boolean checkWeAreDeepInsideStack() {
+            return depth >= 0;
+        }
+        
         @Override
         public boolean checkForChange(DirectCallPolicy previousPolicy) {
             // first setup
             if (previousPolicy == NOP) { return true; }
             
             // we are inside full stack direct call => do not change anything
-            if (previousPolicy instanceof FullStackDirectCallPolicy) {
+            if (previousPolicy instanceof FullStackDirectCallPolicy && ((FullStackDirectCallPolicy) previousPolicy).checkWeAreDeepInsideStack()) {
                 return false;
             }
             

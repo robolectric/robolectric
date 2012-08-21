@@ -48,7 +48,8 @@ public class DirectCallPolicyTest {
 
 	@Test(expected = DirectCallException.class)
 	public void fullStackShouldExpectDirectCallBeforeMethodInvocationFinished() {
-	    new FullStackDirectCallPolicy(null).onMethodInvocationFinished(null);
+	    Object target = new Object();
+	    new FullStackDirectCallPolicy(target).onMethodInvocationFinished(target);
 	}
 	
 	@Test
@@ -73,13 +74,17 @@ public class DirectCallPolicyTest {
 	
     @Test
     public void ignoreOneShotWithInFullStack() {
-        FullStackDirectCallPolicy fullStack = new FullStackDirectCallPolicy(new Object());
+        Object target = new Object(); 
+        FullStackDirectCallPolicy fullStack = new FullStackDirectCallPolicy(target);
+        assertTrue(fullStack.shouldCallDirectly(target));
         OneShotDirectCallPolicy oneShot = new OneShotDirectCallPolicy(new Object());
         assertFalse(oneShot.checkForChange(fullStack));
     }
     @Test
     public void ignoreFullStackWithInFullStack() {
-        FullStackDirectCallPolicy fullStack = new FullStackDirectCallPolicy(new Object());
+        Object target = new Object(); 
+        FullStackDirectCallPolicy fullStack = new FullStackDirectCallPolicy(target);
+        assertTrue(fullStack.shouldCallDirectly(target));
         FullStackDirectCallPolicy fullStack2 = new FullStackDirectCallPolicy(new Object());
         assertFalse(fullStack2.checkForChange(fullStack));
     }
