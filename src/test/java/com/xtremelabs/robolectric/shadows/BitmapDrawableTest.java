@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
@@ -27,6 +28,16 @@ public class BitmapDrawableTest {
     @Before
     public void setUp() throws Exception {
         resources = Robolectric.application.getResources();
+    }
+
+    @Test
+    public void constructors_shouldSetBitmap() throws Exception {
+        Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
+        BitmapDrawable drawable = new BitmapDrawable(bitmap);
+        assertEquals(bitmap, drawable.getBitmap());
+
+        drawable = new BitmapDrawable(resources, bitmap);
+        assertEquals(bitmap, drawable.getBitmap());
     }
 
     @Test
