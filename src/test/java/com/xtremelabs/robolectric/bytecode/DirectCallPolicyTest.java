@@ -5,6 +5,10 @@ import static junit.framework.Assert.*;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import android.content.Context;
+import android.support.v4.content.Loader;
+
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.DirectCallException;
 import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.FullStackDirectCallPolicy;
@@ -108,4 +112,40 @@ public class DirectCallPolicyTest {
         fullStack.shouldCallDirectly(new Object());
     }
 
+    @Test
+    public void customLoaderShouldBeForced() {
+        CustomLoader loader = new CustomLoader(Robolectric.application);
+        
+        loader.startLoading();
+        assertFalse(loader.isForced());
+        
+        Robolectric.directlyOnFullStack(loader).startLoading();
+        assertTrue(loader.isForced());
+    }
+    
+    /** Loader for testing. */
+    public static class CustomLoader extends Loader<Object> {
+
+        private boolean forced = false;
+        
+        public CustomLoader(Context context) {
+            super(context);
+        }
+        
+        @Override
+        protected void onStartLoading() {
+            forceLoad();
+        }
+        
+        @Override
+        protected void onForceLoad() {
+            forced = true;
+        }
+        
+        public boolean isForced() {
+            return forced;
+        }
+        
+    }
+    
 }
