@@ -79,11 +79,11 @@ public class RobolectricInternals {
     public static <T> T directlyOn(T shadowedObject) {
         Vars vars = ALL_VARS.get();
 
-        if (vars.directCallPolicy != DirectCallPolicy.NOP) {
-            throw new DirectCallPolicy.DirectCallException("Direct call policy is already set: " + vars.directCallPolicy);
+        DirectCallPolicy newPolicy = new DirectCallPolicy.OneShotDirectCallPolicy(shadowedObject);
+        if (newPolicy.checkForChange(vars.directCallPolicy)) {
+            vars.directCallPolicy = newPolicy;
         }
-
-        vars.directCallPolicy = new DirectCallPolicy.OneShotDirectCallPolicy(shadowedObject);
+        
         return shadowedObject;
     }
 
