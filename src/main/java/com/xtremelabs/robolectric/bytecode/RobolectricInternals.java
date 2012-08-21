@@ -77,20 +77,28 @@ public class RobolectricInternals {
         return false;
     }
 
-    public static <T> T directlyOn(T shadowedObject) {
+    private static void setupDirectCallPolicy(DirectCallPolicy newPolicy) {
         Vars vars = ALL_VARS.get();
         try {
-            DirectCallPolicy newPolicy = new DirectCallPolicy.OneShotDirectCallPolicy(shadowedObject);
             if (newPolicy.checkForChange(vars.directCallPolicy)) {
                 vars.directCallPolicy = newPolicy;
             }
-            return shadowedObject;
         } catch (DirectCallException e) {
             vars.directCallPolicy = DirectCallPolicy.NOP;
             throw e;
         }
     }
+    
+    public static <T> T directlyOn(T shadowedObject) {
+        setupDirectCallPolicy(new DirectCallPolicy.OneShotDirectCallPolicy(shadowedObject));
+        return shadowedObject;
+    }
 
+    public static <T> T directlyOnFullStack(T shadowedObject) {
+        setupDirectCallPolicy(new DirectCallPolicy.FullStackDirectCallPolicy(shadowedObject));
+        return shadowedObject;
+    }
+    
     public static boolean shouldCallDirectly(Object directInstance) {
         Vars vars = ALL_VARS.get();
         try {

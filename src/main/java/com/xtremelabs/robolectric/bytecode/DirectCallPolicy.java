@@ -61,16 +61,14 @@ public interface DirectCallPolicy {
         }
     }
 
-    /** Direct call is performed once only. */
-    public static class OneShotDirectCallPolicy implements DirectCallPolicy {
-
+    abstract static class SafeDirectCallPolicy implements DirectCallPolicy {
         /** Direct instance. */
-        private Object expectedInstance;
+        Object expectedInstance;
 
-        public OneShotDirectCallPolicy(Object directInstance) {
+        public SafeDirectCallPolicy(Object directInstance) {
             this.expectedInstance = directInstance;
         }
-
+        
         @Override
         public boolean shouldCallDirectly(Object target) {
             if (expectedInstance == null) { return false; }
@@ -81,8 +79,22 @@ public interface DirectCallPolicy {
                 throw new DirectCallException("expected to perform direct call on <" + expected + "> but got <" + target + ">");
             }
             
-            expectedInstance = null;
             return true;
+        }
+    }
+    
+    /** Direct call is performed once only. */
+    public static class OneShotDirectCallPolicy extends SafeDirectCallPolicy {
+
+        public OneShotDirectCallPolicy(Object directInstance) {
+            super(directInstance);
+        }
+
+        @Override
+        public boolean shouldCallDirectly(Object target) {
+            boolean result = super.shouldCallDirectly(target);
+            expectedInstance = null;
+            return result;
         }
 
         @Override
@@ -111,23 +123,34 @@ public interface DirectCallPolicy {
     }
 
     /** Direct call is performed within the invocation full stack. */
-    public static class FullStackDirectCallPolicy implements DirectCallPolicy {
+    public static class FullStackDirectCallPolicy extends SafeDirectCallPolicy {
 
         /** Stack depth. */
         private int depth = -1;
 
+        public FullStackDirectCallPolicy(final Object directInstance) {
+            super(directInstance);
+        }
+        
         @Override
         public boolean shouldCallDirectly(Object target) {
-            ++depth;
-            return true;
+            boolean result = depth == -1 ? super.shouldCallDirectly(target) : true;
+            if (result) { ++depth; }
+            return result;
         }
 
         @Override
         public DirectCallPolicy onMethodInvocationFinished(Object target) {
             if (depth < 0) {
-                throw new DirectCallException("Stack depth is negative: " + depth);
+                throw new DirectCallException("Stack depth is negative: " + depth + ", target: " + expectedInstance);
             }
-            return depth-- == 0 ? NOP : this;
+            if (depth-- == 0) {
+                if (target != expectedInstance) {
+                    throw new DirectCallException("Unexpected state: stack should have been collapsed on <" + expectedInstance + ">, but got <" + target + ">");
+                }
+                return NOP;
+            }
+            return this;
         }
 
         @Override
