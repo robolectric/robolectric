@@ -7,6 +7,8 @@ import android.content.res.Resources;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.TestR;
@@ -20,6 +22,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
@@ -158,5 +161,29 @@ public class ResourcesTest {
     @Test
     public void multipleCallsToGetSystemShouldReturnSameInstance() throws Exception {
         assertThat(Resources.getSystem(), equalTo(Resources.getSystem()));
+    }
+
+    @Test
+    public void applicationResourcesShouldHaveBothSystemAndLocalValues() throws Exception {
+        Activity activity = new Activity();
+        assertThat(activity.getResources().getString(android.R.string.copy), equalTo("Copy"));
+        assertThat(activity.getResources().getString(R.string.copy), equalTo("Local Copy"));
+    }
+
+    @Test
+    public void systemResourcesShouldHaveSystemValuesOnly() throws Exception {
+        assertThat(Resources.getSystem().getString(android.R.string.copy), equalTo("Copy"));
+        assertThat(Resources.getSystem().getString(R.string.copy), nullValue());
+    }
+
+    @Test
+    public void systemResourcesShouldReturnCorrectSystemId() throws Exception {
+        assertThat(Resources.getSystem().getIdentifier("copy", "android:string", null),
+                   equalTo(android.R.string.copy));
+    }
+
+    @Test
+    public void systemResourcesShouldReturnZeroForLocalId() throws Exception {
+        assertThat(Resources.getSystem().getIdentifier("copy", "string", null), equalTo(0));
     }
 }

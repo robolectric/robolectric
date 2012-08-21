@@ -17,6 +17,7 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import java.io.InputStream;
 import java.util.Locale;
 
+import static com.xtremelabs.robolectric.Robolectric.getShadowApplication;
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -258,9 +259,24 @@ public class ShadowResources {
     @Implementation
     public static Resources getSystem() {
         if (system == null) {
-            system = new Resources(null, null, null);
+            try {
+                initSystemResources();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return system;
+    }
+
+    /**
+     * Creates system resource loader from a copy of the application resource loader. Sets
+     * a flag to exclude local resources on initialization.
+     */
+    private static void initSystemResources() throws Exception {
+        final ResourceLoader appResourceLoader = getShadowApplication().getResourceLoader();
+        final ResourceLoader systemResourceLoader = new ResourceLoader(appResourceLoader);
+        systemResourceLoader.setSystem(true);
+        system = ShadowResources.bind(new Resources(null, null, null), systemResourceLoader);
     }
 }
