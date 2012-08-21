@@ -63,7 +63,7 @@ public interface DirectCallPolicy {
 
     abstract static class SafeDirectCallPolicy implements DirectCallPolicy {
         /** Direct instance. */
-        Object expectedInstance;
+        /* package */ Object expectedInstance;
 
         public SafeDirectCallPolicy(Object directInstance) {
             if (directInstance == null) { throw new DirectCallException("Direct call target cannot be null, use class instance for static calls"); }
