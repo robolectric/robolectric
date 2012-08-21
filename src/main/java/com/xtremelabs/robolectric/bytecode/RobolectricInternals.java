@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.bytecode;
 
+import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.DirectCallException;
 import com.xtremelabs.robolectric.internal.Implements;
 
 import java.lang.reflect.Constructor;
@@ -78,18 +79,26 @@ public class RobolectricInternals {
 
     public static <T> T directlyOn(T shadowedObject) {
         Vars vars = ALL_VARS.get();
-
-        DirectCallPolicy newPolicy = new DirectCallPolicy.OneShotDirectCallPolicy(shadowedObject);
-        if (newPolicy.checkForChange(vars.directCallPolicy)) {
-            vars.directCallPolicy = newPolicy;
+        try {
+            DirectCallPolicy newPolicy = new DirectCallPolicy.OneShotDirectCallPolicy(shadowedObject);
+            if (newPolicy.checkForChange(vars.directCallPolicy)) {
+                vars.directCallPolicy = newPolicy;
+            }
+            return shadowedObject;
+        } catch (DirectCallException e) {
+            vars.directCallPolicy = DirectCallPolicy.NOP;
+            throw e;
         }
-        
-        return shadowedObject;
     }
 
     public static boolean shouldCallDirectly(Object directInstance) {
         Vars vars = ALL_VARS.get();
-        return vars.directCallPolicy.shouldCallDirectly(directInstance);
+        try {
+            return vars.directCallPolicy.shouldCallDirectly(directInstance);
+        } catch (DirectCallException e) {
+            vars.directCallPolicy = DirectCallPolicy.NOP;
+            throw e;
+        }
     }
 
     @SuppressWarnings({"UnusedDeclaration"})

@@ -7,6 +7,7 @@ import org.junit.runner.RunWith;
 
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.DirectCallException;
+import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.FullStackDirectCallPolicy;
 import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.OneShotDirectCallPolicy;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -45,4 +46,49 @@ public class DirectCallPolicyTest {
 		assertFalse(oneShot.shouldCallDirectly(null));
 	}
 
+	@Test(expected = DirectCallException.class)
+	public void fullStackShouldExpectDirectCallBeforeMethodInvocationFinished() {
+	    new FullStackDirectCallPolicy().onMethodInvocationFinished(null);
+	}
+	
+	@Test
+	public void testGeneralFullStackBehavior() {
+	    FullStackDirectCallPolicy fullStack = new FullStackDirectCallPolicy();
+        assertTrue(fullStack.shouldCallDirectly(null));
+        
+        assertTrue(fullStack.shouldCallDirectly(null));
+        assertTrue(fullStack.shouldCallDirectly(null));
+        
+        assertSame(fullStack, fullStack.onMethodInvocationFinished(null));
+        assertSame(fullStack, fullStack.onMethodInvocationFinished(null));
+        
+        assertSame(DirectCallPolicy.NOP, fullStack.onMethodInvocationFinished(null));
+	}
+	
+    @Test
+    public void ignoreOneShotWithInFullStack() {
+        FullStackDirectCallPolicy fullStack = new FullStackDirectCallPolicy();
+        OneShotDirectCallPolicy oneShot = new OneShotDirectCallPolicy(new Object());
+        assertFalse(oneShot.checkForChange(fullStack));
+    }
+    @Test
+    public void ignoreFullStackWithInFullStack() {
+        FullStackDirectCallPolicy fullStack = new FullStackDirectCallPolicy();
+        FullStackDirectCallPolicy fullStack2 = new FullStackDirectCallPolicy();
+        assertFalse(fullStack2.checkForChange(fullStack));
+    }
+
+    @Test
+    public void nopShouldAcceptChanges() {
+        assertTrue(DirectCallPolicy.NOP.checkForChange(new FullStackDirectCallPolicy()));
+        assertTrue(DirectCallPolicy.NOP.checkForChange(new OneShotDirectCallPolicy(new Object())));
+    }
+    
+    @Test(expected = DirectCallException.class)
+    public void oneShotShouldCheckTwiceSetting() {
+        OneShotDirectCallPolicy oneShot = new OneShotDirectCallPolicy(new Object());
+        OneShotDirectCallPolicy oneShot2 = new OneShotDirectCallPolicy(new Object());
+        oneShot2.checkForChange(oneShot);
+    }
+    
 }

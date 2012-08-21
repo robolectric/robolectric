@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.bytecode;
 
 /**
- * Policy that defined how direct calls are handled.
+ * Policy that defined how direct calls are handled. Policy is thread local.
  */
 public interface DirectCallPolicy {
 
@@ -16,7 +16,8 @@ public interface DirectCallPolicy {
     boolean shouldCallDirectly(Object target);
 
     /**
-     * Called after each object method invocation.
+     * Called after each object method invocation. 
+     * It's executed in <code>finally</code> block.
      * @param target object which method has been invoked on
      * @return policy to replace current instance
      */
@@ -73,9 +74,13 @@ public interface DirectCallPolicy {
         @Override
         public boolean shouldCallDirectly(Object target) {
             if (expectedInstance == null) { return false; }
+            
             if (expectedInstance != target) {
-                throw new DirectCallException("expected to perform direct call on <" + expectedInstance + "> but got <" + target + ">");
+                Object expected = expectedInstance;
+                expectedInstance = null;
+                throw new DirectCallException("expected to perform direct call on <" + expected + "> but got <" + target + ">");
             }
+            
             expectedInstance = null;
             return true;
         }
@@ -84,31 +89,59 @@ public interface DirectCallPolicy {
         public DirectCallPolicy onMethodInvocationFinished(Object target) {
             return NOP;
         }
+        
         @Override
         public boolean checkForChange(DirectCallPolicy previousPolicy) {
+            // first setup
+            if (previousPolicy == NOP) { return true; }
+            
+            // twice setup
             if (previousPolicy instanceof OneShotDirectCallPolicy) {
                 throw new DirectCallException("already expecting a direct call on <" + ((OneShotDirectCallPolicy) previousPolicy).expectedInstance + "> but here's a new request for <" + expectedInstance + ">");
             }
-            return true;
+            
+            // we are inside full stack direct call => do not change anything
+            if (previousPolicy instanceof FullStackDirectCallPolicy) {
+                return false;
+            }
+            
+            // unexpected
+            throw new DirectCallException("Direct call policy is already set to " + previousPolicy);
         }
     }
 
     /** Direct call is performed within the invocation full stack. */
     public static class FullStackDirectCallPolicy implements DirectCallPolicy {
 
+        /** Stack depth. */
+        private int depth = -1;
+
         @Override
         public boolean shouldCallDirectly(Object target) {
-            return false;
+            ++depth;
+            return true;
         }
 
         @Override
         public DirectCallPolicy onMethodInvocationFinished(Object target) {
-            return NOP;
+            if (depth < 0) {
+                throw new DirectCallException("Stack depth is negative: " + depth);
+            }
+            return depth-- == 0 ? NOP : this;
         }
 
         @Override
         public boolean checkForChange(DirectCallPolicy previousPolicy) {
-            return false;
+            // first setup
+            if (previousPolicy == NOP) { return true; }
+            
+            // we are inside full stack direct call => do not change anything
+            if (previousPolicy instanceof FullStackDirectCallPolicy) {
+                return false;
+            }
+            
+            // unexpected, bad setup
+            throw new DirectCallException("Direct call policy is already set to " + previousPolicy);
         }
         
     }
