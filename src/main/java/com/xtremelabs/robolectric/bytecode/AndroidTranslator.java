@@ -224,13 +224,16 @@ public class AndroidTranslator implements Translator {
 
         if (!hasDefault) {
             String methodBody = generateConstructorBody(ctClass, new CtClass[0]);
-            ctClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], "{\n" + methodBody + "}\n", ctClass));
+            CtConstructor defaultConstrcutor = CtNewConstructor.make(new CtClass[0], new CtClass[0], "{\n" + methodBody + "}\n", ctClass);
+            wrapMethodInvocation(defaultConstrcutor, false);
+            ctClass.addConstructor(defaultConstrcutor);
         }
     }
 
     private boolean fixConstructor(CtClass ctClass, boolean needsDefault, CtConstructor ctConstructor) throws NotFoundException, CannotCompileException {
         String methodBody = generateConstructorBody(ctClass, ctConstructor.getParameterTypes());
         ctConstructor.setBody("{\n" + methodBody + "}\n");
+        wrapMethodInvocation(ctConstructor, false);
         return needsDefault;
     }
 
@@ -333,9 +336,9 @@ public class AndroidTranslator implements Translator {
         }
     }
 
-    private static void wrapMethodInvocation(CtMethod ctMethod, boolean isStatic) throws CannotCompileException {
-    	ctMethod.insertAfter(RobolectricInternals.class.getName() + ".onMethodInvocationFinish(" 
-    			+ (isStatic ? ctMethod.getDeclaringClass().getName() + ".class" : "this") + ");", true);
+    private static void wrapMethodInvocation(CtBehavior ctMethodOrConstructor, boolean isStatic) throws CannotCompileException {
+        ctMethodOrConstructor.insertAfter(RobolectricInternals.class.getName() + ".onMethodInvocationFinish(" 
+    			+ (isStatic ? ctMethodOrConstructor.getDeclaringClass().getName() + ".class" : "this") + ");", true);
     }
     
     private CtMethod makeNewMethod(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, String methodName, CtClass[] paramTypes, String methodBody) throws CannotCompileException, NotFoundException {

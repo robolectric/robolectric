@@ -2,6 +2,13 @@ package com.xtremelabs.robolectric.bytecode;
 
 import static junit.framework.Assert.*;
 
+import java.io.ByteArrayInputStream;
+import java.io.DataInputStream;
+import java.io.File;
+
+import javassist.bytecode.ClassFile;
+import javassist.bytecode.MethodInfo;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -14,6 +21,7 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.DirectCallException;
 import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.FullStackDirectCallPolicy;
 import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.OneShotDirectCallPolicy;
+import com.xtremelabs.robolectric.internal.Instrument;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class DirectCallPolicyTest {
@@ -116,20 +124,58 @@ public class DirectCallPolicyTest {
         fullStack.shouldCallDirectly(new Object());
     }
 
+    /*
+     * XXX very interesting case 
+     * Instrumentation injects default constructor to the Loader class.
+     * As a result super invocations of Loader(Context) constructor are not performed.
+     * Try to uncomment this test and debug .create() method. This test fails.
+     * Currently the only way to provide context to a loader is to set private mContext field value with reflection API.  
+     */
+    
+//    @Test
+//    public void testDirectConstructorCall() throws Exception {
+//        CustomLoader badLoader = new CustomLoader();
+//        assertNull(Robolectric.directlyOnFullStack(badLoader).getContext());
+//        
+//        CustomLoaderCreator creator = new CustomLoaderCreator();
+//        CustomLoader loader = Robolectric.directlyOnFullStack(FullStackDirectCallPolicy.build(creator).include(CustomLoader.class))
+//                .create();
+//        
+//        // is constructor called directly?
+//        assertTrue(loader.superConstructorCalled);
+//        assertNotNull(Robolectric.directlyOnFullStack(loader).getContext());
+//        
+//        // everything still working
+//        loader.startLoading();
+//        assertFalse(loader.isForced());
+//    }
+    
     @Test
     public void customLoaderShouldBeForced() {
-        CustomLoader loader = new CustomLoader(Robolectric.application);
+        CustomLoader loader = new CustomLoader();
         
         loader.startLoading();
         assertFalse(loader.isForced());
         
         Robolectric.directlyOnFullStack(loader).startLoading();
         assertTrue(loader.isForced());
+        
+        // test everything works after direct constructor call
+        CustomLoaderCreator creator = new CustomLoaderCreator();
+        CustomLoader loader2 = Robolectric.directlyOnFullStack(FullStackDirectCallPolicy.build(creator).include(CustomLoader.class))
+                .create();
+        
+        loader2.startLoading();
+        assertFalse(loader2.isForced());
+        
+        Robolectric.directlyOnFullStack(loader2).startLoading();
+        assertTrue(loader2.isForced());
     }
 
     @Test
     public void testFullStack_WithStatics() {
-        CustomLoaderWithLogger loader = new CustomLoaderWithLogger(Robolectric.application);
+        // direct constructor is not necessary in this case
+        CustomLoaderWithLogger loader = new CustomLoaderWithLogger();
 
         // Use instrumented Log class
         Robolectric.directlyOnFullStack(loader).startLoading();
@@ -147,15 +193,27 @@ public class DirectCallPolicyTest {
         assertNotNull(e);
         assertEquals("Stub!", e.getMessage());
     }
+
+    @Instrument
+    public static class CustomLoaderParent<D> extends Loader<D> {
+
+        boolean superConstructorCalled;
+        
+        public CustomLoaderParent() {
+            this(Robolectric.application);
+        }
+        
+        public CustomLoaderParent(Context context) {
+            super(context);
+            superConstructorCalled = true;
+        }
+        
+    }
     
     /** Loader for testing. */
-    public static class CustomLoader extends Loader<Object> {
+    public static class CustomLoader extends CustomLoaderParent<Object> {
 
         private boolean forced = false;
-        
-        public CustomLoader(Context context) {
-            super(context);
-        }
         
         @Override
         protected void onStartLoading() {
@@ -176,10 +234,6 @@ public class DirectCallPolicyTest {
     /** Loader for testing. */
     public static class CustomLoaderWithLogger extends CustomLoader {
 
-        public CustomLoaderWithLogger(Context context) {
-            super(context);
-        }
-        
         @Override
         protected void onForceLoad() {
             super.onForceLoad();
@@ -188,4 +242,15 @@ public class DirectCallPolicyTest {
         
     }
 
+    /** 
+     * This class must be instrumented to call {@link RobolectricInternals#shouldCallDirectly(Object)} 
+     *  from {@link CustomLoaderCreator#create(Context)}.
+     */
+    @Instrument
+    public static class CustomLoaderCreator {
+        public CustomLoader create() {
+            return new CustomLoader();
+        }
+    }
+    
 }
