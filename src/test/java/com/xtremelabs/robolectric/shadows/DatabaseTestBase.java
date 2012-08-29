@@ -544,6 +544,15 @@ public abstract class DatabaseTestBase {
             assertThat(e.getMessage(), equalTo("transaction already successfully"));
         }
     }
+    
+    @Test
+    public void testInTransaction() throws Exception {
+    	assertThat( database.inTransaction(), equalTo(false) );
+    	database.beginTransaction();
+    	assertThat( database.inTransaction(), equalTo(true) );
+    	database.endTransaction();
+    	assertThat( database.inTransaction(), equalTo(false) );    	
+    }
 
     protected long addChuck() {
         return addPerson(1234L, "Chuck");
