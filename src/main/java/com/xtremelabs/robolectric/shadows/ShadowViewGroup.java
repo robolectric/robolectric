@@ -103,6 +103,7 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public View getChildAt(int index) {
+    	if( index >= children.size() ){ return null; }
         return children.get(index);
     }
 

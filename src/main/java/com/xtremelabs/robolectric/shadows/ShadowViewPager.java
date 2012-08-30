@@ -42,4 +42,9 @@ public class ShadowViewPager extends ShadowViewGroup {
         }
         currentItem = position;
     }
+    
+    @Implementation
+    public void setCurrentItem(int position, boolean smoothScroll){
+    	setCurrentItem( position );
+    }
 }
