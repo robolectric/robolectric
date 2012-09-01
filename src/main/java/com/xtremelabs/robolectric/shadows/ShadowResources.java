@@ -123,7 +123,7 @@ public class ShadowResources {
     public CharSequence getText(int id) throws Resources.NotFoundException {
         return getString(id);
     }
-    
+
     public void setDensity(float density) {
         this.density = density;
     }
@@ -166,12 +166,12 @@ public class ShadowResources {
         if (colorDrawable != null) {
             return colorDrawable;
         }
-        
+
         if (resLoader.isNinePatchDrawable(drawableResourceId)) {
         	return new NinePatchDrawable(realResources, null);
         }
 
-        return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
+        return new BitmapDrawable(realResources, BitmapFactory.decodeResource(realResources, drawableResourceId));
     }
 
     @Implementation
@@ -183,7 +183,7 @@ public class ShadowResources {
     public int getInteger(int id) throws Resources.NotFoundException {
     	return resourceLoader.getIntegerValue( id );
     }
-    
+
     @Implementation
     public int getDimensionPixelSize(int id) throws Resources.NotFoundException {
         // The int value returned from here is probably going to be handed to TextView.setTextSize(),
