@@ -126,8 +126,11 @@ public abstract class DatabaseTestBase {
     
     @Test(expected = android.database.SQLException.class)
     public void testInsertOrThrowWithSQLException() {
-        shDatabase.setThrowOnInsert(true);
-        database.insertOrThrow("table_name", null, new ContentValues());
+        ContentValues values = new ContentValues();
+        values.put("id", 1);
+
+        database.insertOrThrow("table_name", null, values);
+        database.insertOrThrow("table_name", null, values);
     }
     
     @Test
@@ -431,7 +434,7 @@ public abstract class DatabaseTestBase {
         int firstIndex = cursor.getColumnIndex("first_column");
         int nameIndex = cursor.getColumnIndex("name");
         assertThat(cursor.getString(nameIndex), equalTo(name));
-        assertThat(cursor.getString(firstIndex), equalTo(null));
+        assertThat(cursor.getString(firstIndex), equalTo((String)null));
 
     }
 

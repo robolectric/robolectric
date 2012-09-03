@@ -45,8 +45,7 @@ public class ShadowSQLiteDatabase  {
     private boolean mLockingEnabled = true;
     private WeakHashMap<SQLiteClosable, Object> mPrograms;
     private boolean transactionSuccess = false;
-    private boolean throwOnInsert;
-    
+
     @Implementation
     public void setLockingEnabled(boolean lockingEnabled) {
         mLockingEnabled = lockingEnabled;
@@ -62,10 +61,6 @@ public class ShadowSQLiteDatabase  {
         mLock.unlock();
     }
     
-    public void setThrowOnInsert(boolean throwOnInsert) {
-        this.throwOnInsert = throwOnInsert;
-    }
-    
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
      	connection = DatabaseConfig.getMemoryConnection();
@@ -74,24 +69,35 @@ public class ShadowSQLiteDatabase  {
     
     @Implementation
     public long insert(String table, String nullColumnHack, ContentValues values) {
-        return insertWithOnConflict(table, nullColumnHack, values, SQLiteDatabase.CONFLICT_NONE);
+        try {
+            return insertOrThrow(table, nullColumnHack, values);
+        } catch (android.database.SQLException e) {
+            return -1;
+        }
     }
     
     @Implementation
-    public long insertOrThrow(String table, String nullColumnHack, ContentValues values) {
-        if (throwOnInsert)
-            throw new android.database.SQLException();
+    public long insertOrThrow(String table, String nullColumnHack, ContentValues values) throws android.database.SQLException {
         return insertWithOnConflict(table, nullColumnHack, values, SQLiteDatabase.CONFLICT_NONE);
     }
 
     @Implementation
     public long replace(String table, String nullColumnHack, ContentValues values) {
+        try {
+            return replaceOrThrow(table, nullColumnHack, values);
+        } catch (android.database.SQLException e) {
+            return -1;
+        }
+    }
+
+    @Implementation
+    public long replaceOrThrow(String table, String nullColumnHack, ContentValues values) {
         return insertWithOnConflict(table, nullColumnHack, values, SQLiteDatabase.CONFLICT_REPLACE);
     }
 
     @Implementation
     public long insertWithOnConflict(String table, String nullColumnHack,
-            ContentValues initialValues, int conflictAlgorithm) {
+            ContentValues initialValues, int conflictAlgorithm) throws android.database.SQLException{
 
         try {
             SQLStringAndBindings sqlInsertString = buildInsertString(table, initialValues, conflictAlgorithm);
@@ -110,7 +116,8 @@ public class ShadowSQLiteDatabase  {
             resultSet.close();
             return result;
         } catch (SQLException e) {
-            return -1; // this is how SQLite behaves, unlike H2 which throws exceptions
+            e.printStackTrace();
+            throw new android.database.SQLException(e.getMessage());
         }
     }
 
