@@ -4,6 +4,7 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -202,6 +203,11 @@ public class ShadowResources {
     public AssetManager getAssets() {
         return ShadowAssetManager.bind(Robolectric.newInstanceOf(AssetManager.class), resourceLoader);
     }
+    
+    @Implementation
+    public XmlResourceParser getXml(int id) {
+    	return resourceLoader.getXml(id);
+    }
 
     @Implementation
     public final android.content.res.Resources.Theme newTheme() {
@@ -225,4 +231,5 @@ public class ShadowResources {
             return newInstanceOf(TypedArray.class);
         }
     }
+
 }

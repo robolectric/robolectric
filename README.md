@@ -12,3 +12,16 @@ contributors, please see: [http://pivotal.github.com/robolectric/index.html](htt
 [![Build Status](https://secure.travis-ci.org/pivotal/robolectric.png?branch=master)](http://travis-ci.org/pivotal/robolectric)
 
 http://ci.robolectric.org
+
+
+### Known compile issues
+If your build fails because of maps.jar is missing then install all the android extra and run:
+
+```
+git clone https://github.com/mosabua/maven-android-sdk-deployer.git
+cd maven-android-sdk-deployer/
+maven install -P <ANDROID_VERSION>
+```
+
+
+

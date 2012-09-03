@@ -2,6 +2,8 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
+
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 import org.hamcrest.CoreMatchers;
@@ -237,4 +239,5 @@ public class ContextTest {
         boolean successfully = context.deleteFile(file.getName());
         assertThat(successfully, is(false));
     }
+
 }
