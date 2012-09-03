@@ -33,8 +33,11 @@ public class XmlFileLoader extends XmlLoader {
 	}
 
 	@Override
-	protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
-		xmlDocuments.put( "xml/" + xmlFile.getName().replace(".xml", ""), document);
+	protected void processResourceXml(
+			File xmlFile, Document document, boolean isSystem)
+					throws Exception {
+		xmlDocuments.put(
+				"xml/" + xmlFile.getName().replace(".xml", ""), document);
 	}
 
  
@@ -50,7 +53,8 @@ public class XmlFileLoader extends XmlLoader {
         return new XmlResourceParserImpl(document);
 	}
 
-	/*package*/ final class XmlResourceParserImpl implements XmlResourceParser {
+	/*package*/ final class XmlResourceParserImpl
+			implements XmlResourceParser {
 
         private final Document document;
         private Node currentNode;
@@ -64,7 +68,8 @@ public class XmlFileLoader extends XmlLoader {
         	this.document = document;
         }
 
-        public void setFeature(String name, boolean state) throws XmlPullParserException {
+        public void setFeature(String name, boolean state)
+        		throws XmlPullParserException {
             if (FEATURE_PROCESS_NAMESPACES.equals(name) && state) {
                 return;
             }
@@ -84,7 +89,8 @@ public class XmlFileLoader extends XmlLoader {
             return false;
         }
         
-        public void setProperty(String name, Object value) throws XmlPullParserException {
+        public void setProperty(String name, Object value)
+        		throws XmlPullParserException {
             throw new XmlPullParserException("setProperty() not supported");
         }
         
@@ -96,16 +102,22 @@ public class XmlFileLoader extends XmlLoader {
             throw new XmlPullParserException("setInput() not supported");
         }
         
-        public void setInput(InputStream inputStream, String inputEncoding) throws XmlPullParserException {
+        public void setInput(InputStream inputStream, String inputEncoding)
+        		throws XmlPullParserException {
             throw new XmlPullParserException("setInput() not supported");
         }
         
-        public void defineEntityReplacementText(String entityName, String replacementText) throws XmlPullParserException {
-            throw new XmlPullParserException("defineEntityReplacementText() not supported");
+        public void defineEntityReplacementText(
+        		String entityName, String replacementText)
+        				throws XmlPullParserException {
+            throw new XmlPullParserException(
+            		"defineEntityReplacementText() not supported");
         }
         
-        public String getNamespacePrefix(int pos) throws XmlPullParserException {
-            throw new XmlPullParserException("getNamespacePrefix() not supported");
+        public String getNamespacePrefix(int pos)
+        		throws XmlPullParserException {
+            throw new XmlPullParserException(
+            		"getNamespacePrefix() not supported");
         }
         
         public String getInputEncoding() {
@@ -113,19 +125,24 @@ public class XmlFileLoader extends XmlLoader {
         }
         
         public String getNamespace(String prefix) {
-            throw new RuntimeException("getNamespace() not supported");
+            throw new RuntimeException(
+            		"getNamespace() not supported");
         }
         
-        public int getNamespaceCount(int depth) throws XmlPullParserException {
-            throw new XmlPullParserException("getNamespaceCount() not supported");
+        public int getNamespaceCount(int depth)
+        		throws XmlPullParserException {
+            throw new XmlPullParserException(
+            		"getNamespaceCount() not supported");
         }
         
         public String getPositionDescription() {
             return "Binary XML file line #" + getLineNumber();
         }
         
-        public String getNamespaceUri(int pos) throws XmlPullParserException {
-            throw new XmlPullParserException("getNamespaceUri() not supported");
+        public String getNamespaceUri(int pos)
+        		throws XmlPullParserException {
+            throw new XmlPullParserException(
+            		"getNamespaceUri() not supported");
         }
         
         public int getColumnNumber() {
@@ -143,12 +160,14 @@ public class XmlFileLoader extends XmlLoader {
         	return -1;
         }
         
-        public int getEventType() throws XmlPullParserException {
+        public int getEventType()
+        		throws XmlPullParserException {
             return mEventType;
         }
         
-        public boolean isWhitespace() throws XmlPullParserException {
-            // whitespace was stripped by aapt.
+        public boolean isWhitespace()
+        		throws XmlPullParserException {
+            // Implemented as in android.
             return false;
         }
         
@@ -211,7 +230,8 @@ public class XmlFileLoader extends XmlLoader {
         }
         
         public boolean isEmptyElementTag() throws XmlPullParserException {
-            // XXX Need to detect this.
+            // In Android this method is left unimplemented.
+        	// This implementation is mirroring that.
             return false;
         }
         
@@ -242,81 +262,7 @@ public class XmlFileLoader extends XmlLoader {
         	return getAttribute(namespaceURI, name).getNodeValue();
         }
         
-        public int next() throws XmlPullParserException,IOException {
-            /*
-        	if (!mStarted) {
-                mStarted = true;
-                mEventType = START_DOCUMENT;
-                return mEventType;
-            }
-            
-            if (mDecNextDepth) {
-                mDepth --;
-                mDecNextDepth = false;
-            }
-            
-            int ev = -1;
-            switch (mEventType) {
-	            case(START_DOCUMENT): {
-	            	currentNode = document.getDocumentElement();
-	            	ev = START_TAG;
-	            	break;
-	            }
-	            case(END_DOCUMENT): {
-	            	// Nothing to do
-	            	break;
-	            }
-	            case(START_TAG): {
-	            	if (currentNode.hasChildNodes()) {
-	            		currentNode = currentNode.getFirstChild();
-		            	mDepth ++;
-		            	if (currentNode.getNodeType() == Node.TEXT_NODE) {
-		            		ev = TEXT;
-		            	} else {
-		            		ev = START_TAG;
-		            	}
-		            } else {
-		            	ev = END_TAG;
-		            }
-	            	break;
-	            }
-	            case(END_TAG): {
-	            	if (document.getDocumentElement().equals(currentNode)) {
-	            		currentNode = null;
-	            		ev = END_DOCUMENT;
-	            		break;
-	            	} else {
-		            	Node nextSibling = currentNode.getNextSibling();
-		            	if (nextSibling != null) {
-		            		currentNode = nextSibling;
-		            		ev = START_TAG;
-		            	} else {
-		            		currentNode = currentNode.getParentNode();
-		            		mDecNextDepth = true;
-		            		ev = END_TAG;
-		            	}
-		            	break;
-	            	}
-	            }
-	            case (TEXT): {
-	            	currentNode = currentNode.getParentNode();
-            		mDecNextDepth = true;
-            		ev = END_TAG;
-            		break;
-	            }
-            }
-            
-            if (ev == END_DOCUMENT) {
-            	currentNode = null;
-                // Automatically close the parse when we reach the end of
-                // a document, since the standard XmlPullParser interface
-                // doesn't have such an API so most clients will leave us
-                // dangling.
-                close();
-            }
-            mEventType = ev;
-            return mEventType;*/
-        	
+        public int next() throws XmlPullParserException,IOException {       	
             if (!mStarted) {
                 mStarted = true;
                 return START_DOCUMENT;
@@ -345,7 +291,6 @@ public class XmlFileLoader extends XmlLoader {
                 // dangling.
                 close();
             }
-            System.out.println("NEXT: " + ev);
             return ev;
         }
         
@@ -373,10 +318,12 @@ public class XmlFileLoader extends XmlLoader {
         			throw new IllegalArgumentException("ENTITY_REF");
         		}
         		case(IGNORABLE_WHITESPACE): {
-        			throw new IllegalArgumentException("IGNORABLE_WHITESPACE");
+        			throw new IllegalArgumentException(
+        					"IGNORABLE_WHITESPACE");
         		}
         		case(PROCESSING_INSTRUCTION): {
-        			throw new IllegalArgumentException("PROCESSING_INSTRUCTION");
+        			throw new IllegalArgumentException(
+        					"PROCESSING_INSTRUCTION");
         		}
         		case(START_DOCUMENT): {
         			currentNode = document.getDocumentElement();
@@ -384,9 +331,9 @@ public class XmlFileLoader extends XmlLoader {
         		}
         		case(START_TAG): {
         			if (currentNode.hasChildNodes()) {
-        				// The node has children
-        				// Navigate down
-        				return processNextNodeType(currentNode.getFirstChild());
+        				// The node has children, navigate down
+        				return processNextNodeType(
+        						currentNode.getFirstChild());
         			} else {
         				// The node has no children
         				return END_TAG;
@@ -396,7 +343,8 @@ public class XmlFileLoader extends XmlLoader {
         			return navigateToNextNode(currentNode);
         		}
         	}
-        	throw new RuntimeException("The next event has not been returned.");
+        	throw new RuntimeException(
+        			"The next event has not been returned.");
         }
         
         /*protected*/ int processNextNodeType(Node node) {
@@ -437,7 +385,6 @@ public class XmlFileLoader extends XmlLoader {
 				}
 				case(Node.TEXT_NODE): {
 					currentNode = node;
-					System.out.println("TEXT: " + currentNode.getNodeValue());
 					return TEXT;
 				}
         	}

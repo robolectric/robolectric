@@ -58,8 +58,14 @@ public class XmlFileLoaderTest {
 
 	@After
 	public void tearDown() throws Exception {
+		parser.close();
 	}
 
+	private void parseUntilNextStartTag()
+			throws XmlPullParserException, IOException {
+		while(parser.next() != XmlResourceParser.START_TAG) {};
+	}
+	
 	/**
 	 * Test method for {@link com.xtremelabs.robolectric.res.XmlFileLoader#getXml(int)}.
 	 * @throws IOException 
@@ -206,11 +212,6 @@ public class XmlFileLoaderTest {
 	}
 
 	@Test
-	public void testGetPositionDescription() {
-		fail("Not yet implemented");
-	}
-
-	@Test
 	public void testGetNamespaceUri() {
 		try {
 			parser.getNamespaceUri(0);
@@ -229,7 +230,7 @@ public class XmlFileLoaderTest {
 	public void testGetDepth() throws XmlPullParserException, IOException {
 		int[] expected = new int[] {
 				// Depths of preference file elements
-				0, 1, 2, 1, 1, 1, 1, 1
+				1, 2, 3, 2, 2, 2, 2, 2
 		};
 		int index = -1;
 		int evt;
@@ -237,10 +238,6 @@ public class XmlFileLoaderTest {
 			switch (evt) {
 				case (XmlResourceParser.START_TAG): {
 					index ++;
-					assertThat(parser.getDepth(), equalTo(expected[index]));
-					break;
-				}
-				case (XmlResourceParser.END_TAG): {
 					assertThat(parser.getDepth(), equalTo(expected[index]));
 					break;
 				}
@@ -310,7 +307,6 @@ public class XmlFileLoaderTest {
 			switch (evt) {
 				case (XmlResourceParser.START_TAG): {
 					index ++;
-					System.out.println(index + "S: " + parser.getName() + " " + parser.getText());
 					assertThat(parser.getName(), equalTo(expected[index]));
 					break;
 				}
@@ -319,28 +315,66 @@ public class XmlFileLoaderTest {
 	}
 
 	@Test
-	public void testGetAttributeNamespace() {
-		fail("Not yet implemented");
+	public void testGetAttributeNamespace()
+			throws XmlPullParserException, IOException {
+		parseUntilNextStartTag();
+		assertThat(parser.getAttributeNamespace(0),
+				equalTo("http://www.w3c.org/2000/xmlns/"));
 	}
 
 	@Test
-	public void testGetAttributeName() {
-		fail("Not yet implemented");
+	public void testGetAttributeName()
+			throws XmlPullParserException, IOException {
+		parseUntilNextStartTag();
+		assertThat(parser.getAttributeName(0),
+				equalTo("xmlns:android"));
 	}
 
 	@Test
-	public void testGetAttributePrefix() {
-		fail("Not yet implemented");
+	public void testGetAttributePrefix()
+			throws XmlPullParserException, IOException {
+		parseUntilNextStartTag();
+		try {
+			parser.getAttributePrefix(0);
+			fail("This method should not be supported");
+		} catch(RuntimeException ex) {
+			// pass
+		}
 	}
 
 	@Test
-	public void testIsEmptyElementTag() {
-		fail("Not yet implemented");
+	public void testIsEmptyElementTag()
+			throws XmlPullParserException, IOException {
+		assertThat(
+				"Not START_TAG should return false.",
+				parser.isEmptyElementTag(),
+				equalTo(false));
+		parseUntilNextStartTag();
+		assertThat(
+				"Not empty tag should return false.",
+				parser.isEmptyElementTag(),
+				equalTo(false));
+		// Navigate to an empty tag
+		parseUntilNextStartTag();
+		parseUntilNextStartTag();
+		parseUntilNextStartTag();
+		assertThat(
+				"Expected CheckBoxPreference.",
+				parser.getName(),
+				equalTo("CheckBoxPreference"));
+		assertThat(
+				"In the Android implementation this method always return false.",
+				parser.isEmptyElementTag(),
+				equalTo(false));
 	}
 
 	@Test
-	public void testGetAttributeCount() {
-		fail("Not yet implemented");
+	public void testGetAttributeCount()
+			throws XmlPullParserException, IOException {
+		parseUntilNextStartTag();
+		assertThat(
+				parser.getAttributeCount(),
+				equalTo(1));
 	}
 
 	@Test
@@ -473,8 +507,4 @@ public class XmlFileLoaderTest {
 		fail("Not yet implemented");
 	}
 
-	@Test
-	public void testClose() {
-		fail("Not yet implemented");
-	}
 }
