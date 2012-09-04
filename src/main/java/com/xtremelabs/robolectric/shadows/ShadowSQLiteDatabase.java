@@ -44,6 +44,7 @@ public class ShadowSQLiteDatabase  {
     private final ReentrantLock mLock = new ReentrantLock(true);
     private boolean mLockingEnabled = true;
     private WeakHashMap<SQLiteClosable, Object> mPrograms;
+    private boolean inTransaction = false;
     private boolean transactionSuccess = false;
     private boolean throwOnInsert;
     
@@ -280,6 +281,8 @@ public class ShadowSQLiteDatabase  {
 			connection.setAutoCommit(false);
 		} catch (SQLException e) {
 			throw new RuntimeException("SQL exception in beginTransaction", e);
+		} finally {
+			inTransaction = true;
 		}
 	}
 
@@ -305,7 +308,14 @@ public class ShadowSQLiteDatabase  {
 			connection.setAutoCommit(true);
 		} catch (SQLException e) {
 			throw new RuntimeException("SQL exception in beginTransaction", e);
+		} finally {
+			inTransaction = false;
 		}
+	}
+	
+	@Implementation
+	public boolean inTransaction() {
+		return inTransaction;
 	}
 	
 	/**
