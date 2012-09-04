@@ -103,7 +103,7 @@ public class XmlFileLoader extends XmlLoader {
         	this.document = document;
         }
 
-        private boolean isSupportedFeature(String name) {
+        /*package*/ boolean isSupportedFeature(String name) {
         	if (name == null) {
         		return false;
         	}
@@ -195,11 +195,15 @@ public class XmlFileLoader extends XmlLoader {
         }
         
         public String getText() {
+        	if (currentNode == null) {
+        		return null;
+        	}
         	return currentNode.getNodeValue();
         }
         
         public int getLineNumber() {
-        	// TODO(msama): The current implementation is unable to return line numbers.
+        	// TODO(msama): The current implementation is 
+        	//		unable to return line numbers.
         	return -1;
         }
         
@@ -208,10 +212,19 @@ public class XmlFileLoader extends XmlLoader {
             return mEventType;
         }
         
+        /*package*/ boolean isWhitespace(String text)
+        		throws XmlPullParserException {
+            if (text == null) {
+            	return false;
+            }
+            return text.split("\\s").length == 0;
+        }
+        
         public boolean isWhitespace()
         		throws XmlPullParserException {
-            // Implemented as in android.
-            return false;
+            // Note: in android whitespaces are automatically stripped.
+        	// Here we have to skip them manually
+        	return isWhitespace(getText());
         }
         
         public String getPrefix() {
@@ -248,7 +261,7 @@ public class XmlFileLoader extends XmlLoader {
             return currentNode.getNodeName();
         }
         
-        private Node getAttributeAt(int index) {
+        /*package*/ Node getAttributeAt(int index) {
         	if (currentNode == null) {
         		throw new IndexOutOfBoundsException(String.valueOf(index));
         	}
@@ -259,12 +272,15 @@ public class XmlFileLoader extends XmlLoader {
         	return map.item(index);
         }
         
-        private Node getAttribute(String namespaceURI, String name) {
+        /*package*/ Node getAttribute(String namespace, String name) {
         	if (currentNode == null) {
         		return null;
         	}
         	NamedNodeMap map = currentNode.getAttributes();
-        	return map.getNamedItemNS(namespaceURI, name);
+        	// XXX(msama): getNamedItemNS does not work.
+        	// 		This is an hack to make this implementation working.
+        	//		return map.getNamedItemNS(namespace, name);
+        	return map.getNamedItem(name);
         }
         
         public String getAttributeNamespace(int index) {
@@ -287,7 +303,7 @@ public class XmlFileLoader extends XmlLoader {
         
         public int getAttributeCount() {
             if (currentNode == null) {
-            	return 0;
+            	return -1;
             }
             return currentNode.getAttributes().getLength();
         }
@@ -297,10 +313,13 @@ public class XmlFileLoader extends XmlLoader {
         }
         
         public String getAttributeType(int index) {
+        	// Android always returns CDATA even if the
+        	// node has no attribute.
             return "CDATA";
         }
         
         public boolean isAttributeDefault(int index) {
+        	// The android implementation always returns false
             return false;
         }
         
@@ -308,8 +327,12 @@ public class XmlFileLoader extends XmlLoader {
             return next();
         }
         
-        public String getAttributeValue(String namespaceURI, String name) {
-        	return getAttribute(namespaceURI, name).getNodeValue();
+        public String getAttributeValue(String namespace, String name) {
+        	Node attr = getAttribute(namespace, name);
+        	if (attr == null) {
+        		return null;
+        	}
+        	return attr.getNodeValue();
         }
         
         public int next() throws XmlPullParserException,IOException {       	
@@ -346,8 +369,9 @@ public class XmlFileLoader extends XmlLoader {
         
         /**
          * A twin implementation of the native android nativeNext(status)
+         * @throws XmlPullParserException 
          */
-        /*package*/ int nativeNext() {
+        /*package*/ int nativeNext() throws XmlPullParserException {
         	switch(mEventType) {
         		case(CDSECT): {
         			throw new IllegalArgumentException("CDSECT");
@@ -397,7 +421,8 @@ public class XmlFileLoader extends XmlLoader {
         			"The next event has not been returned.");
         }
         
-        /*protected*/ int processNextNodeType(Node node) {
+        /*protected*/ int processNextNodeType(Node node)
+        		throws XmlPullParserException {
         	switch (node.getNodeType()) {
 				case(Node.ATTRIBUTE_NODE): {
 					throw new IllegalArgumentException("ATTRIBUTE_NODE");
@@ -434,14 +459,20 @@ public class XmlFileLoader extends XmlLoader {
 					throw new IllegalArgumentException("DOCUMENT_TYPE_NODE");
 				}
 				case(Node.TEXT_NODE): {
-					currentNode = node;
-					return TEXT;
+					if (isWhitespace(node.getNodeValue())) {
+						// Skip whitespaces
+						return navigateToNextNode(node);
+					} else {
+						currentNode = node;
+						return TEXT;
+					}
 				}
         	}
         	throw new RuntimeException("The next event has not been returned.");
         }
         
-        /*protected*/ int navigateToNextNode(Node node) {
+        /*protected*/ int navigateToNextNode(Node node)
+        		throws XmlPullParserException {
 			Node nextNode = node.getNextSibling();
 			if (nextNode != null) {
 				// Move to the next siblings
@@ -449,6 +480,7 @@ public class XmlFileLoader extends XmlLoader {
 			} else {
 				// Goes back to the parent
 				if (document.getDocumentElement().equals(node)) {
+					currentNode = null;
 	        		return END_DOCUMENT;
 	        	}
 				currentNode = node.getParentNode();
@@ -456,7 +488,8 @@ public class XmlFileLoader extends XmlLoader {
 			}
         }
         
-        public void require(int type, String namespace, String name) throws XmlPullParserException, IOException {
+        public void require(int type, String namespace, String name)
+        		throws XmlPullParserException, IOException {
             if (type != getEventType()
                 || (namespace != null && !namespace.equals( getNamespace () ) )
                 || (name != null && !name.equals( getName() ) ) )
@@ -464,33 +497,33 @@ public class XmlFileLoader extends XmlLoader {
         }
         
         public String nextText() throws XmlPullParserException,IOException {
-            if(getEventType() != START_TAG) {
-               throw new XmlPullParserException(
-                 getPositionDescription()
-                 + ": parser must be on START_TAG to read next text", this, null);
+            if (getEventType() != START_TAG) {
+            	throw new XmlPullParserException(
+            			getPositionDescription()
+            			+ ": parser must be on START_TAG to read next text", this, null);
             }
             int eventType = next();
-            if(eventType == TEXT) {
-               String result = getText();
-               eventType = next();
-               if(eventType != END_TAG) {
-                 throw new XmlPullParserException(
-                    getPositionDescription()
-                    + ": event TEXT it must be immediately followed by END_TAG", this, null);
+            if (eventType == TEXT) {
+            	String result = getText();
+                eventType = next();
+                if(eventType != END_TAG) {
+                    throw new XmlPullParserException(
+                    		getPositionDescription()
+                    		+ ": event TEXT it must be immediately followed by END_TAG", this, null);
                 }
                 return result;
             } else if(eventType == END_TAG) {
-               return "";
+            	return "";
             } else {
-               throw new XmlPullParserException(
-                 getPositionDescription()
-                 + ": parser must be on START_TAG or TEXT to read text", this, null);
+            	throw new XmlPullParserException(
+            			getPositionDescription()
+            			+ ": parser must be on START_TAG or TEXT to read text", this, null);
             }
         }
         
         public int nextTag() throws XmlPullParserException,IOException {
             int eventType = next();
-            if(eventType == TEXT ) { // && isWhitespace()) {   // skip whitespace
+            if (eventType == TEXT && isWhitespace()) { // skip whitespace
                eventType = next();
             }
             if (eventType != START_TAG && eventType != END_TAG) {
@@ -550,8 +583,7 @@ public class XmlFileLoader extends XmlLoader {
         {
         	int value = getAttributeIntValue(namespace, attribute, defaultValue);
         	if (value < 0) {
-        		throw new RuntimeException(
-        				"Expected an unsigned int. Found: " + value + ".");
+        		return defaultValue;
         	}
         	return value;
         }
@@ -583,8 +615,11 @@ public class XmlFileLoader extends XmlLoader {
         
         public boolean getAttributeBooleanValue(int idx,
                 boolean defaultValue) {
-        	String value = getAttributeValue(idx);
-        	return Boolean.parseBoolean(value);
+        	try {
+	        	return Boolean.parseBoolean(getAttributeValue(idx));
+        	} catch (IndexOutOfBoundsException ex) {
+        		return defaultValue;
+        	}
         }
         
         public int getAttributeResourceValue(int idx, int defaultValue) {
@@ -592,46 +627,77 @@ public class XmlFileLoader extends XmlLoader {
         }
         
         public int getAttributeIntValue(int idx, int defaultValue) {
-        	String value = getAttributeValue(idx);
         	try {
-        		return Integer.parseInt(value);
+        		return Integer.parseInt(getAttributeValue(idx));
         	} catch(NumberFormatException ex) {
-        		throw new RuntimeException("Expected an integer found: " + value + ".");
-        	}
+        		return defaultValue;
+        	} catch (IndexOutOfBoundsException ex) {
+        		return defaultValue;
+        	} 
         }
         
         public int getAttributeUnsignedIntValue(int idx, int defaultValue) {
-            int value = getAttributeIntValue(idx, defaultValue);
-            if (value < 0) {
-            	throw new RuntimeException(
-            			"Expected an unsigned int. Found: " + value + ".");
-            }
-            return value;
+        	try {
+	            int value = getAttributeIntValue(idx, defaultValue);
+	            if (value < 0) {
+	            	return defaultValue;
+	            }
+	            return value;
+        	} catch(NumberFormatException ex) {
+        		return defaultValue;
+        	} catch (IndexOutOfBoundsException ex) {
+        		return defaultValue;
+        	} 
         }
         
         public float getAttributeFloatValue(int idx, float defaultValue) {
-        	String value = getAttributeValue(idx);
         	try {
-        		return Float.parseFloat(value);
+        		return Float.parseFloat(getAttributeValue(idx));
         	} catch(NumberFormatException ex) {
-        		throw new RuntimeException("Expected a float. Found: " + value + ".");
-        	}
+        		return defaultValue;
+        	} catch (IndexOutOfBoundsException ex) {
+        		return defaultValue;
+        	} 
         }
 
         public String getIdAttribute() {
-        	throw new RuntimeException("Not implemented yet");
+        	Node attr = getAttribute(null, "id");
+        	if (attr == null) {
+        		return null;
+        	}
+        	return attr.getNodeValue();
         }
         
         public String getClassAttribute() {
-        	throw new RuntimeException("Not implemented yet");
+        	Node attr = getAttribute(null, "class");
+        	if (attr == null) {
+        		return null;
+        	}
+        	return attr.getNodeValue();
         }
 
         public int getIdAttributeResourceValue(int defaultValue) {
-        	throw new RuntimeException("Not implemented yet");
+        	String id = getIdAttribute();
+        	if (id == null) {
+        		return defaultValue;
+        	}
+        	try {
+        		return Integer.parseInt(id);
+        	} catch (NumberFormatException ex) {
+        		return defaultValue;
+        	}
         }
 
         public int getStyleAttribute() {
-        	throw new RuntimeException("Not implemented yet");
+        	Node attr = getAttribute(null, "style");
+        	if (attr == null) {
+        		return 0;
+        	}
+        	try {
+        		return Integer.parseInt(attr.getNodeValue());
+        	} catch (NumberFormatException ex) {
+        		return 0;
+        	}
         }
 
         public void close() {

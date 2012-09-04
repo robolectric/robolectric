@@ -145,7 +145,7 @@ public class ResourceLoader {
 				loadMenuResources( resourceDir );
 				loadDrawableResources( resourceDir );
 				loadPreferenceResources( preferenceDir );
-				loadXmlFileResources( resourceDir );
+				loadXmlFileResources( preferenceDir );
 				
 				listNinePatchResources(ninePatchDrawableIds, resourceDir);
 			} else {
@@ -218,22 +218,11 @@ public class ResourceLoader {
 	/**
 	 * All the Xml files should be loaded. 
 	 */
-	private void loadXmlFileResources( File resourceDir ) throws Exception {
-		if ( resourceDir.exists() ) {
+	private void loadXmlFileResources( File xmlResourceDir ) throws Exception {
+		if ( xmlResourceDir.exists() ) {
 			DocumentLoader xmlFileDocumentLoader = 
 					new DocumentLoader( xmlFileLoader );
-			xmlFileDocumentLoader.loadResourceXmlDir( resourceDir );
-			
-			FileFilter subfolderFilter = new FileFilter() {
-		        @Override public boolean accept(File file) {
-		            return file.isDirectory();
-		        }
-		    };
-			
-			// Load sub-folders
-			for (File subfolder: resourceDir.listFiles(subfolderFilter)) {
-				xmlFileDocumentLoader.loadResourceXmlDir( subfolder );
-	        }
+			xmlFileDocumentLoader.loadResourceXmlDir( xmlResourceDir );
 		}
 	}
 
