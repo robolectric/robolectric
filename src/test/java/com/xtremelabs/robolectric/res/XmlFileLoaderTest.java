@@ -11,6 +11,8 @@ import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.Stack;
 
 import org.junit.After;
@@ -527,8 +529,17 @@ public class XmlFileLoaderTest {
 	}
 
 	@Test
-	public void testNextTag() {
-		fail("Not yet implemented");
+	public void testNextTag() throws XmlPullParserException, IOException {
+		Set<Integer> acceptableTags = new HashSet<Integer>();
+		acceptableTags.add(XmlResourceParser.START_TAG);
+		acceptableTags.add(XmlResourceParser.END_TAG);
+		parseUntilNext(XmlResourceParser.START_DOCUMENT);
+		int evt;
+		int max = 5;
+		for (int i = max; i > 0; i--) {
+			evt = parser.nextTag();
+			assertTrue(acceptableTags.contains(evt));
+		}
 	}
 
 	@Test
