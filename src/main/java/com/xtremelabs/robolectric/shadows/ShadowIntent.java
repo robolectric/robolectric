@@ -86,6 +86,14 @@ public class ShadowIntent {
     @Implementation
     public Intent setType(String type) {
         this.type = type;
+        this.data = null;
+        return realIntent;
+    }
+
+    @Implementation
+    public Intent setDataAndType(Uri data, String type) {
+        this.data = data;
+        this.type = type;
         return realIntent;
     }
 
@@ -157,6 +165,7 @@ public class ShadowIntent {
     @Implementation
     public Intent setData(Uri data) {
         this.data = data;
+        this.type = null;
         return realIntent;
     }
 

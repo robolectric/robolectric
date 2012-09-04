@@ -20,6 +20,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(Toast.class)
 public class ShadowToast {
     private String text;
+    private int duration;
     private int gravity;
     private View view;
 
@@ -33,6 +34,7 @@ public class ShadowToast {
     @Implementation(i18nSafe=false)
     public static Toast makeText(Context context, CharSequence text, int duration) {
         Toast toast = new Toast(null);
+        toast.setDuration(duration);
         shadowOf(toast).text = text.toString();
         return toast;
     }
@@ -60,6 +62,16 @@ public class ShadowToast {
     @Implementation
     public int getGravity() {
         return gravity;
+    }
+
+    @Implementation
+    public void setDuration(int duration) {
+        this.duration = duration;
+    }
+
+    @Implementation
+    public int getDuration() {
+        return duration;
     }
 
     /**
