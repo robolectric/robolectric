@@ -96,6 +96,11 @@ abstract public class ShadowContext {
         return FILES_DIR;
     }
 
+	@Implementation
+	public String[] fileList() {
+		return getFilesDir().list();
+	}
+
     @Implementation
     public File getExternalCacheDir() {
         EXTERNAL_CACHE_DIR.mkdir();
