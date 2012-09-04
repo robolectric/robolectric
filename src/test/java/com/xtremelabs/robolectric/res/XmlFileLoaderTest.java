@@ -9,40 +9,35 @@ import static org.hamcrest.CoreMatchers.*;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.StringReader;
 
-import javassist.compiler.Parser;
-
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.res.XmlResourceParser;
 import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.res.XmlFileLoader.XmlResourceParserImpl;
 
 /**
- * Test class for {@link XmlFileLoader}.
+ * Test class for {@link XmlFileLoader} and its inner 
+ * class {@link XmlResourceParserImpl}. The tests verify
+ * that this implementation will behave exactly as 
+ * the android implementation.
  * 
- * @author michele@swiftkey.net
- *
+ * <p>Please not that this implementation uses the resource file "xml/preferences"
+ * to test the parser implementation. If that file is changed
+ * some test may start failing.
+ * 
+ * @author msama (michele@swiftkey.net)
  */
 public class XmlFileLoaderTest {
 
 	private XmlFileLoader xmlFileLoader;
 	private XmlResourceParser parser;
-	
-	private final String[] availableFeatures = new String[]{
-			XmlResourceParser.FEATURE_PROCESS_NAMESPACES,
-			XmlResourceParser.FEATURE_REPORT_NAMESPACE_ATTRIBUTES
-	};
-	
-	private final String[] unavailableFeatures = new String[]{
-			XmlResourceParser.FEATURE_PROCESS_DOCDECL,
-			XmlResourceParser.FEATURE_VALIDATION 
-	};
 	
 	@Before
 	public void setUp() throws Exception {
@@ -89,7 +84,7 @@ public class XmlFileLoaderTest {
 
 	@Test
 	public void testSetFeature() throws XmlPullParserException {
-		for (String feature: availableFeatures) {
+		for (String feature: XmlFileLoader.AVAILABLE_FEATURES) {
 			parser.setFeature(feature, true);
 			try {
 				parser.setFeature(feature, false);
@@ -99,7 +94,7 @@ public class XmlFileLoaderTest {
 			}
 		}
 		
-		for (String feature: unavailableFeatures) {
+		for (String feature: XmlFileLoader.UNAVAILABLE_FEATURES) {
 			try {
 				parser.setFeature(feature, false);
 				fail(feature + " should not be true.");
@@ -117,11 +112,11 @@ public class XmlFileLoaderTest {
 
 	@Test
 	public void testGetFeature() {
-		for (String feature: availableFeatures) {
+		for (String feature: XmlFileLoader.AVAILABLE_FEATURES) {
 			assertThat(parser.getFeature(feature), equalTo(true));
 		}
 		
-		for (String feature: unavailableFeatures) {
+		for (String feature: XmlFileLoader.UNAVAILABLE_FEATURES) {
 			assertThat(parser.getFeature(feature), equalTo(false));
 		}
 	}
@@ -252,14 +247,19 @@ public class XmlFileLoaderTest {
 	}
 
 	@Test
-	public void testGetLineNumber() {
-		fail("Not yet implemented");
+	@Ignore("Not implemented yet")
+	public void testGetLineNumber() throws XmlPullParserException, IOException {
+		assertThat(parser.getLineNumber(), equalTo(-1));
+		parseUntilNextStartTag();
+		assertThat(
+				"The root element should be at line 1.",
+				parser.getLineNumber(), equalTo(1));
 	}
 
 	@Test
-	public void testGetEventType() throws XmlPullParserException {
-		int evt = -1;
-		while (evt != XmlResourceParser.END_DOCUMENT) {
+	public void testGetEventType() throws XmlPullParserException, IOException {
+		int evt;
+		while ((evt = parser.next()) != XmlResourceParser.END_DOCUMENT) {
 			assertThat(parser.getEventType(), equalTo(evt));
 		}
 	}
@@ -285,7 +285,9 @@ public class XmlFileLoaderTest {
 	}
 
 	@Test
-	public void testGetNamespace() {
+	public void testGetNamespace() throws XmlPullParserException, IOException {
+		assertThat(parser.getNamespace(), equalTo(""));
+		parseUntilNextStartTag();
 		assertThat(parser.getNamespace(), equalTo(""));
 	}
 
@@ -319,7 +321,7 @@ public class XmlFileLoaderTest {
 			throws XmlPullParserException, IOException {
 		parseUntilNextStartTag();
 		assertThat(parser.getAttributeNamespace(0),
-				equalTo("http://www.w3c.org/2000/xmlns/"));
+				equalTo("http://www.w3.org/2000/xmlns/"));
 	}
 
 	@Test

@@ -20,11 +20,32 @@ import android.content.res.XmlResourceParser;
 /**
  * Loader for xml property files.
  * 
- * @author michele@swiftkey.net
+ * <p>Given a resource file a concrete implementation of {@link XmlResourceParser}
+ * is returned. The returned implementation is based on the current Android
+ * implementation. Please see the android source code for further details.
  * 
+ * @author msama (michele@swiftkey.net)
+ * 
+ * @see https://github.com/android/platform_frameworks_base/blob/master/core/java/android/content/res/XmlBlock.java
  * @see Resources#getXml(int)
  */
 public class XmlFileLoader extends XmlLoader {
+	
+	/**
+	 * All the parser features currently supported by Android. 
+	 */
+	public static final String[] AVAILABLE_FEATURES = {
+			XmlResourceParser.FEATURE_PROCESS_NAMESPACES,
+			XmlResourceParser.FEATURE_REPORT_NAMESPACE_ATTRIBUTES
+	};
+	
+	/**
+	 * All the parser features currently NOT supported by Android. 
+	 */
+	public static final String[] UNAVAILABLE_FEATURES = {
+			XmlResourceParser.FEATURE_PROCESS_DOCDECL,
+			XmlResourceParser.FEATURE_VALIDATION 
+	};
 	
     private Map<String, Document> xmlDocuments = new HashMap<String, Document>();
 
@@ -53,6 +74,20 @@ public class XmlFileLoader extends XmlLoader {
         return new XmlResourceParserImpl(document);
 	}
 
+	/**
+	 * Concrete implementation of the {@link XmlResourceParser}.
+	 * 
+	 * <p>Clients expects a pull parser while the resource loader
+	 * initialise this object with a {@link Document}. 
+	 * This implementation navigates the dom and emulates a pull
+	 * parser by raising all the opportune events.
+	 * 
+	 * <p>Note that the original android implementation is based on
+	 * a set of native methods calls. Here those methods are
+	 * re-implemented in java when possible.
+	 * 
+	 * @see https://github.com/android/platform_frameworks_base/blob/master/core/java/android/content/res/XmlBlock.java
+	 */
 	/*package*/ final class XmlResourceParserImpl
 			implements XmlResourceParser {
 
@@ -68,25 +103,28 @@ public class XmlFileLoader extends XmlLoader {
         	this.document = document;
         }
 
+        private boolean isSupportedFeature(String name) {
+        	if (name == null) {
+        		return false;
+        	}
+        	for (String feature: AVAILABLE_FEATURES) {
+        		if (feature.equals(name)) {
+        			return true;
+        		}
+        	}
+        	return false;
+        }
+        
         public void setFeature(String name, boolean state)
         		throws XmlPullParserException {
-            if (FEATURE_PROCESS_NAMESPACES.equals(name) && state) {
-                return;
-            }
-            if (FEATURE_REPORT_NAMESPACE_ATTRIBUTES.equals(name) && state) {
-                return;
-            }
+        	if (isSupportedFeature(name) && state) {
+        		return;
+        	}
             throw new XmlPullParserException("Unsupported feature: " + name);
         }
         
         public boolean getFeature(String name) {
-            if (FEATURE_PROCESS_NAMESPACES.equals(name)) {
-                return true;
-            }
-            if (FEATURE_REPORT_NAMESPACE_ATTRIBUTES.equals(name)) {
-                return true;
-            }
-            return false;
+        	return isSupportedFeature(name);
         }
         
         public void setProperty(String name, Object value)
@@ -95,6 +133,8 @@ public class XmlFileLoader extends XmlLoader {
         }
         
         public Object getProperty(String name) {
+        	// Properties are not supported. Android returns null
+        	// instead of throwing an XmlPullParserException.
             return null;
         }
         
@@ -125,8 +165,8 @@ public class XmlFileLoader extends XmlLoader {
         }
         
         public String getNamespace(String prefix) {
-            throw new RuntimeException(
-            		"getNamespace() not supported");
+        	throw new RuntimeException(
+            		"getNamespaceCount() not supported");
         }
         
         public int getNamespaceCount(int depth)
@@ -146,17 +186,20 @@ public class XmlFileLoader extends XmlLoader {
         }
         
         public int getColumnNumber() {
+        	// Android always returns -1
             return -1;
         }
         
         public int getDepth() {
             return mDepth;
         }
+        
         public String getText() {
         	return currentNode.getNodeValue();
         }
         
         public int getLineNumber() {
+        	// TODO(msama): The current implementation is unable to return line numbers.
         	return -1;
         }
         
@@ -188,7 +231,14 @@ public class XmlFileLoader extends XmlLoader {
         }
         
         public String getNamespace() {
-            return document.getNamespaceURI();
+        	if (currentNode == null) {
+        		return "";
+        	}
+        	String namespace = currentNode.getNamespaceURI();
+        	if (namespace == null) {
+        		return "";
+        	}
+        	return namespace;
         }
         
         public String getName() {

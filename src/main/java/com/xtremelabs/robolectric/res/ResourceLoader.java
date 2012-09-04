@@ -135,7 +135,6 @@ public class ResourceLoader {
 				File localValueResourceDir = getValueResourceDir( resourceDir );
 				File systemValueResourceDir = getValueResourceDir( systemResourceDir );
 				File preferenceDir = getPreferenceResourceDir( resourceDir );
-				File xmlFileDir = getXmlFileResourceDir( resourceDir );
 
 				loadStringResources( localValueResourceDir, systemValueResourceDir );
 				loadPluralsResources( localValueResourceDir, systemValueResourceDir );
@@ -146,7 +145,7 @@ public class ResourceLoader {
 				loadMenuResources( resourceDir );
 				loadDrawableResources( resourceDir );
 				loadPreferenceResources( preferenceDir );
-				loadXmlFileResources( xmlFileDir );
+				loadXmlFileResources( resourceDir );
 				
 				listNinePatchResources(ninePatchDrawableIds, resourceDir);
 			} else {
@@ -216,10 +215,25 @@ public class ResourceLoader {
 		}
 	}
 	
-	private void loadXmlFileResources( File xmlResourceDir ) throws Exception {
-		if ( xmlResourceDir.exists() ) {
-			DocumentLoader xmlFileDocumentLoader = new DocumentLoader( xmlFileLoader );
-			xmlFileDocumentLoader.loadResourceXmlDir( xmlResourceDir );
+	/**
+	 * All the Xml files should be loaded. 
+	 */
+	private void loadXmlFileResources( File resourceDir ) throws Exception {
+		if ( resourceDir.exists() ) {
+			DocumentLoader xmlFileDocumentLoader = 
+					new DocumentLoader( xmlFileLoader );
+			xmlFileDocumentLoader.loadResourceXmlDir( resourceDir );
+			
+			FileFilter subfolderFilter = new FileFilter() {
+		        @Override public boolean accept(File file) {
+		            return file.isDirectory();
+		        }
+		    };
+			
+			// Load sub-folders
+			for (File subfolder: resourceDir.listFiles(subfolderFilter)) {
+				xmlFileDocumentLoader.loadResourceXmlDir( subfolder );
+	        }
 		}
 	}
 
@@ -276,10 +290,6 @@ public class ResourceLoader {
 		return xmlResourceDir != null ? new File( xmlResourceDir, "xml" ) : null;
 	}
 	
-	private File getXmlFileResourceDir( File xmlResourceDir ) {
-		return xmlResourceDir != null ? new File( xmlResourceDir, "xml" ) : null;
-	}
-
 	private String getPathToAndroidResources() {
 		String resourcePath;
 		if ( ( resourcePath = getAndroidResourcePathFromLocalProperties() ) != null ) {

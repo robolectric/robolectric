@@ -205,8 +205,13 @@ public class ShadowResources {
     }
     
     @Implementation
-    public XmlResourceParser getXml(int id) {
-    	return resourceLoader.getXml(id);
+    public XmlResourceParser getXml(int id)
+    		throws Resources.NotFoundException {
+    	XmlResourceParser parser = resourceLoader.getXml(id);
+    	if (parser == null) {
+    		throw new Resources.NotFoundException();
+    	}
+    	return parser;
     }
 
     @Implementation

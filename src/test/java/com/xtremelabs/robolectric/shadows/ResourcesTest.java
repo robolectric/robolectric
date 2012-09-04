@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
@@ -142,7 +143,7 @@ public class ResourcesTest {
     }
     
     @Test
-    public void testGetXML() throws Exception {
+    public void testGetXml() throws Exception {
     	int resId = R.xml.preferences;    	
     	XmlResourceParser parser = resources.getXml(resId);
     	// Assert that a resource file is returned
@@ -155,4 +156,15 @@ public class ResourcesTest {
     	} while (event != XmlPullParser.START_TAG);
     	assertThat(parser.getName(), equalTo("PreferenceScreen"));
     }
+    
+    @Test
+    public void testGetXml_unexistentResource() {
+    	try {
+    		resources.getXml(0);
+    		fail("Attempting to load a non existent resource should have raised an exception");
+    	} catch (Resources.NotFoundException ex) {
+    		// pass
+    	}
+    }
+    
 }
