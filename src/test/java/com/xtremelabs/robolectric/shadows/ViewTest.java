@@ -371,6 +371,21 @@ public class ViewTest {
     	assertThat(view2.getMeasuredWidth(), equalTo(800));  
     }
 
+    @Test
+    public void itKnowsIfTheViewIsShown() {
+      view.setVisibility(View.VISIBLE);
+      assertThat(view.isShown(), is(true));
+    }
+
+    @Test
+    public void itKnowsIfTheViewIsNotShown() {
+      view.setVisibility(View.GONE);
+      assertThat(view.isShown(), is(false));
+
+      view.setVisibility(View.INVISIBLE);
+      assertThat(view.isShown(), is(false));
+    }
+
     private static class TestAnimation extends Animation {
     }
 

@@ -550,6 +550,12 @@ public class ShadowView {
         return false;
     }
 
+    @Implementation
+    public boolean isShown() {
+      return derivedIsVisible();
+    }
+
+
     /**
      * Returns a string representation of this {@code View}. Unless overridden, it will be an empty string.
      * <p/>
