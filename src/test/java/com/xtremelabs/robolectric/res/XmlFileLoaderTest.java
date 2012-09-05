@@ -8,6 +8,7 @@ import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.*;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
@@ -15,10 +16,16 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.res.XmlResourceParser;
@@ -38,8 +45,6 @@ import com.xtremelabs.robolectric.res.XmlFileLoader.XmlResourceParserImpl;
  * @author msama (michele@swiftkey.net)
  */
 public class XmlFileLoaderTest {
-
-	private static final int ATTRIBUTE_OUT_OF_INDEX = 999;
 	
 	private XmlFileLoader xmlFileLoader;
 	private XmlResourceParserImpl parser;
@@ -71,11 +76,32 @@ public class XmlFileLoaderTest {
 		};
 	}
 	
-	/**
-	 * Test method for {@link com.xtremelabs.robolectric.res.XmlFileLoader#getXml(int)}.
-	 * @throws IOException 
-	 * @throws XmlPullParserException 
-	 */
+	private void forgeNode(String xmlValue)
+			throws XmlPullParserException {
+		try {
+			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+	        factory.setNamespaceAware(true);
+	        factory.setIgnoringComments(true);
+	        factory.setIgnoringElementContentWhitespace(true);
+	        DocumentBuilder documentBuilder = factory.newDocumentBuilder();
+	        Document document = documentBuilder.parse(
+	        		new ByteArrayInputStream(xmlValue.getBytes()));
+	        
+	        parser = xmlFileLoader.new XmlResourceParserImpl(document);
+	        parseUntilNext(XmlResourceParser.START_TAG);
+		} catch (ParserConfigurationException e) {
+			e.printStackTrace();
+		} catch (SAXException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	private int attributeIndexOutOfIndex() {
+		return parser.getAttributeCount() + 1;
+	};
+	
 	@Test
 	public void testGetXmlInt() throws XmlPullParserException, IOException {
 		assertThat(parser, notNullValue());
@@ -83,9 +109,6 @@ public class XmlFileLoaderTest {
 		assertThat(evt, equalTo(XmlResourceParser.START_DOCUMENT));
 	}
 
-	/**
-	 * Test method for {@link com.xtremelabs.robolectric.res.XmlFileLoader#getXml(java.lang.String)}.
-	 */
 	@Test
 	public void testGetXmlString() {
 		XmlResourceParser parser = xmlFileLoader.getXml("xml/preferences");
@@ -153,7 +176,7 @@ public class XmlFileLoaderTest {
 	public void testSetInput_Reader() {
 		try {
 			parser.setInput(new StringReader(""));
-			fail("Properties should not be supported");
+			fail("This method should not be supported");
 		} catch(XmlPullParserException ex) {
 			// pass
 		}
@@ -165,7 +188,7 @@ public class XmlFileLoaderTest {
 		try {
 			inputStream = new FileInputStream("src/test/resources/res/xml/preferences.xml");
 			parser.setInput(inputStream, "UTF-8");
-			fail("Properties should not be supported");
+			fail("This method should not be supported");
 		} catch(XmlPullParserException ex) {
 			// pass
 		} finally {
@@ -255,12 +278,11 @@ public class XmlFileLoaderTest {
 
 	@Test
 	public void testGetText() throws XmlPullParserException, IOException {
-		assertThat(parser.getText(), equalTo(null));
-		parseUntilNext(XmlResourceParser.START_TAG);
-		assertThat(parser.getText(), equalTo(null));
-		// TODO(msama): Test a node with text
-		// parseUntilNext(XmlResourceParser.TEXT);
-		// assertThat(parser.getText(), notNullValue());
+		forgeNode("<foo/>");
+		assertThat(parser.getText(), equalTo(""));
+		
+		forgeNode("<foo>bar</foo>");
+		assertThat(parser.getText(), equalTo("bar"));
 	}
 
 	@Test
@@ -283,7 +305,8 @@ public class XmlFileLoaderTest {
 
 	@Test
 	public void testIsWhitespace() throws XmlPullParserException {
-		assertThat(parser.isWhitespace(), equalTo(false));
+		assertThat(parser.isWhitespace("bar"), equalTo(false));
+		assertThat(parser.isWhitespace(" "), equalTo(true));
 	}
 
 	@Test
@@ -298,57 +321,40 @@ public class XmlFileLoaderTest {
 
 	@Test
 	public void testGetNamespace() throws XmlPullParserException, IOException {
-		assertThat(parser.getNamespace(), equalTo(""));
-		parseUntilNext(XmlResourceParser.START_TAG);
-		assertThat(parser.getNamespace(), equalTo(""));
+		forgeNode("<foo xmlns=\"http://www.w3.org/1999/xhtml\">bar</foo>");
+		assertThat(parser.getNamespace(),
+				equalTo("http://www.w3.org/1999/xhtml"));
 	}
 
 	@Test
-	public void testGetName() throws XmlPullParserException, IOException {
-		String[] expected = new String[] {
-				"PreferenceScreen",
-				"PreferenceCategory",
-				"Preference",
-				"CheckBoxPreference",
-				"EditTextPreference",
-				"ListPreference",
-				"Preference",
-				"RingtonePreference"
-		};
-		int index = -1;
-		int evt;
-		while ((evt = parser.next()) != XmlResourceParser.END_DOCUMENT) {
-			switch (evt) {
-				case (XmlResourceParser.START_DOCUMENT): {
-					assertThat(parser.getName(), equalTo(""));
-					break;
-				}
-				case (XmlResourceParser.START_TAG): {
-					index ++;
-					assertThat(parser.getName(), equalTo(expected[index]));
-					break;
-				}
-			}
-		}
-		assertThat(
-				"End document name should be empty.",
-				parser.getName(), equalTo(""));
+	public void testGetName_atStart()
+			throws XmlPullParserException, IOException {
+		assertThat(parser.getName(), equalTo(""));
+		parseUntilNext(XmlResourceParser.START_DOCUMENT);
+		assertThat(parser.getName(), equalTo(""));
 	}
 	
 	@Test
+	public void testGetName() throws XmlPullParserException, IOException {
+		forgeNode("<foo/>");
+		assertThat(parser.getName(), equalTo("foo"));
+	}
+	
+	
+	@Test
 	public void testGetAttribute() throws XmlPullParserException, IOException {
-		parseUntilNext(XmlResourceParser.START_TAG);
+		forgeNode("<foo xmlns:bar=\"bar\"/>");
 		assertThat(
 				parser.getAttribute(
 						"http://www.w3.org/2000/xmlns/",
-						"xmlns:android"),
-				notNullValue());
+						"xmlns:bar").getNodeValue(),
+				equalTo("bar"));
 	}
 
 	@Test
 	public void testGetAttributeNamespace()
 			throws XmlPullParserException, IOException {
-		parseUntilNext(XmlResourceParser.START_TAG);
+		forgeNode("<foo xmlns:bar=\"bar\"/>");
 		assertThat(parser.getAttributeNamespace(0),
 				equalTo("http://www.w3.org/2000/xmlns/"));
 	}
@@ -356,14 +362,13 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetAttributeName()
 			throws XmlPullParserException, IOException {
-		parseUntilNext(XmlResourceParser.START_TAG);
 		assertThat(parser.getAttributeName(0),
-				equalTo("xmlns:android"));
-		try {
-			parser.getAttributeName(ATTRIBUTE_OUT_OF_INDEX);
-		} catch (IndexOutOfBoundsException ex) {
-			// pass
-		}
+				nullValue());
+		
+		forgeNode("<foo bar=\"bar\"/>");
+		assertThat(parser.getAttributeName(0), equalTo("bar"));
+		assertThat(parser.getAttributeName(attributeIndexOutOfIndex()),
+				nullValue());
 	}
 
 	@Test
@@ -382,22 +387,17 @@ public class XmlFileLoaderTest {
 	public void testIsEmptyElementTag()
 			throws XmlPullParserException, IOException {
 		assertThat(
-				"Not START_TAG should return false.",
+				"Before START_DOCUMENT should return false.",
 				parser.isEmptyElementTag(),
 				equalTo(false));
-		parseUntilNext(XmlResourceParser.START_TAG);
+			
+		forgeNode("<foo><bar/></foo>");
 		assertThat(
 				"Not empty tag should return false.",
 				parser.isEmptyElementTag(),
 				equalTo(false));
-		// Navigate to an empty tag
-		parseUntilNext(XmlResourceParser.START_TAG);
-		parseUntilNext(XmlResourceParser.START_TAG);
-		parseUntilNext(XmlResourceParser.START_TAG);
-		assertThat(
-				"Expected CheckBoxPreference.",
-				parser.getName(),
-				equalTo("CheckBoxPreference"));
+		
+		forgeNode("<foo/>");
 		assertThat(
 				"In the Android implementation this method always return false.",
 				parser.isEmptyElementTag(),
@@ -412,39 +412,51 @@ public class XmlFileLoaderTest {
 				"of attributes should be -1.",
 				parser.getAttributeCount(),
 				equalTo(-1));
-		parseUntilNext(XmlResourceParser.START_TAG);
+		
+		forgeNode("<foo bar=\"bar\"/>");
 		assertThat(
 				parser.getAttributeCount(),
 				equalTo(1));
 	}
 
 	@Test
-	public void testGetAttributeValueInt() {
+	public void testGetAttributeValue_Int()
+			throws XmlPullParserException {
+		forgeNode("<foo bar=\"bar\"/>");
 		assertThat(
-				parser.getAttributeBooleanValue(ATTRIBUTE_OUT_OF_INDEX, true),
-				equalTo(true));
+				parser.getAttributeValue(0),
+				equalTo("bar"));
+		
+		try {
+			parser.getAttributeValue(attributeIndexOutOfIndex());
+		} catch (IndexOutOfBoundsException ex) {
+			// pass
+		}
 	}
 
 	@Test
 	public void testGetAttributeType() {
+		// Hardcoded to always return CDATA
 		assertThat(
-				parser.getAttributeType(ATTRIBUTE_OUT_OF_INDEX),
+				parser.getAttributeType(attributeIndexOutOfIndex()),
 				equalTo("CDATA"));
 	}
 
 	@Test
 	public void testIsAttributeDefault() {
 		assertThat(
-				parser.isAttributeDefault(ATTRIBUTE_OUT_OF_INDEX),
+				parser.isAttributeDefault(attributeIndexOutOfIndex()),
 				equalTo(false));
 	}
 
 	@Test
 	public void testGetAttributeValueStringString()
 			throws XmlPullParserException, IOException {
-		parseUntilNext(XmlResourceParser.START_TAG);
-		assertThat(parser.getAttributeValue("http://www.w3.org/2000/xmlns/", "xmlns:android"),
-				equalTo("http://schemas.android.com/apk/res/android"));
+		forgeNode("<foo xmlns:bar=\"bar\"/>");
+		assertThat(
+				parser.getAttributeValue(
+						"http://www.w3.org/2000/xmlns/", "xmlns:bar"),
+				equalTo("bar"));
 	}
 
 	@Test
@@ -543,111 +555,252 @@ public class XmlFileLoaderTest {
 	}
 
 	@Test
+	@Ignore("Not yet implemented")
 	public void testGetAttributeNameResource() {
 		fail("Not yet implemented");
 	}
 
 	@Test
-	public void testGetAttributeListValueStringStringStringArrayInt() {
-		fail("Not yet implemented");
+	public void testGetAttributeListValue_StringStringStringArrayInt()
+			throws XmlPullParserException, IOException {
+		String[] options = {"foo", "bar"};
+		forgeNode("<foo xmlns:bar=\"bar\"/>");
+		assertThat(
+				parser.getAttributeListValue(
+						"http://www.w3.org/2000/xmlns/", 
+						"xmlns:bar", options, 0),
+				equalTo(1));
+		
+		forgeNode("<foo xmlns:bar=\"unexpected\"/>");
+		assertThat(
+				parser.getAttributeListValue(
+						"http://www.w3.org/2000/xmlns/", 
+						"xmlns:bar", options, 0),
+				equalTo(0));
 	}
 
 	@Test
-	public void testGetAttributeBooleanValueStringStringBoolean() {
-		fail("Not yet implemented");
+	public void testGetAttributeBooleanValue_StringStringBoolean()
+			throws XmlPullParserException, IOException {
+		forgeNode("<foo xmlns:bar=\"true\"/>");
+		assertThat(
+				parser.getAttributeBooleanValue("http://www.w3.org/2000/xmlns/", 
+				"xmlns:bar", false), equalTo(true));
+		assertThat(
+				parser.getAttributeBooleanValue("http://www.w3.org/2000/xmlns/", 
+				"xmlns:foo", false), equalTo(false));
 	}
 
 	@Test
+	public void testGetAttributeBooleanValue_IntBoolean()
+			throws XmlPullParserException {
+		forgeNode("<foo bar=\"true\"/>");
+		assertThat(
+				parser.getAttributeBooleanValue(0, false),
+				equalTo(true));
+		assertThat(
+				parser.getAttributeBooleanValue(attributeIndexOutOfIndex(), false),
+				equalTo(false));
+	}
+	
+	@Test
+	@Ignore("Not yet implemented")
 	public void testGetAttributeResourceValueStringStringInt() {
 		fail("Not yet implemented");
 	}
-
+	
 	@Test
-	public void testGetAttributeIntValueStringStringInt() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testGetAttributeUnsignedIntValueStringStringInt() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testGetAttributeFloatValueStringStringFloat() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testGetAttributeListValueIntStringArrayInt() {
-		fail("Not yet implemented");
-	}
-
-	@Test
-	public void testGetAttributeBooleanValueIntBoolean() {
-		fail("Not yet implemented");
-	}
-
-	@Test
+	@Ignore("Not yet implemented")
 	public void testGetAttributeResourceValueIntInt() {
 		fail("Not yet implemented");
 	}
 
 	@Test
-	public void testGetAttributeIntValueIntInt() {
-		fail("Not yet implemented");
+	public void testGetAttributeIntValue_StringStringInt()
+			throws XmlPullParserException {
+		forgeNode("<foo xmlns:bar=\"-12\"/>");
+		
+		assertThat(
+				parser.getAttributeIntValue(
+						"http://www.w3.org/2000/xmlns/", 
+						"xmlns:bar", 0),
+				equalTo(-12));
+		
+		assertThat(
+				parser.getAttributeIntValue(
+						"http://www.w3.org/2000/xmlns/", 
+						"xmlns:foo", 0),
+				equalTo(0));
+	}
+	
+
+	@Test
+	public void testGetAttributeIntValue_IntInt()
+			throws XmlPullParserException {
+		forgeNode("<foo bar=\"-12\"/>");
+		
+		assertThat(
+				parser.getAttributeIntValue(0, 0),
+				equalTo(-12));
+		
+		assertThat(
+				parser.getAttributeIntValue(attributeIndexOutOfIndex(), 0),
+				equalTo(0));
+		
+		forgeNode("<foo bar=\"unexpected\"/>");
+		assertThat(
+				parser.getAttributeIntValue(0, 0),
+				equalTo(0));
+	}
+	
+	@Test
+	public void testGetAttributeUnsignedIntValue_StringStringInt()
+			throws XmlPullParserException {
+		forgeNode("<foo xmlns:bar=\"12\"/>");
+		
+		assertThat(
+				parser.getAttributeUnsignedIntValue(
+						"http://www.w3.org/2000/xmlns/", 
+						"xmlns:bar", 0),
+				equalTo(12));
+		
+		assertThat(
+				parser.getAttributeUnsignedIntValue(
+						"http://www.w3.org/2000/xmlns/", 
+						"xmlns:foo", 0),
+				equalTo(0));
+		
+		// Negative unsigned int must be
+		forgeNode("<foo xmlns:bar=\"-12\"/>");
+		
+		assertThat(
+				"Getting a negative number as unsigned should " +
+						"return the default value.",
+				parser.getAttributeUnsignedIntValue(
+						"http://www.w3.org/2000/xmlns/", 
+						"xmlns:bar", 0),
+				equalTo(0));
 	}
 
 	@Test
-	public void testGetAttributeUnsignedIntValueIntInt() {
-		fail("Not yet implemented");
+	public void testGetAttributeUnsignedIntValue_IntInt()
+			throws XmlPullParserException {
+		forgeNode("<foo bar=\"12\"/>");
+		
+		assertThat(
+				parser.getAttributeUnsignedIntValue(0, 0),
+				equalTo(12));
+		
+		assertThat(
+				parser.getAttributeUnsignedIntValue(
+						attributeIndexOutOfIndex(), 0),
+				equalTo(0));
+		
+		// Negative unsigned int must be
+		forgeNode("<foo bar=\"-12\"/>");
+		
+		assertThat(
+				"Getting a negative number as unsigned should " +
+						"return the default value.",
+				parser.getAttributeUnsignedIntValue(0, 0),
+				equalTo(0));
+	}
+	
+	@Test
+	public void testGetAttributeFloatValue_StringStringFloat()
+			throws XmlPullParserException {
+		forgeNode("<foo xmlns:bar=\"12.01\"/>");
+		
+		assertThat(
+				parser.getAttributeFloatValue(
+						"http://www.w3.org/2000/xmlns/", 
+						"xmlns:bar", 0.0f),
+				equalTo(12.01f));
+		
+		assertThat(
+				parser.getAttributeFloatValue(
+						"http://www.w3.org/2000/xmlns/", 
+						"xmlns:foo", 0.0f),
+				equalTo(0.0f));
+		
+		forgeNode("<foo bar=\"unexpected\"/>");
+		assertThat(
+				parser.getAttributeFloatValue(
+						"http://www.w3.org/2000/xmlns/", 
+						"xmlns:bar", 0.0f),
+				equalTo(0.0f));
 	}
 
 	@Test
-	public void testGetAttributeFloatValueIntFloat()
+	public void testGetAttributeFloatValue_IntFloat()
 			throws XmlPullParserException, IOException {
-		parseUntilNext(XmlResourceParser.START_TAG);
-		assertThat(parser.getAttributeFloatValue(0, 1.0f), equalTo(1.0f));
-		// TODO(msama): test an actual read value
+		forgeNode("<foo bar=\"12.01\"/>");
+		
+		assertThat(
+				parser.getAttributeFloatValue(0, 0.0f),
+				equalTo(12.01f));
+		
+		assertThat(
+				parser.getAttributeFloatValue(
+						attributeIndexOutOfIndex(), 0.0f),
+				equalTo(0.0f));
+		
+		forgeNode("<foo bar=\"unexpected\"/>");
+		assertThat(
+				parser.getAttributeFloatValue(0, 0.0f),
+				equalTo(0.0f));
+	}
+	
+	@Test
+	public void testGetAttributeListValue_IntStringArrayInt()
+			throws XmlPullParserException {
+		String[] options = {"foo", "bar"};
+		forgeNode("<foo xmlns:bar=\"bar\"/>");
+		assertThat(
+				parser.getAttributeListValue(0, options, 0),
+				equalTo(1));
+
+		forgeNode("<foo xmlns:bar=\"unexpected\"/>");
+		assertThat(
+				parser.getAttributeListValue(
+						0, options, 0),
+				equalTo(0));
+		
+		assertThat(
+				parser.getAttributeListValue(
+						attributeIndexOutOfIndex(), options, 0),
+				equalTo(0));
 	}
 
 	@Test
 	public void testGetIdAttribute() throws XmlPullParserException, IOException {
-		assertThat(
-				"Document should have no id.",
-				parser.getIdAttribute(), equalTo(null));
-		parseUntilNext(XmlResourceParser.START_TAG);
-		assertThat(
-				"Root element have no id.",
-				parser.getIdAttribute(), equalTo(null));
-		// TODO(msama): Test an element with a real ID
-		// None of the preferences elements have id
+		forgeNode("<foo/>");
+		assertThat(parser.getIdAttribute(), equalTo(null));
+		
+		forgeNode("<foo id=\"bar\"/>");
+		assertThat(parser.getIdAttribute(), equalTo("bar"));
 	}
 
 	@Test
 	public void testGetClassAttribute() throws XmlPullParserException, IOException {
-		assertThat(
-				"Document should have no class.",
-				parser.getClassAttribute(), equalTo(null));
-		parseUntilNext(XmlResourceParser.START_TAG);
-		assertThat(
-				"Root element have no id.",
-				parser.getClassAttribute(), equalTo(null));
-		// TODO(msama): Test an element with a class attribute
-		// None of the preferences elements have a class attribute
+		forgeNode("<foo/>");
+		assertThat(parser.getClassAttribute(), equalTo(null));
+		
+		forgeNode("<foo class=\"bar\"/>");
+		assertThat(parser.getClassAttribute(), equalTo("bar"));
 	}
 
 	@Test
-	public void testGetIdAttributeResourceValue() {
+	public void testGetIdAttributeResourceValue_defaultValue() {
 		assertThat(
 				parser.getIdAttributeResourceValue(12), equalTo(12));
 	}
 
 	@Test
-	public void testGetStyleAttribute() {
-		assertThat(
-				parser.getStyleAttribute(), equalTo(0));
-		// TODO(msama): test with an element with style attribute
-		// None of the preferences elements have a style attribute
+	public void testGetStyleAttribute()
+			throws XmlPullParserException {
+		forgeNode("<foo/>");
+		assertThat(parser.getStyleAttribute(), equalTo(0));
 	}
 
 }

@@ -31,6 +31,9 @@ import android.content.res.XmlResourceParser;
  */
 public class XmlFileLoader extends XmlLoader {
 	
+	private Map<String, Document> mXmlDocuments = 
+			new HashMap<String, Document>();
+	
 	/**
 	 * All the parser features currently supported by Android. 
 	 */
@@ -47,7 +50,20 @@ public class XmlFileLoader extends XmlLoader {
 			XmlResourceParser.FEATURE_VALIDATION 
 	};
 	
-    private Map<String, Document> xmlDocuments = new HashMap<String, Document>();
+	/**
+     * Tell is a given feature is supported by android.
+     */
+	public static boolean isAndroidSupportedFeature(String name) {
+    	if (name == null) {
+    		return false;
+    	}
+    	for (String feature: AVAILABLE_FEATURES) {
+    		if (feature.equals(name)) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
 
 	public XmlFileLoader(ResourceExtractor resourceExtractor) {
 		super(resourceExtractor);
@@ -57,7 +73,7 @@ public class XmlFileLoader extends XmlLoader {
 	protected void processResourceXml(
 			File xmlFile, Document document, boolean isSystem)
 					throws Exception {
-		xmlDocuments.put(
+		mXmlDocuments.put(
 				"xml/" + xmlFile.getName().replace(".xml", ""), document);
 	}
 
@@ -67,7 +83,7 @@ public class XmlFileLoader extends XmlLoader {
 	}
 	
 	public XmlResourceParser getXml(String key) {
-		Document document = xmlDocuments.get(key);
+		Document document = mXmlDocuments.get(key);
 		if (document == null) {
 			return null;
 		}
@@ -88,7 +104,7 @@ public class XmlFileLoader extends XmlLoader {
 	 * 
 	 * @see https://github.com/android/platform_frameworks_base/blob/master/core/java/android/content/res/XmlBlock.java
 	 */
-	/*package*/ final class XmlResourceParserImpl
+	final class XmlResourceParserImpl
 			implements XmlResourceParser {
 
         private final Document document;
@@ -102,29 +118,17 @@ public class XmlFileLoader extends XmlLoader {
         XmlResourceParserImpl(Document document) {
         	this.document = document;
         }
-
-        /*package*/ boolean isSupportedFeature(String name) {
-        	if (name == null) {
-        		return false;
-        	}
-        	for (String feature: AVAILABLE_FEATURES) {
-        		if (feature.equals(name)) {
-        			return true;
-        		}
-        	}
-        	return false;
-        }
         
         public void setFeature(String name, boolean state)
         		throws XmlPullParserException {
-        	if (isSupportedFeature(name) && state) {
+        	if (isAndroidSupportedFeature(name) && state) {
         		return;
         	}
             throw new XmlPullParserException("Unsupported feature: " + name);
         }
         
         public boolean getFeature(String name) {
-        	return isSupportedFeature(name);
+        	return isAndroidSupportedFeature(name);
         }
         
         public void setProperty(String name, Object value)
@@ -196,9 +200,9 @@ public class XmlFileLoader extends XmlLoader {
         
         public String getText() {
         	if (currentNode == null) {
-        		return null;
+        		return "";
         	}
-        	return currentNode.getNodeValue();
+        	return currentNode.getTextContent();
         }
         
         public int getLineNumber() {
@@ -261,7 +265,7 @@ public class XmlFileLoader extends XmlLoader {
             return currentNode.getNodeName();
         }
         
-        /*package*/ Node getAttributeAt(int index) {
+        Node getAttributeAt(int index) {
         	if (currentNode == null) {
         		throw new IndexOutOfBoundsException(String.valueOf(index));
         	}
@@ -272,7 +276,7 @@ public class XmlFileLoader extends XmlLoader {
         	return map.item(index);
         }
         
-        /*package*/ Node getAttribute(String namespace, String name) {
+        Node getAttribute(String namespace, String name) {
         	if (currentNode == null) {
         		return null;
         	}
@@ -284,11 +288,20 @@ public class XmlFileLoader extends XmlLoader {
         }
         
         public String getAttributeNamespace(int index) {
-        	return getAttributeAt(index).getNamespaceURI();
+        	Node attr = getAttributeAt(index);
+        	if (attr == null) {
+        		return null;
+        	}
+        	return attr.getNamespaceURI();
         }
         
         public String getAttributeName(int index) {
-        	return getAttributeAt(index).getNodeName();
+        	try {
+        		Node attr = getAttributeAt(index);
+        		return attr.getNodeName();
+        	} catch(IndexOutOfBoundsException ex) {
+        		return null;
+        	}
         }
         
         public String getAttributePrefix(int index) {
@@ -371,7 +384,7 @@ public class XmlFileLoader extends XmlLoader {
          * A twin implementation of the native android nativeNext(status)
          * @throws XmlPullParserException 
          */
-        /*package*/ int nativeNext() throws XmlPullParserException {
+        private int nativeNext() throws XmlPullParserException {
         	switch(mEventType) {
         		case(CDSECT): {
         			throw new IllegalArgumentException("CDSECT");
@@ -539,11 +552,11 @@ public class XmlFileLoader extends XmlLoader {
     
         public int getAttributeListValue(String namespace, String attribute,
                 String[] options, int defaultValue) {
-        	Node attr = getAttribute(namespace, attribute);
-        	if (attr == null) {
-        		return defaultValue;
-        	}
-        	List<String> optList = Arrays.asList(options);
+    		Node attr = getAttribute(namespace, attribute);
+    		if (attr == null) {
+    			return 0;
+    		}
+    		List<String> optList = Arrays.asList(options);
         	int index = optList.indexOf(attr.getNodeValue());
         	if (index == -1) {
         		return defaultValue;
@@ -597,20 +610,23 @@ public class XmlFileLoader extends XmlLoader {
         	try {
 	        	return Float.parseFloat(attr.getNodeValue());
 	        } catch(NumberFormatException ex) {
-	        	throw new RuntimeException(
-	        			"Expected a float. Found: " + attr.getNodeValue() + ".");
+	        	return defaultValue;
 	    	}
         }
 
         public int getAttributeListValue(int idx,
                 String[] options, int defaultValue) {
-        	String value = getAttributeValue(idx);
-        	List<String> optList = Arrays.asList(options);
-        	int index = optList.indexOf(value);
-        	if (index == -1) {
+        	try {
+	        	String value = getAttributeValue(idx);
+	        	List<String> optList = Arrays.asList(options);
+	        	int index = optList.indexOf(value);
+	        	if (index == -1) {
+	        		return defaultValue;
+	        	}
+	        	return index;
+        	} catch (IndexOutOfBoundsException ex) {
         		return defaultValue;
         	}
-        	return index;
         }
         
         public boolean getAttributeBooleanValue(int idx,
@@ -637,17 +653,11 @@ public class XmlFileLoader extends XmlLoader {
         }
         
         public int getAttributeUnsignedIntValue(int idx, int defaultValue) {
-        	try {
-	            int value = getAttributeIntValue(idx, defaultValue);
-	            if (value < 0) {
-	            	return defaultValue;
-	            }
-	            return value;
-        	} catch(NumberFormatException ex) {
-        		return defaultValue;
-        	} catch (IndexOutOfBoundsException ex) {
-        		return defaultValue;
-        	} 
+        	int value = getAttributeIntValue(idx, defaultValue);
+            if (value < 0) {
+            	return defaultValue;
+            }
+            return value;
         }
         
         public float getAttributeFloatValue(int idx, float defaultValue) {
