@@ -387,22 +387,29 @@ public class XmlFileLoader extends XmlLoader {
         private int nativeNext() throws XmlPullParserException {
         	switch(mEventType) {
         		case(CDSECT): {
-        			throw new IllegalArgumentException("CDSECT");
+        			throw new IllegalArgumentException(
+        					"CDSECT is not handled by Android");
         		}
         		case(COMMENT): {
-        			throw new IllegalArgumentException("COMMENT");
+        			throw new IllegalArgumentException(
+        					"COMMENT is not handled by Android");
         		}
         		case(DOCDECL): {
-        			throw new IllegalArgumentException("DOCDECL");
+        			throw new IllegalArgumentException(
+        					"DOCDECL is not handled by Android");
+        		}
+        		case(ENTITY_REF): {
+        			throw new IllegalArgumentException(
+        					"ENTITY_REF is not handled by Android");
         		}
         		case(END_DOCUMENT): {
-        			throw new IllegalArgumentException("END_DOCUMENT");
+        			// The end document event should have been filtered
+        			// from the invoker. This should never happen.
+        			throw new IllegalArgumentException(
+        					"END_DOCUMENT should not be found here.");
         		}
         		case(END_TAG): {
         			return navigateToNextNode(currentNode);
-        		}
-        		case(ENTITY_REF): {
-        			throw new IllegalArgumentException("ENTITY_REF");
         		}
         		case(IGNORABLE_WHITESPACE): {
         			throw new IllegalArgumentException(
@@ -429,9 +436,14 @@ public class XmlFileLoader extends XmlLoader {
         		case(TEXT): {
         			return navigateToNextNode(currentNode);
         		}
+        		default : {
+        			// This can only happen if mEventType is
+        			// assigned with an unmapped integer.
+        			throw new RuntimeException(
+                			"Roboletric-> Uknown XML event type: " + mEventType);
+        		}
         	}
-        	throw new RuntimeException(
-        			"The next event has not been returned.");
+
         }
         
         /*protected*/ int processNextNodeType(Node node)
@@ -480,11 +492,31 @@ public class XmlFileLoader extends XmlLoader {
 						return TEXT;
 					}
 				}
+				default : {
+					throw new RuntimeException(
+							"Roboletric -> Unknown node type: " + 
+							node.getNodeType() + ".");
+				}
         	}
-        	throw new RuntimeException("The next event has not been returned.");
         }
         
-        /*protected*/ int navigateToNextNode(Node node)
+        /**
+         * Navigate to the next node after a node and all of his 
+         * children have been explored.
+         * 
+         * <p>If the node has unexplored siblings navigate to the
+         * next sibling. Otherwise return to its parent.
+         * 
+         * @param node the node which was just explored.
+         * @return {@link XmlPullParserException#START_TAG} if the given 
+         * 		node has siblings, {@link XmlPullParserException#END_TAG}
+         * 		if the node has no unexplored siblings or 
+         * 		{@link XmlPullParserException#END_DOCUMENT} if the explored
+         * 		was the root document.
+         * @throws XmlPullParserException if the parser fails to 
+         * 		parse the next node.
+         */
+        int navigateToNextNode(Node node)
         		throws XmlPullParserException {
 			Node nextNode = node.getNextSibling();
 			if (nextNode != null) {
@@ -504,9 +536,11 @@ public class XmlFileLoader extends XmlLoader {
         public void require(int type, String namespace, String name)
         		throws XmlPullParserException, IOException {
             if (type != getEventType()
-                || (namespace != null && !namespace.equals( getNamespace () ) )
-                || (name != null && !name.equals( getName() ) ) )
-                throw new XmlPullParserException( "expected "+ TYPES[ type ]+getPositionDescription());
+            		|| (namespace != null && !namespace.equals(getNamespace()))
+            		|| (name != null && !name.equals(getName()))) {
+                throw new XmlPullParserException(
+                		"expected "+ TYPES[type] + getPositionDescription());
+            }
         }
         
         public String nextText() throws XmlPullParserException,IOException {
@@ -614,8 +648,8 @@ public class XmlFileLoader extends XmlLoader {
 	    	}
         }
 
-        public int getAttributeListValue(int idx,
-                String[] options, int defaultValue) {
+        public int getAttributeListValue(
+        		int idx, String[] options, int defaultValue) {
         	try {
 	        	String value = getAttributeValue(idx);
 	        	List<String> optList = Arrays.asList(options);
@@ -629,8 +663,8 @@ public class XmlFileLoader extends XmlLoader {
         	}
         }
         
-        public boolean getAttributeBooleanValue(int idx,
-                boolean defaultValue) {
+        public boolean getAttributeBooleanValue(
+        		int idx, boolean defaultValue) {
         	try {
 	        	return Boolean.parseBoolean(getAttributeValue(idx));
         	} catch (IndexOutOfBoundsException ex) {

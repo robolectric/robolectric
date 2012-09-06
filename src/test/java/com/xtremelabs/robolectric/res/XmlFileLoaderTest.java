@@ -26,6 +26,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
+import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
 import android.content.res.XmlResourceParser;
@@ -76,7 +77,14 @@ public class XmlFileLoaderTest {
 		};
 	}
 	
-	private void forgeNode(String xmlValue)
+	/**
+	 * Create a new {@link Document} from a given string.
+	 * 
+	 * @param xmlValue the XML from which to forge a document.
+	 * @throws XmlPullParserException if the parser fails
+	 * 		to parse the root element.
+	 */
+	private void forgeAndOpenDocument(String xmlValue)
 			throws XmlPullParserException {
 		try {
 			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -88,13 +96,14 @@ public class XmlFileLoaderTest {
 	        		new ByteArrayInputStream(xmlValue.getBytes()));
 	        
 	        parser = xmlFileLoader.new XmlResourceParserImpl(document);
+	        // Navigate to the root element
 	        parseUntilNext(XmlResourceParser.START_TAG);
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		} catch (SAXException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
+		} catch (Exception parsingException) {
+			// Wrap XML parsing exception with a runtime 
+			// exception for convenience.
+			throw new RuntimeException(
+					"Cannot forge a Document from an invalid XML",
+					parsingException);
 		}
 	}
 	
@@ -258,8 +267,8 @@ public class XmlFileLoaderTest {
 
 	@Test
 	public void testGetDepth() throws XmlPullParserException, IOException {
+		// Recorded depths from preference file elements
 		int[] expected = new int[] {
-				// Depths of preference file elements
 				1, 2, 3, 2, 2, 2, 2, 2
 		};
 		int index = -1;
@@ -278,10 +287,10 @@ public class XmlFileLoaderTest {
 
 	@Test
 	public void testGetText() throws XmlPullParserException, IOException {
-		forgeNode("<foo/>");
+		forgeAndOpenDocument("<foo/>");
 		assertThat(parser.getText(), equalTo(""));
 		
-		forgeNode("<foo>bar</foo>");
+		forgeAndOpenDocument("<foo>bar</foo>");
 		assertThat(parser.getText(), equalTo("bar"));
 	}
 
@@ -321,7 +330,7 @@ public class XmlFileLoaderTest {
 
 	@Test
 	public void testGetNamespace() throws XmlPullParserException, IOException {
-		forgeNode("<foo xmlns=\"http://www.w3.org/1999/xhtml\">bar</foo>");
+		forgeAndOpenDocument("<foo xmlns=\"http://www.w3.org/1999/xhtml\">bar</foo>");
 		assertThat(parser.getNamespace(),
 				equalTo("http://www.w3.org/1999/xhtml"));
 	}
@@ -336,14 +345,14 @@ public class XmlFileLoaderTest {
 	
 	@Test
 	public void testGetName() throws XmlPullParserException, IOException {
-		forgeNode("<foo/>");
+		forgeAndOpenDocument("<foo/>");
 		assertThat(parser.getName(), equalTo("foo"));
 	}
 	
 	
 	@Test
 	public void testGetAttribute() throws XmlPullParserException, IOException {
-		forgeNode("<foo xmlns:bar=\"bar\"/>");
+		forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
 		assertThat(
 				parser.getAttribute(
 						"http://www.w3.org/2000/xmlns/",
@@ -354,7 +363,7 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetAttributeNamespace()
 			throws XmlPullParserException, IOException {
-		forgeNode("<foo xmlns:bar=\"bar\"/>");
+		forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
 		assertThat(parser.getAttributeNamespace(0),
 				equalTo("http://www.w3.org/2000/xmlns/"));
 	}
@@ -365,7 +374,7 @@ public class XmlFileLoaderTest {
 		assertThat(parser.getAttributeName(0),
 				nullValue());
 		
-		forgeNode("<foo bar=\"bar\"/>");
+		forgeAndOpenDocument("<foo bar=\"bar\"/>");
 		assertThat(parser.getAttributeName(0), equalTo("bar"));
 		assertThat(parser.getAttributeName(attributeIndexOutOfIndex()),
 				nullValue());
@@ -391,13 +400,13 @@ public class XmlFileLoaderTest {
 				parser.isEmptyElementTag(),
 				equalTo(false));
 			
-		forgeNode("<foo><bar/></foo>");
+		forgeAndOpenDocument("<foo><bar/></foo>");
 		assertThat(
 				"Not empty tag should return false.",
 				parser.isEmptyElementTag(),
 				equalTo(false));
 		
-		forgeNode("<foo/>");
+		forgeAndOpenDocument("<foo/>");
 		assertThat(
 				"In the Android implementation this method always return false.",
 				parser.isEmptyElementTag(),
@@ -413,7 +422,7 @@ public class XmlFileLoaderTest {
 				parser.getAttributeCount(),
 				equalTo(-1));
 		
-		forgeNode("<foo bar=\"bar\"/>");
+		forgeAndOpenDocument("<foo bar=\"bar\"/>");
 		assertThat(
 				parser.getAttributeCount(),
 				equalTo(1));
@@ -422,7 +431,7 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetAttributeValue_Int()
 			throws XmlPullParserException {
-		forgeNode("<foo bar=\"bar\"/>");
+		forgeAndOpenDocument("<foo bar=\"bar\"/>");
 		assertThat(
 				parser.getAttributeValue(0),
 				equalTo("bar"));
@@ -452,7 +461,7 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetAttributeValueStringString()
 			throws XmlPullParserException, IOException {
-		forgeNode("<foo xmlns:bar=\"bar\"/>");
+		forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
 		assertThat(
 				parser.getAttributeValue(
 						"http://www.w3.org/2000/xmlns/", "xmlns:bar"),
@@ -461,39 +470,35 @@ public class XmlFileLoaderTest {
 
 	@Test
 	public void testNext() throws XmlPullParserException, IOException {
-		int lastEvent = -1;
-		int evt = -1;
-		Stack<String> tags = new Stack<String>(); 
+		// Recorded events while parsing preferences from Android
+		int[] expectedEvents = {
+				XmlPullParser.START_DOCUMENT,
+					XmlPullParser.START_TAG, // PreferenceScreen
+						XmlPullParser.START_TAG, // PreferenceCategory
+							XmlPullParser.START_TAG, // Preference
+							XmlPullParser.END_TAG, 
+						XmlPullParser.END_TAG,
+						XmlPullParser.START_TAG, // CheckBoxPreference
+						XmlPullParser.END_TAG, 
+						XmlPullParser.START_TAG, // EditTextPreference
+						XmlPullParser.END_TAG,
+						XmlPullParser.START_TAG, // ListPreference
+						XmlPullParser.END_TAG,
+						XmlPullParser.START_TAG, // Preference
+						XmlPullParser.END_TAG,
+						XmlPullParser.START_TAG, //RingtonePreference
+						XmlPullParser.END_TAG,
+					XmlPullParser.END_TAG,
+				XmlPullParser.END_DOCUMENT
+		};
 		
-		while ((evt = parser.next()) != XmlResourceParser.END_DOCUMENT) {
-			switch (evt) {
-				case (XmlResourceParser.START_DOCUMENT): {
-					assertThat(lastEvent, equalTo(-1));
-					break;
-				}
-				case (XmlResourceParser.START_TAG): {
-					tags.push(parser.getName());
-					break;
-				}
-				case (XmlResourceParser.END_TAG): {
-					String tag = tags.pop();
-					String current = parser.getName();
-					assertThat(
-							"Closing the wrong tag: found: " + 
-									current + ", expected: " + tag + ".",
-							current, equalTo(tag));
-					break;
-				}
-				case (XmlResourceParser.TEXT): {
-					assertThat(lastEvent,
-							anyOf(
-								equalTo(XmlResourceParser.START_TAG),
-								equalTo(XmlResourceParser.END_TAG)));
-					break;
-				}
-			}
-			lastEvent = evt;
-		}
+		int evt = -1;
+		int index = -1;
+		
+		do {
+			evt = parser.next();
+			assertThat(evt, equalTo(expectedEvents[++index]));
+		} while (evt != XmlResourceParser.END_DOCUMENT);
 	}
 
 	@Test
@@ -529,7 +534,7 @@ public class XmlFileLoaderTest {
 
 	@Test
 	public void testNextText_noText() throws XmlPullParserException, IOException {
-		parseUntilNext(XmlResourceParser.START_TAG);
+		forgeAndOpenDocument("<foo><bar/></foo>");
 		try {
 			assertThat(parser.nextText(), equalTo(parser.getText()));
 			fail("nextText on a document with no text should have failed");
@@ -540,18 +545,22 @@ public class XmlFileLoaderTest {
 		}
 	}
 
+	/**
+	 * Test that next tag will only return tag events. 
+	 */
 	@Test
 	public void testNextTag() throws XmlPullParserException, IOException {
 		Set<Integer> acceptableTags = new HashSet<Integer>();
 		acceptableTags.add(XmlResourceParser.START_TAG);
 		acceptableTags.add(XmlResourceParser.END_TAG);
-		parseUntilNext(XmlResourceParser.START_DOCUMENT);
+		
+		forgeAndOpenDocument("<foo><bar/><text>message</text></foo>");
 		int evt;
-		int max = 5;
-		for (int i = max; i > 0; i--) {
-			evt = parser.nextTag();
+		do {
+			evt = parser.next();
 			assertTrue(acceptableTags.contains(evt));
-		}
+		} while (evt == XmlResourceParser.END_TAG &&
+				"foo".equals(parser.getName()));
 	}
 
 	@Test
@@ -564,14 +573,14 @@ public class XmlFileLoaderTest {
 	public void testGetAttributeListValue_StringStringStringArrayInt()
 			throws XmlPullParserException, IOException {
 		String[] options = {"foo", "bar"};
-		forgeNode("<foo xmlns:bar=\"bar\"/>");
+		forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
 		assertThat(
 				parser.getAttributeListValue(
 						"http://www.w3.org/2000/xmlns/", 
 						"xmlns:bar", options, 0),
 				equalTo(1));
 		
-		forgeNode("<foo xmlns:bar=\"unexpected\"/>");
+		forgeAndOpenDocument("<foo xmlns:bar=\"unexpected\"/>");
 		assertThat(
 				parser.getAttributeListValue(
 						"http://www.w3.org/2000/xmlns/", 
@@ -582,7 +591,7 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetAttributeBooleanValue_StringStringBoolean()
 			throws XmlPullParserException, IOException {
-		forgeNode("<foo xmlns:bar=\"true\"/>");
+		forgeAndOpenDocument("<foo xmlns:bar=\"true\"/>");
 		assertThat(
 				parser.getAttributeBooleanValue("http://www.w3.org/2000/xmlns/", 
 				"xmlns:bar", false), equalTo(true));
@@ -594,7 +603,7 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetAttributeBooleanValue_IntBoolean()
 			throws XmlPullParserException {
-		forgeNode("<foo bar=\"true\"/>");
+		forgeAndOpenDocument("<foo bar=\"true\"/>");
 		assertThat(
 				parser.getAttributeBooleanValue(0, false),
 				equalTo(true));
@@ -618,7 +627,7 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetAttributeIntValue_StringStringInt()
 			throws XmlPullParserException {
-		forgeNode("<foo xmlns:bar=\"-12\"/>");
+		forgeAndOpenDocument("<foo xmlns:bar=\"-12\"/>");
 		
 		assertThat(
 				parser.getAttributeIntValue(
@@ -637,7 +646,7 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetAttributeIntValue_IntInt()
 			throws XmlPullParserException {
-		forgeNode("<foo bar=\"-12\"/>");
+		forgeAndOpenDocument("<foo bar=\"-12\"/>");
 		
 		assertThat(
 				parser.getAttributeIntValue(0, 0),
@@ -647,7 +656,7 @@ public class XmlFileLoaderTest {
 				parser.getAttributeIntValue(attributeIndexOutOfIndex(), 0),
 				equalTo(0));
 		
-		forgeNode("<foo bar=\"unexpected\"/>");
+		forgeAndOpenDocument("<foo bar=\"unexpected\"/>");
 		assertThat(
 				parser.getAttributeIntValue(0, 0),
 				equalTo(0));
@@ -656,7 +665,7 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetAttributeUnsignedIntValue_StringStringInt()
 			throws XmlPullParserException {
-		forgeNode("<foo xmlns:bar=\"12\"/>");
+		forgeAndOpenDocument("<foo xmlns:bar=\"12\"/>");
 		
 		assertThat(
 				parser.getAttributeUnsignedIntValue(
@@ -671,7 +680,7 @@ public class XmlFileLoaderTest {
 				equalTo(0));
 		
 		// Negative unsigned int must be
-		forgeNode("<foo xmlns:bar=\"-12\"/>");
+		forgeAndOpenDocument("<foo xmlns:bar=\"-12\"/>");
 		
 		assertThat(
 				"Getting a negative number as unsigned should " +
@@ -685,7 +694,7 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetAttributeUnsignedIntValue_IntInt()
 			throws XmlPullParserException {
-		forgeNode("<foo bar=\"12\"/>");
+		forgeAndOpenDocument("<foo bar=\"12\"/>");
 		
 		assertThat(
 				parser.getAttributeUnsignedIntValue(0, 0),
@@ -697,7 +706,7 @@ public class XmlFileLoaderTest {
 				equalTo(0));
 		
 		// Negative unsigned int must be
-		forgeNode("<foo bar=\"-12\"/>");
+		forgeAndOpenDocument("<foo bar=\"-12\"/>");
 		
 		assertThat(
 				"Getting a negative number as unsigned should " +
@@ -709,7 +718,7 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetAttributeFloatValue_StringStringFloat()
 			throws XmlPullParserException {
-		forgeNode("<foo xmlns:bar=\"12.01\"/>");
+		forgeAndOpenDocument("<foo xmlns:bar=\"12.01\"/>");
 		
 		assertThat(
 				parser.getAttributeFloatValue(
@@ -723,7 +732,7 @@ public class XmlFileLoaderTest {
 						"xmlns:foo", 0.0f),
 				equalTo(0.0f));
 		
-		forgeNode("<foo bar=\"unexpected\"/>");
+		forgeAndOpenDocument("<foo bar=\"unexpected\"/>");
 		assertThat(
 				parser.getAttributeFloatValue(
 						"http://www.w3.org/2000/xmlns/", 
@@ -734,7 +743,7 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetAttributeFloatValue_IntFloat()
 			throws XmlPullParserException, IOException {
-		forgeNode("<foo bar=\"12.01\"/>");
+		forgeAndOpenDocument("<foo bar=\"12.01\"/>");
 		
 		assertThat(
 				parser.getAttributeFloatValue(0, 0.0f),
@@ -745,7 +754,7 @@ public class XmlFileLoaderTest {
 						attributeIndexOutOfIndex(), 0.0f),
 				equalTo(0.0f));
 		
-		forgeNode("<foo bar=\"unexpected\"/>");
+		forgeAndOpenDocument("<foo bar=\"unexpected\"/>");
 		assertThat(
 				parser.getAttributeFloatValue(0, 0.0f),
 				equalTo(0.0f));
@@ -755,12 +764,12 @@ public class XmlFileLoaderTest {
 	public void testGetAttributeListValue_IntStringArrayInt()
 			throws XmlPullParserException {
 		String[] options = {"foo", "bar"};
-		forgeNode("<foo xmlns:bar=\"bar\"/>");
+		forgeAndOpenDocument("<foo xmlns:bar=\"bar\"/>");
 		assertThat(
 				parser.getAttributeListValue(0, options, 0),
 				equalTo(1));
 
-		forgeNode("<foo xmlns:bar=\"unexpected\"/>");
+		forgeAndOpenDocument("<foo xmlns:bar=\"unexpected\"/>");
 		assertThat(
 				parser.getAttributeListValue(
 						0, options, 0),
@@ -774,19 +783,19 @@ public class XmlFileLoaderTest {
 
 	@Test
 	public void testGetIdAttribute() throws XmlPullParserException, IOException {
-		forgeNode("<foo/>");
+		forgeAndOpenDocument("<foo/>");
 		assertThat(parser.getIdAttribute(), equalTo(null));
 		
-		forgeNode("<foo id=\"bar\"/>");
+		forgeAndOpenDocument("<foo id=\"bar\"/>");
 		assertThat(parser.getIdAttribute(), equalTo("bar"));
 	}
 
 	@Test
 	public void testGetClassAttribute() throws XmlPullParserException, IOException {
-		forgeNode("<foo/>");
+		forgeAndOpenDocument("<foo/>");
 		assertThat(parser.getClassAttribute(), equalTo(null));
 		
-		forgeNode("<foo class=\"bar\"/>");
+		forgeAndOpenDocument("<foo class=\"bar\"/>");
 		assertThat(parser.getClassAttribute(), equalTo("bar"));
 	}
 
@@ -799,7 +808,7 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetStyleAttribute()
 			throws XmlPullParserException {
-		forgeNode("<foo/>");
+		forgeAndOpenDocument("<foo/>");
 		assertThat(parser.getStyleAttribute(), equalTo(0));
 	}
 
