@@ -51,4 +51,8 @@ public class ShadowCompoundButton extends ShadowTextView implements Checkable {
     public void setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener listener) {
         onCheckedChangeListener = listener;
     }
+    
+    public CompoundButton.OnCheckedChangeListener getOnCheckedChangeListener() {
+    	return onCheckedChangeListener;
+    }
 }
