@@ -77,16 +77,16 @@ public class ApplicationTest {
         checkSystemService(Context.KEYGUARD_SERVICE, android.app.KeyguardManager.class);
         checkSystemService(Context.LOCATION_SERVICE, android.location.LocationManager.class);
         checkSystemService(Context.SEARCH_SERVICE, android.app.SearchManager.class);
-        checkSystemService(Context.SENSOR_SERVICE, android.hardware.SensorManager.class);
+        checkSystemService(Context.SENSOR_SERVICE, android.hardware.TestSensorManager.class);
         checkSystemService(Context.STORAGE_SERVICE, android.os.storage.StorageManager.class);
-        checkSystemService(Context.VIBRATOR_SERVICE, android.os.Vibrator.class);
-        checkSystemService(Context.CONNECTIVITY_SERVICE, android.net.ConnectivityManager.class);
-        checkSystemService(Context.WIFI_SERVICE, android.net.wifi.WifiManager.class);
-        checkSystemService(Context.AUDIO_SERVICE, android.media.AudioManager.class);
-        checkSystemService(Context.TELEPHONY_SERVICE, android.telephony.TelephonyManager.class);
-        checkSystemService(Context.INPUT_METHOD_SERVICE, android.view.inputmethod.InputMethodManager.class);
-        checkSystemService(Context.UI_MODE_SERVICE, android.app.UiModeManager.class);
-        checkSystemService(Context.DOWNLOAD_SERVICE, android.app.DownloadManager.class);
+        checkSystemService(Context.VIBRATOR_SERVICE, android.os.TestVibrator.class);
+//        checkSystemService(Context.CONNECTIVITY_SERVICE, android.net.ConnectivityManager.class);
+//        checkSystemService(Context.WIFI_SERVICE, android.net.wifi.WifiManager.class);
+//        checkSystemService(Context.AUDIO_SERVICE, android.media.AudioManager.class);
+//        checkSystemService(Context.TELEPHONY_SERVICE, android.telephony.TelephonyManager.class);
+//        checkSystemService(Context.INPUT_METHOD_SERVICE, android.view.inputmethod.InputMethodManager.class);
+//        checkSystemService(Context.UI_MODE_SERVICE, android.app.UiModeManager.class);
+//        checkSystemService(Context.DOWNLOAD_SERVICE, android.app.DownloadManager.class);
     }
 
     private void checkSystemService(String name, Class expectedClass) {

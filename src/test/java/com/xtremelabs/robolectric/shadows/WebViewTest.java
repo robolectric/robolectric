@@ -59,10 +59,8 @@ public class WebViewTest {
     @Test
     public void shouldReturnSettings() {
         WebSettings webSettings = webView.getSettings();
-        ShadowWebSettings shadowWebSettings = Robolectric.shadowOf(webSettings);
 
         assertThat(webSettings, notNullValue());
-        assertThat(shadowWebSettings, notNullValue());
     }
 
     @Test
