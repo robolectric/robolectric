@@ -8,6 +8,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
+import android.text.Selection;
+import android.text.SpannableStringBuilder;
 import android.view.*;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.Robolectric;
@@ -23,12 +25,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import javassist.bytecode.Mnemonic;
+//import javassist.bytecode.Mnemonic;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 
-@SuppressWarnings({"UnusedDeclaration"})
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextWrapper {
     @RealObject
@@ -58,6 +59,9 @@ public class ShadowActivity extends ShadowContextWrapper {
     private boolean onKeyUpWasCalled;
     private ArrayList<Cursor> managedCusors = new ArrayList<Cursor>();
 
+    private int mDefaultKeyMode = Activity.DEFAULT_KEYS_DISABLE;
+    private SpannableStringBuilder mDefaultKeySsb = null;
+    
     @Implementation
     public final Application getApplication() {
         return Robolectric.application;
@@ -77,6 +81,32 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public Intent getIntent() {
         return intent;
+    }
+    
+    @Implementation
+    public void setDefaultKeyMode(int keyMode) {
+    	mDefaultKeyMode = keyMode;
+        
+        // Some modes use a SpannableStringBuilder to track & dispatch input events
+        // This list must remain in sync with the switch in onKeyDown()
+        switch (mDefaultKeyMode) {
+        case Activity.DEFAULT_KEYS_DISABLE:
+        case Activity.DEFAULT_KEYS_SHORTCUT:
+        	mDefaultKeySsb = null;      // not used in these modes
+            break;
+        case Activity.DEFAULT_KEYS_DIALER:
+        case Activity.DEFAULT_KEYS_SEARCH_LOCAL:
+        case Activity.DEFAULT_KEYS_SEARCH_GLOBAL:
+        	mDefaultKeySsb = new SpannableStringBuilder();
+            Selection.setSelection(mDefaultKeySsb, 0);
+            break;
+        default:
+            throw new IllegalArgumentException();
+        }
+    }
+    
+    public int getDefaultKeymode() {
+    	return mDefaultKeyMode;
     }
 
     @Implementation(i18nSafe = false)
