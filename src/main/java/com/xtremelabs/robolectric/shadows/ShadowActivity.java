@@ -204,6 +204,10 @@ public class ShadowActivity extends ShadowContextWrapper {
         return window;
     }
 
+    public void setWindow(TestWindow wind){
+    	window = wind;
+    }
+    
     @Implementation
     public void runOnUiThread(Runnable action) {
         Robolectric.getUiThreadScheduler().post(action);
