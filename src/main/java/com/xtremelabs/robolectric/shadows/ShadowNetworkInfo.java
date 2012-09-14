@@ -14,9 +14,10 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @Implements(NetworkInfo.class)
 public class ShadowNetworkInfo {
-    private boolean isAvailable = true;
-    private boolean isConnected = true;
-    private int connectionType = ConnectivityManager.TYPE_MOBILE;
+    private boolean isAvailable;
+    private boolean isConnected;
+    private int connectionType;
+    private int connectionSubType;
     private NetworkInfo.DetailedState detailedState;
 
     public static NetworkInfo newInstance() {
@@ -24,8 +25,19 @@ public class ShadowNetworkInfo {
     }
 
     public static NetworkInfo newInstance(NetworkInfo.DetailedState detailedState) {
+        return newInstance(detailedState, ConnectivityManager.TYPE_MOBILE, 0, true, true);
+    }
+
+    public static NetworkInfo newInstance(NetworkInfo.DetailedState detailedState, int type, int subType,
+                                          boolean isAvailable,
+                                          boolean isConnected) {
         NetworkInfo networkInfo = Robolectric.newInstanceOf(NetworkInfo.class);
-        shadowOf(networkInfo).setDetailedState(detailedState);
+        final ShadowNetworkInfo info = shadowOf(networkInfo);
+        info.setConnectionType(type);
+        info.setSubType(subType);
+        info.setDetailedState(detailedState);
+        info.setAvailableStatus(isAvailable);
+        info.setConnectionStatus(isConnected);
         return networkInfo;
     }
 
@@ -55,6 +67,16 @@ public class ShadowNetworkInfo {
     	return connectionType;
     }
 
+    @Implementation
+    public int getSubtype() {
+        return connectionSubType;
+    }
+
+    @Implementation
+    public boolean isAvailable() {
+        return isAvailable;
+    }
+
     /**
      * Non-Android accessor
      * Sets up the return value of {@link #isAvailable()}.
@@ -63,12 +85,6 @@ public class ShadowNetworkInfo {
      */
     public void setAvailableStatus(boolean isAvailable) {
         this.isAvailable = isAvailable;
-    }
-    
-
-    @Implementation
-    public boolean isAvailable() {
-        return isAvailable;
     }
 
     /**
@@ -89,6 +105,10 @@ public class ShadowNetworkInfo {
      */
     public void setConnectionType(int connectionType){
     	this.connectionType = connectionType;
+    }
+
+    public void setSubType(int subType) {
+        this.connectionSubType = subType;
     }
 
     public void setDetailedState(NetworkInfo.DetailedState detailedState) {
