@@ -83,7 +83,7 @@ public class ViewTest {
 
     @Test
     public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
-        assertTrue(shadowOf(view).derivedIsVisible());
+        assertTrue(view.isShown());
 
         ViewGroup grandParent = new LinearLayout(null);
         ViewGroup parent = new LinearLayout(null);
@@ -92,7 +92,7 @@ public class ViewTest {
 
         grandParent.setVisibility(View.GONE);
 
-        assertFalse(shadowOf(view).derivedIsVisible());
+        assertFalse(view.isShown());
     }
 
     @Test

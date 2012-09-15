@@ -552,7 +552,14 @@ public class ShadowView {
 
     @Implementation
     public boolean isShown() {
-      return derivedIsVisible();
+        View parent = realView;
+        while (parent != null) {
+            if (parent.getVisibility() != View.VISIBLE) {
+                return false;
+            }
+            parent = (View) parent.getParent();
+        }
+        return true;
     }
 
 
@@ -704,22 +711,6 @@ public class ShadowView {
         isFocused = focused;
     }
 
-    /**
-     * Non-Android accessor.
-     *
-     * @return true if this object and all of its ancestors are {@code View.VISIBLE}, returns false if this or
-     *         any ancestor is not {@code View.VISIBLE}
-     */
-    public boolean derivedIsVisible() {
-        View parent = realView;
-        while (parent != null) {
-            if (parent.getVisibility() != View.VISIBLE) {
-                return false;
-            }
-            parent = (View) parent.getParent();
-        }
-        return true;
-    }
 
     /**
      * Utility method for clicking on views exposing testing scenarios that are not possible when using the actual app.
@@ -727,7 +718,7 @@ public class ShadowView {
      * @throws RuntimeException if the view is disabled or if the view or any of its parents are not visible.
      */
     public boolean checkedPerformClick() {
-        if (!derivedIsVisible()) {
+        if (!isShown()) {
             throw new RuntimeException("View is not visible and cannot be clicked");
         }
         if (!realView.isEnabled()) {
