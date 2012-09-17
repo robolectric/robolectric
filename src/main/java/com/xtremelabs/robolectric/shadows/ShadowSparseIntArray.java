@@ -21,6 +21,11 @@ public class ShadowSparseIntArray {
 	}
 	
 	@Implementation
+	public int get(int key, int valueIfKeyNotFound){
+		return sparseArray.get( key, valueIfKeyNotFound );
+	}
+	
+	@Implementation
 	public void put( int key, int value ){
 		sparseArray.put( key, value );
 	}
