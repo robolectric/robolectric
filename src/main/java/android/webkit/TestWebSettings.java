@@ -1,13 +1,17 @@
-package com.xtremelabs.robolectric.shadows;
+package android.webkit;
 
-import android.webkit.WebSettings;
+import com.xtremelabs.robolectric.internal.DoNotInstrument;
 import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
 
-@Implements(WebSettings.class)
-public class ShadowWebSettings {
-
+/**
+ * Concrete implementation of the abstract WebSettings class.
+ */
+@DoNotInstrument
+public class TestWebSettings extends WebSettings {
+	
     private boolean allowFileAccess = true;
+    private boolean allowFileAccessFromFile = true;
+    private boolean allowUniversalAccessFromFile = true;    
     private boolean blockNetworkImage = false;
     private boolean blockNetworkLoads = false;
     private boolean builtInZoomControls = true;
@@ -21,6 +25,29 @@ public class ShadowWebSettings {
     private WebSettings.PluginState pluginState = WebSettings.PluginState.OFF;
     private boolean supportMultipleWindows = false;
     private boolean supportZoom = true;
+
+	public TestWebSettings() {		
+	}
+
+	@Override
+	public boolean getAllowFileAccessFromFileURLs() {
+		return allowFileAccessFromFile;
+	}
+
+	@Override
+	public boolean getAllowUniversalAccessFromFileURLs() {
+		return allowUniversalAccessFromFile;
+	}
+
+	@Override
+	public void setAllowFileAccessFromFileURLs(boolean allow) {
+		allowFileAccessFromFile = allow;
+	}
+
+	@Override
+	public void setAllowUniversalAccessFromFileURLs(boolean allow) {
+		allowUniversalAccessFromFile = allow;
+	}
 
     @Implementation
     public boolean getAllowFileAccess() {
