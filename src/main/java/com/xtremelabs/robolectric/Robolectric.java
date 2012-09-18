@@ -231,6 +231,7 @@ public class Robolectric {
                 ShadowListActivity.class,
                 ShadowListPreference.class,
                 ShadowListView.class,
+                ShadowLocalBroadcastManager.class,
                 ShadowLocation.class,
                 ShadowLocationManager.class,
                 ShadowLog.class,

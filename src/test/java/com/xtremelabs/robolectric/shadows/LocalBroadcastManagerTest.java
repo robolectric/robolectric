@@ -78,6 +78,7 @@ public class LocalBroadcastManagerTest {
     public void testGetBroadcastIntents() throws Exception {
         LocalBroadcastManager instance = LocalBroadcastManager.getInstance(Robolectric.application);
         ShadowLocalBroadcastManager shadow = shadowOf_(instance);
+        shadow.clearBroadcastIntents();
         Intent intent1 = new Intent("foo");
         instance.sendBroadcast(intent1);
         Intent intent2 = new Intent("bar");
@@ -104,7 +105,7 @@ public class LocalBroadcastManagerTest {
     @Test
     public void testHasBroadcastReceiver() throws Exception {
         LocalBroadcastManager instance = LocalBroadcastManager.getInstance(Robolectric.application);
-        instance.registerReceiver(new TestBroadcastReceiver(), null);
+        instance.registerReceiver(new TestBroadcastReceiver(), new IntentFilter());
         ShadowLocalBroadcastManager shadow = shadowOf_(instance);
 
       boolean hasBroadcastReceiver = shadow.hasBroadcastReceiver(TestBroadcastReceiver.class);
