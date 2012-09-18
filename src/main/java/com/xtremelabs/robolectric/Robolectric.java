@@ -89,6 +89,10 @@ public class Robolectric {
         return null;
     }
 
+    public static <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {
+        return RobolectricInternals.newInstance(clazz, parameterTypes, params);
+    }
+
     public static void bindShadowClass(Class<?> shadowClass) {
         RobolectricInternals.bindShadowClass(shadowClass);
     }

@@ -39,6 +39,22 @@ public class RobolectricInternals {
         }
     }
 
+    public static <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {
+        try {
+            Constructor<T> declaredConstructor = clazz.getDeclaredConstructor(parameterTypes);
+            declaredConstructor.setAccessible(true);
+            return declaredConstructor.newInstance(params);
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public static void bindShadowClass(Class<?> shadowClass) {
         Implements realClass = shadowClass.getAnnotation(Implements.class);
         if (realClass == null) {
