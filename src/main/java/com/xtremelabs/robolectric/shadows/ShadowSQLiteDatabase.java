@@ -3,12 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
-import android.database.sqlite.SQLiteClosable;
-import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteDatabaseCorruptException;
-import android.database.sqlite.SQLiteQueryBuilder;
-import android.database.sqlite.SQLiteStatement;
+import android.database.sqlite.*;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -44,6 +39,7 @@ public class ShadowSQLiteDatabase  {
     private final ReentrantLock mLock = new ReentrantLock(true);
     private boolean mLockingEnabled = true;
     private WeakHashMap<SQLiteClosable, Object> mPrograms;
+    private boolean inTransaction = false;
     private boolean transactionSuccess = false;
     private boolean throwOnInsert;
     
@@ -228,8 +224,20 @@ public class ShadowSQLiteDatabase  {
 
 
     @Implementation
-    public Cursor rawQuery (String sql, String[] selectionArgs){
-    	String sqlBody = sql;
+    public Cursor rawQuery (String sql, String[] selectionArgs) {
+    	return rawQueryWithFactory( new SQLiteDatabase.CursorFactory() {
+			@Override
+			public Cursor newCursor(SQLiteDatabase db,
+					SQLiteCursorDriver masterQuery, String editTable, SQLiteQuery query) {
+				return new SQLiteCursor(db, masterQuery, editTable, query);
+			}
+    		
+    	}, sql, selectionArgs, null );
+    }
+    
+    @Implementation
+    public Cursor rawQueryWithFactory (SQLiteDatabase.CursorFactory cursorFactory, String sql, String[] selectionArgs, String editTable) {
+       	String sqlBody = sql;
         if (sql != null) {
         	sqlBody = buildWhereClause(sql, selectionArgs);
         }
@@ -250,8 +258,7 @@ public class ShadowSQLiteDatabase  {
           }
           //TODO: assert rawquery with args returns actual values
           
-          
-        SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
+        SQLiteCursor cursor = (SQLiteCursor) cursorFactory.newCursor(null, null, null, null);
         shadowOf(cursor).setResultSet(resultSet, sqlBody);
         return cursor;
     }
@@ -280,6 +287,8 @@ public class ShadowSQLiteDatabase  {
 			connection.setAutoCommit(false);
 		} catch (SQLException e) {
 			throw new RuntimeException("SQL exception in beginTransaction", e);
+		} finally {
+			inTransaction = true;
 		}
 	}
 
@@ -305,7 +314,14 @@ public class ShadowSQLiteDatabase  {
 			connection.setAutoCommit(true);
 		} catch (SQLException e) {
 			throw new RuntimeException("SQL exception in beginTransaction", e);
+		} finally {
+			inTransaction = false;
 		}
+	}
+	
+	@Implementation
+	public boolean inTransaction() {
+		return inTransaction;
 	}
 	
 	/**

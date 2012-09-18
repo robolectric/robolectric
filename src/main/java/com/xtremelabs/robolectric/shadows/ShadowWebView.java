@@ -4,6 +4,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
+import android.webkit.TestWebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import com.xtremelabs.robolectric.Robolectric;
@@ -18,7 +19,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
 
     private String lastUrl;
     private HashMap<String, Object> javascriptInterfaces = new HashMap<String, Object>();
-    private WebSettings webSettings = Robolectric.newInstanceOf(WebSettings.class);
+    private WebSettings webSettings = new TestWebSettings();
     private WebViewClient webViewClient = null;
     private boolean runFlag = false;
     private boolean clearCacheCalled = false;

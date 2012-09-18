@@ -1,57 +1,29 @@
 package com.xtremelabs.robolectric;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
+
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultRequestDirector;
+
 import android.accounts.AccountManager;
-import android.app.Activity;
-import android.app.ActivityGroup;
-import android.app.ActivityManager;
-import android.app.AlarmManager;
-import android.app.AlertDialog;
-import android.app.Application;
-import android.app.Dialog;
-import android.app.KeyguardManager;
-import android.app.ListActivity;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
-import android.app.ProgressDialog;
-import android.app.Service;
+import android.app.*;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.ContentProviderOperation;
-import android.content.ContentProviderResult;
-import android.content.ContentResolver;
-import android.content.ContentValues;
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.Intent;
-import android.content.UriMatcher;
+import android.content.*;
 import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.CursorWrapper;
-import android.database.sqlite.SQLiteCursor;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
-import android.database.sqlite.SQLiteProgram;
-import android.database.sqlite.SQLiteQueryBuilder;
-import android.database.sqlite.SQLiteStatement;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Color;
-import android.graphics.ColorMatrix;
-import android.graphics.Matrix;
-import android.graphics.Paint;
-import android.graphics.Path;
-import android.graphics.Rect;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
-import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.StateListDrawable;
+import android.database.sqlite.*;
+import android.graphics.*;
+import android.graphics.drawable.*;
 import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.location.Address;
@@ -66,24 +38,8 @@ import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import android.os.AsyncTask;
-import android.os.Bundle;
-import android.os.CountDownTimer;
-import android.os.Handler;
-import android.os.HandlerThread;
-import android.os.Looper;
-import android.os.Message;
-import android.os.Parcel;
-import android.os.PowerManager;
-import android.os.ResultReceiver;
-import android.os.Vibrator;
-import android.preference.DialogPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceActivity;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceGroup;
-import android.preference.PreferenceScreen;
+import android.os.*;
+import android.preference.*;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
@@ -100,53 +56,13 @@ import android.text.format.DateFormat;
 import android.text.method.PasswordTransformationMethod;
 import android.util.SparseArray;
 import android.util.SparseBooleanArray;
-import android.view.Display;
-import android.view.LayoutInflater;
-import android.view.MenuInflater;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewConfiguration;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
+import android.util.SparseIntArray;
+import android.view.*;
 import android.view.animation.*;
 import android.view.inputmethod.InputMethodManager;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
-import android.webkit.JsPromptResult;
-import android.webkit.JsResult;
-import android.webkit.MimeTypeMap;
-import android.webkit.SslErrorHandler;
-import android.webkit.WebSettings;
-import android.webkit.WebView;
-import android.widget.AbsListView;
-import android.widget.AbsSeekBar;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.CheckedTextView;
-import android.widget.CursorAdapter;
-import android.widget.ExpandableListView;
-import android.widget.Filter;
-import android.widget.FrameLayout;
-import android.widget.Gallery;
-import android.widget.GridView;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.PopupWindow;
-import android.widget.ProgressBar;
-import android.widget.RatingBar;
-import android.widget.RemoteViews;
-import android.widget.ResourceCursorAdapter;
-import android.widget.ScrollView;
-import android.widget.SeekBar;
-import android.widget.SimpleCursorAdapter;
-import android.widget.TabHost;
-import android.widget.TextView;
-import android.widget.Toast;
-import android.widget.VideoView;
-import android.widget.ViewAnimator;
-import android.widget.ViewFlipper;
-import android.widget.ZoomButtonsController;
+import android.webkit.*;
+import android.widget.*;
+
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
@@ -154,15 +70,6 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultRequestDirector;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
 
 public class Robolectric {
     public static Application application;
@@ -393,10 +300,12 @@ public class Robolectric {
                 ShadowSpannableStringBuilder.class,
                 ShadowSparseArray.class,
                 ShadowSparseBooleanArray.class,
+                ShadowSparseIntArray.class,
                 ShadowSpinner.class,
                 ShadowSyncResult.class,
                 ShadowSyncResult.ShadowSyncStats.class,
                 ShadowSQLiteProgram.class,
+                ShadowSQLiteCloseable.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
@@ -431,7 +340,6 @@ public class Robolectric {
                 ShadowViewPager.class,
                 ShadowViewStub.class,
                 ShadowViewTreeObserver.class,
-                ShadowWebSettings.class,
                 ShadowWebView.class,
                 ShadowWifiConfiguration.class,
                 ShadowWifiInfo.class,
@@ -967,6 +875,10 @@ public class Robolectric {
     public static ShadowSparseBooleanArray shadowOf(SparseBooleanArray other) {
         return (ShadowSparseBooleanArray) Robolectric.shadowOf_(other);
     }
+    
+    public static ShadowSparseIntArray shadowOf(SparseIntArray other){
+    	return (ShadowSparseIntArray) Robolectric.shadowOf_( other );
+    }
 
     public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
         return (ShadowSQLiteCursor) Robolectric.shadowOf_(other);
@@ -1066,10 +978,6 @@ public class Robolectric {
 
     public static ShadowVideoView shadowOf(VideoView instance) {
         return (ShadowVideoView) shadowOf_(instance);
-    }
-
-    public static ShadowWebSettings shadowOf(WebSettings instance) {
-        return (ShadowWebSettings) shadowOf_(instance);
     }
 
     public static ShadowWebView shadowOf(WebView instance) {
@@ -1368,4 +1276,5 @@ public class Robolectric {
             }
         }
     }
+
 }

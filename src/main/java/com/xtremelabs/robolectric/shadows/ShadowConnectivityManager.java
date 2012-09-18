@@ -8,8 +8,6 @@ import com.xtremelabs.robolectric.internal.Implements;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-
 /**
  * Shadow of {@code ConnectivityManager} that provides for the simulation of
  * the active connection status.
@@ -19,19 +17,22 @@ import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 public class ShadowConnectivityManager {
 
     private NetworkInfo activeNetwork;
-    private NetworkInfo[] networkInfo;
     private boolean backgroundDataSetting;
 
     private Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<Integer, NetworkInfo>();
 
+    public void __constructor__() {
+        setActiveNetworkInfo(ShadowNetworkInfo.newInstance());
+    }
+
     @Implementation
     public NetworkInfo getActiveNetworkInfo() {
-        return activeNetwork == null ? activeNetwork = newInstanceOf(NetworkInfo.class) : activeNetwork;
+        return activeNetwork;
     }
 
     @Implementation
     public NetworkInfo[] getAllNetworkInfo() {
-        return networkInfo == null ? networkInfo = new NetworkInfo[]{getActiveNetworkInfo()} : networkInfo;
+        return networkTypeToNetworkInfo.values().toArray(new NetworkInfo[networkTypeToNetworkInfo.size()]);
     }
 
     @Implementation
@@ -39,16 +40,25 @@ public class ShadowConnectivityManager {
         return networkTypeToNetworkInfo.get(networkType);
     }
 
-    public void setNetworkInfo(int networkType, NetworkInfo networkInfo) {
-        networkTypeToNetworkInfo.put(networkType, networkInfo);
-    }
-
     @Implementation
     public boolean getBackgroundDataSetting() {
         return backgroundDataSetting;
     }
 
+    public void setNetworkInfo(int networkType, NetworkInfo networkInfo) {
+        networkTypeToNetworkInfo.put(networkType, networkInfo);
+    }
+
     public void setBackgroundDataSetting(boolean b) {
         backgroundDataSetting = b;
+    }
+
+    public void setActiveNetworkInfo(NetworkInfo info) {
+        activeNetwork = info;
+        if (info != null) {
+            networkTypeToNetworkInfo.put(info.getType(), info);
+        }  else {
+            networkTypeToNetworkInfo.clear();
+        }
     }
 }
