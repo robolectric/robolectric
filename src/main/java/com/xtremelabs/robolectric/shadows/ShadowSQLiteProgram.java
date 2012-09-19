@@ -28,15 +28,8 @@ public abstract class ShadowSQLiteProgram {
 		} catch (SQLException e) {
 			throw new RuntimeException(e);
 		}
-	 
-        compile(sql, false);
 	}
 	
-	@Implementation
-	public void compile(String sql, boolean forceCompilation) {
-    }
-
-
     /**
      * Bind a NULL value to this statement. The value remains bound until
      * {@link #clearBindings} is called.

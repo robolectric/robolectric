@@ -44,4 +44,8 @@ public class ShadowRadioGroup extends ShadowLinearLayout {
     public void setOnCheckedChangeListener(OnCheckedChangeListener listener) {
         onCheckedChangeListener = listener;
     }
+    
+    public OnCheckedChangeListener getOnCheckedChangeListener() {
+    	return onCheckedChangeListener;
+    }
 }

@@ -1,6 +1,7 @@
-package com.xtremelabs.robolectric.shadows;
+package android.webkit;
 
 import android.webkit.WebSettings;
+import android.webkit.TestWebSettings;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
@@ -10,19 +11,16 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-
 @RunWith(WithTestDefaultsRunner.class)
-public class WebSettingsTest {
+public class TestWebSettingsTest {
 
-    private WebSettings webSettings;
-    private ShadowWebSettings shadowWebSettings;
+    private TestWebSettings webSettings;
 
     private boolean[] trueAndFalse = {true, false};
 
     @Before
     public void setUp() throws Exception {
-        webSettings = Robolectric.newInstanceOf(WebSettings.class);
-        shadowWebSettings = Robolectric.shadowOf(webSettings);
+        webSettings = new TestWebSettings();
     }
 
     @Test
@@ -36,11 +34,15 @@ public class WebSettingsTest {
         assertThat(webSettings.getJavaScriptEnabled(), equalTo(false));
         assertThat(webSettings.getLightTouchEnabled(), equalTo(false));
         assertThat(webSettings.getLoadWithOverviewMode(), equalTo(false));
-        assertThat(shadowWebSettings.getNeedInitialFocus(), equalTo(false));
-        assertThat(webSettings.getPluginsEnabled(), equalTo(false));
         assertThat(webSettings.getPluginState(), equalTo(WebSettings.PluginState.OFF));
-        assertThat(shadowWebSettings.getSupportMultipleWindows(), equalTo(false));
-        assertThat(shadowWebSettings.getSupportZoom(), equalTo(true));
+
+        // deprecated methods
+        assertThat(webSettings.getPluginsEnabled(), equalTo(false));
+
+        // obsoleted methods
+        assertThat(webSettings.getNeedInitialFocus(), equalTo(false));
+        assertThat(webSettings.getSupportMultipleWindows(), equalTo(false));
+        assertThat(webSettings.getSupportZoom(), equalTo(true));
     }
 
     @Test
@@ -48,6 +50,22 @@ public class WebSettingsTest {
         for (boolean value : trueAndFalse) {
             webSettings.setAllowFileAccess(value);
             assertThat(webSettings.getAllowFileAccess(), equalTo(value));
+        }
+    }
+
+    @Test
+    public void testAllowFileAccessFromFileURLs() {
+        for (boolean value : trueAndFalse) {
+            webSettings.setAllowFileAccessFromFileURLs(value);
+            assertThat(webSettings.getAllowFileAccessFromFileURLs(), equalTo(value));
+        }
+    }
+    
+    @Test
+    public void testAllowUniversalAccessFromFileURLs() {
+        for (boolean value : trueAndFalse) {
+            webSettings.setAllowUniversalAccessFromFileURLs(value);
+            assertThat(webSettings.getAllowUniversalAccessFromFileURLs(), equalTo(value));
         }
     }
 
@@ -119,7 +137,7 @@ public class WebSettingsTest {
     public void testNeedInitialFocus() {
         for (boolean value : trueAndFalse) {
             webSettings.setNeedInitialFocus(value);
-            assertThat(shadowWebSettings.getNeedInitialFocus(), equalTo(value));
+            assertThat(webSettings.getNeedInitialFocus(), equalTo(value));
         }
     }
 
@@ -149,7 +167,7 @@ public class WebSettingsTest {
     public void testSupportMultipleWindows() {
         for (boolean value : trueAndFalse) {
             webSettings.setSupportMultipleWindows(value);
-            assertThat(shadowWebSettings.getSupportMultipleWindows(), equalTo(value));
+            assertThat(webSettings.getSupportMultipleWindows(), equalTo(value));
         }
     }
 
@@ -157,7 +175,7 @@ public class WebSettingsTest {
     public void testSupportZoom() {
         for (boolean value : trueAndFalse) {
             webSettings.setSupportZoom(value);
-            assertThat(shadowWebSettings.getSupportZoom(), equalTo(value));
+            assertThat(webSettings.getSupportZoom(), equalTo(value));
         }
     }
 }
