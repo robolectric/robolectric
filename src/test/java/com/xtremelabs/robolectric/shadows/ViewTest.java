@@ -83,7 +83,7 @@ public class ViewTest {
 
     @Test
     public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
-        assertTrue(shadowOf(view).derivedIsVisible());
+        assertTrue(view.isShown());
 
         ViewGroup grandParent = new LinearLayout(null);
         ViewGroup parent = new LinearLayout(null);
@@ -92,7 +92,7 @@ public class ViewTest {
 
         grandParent.setVisibility(View.GONE);
 
-        assertFalse(shadowOf(view).derivedIsVisible());
+        assertFalse(view.isShown());
     }
 
     @Test
@@ -369,6 +369,21 @@ public class ViewTest {
     	assertThat(view2.getWidth(), equalTo(0)); 
     	assertThat(view2.getMeasuredHeight(), equalTo(400));
     	assertThat(view2.getMeasuredWidth(), equalTo(800));  
+    }
+
+    @Test
+    public void itKnowsIfTheViewIsShown() {
+      view.setVisibility(View.VISIBLE);
+      assertThat(view.isShown(), is(true));
+    }
+
+    @Test
+    public void itKnowsIfTheViewIsNotShown() {
+      view.setVisibility(View.GONE);
+      assertThat(view.isShown(), is(false));
+
+      view.setVisibility(View.INVISIBLE);
+      assertThat(view.isShown(), is(false));
     }
 
     private static class TestAnimation extends Animation {
