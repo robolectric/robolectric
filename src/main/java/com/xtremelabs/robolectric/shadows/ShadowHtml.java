@@ -1,8 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.text.Html;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
-import android.text.SpannedString;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -20,7 +20,7 @@ public class ShadowHtml {
         if (expected != null){
             return expected;
         }
-        return new SpannedString(source);
+        return new SpannableStringBuilder(source);
     }
 
     public static ExpectInput expect(String s) {
