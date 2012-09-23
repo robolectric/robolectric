@@ -21,6 +21,7 @@ import java.util.regex.Pattern;
 public class FakeHttpLayer {
     List<HttpResponseGenerator> pendingHttpResponses = new ArrayList<HttpResponseGenerator>();
     List<HttpRequestInfo> httpRequestInfos = new ArrayList<HttpRequestInfo>();
+    List<HttpResponse> httpResponses = new ArrayList<HttpResponse>();
     List<HttpEntityStub.ResponseRule> httpResponseRules = new ArrayList<HttpEntityStub.ResponseRule>();
     HttpResponse defaultHttpResponse;
     private HttpResponse defaultResponse;
@@ -119,8 +120,8 @@ public class FakeHttpLayer {
             }
         }
 
-        httpRequestInfos.add(new HttpRequestInfo(httpRequest, httpHost, httpContext, requestDirector));
-
+        addRequestInfo(new HttpRequestInfo(httpRequest, httpHost, httpContext, requestDirector));
+        addHttpResponse(httpResponse);
         return httpResponse;
     }
 
@@ -134,6 +135,19 @@ public class FakeHttpLayer {
 
     public void clearRequestInfos() {
         httpRequestInfos.clear();
+    }
+
+    /**
+     * This method is not supposed to be consumed by tests. This exists solely for the purpose of
+     * logging real HTTP requests, so that functional/integration tests can verify if those were made, without
+     * messing with the fake http layer to actually perform the http call, instead of returning a mocked response.
+     *
+     * If you are just using mocked http calls, you should not even notice this method here.
+     *
+     * @param requestInfo
+     */
+    public void addRequestInfo(HttpRequestInfo requestInfo) {
+        httpRequestInfos.add(requestInfo);
     }
 
     public boolean hasResponseRules() {
@@ -167,6 +181,46 @@ public class FakeHttpLayer {
 
     public void clearPendingHttpResponses() {
         pendingHttpResponses.clear();
+    }
+
+    /**
+     * This method return a list containing all the HTTP responses logged by the fake http layer, be it
+     * mocked http responses, be it real http calls (if {code}interceptHttpRequests{/code} is set to false).
+     *
+     * It doesn't make much sense to call this method if said property is set to true, as you yourself are
+     * providing the response, but it's here nonetheless.
+     *
+     * @return List of all HTTP Responses logged by the fake http layer.
+     */
+    public List<HttpResponse> getHttpResponses() {
+        return new ArrayList<HttpResponse>(httpResponses);
+    }
+
+    /**
+     * As a consumer of the fake http call, you should never call this method. This should be used solely
+     * by components that exercises http calls.
+     *
+     * @param response The final response received by the server
+     */
+    public void addHttpResponse(HttpResponse response) {
+        this.httpResponses.add(response);
+    }
+
+    /**
+     * Helper method that returns the latest received response from the server.
+     * @return The latest HTTP response or null, if no responses are available
+     */
+    public HttpResponse getLastHttpResponse() {
+        if (httpResponses.isEmpty()) return null;
+        return httpResponses.get(httpResponses.size()-1) ;
+    }
+
+    /**
+     * Call this method if you want to ensure that there's no http responses logged from this point until
+     * the next response arrives. Helpful to ensure that the state is "clear" before actions are executed.
+     */
+    public void clearHttpResponses() {
+        this.httpResponses.clear();
     }
 
     /**
