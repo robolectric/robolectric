@@ -65,6 +65,7 @@ import android.widget.*;
 
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
+import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.FullStackDirectCallPolicy;
 import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
@@ -369,6 +370,14 @@ public class Robolectric {
 
     public static <T> T directlyOn(T shadowedObject) {
         return RobolectricInternals.directlyOn(shadowedObject);
+    }
+
+    public static <T> T directlyOnFullStack(T shadowedObject) {
+        return RobolectricInternals.directlyOnFullStack(shadowedObject);
+    }
+
+    public static <T> T directlyOnFullStack(FullStackDirectCallPolicy.Builder<T> builder) {
+        return RobolectricInternals.directlyOnFullStack(builder);
     }
 
     public static ShadowAbsListView shadowOf(AbsListView instance) {
