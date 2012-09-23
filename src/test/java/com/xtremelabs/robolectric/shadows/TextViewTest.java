@@ -356,6 +356,14 @@ public class TextViewTest {
         shadowOf(textView).setLayout(layout);
         assertEquals(textView.getLayout(), layout);
     }
+    
+    @Test
+    public void testGetError() {
+      assertNull(textView.getError());
+      CharSequence error = "myError";
+      textView.setError(error);
+      assertEquals(error, textView.getError());
+    }
 
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
         List<MockTextWatcher> mockTextWatchers = new ArrayList<MockTextWatcher>();
