@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.util.Base64;
+import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
 import java.io.UnsupportedEncodingException;
@@ -58,6 +59,7 @@ public class ShadowBase64 {
      *
      * @throws IllegalArgumentException if the input contains incorrect padding
      */
+    @Implementation
     public static byte[] decode(String str, int flags) {
         return decode(str.getBytes(), flags);
     }
@@ -73,6 +75,7 @@ public class ShadowBase64 {
      *
      * @throws IllegalArgumentException if the input contains incorrect padding
      */
+    @Implementation
     public static byte[] decode(byte[] input, int flags) {
         return decode(input, 0, input.length, flags);
     }
@@ -90,6 +93,7 @@ public class ShadowBase64 {
      *
      * @throws IllegalArgumentException if the input contains incorrect padding
      */
+    @Implementation
     public static byte[] decode(byte[] input, int offset, int len, int flags) {
         // Allocate space for the most data the input could represent.
         // (It could contain less if it contains whitespace, etc.)
@@ -381,6 +385,7 @@ public class ShadowBase64 {
      * @param flags controls certain features of the encoded output. Passing {@code DEFAULT} results in output that adheres to RFC
      * 2045.
      */
+    @Implementation
     public static String encodeToString(byte[] input, int flags) {
         try {
             return new String(encode(input, flags), "US-ASCII");
@@ -400,6 +405,7 @@ public class ShadowBase64 {
      * @param flags controls certain features of the encoded output. Passing {@code DEFAULT} results in output that adheres to RFC
      * 2045.
      */
+    @Implementation
     public static String encodeToString(byte[] input, int offset, int len, int flags) {
         try {
             return new String(encode(input, offset, len, flags), "US-ASCII");
@@ -417,6 +423,7 @@ public class ShadowBase64 {
      * @param flags controls certain features of the encoded output. Passing {@code DEFAULT} results in output that adheres to RFC
      * 2045.
      */
+    @Implementation
     public static byte[] encode(byte[] input, int flags) {
         return encode(input, 0, input.length, flags);
     }
@@ -430,6 +437,7 @@ public class ShadowBase64 {
      * @param flags controls certain features of the encoded output. Passing {@code DEFAULT} results in output that adheres to RFC
      * 2045.
      */
+    @Implementation
     public static byte[] encode(byte[] input, int offset, int len, int flags) {
         Encoder encoder = new Encoder(flags, null);
 
