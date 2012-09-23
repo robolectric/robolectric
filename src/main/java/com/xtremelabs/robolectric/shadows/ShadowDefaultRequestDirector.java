@@ -148,7 +148,10 @@ public class ShadowDefaultRequestDirector {
         if (Robolectric.getFakeHttpLayer().isInterceptingHttpRequests()) {
             return Robolectric.getFakeHttpLayer().emulateRequest(httpHost, httpRequest, httpContext, realObject);
         } else {
-            return redirector.execute(httpHost, httpRequest, httpContext);
+            Robolectric.getFakeHttpLayer().addRequestInfo(new HttpRequestInfo(httpRequest, httpHost, httpContext, redirector));
+            HttpResponse response = redirector.execute(httpHost, httpRequest, httpContext);
+            Robolectric.getFakeHttpLayer().addHttpResponse(response);
+            return response;
         }
     }
 
