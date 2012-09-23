@@ -27,6 +27,7 @@ import java.util.Random;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
 import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -370,6 +371,19 @@ public class TextViewTest {
         final InputFilter[] expectedFilters = new InputFilter[] { new InputFilter.LengthFilter(1) };
         textView.setFilters(expectedFilters);
         assertThat(textView.getFilters(), is(expectedFilters));
+    }
+
+    @Test
+    public void testHasSelectionReturnsTrue() {
+        textView.setText("1");
+        shadowOf(textView).setSelection(0, 0);
+        assertTrue(textView.hasSelection());
+    }
+
+    @Test
+    public void testHasSelectionReturnsFalse() {
+        textView.setText("1");
+        assertFalse(textView.hasSelection());
     }
 
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
