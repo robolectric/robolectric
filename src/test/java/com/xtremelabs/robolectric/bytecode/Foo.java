@@ -15,4 +15,16 @@ public class Foo {
     public void findFooById(int i) {
         throw new RuntimeException("stub!");
     }
+    
+    /* package */ boolean invokedDirectly() {
+        return true;
+    }
+    
+    public String callGetName() {
+        return getName();
+    }
+    
+    public boolean callInvokedDirectly() {
+        return invokedDirectly();
+    }
 }

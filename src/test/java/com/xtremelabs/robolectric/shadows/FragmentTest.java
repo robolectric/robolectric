@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,12 +28,22 @@ public class FragmentTest {
         int id = fragment.getResources().getIdentifier("hello", "string", "com.xtremelabs.robolectric");
         assertTrue(id > 0);
 
-        String hello = fragment.getResources().getString(id);
+        String hello = fragment.getString(id);
         assertEquals("Hello", hello);
+    }
+
+    @Test
+    public void getString_returnsStringResource() throws Exception {
+        assertEquals("Howdy", fragment.getString(R.string.howdy));
     }
 
     @Test(expected = IllegalStateException.class)
     public void unattachedFragmentsCannotGetResources() throws Exception {
         new TestFragment().getResources();
+    }
+
+    @Test(expected = IllegalStateException.class)
+    public void unattachedFragmentsCannotGetStrings() throws Exception {
+        new TestFragment().getString(R.string.howdy);
     }
 }
