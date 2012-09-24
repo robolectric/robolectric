@@ -348,6 +348,20 @@ public class DefaultRequestDirectorTest {
     }
 
     @Test
+    public void shouldSupportRealHttpRequestsAddingRequestInfo() throws Exception {
+        Robolectric.getFakeHttpLayer().interceptHttpRequests(false);
+        DefaultHttpClient client = new DefaultHttpClient();
+
+        // it's really bad to depend on an external server in order to get a test pass,
+        // but this test is about making sure that we can intercept calls to external servers
+        // so, I think that in this specific case, it's appropriate...
+        client.execute(new HttpGet("http://google.com"));
+
+        assertNotNull(Robolectric.getFakeHttpLayer().getLastSentHttpRequestInfo());
+        assertNotNull(Robolectric.getFakeHttpLayer().getLastHttpResponse());
+    }
+
+    @Test
     public void shouldReturnResponseFromHttpResponseGenerator() throws Exception {
         Robolectric.addPendingHttpResponse(new HttpResponseGenerator() {
             @Override

@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
+import android.text.InputFilter;
 import android.text.Layout;
 import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
@@ -36,6 +37,7 @@ public class ShadowTextView extends ShadowView {
     private boolean autoLinkPhoneNumbers;
     private int autoLinkMask;
     private CharSequence hintText;
+    private CharSequence errorText;
     private int compoundDrawablePadding;
     private MovementMethod movementMethod;
     private boolean linksClickable;
@@ -45,9 +47,10 @@ public class ShadowTextView extends ShadowView {
     private int textAppearanceId;
     private TransformationMethod transformationMethod;
     private int inputType;
-    protected int selectionStart = 0;
-    protected int selectionEnd = 0;
+    protected int selectionStart = -1;
+    protected int selectionEnd = -1;
     private Typeface typeface;
+    private InputFilter[] inputFilters;
 
     private List<TextWatcher> watchers = new ArrayList<TextWatcher>();
     private List<Integer> previousKeyCodes = new ArrayList<Integer>();
@@ -333,6 +336,16 @@ public class ShadowTextView extends ShadowView {
     public String innerText() {
         return (text == null || getVisibility() != VISIBLE) ? "" : text.toString();
     }
+    
+    @Implementation
+    public void setError(CharSequence error) {
+      errorText = error;
+    }
+    
+    @Implementation
+    public CharSequence getError() {
+      return errorText;
+    }
 
     @Override
     @Implementation
@@ -491,6 +504,21 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public int getSelectionEnd() {
         return selectionEnd;
+    }
+
+    @Implementation
+    public void setFilters(InputFilter[] inputFilters) {
+        this.inputFilters = inputFilters;
+    }
+
+    @Implementation
+    public InputFilter[] getFilters() {
+        return this.inputFilters;
+    }
+
+    @Implementation
+    public boolean hasSelection() {
+        return selectionStart >= 0 && selectionEnd >= 0;
     }
 
     @Implementation

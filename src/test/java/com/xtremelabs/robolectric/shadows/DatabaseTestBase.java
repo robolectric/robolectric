@@ -4,11 +4,9 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -17,7 +15,9 @@ import java.sql.Statement;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 
 public abstract class DatabaseTestBase {
@@ -125,9 +125,18 @@ public abstract class DatabaseTestBase {
     }
     
     @Test(expected = android.database.SQLException.class)
-    public void testInsertOrThrowWithSQLException() {
+    public void testInsertOrThrowWithSimulatedSQLException() {
         shDatabase.setThrowOnInsert(true);
         database.insertOrThrow("table_name", null, new ContentValues());
+    }
+
+    @Test(expected = android.database.SQLException.class)
+    public void testInsertOrThrowWithSQLException() {
+        ContentValues values = new ContentValues();
+        values.put("id", 1);
+
+        database.insertOrThrow("table_name", null, values);
+        database.insertOrThrow("table_name", null, values);
     }
     
     @Test
@@ -431,7 +440,7 @@ public abstract class DatabaseTestBase {
         int firstIndex = cursor.getColumnIndex("first_column");
         int nameIndex = cursor.getColumnIndex("name");
         assertThat(cursor.getString(nameIndex), equalTo(name));
-        assertThat(cursor.getString(firstIndex), equalTo(null));
+        assertThat(cursor.getString(firstIndex), equalTo((String)null));
 
     }
 

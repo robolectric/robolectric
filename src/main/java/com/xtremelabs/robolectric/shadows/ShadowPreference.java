@@ -30,8 +30,9 @@ public class ShadowPreference {
 	protected Object callChangeListenerValue = null;
 	
 	protected Preference.OnPreferenceClickListener  onClickListener;
+	protected Preference.OnPreferenceChangeListener onPreferenceChangeListener;
 	private Intent intent;
-	
+
 	public void __constructor__(Context context) {
 		__constructor__(context, null, 0);
 	}
@@ -102,7 +103,7 @@ public class ShadowPreference {
 	@Implementation
 	public boolean callChangeListener(Object newValue) {
 		callChangeListenerValue = newValue;
-		return true;
+		return (onPreferenceChangeListener == null) ? true : onPreferenceChangeListener.onPreferenceChange(realPreference, newValue);
 	}
 	
 	public Object getCallChangeListenerValue() {
@@ -176,8 +177,18 @@ public class ShadowPreference {
 	@Implementation
 	public Preference.OnPreferenceClickListener getOnPreferenceClickListener() {
 		return onClickListener;
-	}	
-	
+	}
+
+	@Implementation
+	public void setOnPreferenceChangeListener( Preference.OnPreferenceChangeListener onPreferenceChangeListener ) {
+		this.onPreferenceChangeListener = onPreferenceChangeListener;
+	}
+
+	@Implementation
+	public Preference.OnPreferenceChangeListener getOnPreferenceChangeListener() {
+		return onPreferenceChangeListener;
+	}
+
 	public boolean click() {
 		return onClickListener.onPreferenceClick(realPreference);
 	}
