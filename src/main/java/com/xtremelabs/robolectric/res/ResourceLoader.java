@@ -62,19 +62,19 @@ public class ResourceLoader {
 	private boolean isInitialized = false;
 	private boolean strictI18n = false;
 	private String locale="";
-	
+
 	private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
 
 	public ResourceLoader(  int sdkVersion, Class rClass, File resourceDir, File assetsDir ) throws Exception {
 		this( sdkVersion, rClass, resourceDir, assetsDir, "");
 	}
-	
+
 	public ResourceLoader( int sdkVersion, Class rClass, File resourceDir, File assetsDir, String locale ) throws Exception {
 		this.sdkVersion = sdkVersion;
 		this.assetsDir = assetsDir;
 		this.rClass = rClass;
 		this.locale = locale;
-		
+
 		resourceExtractor = new ResourceExtractor();
 		resourceExtractor.addLocalRClass( rClass );
 		resourceExtractor.addSystemRClass( R.class );
@@ -113,7 +113,7 @@ public class ResourceLoader {
 		if ( isInitialized ) {
 			return;
 		}
-		
+
 		try {
 			if ( resourceDir != null ) {
 				viewLoader = new ViewLoader( resourceExtractor, attrResourceLoader );
@@ -138,7 +138,7 @@ public class ResourceLoader {
 				loadMenuResources( resourceDir );
 				loadDrawableResources( resourceDir );
 				loadPreferenceResources( preferenceDir );
-				
+
 				listNinePatchResources(ninePatchDrawableIds, resourceDir);
 			} else {
 				viewLoader = null;
@@ -249,7 +249,7 @@ public class ResourceLoader {
 			valuesDir += "-"+ locale;
 		}
 		File result = ( xmlResourceDir != null ) ? new File( xmlResourceDir, valuesDir ) : null;
-		if( result == null || !result.exists() ){
+		if( result != null && !result.exists() ){
 			throw new RuntimeException("Couldn't find value resource directory: " + result.getAbsolutePath() );
 		}
 		return result;
@@ -471,15 +471,15 @@ public class ResourceLoader {
 
 		return null;
 	}
-	
+
 	public boolean isNinePatchDrawable(int drawableResourceId) {
 		return ninePatchDrawableIds.contains(drawableResourceId);
 	}
-	
+
 	/**
 	 * Returns a collection of resource IDs for all nine-patch drawables
 	 * in the project.
-	 * 
+	 *
 	 * @param resourceIds
 	 * @param dir
 	 */
