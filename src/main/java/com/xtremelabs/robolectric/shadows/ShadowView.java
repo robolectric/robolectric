@@ -854,6 +854,15 @@ public class ShadowView {
         return onClickListener;
     }
 
+    /**
+     * Non-android accessor.  Returns long click listener, if set.
+     *
+     * @return
+     */
+    public View.OnLongClickListener getOnLongClickListener() {
+        return onLongClickListener;
+    }
+
     @Implementation
     public void setDrawingCacheEnabled(boolean drawingCacheEnabled) {
         this.drawingCacheEnabled = drawingCacheEnabled;

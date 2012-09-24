@@ -30,7 +30,7 @@ public class ShadowEditText extends ShadowTextView {
     @Override
     @Implementation(i18nSafe = true)
     public void setText(CharSequence str) {
-        if ( !TextUtils.isEmpty(str) && str.length() > maxLength) {
+        if (!TextUtils.isEmpty(str) && str.length() > maxLength) {
             str = str.subSequence(0, maxLength);
         }
         super.setText(str);
@@ -57,4 +57,11 @@ public class ShadowEditText extends ShadowTextView {
     public void setSelection(int start, int end) {
         super.setSelection(start, end);
     }
+
+    @Implementation
+    public void selectAll() {
+        CharSequence text = super.getText();
+        super.setSelection(0, text.length() - 1);
+    }
+
 }
