@@ -67,6 +67,14 @@ public class ShadowFragment {
         return activity.getResources();
     }
 
+    @Implementation
+    public String getString(int id) {
+        if (activity == null) {
+            throw new IllegalStateException("Fragment " + this + " not attached to Activity");
+        }
+        return getResources().getString(id);
+    }
+
     public void setTag(String tag) {
         this.tag = tag;
     }

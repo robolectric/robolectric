@@ -1,5 +1,7 @@
 package com.xtremelabs.robolectric.bytecode;
 
+import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.DirectCallException;
+import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.FullStackDirectCallPolicy;
 import com.xtremelabs.robolectric.internal.Implements;
 
 import java.lang.reflect.Constructor;
@@ -20,7 +22,7 @@ public class RobolectricInternals {
     };
 
     private static class Vars {
-        Object callDirectly;
+        DirectCallPolicy directCallPolicy = DirectCallPolicy.NOP;
     }
 
     public static <T> T newInstanceOf(Class<T> clazz) {
@@ -76,35 +78,50 @@ public class RobolectricInternals {
         return false;
     }
 
-    public static <T> T directlyOn(T shadowedObject) {
+    private static void setupDirectCallPolicy(DirectCallPolicy newPolicy) {
         Vars vars = ALL_VARS.get();
-
-        if (vars.callDirectly != null) {
-            Object expectedInstance = vars.callDirectly;
-            vars.callDirectly = null;
-            throw new RuntimeException("already expecting a direct call on <" + expectedInstance + "> but here's a new request for <" + shadowedObject + ">");
+        try {
+            if (newPolicy.checkForChange(vars.directCallPolicy)) {
+                vars.directCallPolicy = newPolicy;
+            }
+        } catch (DirectCallException e) {
+            vars.directCallPolicy = DirectCallPolicy.NOP;
+            throw e;
         }
-
-        vars.callDirectly = shadowedObject;
+    }
+    
+    public static <T> T directlyOn(T shadowedObject) {
+        setupDirectCallPolicy(new DirectCallPolicy.OneShotDirectCallPolicy(shadowedObject));
         return shadowedObject;
+    }
+
+    public static <T> T directlyOnFullStack(T shadowedObject) {
+        setupDirectCallPolicy(FullStackDirectCallPolicy.withTarget(shadowedObject));
+        return shadowedObject;
+    }
+
+    public static <T> T directlyOnFullStack(FullStackDirectCallPolicy.Builder<T> builder) {
+        FullStackDirectCallPolicy policy = builder.create();
+        setupDirectCallPolicy(policy);
+        return builder.getTarget();
     }
 
     public static boolean shouldCallDirectly(Object directInstance) {
         Vars vars = ALL_VARS.get();
-        if (vars.callDirectly != null) {
-            if (vars.callDirectly != directInstance) {
-                Object expectedInstance = vars.callDirectly;
-                vars.callDirectly = null;
-                throw new RuntimeException("expected to perform direct call on <" + expectedInstance + "> but got <" + directInstance + ">");
-            } else {
-                vars.callDirectly = null;
-            }
-            return true;
-        } else {
-            return false;
+        try {
+            return vars.directCallPolicy.shouldCallDirectly(directInstance);
+        } catch (DirectCallException e) {
+            vars.directCallPolicy = DirectCallPolicy.NOP;
+            throw e;
         }
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
+    public static void onMethodInvocationFinish(final Object instance) {
+        Vars vars = ALL_VARS.get();
+        vars.directCallPolicy = vars.directCallPolicy.onMethodInvocationFinished(instance);
+    }
+    
     @SuppressWarnings({"UnusedDeclaration"})
     public static Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Throwable {
         try {
