@@ -81,9 +81,21 @@ public class RobolectricConfig {
         if (properties != null) {
             int libRef = 1;
             String lib;
-            while ( (lib = properties.getProperty("android.library.reference." + libRef)) != null) {
+            while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
                 buildResourcePath(new File(baseDir, lib), resources);
                 libRef++;
+            }
+            return;
+        } else {
+            // Try unpack folder from maven.
+            File unpack = new File(baseDir, "target/unpack/apklibs");
+            if (unpack.exists()) {
+                File[] libs = unpack.listFiles();
+                if (libs != null) {
+                    for (File lib : libs) {
+                        resources.add(new File(lib, "res"));
+                    }
+                }
             }
         }
     }
@@ -157,7 +169,7 @@ public class RobolectricConfig {
 
             processName = getTagAttributeText(manifestDocument, "application", "android:process");
             if (processName == null) {
-            	processName = packageName;
+                processName = packageName;
             }
 
             parseApplicationFlags(manifestDocument);
@@ -224,14 +236,14 @@ public class RobolectricConfig {
     }
 
     private int getApplicationFlag(final Document doc, final String attribute, final int attributeValue) {
-    	String flagString = getTagAttributeText(doc, "application", attribute);
-    	return "true".equalsIgnoreCase(flagString) ? attributeValue : 0;
+        String flagString = getTagAttributeText(doc, "application", attribute);
+        return "true".equalsIgnoreCase(flagString) ? attributeValue : 0;
     }
-    
+
     private Integer getTagAttributeIntValue(final Document doc, final String tag, final String attribute) {
         return getTagAttributeIntValue(doc, tag, attribute, null);
     }
-    
+
     private Integer getTagAttributeIntValue(final Document doc, final String tag, final String attribute, final Integer defaultValue) {
         String valueString = getTagAttributeText(doc, tag, attribute);
         if (valueString != null) {
@@ -249,11 +261,11 @@ public class RobolectricConfig {
         parseAndroidManifest();
         return packageName;
     }
-    
+
     public int getMinSdkVersion() {
-    	parseAndroidManifest();
-		return minSdkVersion;
-	}
+        parseAndroidManifest();
+        return minSdkVersion;
+    }
 
     public int getSdkVersion() {
         parseAndroidManifest();
@@ -261,15 +273,15 @@ public class RobolectricConfig {
     }
 
     public int getApplicationFlags() {
-    	parseAndroidManifest();
-    	return applicationFlags;
+        parseAndroidManifest();
+        return applicationFlags;
     }
-    
+
     public String getProcessName() {
-		parseAndroidManifest();
-		return processName;
-	}
-    
+        parseAndroidManifest();
+        return processName;
+    }
+
     @Deprecated
     public File getResourceDirectory() {
         return resourcePath.get(0);
@@ -299,11 +311,11 @@ public class RobolectricConfig {
     }
 
     public boolean getStrictI18n() {
-    	return strictI18n;
+        return strictI18n;
     }
-    
+
     public void setStrictI18n(boolean strict) {
-    	strictI18n = strict;
+        strictI18n = strict;
     }
 
     private static String getTagAttributeText(final Document doc, final String tag, final String attribute) {
@@ -317,7 +329,7 @@ public class RobolectricConfig {
         }
         return null;
     }
-    
+
     private static Application newApplicationInstance(final String packageName, final String applicationName) {
         Application application;
         try {
@@ -362,7 +374,7 @@ public class RobolectricConfig {
         result = 31 * result + (getAssetsDirectory() != null ? getAssetsDirectory().hashCode() : 0);
         return result;
     }
-    
+
     public int getRealSdkVersion() {
         parseAndroidManifest();
         if (sdkVersionSpecified) {
