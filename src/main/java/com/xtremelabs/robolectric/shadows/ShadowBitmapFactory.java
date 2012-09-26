@@ -37,7 +37,7 @@ public class ShadowBitmapFactory {
         shadowOf(bitmap).setLoadedFromResourceId(id);
         return bitmap;
     }
-    
+
     private static String getResourceName(int id) {
         return shadowOf(Robolectric.application).getResourceLoader().getNameForId(id);
     }
@@ -84,8 +84,10 @@ public class ShadowBitmapFactory {
 
         shadowBitmap.setWidth(widthAndHeight.x);
         shadowBitmap.setHeight(widthAndHeight.y);
-        options.outWidth = widthAndHeight.x;
-        options.outHeight = widthAndHeight.y;
+        if (options != null) {
+            options.outWidth = widthAndHeight.x;
+            options.outHeight = widthAndHeight.y;
+        }
         return bitmap;
     }
 
@@ -102,6 +104,7 @@ public class ShadowBitmapFactory {
     }
 
     private static String stringify(BitmapFactory.Options options) {
+        if (options == null) return "";
         List<String> opts = new ArrayList<String>();
 
         if (options.inJustDecodeBounds) opts.add("inJustDecodeBounds");
