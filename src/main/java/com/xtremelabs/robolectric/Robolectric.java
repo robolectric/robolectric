@@ -74,6 +74,7 @@ import com.xtremelabs.robolectric.util.Scheduler;
 
 public class Robolectric {
     public static Application application;
+    public static final int DEFAULT_SDK_VERSION = 16;
 
     public static <T> T newInstanceOf(Class<T> clazz) {
         return RobolectricInternals.newInstanceOf(clazz);

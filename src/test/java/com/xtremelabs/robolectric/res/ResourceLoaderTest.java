@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 
 import java.io.File;
 
+import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
@@ -26,7 +27,7 @@ public class ResourceLoaderTest {
 
     @Test
     public void shouldLoadSystemResources() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(10, R.class, resourceFile("res"), resourceFile("assets"));
+        ResourceLoader resourceLoader = new ResourceLoader(DEFAULT_SDK_VERSION, R.class, resourceFile("res"), resourceFile("assets"));
         String stringValue = resourceLoader.getStringValue(android.R.string.copy);
         assertEquals("Copy", stringValue);
 
@@ -36,14 +37,14 @@ public class ResourceLoaderTest {
 
     @Test
     public void shouldLoadLocalResources() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(10, R.class, resourceFile("res"), resourceFile("assets"));
+        ResourceLoader resourceLoader = new ResourceLoader(DEFAULT_SDK_VERSION, R.class, resourceFile("res"), resourceFile("assets"));
         String stringValue = resourceLoader.getStringValue(R.string.copy);
         assertEquals("Local Copy", stringValue);
     }
 
     @Test(expected=I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflateView() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(10, R.class, resourceFile("res"), resourceFile("layout"));
+        ResourceLoader resourceLoader = new ResourceLoader(DEFAULT_SDK_VERSION, R.class, resourceFile("res"), resourceFile("layout"));
         resourceLoader.setStrictI18n(true);
         ViewGroup vg = new FrameLayout(Robolectric.application);
     	resourceLoader.inflateView(Robolectric.application, R.layout.text_views, vg);
@@ -51,21 +52,21 @@ public class ResourceLoaderTest {
     
     @Test(expected=I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflateMenu() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(10, R.class, resourceFile("res"), resourceFile("menu"));
+        ResourceLoader resourceLoader = new ResourceLoader(DEFAULT_SDK_VERSION, R.class, resourceFile("res"), resourceFile("menu"));
         resourceLoader.setStrictI18n(true);
     	resourceLoader.inflateMenu(Robolectric.application, R.menu.test, null);
     }
     
     @Test(expected=I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflatePreferences() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(10, R.class, resourceFile("res"), resourceFile("xml"));
+        ResourceLoader resourceLoader = new ResourceLoader(DEFAULT_SDK_VERSION, R.class, resourceFile("res"), resourceFile("xml"));
         resourceLoader.setStrictI18n(true);
     	resourceLoader.inflatePreferences(Robolectric.application, R.xml.preferences);
     }
 
     @Test
     public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(10, R.class, resourceFile("res"), resourceFile("layout"));
+        ResourceLoader resourceLoader = new ResourceLoader(DEFAULT_SDK_VERSION, R.class, resourceFile("res"), resourceFile("layout"));
         resourceLoader.setLayoutQualifierSearchPath("does-not-exist", "land", "xlarge");
         ViewGroup viewGroup = new FrameLayout(Robolectric.application);
         ViewGroup view = (ViewGroup) resourceLoader.inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup);
