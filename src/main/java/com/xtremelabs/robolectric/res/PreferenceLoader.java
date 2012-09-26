@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 
 import android.view.View;
+import com.xtremelabs.robolectric.shadows.ShadowPreferenceScreen;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -120,17 +121,21 @@ public class PreferenceLoader extends XmlLoader {
   
         private Preference constructPreference(Context context, PreferenceGroup parent) throws Exception {
         	Class<? extends Preference> clazz = pickViewClass();
-        	
-           	if (clazz.equals(PreferenceScreen.class)) {
-        		return Robolectric.newInstanceOf(PreferenceScreen.class);
+
+	        TestAttributeSet attributeSet = new TestAttributeSet(
+                    attributes, resourceExtractor, new AttrResourceLoader(resourceExtractor), null, false);
+	        if (strictI18n) {
+		        attributeSet.validateStrictI18n();
+	        }
+
+	        if (clazz.equals(PreferenceScreen.class)) {
+		           final PreferenceScreen preferenceScreen = Robolectric.newInstanceOf(PreferenceScreen.class);
+		           final ShadowPreferenceScreen shadowPreferenceScreen = Robolectric.shadowOf(preferenceScreen);
+		           shadowPreferenceScreen.__constructor__(context, attributeSet);
+		           return preferenceScreen;
         	}
            	
            	try {
-                TestAttributeSet attributeSet = new TestAttributeSet(
-                        attributes, resourceExtractor, new AttrResourceLoader(resourceExtractor), null, false);
-                if (strictI18n) {
-                	attributeSet.validateStrictI18n();
-                }
                 return ((Constructor<? extends Preference>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
             } catch (NoSuchMethodException e) {
 	            try {

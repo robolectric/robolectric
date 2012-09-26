@@ -43,4 +43,13 @@
 		android:summary=""
 		/>
 
+    <PreferenceScreen
+            android:key="subscreen"
+            android:title="SubScreen">
+        <Preference
+                android:key="subpref"
+                android:title="SubPref"
+                />
+    </PreferenceScreen>
+
 </PreferenceScreen>  

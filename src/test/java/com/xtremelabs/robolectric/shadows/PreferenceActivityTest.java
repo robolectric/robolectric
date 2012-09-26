@@ -25,6 +25,8 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 @RunWith(WithTestDefaultsRunner.class)
 public class PreferenceActivityTest {
 	static final String PREF_KEY = "prefKey";
+	public static final int PREFERENCE_XML_TOP_LEVEL_COUNT = 7;
+	public static final int PREFERENCE_WITH_STRING_RESOURCES = 4;
 
 	private TestPreferenceActivity activity;
 	private ShadowPreferenceActivity shadow;
@@ -61,15 +63,14 @@ public class PreferenceActivityTest {
 	@Test
 	public void shouldLoadPreferenceScreen() {
 		activity.addPreferencesFromResource(R.xml.preferences);
-		assertThat( activity.getPreferenceScreen().getPreferenceCount(), equalTo(6));
+		assertThat( activity.getPreferenceScreen().getPreferenceCount(), equalTo(PREFERENCE_XML_TOP_LEVEL_COUNT));
 	}
 
 	@Test
-	public void shouldSetKeyTitleAndSummaryFromResourcesWhilstInflatingXmlLayout() throws Exception {
+	public void shouldFindPreferenceByResolvedResourceKey() {
 		activity.addPreferencesFromResource(R.xml.preferences);
-		final PreferenceScreen preferenceScreen = activity.getPreferenceScreen();
-		final int referenceUsingPreference = 4;
-		final Preference preference = preferenceScreen.getPreference(referenceUsingPreference);
+
+		Preference preference = activity.findPreference(PREF_KEY);
 		assertThat(preference, not(nullValue()));
 		assertThat(preference.getKey().toString(), equalTo(PREF_KEY));
 		assertThat(preference.getTitle().toString(), equalTo("prefTitle"));
@@ -77,12 +78,12 @@ public class PreferenceActivityTest {
 	}
 
 	@Test
-	public void shouldFindResourceByKey() {
+	public void shouldFindPreferenceScreenByKey() {
 		activity.addPreferencesFromResource(R.xml.preferences);
 
-		Preference preference = activity.findPreference(PREF_KEY);
+		Preference preference = activity.findPreference("subscreen");
 		assertThat(preference, not(nullValue()));
-		assertThat(preference.getKey().toString(), equalTo(PREF_KEY));
+		assertThat(preference.getTitle().toString(), equalTo("SubScreen"));
 	}
 
 	@Test

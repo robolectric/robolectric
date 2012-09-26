@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.res;
 
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 
+import com.xtremelabs.robolectric.shadows.PreferenceActivityTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -66,7 +67,7 @@ public class PreferenceLoaderTest {
     }
     
     protected void assertThatScreenMatchesExpected(PreferenceScreen screen) {
-    	assertThat(screen.getPreferenceCount(), equalTo(6));
+    	assertThat(screen.getPreferenceCount(), equalTo(PreferenceActivityTest.PREFERENCE_XML_TOP_LEVEL_COUNT));
     	
     	assertThat(screen.getPreference(0), instanceOf(PreferenceCategory.class));
     	assertThat(((PreferenceCategory)screen.getPreference(0)).getPreference(0), instanceOf(Preference.class));
@@ -74,7 +75,9 @@ public class PreferenceLoaderTest {
     	assertThat(screen.getPreference(1), instanceOf(CheckBoxPreference.class));
     	assertThat(screen.getPreference(2), instanceOf(EditTextPreference.class));
     	assertThat(screen.getPreference(3), instanceOf(ListPreference.class));
-    	assertThat(screen.getPreference(4), instanceOf(Preference.class));
-    	assertThat(screen.getPreference(5), instanceOf(RingtonePreference.class));   	
+    	assertThat(screen.getPreference(PreferenceActivityTest.PREFERENCE_WITH_STRING_RESOURCES), instanceOf(Preference.class));
+    	assertThat(screen.getPreference(5), instanceOf(RingtonePreference.class));
+	    assertThat(screen.getPreference(6), instanceOf(PreferenceScreen.class));
+	    assertThat(((PreferenceScreen)screen.getPreference(6)).getPreference(0), instanceOf(Preference.class));
     }
 }
