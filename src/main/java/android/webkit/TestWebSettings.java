@@ -29,22 +29,18 @@ public class TestWebSettings extends WebSettings {
 	public TestWebSettings() {		
 	}
 
-	@Override
 	public boolean getAllowFileAccessFromFileURLs() {
 		return allowFileAccessFromFile;
 	}
 
-	@Override
 	public boolean getAllowUniversalAccessFromFileURLs() {
 		return allowUniversalAccessFromFile;
 	}
 
-	@Override
 	public void setAllowFileAccessFromFileURLs(boolean allow) {
 		allowFileAccessFromFile = allow;
 	}
 
-	@Override
 	public void setAllowUniversalAccessFromFileURLs(boolean allow) {
 		allowUniversalAccessFromFile = allow;
 	}
