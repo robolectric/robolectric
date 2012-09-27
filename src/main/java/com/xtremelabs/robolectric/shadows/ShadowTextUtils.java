@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.text.TextUtils;
+import android.text.TextPaint;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.util.Join;
@@ -34,5 +35,12 @@ public class ShadowTextUtils {
     @Implementation
     public static String join(CharSequence delimiter, Object[] tokens) {
         return Join.join((String) delimiter, tokens);
+    }
+
+    @Implementation
+    public static CharSequence ellipsize(CharSequence text,
+                                         TextPaint p,
+                                         float avail, TextUtils.TruncateAt where) {
+        return text;
     }
 }
