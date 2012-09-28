@@ -18,7 +18,7 @@ public class MethodGeneratorTest {
     public void whenMethodReturnsObject_shouldGenerateMethodBody() throws Exception {
         CtClass ctClass = classPool.get("java.lang.String");
         String methodBody = new MethodGenerator(ctClass).generateMethodBody(
-                ctClass, ctClass.getDeclaredMethod("substring", new CtClass[]{CtClass.intType}),
+                ctClass.getDeclaredMethod("substring", new CtClass[]{CtClass.intType}),
                 ctClass, Type.OBJECT, false, false);
         assertEquals("if (!com.xtremelabs.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
                 "Object x = com.xtremelabs.robolectric.bytecode.RobolectricInternals.methodInvoked(\n" +
@@ -32,7 +32,7 @@ public class MethodGeneratorTest {
     public void whenMethodReturnsPrimitive_shouldGenerateMethodBody() throws Exception {
         CtClass ctClass = classPool.get("java.lang.String");
         String methodBody = new MethodGenerator(ctClass).generateMethodBody(
-                ctClass, ctClass.getDeclaredMethod("length"),
+                ctClass.getDeclaredMethod("length"),
                 ctClass, Type.OBJECT, false, false);
         assertEquals("if (!com.xtremelabs.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
                 "Object x = com.xtremelabs.robolectric.bytecode.RobolectricInternals.methodInvoked(\n" +
@@ -46,7 +46,7 @@ public class MethodGeneratorTest {
     public void whenMethodReturnsVoid_shouldGenerateMethodBody() throws Exception {
         CtClass ctClass = classPool.get("java.lang.Object");
         String methodBody = new MethodGenerator(ctClass).generateMethodBody(
-                ctClass, ctClass.getDeclaredMethod("wait"),
+                ctClass.getDeclaredMethod("wait"),
                 ctClass, Type.VOID, false, false);
         assertEquals("if (!com.xtremelabs.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
                 "com.xtremelabs.robolectric.bytecode.RobolectricInternals.methodInvoked(\n" +
@@ -59,7 +59,7 @@ public class MethodGeneratorTest {
     public void whenMethodIsStatic_shouldGenerateMethodBody() throws Exception {
         CtClass ctClass = classPool.get("java.lang.String");
         String methodBody = new MethodGenerator(ctClass).generateMethodBody(
-                ctClass, ctClass.getDeclaredMethod("valueOf", new CtClass[]{CtClass.intType}),
+                ctClass.getDeclaredMethod("valueOf", new CtClass[]{CtClass.intType}),
                 ctClass, Type.OBJECT, true, false);
         assertEquals("if (!com.xtremelabs.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(java.lang.String.class)) {\n" +
                 "Object x = com.xtremelabs.robolectric.bytecode.RobolectricInternals.methodInvoked(\n" +
@@ -81,7 +81,7 @@ public class MethodGeneratorTest {
     public void shouldGenerateMethodBodyForEquals() throws Exception {
         CtClass ctClass = classPool.get("java.lang.Object");
         String methodBody = new MethodGenerator(ctClass).generateMethodBody(
-                ctClass, ctClass.getDeclaredMethod("equals", new CtClass[]{ctClass}),
+                ctClass.getDeclaredMethod("equals", new CtClass[]{ctClass}),
                 ctClass, Type.BOOLEAN, false, true);
         assertEquals("if (!com.xtremelabs.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
                 "Object x = com.xtremelabs.robolectric.bytecode.RobolectricInternals.methodInvoked(\n" +
