@@ -15,9 +15,9 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BluetoothAdapter.class)
 public class ShadowBluetoothAdapter {
-
     private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
     private boolean isDiscovering;
+    private String address;
 
     @Implementation
     public static BluetoothAdapter getDefaultAdapter() {
@@ -50,4 +50,12 @@ public class ShadowBluetoothAdapter {
         return isDiscovering;
     }
 
+    @Implementation
+    public String getAddress() {
+        return this.address;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 }
