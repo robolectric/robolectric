@@ -54,7 +54,6 @@ import android.view.animation.*;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.*;
 import android.widget.*;
-import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.FullStackDirectCallPolicy;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.shadows.*;
