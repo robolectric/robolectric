@@ -2,14 +2,14 @@ package com.xtremelabs.robolectric.bytecode;
 
 import javassist.*;
 
-class MethodGenerator {
+public class MethodGenerator {
     private final CtClass ctClass;
 
     public MethodGenerator(CtClass ctClass) {
         this.ctClass = ctClass;
     }
 
-    void fixConstructors() throws CannotCompileException, NotFoundException {
+    public void fixConstructors() throws CannotCompileException, NotFoundException {
 
         if (ctClass.isEnum()) {
             // skip enum constructors because they are not stubs in android.jar
@@ -20,7 +20,7 @@ class MethodGenerator {
 
         for (CtConstructor ctConstructor : ctClass.getDeclaredConstructors()) {
             try {
-                fixConstructor(ctClass, hasDefault, ctConstructor);
+                fixConstructor(ctConstructor);
 
                 if (ctConstructor.getParameterTypes().length == 0) {
                     hasDefault = true;
@@ -31,20 +31,19 @@ class MethodGenerator {
         }
 
         if (!hasDefault) {
-            String methodBody = generateConstructorBody(ctClass, new CtClass[0]);
+            String methodBody = generateConstructorBody(new CtClass[0]);
             CtConstructor defaultConstructor = CtNewConstructor.make(new CtClass[0], new CtClass[0], "{\n" + methodBody + "}\n", ctClass);
             ctClass.addConstructor(defaultConstructor);
         }
     }
 
-    private boolean fixConstructor(CtClass ctClass, boolean needsDefault, CtConstructor ctConstructor) throws NotFoundException, CannotCompileException {
-        String methodBody = generateConstructorBody(ctClass, ctConstructor.getParameterTypes());
+    public void fixConstructor(CtConstructor ctConstructor) throws NotFoundException, CannotCompileException {
+        String methodBody = generateConstructorBody(ctConstructor.getParameterTypes());
         ctConstructor.setBody("{\n" + methodBody + "}\n");
-        return needsDefault;
     }
 
-    private String generateConstructorBody(CtClass ctClass, CtClass[] parameterTypes) throws NotFoundException {
-        return generateMethodBody(ctClass,
+    public String generateConstructorBody(CtClass[] parameterTypes) throws NotFoundException {
+        return generateMethodBody(
                 new CtMethod(CtClass.voidType, "<init>", parameterTypes, ctClass),
                 CtClass.voidType,
                 Type.VOID,
@@ -52,24 +51,24 @@ class MethodGenerator {
                 false);
     }
 
-    void fixMethods() throws NotFoundException, CannotCompileException {
+    public void fixMethods() throws NotFoundException, CannotCompileException {
         for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
-            fixMethod(ctClass, ctMethod, true);
+            fixMethod(ctMethod, true);
         }
         CtMethod equalsMethod = ctClass.getMethod("equals", "(Ljava/lang/Object;)Z");
         CtMethod hashCodeMethod = ctClass.getMethod("hashCode", "()I");
         CtMethod toStringMethod = ctClass.getMethod("toString", "()Ljava/lang/String;");
 
-        fixMethod(ctClass, equalsMethod, false);
-        fixMethod(ctClass, hashCodeMethod, false);
-        fixMethod(ctClass, toStringMethod, false);
+        fixMethod(equalsMethod, false);
+        fixMethod(hashCodeMethod, false);
+        fixMethod(toStringMethod, false);
     }
 
     private String describe(CtMethod ctMethod) throws NotFoundException {
         return Modifier.toString(ctMethod.getModifiers()) + " " + ctMethod.getReturnType().getSimpleName() + " " + ctMethod.getLongName();
     }
 
-    private void fixMethod(CtClass ctClass, CtMethod ctMethod, boolean wasFoundInClass) throws NotFoundException {
+    public void fixMethod(final CtMethod ctMethod, boolean wasFoundInClass) throws NotFoundException {
         String describeBefore = describe(ctMethod);
         try {
             CtClass declaringClass = ctMethod.getDeclaringClass();
@@ -116,10 +115,10 @@ class MethodGenerator {
 //            }
 
             boolean isStatic = Modifier.isStatic(originalModifiers);
-            String methodBody = generateMethodBody(ctClass, ctMethod, wasNative, wasAbstract, returnCtClass, returnType, isStatic, !wasFoundInClass);
+            String methodBody = generateMethodBody(ctMethod, wasNative, wasAbstract, returnCtClass, returnType, isStatic, !wasFoundInClass);
 
             if (!wasFoundInClass) {
-                CtMethod newMethod = makeNewMethod(ctClass, ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + generateCallToSuper(methodName, paramTypes) + "\n}");
+                CtMethod newMethod = makeNewMethod(ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + generateCallToSuper(methodName, paramTypes) + "\n}");
                 newMethod.setModifiers(newModifiers);
                 if (wasDeclaredInClass) {
                     ctMethod.insertBefore("{\n" + methodBody + "}\n");
@@ -127,7 +126,7 @@ class MethodGenerator {
                     ctClass.addMethod(newMethod);
                 }
             } else if (wasAbstract || wasNative) {
-                CtMethod newMethod = makeNewMethod(ctClass, ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + "\n}");
+                CtMethod newMethod = makeNewMethod(ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + "\n}");
                 ctMethod.setBody(newMethod, null);
             } else {
                 ctMethod.insertBefore("{\n" + methodBody + "}\n");
@@ -138,7 +137,7 @@ class MethodGenerator {
         }
     }
 
-    private CtMethod makeNewMethod(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, String methodName, CtClass[] paramTypes, String methodBody) throws CannotCompileException, NotFoundException {
+    public CtMethod makeNewMethod(CtMethod ctMethod, CtClass returnCtClass, String methodName, CtClass[] paramTypes, String methodBody) throws CannotCompileException, NotFoundException {
         return CtNewMethod.make(
                 ctMethod.getModifiers(),
                 returnCtClass,
@@ -165,12 +164,12 @@ class MethodGenerator {
         return parameterReplacementList;
     }
 
-    private String generateMethodBody(CtClass ctClass, CtMethod ctMethod, boolean wasNative, boolean wasAbstract, CtClass returnCtClass, Type returnType, boolean aStatic, boolean shouldGenerateCallToSuper) throws NotFoundException {
+    public String generateMethodBody(CtMethod ctMethod, boolean wasNative, boolean wasAbstract, CtClass returnCtClass, Type returnType, boolean aStatic, boolean shouldGenerateCallToSuper) throws NotFoundException {
         String methodBody;
         if (wasAbstract) {
             methodBody = returnType.isVoid() ? "" : "return " + returnType.defaultReturnString() + ";";
         } else {
-            methodBody = generateMethodBody(ctClass, ctMethod, returnCtClass, returnType, aStatic, shouldGenerateCallToSuper);
+            methodBody = generateMethodBody(ctMethod, returnCtClass, returnType, aStatic, shouldGenerateCallToSuper);
         }
 
         if (wasNative) {
@@ -179,7 +178,7 @@ class MethodGenerator {
         return methodBody;
     }
 
-    public String generateMethodBody(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean isStatic, boolean shouldGenerateCallToSuper) throws NotFoundException {
+    public String generateMethodBody(CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean isStatic, boolean shouldGenerateCallToSuper) throws NotFoundException {
         boolean returnsVoid = returnType.isVoid();
         String className = ctClass.getName();
 
@@ -254,7 +253,7 @@ class MethodGenerator {
         return methodBody;
     }
 
-    private void appendParamTypeArray(StringBuilder buf, CtMethod ctMethod) throws NotFoundException {
+    public void appendParamTypeArray(StringBuilder buf, CtMethod ctMethod) throws NotFoundException {
         CtClass[] parameterTypes = ctMethod.getParameterTypes();
         if (parameterTypes.length == 0) {
             buf.append("new String[0]");
@@ -271,7 +270,7 @@ class MethodGenerator {
         }
     }
 
-    private void appendParamArray(StringBuilder buf, CtMethod ctMethod) throws NotFoundException {
+    public void appendParamArray(StringBuilder buf, CtMethod ctMethod) throws NotFoundException {
         int parameterCount = ctMethod.getParameterTypes().length;
         if (parameterCount == 0) {
             buf.append("new Object[0]");
