@@ -484,6 +484,16 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 		robolectricConfig.setLocale( locale );
 	}
 
+	/**
+	 * Find all the class and method annotations and pass them to
+	 * addConstantFromAnnotation() for evaluation.
+	 * 
+	 * TODO: Add compound annotations to suport defining more than one int and string at a time
+	 * TODO: See http://stackoverflow.com/questions/1554112/multiple-annotations-of-the-same-type-on-one-element 
+	 * 
+	 * @param method
+	 * @return 
+	 */
     private HashMap<Field,Object> getWithConstantAnnotations(Method method) {
     	HashMap<Field,Object> constants = new HashMap<Field,Object>();
     	
@@ -498,38 +508,45 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     	return constants;
     }
     
+    /**
+     * If the annotation is a constant redefinition, add it to the provided hash
+     * 
+     * @param constants
+     * @param anno
+     */
     private void addConstantFromAnnotation(HashMap<Field,Object> constants, Annotation anno) {
         try {
         	String name = anno.annotationType().getName();
+        	Object newValue = null;
     	
 	    	if (name.equals( "com.xtremelabs.robolectric.annotation.WithConstantString" )) {
-	    		Class classWithField = (Class) anno.annotationType().getMethod("classWithField").invoke(anno);
-	    		String fieldName = (String) anno.annotationType().getMethod("fieldName").invoke(anno);
-	    		String newValue = (String) anno.annotationType().getMethod("newValue").invoke(anno);
-	    		addConstant(constants, classWithField, fieldName, newValue);
+	    		newValue = (String) anno.annotationType().getMethod("newValue").invoke(anno);
+	    	} 
+	    	else if (name.equals( "com.xtremelabs.robolectric.annotation.WithConstantInt" )) {
+	    		newValue = (Integer) anno.annotationType().getMethod("newValue").invoke(anno);
 	    	}
-	    	
-	    	if (name.equals( "com.xtremelabs.robolectric.annotation.WithConstantInt" )) {
-	    		Class classWithField = (Class) anno.annotationType().getMethod("classWithField").invoke(anno);
-	    		String fieldName = (String) anno.annotationType().getMethod("fieldName").invoke(anno);
-	    		Integer newValue = (Integer) anno.annotationType().getMethod("newValue").invoke(anno);
-	    		addConstant(constants, classWithField, fieldName, newValue);
+	    	else {
+	    		return;
 	    	}
-	    	
+
+    		@SuppressWarnings("rawtypes")
+			Class classWithField = (Class) anno.annotationType().getMethod("classWithField").invoke(anno);
+    		String fieldName = (String) anno.annotationType().getMethod("fieldName").invoke(anno);
+            Field field = classWithField.getDeclaredField(fieldName);
+            constants.put(field, newValue);	    	
         } catch (Exception e) {
             throw new RuntimeException(e);
         }   	
     }
     
-    private void addConstant(HashMap<Field,Object> constants, Class classWithField, String fieldName, Object newValue) {
-        try {
-            Field field = classWithField.getDeclaredField(fieldName);
-            constants.put(field, newValue);
-        } catch (NoSuchFieldException e) {
-            throw new RuntimeException(e);
-        }   	
-    }
-    
+    /**
+     * Defines static finals from the provided hash and stores the old values back
+     * into the hash.
+     * 
+     * Call it twice with the same hash, and it puts everything back the way it was originally.
+     * 
+     * @param constants
+     */
     private void setupConstants(HashMap<Field,Object> constants) {
     	for(Field field:constants.keySet()) {
     		Object newValue = constants.get(field);
