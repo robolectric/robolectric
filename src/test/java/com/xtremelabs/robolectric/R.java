@@ -62,6 +62,9 @@ public final class R {
         public static final int some_html = nextId++;
         public static final int greeting = nextId++;
         public static final int copy = nextId++;
+        public static final int preference_key = nextId++;
+        public static final int preference_title = nextId++;
+        public static final int preference_summary = nextId++;
     }
 
     public static final class plurals {

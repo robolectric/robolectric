@@ -7,6 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import android.view.View;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -125,7 +126,8 @@ public class PreferenceLoader extends XmlLoader {
         	}
            	
            	try {
-                TestAttributeSet attributeSet = new TestAttributeSet(attributes);
+                TestAttributeSet attributeSet = new TestAttributeSet(
+                        attributes, resourceExtractor, new AttrResourceLoader(resourceExtractor), null, false);
                 if (strictI18n) {
                 	attributeSet.validateStrictI18n();
                 }
