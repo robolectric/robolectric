@@ -1,10 +1,14 @@
 package com.xtremelabs.robolectric.res;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -12,6 +16,7 @@ import org.junit.runner.RunWith;
 
 import android.content.ComponentName;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
@@ -19,7 +24,8 @@ import android.content.pm.ResolveInfo;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
-import java.util.List;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class RobolectricPackageManagerTest {
@@ -146,5 +152,36 @@ public class RobolectricPackageManagerTest {
         rpm.setSystemFeature(PackageManager.FEATURE_CAMERA, false);
         assertThat(rpm.hasSystemFeature(PackageManager.FEATURE_CAMERA), equalTo(false));
     }
-
+    
+    @Test
+    public void testGetPreferredActivities() throws Exception {
+    	// Setup an intentfilter and add to packagemanager
+		IntentFilter filter = new IntentFilter(Intent.ACTION_MAIN);
+	    filter.addCategory(Intent.CATEGORY_HOME);
+	    final String packageName = "com.example.dummy";
+	    ComponentName name = new ComponentName( packageName, "LauncherAcitivity" );
+	    rpm.addPreferredActivity( filter, 0, null, name);
+	    
+	    // Test match
+	    List<IntentFilter> filters = new ArrayList<IntentFilter>();
+	    filters.add( filter );
+	    
+	    List<ComponentName> activities = new ArrayList<ComponentName>();
+	    rpm.getPreferredActivities( filters, activities, null );
+	    
+	    assertThat( activities.size(), equalTo(1) );
+	    assertThat( activities.get( 0 ).getPackageName(), equalTo(packageName));
+	    
+	    // Test not match
+	    IntentFilter filter1 = new IntentFilter(Intent.ACTION_VIEW );
+	    filters.add( filter1 );
+	    filters.clear();
+	    activities.clear();
+	    filters.add( filter1 );
+	    
+	    rpm.getPreferredActivities( filters, activities, null );
+	    
+	    assertThat( activities.size(), equalTo(0) );
+    }
+    
 }

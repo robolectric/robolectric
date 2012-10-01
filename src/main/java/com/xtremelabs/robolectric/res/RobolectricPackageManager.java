@@ -1,13 +1,12 @@
 package com.xtremelabs.robolectric.res;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.Map.Entry;
 
 import android.content.ComponentName;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
@@ -23,7 +22,8 @@ public class RobolectricPackageManager extends StubPackageManager {
     private Map<ComponentName, ComponentState> componentList = new HashMap<ComponentName,ComponentState>();
     private Map<ComponentName, Drawable> drawableList = new HashMap<ComponentName, Drawable>();
     private Map<String, Boolean> systemFeatureList = new HashMap<String, Boolean>();
-
+    private Map<IntentFilter, ComponentName > preferredActivities = new HashMap<IntentFilter, ComponentName>();
+    
     private ContextWrapper contextWrapper;
     private RobolectricConfig config;
     private ApplicationInfo applicationInfo;
@@ -135,6 +135,50 @@ public class RobolectricPackageManager extends StubPackageManager {
 	public void setComponentEnabledSetting(ComponentName componentName, int newState, int flags) {
 		componentList.put(componentName, new ComponentState(newState, flags));
 	}
+	
+    public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
+    	preferredActivities.put(filter, activity);
+    }
+    
+    @Override
+    public int getPreferredActivities(List<IntentFilter> outFilters, List<ComponentName> outActivities, String packageName) {
+    	if( outFilters == null ){ return 0; }
+    	
+    	Set< IntentFilter> filters = preferredActivities.keySet();
+    	for( IntentFilter filter: outFilters ){
+    		step:
+			for ( IntentFilter testFilter : filters ) {
+				ComponentName name = preferredActivities.get( testFilter );
+				// filter out based on the given packageName;
+				if( packageName != null && !name.getPackageName().equals( packageName ) ){
+					continue step;
+				}
+				
+				// Check actions
+				Iterator< String > iterator = filter.actionsIterator();
+				while ( iterator.hasNext() ) {
+					if ( !testFilter.matchAction( iterator.next() ) ) {
+						continue step;
+					}
+				}
+
+				iterator = filter.categoriesIterator();
+				while ( iterator.hasNext() ) {
+					if ( !filter.hasCategory( iterator.next() ) ) {
+						continue step;
+					}
+				}
+				
+				if( outActivities == null ){
+					outActivities = new ArrayList<ComponentName>();
+				}
+				
+				outActivities.add( name );
+			}
+    	}
+    	
+    	return 0;
+    }
 
 	/**
 	 * Non-Android accessor.  Use to make assertions on values passed to
