@@ -49,6 +49,15 @@ public class BitmapFactoryTest {
     }
 
     @Test
+    public void decodeStream_shouldSetDescriptionWithNullOptions() throws Exception {
+        InputStream inputStream = Robolectric.application.getContentResolver().openInputStream(Uri.parse("content:/path"));
+        Bitmap bitmap = BitmapFactory.decodeStream(inputStream, null, null);
+        assertEquals("Bitmap for content:/path", shadowOf(bitmap).getDescription());
+        assertEquals(100, bitmap.getWidth());
+        assertEquals(100, bitmap.getHeight());
+    }
+
+    @Test
     public void decodeResource_shouldGetWidthAndHeightFromHints() throws Exception {
         ShadowBitmapFactory.provideWidthAndHeightHints(R.drawable.an_image, 123, 456);
 
@@ -65,7 +74,7 @@ public class BitmapFactoryTest {
         Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image, options);
         assertEquals(true, shadowOf(bitmap).getDescription().contains("inSampleSize=100"));
     }
-    
+
     @Test
     public void decodeFile_shouldGetWidthAndHeightFromHints() throws Exception {
         ShadowBitmapFactory.provideWidthAndHeightHints("/some/file.jpg", 123, 456);

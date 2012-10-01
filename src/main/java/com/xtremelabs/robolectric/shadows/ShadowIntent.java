@@ -202,8 +202,13 @@ public class ShadowIntent {
 
     @Implementation
     public Bundle getExtras() {
+        if (extras.isEmpty()) {
+            return null;
+        }
+
         Bundle bundle = new Bundle();
-        ((ShadowBundle) Robolectric.shadowOf_(bundle)).map.putAll(extras);
+        Map<String, Object> map = ((ShadowBundle) Robolectric.shadowOf_(bundle)).map;
+        map.putAll(extras);
         return bundle;
     }
     

@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.pm.ApplicationInfo.*;
+import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 
 public class RobolectricConfig {
     private final File androidManifestFile;
@@ -92,13 +93,13 @@ public class RobolectricConfig {
             Integer minSdkVer = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
             Integer sdkVer = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
             if (minSdkVer == null) {
-                minSdkVersion = 10;
+                minSdkVersion = DEFAULT_SDK_VERSION;
                 minSdkVersionSpecified = false;
             } else {
                 minSdkVersion = minSdkVer;
             }
             if (sdkVer == null) {
-                sdkVersion = 10;
+                sdkVersion = DEFAULT_SDK_VERSION;
                 sdkVersionSpecified = false;
             } else {
                 sdkVersion = sdkVer;
