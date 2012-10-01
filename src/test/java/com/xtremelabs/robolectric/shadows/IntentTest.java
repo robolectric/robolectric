@@ -30,6 +30,13 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class IntentTest {
+
+    @Test
+    public void testGetExtraReturnsNull_whenThereAreNoExtrasAdded() throws Exception {
+        Intent intent = new Intent();
+        assertEquals(intent.getExtras(), null);
+    }
+
     @Test
     public void testStringExtra() throws Exception {
         Intent intent = new Intent();

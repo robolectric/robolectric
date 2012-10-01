@@ -119,7 +119,7 @@ public class ShadowSQLiteDatabase  {
             resultSet.close();
             return result;
         } catch (SQLException e) {
-            throw new android.database.SQLException(e.getLocalizedMessage(), e);
+            throw new android.database.SQLException(e.getLocalizedMessage());
         }
     }
 
