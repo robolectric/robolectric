@@ -236,7 +236,7 @@
           ANDROID="tmp/sdk/android-sdk-linux/tools/android"
           chmod +x $ANDROID
           SDKS=$($ANDROID list sdk --all | awk \
-                    '/SDK Platform.* API 10/ || /Google APIs, Android API 10, revision 2/ \
+                    '/SDK Platform.* API 16/ || /Google APIs, Android API 10, revision 2/ \
                     { s=s "," int($1) } \
                     END { print substr(s, 2, length(s)) }' \
                 )
