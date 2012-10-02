@@ -1277,18 +1277,31 @@ public class Robolectric {
         public static void setFinalStaticField(Class classWhichContainsField, String fieldName, Object newValue) {
             try {
                 Field field = classWhichContainsField.getDeclaredField(fieldName);
-                field.setAccessible(true);
+                setFinalStaticField(field, newValue);
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(e);
+            } 
+        }
+        
+        public static Object setFinalStaticField(Field field, Object newValue) {
+        	Object oldValue = null;
+        	
+            try {
+            	field.setAccessible(true);
 
                 Field modifiersField = Field.class.getDeclaredField("modifiers");
                 modifiersField.setAccessible(true);
                 modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
 
-                field.set(null, newValue);
+            	oldValue = field.get(null);
+               field.set(null, newValue);
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException(e);
             } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
+            
+            return oldValue;
         }
     }
 
