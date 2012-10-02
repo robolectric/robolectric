@@ -5,6 +5,7 @@ import android.content.Context;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.core.IsEqual;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +18,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -30,6 +33,7 @@ public class ContextTest {
         context = new Activity();
         deleteDir(context.getFilesDir());
         deleteDir(context.getCacheDir());
+        deleteDir(ShadowContext.DATABASE_DIR);
 
         File[] files = context.getFilesDir().listFiles();
         assertNotNull(files);
@@ -46,6 +50,7 @@ public class ContextTest {
     	deleteDir(context.getCacheDir());
     	deleteDir(context.getExternalCacheDir());
     	deleteDir(context.getExternalFilesDir(null));
+    	deleteDir(ShadowContext.DATABASE_DIR);
     }
 
     public void deleteDir(File path) {
@@ -150,6 +155,15 @@ public class ContextTest {
     	File f = context.getExternalFilesDir("__test__");
         assertTrue(f.exists());
         assertTrue(f.getAbsolutePath().endsWith("__test__"));
+    }
+    
+    @Test
+    public void getDatabasePath_shouldCreateDirectory() {
+    	assertFalse(ShadowContext.DATABASE_DIR.exists());
+    	String testDBName = "abc.db";
+    	File dbFile = context.getDatabasePath(testDBName);
+    	assertTrue(ShadowContext.DATABASE_DIR.exists());
+    	assertEquals(ShadowContext.DATABASE_DIR, dbFile.getParentFile());
     }
 
     @Test
