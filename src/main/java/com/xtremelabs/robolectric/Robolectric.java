@@ -327,6 +327,7 @@ public class Robolectric {
                 ShadowTextView.class,
                 ShadowTime.class,
                 ShadowToast.class,
+                ShadowTouchDelegate.class,
                 ShadowTranslateAnimation.class,
                 ShadowTypedArray.class,
                 ShadowTypedValue.class,
@@ -951,6 +952,10 @@ public class Robolectric {
         return (ShadowToast) shadowOf_(instance);
     }
 
+    public static ShadowTouchDelegate shadowOf( TouchDelegate instance ){
+    	return (ShadowTouchDelegate) shadowOf_(instance);
+    }
+    
     public static ShadowTranslateAnimation shadowOf(TranslateAnimation instance) {
         return (ShadowTranslateAnimation) shadowOf_(instance);
     }
