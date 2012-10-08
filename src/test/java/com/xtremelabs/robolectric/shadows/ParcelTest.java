@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Parcel;
 import com.xtremelabs.robolectric.Robolectric;
@@ -52,6 +53,11 @@ public class ParcelTest {
     @Test
     public void testReadStringWhenEmpty() {
         assertThat(parcel.readString(), nullValue());
+    }
+
+    @Test
+    public void testReadStrongBinderWhenEmpty() {
+        assertThat(parcel.readStrongBinder(), nullValue());
     }
 
     @Test
@@ -309,5 +315,12 @@ public class ParcelTest {
         assertEquals(2, rehydrated.size());
         assertEquals("str1", rehydrated.get(0));
         assertEquals("str2", rehydrated.get(1));
+    }
+
+    @Test
+    public void testReadWriteStrongBinder() throws Exception {
+        Binder expected = new Binder();
+        parcel.writeStrongBinder(expected);
+        assertEquals(expected, parcel.readStrongBinder());
     }
 }
