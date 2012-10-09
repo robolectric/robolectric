@@ -40,7 +40,20 @@ public class BoolResourceLoader extends XTagXmlResourceLoader
 	
 	@Override
 	public Object convertRawValue(String rawValue) {
-		return Boolean.parseBoolean(rawValue);
+		// If null just let it throw a null pointer exception
+		rawValue = rawValue.toLowerCase();
+		if ("true".equals(rawValue)) {
+			return true;
+		} else if ("false".equals(rawValue)) {
+			return false;
+		}
+		// Convert to int
+		// If is not a number this will throw an exception
+		int intValue = Integer.parseInt(rawValue);
+		if (intValue == 0) {
+			return false;
+		} 
+		return true;
 	}
 
 	@Override

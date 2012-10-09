@@ -30,5 +30,10 @@ public class BoolResourceLoaderTest {
 		assertThat(resourceLoader.getValue(R.bool.false_bool_value ), equalTo(false));
 		assertThat(resourceLoader.getValue(R.bool.true_bool_value ), equalTo(true));
     }
-
+	
+	@Test
+	public void testIntegersAreResolvedAsBooleans() {
+		assertThat(resourceLoader.getValue(R.bool.zero_is_false ), equalTo(false));
+		assertThat(resourceLoader.getValue(R.bool.integers_are_true ), equalTo(true));
+    }
 }
