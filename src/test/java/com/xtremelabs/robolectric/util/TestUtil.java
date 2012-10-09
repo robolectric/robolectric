@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
+import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 import static org.junit.Assert.assertTrue;
 
 public abstract class TestUtil {
@@ -90,6 +91,6 @@ public abstract class TestUtil {
            	sdkDir = localProperties.getProperty("sdk.dir");             
        }
 
-        return file(new File(sdkDir, "platforms/android-10/data/res/"), paths);
+        return file(new File(sdkDir, "platforms/android-" + DEFAULT_SDK_VERSION + "/data/res/"), paths);
     }
 }

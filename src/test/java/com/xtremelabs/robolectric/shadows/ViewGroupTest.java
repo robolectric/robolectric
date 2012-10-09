@@ -19,6 +19,7 @@ import org.junit.runner.RunWith;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
+import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -40,7 +41,7 @@ public class ViewGroupTest {
     @Before
     public void setUp() throws Exception {
         context = new Application();
-        ShadowApplication.bind(context, new ResourceLoader(10, R.class, null, null));
+        ShadowApplication.bind(context, new ResourceLoader(DEFAULT_SDK_VERSION, R.class, null, null));
 
         root = new FrameLayout(context);
 
