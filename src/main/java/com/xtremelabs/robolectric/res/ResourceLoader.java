@@ -61,6 +61,7 @@ public class ResourceLoader {
 	private final RawResourceLoader rawResourceLoader;
 	private final DimenResourceLoader dimenResourceLoader;
 	private final IntegerResourceLoader integerResourceLoader;
+	private final BoolResourceLoader boolResourceLoader;
 	private boolean isInitialized = false;
 	private boolean strictI18n = false;
 	private String locale="";
@@ -90,6 +91,7 @@ public class ResourceLoader {
 		rawResourceLoader = new RawResourceLoader( resourceExtractor, resourceDir );
 		dimenResourceLoader = new DimenResourceLoader( resourceExtractor );
 		integerResourceLoader = new IntegerResourceLoader( resourceExtractor );
+		boolResourceLoader = new BoolResourceLoader( resourceExtractor );
 
 		this.resourceDir = resourceDir;
 	}
@@ -390,6 +392,7 @@ public class ResourceLoader {
 		rawResourceLoader = null;
 		dimenResourceLoader = null;
 		integerResourceLoader = null;
+		boolResourceLoader = null;
 	}
 
 	public static ResourceLoader getFrom( Context context ) {
@@ -431,6 +434,11 @@ public class ResourceLoader {
 	public int getIntegerValue( int id ) {
 		init();
 		return integerResourceLoader.getValue( id );
+	}
+	
+	public boolean getBooleanValue( int id ) {
+		init();
+		return boolResourceLoader.getValue( id );
 	}
 	
 	public XmlResourceParser getXml( int id ) {

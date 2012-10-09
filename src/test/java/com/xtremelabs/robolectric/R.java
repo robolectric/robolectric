@@ -157,4 +157,9 @@ public final class R {
         public static final int test_integer2 = nextId++;
         public static final int test_large_hex = nextId++;
     }
+    
+    public static final class bool {
+    	public static final int false_bool_value = nextId++;
+    	public static final int true_bool_value = nextId++;
+    }
 }
