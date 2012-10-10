@@ -61,5 +61,4 @@ public class ShadowSensorManager {
 	public SensorEvent createSensorEvent() {
 		return Robolectric.newInstanceOf(SensorEvent.class);
 	}
-
 }

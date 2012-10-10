@@ -72,9 +72,9 @@ public class ApplicationTest {
         checkSystemService(Context.KEYGUARD_SERVICE, android.app.KeyguardManager.class);
         checkSystemService(Context.LOCATION_SERVICE, android.location.LocationManager.class);
         checkSystemService(Context.SEARCH_SERVICE, android.app.SearchManager.class);
-        checkSystemService(Context.SENSOR_SERVICE, android.hardware.SensorManager.class);
+        checkSystemService(Context.SENSOR_SERVICE, android.hardware.TestSensorManager.class);
         checkSystemService(Context.STORAGE_SERVICE, android.os.storage.StorageManager.class);
-        checkSystemService(Context.VIBRATOR_SERVICE, android.os.Vibrator.class);
+        checkSystemService(Context.VIBRATOR_SERVICE, android.os.TestVibrator.class);
         checkSystemService(Context.CONNECTIVITY_SERVICE, android.net.ConnectivityManager.class);
         checkSystemService(Context.WIFI_SERVICE, android.net.wifi.WifiManager.class);
         checkSystemService(Context.AUDIO_SERVICE, android.media.AudioManager.class);
