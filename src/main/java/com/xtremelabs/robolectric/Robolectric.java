@@ -272,6 +272,7 @@ public class Robolectric {
                 ShadowSyncResult.class,
                 ShadowSyncResult.ShadowSyncStats.class,
                 ShadowSQLiteProgram.class,
+                ShadowSQLiteCloseable.class,
                 ShadowSQLiteDatabase.class,
                 ShadowSQLiteCursor.class,
                 ShadowSQLiteOpenHelper.class,
@@ -299,7 +300,6 @@ public class Robolectric {
                 ShadowViewFlipper.class,
                 ShadowViewMeasureSpec.class,
                 ShadowViewStub.class,
-                ShadowWebSettings.class,
                 ShadowWebView.class,
                 ShadowWifiConfiguration.class,
                 ShadowWifiInfo.class,
@@ -821,10 +821,6 @@ public class Robolectric {
         return (ShadowVideoView) shadowOf_(instance);
     }
 
-    public static ShadowWebSettings shadowOf(WebSettings instance) {
-        return (ShadowWebSettings) shadowOf_(instance);
-    }
-
     public static ShadowWebView shadowOf(WebView instance) {
         return (ShadowWebView) shadowOf_(instance);
     }
@@ -1131,5 +1127,4 @@ public class Robolectric {
             }
         }
     }
-
 }
