@@ -114,6 +114,11 @@ public class ShadowFragment {
         this.resumed = true;
     }
 
+    public void pause() {
+        realFragment.onPause();
+        this.resumed = false;
+    }
+
     @Implementation
     public void startActivity(Intent intent) {
         if (fragmentActivity == null) {
