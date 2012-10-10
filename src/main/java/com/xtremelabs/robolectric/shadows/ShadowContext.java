@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.util.UUID;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -23,10 +24,14 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Context.class)
 abstract public class ShadowContext {
-    public static final File CACHE_DIR = new File(System.getProperty("java.io.tmpdir"), "android-cache");
-    public static final File EXTERNAL_CACHE_DIR = new File(System.getProperty("java.io.tmpdir"), "android-external-cache");
-    public static final File FILES_DIR = new File(System.getProperty("java.io.tmpdir"), "android-tmp");
-    public static final File DOWNLOADS_DIR = new File(System.getProperty("java.io.tmpdir"), "android-dls");
+    public static final File CACHE_DIR = new File(System.getProperty("java.io.tmpdir"),
+        UUID.randomUUID().toString() + "android-cache");
+    public static final File EXTERNAL_CACHE_DIR = new File(System.getProperty("java.io.tmpdir"),
+        UUID.randomUUID().toString() + "android-external-cache");
+    public static final File FILES_DIR = new File(System.getProperty("java.io.tmpdir"),
+        UUID.randomUUID().toString() + "android-tmp");
+    public static final File DOWNLOADS_DIR = new File(System.getProperty("java.io.tmpdir"),
+        UUID.randomUUID().toString() + "android-dls");
 
     @RealObject private Context realContext;
 
