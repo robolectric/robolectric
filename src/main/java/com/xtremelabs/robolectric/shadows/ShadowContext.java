@@ -28,6 +28,7 @@ abstract public class ShadowContext {
     public static final File EXTERNAL_CACHE_DIR = createTempDir("android-external-cache");
     public static final File FILES_DIR = createTempDir("android-tmp");
     public static final File EXTERNAL_FILES_DIR = createTempDir("android-external-files");
+    public static final File DATABASE_DIR = createTempDir("android-database");
 
     @RealObject private Context realContext;
 
@@ -97,6 +98,12 @@ abstract public class ShadowContext {
     }
 
     @Implementation
+    public File getDatabasePath(String name) {
+        DATABASE_DIR.mkdirs();
+        return new File(DATABASE_DIR, name);
+    }
+    
+    @Implementation
     public File getExternalCacheDir() {
         EXTERNAL_CACHE_DIR.mkdir();
         return EXTERNAL_CACHE_DIR;
@@ -146,6 +153,7 @@ abstract public class ShadowContext {
         clearFiles(CACHE_DIR);
         clearFiles(EXTERNAL_CACHE_DIR);
         clearFiles(EXTERNAL_FILES_DIR);
+        clearFiles(DATABASE_DIR);
     }
 
     public static void clearFiles(File dir) {

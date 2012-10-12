@@ -32,8 +32,8 @@ public class RobolectricConfig {
     private int applicationFlags;
     private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
     private boolean strictI18n = false;
-    private String locale = "";
-    private String oldLocale = "";
+    private String valuesResQualifiers="";
+    private String oldValuesResQualifier="";
 
     /**
      * Creates a Robolectric configuration using default Android files relative to the specified base directory.
@@ -251,17 +251,17 @@ public class RobolectricConfig {
     	strictI18n = strict;
     }
 
-    public void setLocale( String locale ){
-    	this.oldLocale = this.locale;
-    	this.locale = locale;
+    public void setValuesResQualifiers( String qualifiers ){
+    	this.oldValuesResQualifier = this.valuesResQualifiers;
+    	this.valuesResQualifiers = qualifiers;
     }
     
-    public String getLocale() {
-    	return this.locale;
+    public String getValuesResQualifiers() {
+    	return valuesResQualifiers;
     }
     
-    public boolean isLocaleChanged() {
-    	return !locale.equals( oldLocale );
+    public boolean isValuesResQualifiersChanged() {
+    	return !valuesResQualifiers.equals( oldValuesResQualifier );
     }
     
     private static String getTagAttributeText(final Document doc, final String tag, final String attribute) {

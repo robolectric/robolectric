@@ -78,7 +78,9 @@ public class ShadowView {
     private CharSequence contentDescription = null;
     private int measuredWidth = 0;
     private int measuredHeight = 0;
-
+    private TouchDelegate touchDelegate;
+    
+    
     public void __constructor__(Context context) {
         __constructor__(context, null);
     }
@@ -960,5 +962,15 @@ public class ShadowView {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    @Implementation
+    public void setTouchDelegate (TouchDelegate delegate) {
+    	this.touchDelegate = delegate;
+    }
+    
+    @Implementation
+    public TouchDelegate getTouchDelegate()  {
+    	return touchDelegate;
     }
 }
