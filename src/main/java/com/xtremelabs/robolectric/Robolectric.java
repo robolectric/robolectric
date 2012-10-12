@@ -1,15 +1,5 @@
 package com.xtremelabs.robolectric;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultRequestDirector;
-
 import android.accounts.AccountManager;
 import android.app.*;
 import android.appwidget.AppWidgetManager;
@@ -62,15 +52,23 @@ import android.view.animation.*;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.*;
 import android.widget.*;
-
+import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.FullStackDirectCallPolicy;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
-import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.FullStackDirectCallPolicy;
 import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultRequestDirector;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
 
 public class Robolectric {
     public static Application application;
@@ -207,6 +205,7 @@ public class Robolectric {
                 ShadowGallery.class,
                 ShadowGeocoder.class,
                 ShadowGeoPoint.class,
+                ShadowGestureDetector.class,
                 ShadowGridView.class,
                 ShadowHandler.class,
                 ShadowHandlerThread.class,
@@ -650,6 +649,10 @@ public class Robolectric {
 
     public static ShadowGeocoder shadowOf(Geocoder instance) {
         return (ShadowGeocoder) shadowOf_(instance);
+    }
+
+    public static ShadowGestureDetector shadowOf(GestureDetector instance) {
+        return (ShadowGestureDetector) shadowOf_(instance);
     }
 
     public static ShadowGridView shadowOf(GridView instance) {
