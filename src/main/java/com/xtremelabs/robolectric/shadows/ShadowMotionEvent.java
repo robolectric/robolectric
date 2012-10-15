@@ -55,6 +55,11 @@ public class ShadowMotionEvent {
     }
 
     @Implementation
+    public void setAction(int action ) {
+        this.action = action;
+    }
+    
+    @Implementation
     public float getRawX() {
         return getX();
     }

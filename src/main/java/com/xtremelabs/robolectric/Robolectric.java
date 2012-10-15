@@ -11,6 +11,8 @@ import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
 
 import android.accounts.AccountManager;
+import android.animation.ObjectAnimator;
+import android.animation.ValueAnimator;
 import android.app.*;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
@@ -63,9 +65,9 @@ import android.view.inputmethod.InputMethodManager;
 import android.webkit.*;
 import android.widget.*;
 
+import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.FullStackDirectCallPolicy;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
-import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.FullStackDirectCallPolicy;
 import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
@@ -207,6 +209,7 @@ public class Robolectric {
                 ShadowGallery.class,
                 ShadowGeocoder.class,
                 ShadowGeoPoint.class,
+                ShadowGestureDetector.class,
                 ShadowGridView.class,
                 ShadowHandler.class,
                 ShadowHandlerThread.class,
@@ -255,6 +258,7 @@ public class Robolectric {
                 ShadowNotificationManager.class,
                 ShadowNetworkInfo.class,
                 ShadowOverlayItem.class,
+                ShadowObjectAnimator.class,
                 ShadowPagerAdapter.class,
                 ShadowPaint.class,
                 ShadowPair.class,
@@ -281,6 +285,8 @@ public class Robolectric {
                 ShadowRadioGroup.class,
                 ShadowRatingBar.class,
                 ShadowRect.class,
+                ShadowRelativeLayout.class,
+                ShadowRelativeLayoutParams.class,
                 ShadowResolveInfo.class,
                 ShadowRemoteCallbackList.class,
                 ShadowRemoteViews.class,
@@ -333,6 +339,7 @@ public class Robolectric {
                 ShadowTypedValue.class,
                 ShadowUriMatcher.class,
                 ShadowURLSpan.class,
+                ShadowValueAnimator.class,
                 ShadowVibrator.class,
                 ShadowVideoView.class,
                 ShadowView.class,
@@ -651,6 +658,10 @@ public class Robolectric {
         return (ShadowGeocoder) shadowOf_(instance);
     }
 
+    public static ShadowGestureDetector shadowOf(GestureDetector instance) {
+        return (ShadowGestureDetector) shadowOf_(instance);
+    }
+
     public static ShadowGridView shadowOf(GridView instance) {
         return (ShadowGridView) shadowOf_(instance);
     }
@@ -749,6 +760,10 @@ public class Robolectric {
 
     public static ShadowNetworkInfo shadowOf(NetworkInfo instance) {
         return (ShadowNetworkInfo) shadowOf_(instance);
+    }
+
+    public static ShadowObjectAnimator shadowOf(ObjectAnimator instance) {
+        return (ShadowObjectAnimator) shadowOf_(instance);
     }
 
     public static ShadowNotification shadowOf(Notification other) {
@@ -962,6 +977,10 @@ public class Robolectric {
 
     public static ShadowUriMatcher shadowOf(UriMatcher instance) {
         return (ShadowUriMatcher) shadowOf_(instance);
+    }
+
+    public static ShadowValueAnimator shadowOf(ValueAnimator instance) {
+        return (ShadowValueAnimator) shadowOf_(instance);
     }
 
     public static ShadowView shadowOf(View instance) {
