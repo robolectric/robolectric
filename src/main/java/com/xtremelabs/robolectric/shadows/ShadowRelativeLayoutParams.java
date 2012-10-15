@@ -9,7 +9,7 @@ import com.xtremelabs.robolectric.internal.Implements;
  */
 @SuppressWarnings("UnusedDeclaration")
 @Implements(RelativeLayout.LayoutParams.class)
-public class ShadowRelativeLayoutParams extends ShadowLayoutParams {
+public class ShadowRelativeLayoutParams extends ShadowMarginLayoutParams {
     int rules[] = new int[16]; // not the right way to do this
 
     @Implementation
