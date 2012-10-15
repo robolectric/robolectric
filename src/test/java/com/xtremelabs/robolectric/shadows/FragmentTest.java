@@ -11,17 +11,25 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.matchers.StartedMatcher;
-
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.junit.Assert.*;
+import static java.util.Arrays.asList;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class FragmentTest {
@@ -202,11 +210,11 @@ public class FragmentTest {
     }
 
     @Test
-    public void testHeadlessFragmentOnCreateIsCalled() throws Exception {
+    public void testHeadlessFragmentOnAttachAndOnCreateAreCalled() throws Exception {
         DummyHeadlessFragment fragment = new DummyHeadlessFragment();
         ContainerActivity activity = new ContainerActivity();
         activity.getSupportFragmentManager().beginTransaction().add(fragment, null).commit();
-        assertTrue(fragment.created);
+        assertEquals(asList("onAttach", "onCreate"), fragment.log);
     }
 
     @Test
@@ -339,12 +347,17 @@ public class FragmentTest {
     }
 
     private static class DummyHeadlessFragment extends Fragment {
-        boolean created = false;
+        List<String> log = new ArrayList<String>();
 
-        @Override
+        @Override public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            log.add("onAttach");
+        }
+
+      @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            created = true;
+            log.add("onCreate");
         }
     }
 

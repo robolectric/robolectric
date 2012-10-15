@@ -164,7 +164,9 @@ public class ShadowFragmentActivity extends ShadowActivity {
                     shadowFragment.setTag(tag);
                     tagLookup.put(tag, fragment);
                 }
-                shadowFragment.setActivity((FragmentActivity) getRealActivity());
+                FragmentActivity activity = (FragmentActivity) getRealActivity();
+                shadowFragment.setActivity(activity);
+                fragment.onAttach(activity);
                 fragment.onCreate(null);
                 shadowFragment.createView();
                 if (containerViewId == R.id.content) setContentView(fragment.getView());
