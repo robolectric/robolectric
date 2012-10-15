@@ -47,6 +47,7 @@ import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
+import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -435,6 +436,7 @@ public class Robolectric {
                 ShadowTranslateAnimation.class,
                 ShadowTypedArray.class,
                 ShadowTypedValue.class,
+                ShadowTypeface.class,
                 ShadowUriMatcher.class,
                 ShadowURLSpan.class,
                 ShadowValueAnimator.class,
@@ -1067,6 +1069,10 @@ public class Robolectric {
 
     public static ShadowTranslateAnimation shadowOf(TranslateAnimation instance) {
         return (ShadowTranslateAnimation) shadowOf_(instance);
+    }
+
+    public static ShadowTypeface shadowOf(Typeface instance) {
+        return (ShadowTypeface) shadowOf_(instance);
     }
 
     public static ShadowUriMatcher shadowOf(UriMatcher instance) {
