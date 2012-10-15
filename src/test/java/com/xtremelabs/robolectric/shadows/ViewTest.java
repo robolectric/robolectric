@@ -390,6 +390,14 @@ public class ViewTest {
         assertThat(view.getTranslationY(), equalTo(4.6f));
     }
 
+    @Test
+    public void shouldGetAndSetAlpha() throws Exception {
+        view = new TestView(new Activity());
+        view.setAlpha(9.1f);
+
+        assertThat(view.getAlpha(), equalTo(9.1f));
+    }
+
     private static class TestAnimation extends Animation {
     }
 
