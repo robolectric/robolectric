@@ -68,7 +68,7 @@ public class ShadowAbstractCursor {
      *
      * @param pos = the position to set
      */
-    private void setPosition(int pos) {
+    protected void setPosition(int pos) {
         currentRowNumber = pos;
         if ((-1 == currentRowNumber) || (rowCount == currentRowNumber)) {
             currentRow = null;
