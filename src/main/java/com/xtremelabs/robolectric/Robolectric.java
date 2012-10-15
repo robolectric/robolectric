@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import android.accounts.AccountManager;
+import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
 import android.app.Activity;
@@ -237,6 +238,7 @@ public class Robolectric {
                 ShadowAlphaAnimation.class,
                 ShadowAndroidHttpClient.class,
                 ShadowAnimation.class,
+                ShadowAnimator.class,
                 ShadowAnimationDrawable.class,
                 ShadowAnimationSet.class,
                 ShadowAnimationUtils.class,
@@ -533,6 +535,10 @@ public class Robolectric {
 
     public static ShadowAnimation shadowOf(Animation instance) {
         return (ShadowAnimation) shadowOf_(instance);
+    }
+
+    public static ShadowAnimator shadowOf(Animator instance) {
+        return (ShadowAnimator) shadowOf_(instance);
     }
 
     public static ShadowAnimationDrawable shadowOf(AnimationDrawable instance) {

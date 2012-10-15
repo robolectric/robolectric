@@ -5,7 +5,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
 @Implements(ValueAnimator.class)
-public class ShadowValueAnimator {
+public class ShadowValueAnimator extends ShadowAnimator {
     protected long duration;
 
     // Tested via ObjectAnimatorTest for now

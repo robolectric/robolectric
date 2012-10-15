@@ -73,6 +73,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     public void start() {
         String methodName = "set" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
         final Method setter;
+        notifyStart();
         try {
             setter = target.getClass().getMethod(methodName, animationType);
             if (animationType == float.class) {
@@ -85,6 +86,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
             @Override
             public void run() {
                 try {
+                    notifyEnd();
                     if (animationType == float.class) {
                         setter.invoke(target, floatValues[floatValues.length - 1]);
                     }
