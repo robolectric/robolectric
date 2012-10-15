@@ -10,7 +10,10 @@ import com.xtremelabs.robolectric.internal.Implements;
 @SuppressWarnings("UnusedDeclaration")
 @Implements(RelativeLayout.LayoutParams.class)
 public class ShadowRelativeLayoutParams extends ShadowMarginLayoutParams {
-    int rules[] = new int[16]; // not the right way to do this
+    // VERB_COUNT is defined in RelativeLayout.java and is private, so we duplicate it here.
+    private static final int VERB_COUNT = 16;
+
+    private int rules[] = new int[VERB_COUNT];
 
     @Implementation
     public void addRule(int verb) {
