@@ -21,6 +21,7 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.database.CursorWrapper;
+import android.database.MergeCursor;
 import android.database.sqlite.*;
 import android.graphics.*;
 import android.graphics.drawable.*;
@@ -244,6 +245,7 @@ public class Robolectric {
                 ShadowMediaRecorder.class,
                 ShadowMediaStore.ShadowImages.ShadowMedia.class,
                 ShadowMenuInflater.class,
+                ShadowMergeCursor.class,
                 ShadowMessage.class,
                 ShadowMessenger.class,
                 ShadowMimeTypeMap.class,
@@ -735,6 +737,10 @@ public class Robolectric {
         return (ShadowMenuInflater) shadowOf_(instance);
     }
 
+    public static ShadowMergeCursor shadowOf(MergeCursor instance) {
+        return (ShadowMergeCursor) shadowOf_(instance);
+    }
+    
     public static ShadowMessage shadowOf(Message instance) {
         return (ShadowMessage) shadowOf_(instance);
     }
