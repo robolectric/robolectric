@@ -85,7 +85,7 @@ public class ShadowView {
     private int measuredHeight = 0;
     private float translationX = 0.0f;
     private float translationY = 0.0f;
-    private float alpha = 0.0f;
+    private float alpha = 1.0f;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
