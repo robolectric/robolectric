@@ -16,8 +16,10 @@ public class ShadowMergeCursor extends ShadowAbstractCursor {
 	private Cursor activeCursor;
 	
 	public void __constructor__( Cursor[] cursors ) {
-		this.cursors = cursors;
-		this.activeCursor = cursors[0];
+		if ( cursors != null ) {
+			this.cursors = cursors;
+			this.activeCursor = cursors[0];
+		}
 		
 		rowCount = getCount();
 		if ( activeCursor != null ) {
@@ -29,6 +31,7 @@ public class ShadowMergeCursor extends ShadowAbstractCursor {
 	@Override
 	public int getCount() {
 		int count = 0;
+		if ( cursors == null ) { return count; }
 		
 		for (int i = 0; i < cursors.length; i++) {
 			Cursor c = cursors[i];
@@ -43,6 +46,8 @@ public class ShadowMergeCursor extends ShadowAbstractCursor {
 	@Override
 	protected void setPosition( int pos ) {
 		int count = 0;
+		if ( cursors == null ) { return; }
+		
 		currentRowNumber = pos;
 		
 		for ( int i = 0; i < cursors.length; i++ ) {
