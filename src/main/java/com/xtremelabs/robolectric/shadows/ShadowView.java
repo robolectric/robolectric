@@ -7,8 +7,13 @@ import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
-import android.view.*;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.View.MeasureSpec;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -78,6 +83,9 @@ public class ShadowView {
     private CharSequence contentDescription = null;
     private int measuredWidth = 0;
     private int measuredHeight = 0;
+    private float translationX = 0.0f;
+    private float translationY = 0.0f;
+    private float alpha = 1.0f;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -947,6 +955,36 @@ public class ShadowView {
 
     @Implementation
     public void onAnimationEnd() {
+    }
+
+    @Implementation
+    public void setTranslationX(float translationX) {
+        this.translationX = translationX;
+    }
+
+    @Implementation
+    public float getTranslationX() {
+        return translationX;
+    }
+
+    @Implementation
+    public void setTranslationY(float translationY) {
+        this.translationY = translationY;
+    }
+
+    @Implementation
+    public float getTranslationY() {
+        return translationY;
+    }
+
+    @Implementation
+    public void setAlpha(float alpha) {
+        this.alpha = alpha;
+    }
+
+    @Implementation
+    public float getAlpha() {
+        return alpha;
     }
 
     /*

@@ -6,6 +6,7 @@ import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -25,7 +26,10 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewGroupTest {
@@ -218,5 +222,17 @@ public class ViewGroupTest {
                 "    <View/>\n" +
                 "  </FrameLayout>\n" +
                 "</FrameLayout>\n", out.toString());
+    }
+
+    @Test
+    public void addViewWithLayoutParams_shouldStoreLayoutParams() throws Exception {
+        FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        FrameLayout.LayoutParams layoutParams2 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        ImageView child1 = new ImageView(Robolectric.application);
+        ImageView child2 = new ImageView(Robolectric.application);
+        root.addView(child1, layoutParams1);
+        root.addView(child2, 1, layoutParams2);
+        assertSame(layoutParams1, child1.getLayoutParams());
+        assertSame(layoutParams2, child2.getLayoutParams());
     }
 }
