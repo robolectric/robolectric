@@ -106,4 +106,16 @@ public class CanvasTest {
         assertEquals("Path " + shadowOf(path1).getPoints().toString() + "\n"
                 + "Path " + shadowOf(path2).getPoints().toString(), shadowOf(targetBitmap).getDescription());
     }
+
+    @Test
+    public void resetCanvasHistory_shouldClearTheHistoryAndDescription() throws Exception {
+        Canvas canvas = new Canvas();
+        canvas.drawPath(new Path(), new Paint());
+
+        ShadowCanvas shadow = shadowOf(canvas);
+        shadow.resetCanvasHistory();
+
+        assertThat(shadow.getPathPaintHistoryCount(), equalTo(0));
+        assertEquals("", shadow.getDescription());
+    }
 }
