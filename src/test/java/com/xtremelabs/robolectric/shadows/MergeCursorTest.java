@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
@@ -90,12 +91,14 @@ public class MergeCursorTest {
     	cursor = new MergeCursor( null );
     	assertThat( cursor.getCount(), equalTo(0) );
     	assertThat( cursor.moveToFirst(), equalTo(false) );
+    	assertThat( cursor.getColumnNames(), notNullValue() );
     	
     	// cursor list with null contents
     	cursor = new MergeCursor( new Cursor[1] );
     	assertThat( cursor.getCount(), equalTo(0) );    	
     	assertThat( cursor.moveToFirst(), equalTo(false) );
-    	
+    	assertThat( cursor.getColumnNames(), notNullValue() );
+
     	// cursor list with partially null contents
     	Cursor[] cursors = new Cursor[2];
     	cursors[0] = null;
@@ -103,6 +106,22 @@ public class MergeCursorTest {
     	cursor = new MergeCursor( cursors );
     	assertThat( cursor.getCount(), equalTo(TABLE_1_INSERTS.length) );
     	assertThat( cursor.moveToFirst(), equalTo(true) );
+    	assertThat( cursor.getColumnNames(), notNullValue() );
+    }
+    
+    @Test
+    public void testMoveToPositionEmptyCursor() throws Exception {
+    	Cursor[] cursors = new Cursor[2];
+    	cursors[0] = null;
+    	cursors[1] = null;
+    	
+    	cursor = new MergeCursor( cursors );
+    	assertThat( cursor.getCount(), equalTo(0) );
+    	assertThat( cursor.getColumnNames(), notNullValue() );
+    	
+    	cursor.moveToPosition(0);
+
+    	assertThat( cursor.getColumnNames(), notNullValue() );    	
     }
     
     @Test

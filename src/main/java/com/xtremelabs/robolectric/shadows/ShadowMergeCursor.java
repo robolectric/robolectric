@@ -24,6 +24,8 @@ public class ShadowMergeCursor extends ShadowAbstractCursor {
 		rowCount = getCount();
 		if ( activeCursor != null ) {
 			columnNameArray = activeCursor.getColumnNames();
+		} else {
+			columnNameArray = new String[0];
 		}
 	}
 	
@@ -49,6 +51,8 @@ public class ShadowMergeCursor extends ShadowAbstractCursor {
 		if ( cursors == null ) { return; }
 		
 		currentRowNumber = pos;
+		columnNameArray = new String[0];
+		activeCursor = null;
 		
 		for ( int i = 0; i < cursors.length; i++ ) {
 			Cursor c = cursors[i];
