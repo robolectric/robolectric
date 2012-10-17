@@ -1,14 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
+import android.graphics.Color;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.graphics.Color;
-
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ColorTest {
@@ -22,5 +21,12 @@ public class ColorTest {
     public void testArgb() {
         int color = Color.argb(100, 160, 160, 160);
         assertThat(color, is(1688248480));
+    }
+
+    @Test
+    public void testParseColor() throws Exception {
+        assertEquals(-1, Color.parseColor("#ffffffff"));
+        assertEquals(0, Color.parseColor("#00000000"));
+        assertEquals(-5588020, Color.parseColor("#ffaabbcc"));
     }
 }

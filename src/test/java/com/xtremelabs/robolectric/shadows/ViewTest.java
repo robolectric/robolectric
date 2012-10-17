@@ -4,14 +4,21 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
-import android.view.*;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.View.MeasureSpec;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.*;
+import com.xtremelabs.robolectric.util.TestAnimationListener;
+import com.xtremelabs.robolectric.util.TestOnClickListener;
+import com.xtremelabs.robolectric.util.TestOnLongClickListener;
+import com.xtremelabs.robolectric.util.TestRunnable;
+import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +27,9 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewTest {
@@ -369,6 +378,24 @@ public class ViewTest {
     	assertThat(view2.getWidth(), equalTo(0)); 
     	assertThat(view2.getMeasuredHeight(), equalTo(400));
     	assertThat(view2.getMeasuredWidth(), equalTo(800));  
+    }
+
+    @Test
+    public void shouldGetAndSetTranslations() throws Exception {
+        view = new TestView(new Activity());
+        view.setTranslationX(8.9f);
+        view.setTranslationY(4.6f);
+
+        assertThat(view.getTranslationX(), equalTo(8.9f));
+        assertThat(view.getTranslationY(), equalTo(4.6f));
+    }
+
+    @Test
+    public void shouldGetAndSetAlpha() throws Exception {
+        view = new TestView(new Activity());
+        view.setAlpha(9.1f);
+
+        assertThat(view.getAlpha(), equalTo(9.1f));
     }
 
     private static class TestAnimation extends Animation {

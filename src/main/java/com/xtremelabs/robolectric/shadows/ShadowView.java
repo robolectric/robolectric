@@ -1,5 +1,14 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.Robolectric.Reflection.newInstanceOf;
+
+import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -10,19 +19,11 @@ import android.util.AttributeSet;
 import android.view.*;
 import android.view.View.MeasureSpec;
 import android.view.animation.Animation;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-
-import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-
-import static com.xtremelabs.robolectric.Robolectric.Reflection.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this
@@ -79,8 +80,10 @@ public class ShadowView {
     private int measuredWidth = 0;
     private int measuredHeight = 0;
     private TouchDelegate touchDelegate;
-    
-    
+    private float translationX = 0.0f;
+    private float translationY = 0.0f;
+    private float alpha = 0.0f;
+
     public void __constructor__(Context context) {
         __constructor__(context, null);
     }
@@ -949,6 +952,36 @@ public class ShadowView {
 
     @Implementation
     public void onAnimationEnd() {
+    }
+
+    @Implementation
+    public void setTranslationX(float translationX) {
+        this.translationX = translationX;
+    }
+
+    @Implementation
+    public float getTranslationX() {
+        return translationX;
+    }
+
+    @Implementation
+    public void setTranslationY(float translationY) {
+        this.translationY = translationY;
+    }
+
+    @Implementation
+    public float getTranslationY() {
+        return translationY;
+    }
+
+    @Implementation
+    public void setAlpha(float alpha) {
+        this.alpha = alpha;
+    }
+
+    @Implementation
+    public float getAlpha() {
+        return alpha;
     }
 
     /*

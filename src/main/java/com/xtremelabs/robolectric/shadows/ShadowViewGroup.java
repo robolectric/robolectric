@@ -77,11 +77,12 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public void addView(View child, ViewGroup.LayoutParams params) {
-        ((ViewGroup) realView).addView(child, -1);
+        ((ViewGroup) realView).addView(child, -1, params);
     }
 
     @Implementation
     public void addView(View child, int index, ViewGroup.LayoutParams params) {
+        child.setLayoutParams(params);
         ((ViewGroup) realView).addView(child, index);
     }
 
