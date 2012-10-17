@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <bool name="false_bool_value">false</bool>
+    <bool name="true_bool_value">true</bool>
+    <bool name="zero_is_false">0</bool>
+    <bool name="integers_are_true">7</bool>
+</resources>

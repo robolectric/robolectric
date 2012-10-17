@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+     <integer-array name="zero_to_four_int_array">
+          <item>0</item>
+          <item>1</item>
+          <item>2</item>
+          <item>3</item>
+          <item>4</item>
+     </integer-array>
+     <integer-array name="empty_int_array" />
+     <integer-array name="with_references_int_array">
+          <item>0</item>
+          <item>@integer/test_integer1</item>
+          <item>1</item>
+     </integer-array>
+</resources>

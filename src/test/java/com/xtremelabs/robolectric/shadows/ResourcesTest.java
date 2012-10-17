@@ -5,15 +5,18 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.junit.Assert.*;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.xmlpull.v1.XmlPullParser;
 
 import android.app.Activity;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -22,7 +25,6 @@ import android.graphics.drawable.NinePatchDrawable;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.RobolectricTestRunnerTest.RunnerForTesting;
 import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.util.TestR;
 
@@ -110,7 +112,7 @@ public class ResourcesTest {
      */
     @Test
     public void testGetNinePatchDrawable() {
-    	assertThat( resources.getDrawable( R.drawable.nine_patch_drawable ), instanceOf( NinePatchDrawable.class ) );  
+    	assertThat(resources.getDrawable(R.drawable.nine_patch_drawable ), instanceOf(NinePatchDrawable.class ) );  
     }
     
     /**
@@ -119,7 +121,7 @@ public class ResourcesTest {
     @Test
     public void testGetBitmapDrawableForUnknownId() {
     	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
-    	assertThat( resources.getDrawable( Integer.MAX_VALUE ), instanceOf( BitmapDrawable.class ) );    	    	
+    	assertThat(resources.getDrawable( Integer.MAX_VALUE ), instanceOf( BitmapDrawable.class ));    	    	
     }
     @Test
     public void testDensity() {
@@ -140,5 +142,29 @@ public class ResourcesTest {
         assertThat(activity.getResources().getDisplayMetrics().widthPixels, equalTo(480));
     }
     
- 
+    @Test
+    public void testGetXml() throws Exception {
+    	int resId = R.xml.preferences;    	
+    	XmlResourceParser parser = resources.getXml(resId);
+    	// Assert that a resource file is returned
+    	assertThat(parser, notNullValue());
+    	
+    	// Assert that the resource file is the preference screen
+    	int event = -1;
+    	do {
+    		event = parser.next();
+    	} while (event != XmlPullParser.START_TAG);
+    	assertThat(parser.getName(), equalTo("PreferenceScreen"));
+    }
+    
+    @Test
+    public void testGetXml_unexistentResource() {
+    	try {
+    		resources.getXml(0);
+    		fail("Attempting to load a non existent resource should have raised an exception");
+    	} catch (Resources.NotFoundException ex) {
+    		// pass
+    	}
+    }
+    
 }
