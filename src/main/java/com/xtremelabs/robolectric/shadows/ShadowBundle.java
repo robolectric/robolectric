@@ -44,13 +44,13 @@ public class ShadowBundle {
         Object value = map.get(key);
         return value == null ? 0 : (Long) value;
     }
-    
+
     @Implementation
-    public long getLong(String key,long defaultValue) {
+    public long getLong(String key, long defaultValue) {
         Object value = map.get(key);
         return value == null ? defaultValue : (Long) value;
     }
-    
+
     @Implementation
     public void putInt(String key, int value) {
         map.put(key, value);
@@ -61,13 +61,13 @@ public class ShadowBundle {
         Object value = map.get(key);
         return value == null ? 0 : (Integer) value;
     }
-    
+
     @Implementation
     public int getInt(String key, int defaultValue) {
         Object value = map.get(key);
         return value == null ? defaultValue : (Integer) value;
     }
-    
+
     @Implementation
     public void putDouble(String key, double value) {
         map.put(key, value);
@@ -78,15 +78,65 @@ public class ShadowBundle {
         Object value = map.get(key);
         return value == null ? 0 : (Double) value;
     }
-    
+
     @Implementation
     public double getDouble(String key, double defaultValue) {
         Object value = map.get(key);
         return value == null ? defaultValue : (Double) value;
     }
-    
+
     @Implementation
     public void putBoolean(String key, boolean value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public void putFloat(String key, float value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public void putBooleanArray(java.lang.String key, boolean[] value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public void putByteArray(java.lang.String key, byte[] value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public void putShortArray(java.lang.String key, short[] value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public void putCharArray(java.lang.String key, char[] value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public void putIntArray(java.lang.String key, int[] value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public void putLongArray(java.lang.String key, long[] value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public void putFloatArray(java.lang.String key, float[] value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public void putDoubleArray(java.lang.String key, double[] value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public void putCharSequenceArray(java.lang.String key, java.lang.CharSequence[] value) {
         map.put(key, value);
     }
 
@@ -95,16 +145,11 @@ public class ShadowBundle {
         Object value = map.get(key);
         return value == null ? false : (Boolean) value;
     }
-    
+
     @Implementation
     public boolean getBoolean(String key, boolean defaultValue) {
         Object value = map.get(key);
         return value == null ? defaultValue : (Boolean) value;
-    }
-
-    @Implementation
-    public void putFloat(String key, float value) {
-        map.put(key, value);
     }
 
     @Implementation
@@ -118,7 +163,7 @@ public class ShadowBundle {
         Object value = map.get(key);
         return value == null ? defaultValue : (Float) value;
     }
-    
+
     @Implementation
     public void putSerializable(String key, Serializable value) {
         map.put(key, value);
@@ -133,7 +178,7 @@ public class ShadowBundle {
     public void putParcelable(String key, Parcelable value) {
         map.put(key, value);
     }
-    
+
     @Implementation
     public void putParcelableArrayList(String key, ArrayList<? extends Parcelable> value) {
         map.put(key, value);
@@ -143,10 +188,10 @@ public class ShadowBundle {
     public Parcelable getParcelable(String key) {
         return (Parcelable) map.get(key);
     }
-    
+
     @Implementation
     public ArrayList<Parcelable> getParcelableArrayList(String key) {
-    	return (ArrayList<Parcelable>)map.get(key);
+        return (ArrayList<Parcelable>) map.get(key);
     }
 
     @Implementation
@@ -156,7 +201,7 @@ public class ShadowBundle {
 
     @Implementation
     public void putAll(Bundle bundle) {
-    	map.putAll(((ShadowBundle) Robolectric.shadowOf_(bundle)).map);
+        map.putAll(((ShadowBundle) Robolectric.shadowOf_(bundle)).map);
     }
 
     @Implementation
@@ -184,7 +229,53 @@ public class ShadowBundle {
         return map.keySet();
     }
 
-    @Override @Implementation
+    @Implementation
+    public boolean[] getBooleanArray(java.lang.String key) {
+        return (boolean[]) map.get(key);
+    }
+
+    @Implementation
+    public byte[] getByteArray(java.lang.String key) {
+        return (byte[]) map.get(key);
+    }
+
+    @Implementation
+    public short[] getShortArray(java.lang.String key) {
+        return (short[]) map.get(key);
+    }
+
+    @Implementation
+    public char[] getCharArray(java.lang.String key) {
+        return (char[]) map.get(key);
+    }
+
+    @Implementation
+    public int[] getIntArray(java.lang.String key) {
+        return (int[]) map.get(key);
+    }
+
+    @Implementation
+    public long[] getLongArray(java.lang.String key) {
+        return (long[]) map.get(key);
+    }
+
+    @Implementation
+    public float[] getFloatArray(java.lang.String key) {
+        return (float[]) map.get(key);
+    }
+
+    @Implementation
+    public double[] getDoubleArray(java.lang.String key) {
+        return (double[]) map.get(key);
+    }
+
+    @Implementation
+    public java.lang.CharSequence[] getCharSequenceArray(java.lang.String key) {
+        return (CharSequence[]) map.get(key);
+    }
+
+    @Override
+    @Implementation
     public boolean equals(Object o) {
         if (o == null) return false;
         o = shadowOf_(o);
@@ -199,7 +290,8 @@ public class ShadowBundle {
         return true;
     }
 
-    @Override @Implementation
+    @Override
+    @Implementation
     public int hashCode() {
         return map != null ? map.hashCode() : 0;
     }
