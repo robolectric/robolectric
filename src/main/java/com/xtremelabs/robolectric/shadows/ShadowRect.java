@@ -49,6 +49,16 @@ public class ShadowRect {
     }
 
     @Implementation
+    public final int centerX() {
+        return (realRect.left + realRect.right) >> 1;
+    }
+
+    @Implementation
+    public final int centerY() {
+        return (realRect.top + realRect.bottom) >> 1;
+    }
+
+    @Implementation
     public boolean equals(Object obj) {
         if (obj == null) return false;
         Object o = shadowOf_(obj);
