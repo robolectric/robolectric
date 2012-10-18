@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -60,21 +61,26 @@ abstract public class ShadowContext {
     abstract public Resources.Theme getTheme();
 
     @Implementation
-    public final TypedArray obtainStyledAttributes(
-            int[] attrs) {
+    public final TypedArray obtainStyledAttributes(int[] attrs) {
         return getTheme().obtainStyledAttributes(attrs);
     }
 
     @Implementation
-    public final TypedArray obtainStyledAttributes(
-            int resid, int[] attrs) throws Resources.NotFoundException {
+    public final TypedArray obtainStyledAttributes(int resid, int[] attrs) throws Resources.NotFoundException {
         return getTheme().obtainStyledAttributes(resid, attrs);
     }
 
     @Implementation
-    public final TypedArray obtainStyledAttributes(
-            AttributeSet set, int[] attrs) {
-        return getTheme().obtainStyledAttributes(set, attrs, 0, 0);
+    public final TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs) {
+        TypedArray result = Robolectric.newInstanceOf(TypedArray.class);
+        if (attrs == null) {
+            return result;
+        }
+        ShadowTypedArray styledAttributes = Robolectric.shadowOf(result);
+        for(int attr : attrs) {
+            styledAttributes.add(set.getAttributeValue(attr));
+        }
+        return result;
     }
 
     @Implementation
