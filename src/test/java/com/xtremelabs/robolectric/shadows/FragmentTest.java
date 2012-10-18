@@ -15,21 +15,16 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.matchers.StartedMatcher;
-import java.util.ArrayList;
-import java.util.List;
+import com.xtremelabs.robolectric.util.TestUtil;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class FragmentTest {
@@ -288,6 +283,35 @@ public class FragmentTest {
         fragment.startActivityForResult(intent, 0);
     }
 
+    @Test public void pop_shouldReplaceFragmentWithPreviousFragment() throws Exception {
+        DummyFragment fragment1 = new DummyFragment();
+        DummyFragment fragment2 = new DummyFragment();
+        ContainerActivity activity = new ContainerActivity();
+        FragmentManager fragmentManager = activity.getSupportFragmentManager();
+
+        int containerId = 9420;
+        fragmentManager.beginTransaction()
+                .add(containerId, fragment1).commit();
+        assertLog(fragment1.log, "resumed");
+
+        fragmentManager.beginTransaction()
+                .add(containerId, fragment2).addToBackStack("second").commit();
+        assertLog(fragment1.log, "paused");
+        assertLog(fragment2.log, "resumed");
+
+        fragmentManager.popBackStackImmediate();
+        assertLog(fragment2.log, "paused");
+        assertLog(fragment1.log, "resumed");
+
+        Fragment currentFragment = fragmentManager.findFragmentById(containerId);
+        assertSame(fragment1, currentFragment);
+    }
+
+    void assertLog(List<String> log, String... expected) {
+        TestUtil.assertEquals(asList(expected), log);
+        log.clear();
+    }
+
     private void startFragment(DummyFragment fragment) {
         ContainerActivity containerActivity = new ContainerActivity();
         startFragment(containerActivity, fragment);
@@ -307,6 +331,7 @@ public class FragmentTest {
         private int serial;
         private int created;
         private int activityCreated;
+        private List<String> log = new ArrayList<String>();
         private int resumed;
         private int viewCreated;
         private int onViewCreated;
@@ -328,9 +353,16 @@ public class FragmentTest {
         }
 
         @Override
+        public void onPause() {
+            super.onPause();
+            log.add("paused");
+        }
+
+        @Override
         public void onResume() {
             super.onResume();
             resumed = ++serial;
+            log.add("resumed");
         }
 
         @Override

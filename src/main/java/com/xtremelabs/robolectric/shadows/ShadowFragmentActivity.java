@@ -72,7 +72,17 @@ public class ShadowFragmentActivity extends ShadowActivity {
         @Override
         public boolean popBackStackImmediate() {
             if (backStack.size() == 0) return false;
-            backStack.pop();
+            FragmentTransactionImpl.BackStackRecord entry = (FragmentTransactionImpl.BackStackRecord) backStack.pop();
+            Fragment previousFragment = entry.previousFragment;
+            if (previousFragment != null) {
+                Fragment currentFragment = intLookup.get(previousFragment.getId());
+                if (currentFragment != null) {
+                    currentFragment.onPause();
+                }
+                intLookup.put(previousFragment.getId(), previousFragment);
+                previousFragment.onResume();
+            }
+
             return true;
         }
 
@@ -142,6 +152,7 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
         private class FragmentTransactionImpl extends FragmentTransaction {
             private BackStackRecord backStackEntry;
+            private Fragment previousFragment;
 
             @Override
             public FragmentTransaction add(Fragment fragment, String s) {
@@ -158,6 +169,10 @@ public class ShadowFragmentActivity extends ShadowActivity {
                 ShadowFragment shadowFragment = shadowOf(fragment);
                 if (containerViewId != 0) {
                     shadowFragment.setFragmentId(containerViewId);
+                    previousFragment = intLookup.get(containerViewId);
+                    if (previousFragment != null) {
+                        previousFragment.onPause();
+                    }
                     intLookup.put(containerViewId, fragment);
                 }
                 if (tag != null) {
@@ -243,7 +258,7 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
             @Override
             public FragmentTransaction addToBackStack(final String s) {
-                backStackEntry = new BackStackRecord(s);
+                backStackEntry = new BackStackRecord(s, previousFragment);
 
                 return this;
             }
@@ -296,9 +311,11 @@ public class ShadowFragmentActivity extends ShadowActivity {
 
             private class BackStackRecord implements BackStackEntry {
                 private final String s;
+                private Fragment previousFragment;
 
-                public BackStackRecord(String s) {
+                public BackStackRecord(String s, Fragment previousFragment) {
                     this.s = s;
+                    this.previousFragment = previousFragment;
                 }
 
                 @Override
