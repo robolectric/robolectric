@@ -486,6 +486,11 @@ public class ShadowView {
     }
 
     @Implementation
+    public View.OnFocusChangeListener getOnFocusChangeListener() {
+        return onFocusChangeListener;
+    }
+
+    @Implementation
     public void invalidate() {
         wasInvalidated = true;
     }
