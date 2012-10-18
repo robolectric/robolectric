@@ -10,7 +10,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -19,11 +18,6 @@ public class TypedArrayTest {
 
     @Before public void setUp() throws Exception {
         context = new Activity();
-    }
-
-    @Test
-    public void getResources() throws Exception {
-        assertThat(context.obtainStyledAttributes(null).getResources(), nullValue());
     }
 
     @Test
