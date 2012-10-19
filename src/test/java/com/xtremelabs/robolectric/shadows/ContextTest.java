@@ -2,8 +2,10 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.TypedArray;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
+import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
@@ -15,6 +17,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertNotNull;
@@ -236,5 +240,17 @@ public class ContextTest {
         File file = new File(filesDir, "test.txt");
         boolean successfully = context.deleteFile(file.getName());
         assertThat(successfully, is(false));
+    }
+
+    @Test
+    public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
+        Map<String, String> attributes = new HashMap<String, String>();
+        attributes.put("ns:textStyle2", "one");
+        attributes.put("ns:textStyle3", "two");
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, R.class);
+        TypedArray typedArray = context.obtainStyledAttributes(testAttributeSet, new int[]{R.id.textStyle2, R.id.textStyle3});
+
+        assertThat(typedArray.getString(R.styleable.HeaderBar_textStyle2), equalTo("one"));
+        assertThat(typedArray.getString(R.styleable.HeaderBar_textStyle3), equalTo("two"));
     }
 }

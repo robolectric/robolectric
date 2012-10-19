@@ -13,6 +13,7 @@ import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.database.CursorWrapper;
 import android.database.sqlite.*;
 import android.graphics.*;
@@ -978,6 +979,10 @@ public class Robolectric {
 
     public static ShadowTranslateAnimation shadowOf(TranslateAnimation instance) {
         return (ShadowTranslateAnimation) shadowOf_(instance);
+    }
+
+    public static ShadowTypedArray shadowOf(TypedArray instance) {
+        return (ShadowTypedArray) shadowOf_(instance);
     }
 
     public static ShadowTypeface shadowOf(Typeface instance) {
