@@ -1,10 +1,12 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
+@SuppressWarnings({"UnusedDeclaration"})
 @Implements(GestureDetector.class)
 public class ShadowGestureDetector {
     private MotionEvent onTouchEventMotionEvent;
@@ -12,6 +14,10 @@ public class ShadowGestureDetector {
     private GestureDetector.OnGestureListener listener;
 
     public void __constructor__(GestureDetector.OnGestureListener listener) {
+        __constructor__(null, listener);
+    }
+
+    public void __constructor__(Context context, GestureDetector.OnGestureListener listener) {
         this.listener = listener;
     }
 
