@@ -6,6 +6,8 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
+import java.io.IOException;
+
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @Implements(Typeface.class)
@@ -14,9 +16,14 @@ public class ShadowTypeface {
 
     @Implementation
     public static Typeface createFromAsset(AssetManager assetManager, String path) {
-        Typeface typeface = Robolectric.newInstanceOf(Typeface.class);
-        shadowOf(typeface).setAssetPath(path);
-        return typeface;
+        try {
+            assetManager.open(path);
+            Typeface typeface = Robolectric.newInstanceOf(Typeface.class);
+            shadowOf(typeface).setAssetPath(path);
+            return typeface;
+        } catch (IOException e) {
+            throw new RuntimeException("Font not found");
+        }
     }
 
     public String getAssetPath() {
