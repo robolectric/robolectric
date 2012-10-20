@@ -11,8 +11,8 @@ public class SimpleTestCursor extends TestCursor {
     public String selection;
     public String[] selectionArgs;
     public String sortOrder;
-    Object[][] results = new Object[0][0];
-    List<String> columnNames= new ArrayList<String>();
+    protected Object[][] results = new Object[0][0];
+    protected List<String> columnNames= new ArrayList<String>();
     int resultsIndex = -1;
     boolean closeWasCalled;
 
