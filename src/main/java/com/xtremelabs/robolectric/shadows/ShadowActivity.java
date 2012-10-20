@@ -519,6 +519,16 @@ public class ShadowActivity extends ShadowContextWrapper {
         invoker.call("onRestoreInstanceState", Bundle.class).with(outState);
         invoker.call("onResume").withNothing();
     }
+
+    public void pauseAndThenResume() {
+        final ActivityInvoker invoker = new ActivityInvoker();
+
+        invoker.call("onPause").withNothing();
+        invoker.call("onStop").withNothing();
+        invoker.call("onRestart").withNothing();
+        invoker.call("onStart").withNothing();
+        invoker.call("onResume").withNothing();
+    }
     
     @Implementation
     public void startManagingCursor(Cursor c) {
