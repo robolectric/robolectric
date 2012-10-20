@@ -73,6 +73,9 @@ public final class R {
         public static final int greetings = nextId++;
         public static final int alertDialogTestItems = nextId++;
         public static final int emailAddressTypes = nextId++;
+        public static final int zero_to_four_int_array = nextId++;
+        public static final int empty_int_array = nextId++;
+        public static final int with_references_int_array = nextId++;
     }
 
     public static final class color {
@@ -156,5 +159,12 @@ public final class R {
         public static final int test_integer1 = nextId++;
         public static final int test_integer2 = nextId++;
         public static final int test_large_hex = nextId++;
+    }
+    
+    public static final class bool {
+    	public static final int false_bool_value = nextId++;
+    	public static final int true_bool_value = nextId++;
+    	public static final int zero_is_false = nextId++;
+    	public static final int integers_are_true = nextId++;
     }
 }

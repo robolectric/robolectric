@@ -3,12 +3,12 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.app.Dialog;
 import android.appwidget.AppWidgetProvider;
-import android.content.*;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.pm.ActivityInfo;
-import android.database.CharArrayBuffer;
-import android.database.ContentObserver;
 import android.database.Cursor;
-import android.database.DataSetObserver;
 import android.database.sqlite.SQLiteCursor;
 import android.net.Uri;
 import android.os.Bundle;
@@ -341,6 +341,26 @@ public class ActivityTest {
 
         int id = activity.getResources().getIdentifier("just_alot_of_crap", "string", "com.xtremelabs.robolectric");
         assertTrue(id == 0);
+    }
+    
+    @Test
+    public void setDefaultKeyMode_shouldSetKeyMode() {
+    	int[] modes = {
+    			Activity.DEFAULT_KEYS_DISABLE,
+    			Activity.DEFAULT_KEYS_SHORTCUT,
+    			Activity.DEFAULT_KEYS_DIALER,
+    			Activity.DEFAULT_KEYS_SEARCH_LOCAL,
+    			Activity.DEFAULT_KEYS_SEARCH_GLOBAL
+    	};
+    	Activity activity = new Activity();
+    	ShadowActivity shadow = shadowOf(activity);
+    	
+    	for (int mode: modes) {
+    		activity.setDefaultKeyMode(mode);
+    		assertThat("Unexpected key mode",
+    				shadow.getDefaultKeymode(),
+    				equalTo(mode));
+    	}
     }
 
     @Test
