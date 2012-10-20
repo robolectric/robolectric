@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.res;
 import org.w3c.dom.Node;
 public class DimenResourceLoader extends XpathResourceXmlLoader implements ResourceValueConverter {
 
-    private static final String[] UNITS = { "dp", "dip", "px", "sp" };
+    private static final String[] UNITS = { "dp", "dip", "pt", "px", "sp" };
 	
     private ResourceReferenceResolver<Float> dimenResolver = new ResourceReferenceResolver<Float>("dimen");
 

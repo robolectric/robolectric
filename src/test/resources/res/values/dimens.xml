@@ -2,6 +2,7 @@
 <resources>
 	<dimen name="test_dp_dimen">8dp</dimen>
 	<dimen name="test_dip_dimen">20dip</dimen>
+	<dimen name="test_pt_dimen">12pt</dimen>
 	<dimen name="test_px_dimen">15px</dimen>
 	<dimen name="test_sp_dimen">5sp</dimen>
 </resources>

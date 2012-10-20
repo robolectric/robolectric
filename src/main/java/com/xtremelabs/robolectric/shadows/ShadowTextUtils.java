@@ -11,6 +11,11 @@ import java.util.Collection;
 @Implements(TextUtils.class)
 public class ShadowTextUtils {
     @Implementation
+    public static boolean equals(CharSequence a, CharSequence b) {
+        return (a == b) || (a instanceof String && a.equals(b));
+    }
+
+    @Implementation
     public static CharSequence expandTemplate(CharSequence template,
                                               CharSequence... values) {
         String s = template.toString();

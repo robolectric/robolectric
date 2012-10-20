@@ -28,6 +28,8 @@ public class DimenResourceLoaderTest {
 				equalTo(8.0f));
 		assertThat(dimenResourceLoader.getValue(R.dimen.test_dip_dimen),
 				equalTo(20.0f));
+		assertThat(dimenResourceLoader.getValue(R.dimen.test_pt_dimen),
+				equalTo(12.0f));
 		assertThat(dimenResourceLoader.getValue(R.dimen.test_px_dimen),
 				equalTo(15.0f));
 		assertThat(dimenResourceLoader.getValue(R.dimen.test_sp_dimen),
