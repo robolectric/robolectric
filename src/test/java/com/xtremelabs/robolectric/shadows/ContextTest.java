@@ -144,6 +144,11 @@ public class ContextTest {
         assertTrue(context.getFilesDir().exists());
     }
 
+	@Test
+	public void fileList() throws Exception {
+		assertThat(context.fileList(), equalTo(context.getFilesDir().list()));
+	}
+
     @Test
     public void getExternalFilesDir_shouldCreateDirectory() throws Exception {
         assertTrue(context.getExternalFilesDir(null).exists());
