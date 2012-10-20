@@ -9,46 +9,47 @@ public class Scheduler {
     private List<PostedRunnable> postedRunnables = new ArrayList<PostedRunnable>();
     private long currentTime = 0;
     private boolean paused = false;
+    private Thread associatedThread = Thread.currentThread();
 
-    public long getCurrentTime() {
+    public synchronized long getCurrentTime() {
         return currentTime;
     }
 
-    public void pause() {
+    public synchronized void pause() {
         paused = true;
     }
 
-    public void unPause() {
+    public synchronized void unPause() {
         paused = false;
         advanceToLastPostedRunnable();
     }
 
-    public boolean isPaused() {
+    public synchronized boolean isPaused() {
         return paused;
     }
 
-    public void postDelayed(Runnable runnable, long delayMillis) {
-        if (paused || delayMillis > 0) {
-            postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
-            Collections.sort(postedRunnables);
+    public synchronized void postDelayed(Runnable runnable, long delayMillis) {
+        if (paused || delayMillis > 0 || Thread.currentThread() != associatedThread) {
+	        postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
+	        Collections.sort(postedRunnables);
         } else {
             runnable.run();
         }
     }
 
-    public void post(Runnable runnable) {
+    public synchronized void post(Runnable runnable) {
         postDelayed(runnable, 0);
     }
 
-    public void postAtFrontOfQueue(Runnable runnable) {
-        if (paused) {
-            postedRunnables.add(0, new PostedRunnable(runnable, currentTime));
+    public synchronized void postAtFrontOfQueue(Runnable runnable) {
+        if (paused || Thread.currentThread() != associatedThread) {
+        	postedRunnables.add(0, new PostedRunnable(runnable, currentTime));
         } else {
             runnable.run();
         }
     }
 
-    public void remove(Runnable runnable) {
+    public synchronized void remove(Runnable runnable) {
         ListIterator<PostedRunnable> iterator = postedRunnables.listIterator();
         while (iterator.hasNext()) {
             PostedRunnable next = iterator.next();
@@ -58,7 +59,7 @@ public class Scheduler {
         }
     }
 
-    public boolean advanceToLastPostedRunnable() {
+    public synchronized boolean advanceToLastPostedRunnable() {
         if (enqueuedTaskCount() < 1) {
             return false;
         }
@@ -66,7 +67,7 @@ public class Scheduler {
         return advanceTo(postedRunnables.get(postedRunnables.size() - 1).scheduledTime);
     }
 
-    public boolean advanceToNextPostedRunnable() {
+    public synchronized boolean advanceToNextPostedRunnable() {
         if (enqueuedTaskCount() < 1) {
             return false;
         }
@@ -74,12 +75,12 @@ public class Scheduler {
         return advanceTo(postedRunnables.get(0).scheduledTime);
     }
 
-    public boolean advanceBy(long intervalMs) {
+    public synchronized boolean advanceBy(long intervalMs) {
         long endingTime = currentTime + intervalMs;
         return advanceTo(endingTime);
     }
 
-    public boolean advanceTo(long endingTime) {
+    public synchronized boolean advanceTo(long endingTime) {
         if (endingTime - currentTime < 0 || enqueuedTaskCount() < 1) {
             return false;
         }
@@ -94,7 +95,7 @@ public class Scheduler {
         return runCount > 0;
     }
 
-    public boolean runOneTask() {
+    public synchronized boolean runOneTask() {
         if (enqueuedTaskCount() < 1) {
             return false;
         }
@@ -105,7 +106,7 @@ public class Scheduler {
         return true;
     }
 
-    public boolean runTasks(int howMany) {
+    public synchronized boolean runTasks(int howMany) {
         if (enqueuedTaskCount() < howMany) {
             return false;
         }
@@ -119,20 +120,20 @@ public class Scheduler {
         return true;
     }
 
-    public int enqueuedTaskCount() {
+    public synchronized int enqueuedTaskCount() {
         return postedRunnables.size();
     }
 
-    public boolean areAnyRunnable() {
+    public synchronized boolean areAnyRunnable() {
         return nextTaskIsScheduledBefore(currentTime);
     }
 
-    public void reset() {
+    public synchronized void reset() {
         postedRunnables.clear();
         paused = false;
     }
 
-    public int size() {
+    public synchronized int size() {
         return postedRunnables.size();
     }
 
