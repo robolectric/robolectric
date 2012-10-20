@@ -46,7 +46,7 @@ public class ProgressDialogTest {
 
         assertThat(shadow.getMessage(), nullValue());
         dialog.setMessage(message);
-        assertThat((CharSequence) shadow.getMessage(), equalTo(message));
+        assertThat(shadow.getMessage(), equalTo(message));
     }
 
     @Test
@@ -58,6 +58,26 @@ public class ProgressDialogTest {
 
         dialog.setIndeterminate(false);
         assertThat(dialog.isIndeterminate(), equalTo(false));
+    }
+
+    @Test
+    public void shouldSetMax() {
+        assertThat(dialog.getMax(), equalTo(0));
+        assertThat(shadow.getMax(), equalTo(0));
+
+        dialog.setMax(41);
+        assertThat(dialog.getMax(), equalTo(41));
+        assertThat(shadow.getMax(), equalTo(41));
+    }
+
+    @Test
+    public void shouldSetProgress() {
+        assertThat(dialog.getProgress(), equalTo(0));
+        assertThat(shadow.getProgress(), equalTo(0));
+
+        dialog.setProgress(42);
+        assertThat(dialog.getProgress(), equalTo(42));
+        assertThat(shadow.getProgress(), equalTo(42));
     }
 
     @Test
@@ -76,7 +96,7 @@ public class ProgressDialogTest {
     }
 
     @Test
-    public void show_setsLatestAlertDialogAndLatestDialog_3args() throws Exception{
+    public void show_setsLatestAlertDialogAndLatestDialog_3args() throws Exception {
         assertLatestDialogsSet("Title", "Message", false, false, null, new Callable<ProgressDialog>() {
             @Override
             public ProgressDialog call() throws Exception {
@@ -87,7 +107,7 @@ public class ProgressDialogTest {
     }
 
     @Test
-    public void show_setsLatestAlertDialogAndLatestDialog_4args() throws Exception{
+    public void show_setsLatestAlertDialogAndLatestDialog_4args() throws Exception {
         assertLatestDialogsSet("Title", "Message", true, false, null, new Callable<ProgressDialog>() {
             @Override
             public ProgressDialog call() throws Exception {
@@ -97,7 +117,7 @@ public class ProgressDialogTest {
     }
 
     @Test
-    public void show_setsLatestAlertDialogAndLatestDialog_5args() throws Exception{
+    public void show_setsLatestAlertDialogAndLatestDialog_5args() throws Exception {
         assertLatestDialogsSet("Title", "Message", true, true, null, new Callable<ProgressDialog>() {
             @Override
             public ProgressDialog call() throws Exception {
@@ -107,7 +127,7 @@ public class ProgressDialogTest {
     }
 
     @Test
-    public void show_setsLatestAlertDialogAndLatestDialog_6args() throws Exception{
+    public void show_setsLatestAlertDialogAndLatestDialog_6args() throws Exception {
         final DialogInterface.OnCancelListener cancelListener = new DialogInterface.OnCancelListener() {
             @Override
             public void onCancel(DialogInterface dialog) {
@@ -142,12 +162,12 @@ public class ProgressDialogTest {
     }
 
     private static class TestOnCancelListener implements DialogInterface.OnCancelListener {
+
         public DialogInterface onCancelDialogInterface;
 
         @Override
         public void onCancel(DialogInterface dialogInterface) {
             onCancelDialogInterface = dialogInterface;
-
         }
     }
 }
