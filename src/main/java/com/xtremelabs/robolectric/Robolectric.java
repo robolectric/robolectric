@@ -193,6 +193,10 @@ public class Robolectric {
         return null;
     }
 
+    public static <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {
+        return RobolectricInternals.newInstance(clazz, parameterTypes, params);
+    }
+
     public static void bindShadowClass(Class<?> shadowClass) {
         RobolectricInternals.bindShadowClass(shadowClass);
     }
@@ -335,6 +339,7 @@ public class Robolectric {
                 ShadowListActivity.class,
                 ShadowListPreference.class,
                 ShadowListView.class,
+                ShadowLocalBroadcastManager.class,
                 ShadowLocation.class,
                 ShadowLocationManager.class,
                 ShadowLog.class,
