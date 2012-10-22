@@ -1,16 +1,18 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
+import android.graphics.Shader.TileMode;
 import android.graphics.drawable.BitmapDrawable;
+
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-
-import static android.graphics.Shader.TileMode;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapDrawable.class)
@@ -25,6 +27,10 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     private TileMode tileModeY;
 
     public void __constructor__(Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
+    public void __constructor__(Resources resources, Bitmap bitmap) {
         this.bitmap = bitmap;
     }
 
@@ -57,6 +63,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
      * @return resource id from which this {@code BitmapDrawable} was loaded
      * @deprecated use com.xtremelabs.robolectric.shadows.ShadowBitmap#getLoadedFromResourceId() instead.
      */
+    @Deprecated
     @Override
     public int getLoadedFromResourceId() {
         return shadowOf(bitmap).getLoadedFromResourceId();
@@ -99,7 +106,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     public TileMode getTileModeY() {
         return tileModeY;
     }
-    
+
     @Implementation
     public void setTileModeXY(TileMode modeX, TileMode modeY) {
         setTileModeX(modeX);

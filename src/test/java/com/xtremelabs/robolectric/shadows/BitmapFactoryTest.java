@@ -32,6 +32,17 @@ public class BitmapFactoryTest {
     }
 
     @Test
+    public void decodeResourceWithOpts_shouldSetDescription() throws Exception {
+        BitmapFactory.Options opts = new BitmapFactory.Options();
+        Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image, opts);
+        assertEquals("Bitmap for resource:drawable/an_image", shadowOf(bitmap).getDescription());
+        assertEquals(100, bitmap.getWidth());
+        assertEquals(100, bitmap.getHeight());
+        assertEquals(100, opts.outWidth);
+        assertEquals(100, opts.outHeight);
+    }
+
+    @Test
     public void decodeFile_shouldSetDescription() throws Exception {
         Bitmap bitmap = BitmapFactory.decodeFile("/some/file.jpg");
         assertEquals("Bitmap for file:/some/file.jpg", shadowOf(bitmap).getDescription());
