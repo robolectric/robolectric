@@ -39,4 +39,20 @@ public class ScrollerTest {
         assertThat(scroller.getCurrX(), equalTo(12));
         assertThat(scroller.getCurrY(), equalTo(36));
     }
+
+    @Test
+    public void computeScrollOffsetShouldCalculateWhetherScrollIsFinished() throws Exception {
+
+        assertThat(scroller.computeScrollOffset(), equalTo(false));
+
+        scroller.startScroll(0, 0, 12, 36, 1000);
+        assertThat(scroller.computeScrollOffset(), equalTo(true));
+
+        Robolectric.idleMainLooper(500);
+        assertThat(scroller.computeScrollOffset(), equalTo(true));
+
+        Robolectric.idleMainLooper(500);
+        assertThat(scroller.computeScrollOffset(), equalTo(true));
+        assertThat(scroller.computeScrollOffset(), equalTo(false));
+    }
 }

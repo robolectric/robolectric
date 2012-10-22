@@ -16,6 +16,7 @@ public class ShadowScroller {
     private int finalY;
     private long startTime;
     private long duration;
+    private boolean started;
 
     @Implementation
     public int getCurrX() {
@@ -42,6 +43,7 @@ public class ShadowScroller {
         finalY = startY + dy;
         startTime = getScheduler().getCurrentTime();
         this.duration = duration;
+        started = true;
         // enque a dummy task so that the scheduler will actually run
         getScheduler().postDelayed(new Runnable() {
             @Override
@@ -49,6 +51,15 @@ public class ShadowScroller {
                 // do nothing
             }
         }, duration);
+    }
+
+    @Implementation
+    public boolean computeScrollOffset() {
+        if (!started) {
+            return false;
+        }
+        started &= deltaTime() < duration;
+        return true;
     }
 
     private long deltaTime() {
