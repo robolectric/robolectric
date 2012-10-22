@@ -58,6 +58,7 @@ public class ShadowView {
     private ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(0, 0);
     private Map<Integer, Object> tags = new HashMap<Integer, Object>();
     private boolean clickable;
+    private boolean longClickable;
     protected boolean focusable;
     boolean focusableInTouchMode;
     private int backgroundResourceId = -1;
@@ -119,6 +120,11 @@ public class ShadowView {
     @Implementation
     public void setClickable(boolean clickable) {
         this.clickable = clickable;
+    }
+    
+    @Implementation
+    public void setLongClickable(boolean longClickable) {
+    	this.longClickable = longClickable;
     }
 
     /**
@@ -316,6 +322,9 @@ public class ShadowView {
     @Implementation
     public void setOnClickListener(View.OnClickListener onClickListener) {
         this.onClickListener = onClickListener;
+        if (!isClickable()) {
+        	setClickable(true);
+        }
     }
 
     @Implementation
@@ -331,6 +340,9 @@ public class ShadowView {
     @Implementation
     public void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
         this.onLongClickListener = onLongClickListener;
+        if (!isLongClickable()) {
+        	setLongClickable(true);
+        }
     }
 
     @Implementation
@@ -632,6 +644,14 @@ public class ShadowView {
         return clickable;
     }
 
+    /**
+     * @return whether the view is long-clickable
+     */
+    @Implementation
+    public boolean isLongClickable() {
+        return longClickable;
+    }
+    
     /**
      * Non-Android accessor.
      *
