@@ -1,8 +1,9 @@
 package com.xtremelabs.robolectric.shadows;
 
-import java.util.Arrays;
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import android.content.UriMatcher;
 import android.net.Uri;
@@ -13,104 +14,117 @@ import com.xtremelabs.robolectric.internal.Implements;
 @Implements(UriMatcher.class)
 public class ShadowUriMatcher {
 
-	public static class MatchNode {
-		public int code = UriMatcher.NO_MATCH;
-		public HashMap<String, MatchNode> map = new HashMap<String, ShadowUriMatcher.MatchNode>();
-		public MatchNode number;
-		public MatchNode text;
+  public static class MatchNode {
+    public int code = UriMatcher.NO_MATCH;
+    private int which;
+    private String text;
+    public List<MatchNode> children = new ArrayList<MatchNode>();
 
-		public MatchNode(int code) {
-			this.code = code;
-		}
-	}
+    public MatchNode(int code) {
+      this.code = code;
+    }
+  }
 
-	public MatchNode rootNode;
+  public MatchNode rootNode;
 
-	public void __constructor__(int code) {
-		rootNode = new MatchNode(code);
-	}
+  public void __constructor__(int code) {
+    rootNode = new MatchNode(code);
+  }
+  
+  @Implementation
+  public void addURI(String authority, String path, int code) {
+    if (code < 0) {
+      throw new IllegalArgumentException("code " + code + " is invalid: it must be positive");
+    }
+    String[] tokens = path != null ? PATH_SPLIT_PATTERN.split(path) : null;
+    int numTokens = tokens != null ? tokens.length : 0;
+    MatchNode node = rootNode;
+    for (int i = -1; i < numTokens; i++) {
+      String token = i < 0 ? authority : tokens[i];
+      Collection<ShadowUriMatcher.MatchNode> children = node.children;
+      boolean b = false;
+      for (MatchNode child : children) {
+        if (token.equals(child.text)) {
+          node = child;
+          b = true;
+          break;
+        }
+      }
+      if (!b) {
+        // Child not found, create it
+        MatchNode child = new MatchNode(UriMatcher.NO_MATCH);
+        if (token.equals("#")) {
+          child.which = NUMBER;
+        } else if (token.equals("*")) {
+          child.which = TEXT;
+        } else {
+          child.which = EXACT;
+        }
+        child.text = token;
+        node.children.add(child);
+        node = child;
+      }
+    }
+    node.code = code;
+  }
 
-	@Implementation
-	public void addURI(String authority, String path, int code) {
-		MatchNode authNode = rootNode.map.get(authority);
-		if (authNode == null) {
-			authNode = new MatchNode(rootNode.code);
-			rootNode.map.put(authority, authNode);
-		}
+  static final Pattern PATH_SPLIT_PATTERN = Pattern.compile("/");
 
-		String[] segments = path.split("/");
-		addNodes(authNode, Arrays.asList(segments), code);
-	}
+  @Implementation
+  public int match(Uri uri) {
+    final List<String> pathSegments = uri.getPathSegments();
+    final int li = pathSegments.size();
 
-	@Implementation
-	public int match(Uri uri) {
-		String auth = uri.getAuthority();
-		List<String> segments = uri.getPathSegments();
+    MatchNode node = rootNode;
 
-		if (!rootNode.map.containsKey(auth)) {
-			return rootNode.code;
-		}
+    if (li == 0 && uri.getAuthority() == null) {
+      return rootNode.code;
+    }
 
-		return matchSegments(rootNode.map.get(auth), segments);
-	}
+    for (int i = -1; i < li; i++) {
+      String u = i < 0 ? uri.getAuthority() : pathSegments.get(i);
+      List<MatchNode> list = node.children;
+      if (list == null) {
+        break;
+      }
+      node = null;
+      int lj = list.size();
+      for (int j = 0; j < lj; j++) {
+        MatchNode n = list.get(j);
+        which_switch: switch (n.which) {
+          case EXACT :
+            if (n.text.equals(u)) {
+              node = n;
+            }
+            break;
+          case NUMBER :
+            int lk = u.length();
+            for (int k = 0; k < lk; k++) {
+              char c = u.charAt(k);
+              if (c < '0' || c > '9') {
+                break which_switch;
+              }
+            }
+            node = n;
+            break;
+          case TEXT :
+            node = n;
+            break;
+        }
+        if (node != null) {
+          break;
+        }
+      }
+      if (node == null) {
+        return UriMatcher.NO_MATCH;
+      }
+    }
 
-	private int matchSegments(MatchNode node, List<String> segments) {
-		if (segments.isEmpty()) return node.code;
-		String segment = segments.get(0);
-		segments = segments.subList(1, segments.size());
+    return node.code;
+  }
 
-		if (node.map.containsKey(segment)) {
-			return matchSegments(node.map.get(segment), segments);
-		}
-		if (node.number != null) {
-			long id;
-			try {
-				id = Long.parseLong(segment);
-				if (id >= 0) {
-					return matchSegments(node.number, segments);
-				}
-			}
-			catch (NumberFormatException e) {}
-		}
-		if (node.text != null) {
-			return matchSegments(node.text, segments);
-		}
-
-		return rootNode.code;
-	}
-
-	private void addNodes(MatchNode baseNode, List<String> segments, int code) {
-		MatchNode nextNode = null;
-		String segment = segments.get(0);
-
-		if (segment.equals("#")) {
-			nextNode = baseNode.number;
-			if (nextNode == null) {
-				nextNode = new MatchNode(rootNode.code);
-				baseNode.number = nextNode;
-			}
-		}
-		else if (segment.equals("*")) {
-			nextNode = baseNode.text;
-			if (nextNode == null) {
-				nextNode = new MatchNode(rootNode.code);
-				baseNode.text = nextNode;
-			}
-		}
-		else {
-			nextNode = baseNode.map.get(segment);
-			if (nextNode == null) {
-				nextNode = new MatchNode(rootNode.code);
-				baseNode.map.put(segment, nextNode);
-			}
-		}
-
-		if (segments.size() > 1) {
-			addNodes(nextNode, segments.subList(1, segments.size()), code);
-		}
-		else {
-			nextNode.code = code;
-		}
-	}
+  private static final int EXACT = 0;
+  private static final int NUMBER = 1;
+  private static final int TEXT = 2;
 
 }
