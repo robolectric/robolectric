@@ -11,8 +11,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
 
 import android.accounts.AccountManager;
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.app.*;
 import android.appwidget.AppWidgetManager;
 import android.bluetooth.BluetoothAdapter;
@@ -22,6 +20,7 @@ import android.content.pm.ResolveInfo;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.database.CursorWrapper;
 import android.database.MergeCursor;
 import android.database.sqlite.*;
@@ -94,6 +93,10 @@ public class Robolectric {
         return null;
     }
 
+    public static <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {
+        return RobolectricInternals.newInstance(clazz, parameterTypes, params);
+    }
+
     public static void bindShadowClass(Class<?> shadowClass) {
         RobolectricInternals.bindShadowClass(shadowClass);
     }
@@ -139,6 +142,7 @@ public class Robolectric {
                 ShadowAlphaAnimation.class,
                 ShadowAndroidHttpClient.class,
                 ShadowAnimation.class,
+                ShadowAnimator.class,
                 ShadowAnimationDrawable.class,
                 ShadowAnimationSet.class,
                 ShadowAnimationUtils.class,
@@ -149,6 +153,7 @@ public class Robolectric {
                 ShadowAsyncTask.class,
                 ShadowAudioManager.class,
                 ShadowBaseAdapter.class,
+                ShadowBase64.class,
                 ShadowBinder.class,
                 ShadowBitmap.class,
                 ShadowBitmapDrawable.class,
@@ -234,6 +239,7 @@ public class Robolectric {
                 ShadowListActivity.class,
                 ShadowListPreference.class,
                 ShadowListView.class,
+                ShadowLocalBroadcastManager.class,
                 ShadowLocation.class,
                 ShadowLocationManager.class,
                 ShadowLog.class,
@@ -296,6 +302,7 @@ public class Robolectric {
                 ShadowResourceCursorAdapter.class,
                 ShadowResources.class,
                 ShadowResources.ShadowTheme.class,
+                ShadowScaleGestureDetector.class,
                 ShadowScanResult.class,
                 ShadowScrollView.class,
                 ShadowSeekBar.class,
@@ -339,6 +346,7 @@ public class Robolectric {
                 ShadowTranslateAnimation.class,
                 ShadowTypedArray.class,
                 ShadowTypedValue.class,
+                ShadowTypeface.class,
                 ShadowUriMatcher.class,
                 ShadowURLSpan.class,
                 ShadowValueAnimator.class,
@@ -768,10 +776,6 @@ public class Robolectric {
         return (ShadowNetworkInfo) shadowOf_(instance);
     }
 
-    public static ShadowObjectAnimator shadowOf(ObjectAnimator instance) {
-        return (ShadowObjectAnimator) shadowOf_(instance);
-    }
-
     public static ShadowNotification shadowOf(Notification other) {
         return (ShadowNotification) Robolectric.shadowOf_(other);
     }
@@ -870,6 +874,10 @@ public class Robolectric {
 
     public static ShadowResultReceiver shadowOf(ResultReceiver instance) {
         return (ShadowResultReceiver) shadowOf_(instance);
+    }
+
+    public static ShadowScaleGestureDetector shadowOf(ScaleGestureDetector instance) {
+        return (ShadowScaleGestureDetector) shadowOf_(instance);
     }
 
     public static ShadowScanResult shadowOf(ScanResult instance) {
@@ -981,12 +989,16 @@ public class Robolectric {
         return (ShadowTranslateAnimation) shadowOf_(instance);
     }
 
-    public static ShadowUriMatcher shadowOf(UriMatcher instance) {
-        return (ShadowUriMatcher) shadowOf_(instance);
+    public static ShadowTypedArray shadowOf(TypedArray instance) {
+        return (ShadowTypedArray) shadowOf_(instance);
     }
 
-    public static ShadowValueAnimator shadowOf(ValueAnimator instance) {
-        return (ShadowValueAnimator) shadowOf_(instance);
+    public static ShadowTypeface shadowOf(Typeface instance) {
+        return (ShadowTypeface) shadowOf_(instance);
+    }
+
+    public static ShadowUriMatcher shadowOf(UriMatcher instance) {
+        return (ShadowUriMatcher) shadowOf_(instance);
     }
 
     public static ShadowView shadowOf(View instance) {

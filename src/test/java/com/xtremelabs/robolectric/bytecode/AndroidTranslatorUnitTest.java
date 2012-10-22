@@ -6,9 +6,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyObject;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.*;
 
 public class AndroidTranslatorUnitTest {
@@ -116,11 +113,6 @@ public class AndroidTranslatorUnitTest {
         assertTrue(androidTranslator.shouldInstrument(classPool.makeClass("android.content.Intent")));
         assertTrue(androidTranslator.shouldInstrument(classPool.makeClass("android.and.now.for.something.completely.different")));
 
-    }
-
-    @Test
-    public void shouldNotInstrumentLocalBroadcastManager() throws Exception {
-        assertFalse(androidTranslator.shouldInstrument(classPool.makeClass("android.support.v4.content.LocalBroadcastManager")));
     }
 
     @Test

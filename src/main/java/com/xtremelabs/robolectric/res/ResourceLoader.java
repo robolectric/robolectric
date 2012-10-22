@@ -10,6 +10,7 @@ import java.util.Set;
 
 import android.R;
 import android.content.Context;
+import android.content.res.XmlResourceParser;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -51,6 +52,7 @@ public class ResourceLoader {
 	private final ResourceExtractor resourceExtractor;
 	private ViewLoader viewLoader;
 	private MenuLoader menuLoader;
+	private XmlFileLoader xmlFileLoader;
 	private PreferenceLoader preferenceLoader;
 	private final StringResourceLoader stringResourceLoader;
 	private final PluralResourceLoader pluralResourceLoader;
@@ -61,6 +63,7 @@ public class ResourceLoader {
 	private final RawResourceLoader rawResourceLoader;
 	private final DimenResourceLoader dimenResourceLoader;
 	private final IntegerResourceLoader integerResourceLoader;
+	private final BoolResourceLoader boolResourceLoader;
 	private boolean isInitialized = false;
 	private boolean strictI18n = false;
 	
@@ -84,6 +87,7 @@ public class ResourceLoader {
 		rawResourceLoader = new RawResourceLoader( resourceExtractor, resourceDir );
 		dimenResourceLoader = new DimenResourceLoader( resourceExtractor );
 		integerResourceLoader = new IntegerResourceLoader( resourceExtractor );
+		boolResourceLoader = new BoolResourceLoader( resourceExtractor );
 
 		this.resourceDir = resourceDir;
 	}
@@ -98,6 +102,9 @@ public class ResourceLoader {
 		}
 		if ( preferenceLoader != null ) {
 			preferenceLoader.setStrictI18n( strict );
+		}
+		if ( xmlFileLoader != null ) {
+			xmlFileLoader.setStrictI18n( strict );
 		}
 	}
 
@@ -115,10 +122,12 @@ public class ResourceLoader {
 				viewLoader = new ViewLoader( resourceExtractor, attrResourceLoader );
 				menuLoader = new MenuLoader( resourceExtractor, attrResourceLoader );
 				preferenceLoader = new PreferenceLoader( resourceExtractor );
+				xmlFileLoader = new XmlFileLoader( resourceExtractor );
 
 				viewLoader.setStrictI18n( strictI18n );
 				menuLoader.setStrictI18n( strictI18n );
 				preferenceLoader.setStrictI18n( strictI18n );
+				xmlFileLoader.setStrictI18n( strictI18n );
 
 				File systemResourceDir = getSystemResourceDir( getPathToAndroidResources() );
 				File localValueResourceDir = getValueResourceDir( resourceDir, null, true );
@@ -134,12 +143,14 @@ public class ResourceLoader {
 				loadMenuResources( resourceDir );
 				loadDrawableResources( resourceDir );
 				loadPreferenceResources( preferenceDir );
+				loadXmlFileResources( preferenceDir );
 				
 				listNinePatchResources(ninePatchDrawableIds, resourceDir);
 			} else {
 				viewLoader = null;
 				menuLoader = null;
 				preferenceLoader = null;
+				xmlFileLoader = null;
 			}
 		} catch ( I18nException e ) {
 			throw e;
@@ -226,6 +237,17 @@ public class ResourceLoader {
 			preferenceDocumentLoader.loadResourceXmlDir( xmlResourceDir );
 		}
 	}
+	
+	/**
+	 * All the Xml files should be loaded. 
+	 */
+	private void loadXmlFileResources( File xmlResourceDir ) throws Exception {
+		if ( xmlResourceDir.exists() ) {
+			DocumentLoader xmlFileDocumentLoader = 
+					new DocumentLoader( xmlFileLoader );
+			xmlFileDocumentLoader.loadResourceXmlDir( xmlResourceDir );
+		}
+	}
 
 	private void loadLayoutResourceXmlSubDirs( DocumentLoader layoutDocumentLoader, File xmlResourceDir, boolean isSystem )
 			throws Exception {
@@ -279,7 +301,7 @@ public class ResourceLoader {
 	private File getPreferenceResourceDir( File xmlResourceDir ) {
 		return xmlResourceDir != null ? new File( xmlResourceDir, "xml" ) : null;
 	}
-
+	
 	private String getPathToAndroidResources() {
 		String resourcePath;
 		if ( ( resourcePath = getAndroidResourcePathFromLocalProperties() ) != null ) {
@@ -391,6 +413,7 @@ public class ResourceLoader {
 		rawResourceLoader = null;
 		dimenResourceLoader = null;
 		integerResourceLoader = null;
+		boolResourceLoader = null;
 	}
 
 	public static ResourceLoader getFrom( Context context ) {
@@ -432,6 +455,16 @@ public class ResourceLoader {
 	public int getIntegerValue( int id ) {
 		init();
 		return integerResourceLoader.getValue( id );
+	}
+	
+	public boolean getBooleanValue( int id ) {
+		init();
+		return boolResourceLoader.getValue( id );
+	}
+	
+	public XmlResourceParser getXml( int id ) {
+		init();
+		return xmlFileLoader.getXml( id );
 	}
 
 	public boolean isDrawableXml( int resourceId ) {

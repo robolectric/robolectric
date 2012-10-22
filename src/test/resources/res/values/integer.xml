@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <resource>
-
 	<string name="test_non_integer">This is not an integer</string>
 	<integer name="test_integer1">2000</integer>
 	<integer name="test_integer2">9</integer>

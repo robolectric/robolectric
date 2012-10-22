@@ -137,4 +137,11 @@ public class TestAttributeSetTest {
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, attrResourceLoader, CustomView.class, false);
         assertThat(testAttributeSet.getAttributeIntValue("some namespace", "itemType", 0), equalTo(1));
     }
+
+    @Test
+    public void getAttributeValue_shouldReturnAttributeAssociatedWithResourceId() throws Exception {
+        attributes.put("ns:textStyle2", "expected value");
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, R.class);
+        assertThat(testAttributeSet.getAttributeValue(R.id.textStyle2), equalTo("expected value"));
+    }
 }

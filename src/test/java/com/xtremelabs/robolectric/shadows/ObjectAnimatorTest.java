@@ -40,7 +40,6 @@ public class ObjectAnimatorTest {
         ObjectAnimator animator = ObjectAnimator.ofFloat(target, "translationX", 0.5f, 0.4f);
         animator.setDuration(1000);
 
-        Robolectric.pauseMainLooper();
         animator.start();
         assertThat(target.getTranslationX(), equalTo(0.5f));
         Robolectric.idleMainLooper(999);
@@ -49,4 +48,22 @@ public class ObjectAnimatorTest {
         Robolectric.idleMainLooper(1);
         assertThat(target.getTranslationX(), equalTo(0.4f));
     }
+
+    @Test
+    public void shouldCallAnimationListenerAtStartAndEnd() throws Exception {
+        View target = new View(null);
+        ObjectAnimator animator = ObjectAnimator.ofFloat(target, "translationX", 0.5f, 0.4f);
+        animator.setDuration(1);
+        TestAnimatorListener startListener = new TestAnimatorListener();
+        TestAnimatorListener endListener = new TestAnimatorListener();
+        animator.addListener(startListener);
+        animator.addListener(endListener);
+        animator.start();
+
+        assertThat(startListener.startWasCalled, equalTo(true));
+        assertThat(endListener.endWasCalled, equalTo(false));
+        Robolectric.idleMainLooper(1);
+        assertThat(endListener.endWasCalled, equalTo(true));
+    }
+
 }

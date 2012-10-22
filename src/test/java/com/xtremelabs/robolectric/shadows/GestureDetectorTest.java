@@ -52,6 +52,7 @@ public class GestureDetectorTest {
     public void test_getListener() throws Exception {
         TestOnGestureListener listener = new TestOnGestureListener();
         assertSame(listener, shadowOf(new GestureDetector(listener)).getListener());
+        assertSame(listener, shadowOf(new GestureDetector(null, listener)).getListener());
     }
 
     private static class TestOnGestureListener implements GestureDetector.OnGestureListener {
