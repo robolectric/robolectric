@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.tester.android.view;
 import static org.junit.Assert.assertNotNull;
 import junit.framework.Assert;
 
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -17,39 +18,41 @@ import android.content.Intent;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class TestMenuTest {
+    private MyActivity activity;        
+    private TestMenu testMenu;
+
+    @Before
+    public void setUp() {
+        activity = new MyActivity();
+        
+        testMenu = new TestMenu(activity);
+        testMenu.add(0, 10, 0, 0);
+    }
 
     @Test
-    public void addAndRemoveMenuItems() {
-        TestMenu testMenu = new TestMenu(new MyActivity());
-        //TestMenuItem testMenuItem = new TestMenuItem(R.id.menu_about);
-        testMenu.add(0, 10,0,0);
-
+    public void addMenuItems() {
         TestMenuItem testMenuItem = (TestMenuItem) testMenu.findItem(10);
         
+        assertNotNull(testMenuItem);
         Assert.assertEquals(10, testMenuItem.getItemId());
-        
+    }
+
+    @Test
+    public void removeMenuItems() {
         testMenu.removeItem(10);
         
-        testMenuItem = (TestMenuItem) testMenu.findItem(10);
+        TestMenuItem testMenuItem = (TestMenuItem) testMenu.findItem(10);
         Assert.assertNull(testMenuItem);
-
     }
     
     @Test
     public void clickWithIntent() {
-    	MyActivity activity = new MyActivity();
-    	
-    	TestMenu testMenu = new TestMenu(activity);
-        testMenu.add(0, 10,0,0);
-
         TestMenuItem testMenuItem = (TestMenuItem) testMenu.findItem(10);
         Assert.assertNull(testMenuItem.getIntent());
         
         Intent intent = new Intent(activity, MyActivity.class);
         testMenuItem.setIntent(intent);
         testMenuItem.click();
-        
-        Assert.assertNotNull(testMenuItem);
         
         ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
         Intent startedIntent = shadowActivity.getNextStartedActivity();
