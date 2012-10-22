@@ -4,11 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
-import android.view.MotionEvent;
-import android.view.View;
+import android.view.*;
 import android.view.View.MeasureSpec;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
@@ -411,6 +410,35 @@ public class ViewTest {
 
       view.setVisibility(View.INVISIBLE);
       assertThat(view.isShown(), is(false));
+    }
+    
+    public void shouldClickAndNotClick() throws Exception {
+    	assertThat( view.isClickable(), equalTo(false) );
+    	view.setClickable(true);
+    	assertThat( view.isClickable(), equalTo(true) );
+    	view.setClickable(false);    	
+    	assertThat( view.isClickable(), equalTo(false) );
+    	view.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {;}
+    	});
+    	assertThat( view.isClickable(), equalTo(true) );
+    }
+
+    @Test
+    public void shouldLongClickAndNotLongClick() throws Exception {
+    	assertThat( view.isLongClickable(), equalTo(false) );
+    	view.setLongClickable(true);
+    	assertThat( view.isLongClickable(), equalTo(true) );
+    	view.setLongClickable(false);    	
+    	assertThat( view.isLongClickable(), equalTo(false) ); 
+    	view.setOnLongClickListener(new OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				return false;
+			}
+    	});
+    	assertThat( view.isLongClickable(), equalTo(true) );
     }
 
     private static class TestAnimation extends Animation {
