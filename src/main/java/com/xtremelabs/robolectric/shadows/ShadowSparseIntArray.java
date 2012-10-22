@@ -26,6 +26,11 @@ public class ShadowSparseIntArray {
 	}
 	
 	@Implementation
+    	public void delete(int key) {
+        	sparseArray.delete(key);
+    	}
+    
+	@Implementation
 	public void put( int key, int value ){
 		sparseArray.put( key, value );
 	}
@@ -36,6 +41,11 @@ public class ShadowSparseIntArray {
 	}
 	
 	@Implementation
+    	public int indexOfKey(int key) {
+        	return sparseArray.indexOfKey(key);
+    	}
+    	
+	@Implementation
 	public int indexOfValue( int value ) {
 		return sparseArray.indexOfValue( value );
 	}
@@ -44,4 +54,19 @@ public class ShadowSparseIntArray {
 	public int keyAt( int index ){
 		return sparseArray.keyAt( index );
 	}
+	
+	@Implementation
+   	public int valueAt(int index) {
+	        return sparseArray.valueAt(index);
+    	}
+    	
+    	@Implementation
+    	public void clear() {
+        	sparseArray.clear();
+    	}
+
+    	@Implementation
+    	public void append(int key, int value) {
+        	sparseArray.append(key, value);
+    	}
 }
