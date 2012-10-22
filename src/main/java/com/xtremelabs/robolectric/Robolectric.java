@@ -147,6 +147,7 @@ import android.widget.RatingBar;
 import android.widget.RemoteViews;
 import android.widget.ResourceCursorAdapter;
 import android.widget.ScrollView;
+import android.widget.Scroller;
 import android.widget.SeekBar;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TabHost;
@@ -404,6 +405,7 @@ public class Robolectric {
                 ShadowScaleGestureDetector.class,
                 ShadowScanResult.class,
                 ShadowScrollView.class,
+                ShadowScroller.class,
                 ShadowSeekBar.class,
                 ShadowSensorManager.class,
                 ShadowService.class,
@@ -976,6 +978,10 @@ public class Robolectric {
 
     public static ShadowScanResult shadowOf(ScanResult instance) {
         return (ShadowScanResult) shadowOf_(instance);
+    }
+
+    public static ShadowScroller shadowOf(Scroller instance) {
+        return (ShadowScroller) shadowOf_(instance);
     }
 
     public static ShadowScrollView shadowOf(ScrollView instance) {
