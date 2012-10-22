@@ -105,11 +105,19 @@ public class TestAttributeSetTest {
     }
 
     @Test
-    public void getAttributeValue_shouldReturnValueFromAttribute() throws Exception {
+    public void getAttributeValue_byName_shouldReturnValueFromAttribute() throws Exception {
         attributes.put("isSugary", "oh heck yeah");
 
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
         assertThat(testAttributeSet.getAttributeValue("com.some.namespace", "isSugary"), equalTo("oh heck yeah"));
+    }
+
+    @Test
+    public void getAttributeValue_byId_shouldReturnValueFromAttribute() throws Exception {
+        attributes.put("isSugary", "oh heck yeah");
+
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
+        assertThat(testAttributeSet.getAttributeValue(R.attr.isSugary), equalTo("oh heck yeah"));
     }
 
     @Test
