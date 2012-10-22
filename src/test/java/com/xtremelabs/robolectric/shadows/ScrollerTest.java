@@ -27,11 +27,11 @@ public class ScrollerTest {
         assertThat(scroller.getCurrX(), equalTo(0));
         assertThat(scroller.getCurrY(), equalTo(0));
 
-        Robolectric.idleMainLooper(333);
+        Robolectric.idleMainLooper(334);
         assertThat(scroller.getCurrX(), equalTo(4));
         assertThat(scroller.getCurrY(), equalTo(12));
 
-        Robolectric.idleMainLooper(167);
+        Robolectric.idleMainLooper(166);
         assertThat(scroller.getCurrX(), equalTo(6));
         assertThat(scroller.getCurrY(), equalTo(18));
 
