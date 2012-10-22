@@ -85,8 +85,17 @@ public class TestAttributeSet implements AttributeSet {
     }
 
     @Override
-    public String getAttributeValue(int index) {
-        throw new UnsupportedOperationException();
+    public String getAttributeValue(int resourceId) {
+        String attrName = resourceExtractor.getResourceName(resourceId);
+        attrName = removePrefix(attrName, "attr/");
+        return getAttributeValueInMap(null, attrName);
+    }
+
+    private static String removePrefix(String string, String prefix) {
+        if (string.startsWith(prefix)) {
+            string = string.substring(prefix.length());
+        }
+        return string;
     }
 
     @Override
