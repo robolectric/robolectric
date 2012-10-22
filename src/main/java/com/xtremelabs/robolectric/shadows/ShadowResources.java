@@ -1,6 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.res.*;
+import android.content.res.AssetManager;
+import android.content.res.ColorStateList;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -13,7 +17,6 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-
 import java.io.InputStream;
 import java.util.Locale;
 
@@ -225,7 +228,7 @@ public class ShadowResources {
 
     @Implementation
     public final android.content.res.Resources.Theme newTheme() {
-        return newInstanceOf(Resources.Theme.class);
+        return inject(realResources, newInstanceOf(Resources.Theme.class));
     }
 
     /**
@@ -238,8 +241,18 @@ public class ShadowResources {
         resourceLoader.dimensions.put(id, value);
     }
 
+    public ResourceExtractor getResourceExtractor() {
+        return resourceLoader.getResourceExtractor();
+    }
+
     @Implements(Resources.Theme.class)
-    public static class ShadowTheme {
+    public static class ShadowTheme implements UsesResources {
+        protected Resources resources;
+
+        public void injectResources(Resources resources) {
+            this.resources = resources;
+        }
+
         @Implementation
         public TypedArray obtainStyledAttributes(int[] attrs) {
             return obtainStyledAttributes(0, attrs);
@@ -252,7 +265,7 @@ public class ShadowResources {
 
         @Implementation
         public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-            return newInstanceOf(TypedArray.class);
+            return inject(resources, newInstanceOf(TypedArray.class));
         }
     }
 
@@ -269,7 +282,16 @@ public class ShadowResources {
         return system;
     }
 
-    /**
+    public static <T> T inject(Resources resources, T instance) {
+        Object shadow = Robolectric.shadowOf_(instance);
+        if (shadow instanceof UsesResources) {
+            ((UsesResources) shadow).injectResources(resources);
+        }
+        return instance;
+    }
+
+
+  /**
      * Creates system resource loader from a copy of the application resource loader. Sets
      * a flag to exclude local resources on initialization.
      */

@@ -137,6 +137,10 @@ public final class R {
         public static final int raw_no_ext = nextId++;
     }
 
+    public static final class attr {
+        public static final int isSugary = nextId++;
+    }
+
     public static final class menu {
         public static final int test = nextId++;
         public static final int test_withchilds = nextId++;
