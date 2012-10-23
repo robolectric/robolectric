@@ -1,24 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Point;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.util.AttributeSet;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.View.MeasureSpec;
-import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.view.ViewTreeObserver;
-import android.view.animation.Animation;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.Robolectric.Reflection.newInstanceOf;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -26,8 +9,21 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.Robolectric.Reflection.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.util.AttributeSet;
+import android.view.*;
+import android.view.View.MeasureSpec;
+import android.view.animation.Animation;
+
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this
@@ -62,6 +58,7 @@ public class ShadowView {
     private ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(0, 0);
     private Map<Integer, Object> tags = new HashMap<Integer, Object>();
     private boolean clickable;
+    private boolean longClickable;
     protected boolean focusable;
     boolean focusableInTouchMode;
     private int backgroundResourceId = -1;
@@ -83,6 +80,7 @@ public class ShadowView {
     private CharSequence contentDescription = null;
     private int measuredWidth = 0;
     private int measuredHeight = 0;
+    private TouchDelegate touchDelegate;
     private float translationX = 0.0f;
     private float translationY = 0.0f;
     private float alpha = 1.0f;
@@ -122,6 +120,11 @@ public class ShadowView {
     @Implementation
     public void setClickable(boolean clickable) {
         this.clickable = clickable;
+    }
+    
+    @Implementation
+    public void setLongClickable(boolean longClickable) {
+    	this.longClickable = longClickable;
     }
 
     /**
@@ -319,6 +322,9 @@ public class ShadowView {
     @Implementation
     public void setOnClickListener(View.OnClickListener onClickListener) {
         this.onClickListener = onClickListener;
+        if (!isClickable()) {
+        	setClickable(true);
+        }
     }
 
     @Implementation
@@ -334,6 +340,9 @@ public class ShadowView {
     @Implementation
     public void setOnLongClickListener(View.OnLongClickListener onLongClickListener) {
         this.onLongClickListener = onLongClickListener;
+        if (!isLongClickable()) {
+        	setLongClickable(true);
+        }
     }
 
     @Implementation
@@ -648,6 +657,14 @@ public class ShadowView {
         return clickable;
     }
 
+    /**
+     * @return whether the view is long-clickable
+     */
+    @Implementation
+    public boolean isLongClickable() {
+        return longClickable;
+    }
+    
     /**
      * Non-Android accessor.
      *
@@ -995,5 +1012,15 @@ public class ShadowView {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
+    
+    @Implementation
+    public void setTouchDelegate (TouchDelegate delegate) {
+    	this.touchDelegate = delegate;
+    }
+    
+    @Implementation
+    public TouchDelegate getTouchDelegate()  {
+    	return touchDelegate;
     }
 }

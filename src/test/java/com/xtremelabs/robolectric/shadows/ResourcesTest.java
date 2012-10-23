@@ -81,8 +81,8 @@ public class ResourcesTest {
     }
     
     @Test
-    @Values( locale="fr" )
-    public void testGetResourceFromSpecificLocale(){
+    @Values( qualifiers="fr" )
+    public void testGetValuesResFromSpecifiecQualifiers(){
     	String hello=resources.getString( R.string.hello );
     	assertThat( hello, equalTo( "Bonjour" ) );
     }

@@ -1,5 +1,13 @@
 package com.xtremelabs.robolectric.res;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+
 import android.R;
 import android.content.Context;
 import android.content.res.XmlResourceParser;
@@ -7,20 +15,14 @@ import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceScreen;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.shadows.ShadowContextWrapper;
 import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.util.*;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ResourceLoader {
 	private static final FileFilter MENU_DIR_FILE_FILTER = new FileFilter() {
@@ -64,19 +66,13 @@ public class ResourceLoader {
 	private final BoolResourceLoader boolResourceLoader;
 	private boolean isInitialized = false;
 	private boolean strictI18n = false;
-	private String locale="";
 	
 	private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
 
-	public ResourceLoader(  int sdkVersion, Class rClass, File resourceDir, File assetsDir ) throws Exception {
-		this( sdkVersion, rClass, resourceDir, assetsDir, "");
-	}
-	
-	public ResourceLoader( int sdkVersion, Class rClass, File resourceDir, File assetsDir, String locale ) throws Exception {
+	public ResourceLoader( int sdkVersion, Class rClass, File resourceDir, File assetsDir) throws Exception {
 		this.sdkVersion = sdkVersion;
 		this.assetsDir = assetsDir;
 		this.rClass = rClass;
-		this.locale = locale;
 		
 		resourceExtractor = new ResourceExtractor();
 		resourceExtractor.addLocalRClass( rClass );
@@ -134,8 +130,8 @@ public class ResourceLoader {
 				xmlFileLoader.setStrictI18n( strictI18n );
 
 				File systemResourceDir = getSystemResourceDir( getPathToAndroidResources() );
-				File localValueResourceDir = getValueResourceDir( resourceDir );
-				File systemValueResourceDir = getValueResourceDir( systemResourceDir );
+				File localValueResourceDir = getValueResourceDir( resourceDir, null, true );
+				File systemValueResourceDir = getValueResourceDir( systemResourceDir, null, false );
 				File preferenceDir = getPreferenceResourceDir( resourceDir );
 
 				loadStringResources( localValueResourceDir, systemValueResourceDir );
@@ -164,6 +160,31 @@ public class ResourceLoader {
 		isInitialized = true;
 	}
 
+	/**
+	 * Reload values resources, include String, Plurals, Dimen, Prefs, Menu
+	 *
+	 * @param locale
+	 */
+	public void reloadValuesResouces( String qualifiers ) {
+		
+		File systemResourceDir = getSystemResourceDir( getPathToAndroidResources() );
+		File localValueResourceDir = getValueResourceDir( resourceDir, qualifiers, true );
+		File systemValueResourceDir = getValueResourceDir( systemResourceDir, null, false );
+		File preferenceDir = getPreferenceResourceDir( resourceDir );
+		
+		try {
+			loadStringResources( localValueResourceDir, systemValueResourceDir );
+			loadPluralsResources( localValueResourceDir, systemValueResourceDir );
+			loadValueResources( localValueResourceDir, systemValueResourceDir );
+			loadDimenResources( localValueResourceDir, systemValueResourceDir );
+			loadIntegerResource( localValueResourceDir, systemValueResourceDir );
+			loadMenuResources( resourceDir );
+			loadPreferenceResources( preferenceDir );
+		} catch ( Exception e ) {
+			throw new RuntimeException( e );
+		} 
+	}
+	
 	private File getSystemResourceDir( String pathToAndroidResources ) {
 		return pathToAndroidResources != null ? new File( pathToAndroidResources ) : null;
 	}
@@ -265,10 +286,10 @@ public class ResourceLoader {
 		}
 	}
 
-	private File getValueResourceDir( File xmlResourceDir ) {
+	private File getValueResourceDir( File xmlResourceDir, String qualifiers, boolean isLocal ) {
 		String valuesDir = "values";
-		if( !TextUtils.isEmpty( locale ) ){
-			valuesDir += "-"+ locale;
+		if( qualifiers != null && !qualifiers.isEmpty() && isLocal ){
+			valuesDir += "-"+ qualifiers;
 		}
 		File result = ( xmlResourceDir != null ) ? new File( xmlResourceDir, valuesDir ) : null;
 		if( result == null || !result.exists() ){
