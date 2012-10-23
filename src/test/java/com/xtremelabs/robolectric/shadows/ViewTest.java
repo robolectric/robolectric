@@ -2,10 +2,10 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -14,6 +14,7 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import com.xtremelabs.robolectric.tester.android.view.TestWindow;
 import com.xtremelabs.robolectric.util.TestAnimationListener;
 import com.xtremelabs.robolectric.util.TestOnClickListener;
 import com.xtremelabs.robolectric.util.TestOnLongClickListener;
@@ -22,9 +23,9 @@ import com.xtremelabs.robolectric.util.Transcript;
 import java.util.concurrent.atomic.AtomicBoolean;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.application;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.Robolectric.visualize;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -342,7 +343,10 @@ public class ViewTest {
         assertThat(listener.wasRepeatCalled, equalTo(false));
         assertThat(listener.wasEndCalled, equalTo(true));
     }
-    
+
+    private static class TestAnimation extends Animation {
+    }
+
     @Test
     public void shouldfindViewWithTag() {
     	String tagged = "tagged";
@@ -357,6 +361,57 @@ public class ViewTest {
         assertThat(shadowOf(view).scrollToCoordinates, equalTo(new Point(1, 2)));
     }
 
-    private class TestAnimation extends Animation {
+    @Test public void shouldCallOnAttachedToAndDetachedFromWindow() throws Exception {
+        MyView parent = new MyView("parent");
+        parent.addView(new MyView("child"));
+        transcript.assertNoEventsSoFar();
+
+        TestWindow window = new TestWindow(application);
+        window.setContentView(parent);
+        transcript.assertEventsSoFar("parent attached", "child attached");
+
+        parent.addView(new MyView("another child"));
+        transcript.assertEventsSoFar("another child attached");
+
+        MyView temporaryChild = new MyView("temporary child");
+        parent.addView(temporaryChild);
+        transcript.assertEventsSoFar("temporary child attached");
+        assertTrue(shadowOf(temporaryChild).isAttachedToWindow());
+
+        parent.removeView(temporaryChild);
+        transcript.assertEventsSoFar("temporary child detached");
+        assertFalse(shadowOf(temporaryChild).isAttachedToWindow());
+
+        window.setContentView(null);
+        transcript.assertEventsSoFar("parent detached", "child detached", "another child detached");
+    }
+
+    @Test public void removeAllViews_shouldCallOnAttachedToAndDetachedFromWindow() throws Exception {
+        MyView parent = new MyView("parent");
+        parent.addView(new MyView("child"));
+        parent.addView(new MyView("another child"));
+        new TestWindow(application).setContentView(parent);
+        transcript.clear();
+        parent.removeAllViews();
+        transcript.assertEventsSoFar("child detached", "another child detached");
+    }
+
+    private class MyView extends LinearLayout {
+        private String name;
+
+        public MyView(String name) {
+            super(Robolectric.application);
+            this.name = name;
+        }
+
+        @Override protected void onAttachedToWindow() {
+            transcript.add(name + " attached");
+            super.onAttachedToWindow();
+        }
+
+        @Override protected void onDetachedFromWindow() {
+            transcript.add(name + " detached");
+            super.onDetachedFromWindow();
+        }
     }
 }

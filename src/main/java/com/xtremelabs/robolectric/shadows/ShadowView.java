@@ -17,7 +17,6 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.ReflectionUtil;
-
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,6 +35,9 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(View.class)
 public class ShadowView {
+    // This is dumb, we should have a Robolectric-wide way of warning about weird states. todo [xw]
+    public static boolean strict = false;
+
     @RealObject
     protected View realView;
 
@@ -77,6 +79,7 @@ public class ShadowView {
     private boolean didRequestLayout;
     private Drawable background;
     private Animation animation;
+    private boolean attachedToWindow;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -873,5 +876,43 @@ public class ShadowView {
     @Implementation
     public void scrollTo(int x, int y) {
         this.scrollToCoordinates = new Point(x, y);
+    }
+
+    @Implementation
+    public void onAttachedToWindow() {
+        if (strict && attachedToWindow) throw new IllegalStateException("already attached!");
+        attachedToWindow = true;
+    }
+
+    @Implementation
+    public void onDetachedFromWindow() {
+        if (strict && !attachedToWindow) throw new IllegalStateException("not attached!");
+        attachedToWindow = false;
+    }
+
+    public boolean isAttachedToWindow() {
+        return attachedToWindow;
+    }
+
+    public void callOnAttachedToWindow() {
+        invokeReflectively("onAttachedToWindow");
+    }
+
+    public void callOnDetachedFromWindow() {
+        invokeReflectively("onDetachedFromWindow");
+    }
+
+    private void invokeReflectively(String methodName) {
+        try {
+            Method method = View.class.getDeclaredMethod(methodName);
+            method.setAccessible(true);
+            method.invoke(realView);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

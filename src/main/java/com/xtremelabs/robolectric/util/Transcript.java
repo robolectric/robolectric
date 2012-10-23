@@ -22,6 +22,17 @@ public class Transcript {
         events.clear();
     }
 
+    public void assertEventsInclude(String... expectedEvents) {
+        List<String> original = new ArrayList<String>(events);
+        for (String expectedEvent : expectedEvents) {
+            int index = events.indexOf(expectedEvent);
+            if (index == -1) {
+                assertEquals(Arrays.asList(expectedEvents), original);
+            }
+            events.subList(0, index + 1).clear();
+        }
+    }
+
     public void clear() {
         events.clear();
     }

@@ -15,16 +15,19 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.matchers.StartedMatcher;
-import com.xtremelabs.robolectric.util.TestUtil;
+import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static java.util.Arrays.asList;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class FragmentTest {
@@ -41,11 +44,7 @@ public class FragmentTest {
         assertNotNull(tacos);
         assertEquals("TACOS", tacos.getText());
 
-        assertEquals(1, fragment.created);
-        assertEquals(2, fragment.viewCreated);
-        assertEquals(3, fragment.onViewCreated);
-        assertEquals(4, fragment.activityCreated);
-        assertEquals(5, fragment.resumed);
+        fragment.transcript.assertEventsSoFar("attached", "created", "viewCreated", "onViewCreated", "activityCreated", "resumed");
 
         assertTrue(fragment.isResumed());
 
@@ -209,7 +208,7 @@ public class FragmentTest {
         DummyHeadlessFragment fragment = new DummyHeadlessFragment();
         ContainerActivity activity = new ContainerActivity();
         activity.getSupportFragmentManager().beginTransaction().add(fragment, null).commit();
-        assertEquals(asList("onAttach", "onCreate"), fragment.log);
+        fragment.transcript.assertEventsSoFar("onAttach", "onCreate");
     }
 
     @Test
@@ -292,24 +291,19 @@ public class FragmentTest {
         int containerId = 9420;
         fragmentManager.beginTransaction()
                 .add(containerId, fragment1).commit();
-        assertLog(fragment1.log, "resumed");
+        fragment1.transcript.assertEventsInclude("resumed");
 
         fragmentManager.beginTransaction()
-                .add(containerId, fragment2).addToBackStack("second").commit();
-        assertLog(fragment1.log, "paused");
-        assertLog(fragment2.log, "resumed");
+                  .add(containerId, fragment2).addToBackStack("second").commit();
+        fragment1.transcript.assertEventsInclude("paused");
+        fragment2.transcript.assertEventsInclude("resumed");
 
         fragmentManager.popBackStackImmediate();
-        assertLog(fragment2.log, "paused");
-        assertLog(fragment1.log, "resumed");
+        fragment2.transcript.assertEventsInclude("paused");
+        fragment1.transcript.assertEventsInclude("resumed");
 
         Fragment currentFragment = fragmentManager.findFragmentById(containerId);
         assertSame(fragment1, currentFragment);
-    }
-
-    void assertLog(List<String> log, String... expected) {
-        TestUtil.assertEquals(asList(expected), log);
-        log.clear();
     }
 
     private void startFragment(DummyFragment fragment) {
@@ -328,13 +322,7 @@ public class FragmentTest {
 
         private Object argument;
 
-        private int serial;
-        private int created;
-        private int activityCreated;
-        private List<String> log = new ArrayList<String>();
-        private int resumed;
-        private int viewCreated;
-        private int onViewCreated;
+        private Transcript transcript = new Transcript();
 
         @Override
         public void onCreate(Bundle savedInstanceState) {
@@ -343,53 +331,62 @@ public class FragmentTest {
                 argument = getArguments().get(ARG_KEY);
             }
 
-            created = ++serial;
+            transcript.add("created");
         }
 
         @Override
         public void onActivityCreated(Bundle savedInstanceState) {
             super.onActivityCreated(savedInstanceState);
-            activityCreated = ++serial;
+            transcript.add("activityCreated");
         }
 
         @Override
         public void onPause() {
             super.onPause();
-            log.add("paused");
+            transcript.add("paused");
         }
 
         @Override
         public void onResume() {
             super.onResume();
-            resumed = ++serial;
-            log.add("resumed");
+            transcript.add("resumed");
+        }
+
+        @Override public void onAttach(Activity activity) {
+            super.onAttach(activity);
+            transcript.add("attached");
+        }
+
+        @Override public void onDetach() {
+            super.onDetach();
+            transcript.add("detached");
         }
 
         @Override
         public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            viewCreated = ++serial;
+            transcript.add("viewCreated");
             return inflater.inflate(R.layout.fragment_contents, container, false);
         }
 
         @Override
         public void onViewCreated(View view, Bundle savedInstanceState) {
             super.onViewCreated(view, savedInstanceState);
-            onViewCreated = ++serial;
+            transcript.add("onViewCreated");
         }
     }
 
     private static class DummyHeadlessFragment extends Fragment {
-        List<String> log = new ArrayList<String>();
+        Transcript transcript = new Transcript();
 
         @Override public void onAttach(Activity activity) {
             super.onAttach(activity);
-            log.add("onAttach");
+            transcript.add("onAttach");
         }
 
       @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            log.add("onCreate");
+            transcript.add("onCreate");
         }
     }
 
