@@ -307,6 +307,11 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public float getFloatArrayExtra(String name) {
+        return (float[]) extras.get(name);
+    }
+
+    @Implementation
     public boolean getBooleanExtra(String name, boolean defaultValue) {
         return extras.containsKey(name) ? (Boolean) extras.get(name) : defaultValue;
     }
