@@ -1,25 +1,28 @@
 package com.xtremelabs.robolectric.res;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.io.*;
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.Properties;
+import java.util.Set;
+
 import android.R;
 import android.content.Context;
+import android.content.res.XmlResourceParser;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceScreen;
-import android.text.TextUtils;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.shadows.ShadowContextWrapper;
 import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.util.*;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ResourceLoader {
 	private static final FileFilter MENU_DIR_FILE_FILTER = new FileFilter() {
@@ -49,6 +52,7 @@ public class ResourceLoader {
 	private final ResourceExtractor resourceExtractor;
 	private ViewLoader viewLoader;
 	private MenuLoader menuLoader;
+	private XmlFileLoader xmlFileLoader;
 	private PreferenceLoader preferenceLoader;
 	private final StringResourceLoader stringResourceLoader;
 	private final PluralResourceLoader pluralResourceLoader;
@@ -59,21 +63,16 @@ public class ResourceLoader {
 	private final RawResourceLoader rawResourceLoader;
 	private final DimenResourceLoader dimenResourceLoader;
 	private final IntegerResourceLoader integerResourceLoader;
+	private final BoolResourceLoader boolResourceLoader;
 	private boolean isInitialized = false;
 	private boolean strictI18n = false;
-	private String locale="";
 	
 	private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
 
-	public ResourceLoader(  int sdkVersion, Class rClass, File resourceDir, File assetsDir ) throws Exception {
-		this( sdkVersion, rClass, resourceDir, assetsDir, "");
-	}
-	
-	public ResourceLoader( int sdkVersion, Class rClass, File resourceDir, File assetsDir, String locale ) throws Exception {
+	public ResourceLoader( int sdkVersion, Class rClass, File resourceDir, File assetsDir) throws Exception {
 		this.sdkVersion = sdkVersion;
 		this.assetsDir = assetsDir;
 		this.rClass = rClass;
-		this.locale = locale;
 		
 		resourceExtractor = new ResourceExtractor();
 		resourceExtractor.addLocalRClass( rClass );
@@ -88,6 +87,7 @@ public class ResourceLoader {
 		rawResourceLoader = new RawResourceLoader( resourceExtractor, resourceDir );
 		dimenResourceLoader = new DimenResourceLoader( resourceExtractor );
 		integerResourceLoader = new IntegerResourceLoader( resourceExtractor );
+		boolResourceLoader = new BoolResourceLoader( resourceExtractor );
 
 		this.resourceDir = resourceDir;
 	}
@@ -102,6 +102,9 @@ public class ResourceLoader {
 		}
 		if ( preferenceLoader != null ) {
 			preferenceLoader.setStrictI18n( strict );
+		}
+		if ( xmlFileLoader != null ) {
+			xmlFileLoader.setStrictI18n( strict );
 		}
 	}
 
@@ -119,14 +122,16 @@ public class ResourceLoader {
 				viewLoader = new ViewLoader( resourceExtractor, attrResourceLoader );
 				menuLoader = new MenuLoader( resourceExtractor, attrResourceLoader );
 				preferenceLoader = new PreferenceLoader( resourceExtractor );
+				xmlFileLoader = new XmlFileLoader( resourceExtractor );
 
 				viewLoader.setStrictI18n( strictI18n );
 				menuLoader.setStrictI18n( strictI18n );
 				preferenceLoader.setStrictI18n( strictI18n );
+				xmlFileLoader.setStrictI18n( strictI18n );
 
 				File systemResourceDir = getSystemResourceDir( getPathToAndroidResources() );
-				File localValueResourceDir = getValueResourceDir( resourceDir );
-				File systemValueResourceDir = getValueResourceDir( systemResourceDir );
+				File localValueResourceDir = getValueResourceDir( resourceDir, null, true );
+				File systemValueResourceDir = getValueResourceDir( systemResourceDir, null, false );
 				File preferenceDir = getPreferenceResourceDir( resourceDir );
 
 				loadStringResources( localValueResourceDir, systemValueResourceDir );
@@ -138,12 +143,14 @@ public class ResourceLoader {
 				loadMenuResources( resourceDir );
 				loadDrawableResources( resourceDir );
 				loadPreferenceResources( preferenceDir );
+				loadXmlFileResources( preferenceDir );
 				
 				listNinePatchResources(ninePatchDrawableIds, resourceDir);
 			} else {
 				viewLoader = null;
 				menuLoader = null;
 				preferenceLoader = null;
+				xmlFileLoader = null;
 			}
 		} catch ( I18nException e ) {
 			throw e;
@@ -153,6 +160,31 @@ public class ResourceLoader {
 		isInitialized = true;
 	}
 
+	/**
+	 * Reload values resources, include String, Plurals, Dimen, Prefs, Menu
+	 *
+	 * @param locale
+	 */
+	public void reloadValuesResouces( String qualifiers ) {
+		
+		File systemResourceDir = getSystemResourceDir( getPathToAndroidResources() );
+		File localValueResourceDir = getValueResourceDir( resourceDir, qualifiers, true );
+		File systemValueResourceDir = getValueResourceDir( systemResourceDir, null, false );
+		File preferenceDir = getPreferenceResourceDir( resourceDir );
+		
+		try {
+			loadStringResources( localValueResourceDir, systemValueResourceDir );
+			loadPluralsResources( localValueResourceDir, systemValueResourceDir );
+			loadValueResources( localValueResourceDir, systemValueResourceDir );
+			loadDimenResources( localValueResourceDir, systemValueResourceDir );
+			loadIntegerResource( localValueResourceDir, systemValueResourceDir );
+			loadMenuResources( resourceDir );
+			loadPreferenceResources( preferenceDir );
+		} catch ( Exception e ) {
+			throw new RuntimeException( e );
+		} 
+	}
+	
 	private File getSystemResourceDir( String pathToAndroidResources ) {
 		return pathToAndroidResources != null ? new File( pathToAndroidResources ) : null;
 	}
@@ -205,6 +237,17 @@ public class ResourceLoader {
 			preferenceDocumentLoader.loadResourceXmlDir( xmlResourceDir );
 		}
 	}
+	
+	/**
+	 * All the Xml files should be loaded. 
+	 */
+	private void loadXmlFileResources( File xmlResourceDir ) throws Exception {
+		if ( xmlResourceDir.exists() ) {
+			DocumentLoader xmlFileDocumentLoader = 
+					new DocumentLoader( xmlFileLoader );
+			xmlFileDocumentLoader.loadResourceXmlDir( xmlResourceDir );
+		}
+	}
 
 	private void loadLayoutResourceXmlSubDirs( DocumentLoader layoutDocumentLoader, File xmlResourceDir, boolean isSystem )
 			throws Exception {
@@ -243,10 +286,10 @@ public class ResourceLoader {
 		}
 	}
 
-	private File getValueResourceDir( File xmlResourceDir ) {
+	private File getValueResourceDir( File xmlResourceDir, String qualifiers, boolean isLocal ) {
 		String valuesDir = "values";
-		if( !TextUtils.isEmpty( locale ) ){
-			valuesDir += "-"+ locale;
+		if( qualifiers != null && !qualifiers.isEmpty() && isLocal ){
+			valuesDir += "-"+ qualifiers;
 		}
 		File result = ( xmlResourceDir != null ) ? new File( xmlResourceDir, valuesDir ) : null;
 		if( result == null || !result.exists() ){
@@ -258,7 +301,7 @@ public class ResourceLoader {
 	private File getPreferenceResourceDir( File xmlResourceDir ) {
 		return xmlResourceDir != null ? new File( xmlResourceDir, "xml" ) : null;
 	}
-
+	
 	private String getPathToAndroidResources() {
 		String resourcePath;
 		if ( ( resourcePath = getAndroidResourcePathFromLocalProperties() ) != null ) {
@@ -370,6 +413,7 @@ public class ResourceLoader {
 		rawResourceLoader = null;
 		dimenResourceLoader = null;
 		integerResourceLoader = null;
+		boolResourceLoader = null;
 	}
 
 	public static ResourceLoader getFrom( Context context ) {
@@ -411,6 +455,16 @@ public class ResourceLoader {
 	public int getIntegerValue( int id ) {
 		init();
 		return integerResourceLoader.getValue( id );
+	}
+	
+	public boolean getBooleanValue( int id ) {
+		init();
+		return boolResourceLoader.getValue( id );
+	}
+	
+	public XmlResourceParser getXml( int id ) {
+		init();
+		return xmlFileLoader.getXml( id );
 	}
 
 	public boolean isDrawableXml( int resourceId ) {

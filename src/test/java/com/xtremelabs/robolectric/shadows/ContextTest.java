@@ -2,9 +2,12 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.TypedArray;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
+import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.hamcrest.CoreMatchers;
+import org.hamcrest.core.IsEqual;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,8 +18,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -30,6 +37,7 @@ public class ContextTest {
         context = new Activity();
         deleteDir(context.getFilesDir());
         deleteDir(context.getCacheDir());
+        deleteDir(ShadowContext.DATABASE_DIR);
 
         File[] files = context.getFilesDir().listFiles();
         assertNotNull(files);
@@ -46,6 +54,7 @@ public class ContextTest {
     	deleteDir(context.getCacheDir());
     	deleteDir(context.getExternalCacheDir());
     	deleteDir(context.getExternalFilesDir(null));
+    	deleteDir(ShadowContext.DATABASE_DIR);
     }
 
     public void deleteDir(File path) {
@@ -140,6 +149,11 @@ public class ContextTest {
         assertTrue(context.getFilesDir().exists());
     }
 
+	@Test
+	public void fileList() throws Exception {
+		assertThat(context.fileList(), equalTo(context.getFilesDir().list()));
+	}
+
     @Test
     public void getExternalFilesDir_shouldCreateDirectory() throws Exception {
         assertTrue(context.getExternalFilesDir(null).exists());
@@ -150,6 +164,15 @@ public class ContextTest {
     	File f = context.getExternalFilesDir("__test__");
         assertTrue(f.exists());
         assertTrue(f.getAbsolutePath().endsWith("__test__"));
+    }
+    
+    @Test
+    public void getDatabasePath_shouldCreateDirectory() {
+    	assertFalse(ShadowContext.DATABASE_DIR.exists());
+    	String testDBName = "abc.db";
+    	File dbFile = context.getDatabasePath(testDBName);
+    	assertTrue(ShadowContext.DATABASE_DIR.exists());
+    	assertEquals(ShadowContext.DATABASE_DIR, dbFile.getParentFile());
     }
 
     @Test
@@ -236,5 +259,17 @@ public class ContextTest {
         File file = new File(filesDir, "test.txt");
         boolean successfully = context.deleteFile(file.getName());
         assertThat(successfully, is(false));
+    }
+
+    @Test
+    public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
+        Map<String, String> attributes = new HashMap<String, String>();
+        attributes.put("ns:textStyle2", "one");
+        attributes.put("ns:textStyle3", "two");
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, R.class);
+        TypedArray typedArray = context.obtainStyledAttributes(testAttributeSet, new int[]{R.id.textStyle2, R.id.textStyle3});
+
+        assertThat(typedArray.getString(R.styleable.HeaderBar_textStyle2), equalTo("one"));
+        assertThat(typedArray.getString(R.styleable.HeaderBar_textStyle3), equalTo("two"));
     }
 }

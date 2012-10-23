@@ -6,12 +6,18 @@ import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.view.*;
 import android.view.View.MeasureSpec;
+import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.*;
+import com.xtremelabs.robolectric.util.TestAnimationListener;
+import com.xtremelabs.robolectric.util.TestOnClickListener;
+import com.xtremelabs.robolectric.util.TestOnLongClickListener;
+import com.xtremelabs.robolectric.util.TestRunnable;
+import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -20,7 +26,9 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewTest {
@@ -83,7 +91,7 @@ public class ViewTest {
 
     @Test
     public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
-        assertTrue(shadowOf(view).derivedIsVisible());
+        assertTrue(view.isShown());
 
         ViewGroup grandParent = new LinearLayout(null);
         ViewGroup parent = new LinearLayout(null);
@@ -92,7 +100,7 @@ public class ViewTest {
 
         grandParent.setVisibility(View.GONE);
 
-        assertFalse(shadowOf(view).derivedIsVisible());
+        assertFalse(view.isShown());
     }
 
     @Test
@@ -369,6 +377,68 @@ public class ViewTest {
     	assertThat(view2.getWidth(), equalTo(0)); 
     	assertThat(view2.getMeasuredHeight(), equalTo(400));
     	assertThat(view2.getMeasuredWidth(), equalTo(800));  
+    }
+    
+    @Test
+    public void shouldGetAndSetTranslations() throws Exception {
+        view = new TestView(new Activity());
+        view.setTranslationX(8.9f);
+        view.setTranslationY(4.6f);
+
+        assertThat(view.getTranslationX(), equalTo(8.9f));
+        assertThat(view.getTranslationY(), equalTo(4.6f));
+    }
+
+    @Test
+    public void shouldGetAndSetAlpha() throws Exception {
+        view = new TestView(new Activity());
+        view.setAlpha(9.1f);
+
+        assertThat(view.getAlpha(), equalTo(9.1f));
+    }
+    
+    @Test
+    public void itKnowsIfTheViewIsShown() {
+      view.setVisibility(View.VISIBLE);
+      assertThat(view.isShown(), is(true));
+    }
+
+    @Test
+    public void itKnowsIfTheViewIsNotShown() {
+      view.setVisibility(View.GONE);
+      assertThat(view.isShown(), is(false));
+
+      view.setVisibility(View.INVISIBLE);
+      assertThat(view.isShown(), is(false));
+    }
+    
+    public void shouldClickAndNotClick() throws Exception {
+    	assertThat( view.isClickable(), equalTo(false) );
+    	view.setClickable(true);
+    	assertThat( view.isClickable(), equalTo(true) );
+    	view.setClickable(false);    	
+    	assertThat( view.isClickable(), equalTo(false) );
+    	view.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {;}
+    	});
+    	assertThat( view.isClickable(), equalTo(true) );
+    }
+
+    @Test
+    public void shouldLongClickAndNotLongClick() throws Exception {
+    	assertThat( view.isLongClickable(), equalTo(false) );
+    	view.setLongClickable(true);
+    	assertThat( view.isLongClickable(), equalTo(true) );
+    	view.setLongClickable(false);    	
+    	assertThat( view.isLongClickable(), equalTo(false) ); 
+    	view.setOnLongClickListener(new OnLongClickListener() {
+			@Override
+			public boolean onLongClick(View v) {
+				return false;
+			}
+    	});
+    	assertThat( view.isLongClickable(), equalTo(true) );
     }
 
     private static class TestAnimation extends Animation {

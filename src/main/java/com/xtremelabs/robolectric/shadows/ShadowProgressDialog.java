@@ -13,6 +13,8 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowProgressDialog extends ShadowAlertDialog {
 
     private boolean indeterminate;
+    private int max;
+    private int progress;
 
     @Implementation
     public static ProgressDialog show(Context context, CharSequence title, CharSequence message) {
@@ -50,5 +52,25 @@ public class ShadowProgressDialog extends ShadowAlertDialog {
     @Implementation
     public boolean isIndeterminate() {
         return indeterminate;
+    }
+
+    @Implementation
+    public void setMax(int max) {
+        this.max = max;
+    }
+
+    @Implementation
+    public int getMax() {
+        return max;
+    }
+
+    @Implementation
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
+
+    @Implementation
+    public int getProgress() {
+        return progress;
     }
 }

@@ -126,11 +126,6 @@ public class ShadowImageView extends ShadowView {
         return imageDrawable;
     }
 
-    @Implementation
-    public int getAlpha() {
-        return alpha;
-    }
-
     @Deprecated
     public int getResourceId() {
         return resourceId;

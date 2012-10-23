@@ -18,8 +18,6 @@ import static com.xtremelabs.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
 @Implements(Path.class)
 public class ShadowPath {
     private List<Point> points = new ArrayList<Point>();
-    private List<Point> pointsMovedTo = new ArrayList<Point>();
-    private List<Point> pointsLinedTo = new ArrayList<Point>();
     private Point wasMovedTo;
     private String quadDescription = "";
 
@@ -41,7 +39,14 @@ public class ShadowPath {
     	quadDescription = "Add a quadratic bezier from last point, approaching (" + x1 + "," + y1 + "), " +
     			"ending at (" +x2+","+ y2 + ")";
     }
-    
+
+    @Implementation
+    public void reset() {
+        points.clear();
+        wasMovedTo = null;
+        quadDescription = "";
+    }
+
     public String getQuadDescription() {
     	return quadDescription;
     }

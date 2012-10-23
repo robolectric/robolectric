@@ -19,6 +19,20 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 public class ShadowBundle {
     Map<String, Object> map = new HashMap<String, Object>();
 
+    public void __constructor__(Bundle b) {
+        putAll(b);
+    }
+
+    @Implementation
+    public void clear() {
+        map.clear();
+    }
+
+    @Implementation
+    public void remove(String key) {
+        map.remove(key);
+    }
+
     @Implementation
     public Object get(String key) {
         return map.get(key);
@@ -31,7 +45,8 @@ public class ShadowBundle {
 
     @Implementation
     public String getString(String key) {
-        return (String) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof String) ? null : (String) value;
     }
 
     @Implementation
@@ -41,14 +56,13 @@ public class ShadowBundle {
 
     @Implementation
     public long getLong(String key) {
-        Object value = map.get(key);
-        return value == null ? 0 : (Long) value;
+        return getLong(key, 0);
     }
 
     @Implementation
-    public long getLong(String key,long defaultValue) {
+    public long getLong(String key, long defaultValue) {
         Object value = map.get(key);
-        return value == null ? defaultValue : (Long) value;
+        return value == null || !(value instanceof Long) ? defaultValue : (Long) value;
     }
 
     @Implementation
@@ -58,14 +72,13 @@ public class ShadowBundle {
 
     @Implementation
     public int getInt(String key) {
-        Object value = map.get(key);
-        return value == null ? 0 : (Integer) value;
+        return getInt(key, 0);
     }
 
     @Implementation
     public int getInt(String key, int defaultValue) {
         Object value = map.get(key);
-        return value == null ? defaultValue : (Integer) value;
+        return value == null || !(value instanceof Integer) ? defaultValue : (Integer) value;
     }
 
     @Implementation
@@ -75,14 +88,13 @@ public class ShadowBundle {
 
     @Implementation
     public double getDouble(String key) {
-        Object value = map.get(key);
-        return value == null ? 0 : (Double) value;
+        return getDouble(key, 0);
     }
 
     @Implementation
     public double getDouble(String key, double defaultValue) {
         Object value = map.get(key);
-        return value == null ? defaultValue : (Double) value;
+        return value == null || !(value instanceof Double) ? defaultValue : (Double) value;
     }
 
     @Implementation
@@ -92,14 +104,40 @@ public class ShadowBundle {
 
     @Implementation
     public boolean getBoolean(String key) {
-        Object value = map.get(key);
-        return value == null ? false : (Boolean) value;
+        return getBoolean(key, false);
     }
 
     @Implementation
     public boolean getBoolean(String key, boolean defaultValue) {
         Object value = map.get(key);
-        return value == null ? defaultValue : (Boolean) value;
+        return value == null || !(value instanceof Boolean) ? defaultValue : (Boolean) value;
+    }
+
+    @Implementation
+    public void putChar(String key, char value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public char getChar(String key) {
+        return getChar(key, (char) 0);
+    }
+
+    @Implementation
+    public char getChar(String key, char defaultValue) {
+        Object value = map.get(key);
+        return value == null || !(value instanceof Character) ? defaultValue : (Character) value;
+    }
+
+    @Implementation
+    public void putCharSequence(String key, CharSequence value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public CharSequence getCharSequence(String key) {
+        Object value = map.get(key);
+        return value == null || !(value instanceof CharSequence) ? null : (CharSequence) value;
     }
 
     @Implementation
@@ -109,14 +147,13 @@ public class ShadowBundle {
 
     @Implementation
     public float getFloat(String key) {
-        Object value = map.get(key);
-        return value == null ? 0 : (Float) value;
+        return getFloat(key, 0);
     }
 
     @Implementation
     public float getFloat(String key, float defaultValue) {
         Object value = map.get(key);
-        return value == null ? defaultValue : (Float) value;
+        return value == null || !(value instanceof Float) ? defaultValue : (Float) value;
     }
 
     @Implementation
@@ -126,7 +163,8 @@ public class ShadowBundle {
 
     @Implementation
     public Serializable getSerializable(String key) {
-        return (Serializable) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof Serializable) ? null : (Serializable) value;
     }
 
     @Implementation
@@ -141,17 +179,20 @@ public class ShadowBundle {
 
     @Implementation
     public Parcelable getParcelable(String key) {
-        return (Parcelable) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof Parcelable) ? null : (Parcelable) value;
     }
 
     @Implementation
     public ArrayList<Parcelable> getParcelableArrayList(String key) {
-    	return (ArrayList<Parcelable>)map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof ArrayList) ? null : (ArrayList<Parcelable>) value;
     }
 
     @Implementation
     public Parcelable[] getParcelableArray(String key) {
-        return (Parcelable[]) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof Parcelable[]) ? null : (Parcelable[]) value;
     }
 
     @Implementation
@@ -166,7 +207,19 @@ public class ShadowBundle {
 
     @Implementation
     public ArrayList<String> getStringArrayList(String key) {
-        return (ArrayList<String>) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof ArrayList) ? null : (ArrayList<String>) value;
+    }
+
+    @Implementation
+    public void putCharSequenceArrayList(String key, ArrayList<CharSequence> value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public ArrayList<CharSequence> getCharSequenceArrayList(String key) {
+        Object value = map.get(key);
+        return value == null || !(value instanceof ArrayList) ? null : (ArrayList<CharSequence>) value;
     }
 
     @Implementation
@@ -176,7 +229,8 @@ public class ShadowBundle {
 
     @Implementation
     public ArrayList<Integer> getIntegerArrayList(String key) {
-        return (ArrayList<Integer>) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof ArrayList) ? null : (ArrayList<Integer>) value;
     }
 
     @Implementation
@@ -186,7 +240,8 @@ public class ShadowBundle {
 
     @Implementation
     public Bundle getBundle(String key) {
-        return (Bundle) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof Bundle) ? null : (Bundle) value;
     }
 
     @Implementation
@@ -196,7 +251,8 @@ public class ShadowBundle {
 
     @Implementation
     public boolean[] getBooleanArray(String key) {
-        return (boolean[]) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof boolean[]) ? null : (boolean[]) value;
     }
 
     @Implementation
@@ -206,7 +262,8 @@ public class ShadowBundle {
 
     @Implementation
     public byte[] getByteArray(String key) {
-        return (byte[]) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof byte[]) ? null : (byte[]) value;
     }
 
     @Implementation
@@ -216,7 +273,8 @@ public class ShadowBundle {
 
     @Implementation
     public char[] getCharArray(String key) {
-        return (char[]) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof char[]) ? null : (char[]) value;
     }
 
     @Implementation
@@ -226,7 +284,8 @@ public class ShadowBundle {
 
     @Implementation
     public double[] getDoubleArray(String key) {
-        return (double[]) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof double[]) ? null : (double[]) value;
     }
 
     @Implementation
@@ -236,7 +295,8 @@ public class ShadowBundle {
 
     @Implementation
     public float[] getFloatArray(String key) {
-        return (float[]) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof float[]) ? null : (float[]) value;
     }
 
     @Implementation
@@ -246,7 +306,8 @@ public class ShadowBundle {
 
     @Implementation
     public int[] getIntArray(String key) {
-        return (int[]) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof int[]) ? null : (int[]) value;
     }
 
     @Implementation
@@ -256,7 +317,8 @@ public class ShadowBundle {
 
     @Implementation
     public long[] getLongArray(String key) {
-        return (long[]) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof long[]) ? null : (long[]) value;
     }
 
     @Implementation
@@ -266,7 +328,8 @@ public class ShadowBundle {
 
     @Implementation
     public short[] getShortArray(String key) {
-        return (short[]) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof short[]) ? null : (short[]) value;
     }
 
     @Implementation
@@ -281,7 +344,19 @@ public class ShadowBundle {
 
     @Implementation
     public String[] getStringArray(String key) {
-        return (String[]) map.get(key);
+        Object value = map.get(key);
+        return value == null || !(value instanceof String[]) ? null : (String[]) value;
+    }
+
+    @Implementation
+    public void putCharSequenceArray(String key, CharSequence[] value) {
+        map.put(key, value);
+    }
+
+    @Implementation
+    public CharSequence[] getCharSequenceArray(String key) {
+        Object value = map.get(key);
+        return value == null || !(value instanceof CharSequence[]) ? null : (CharSequence[]) value;
     }
 
     @Implementation

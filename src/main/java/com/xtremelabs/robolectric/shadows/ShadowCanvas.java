@@ -149,6 +149,7 @@ public class ShadowCanvas {
     public void resetCanvasHistory() {
         pathPaintEvents.clear();
         circlePaintEvents.clear();
+        shadowOf(targetBitmap).setDescription("");
     }
 
     public Paint getDrawnPaint() {

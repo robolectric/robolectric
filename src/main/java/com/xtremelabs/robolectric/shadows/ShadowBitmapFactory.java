@@ -16,6 +16,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.zip.CRC32;
+import java.util.zip.Checksum;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -37,7 +39,7 @@ public class ShadowBitmapFactory {
         shadowOf(bitmap).setLoadedFromResourceId(id);
         return bitmap;
     }
-    
+
     private static String getResourceName(int id) {
         return shadowOf(Robolectric.application).getResourceLoader().getNameForId(id);
     }
@@ -61,7 +63,19 @@ public class ShadowBitmapFactory {
     public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
         return create(is.toString().replaceFirst("stream for ", ""), opts);
     }
+    
+    @Implementation
+    public static Bitmap decodeByteArray(byte[] data, int offset, int length) {
+    	return decodeByteArray( data, offset, length, new BitmapFactory.Options() );
+    }
 
+    @Implementation
+    public static Bitmap decodeByteArray(byte[] data, int offset, int length, BitmapFactory.Options opts) {
+    	Checksum checksumEngine = new CRC32();
+    	checksumEngine.update(data, 0, data.length);
+    	return create("byte array, checksum:" + checksumEngine.getValue() + " offset: " + offset + " length: " + data.length, opts );
+    }
+    
     static Bitmap create(String name) {
         return create(name, new BitmapFactory.Options());
     }
@@ -84,8 +98,10 @@ public class ShadowBitmapFactory {
 
         shadowBitmap.setWidth(widthAndHeight.x);
         shadowBitmap.setHeight(widthAndHeight.y);
-        options.outWidth = widthAndHeight.x;
-        options.outHeight = widthAndHeight.y;
+        if (options != null) {
+            options.outWidth = widthAndHeight.x;
+            options.outHeight = widthAndHeight.y;
+        }
         return bitmap;
     }
 
@@ -102,6 +118,7 @@ public class ShadowBitmapFactory {
     }
 
     private static String stringify(BitmapFactory.Options options) {
+        if (options == null) return "";
         List<String> opts = new ArrayList<String>();
 
         if (options.inJustDecodeBounds) opts.add("inJustDecodeBounds");

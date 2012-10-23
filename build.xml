@@ -21,8 +21,10 @@
          should be checked in in Version Control Systems.
 
          -->
-    <property file="build.properties"/>
+    <!-- this should match whatever is defined in Robolectic.DEFAULT_SDK_VERSION -->
+    <property name="default.sdk.version" value="16"/>
 
+    <property file="build.properties"/>
     <!-- The default.properties file is created and updated by the 'android' tool, as well
          as ADT.
          This file is an integral part of the build system for your application and
@@ -52,10 +54,10 @@
     </path>
 
     <path id="android.target.classpath">
-        <pathelement path="${sdk.dir}/platforms/android-16/android.jar"/>
-        <pathelement path="${sdk.dir}/add-ons/addon_google_apis_google_inc_16/libs/maps.jar"/>
-        <pathelement path="${sdk.dir}/add-ons/addon-google_apis-google_inc_-16/libs/maps.jar"/>
-        <pathelement path="${sdk.dir}/add-ons/addon-google_apis-google-16/libs/maps.jar"/>
+        <pathelement path="${sdk.dir}/platforms/android-${default.sdk.version}/android.jar"/>
+        <pathelement path="${sdk.dir}/add-ons/addon_google_apis_google_inc_${default.sdk.version}/libs/maps.jar"/>
+        <pathelement path="${sdk.dir}/add-ons/addon-google_apis-google_inc_-${default.sdk.version}/libs/maps.jar"/>
+        <pathelement path="${sdk.dir}/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar"/>
         <pathelement path="${sdk.dir}/extras/android/support/v4/android-support-v4.jar"/>
         <pathelement path="${sdk.dir}/android-compatibility/v4/android-support-v4.jar"/>
     </path>
@@ -217,13 +219,13 @@
 
     <target name="maven-install-jars" description="Install the jar files that Maven can't find for itself">
         <exec executable="mvn">
-            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon_google_apis_google_inc_10/libs/maps.jar" />
+            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon_google_apis_google_inc_${default.sdk.version}/libs/maps.jar" />
         </exec>
         <exec executable="mvn">
-            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google_inc_-10/libs/maps.jar" />
+            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google_inc_-${default.sdk.version}/libs/maps.jar" />
         </exec>
         <exec executable="mvn">
-            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google-10/libs/maps.jar" />
+            <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar" />
         </exec>
     </target>
 
@@ -236,11 +238,13 @@
           ANDROID="tmp/sdk/android-sdk-linux/tools/android"
           chmod +x $ANDROID
           SDKS=$($ANDROID list sdk --all | awk \
-                    '/SDK Platform.* API 10/ || /Google APIs, Android API 10, revision 2/ \
+                    '/SDK Platform.* API ${default.sdk.version}/ || /Google APIs, Android API ${default.sdk.version}, revision 2/ \
                     { s=s "," int($1) } \
                     END { print substr(s, 2, length(s)) }' \
                 )
           $ANDROID update sdk --no-ui --all --filter $SDKS
+
+          cat /home/travis/.m2/settings.xml
       </echo>
       <chmod file="tmp/install-sdk" perm="u+x"/>
       <exec executable="tmp/install-sdk"/>
@@ -248,7 +252,7 @@
         <entry key="sdk.dir" value="${basedir}/tmp/sdk/android-sdk-linux/"/>
       </propertyfile>
       <exec executable="mvn">
-          <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=tmp/sdk/android-sdk-linux/add-ons/addon-google_apis-google-10/libs/maps.jar"/>
+          <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=tmp/sdk/android-sdk-linux/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar"/>
       </exec>
     </target>
 </project>

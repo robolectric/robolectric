@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.os.Bundle;
@@ -60,6 +61,14 @@ public class ShadowParcel {
     }
 
     @Implementation
+    public void writeStrongBinder(IBinder binder) {
+        if (binder == null) {
+            return;
+        }
+        parcelData.add(binder);
+    }
+
+    @Implementation
     public String readString() {
         return index < parcelData.size() ? (String) parcelData.get(index++) : null;
     }
@@ -92,6 +101,11 @@ public class ShadowParcel {
     @Implementation
     public Bundle readBundle() {
         return index < parcelData.size() ? (Bundle) parcelData.get(index++) : null;
+    }
+
+    @Implementation
+    public IBinder readStrongBinder() {
+        return index < parcelData.size() ? (IBinder) parcelData.get(index++) : null;
     }
 
     @Implementation
