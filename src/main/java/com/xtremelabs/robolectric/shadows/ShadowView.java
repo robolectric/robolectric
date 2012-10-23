@@ -1,26 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Point;
-import android.graphics.Rect;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.util.AttributeSet;
-import android.view.KeyEvent;
-import android.view.MotionEvent;
-import android.view.TouchDelegate;
-import android.view.View;
-import android.view.View.MeasureSpec;
-import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.view.ViewTreeObserver;
-import android.view.animation.Animation;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.Robolectric.Reflection.newInstanceOf;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -28,8 +9,21 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.Robolectric.Reflection.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.util.AttributeSet;
+import android.view.*;
+import android.view.View.MeasureSpec;
+import android.view.animation.Animation;
+
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this
@@ -585,24 +579,6 @@ public class ShadowView {
         return true;
     }
 
-    @Implementation
-    public final boolean getGlobalVisibleRect(Rect r) {
-        return getGlobalVisibleRect(r, null);
-    }
-
-    @Implementation
-    public boolean getGlobalVisibleRect(Rect r, Point globalOffset) {
-        int width = right - left;
-        int height = bottom - top;
-        if (width > 0 && height > 0) {
-            r.set(0, 0, width, height);
-            if (globalOffset != null) {
-                globalOffset.set(-getScrollX(), -getScrollY());
-            }
-            return parent == null || ((ShadowViewGroup)parent).getChildVisibleRect(realView, r, globalOffset);
-        }
-        return false;
-    }
 
     /**
      * Returns a string representation of this {@code View}. Unless overridden, it will be an empty string.
