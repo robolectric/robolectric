@@ -608,8 +608,23 @@ public class ShadowView {
         dumpIndent(out, indent);
 
         out.print("<" + realView.getClass().getSimpleName());
+        dumpAttributes(out);
+    }
+
+    protected void dumpAttributes(PrintStream out) {
         if (id > 0) {
             out.print(" id=\"" + shadowOf(context).getResourceLoader().getNameForId(id) + "\"");
+        }
+
+        switch (realView.getVisibility()) {
+            case View.VISIBLE:
+                break;
+            case View.INVISIBLE:
+                out.print(" visibility=\"INVISIBLE\"");
+                break;
+            case View.GONE:
+                out.print(" visibility=\"GONE\"");
+                break;
         }
     }
 

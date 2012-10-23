@@ -1410,18 +1410,51 @@ public class Robolectric {
         return shadowOf(view).checkedPerformClick();
     }
 
+    /**
+     * Returns a textual representation of the appearance of the object.
+     *
+     * @param view the view to visualize
+     */
     public static String visualize(View view) {
         Canvas canvas = new Canvas();
         view.draw(canvas);
         return shadowOf(canvas).getDescription();
     }
 
+    /**
+     * Returns a textual representation of the appearance of the object.
+     *
+     * @param canvas the canvas to visualize
+     */
     public static String visualize(Canvas canvas) {
         return shadowOf(canvas).getDescription();
     }
 
+    /**
+     * Returns a textual representation of the appearance of the object.
+     *
+     * @param bitmap the bitmap to visualize
+     */
     public static String visualize(Bitmap bitmap) {
         return shadowOf(bitmap).getDescription();
+    }
+
+    /**
+     * Emits an xml-like representation of the view to System.out.
+     *
+     * @param view the view to dump
+     */
+    public static void dump(View view) {
+        shadowOf(view).dump();
+    }
+
+    /**
+     * Returns the text contained within this view.
+     *
+     * @param view the view to scan for text
+     */
+    public static String innerText(View view) {
+        return shadowOf(view).innerText();
     }
 
     /**
