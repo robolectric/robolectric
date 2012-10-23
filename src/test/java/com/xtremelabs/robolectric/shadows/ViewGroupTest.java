@@ -1,6 +1,9 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Activity;
 import android.app.Application;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
@@ -234,5 +237,97 @@ public class ViewGroupTest {
         root.addView(child2, 1, layoutParams2);
         assertSame(layoutParams1, child1.getLayoutParams());
         assertSame(layoutParams2, child2.getLayoutParams());
+    }
+
+    @Test
+    public void shouldReturnIsVisibleWhenScrolled() throws Exception {
+        View childView = new View(new Activity());
+        ViewGroup rootView = new FrameLayout(new Activity());
+
+        Rect r = new Rect(0, 0, 100, 100);
+        childView.layout(0, 0, 100, 100);
+        rootView.layout(0, 0, 100, 100);
+        rootView.addView(childView);
+
+        assertThat(rootView.getChildVisibleRect(childView, r, null), equalTo(true));
+
+        rootView.scrollTo(50, 0);
+        assertThat(rootView.getChildVisibleRect(childView, r, null), equalTo(true));
+        assertThat(r, equalTo(new Rect(0, 0, 100, 100)));
+
+        rootView.scrollTo(100, 0);
+        assertThat(rootView.getChildVisibleRect(childView, r, null), equalTo(false));
+        assertThat(r, equalTo(new Rect(0, 0, 100, 100)));
+    }
+
+    @Test
+    public void shouldModifyOffsetWhenScrolled() throws Exception {
+        View childView = new View(new Activity());
+        ViewGroup rootView = new FrameLayout(new Activity());
+
+        Rect r = new Rect(0, 0, 100, 100);
+        childView.layout(0, 0, 100, 100);
+        rootView.layout(0, 0, 100, 100);
+        rootView.addView(childView);
+
+        Point offset = new Point(); // 0,0
+
+        rootView.scrollTo(50, 0);
+        assertThat(rootView.getChildVisibleRect(childView, r, offset), equalTo(true));
+        assertThat(offset, equalTo(new Point(-50, 0)));
+
+        rootView.scrollTo(100, 0);
+        offset = new Point(); // 0,0
+        assertThat(rootView.getChildVisibleRect(childView, r, offset), equalTo(false));
+        assertThat(offset, equalTo(new Point(-100, 0)));
+    }
+
+    @Test
+    public void shouldModifyRectWhenScrolled() throws Exception {
+        View childView = new View(new Activity());
+        ViewGroup rootView = new FrameLayout(new Activity());
+        ViewGroup parentView = new FrameLayout(new Activity());
+
+        Rect r = new Rect(0, 0, 100, 100);
+        childView.layout(0, 0, 100, 100);
+        rootView.layout(0, 0, 100, 100);
+        parentView.layout(0, 0, 100, 100);
+        parentView.addView(childView);
+        rootView.addView(parentView);
+
+        assertThat(rootView.getChildVisibleRect(childView, r, null), equalTo(true));
+
+        parentView.scrollTo(50, 0);
+        assertThat(parentView.getChildVisibleRect(childView, r, null), equalTo(true));
+        assertThat(r, equalTo(new Rect(-50, 0, 50, 100)));
+
+        r = new Rect(0, 0, 100, 100);
+        parentView.scrollTo(100, 0);
+        assertThat(parentView.getChildVisibleRect(childView, r, null), equalTo(false));
+        assertThat(r, equalTo(new Rect(0, 0, 100, 100)));
+    }
+
+    @Test
+    public void shouldModifyRectWhenBothAncestorsAreScrolled() throws Exception {
+        View childView = new View(new Activity());
+        ViewGroup rootView = new FrameLayout(new Activity());
+        ViewGroup parentXView = new FrameLayout(new Activity());
+        ViewGroup parentYView = new FrameLayout(new Activity());
+
+        Rect r = new Rect(0, 0, 100, 100);
+        childView.layout(0, 0, 100, 100);
+        rootView.layout(0, 0, 100, 100);
+        parentXView.layout(0, 0, 100, 100);
+        parentYView.layout(0, 0, 100, 100);
+
+        parentXView.addView(childView);
+        parentYView.addView(parentXView);
+        rootView.addView(parentYView);
+
+        parentXView.scrollTo(50, 0);
+        parentYView.scrollTo(0, 50);
+        rootView.scrollTo(0, 100);
+        assertThat(parentXView.getChildVisibleRect(childView, r, null), equalTo(false));
+        assertThat(r, equalTo(new Rect(-50, -50, 50, 50)));
     }
 }

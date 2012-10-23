@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
+import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.view.MotionEvent;
 import android.view.View;
@@ -12,6 +13,7 @@ import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -444,6 +446,49 @@ public class ViewTest {
             }
         });
         assertThat(view.isLongClickable(), equalTo(true));
+    }
+
+    @Test
+    public void getGlobalVisibleRect_shouldPopulateSizeIfParentIsNull() throws Exception {
+        view.layout(10, 20, 30, 40);
+        Rect result = new Rect();
+
+        assertThat(view.getGlobalVisibleRect(result, null), equalTo(true));
+
+        assertThat(result, equalTo(new Rect(0, 0, 20 ,20)));
+    }
+
+    @Test
+    public void getGlobalVisibleRect_shouldPopulateGlobalOffsetWithNegativeScroll() throws Exception {
+        view.layout(0, 0, 23, 134);
+        view.scrollTo(15, 47);
+        Rect ignored = new Rect();
+        Point result = new Point();
+        view.getGlobalVisibleRect(ignored, result);
+
+        assertThat(result, equalTo(new Point(-15, -47)));
+    }
+
+    @Test
+    public void getGlobalVisibleRect_returnsFalseIfAreaIsZero() throws Exception {
+        Rect ignored = new Rect();
+        view.layout(5, 10, 5, 20);
+        assertThat(view.getGlobalVisibleRect(ignored, null), equalTo(false));
+        view.layout(5, 10, 50, 10);
+        assertThat(view.getGlobalVisibleRect(ignored, null), equalTo(false));
+    }
+
+    @Test
+    public void getGlobalVisibleRect_shouldCallParentGetChildVisibleRect() throws Exception {
+        view.layout(0, 0, 25, 20);
+        ViewGroup parentView = new FrameLayout(new Activity());
+        parentView.addView(view);
+        parentView.scrollTo(18, 49);
+        Rect ignored = new Rect();
+        Point result = new Point();
+        view.getGlobalVisibleRect(ignored, result);
+
+        assertThat(result, equalTo(new Point(-18, -49)));
     }
 
     private static class TestAnimation extends Animation {

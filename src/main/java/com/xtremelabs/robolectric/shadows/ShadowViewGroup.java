@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation.AnimationListener;
@@ -201,6 +202,35 @@ public class ShadowViewGroup extends ShadowView {
     @Implementation
     public void requestDisallowInterceptTouchEvent(boolean disallowIntercept) {
         disallowInterceptTouchEvent = disallowIntercept;
+    }
+
+    @Implementation
+    public boolean getChildVisibleRect(View child, Rect r, android.graphics.Point offset) {
+        final Rect rect = new Rect();
+        rect.set(r);
+
+        int dx = child.getLeft() - getScrollX();
+        int dy = child.getTop() - getScrollY();
+
+        rect.offset(dx, dy);
+
+        if (offset != null) {
+            offset.x += dx;
+            offset.y += dy;
+        }
+
+        // If the child's rectangle is visible within me (e.g. not off in negative space)
+        if (rect.intersect(0, 0, right - left, bottom - top)) {
+            if (parent == null) {
+                // I am a root view. This child is wholly visible.
+                return true;
+            }
+            // The child is partly visible
+            r.set(rect);
+            return ((ShadowViewGroup) parent).getChildVisibleRect(realView, r, offset);
+        }
+
+        return false;
     }
 
     public boolean getDisallowInterceptTouchEvent() {
