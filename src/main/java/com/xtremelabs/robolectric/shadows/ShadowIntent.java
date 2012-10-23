@@ -291,6 +291,12 @@ public class ShadowIntent {
     }
 
     @Implementation
+    public Intent putExtra(String key, float[] value) {
+        extras.put(key, value);
+        return realIntent;
+    }
+
+    @Implementation
     public int[] getIntArrayExtra(String name) {
         return (int[]) extras.get(name);
     }
