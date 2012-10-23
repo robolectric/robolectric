@@ -209,6 +209,7 @@ public class ViewGroupTest {
     @Test
     public void dump_shouldDumpStructure() throws Exception {
         child3.setId(R.id.snippet_text);
+        child3b.setVisibility(View.GONE);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         shadowOf(root).dump(new PrintStream(out), 0);
@@ -217,7 +218,7 @@ public class ViewGroupTest {
                 "  <View/>\n" +
                 "  <FrameLayout id=\"id/snippet_text\">\n" +
                 "    <View/>\n" +
-                "    <View/>\n" +
+                "    <View visibility=\"GONE\"/>\n" +
                 "  </FrameLayout>\n" +
                 "</FrameLayout>\n", out.toString());
     }
