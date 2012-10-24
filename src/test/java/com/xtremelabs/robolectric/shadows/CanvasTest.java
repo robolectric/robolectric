@@ -118,4 +118,14 @@ public class CanvasTest {
         assertThat(shadow.getPathPaintHistoryCount(), equalTo(0));
         assertEquals("", shadow.getDescription());
     }
+
+    @Test
+    public void shouldGetAndSetHeightAndWidth() throws Exception {
+        Canvas canvas = new Canvas();
+        shadowOf(canvas).setWidth(99);
+        shadowOf(canvas).setHeight(42);
+
+        assertEquals(99, canvas.getWidth());
+        assertEquals(42, canvas.getHeight());
+    }
 }
