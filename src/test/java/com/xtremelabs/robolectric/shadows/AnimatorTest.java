@@ -2,11 +2,11 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.animation.Animator;
 import android.animation.TimeInterpolator;
+import com.xtremelabs.robolectric.RobolectricShadowOfLevel16;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
@@ -20,10 +20,10 @@ public class AnimatorTest {
         animator.addListener(startListener);
         animator.addListener(endListener);
 
-        shadowOf(animator).notifyStart();
+        RobolectricShadowOfLevel16.shadowOf(animator).notifyStart();
         assertThat(startListener.startWasCalled, equalTo(true));
 
-        shadowOf(animator).notifyEnd();
+        RobolectricShadowOfLevel16.shadowOf(animator).notifyEnd();
         assertThat(endListener.endWasCalled, equalTo(true));
     }
 

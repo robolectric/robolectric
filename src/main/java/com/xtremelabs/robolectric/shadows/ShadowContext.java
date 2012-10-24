@@ -29,6 +29,7 @@ abstract public class ShadowContext {
     public static final File EXTERNAL_CACHE_DIR = createTempDir("android-external-cache");
     public static final File FILES_DIR = createTempDir("android-tmp");
     public static final File EXTERNAL_FILES_DIR = createTempDir("android-external-files");
+    public static final File DATABASE_DIR = createTempDir("android-database");
 
     @RealObject private Context realContext;
 
@@ -76,6 +77,11 @@ abstract public class ShadowContext {
         if (attrs == null) {
             return result;
         }
+        
+        if( set == null ){
+        	return getTheme().obtainStyledAttributes( attrs );
+        }
+        
         ShadowTypedArray styledAttributes = Robolectric.shadowOf(result);
         for(int attr : attrs) {
             styledAttributes.add(set.getAttributeValue(attr));
@@ -102,6 +108,17 @@ abstract public class ShadowContext {
         return FILES_DIR;
     }
 
+	@Implementation
+	public String[] fileList() {
+		return getFilesDir().list();
+	}
+
+    @Implementation
+    public File getDatabasePath(String name) {
+        DATABASE_DIR.mkdirs();
+        return new File(DATABASE_DIR, name);
+    }
+    
     @Implementation
     public File getExternalCacheDir() {
         EXTERNAL_CACHE_DIR.mkdir();
@@ -152,6 +169,7 @@ abstract public class ShadowContext {
         clearFiles(CACHE_DIR);
         clearFiles(EXTERNAL_CACHE_DIR);
         clearFiles(EXTERNAL_FILES_DIR);
+        clearFiles(DATABASE_DIR);
     }
 
     public static void clearFiles(File dir) {

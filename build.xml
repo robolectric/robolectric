@@ -243,6 +243,8 @@
                     END { print substr(s, 2, length(s)) }' \
                 )
           $ANDROID update sdk --no-ui --all --filter $SDKS
+
+          cat /home/travis/.m2/settings.xml
       </echo>
       <chmod file="tmp/install-sdk" perm="u+x"/>
       <exec executable="tmp/install-sdk"/>

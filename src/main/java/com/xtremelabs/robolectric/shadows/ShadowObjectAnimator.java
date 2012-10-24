@@ -3,13 +3,13 @@ package com.xtremelabs.robolectric.shadows;
 import android.animation.ObjectAnimator;
 import android.os.Handler;
 import android.os.Looper;
+import com.xtremelabs.robolectric.RobolectricShadowOfLevel16;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.lang.reflect.Method;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -29,7 +29,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
         result.setTarget(target);
         result.setPropertyName(propertyName);
         result.setFloatValues(values);
-        shadowOf(result).setAnimationType(float.class);
+        RobolectricShadowOfLevel16.shadowOf(result).setAnimationType(float.class);
 
         return result;
     }
