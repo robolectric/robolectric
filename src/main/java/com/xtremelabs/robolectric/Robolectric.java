@@ -384,6 +384,7 @@ public class Robolectric {
         ShadowContentResolver.reset();
         ShadowLocalBroadcastManager.reset();
         ShadowMimeTypeMap.reset();
+        ShadowPowerManager.reset();
         ShadowStatFs.reset();
     }
 

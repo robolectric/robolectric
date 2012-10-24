@@ -4,6 +4,12 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
 import static junit.framework.Assert.assertTrue;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.junit.Assert.assertThat;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
@@ -73,5 +79,27 @@ public class PowerManagerTest {
     public void shouldThrowRuntimeExceptionIfLockisUnderlocked() throws Exception {
         PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
         lock.release();
+    }
+    
+    @Test
+    public void shouldLogLatestWakeLock() throws Exception {
+    	ShadowPowerManager.reset();
+    	assertThat( shadowPowerManager.getLatestWakeLock(), nullValue() );
+
+    	PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
+    	lock.acquire();
+
+    	assertThat( shadowPowerManager.getLatestWakeLock(), notNullValue() );
+    	assertThat( shadowPowerManager.getLatestWakeLock(), sameInstance( lock ) );
+    	assertThat( lock.isHeld(), equalTo(true) );
+    	
+    	lock.release();
+    	
+    	assertThat( shadowPowerManager.getLatestWakeLock(), notNullValue() );
+    	assertThat( shadowPowerManager.getLatestWakeLock(), sameInstance( lock ) );
+    	assertThat( lock.isHeld(), equalTo(false) );
+    	
+    	ShadowPowerManager.reset();
+    	assertThat( shadowPowerManager.getLatestWakeLock(), nullValue() );
     }
 }
