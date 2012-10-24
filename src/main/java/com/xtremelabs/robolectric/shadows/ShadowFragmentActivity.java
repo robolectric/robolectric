@@ -181,7 +181,6 @@ public class ShadowFragmentActivity extends ShadowActivity {
                 }
                 FragmentActivity activity = (FragmentActivity) getRealActivity();
                 shadowFragment.setActivity(activity);
-                fragment.onAttach(activity);
                 fragment.onCreate(null);
                 shadowFragment.createView();
                 if (containerViewId == R.id.content) setContentView(fragment.getView());
@@ -208,6 +207,7 @@ public class ShadowFragmentActivity extends ShadowActivity {
             public FragmentTransaction remove(Fragment fragment) {
                 intLookup.remove(fragment.getId());
                 tagLookup.remove(fragment.getTag());
+                shadowOf(fragment).setActivity(null);
                 return this;
             }
 

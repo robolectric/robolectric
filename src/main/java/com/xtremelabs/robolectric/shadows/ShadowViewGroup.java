@@ -57,7 +57,6 @@ public class ShadowViewGroup extends ShadowView {
     @Implementation
     public void addView(View child) {
         ((ViewGroup) realView).addView(child, -1);
-        setChildLayoutParams(child);
     }
 
     @Implementation
@@ -68,29 +67,25 @@ public class ShadowViewGroup extends ShadowView {
             children.add(index, child);
         }
         shadowOf(child).parent = this;
-        setChildLayoutParams(child);
-    }
-
-    protected void setChildLayoutParams(View child) {
-        shadowOf(child).setLayoutParams(new ViewGroup.LayoutParams(0, 0));
+        addedChild(child);
     }
 
     @Implementation
     public void addView(View child, int width, int height) {
         ((ViewGroup) realView).addView(child, -1);
-        setChildLayoutParams(child);
+        addedChild(child);
     }
 
     @Implementation
     public void addView(View child, ViewGroup.LayoutParams params) {
         ((ViewGroup) realView).addView(child, -1);
-        setChildLayoutParams(child);
+        addedChild(child);
     }
 
     @Implementation
     public void addView(View child, int index, ViewGroup.LayoutParams params) {
         ((ViewGroup) realView).addView(child, index);
-        setChildLayoutParams(child);
+        addedChild(child);
     }
 
     @Implementation
@@ -99,6 +94,7 @@ public class ShadowViewGroup extends ShadowView {
         if (child == null) return;
         shadowOf(child).parent = null;
         children.remove(child);
+        removedChild(child);
     }
 
     @Implementation
@@ -126,13 +122,16 @@ public class ShadowViewGroup extends ShadowView {
     public void removeAllViews() {
         for (View child : children) {
             shadowOf(child).parent = null;
+            removedChild(child);
         }
         children.clear();
     }
 
     @Implementation
     public void removeViewAt(int position) {
-        shadowOf(children.remove(position)).parent = null;
+        View child = children.remove(position);
+        shadowOf(child).parent = null;
+        removedChild(child);
     }
 
     @Override
@@ -210,6 +209,35 @@ public class ShadowViewGroup extends ShadowView {
     @Implementation
     public AnimationListener getLayoutAnimationListener() {
         return animListener;
+    }
+
+    @Override
+    public void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        for (int i = 0; i < getChildCount(); i++) {
+            shadowOf(getChildAt(i)).callOnAttachedToWindow();
+        }
+    }
+
+    @Override
+    public void onDetachedFromWindow() {
+        for (int i = 0; i < getChildCount(); i++) {
+            shadowOf(getChildAt(i)).callOnDetachedFromWindow();
+        }
+        super.onDetachedFromWindow();
+    }
+
+    protected void addedChild(View child) {
+        if (isAttachedToWindow()) shadowOf(child).callOnAttachedToWindow();
+        setChildLayoutParams(child);
+    }
+
+    protected void removedChild(View child) {
+        if (isAttachedToWindow()) shadowOf(child).callOnDetachedFromWindow();
+    }
+
+    protected void setChildLayoutParams(View child) {
+        shadowOf(child).setLayoutParams(new ViewGroup.LayoutParams(0, 0));
     }
 
     private boolean isValidIndex(int i) {

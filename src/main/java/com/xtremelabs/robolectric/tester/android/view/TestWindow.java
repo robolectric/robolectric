@@ -10,6 +10,8 @@ import android.view.*;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.Robolectric;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 public class TestWindow extends Window {
     public int flags;
     public int requestedFeatureId;
@@ -53,11 +55,13 @@ public class TestWindow extends Window {
     }
 
     @Override public void setContentView(int layoutResID) {
-        this.contentView = getLayoutInflater().inflate(layoutResID, null);
+        setContentView(getLayoutInflater().inflate(layoutResID, null));
     }
 
     @Override public void setContentView(View view) {
-        this.contentView = view;
+        if (contentView != null) shadowOf(contentView).callOnDetachedFromWindow();
+        contentView = view;
+        if (contentView != null) shadowOf(contentView).callOnAttachedToWindow();
     }
 
     @Override public void setContentView(View view, ViewGroup.LayoutParams params) {
