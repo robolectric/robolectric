@@ -103,7 +103,7 @@ public class CanvasTest {
         ShadowCanvas shadow = shadowOf(canvas);
         assertThat(shadow.getPathPaintHistoryCount(), equalTo(2));
         assertEquals(shadowOf(shadow.getDrawnPath(0)).getPoints().get(0), new ShadowPath.Point(10, 10, LINE_TO));
-        assertEquals(shadowOf(shadow.getDrawnPath(0)).getPoints().get(1), new ShadowPath.Point(20, 20, LINE_TO));
+        assertEquals(shadowOf(shadow.getDrawnPath(1)).getPoints().get(0), new ShadowPath.Point(20, 20, LINE_TO));
     }
 
     @Test
