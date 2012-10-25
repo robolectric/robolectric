@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
@@ -82,8 +83,27 @@ public class CanvasTest {
 
         ShadowCanvas shadow = shadowOf(canvas);
         assertThat(shadow.getPathPaintHistoryCount(), equalTo(1));
-        assertThat(shadow.getDrawnPath(0), equalTo(path));
+        assertEquals(shadowOf(shadow.getDrawnPath(0)).getPoints().get(0), new ShadowPath.Point(10, 10, LINE_TO));
         assertThat(shadow.getDrawnPathPaint(0), equalTo(paint));
+    }
+
+    @Test
+    public void drawPath_shouldRecordThePointsOfEachPathEvenWhenItIsTheSameInstance() throws Exception {
+        Canvas canvas = new Canvas(targetBitmap);
+        Paint paint = new Paint();
+        Path path = new Path();
+
+        path.lineTo(10, 10);
+        canvas.drawPath(path, paint);
+
+        path.reset();
+        path.lineTo(20, 20);
+        canvas.drawPath(path, paint);
+
+        ShadowCanvas shadow = shadowOf(canvas);
+        assertThat(shadow.getPathPaintHistoryCount(), equalTo(2));
+        assertEquals(shadowOf(shadow.getDrawnPath(0)).getPoints().get(0), new ShadowPath.Point(10, 10, LINE_TO));
+        assertEquals(shadowOf(shadow.getDrawnPath(0)).getPoints().get(1), new ShadowPath.Point(20, 20, LINE_TO));
     }
 
     @Test
