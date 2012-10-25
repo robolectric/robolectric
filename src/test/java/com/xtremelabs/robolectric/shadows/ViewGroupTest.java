@@ -5,6 +5,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
+import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -88,6 +89,14 @@ public class ViewGroupTest {
         root.setLayoutAnimationListener(animationListener);
 
         assertThat(root.getLayoutAnimationListener(), sameInstance(animationListener));
+    }
+    
+    @Test
+    public void testLayoutAnimation() {
+    	assertThat(root.getLayoutAnimation(), nullValue());
+    	LayoutAnimationController layoutAnim = new LayoutAnimationController(context, null);
+    	root.setLayoutAnimation(layoutAnim);
+    	assertThat(root.getLayoutAnimation(), sameInstance(layoutAnim));
     }
 
     @Test
