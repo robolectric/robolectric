@@ -22,6 +22,25 @@ public class ShadowBaseAdapter {
     }
 
     /**
+     * Android's BaseAdapter returns 1, which is the minimum view type count that an
+     * adapter is allowed to return.
+     */
+    @Implementation
+    public int getViewTypeCount() {
+        return 1;
+    }
+
+    /**
+     * Android's BaseAdapter simply returns true.
+     *
+     * @param position The position in the adapter.
+     */
+    @Implementation
+    public boolean isEnabled(int position) {
+        return true;
+    }
+
+    /**
      * Just returns true
      *
      * @return true
