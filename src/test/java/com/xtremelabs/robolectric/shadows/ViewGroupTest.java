@@ -8,6 +8,7 @@ import android.view.animation.Animation.AnimationListener;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -26,10 +27,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewGroupTest {
@@ -212,6 +210,10 @@ public class ViewGroupTest {
     public void dump_shouldDumpStructure() throws Exception {
         child3.setId(R.id.snippet_text);
         child3b.setVisibility(View.GONE);
+        TextView textView = new TextView(context);
+        textView.setText("Here's some text!");
+        textView.setVisibility(View.INVISIBLE);
+        child3.addView(textView);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         shadowOf(root).dump(new PrintStream(out), 0);
@@ -221,6 +223,7 @@ public class ViewGroupTest {
                 "  <FrameLayout id=\"id/snippet_text\">\n" +
                 "    <View/>\n" +
                 "    <View visibility=\"GONE\"/>\n" +
+                "    <TextView visibility=\"INVISIBLE\" text=\"Here&apos;s some text!\"/>\n" +
                 "  </FrameLayout>\n" +
                 "</FrameLayout>\n", out.toString());
     }

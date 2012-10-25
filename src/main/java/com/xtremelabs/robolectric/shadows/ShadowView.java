@@ -1,14 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.Robolectric.Reflection.newInstanceOf;
-
-import java.io.PrintStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.HashMap;
-import java.util.Map;
-
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -19,11 +10,19 @@ import android.util.AttributeSet;
 import android.view.*;
 import android.view.View.MeasureSpec;
 import android.view.animation.Animation;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+
+import java.io.PrintStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.xtremelabs.robolectric.Robolectric.Reflection.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this
@@ -613,19 +612,23 @@ public class ShadowView {
 
     protected void dumpAttributes(PrintStream out) {
         if (id > 0) {
-            out.print(" id=\"" + shadowOf(context).getResourceLoader().getNameForId(id) + "\"");
+            dumpAttribute(out, "id", shadowOf(context).getResourceLoader().getNameForId(id));
         }
 
         switch (realView.getVisibility()) {
             case View.VISIBLE:
                 break;
             case View.INVISIBLE:
-                out.print(" visibility=\"INVISIBLE\"");
+                dumpAttribute(out, "visibility", "INVISIBLE");
                 break;
             case View.GONE:
-                out.print(" visibility=\"GONE\"");
+                dumpAttribute(out, "visibility", "GONE");
                 break;
         }
+    }
+
+    protected void dumpAttribute(PrintStream out, String name, String value) {
+        out.print(" " + name + "=\"" + ShadowTextUtils.htmlEncode(value) + "\"");
     }
 
     protected void dumpIndent(PrintStream out, int indent) {
