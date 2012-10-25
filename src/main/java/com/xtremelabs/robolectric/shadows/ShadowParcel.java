@@ -1,16 +1,19 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.os.Bundle;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 @Implements(Parcel.class)
 @SuppressWarnings("unchecked")
@@ -69,6 +72,20 @@ public class ShadowParcel {
     }
 
     @Implementation
+    public final void writeMap(Map map) {
+        if (map == null) {
+            writeInt(-1);
+            return;
+        }
+        Set<Map.Entry<String,Object>> entries = map.entrySet();
+        writeInt(entries.size());
+        for (Map.Entry<String,Object> e : entries) {
+            parcelData.add(e.getKey());
+            parcelData.add(e.getValue());
+        }
+    }
+
+    @Implementation
     public String readString() {
         return index < parcelData.size() ? (String) parcelData.get(index++) : null;
     }
@@ -106,6 +123,22 @@ public class ShadowParcel {
     @Implementation
     public IBinder readStrongBinder() {
         return index < parcelData.size() ? (IBinder) parcelData.get(index++) : null;
+    }
+
+    @Implementation
+    public final HashMap readHashMap(ClassLoader loader)
+    {
+        int count = readInt();
+        if (count < 0) {
+            return null;
+        }
+        HashMap map = new HashMap(count);
+        for (int i = 0; i < count; ++i) {
+            Object key = parcelData.get(index++);
+            Object value = parcelData.get(index++);
+            map.put(key, value);
+        }
+        return map;
     }
 
     @Implementation
