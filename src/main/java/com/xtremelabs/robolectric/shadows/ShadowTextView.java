@@ -19,6 +19,7 @@ import android.widget.TextView;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -545,6 +546,15 @@ public class ShadowTextView extends ShadowView {
 
     public void setLayout(Layout layout) {
         this.layout = layout;
+    }
+
+    @Override
+    protected void dumpAttributes(PrintStream out) {
+        super.dumpAttributes(out);
+        CharSequence text = getText();
+        if (text != null && text.length() > 0) {
+            dumpAttribute(out, "text", text.toString());
+        }
     }
 
     public static class CompoundDrawables {

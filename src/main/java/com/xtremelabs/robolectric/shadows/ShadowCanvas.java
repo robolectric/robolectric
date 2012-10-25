@@ -28,6 +28,8 @@ public class ShadowCanvas {
     private float translateY;
     private float scaleX = 1;
     private float scaleY = 1;
+    private int height;
+    private int width;
 
     public void __constructor__(Bitmap bitmap) {
         this.targetBitmap = bitmap;
@@ -154,6 +156,24 @@ public class ShadowCanvas {
 
     public Paint getDrawnPaint() {
         return drawnPaint;
+    }
+
+    public void setHeight(int height) {
+        this.height = height;
+    }
+
+    public void setWidth(int width) {
+        this.width = width;
+    }
+
+    @Implementation
+    public int getWidth() {
+        return width;
+    }
+
+    @Implementation
+    public int getHeight() {
+        return height;
     }
 
     private static class PathPaintHistoryEvent {
