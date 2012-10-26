@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 
@@ -41,8 +42,10 @@ public class ShadowResolveInfo {
 			
 		ResolveInfo resInfo = new ResolveInfo();
 		ActivityInfo actInfo = new ActivityInfo();
+        actInfo.applicationInfo = new ApplicationInfo();
 		actInfo.packageName = packageName;
-		actInfo.name = activityName;
+        actInfo.applicationInfo.packageName = packageName;
+        actInfo.name = activityName;
 		resInfo.activityInfo = actInfo;
 		
 		ShadowResolveInfo shResolve = Robolectric.shadowOf(resInfo );
