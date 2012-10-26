@@ -22,6 +22,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowCanvas {
     private List<PathPaintHistoryEvent> pathPaintEvents = new ArrayList<PathPaintHistoryEvent>();
     private List<CirclePaintHistoryEvent> circlePaintEvents = new ArrayList<CirclePaintHistoryEvent>();
+    private List<TextHistoryEvent> drawnTextEventHistory = new ArrayList<TextHistoryEvent>();
     private Paint drawnPaint;
     private Bitmap targetBitmap = newInstanceOf(Bitmap.class);
     private float translateX;
@@ -41,6 +42,11 @@ public class ShadowCanvas {
 
     public String getDescription() {
         return shadowOf(targetBitmap).getDescription();
+    }
+
+    @Implementation
+    public void drawText(String text, float x, float y, Paint paint) {
+        drawnTextEventHistory.add(new TextHistoryEvent(x, y, paint, text));
     }
 
     @Implementation
@@ -149,6 +155,7 @@ public class ShadowCanvas {
     }
 
     public void resetCanvasHistory() {
+        drawnTextEventHistory.clear();
         pathPaintEvents.clear();
         circlePaintEvents.clear();
         shadowOf(targetBitmap).setDescription("");
@@ -176,6 +183,14 @@ public class ShadowCanvas {
         return height;
     }
 
+    public TextHistoryEvent getDrawnTextEvent(int i) {
+        return drawnTextEventHistory.get(i);
+    }
+
+    public int getTextHistoryCount() {
+        return drawnTextEventHistory.size();
+    }
+
     private static class PathPaintHistoryEvent {
         private Path drawnPath;
         private Paint pathPaint;
@@ -197,6 +212,20 @@ public class ShadowCanvas {
             this.centerX = centerX;
             this.centerY = centerY;
             this.radius = radius;
+        }
+    }
+
+    public static class TextHistoryEvent {
+        public float x;
+        public float y;
+        public Paint paint;
+        public String text;
+
+        private TextHistoryEvent(float x, float y, Paint paint, String text) {
+            this.x = x;
+            this.y = y;
+            this.paint = paint;
+            this.text = text;
         }
     }
 }

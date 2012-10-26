@@ -131,11 +131,13 @@ public class CanvasTest {
     public void resetCanvasHistory_shouldClearTheHistoryAndDescription() throws Exception {
         Canvas canvas = new Canvas();
         canvas.drawPath(new Path(), new Paint());
+        canvas.drawText("hi", 1, 2, new Paint());
 
         ShadowCanvas shadow = shadowOf(canvas);
         shadow.resetCanvasHistory();
 
         assertThat(shadow.getPathPaintHistoryCount(), equalTo(0));
+        assertThat(shadow.getTextHistoryCount(), equalTo(0));
         assertEquals("", shadow.getDescription());
     }
 
@@ -147,5 +149,30 @@ public class CanvasTest {
 
         assertEquals(99, canvas.getWidth());
         assertEquals(42, canvas.getHeight());
+    }
+
+    @Test
+    public void shouldRecordText() throws Exception {
+        Canvas canvas = new Canvas();
+        Paint paint = new Paint();
+        Paint paint2 = new Paint();
+        paint.setColor(1);
+        paint2.setColor(5);
+        canvas.drawText("hello", 1, 2, paint);
+        canvas.drawText("hello 2", 4, 6, paint2);
+        ShadowCanvas shadowCanvas = shadowOf(canvas);
+
+        assertThat(shadowCanvas.getTextHistoryCount(), equalTo(2));
+
+        assertEquals(1f, shadowCanvas.getDrawnTextEvent(0).x, 0);
+        assertEquals(2f, shadowCanvas.getDrawnTextEvent(0).y, 0);
+        assertEquals(4f, shadowCanvas.getDrawnTextEvent(1).x, 0);
+        assertEquals(6f, shadowCanvas.getDrawnTextEvent(1).y, 0);
+
+        assertEquals(paint, shadowCanvas.getDrawnTextEvent(0).paint);
+        assertEquals(paint2, shadowCanvas.getDrawnTextEvent(1).paint);
+
+        assertEquals("hello", shadowCanvas.getDrawnTextEvent(0).text);
+        assertEquals("hello 2", shadowCanvas.getDrawnTextEvent(1).text);
     }
 }
