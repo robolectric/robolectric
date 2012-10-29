@@ -83,13 +83,31 @@ public class ShadowCanvas {
 
         int x = (int) (left + translateX);
         int y = (int) (top + translateY);
-        if (x != 0 && y != 0) {
+        if (x != 0 || y != 0) {
             appendDescription(" at (" + x + "," + y + ")");
         }
 
         if (scaleX != 1 && scaleY != 1) {
             appendDescription(" scaled by (" + scaleX + "," + scaleY + ")");
         }
+    }
+
+    @Implementation
+    public void drawBitmap(Bitmap bitmap, Rect src, Rect dst, Paint paint) {
+        describeBitmap(bitmap, paint);
+
+        appendDescription(" at (" +
+                dst.left + "," + dst.top +
+                ") with height=" + dst.height() +
+                " and width=" + dst.width() +
+                " taken from " + src.toString());
+    }
+
+    @Implementation
+    public void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
+        describeBitmap(bitmap, paint);
+
+        appendDescription(" transformed by matrix");
     }
 
     @Implementation
@@ -117,13 +135,6 @@ public class ShadowCanvas {
         if (getDescription().length() != 0) {
             appendDescription("\n");
         }
-    }
-
-    @Implementation
-    public void drawBitmap(Bitmap bitmap, Matrix matrix, Paint paint) {
-        describeBitmap(bitmap, paint);
-
-        appendDescription(" transformed by matrix");
     }
 
     public int getPathPaintHistoryCount() {
