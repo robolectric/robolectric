@@ -9,4 +9,7 @@
         <item>bar</item>
     </string-array>
     <string name="copy">Local Copy</string>
+    <string name="preference_key">prefKey</string>
+    <string name="preference_title">prefTitle</string>
+    <string name="preference_summary">prefSummary</string>
 </resources>

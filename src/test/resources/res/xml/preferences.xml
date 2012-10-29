@@ -33,14 +33,23 @@
 		/>
 
 	<Preference
-		android:key="preference"
-		android:title="Preference Title"
-		android:summary=""/>
+		android:key="@string/preference_key"
+		android:title="@string/preference_title"
+		android:summary="@string/preference_summary"/>
 
 	<RingtonePreference
 		android:key="ringtone"
 		android:title="Ringtone Test"
 		android:summary=""
 		/>
+
+    <PreferenceScreen
+            android:key="subscreen"
+            android:title="SubScreen">
+        <Preference
+                android:key="subpref"
+                android:title="SubPref"
+                />
+    </PreferenceScreen>
 
 </PreferenceScreen>  
