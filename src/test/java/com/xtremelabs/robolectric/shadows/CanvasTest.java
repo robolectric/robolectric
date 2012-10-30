@@ -38,6 +38,14 @@ public class CanvasTest {
     }
 
     @Test
+    public void shouldDescribeBitmapDrawing_withDestinationRect() throws Exception {
+        Canvas canvas = new Canvas(targetBitmap);
+        canvas.drawBitmap(imageBitmap, new Rect(1,2,3,4), new Rect(5,6,7,8), new Paint());
+
+        assertEquals("Bitmap for file:/an/image.jpg at (5,6) with height=2 and width=2 taken from Rect(1, 2 - 3, 4)", shadowOf(canvas).getDescription());
+    }
+
+    @Test
     public void shouldDescribeBitmapDrawing_WithMatrix() throws Exception {
         Canvas canvas = new Canvas(targetBitmap);
         canvas.drawBitmap(imageBitmap, new Matrix(), new Paint());
