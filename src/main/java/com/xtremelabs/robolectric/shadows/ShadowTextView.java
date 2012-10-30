@@ -426,10 +426,10 @@ public class ShadowTextView extends ShadowView {
     }
 
     private void applyHintColorAttribute() {
-        String colorValue = attributeSet.getAttributeValue("android", "hintColor");
+        String colorValue = attributeSet.getAttributeValue("android", "textColorHint");
         if (colorValue != null) {
             if (colorValue.startsWith("@color/") || colorValue.startsWith("@android:color/")) {
-                int colorResId = attributeSet.getAttributeResourceValue("android", "hintColor", 0);
+                int colorResId = attributeSet.getAttributeResourceValue("android", "textColorHint", 0);
                 setHintTextColor(context.getResources().getColor(colorResId));
             } else if (colorValue.startsWith("#")) {
                 int colorFromHex = (int) Long.valueOf(colorValue.replaceAll("#", ""), 16).longValue();
