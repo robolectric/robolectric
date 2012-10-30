@@ -221,12 +221,23 @@ public class ShadowTextView extends ShadowView {
         if (compoundDrawablesImpl == null) {
             return new Drawable[]{null, null, null, null};
         }
-        return new Drawable[]{
-                compoundDrawablesImpl.leftDrawable,
-                compoundDrawablesImpl.topDrawable,
-                compoundDrawablesImpl.rightDrawable,
-                compoundDrawablesImpl.bottomDrawable
-        };
+
+        if(compoundDrawablesImpl.left == 0 && compoundDrawablesImpl.right == 0 &&
+            compoundDrawablesImpl.top == 0 && compoundDrawablesImpl.bottom == 0) {
+            return new Drawable[]{
+                    compoundDrawablesImpl.leftDrawable,
+                    compoundDrawablesImpl.topDrawable,
+                    compoundDrawablesImpl.rightDrawable,
+                    compoundDrawablesImpl.bottomDrawable
+            };
+        } else {
+            return new Drawable[]{
+                buildDrawable(compoundDrawablesImpl.left),
+                buildDrawable(compoundDrawablesImpl.top),
+                buildDrawable(compoundDrawablesImpl.right),
+                buildDrawable(compoundDrawablesImpl.bottom)
+            };
+        }
     }
 
     @Implementation

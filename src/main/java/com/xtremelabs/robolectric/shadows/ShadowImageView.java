@@ -1,14 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.widget.ImageView;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -50,41 +47,6 @@ public class ShadowImageView extends ShadowView {
     public void setImageResource(int resId) {
         this.resourceId = resId;
         setImageDrawable(buildDrawable(resId));
-    }
-
-    /**
-     * Build drawable, either LayerDrawable or BitmapDrawable.
-     *
-     * @param resourceId Resource id
-     * @return Drawable
-     */
-    protected Drawable buildDrawable(int resourceId) {
-        if (isDrawableXml(resourceId)) {
-            int[] resourceIds = shadowOf(Robolectric.application)
-                    .getResourceLoader().getDrawableIds(resourceId);
-
-            Drawable[] drawables = new Drawable[resourceIds.length];
-
-            for (int i = 0; i < resourceIds.length; i++) {
-                drawables[i] = buildDrawable(resourceIds[i]);
-            }
-
-            return new LayerDrawable(drawables);
-        } else {
-            return new BitmapDrawable(BitmapFactory.decodeResource(
-                    getResources(), resourceId));
-        }
-    }
-
-    /**
-     * Does the resource id point to xml resource.
-     *
-     * @param resourceId Resource id
-     * @return Boolean
-     */
-    private boolean isDrawableXml(int resourceId) {
-        return shadowOf(Robolectric.application).getResourceLoader()
-                .isDrawableXml(resourceId);
     }
 
     @Implementation
