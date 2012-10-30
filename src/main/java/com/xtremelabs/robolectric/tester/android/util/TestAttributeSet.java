@@ -92,8 +92,12 @@ public class TestAttributeSet implements AttributeSet {
     @Override
     public String getAttributeValue(int resourceId) {
         String qualifiedResourceName = resourceExtractor.getResourceName(resourceId);
-        String resourceName = qualifiedResourceName.substring(qualifiedResourceName.indexOf('/') + 1);
-        return getAttributeValueInMap(null, resourceName);
+        if (qualifiedResourceName != null) {
+            String resourceName = qualifiedResourceName.substring(qualifiedResourceName.indexOf('/') + 1);
+            return getAttributeValueInMap(null, resourceName);
+        } else {
+            return null;
+        }
     }
 
     @Override
