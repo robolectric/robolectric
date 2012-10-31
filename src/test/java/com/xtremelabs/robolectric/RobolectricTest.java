@@ -26,7 +26,10 @@ import java.io.PrintStream;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class RobolectricTest {
@@ -162,6 +165,7 @@ public class RobolectricTest {
         assertThat(new Activity().getResources().getDisplayMetrics().heightPixels, equalTo(200));
     }
 
+    @Test
     public void clickOn_shouldCallClickListener() throws Exception {
         View view = new View(null);
         TestOnClickListener testOnClickListener = new TestOnClickListener();

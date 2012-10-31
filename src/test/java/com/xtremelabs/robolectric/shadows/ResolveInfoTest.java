@@ -34,6 +34,7 @@ public class ResolveInfoTest {
     public void testNewResolveInfoWithActivity() {
         assertThat(mResolveInfo.loadLabel(null).toString(), equalTo("name"));
         assertThat(mResolveInfo.activityInfo.packageName, equalTo("package"));
+        assertThat(mResolveInfo.activityInfo.applicationInfo.packageName, equalTo("package"));
         assertThat(mResolveInfo.activityInfo.name, equalTo("activity"));
     }
 }

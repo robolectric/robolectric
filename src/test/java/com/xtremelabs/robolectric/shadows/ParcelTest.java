@@ -12,6 +12,7 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -322,5 +323,15 @@ public class ParcelTest {
         Binder expected = new Binder();
         parcel.writeStrongBinder(expected);
         assertEquals(expected, parcel.readStrongBinder());
+    }
+
+    @Test
+    public void testReadWriteMap() throws Exception {
+        HashMap<String, String> original = new HashMap<String, String>();
+        original.put("key", "value");
+        parcel.writeMap(original);
+        HashMap<String, String> rehydrated = parcel.readHashMap(null);
+
+        assertEquals("value", rehydrated.get("key"));
     }
 }

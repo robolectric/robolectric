@@ -1,8 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.graphics.ColorFilter;
-import android.graphics.Paint;
-import android.graphics.Shader;
+import android.graphics.*;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -30,8 +28,11 @@ public class ShadowPaint {
     private boolean antiAlias;
     private boolean dither;
     private int flags;
-    
+    private PathEffect pathEffect;
+
     @RealObject Paint paint;
+    private Typeface typeface;
+    private float textSize;
 
     public void __constructor__(int flags) {
     	this.flags = flags;
@@ -121,6 +122,27 @@ public class ShadowPaint {
         shadowDx = dx;
         shadowDy = dy;
         shadowColor = color;
+    }
+
+    @Implementation
+    public Typeface getTypeface() {
+        return typeface;
+    }
+
+    @Implementation
+    public Typeface setTypeface(Typeface typeface) {
+        this.typeface = typeface;
+        return typeface;
+    }
+
+    @Implementation
+    public float getTextSize() {
+        return textSize;
+    }
+
+    @Implementation
+    public void setTextSize(float textSize) {
+        this.textSize = textSize;
     }
 
     /**
@@ -215,5 +237,16 @@ public class ShadowPaint {
     @Implementation
     public final boolean isAntiAlias() {
     	return antiAlias;
+    }
+
+    @Implementation
+    public PathEffect getPathEffect() {
+        return pathEffect;
+    }
+
+    @Implementation
+    public PathEffect setPathEffect(PathEffect effect) {
+        this.pathEffect = effect;
+        return effect;
     }
 }

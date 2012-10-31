@@ -64,4 +64,17 @@ public class PathTest {
         assertNull(shadowPath.getWasMovedTo());
         assertEquals("", shadowPath.getQuadDescription());
     }
+
+    @Test
+    public void test_copyConstructor() throws Exception {
+        Path path = Robolectric.newInstanceOf(Path.class);
+        path.moveTo(0, 3);
+        path.lineTo(2, 3);
+        path.quadTo(2, 3, 4, 5);
+
+        Path copiedPath = new Path(path);
+        assertEquals(shadowOf(path).getPoints(), shadowOf(copiedPath).getPoints());
+        assertEquals(shadowOf(path).getWasMovedTo(), shadowOf(copiedPath).getWasMovedTo());
+        assertEquals(shadowOf(path).getQuadDescription(), shadowOf(copiedPath).getQuadDescription());
+    }
 }

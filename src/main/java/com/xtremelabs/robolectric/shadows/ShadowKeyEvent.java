@@ -6,7 +6,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(KeyEvent.class)
-public class ShadowKeyEvent {
+public class ShadowKeyEvent extends ShadowInputEvent {
     private int action;
     private int code;
 

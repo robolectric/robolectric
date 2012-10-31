@@ -7,8 +7,10 @@ import com.xtremelabs.robolectric.internal.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.shadows.ShadowPath.Point.Type.LINE_TO;
 import static com.xtremelabs.robolectric.shadows.ShadowPath.Point.Type.MOVE_TO;
+
 
 /**
  * Shadow of {@code Path} that contains a simplified implementation of the original class that only supports
@@ -20,6 +22,12 @@ public class ShadowPath {
     private List<Point> points = new ArrayList<Point>();
     private Point wasMovedTo;
     private String quadDescription = "";
+
+    public void __constructor__(Path path) {
+        points = new ArrayList<Point>(shadowOf(path).getPoints());
+        wasMovedTo = shadowOf(path).wasMovedTo;
+        quadDescription = shadowOf(path).quadDescription;
+    }
 
     @Implementation
     public void moveTo(float x, float y) {
@@ -36,8 +44,8 @@ public class ShadowPath {
 
     @Implementation
     public void quadTo(float x1, float y1, float x2, float y2) {
-    	quadDescription = "Add a quadratic bezier from last point, approaching (" + x1 + "," + y1 + "), " +
-    			"ending at (" +x2+","+ y2 + ")";
+        quadDescription = "Add a quadratic bezier from last point, approaching (" + x1 + "," + y1 + "), " +
+                "ending at (" + x2 + "," + y2 + ")";
     }
 
     @Implementation
@@ -48,7 +56,7 @@ public class ShadowPath {
     }
 
     public String getQuadDescription() {
-    	return quadDescription;
+        return quadDescription;
     }
 
     /**
@@ -110,13 +118,13 @@ public class ShadowPath {
         public String toString() {
             return "Point(" + x + "," + y + "," + type + ")";
         }
-        
+
         public float getX() {
-        	return x;       	
+            return x;
         }
-        
+
         public float getY() {
-        	return y;
+            return y;
         }
 
         public Type getType() {
