@@ -122,7 +122,7 @@ public class ShadowContextWrapper extends ShadowContext {
      */
     @Implementation
     public PackageManager getPackageManager() {
-        return realContextWrapper == getApplicationContext() ? packageManager : getApplicationContext().getPackageManager();
+        return packageManager == null ? getApplicationContext().getPackageManager() : packageManager;
     }
 
     @Implementation

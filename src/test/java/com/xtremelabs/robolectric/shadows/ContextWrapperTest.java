@@ -7,8 +7,11 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.pm.PackageManager;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
 import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
@@ -108,7 +111,6 @@ public class ContextWrapperTest {
 		assertEquals(broadcastIntent, broadcastIntents.get(0));
 	}
 	
-
     @Test
     public void shouldReturnSameApplicationEveryTime() throws Exception {
         Activity activity = new Activity();
@@ -124,6 +126,16 @@ public class ContextWrapperTest {
 
         assertThat(activity.getApplicationContext(), sameInstance(new Activity().getApplicationContext()));
     }
+
+	@Test
+	public void shouldReturnOverridenApplicationContext() throws Exception {
+        Activity activity = new Activity();
+        ShadowActivity shadow = Robolectric.shadowOf(activity);
+        PackageManager stubManager = new StubPackageManager();
+
+        shadow.setPackageManager(stubManager);
+        assertThat(stubManager, sameInstance(shadow.getPackageManager()));
+	}
 
     @Test
     public void shouldReturnSameContentResolverEveryTime() throws Exception {
