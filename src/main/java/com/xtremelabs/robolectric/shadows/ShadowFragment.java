@@ -109,14 +109,22 @@ public class ShadowFragment {
         this.targetFragment = targetFragment;
     }
 
+    @Implementation
+    public void onResume() {
+        this.resumed = true;
+    }
+
     public void resume() {
         realFragment.onResume();
-        this.resumed = true;
+    }
+
+    @Implementation
+    public void onPause() {
+        this.resumed = false;
     }
 
     public void pause() {
         realFragment.onPause();
-        this.resumed = false;
     }
 
     @Implementation

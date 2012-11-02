@@ -1,20 +1,17 @@
 package com.xtremelabs.robolectric.res;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import android.content.ComponentName;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
-
 import com.xtremelabs.robolectric.RobolectricConfig;
-import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RobolectricPackageManager extends StubPackageManager {
 	
@@ -25,6 +22,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     private ContextWrapper contextWrapper;
     private RobolectricConfig config;
     private ApplicationInfo applicationInfo;
+    private Map<String, Boolean> systemFeatures = new HashMap<String, Boolean>();
 
     public RobolectricPackageManager(ContextWrapper contextWrapper, RobolectricConfig config) {
         this.contextWrapper = contextWrapper;
@@ -83,14 +81,22 @@ public class RobolectricPackageManager extends StubPackageManager {
     public void addResolveInfoForIntent( Intent intent, List<ResolveInfo> info ) {
     	resolveList.put( intent, info );
     }
-    
-	@Override
+
+    public void setSystemFeature(String name, boolean value) {
+        systemFeatures.put(name, value);
+    }
+
+    @Override public boolean hasSystemFeature(String name) {
+        return systemFeatures.containsKey(name) ? systemFeatures.get(name) : false;
+    }
+
+  @Override
 	public Intent getLaunchIntentForPackage(String packageName) {
 		Intent i = new Intent();
 		i.setComponent( new ComponentName(packageName, "") );
 		return i;
 	}
-	
+
 	@Override
 	public CharSequence getApplicationLabel(ApplicationInfo info) {
 		return info.name;
