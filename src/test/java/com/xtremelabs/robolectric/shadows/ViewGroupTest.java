@@ -8,6 +8,7 @@ import android.view.animation.Animation.AnimationListener;
 import android.widget.FrameLayout;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.RobolectricConfig;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import org.junit.After;
@@ -40,7 +41,7 @@ public class ViewGroupTest {
     @Before
     public void setUp() throws Exception {
         Application context = new Application();
-        ShadowApplication.bind(context, new ResourceLoader(10, R.class, (File) null, null));
+        ShadowApplication.bind(context, new ResourceLoader(RobolectricConfig.DEFAULT_SDK, R.class, (File) null, null));
 
         root = new FrameLayout(context);
 

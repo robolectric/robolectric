@@ -20,6 +20,8 @@ import java.util.Properties;
 import static android.content.pm.ApplicationInfo.*;
 
 public class RobolectricConfig {
+    public static final int DEFAULT_SDK = 16;
+
     private final File androidManifestFile;
     private List<File> resourcePath;
     private final File assetsDirectory;
@@ -155,13 +157,13 @@ public class RobolectricConfig {
             Integer minSdkVer = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
             Integer sdkVer = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
             if (minSdkVer == null) {
-                minSdkVersion = 10;
+                minSdkVersion = DEFAULT_SDK;
                 minSdkVersionSpecified = false;
             } else {
                 minSdkVersion = minSdkVer;
             }
             if (sdkVer == null) {
-                sdkVersion = 10;
+                sdkVersion = DEFAULT_SDK;
                 sdkVersionSpecified = false;
             } else {
                 sdkVersion = sdkVer;

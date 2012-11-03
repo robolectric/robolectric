@@ -97,7 +97,7 @@ public abstract class TestUtil {
            	sdkDir = localProperties.getProperty("sdk.dir");             
        }
 
-        return file(new File(sdkDir, "platforms/android-16/data/res/"), paths);
+        return file(new File(sdkDir, "platforms/android-" + RobolectricConfig.DEFAULT_SDK + "/data/res/"), paths);
     }
 
     public static String readString(InputStream is) throws IOException {
