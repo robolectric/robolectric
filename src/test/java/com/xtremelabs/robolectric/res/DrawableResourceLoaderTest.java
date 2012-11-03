@@ -39,7 +39,7 @@ public class DrawableResourceLoaderTest {
     @Test
     public void testProcessResourceXml() throws Exception {
         assertTrue("drawable/rainbow", resourceLoader.documents.containsKey("drawable/rainbow"));
-        assertEquals("documents.size", 115, resourceLoader.documents.size());
+        assertEquals("documents.size", 217, resourceLoader.documents.size());
     }
 
     @Test
