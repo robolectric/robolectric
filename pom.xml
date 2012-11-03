@@ -15,7 +15,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.sourceEncoding>UTF-8</project.reporting.sourceEncoding>
 
-        <square.nexus.snapshots>http://example.com/</square.nexus.snapshots>
+        <square.nexus.url>http://example.com/</square.nexus.url>
     </properties>
 
     <profiles>
@@ -24,7 +24,7 @@
             <repositories>
                 <repository>
                     <id>square-nexus</id>
-                    <url>${square.nexus.snapshots}</url>
+                    <url>${square.nexus.url}</url>
                 </repository>
             </repositories>
         </profile>
