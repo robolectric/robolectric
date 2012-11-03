@@ -118,7 +118,7 @@
         <dependency>
             <groupId>com.google.android.maps</groupId>
             <artifactId>maps</artifactId>
-            <version>10_r2</version>
+            <version>16_r2</version>
             <scope>provided</scope>
         </dependency>
 
