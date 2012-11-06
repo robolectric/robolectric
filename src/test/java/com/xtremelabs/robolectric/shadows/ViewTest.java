@@ -16,11 +16,7 @@ import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.TestAnimationListener;
-import com.xtremelabs.robolectric.util.TestOnClickListener;
-import com.xtremelabs.robolectric.util.TestOnLongClickListener;
-import com.xtremelabs.robolectric.util.TestRunnable;
-import com.xtremelabs.robolectric.util.Transcript;
+import com.xtremelabs.robolectric.util.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,9 +25,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewTest {
@@ -413,6 +407,15 @@ public class ViewTest {
 
         view.setVisibility(View.INVISIBLE);
         assertThat(view.isShown(), is(false));
+    }
+
+    @Test
+    public void shouldTrackRequestLayoutCalls() throws Exception {
+        assertThat(shadowOf(view).didRequestLayout(), is(false));
+        view.requestLayout();
+        assertThat(shadowOf(view).didRequestLayout(), is(true));
+        shadowOf(view).setDidRequestLayout(false);
+        assertThat(shadowOf(view).didRequestLayout(), is(false));
     }
 
     public void shouldClickAndNotClick() throws Exception {

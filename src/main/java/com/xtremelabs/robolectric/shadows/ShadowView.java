@@ -477,6 +477,10 @@ public class ShadowView {
         return didRequestLayout;
     }
 
+    public void setDidRequestLayout(boolean didRequestLayout) {
+        this.didRequestLayout = didRequestLayout;
+    }
+
     @Implementation
     public final boolean requestFocus() {
         return requestFocus(View.FOCUS_DOWN);
