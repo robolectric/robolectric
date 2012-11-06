@@ -168,6 +168,22 @@ public class ShadowApplication extends ShadowContextWrapper {
             return service;
         }
     }
+    
+    /**
+     * Non-Android accessor.  Use to replace the implementation class for a 
+     * system with a custom implementation, specific to the needs of a test case.
+     * 
+     * TODO Fragile, due to manipulation of static data.  Wrap this in the
+     * RobolectricTestRunner with something to restore when the test case is done,
+     * as we do with WithConstantString/WithConstantInt annotations?
+     * 
+     * @param name
+     * @param className
+     */
+    public void defineSystemService( String name, String className ) {
+    	SYSTEM_SERVICE_MAP.put(name, className);
+    	systemServices.remove(name);
+    }
 
     @Implementation
     @Override
