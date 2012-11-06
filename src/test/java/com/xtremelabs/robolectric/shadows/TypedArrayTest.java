@@ -28,4 +28,13 @@ public class TypedArrayTest {
 
         assertThat(array.getString(0), equalTo("expected value"));
     }
+
+    @Test
+    public void shouldGetAndSetBooleanAttributes() throws Exception {
+        TypedArray array = Robolectric.newInstanceOf(TypedArray.class);
+        ShadowTypedArray shadowArray = Robolectric.shadowOf(array);
+        shadowArray.add("true");
+
+        assertThat(array.getBoolean(0, false), equalTo(true));
+    }
 }
