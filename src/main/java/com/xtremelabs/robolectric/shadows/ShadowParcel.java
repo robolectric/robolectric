@@ -237,6 +237,20 @@ public class ShadowParcel {
     }
 
     @Implementation
+    public final String[] createStringArray() {
+        int N = readInt();
+        if (N >= 0) {
+            String[] val = new String[N];
+            for (int i=0; i<N; i++) {
+                val[i] = readString();
+            }
+            return val;
+        } else {
+            return null;
+        }
+    }
+    
+    @Implementation
     public void writeStringList(List<String> strings) {
         if (strings == null) {
             writeInt(-1);
