@@ -227,6 +227,7 @@ public class Robolectric {
                 ShadowIntentFilter.class,
                 ShadowIntentFilterAuthorityEntry.class,
                 ShadowItemizedOverlay.class,
+                ShadowLayoutAnimationController.class,
                 ShadowJsPromptResult.class,
                 ShadowJsResult.class,
                 ShadowKeyEvent.class,
@@ -387,6 +388,7 @@ public class Robolectric {
         ShadowContentResolver.reset();
         ShadowLocalBroadcastManager.reset();
         ShadowMimeTypeMap.reset();
+        ShadowPowerManager.reset();
         ShadowStatFs.reset();
     }
 
@@ -448,6 +450,10 @@ public class Robolectric {
 
     public static ShadowAnimation shadowOf(Animation instance) {
         return (ShadowAnimation) shadowOf_(instance);
+    }
+
+    public static ShadowLayoutAnimationController shadowOf(LayoutAnimationController instance) {
+        return (ShadowLayoutAnimationController) shadowOf_(instance);
     }
 
     public static ShadowAnimationDrawable shadowOf(AnimationDrawable instance) {

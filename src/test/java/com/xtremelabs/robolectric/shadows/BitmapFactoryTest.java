@@ -136,7 +136,28 @@ public class BitmapFactoryTest {
     	options.inSampleSize = 4;
     	Bitmap bitmap = ShadowBitmapFactory.decodeByteArray(data, 0, data.length, options);
     	assertThat( shadowOf(bitmap).getDescription(), equalTo( "Bitmap for byte array, checksum:80429753 offset: 0 length: 8 with options inSampleSize=4" ) );
-    	assertThat( bitmap.getWidth(), equalTo(100) );
-    	assertThat( bitmap.getHeight(), equalTo(100) );
+    	assertThat( bitmap.getWidth(), equalTo(25) );
+    	assertThat( bitmap.getHeight(), equalTo(25) );
+    }
+    
+    @Test
+    public void decodeWithDifferentSampleSize() {
+    	String name = "test";
+    	BitmapFactory.Options options = new BitmapFactory.Options();
+    	
+    	options.inSampleSize = 0;    	
+    	Bitmap bm = ShadowBitmapFactory.create(name, options);
+    	assertThat( bm.getWidth(), equalTo(100) );
+    	assertThat( bm.getHeight(), equalTo(100) );
+   	
+    	options.inSampleSize = 2;    	
+    	bm = ShadowBitmapFactory.create(name, options);
+    	assertThat( bm.getWidth(), equalTo(50) );
+    	assertThat( bm.getHeight(), equalTo(50) );
+    	
+    	options.inSampleSize = 101;    	
+    	bm = ShadowBitmapFactory.create(name, options);
+    	assertThat( bm.getWidth(), equalTo(1) );
+    	assertThat( bm.getHeight(), equalTo(1) );
     }
 }
