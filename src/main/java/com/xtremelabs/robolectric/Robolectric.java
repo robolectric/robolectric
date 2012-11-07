@@ -54,8 +54,10 @@ import android.view.animation.*;
 import android.view.inputmethod.InputMethodManager;
 import android.webkit.*;
 import android.widget.*;
+import com.xtremelabs.robolectric.bytecode.IgnorableClassNotFoundException;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
+import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
@@ -69,11 +71,14 @@ import org.apache.http.impl.client.DefaultRequestDirector;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class Robolectric {
     public static Application application;
     public static final int DEFAULT_SDK_VERSION = 16;
+    private static Set<String> unloadableClassNames = new HashSet<String>();
 
     public static <T> T newInstanceOf(Class<T> clazz) {
         return RobolectricInternals.newInstanceOf(clazz);
@@ -95,7 +100,44 @@ public class Robolectric {
     }
 
     public static void bindShadowClass(Class<?> shadowClass) {
-        RobolectricInternals.bindShadowClass(shadowClass);
+        Implements realClass = shadowClass.getAnnotation(Implements.class);
+        if (realClass == null) {
+            throw new IllegalArgumentException(shadowClass + " is not annotated with @Implements");
+        }
+
+        try {
+            getShadowWranger().bindShadowClass(realClass.value(), shadowClass);
+        } catch (TypeNotPresentException typeLoadingException) {
+            String unloadableClassName = shadowClass.getSimpleName();
+            if (isIgnorableClassLoadingException(typeLoadingException)) {
+                //this allows users of the robolectric.jar file to use the non-Google APIs version of the api
+                if (unloadableClassNames.add(unloadableClassName)) {
+                    System.out.println("Warning: an error occurred while binding shadow class: " + unloadableClassName);
+                }
+            } else {
+                throw typeLoadingException;
+            }
+        }
+    }
+
+    private static ShadowWrangler getShadowWranger() {
+        return ((ShadowWrangler) RobolectricInternals.getClassHandler());
+    }
+
+    private static boolean isIgnorableClassLoadingException(Throwable typeLoadingException) {
+        if (typeLoadingException != null) {
+            // instanceof doesn't work here. Are we in different classloaders?
+            if (typeLoadingException.getClass().getName().equals(IgnorableClassNotFoundException.class.getName())) {
+                return true;
+            }
+
+            if (typeLoadingException instanceof NoClassDefFoundError
+                    || typeLoadingException instanceof ClassNotFoundException
+                    || typeLoadingException instanceof TypeNotPresentException) {
+                return isIgnorableClassLoadingException(typeLoadingException.getCause());
+            }
+        }
+        return false;
     }
 
     public static void bindDefaultShadowClasses() {
@@ -115,7 +157,7 @@ public class Robolectric {
      * output for the current test only.
      */
     public static void logMissingInvokedShadowMethods() {
-        ShadowWrangler.getInstance().logMissingInvokedShadowMethods();
+        getShadowWranger().logMissingInvokedShadowMethods();
     }
 
     public static List<Class<?>> getDefaultShadowClasses() {
@@ -375,7 +417,7 @@ public class Robolectric {
     }
 
     public static void resetStaticState() {
-        ShadowWrangler.getInstance().silence();
+        getShadowWranger().silence();
         Robolectric.application = new Application();
         ShadowBitmapFactory.reset();
         ShadowDrawable.reset();
@@ -1079,7 +1121,7 @@ public class Robolectric {
 
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
-        return (P) ShadowWrangler.getInstance().shadowOf(instance);
+        return (P) getShadowWranger().shadowOf(instance);
     }
 
     /**
