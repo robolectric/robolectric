@@ -3,6 +3,8 @@ package com.xtremelabs.robolectric.bytecode;
 import javassist.*;
 
 public class MethodGenerator {
+    public static final String CONSTRUCTOR_METHOD_NAME = "__constructor__";
+
     private final CtClass ctClass;
 
     public MethodGenerator(CtClass ctClass) {
@@ -64,11 +66,7 @@ public class MethodGenerator {
         fixMethod(toStringMethod, false);
     }
 
-    private String describe(CtMethod ctMethod) throws NotFoundException {
-        return Modifier.toString(ctMethod.getModifiers()) + " " + ctMethod.getReturnType().getSimpleName() + " " + ctMethod.getLongName();
-    }
-
-    public void fixMethod(final CtMethod ctMethod, boolean wasFoundInClass) throws NotFoundException {
+    public void fixMethod(final CtMethod ctMethod, boolean isDeclaredOnClass) throws NotFoundException {
         String describeBefore = describe(ctMethod);
         try {
             CtClass declaringClass = ctMethod.getDeclaringClass();
@@ -90,7 +88,7 @@ public class MethodGenerator {
             if (wasFinal) {
                 newModifiers = Modifier.clear(newModifiers, Modifier.FINAL);
             }
-            if (wasFoundInClass) {
+            if (isDeclaredOnClass) {
                 ctMethod.setModifiers(newModifiers);
             }
 
@@ -115,10 +113,10 @@ public class MethodGenerator {
 //            }
 
             boolean isStatic = Modifier.isStatic(originalModifiers);
-            String methodBody = generateMethodBody(ctMethod, wasNative, wasAbstract, returnCtClass, returnType, isStatic, !wasFoundInClass);
+            String methodBody = generateMethodBody(ctMethod, wasNative, wasAbstract, returnCtClass, returnType, isStatic, !isDeclaredOnClass);
 
-            if (!wasFoundInClass) {
-                CtMethod newMethod = makeNewMethod(ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + generateCallToSuper(methodName, paramTypes) + "\n}");
+            if (!isDeclaredOnClass) {
+                CtMethod newMethod = makeNewMethod(ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + generateCallToSuper(ctMethod) + "\n}");
                 newMethod.setModifiers(newModifiers);
                 if (wasDeclaredInClass) {
                     ctMethod.insertBefore("{\n" + methodBody + "}\n");
@@ -131,10 +129,13 @@ public class MethodGenerator {
             } else {
                 ctMethod.insertBefore("{\n" + methodBody + "}\n");
             }
-
         } catch (Exception e) {
             throw new RuntimeException("problem instrumenting " + describeBefore, e);
         }
+    }
+
+    public static String describe(CtMethod ctMethod) throws NotFoundException {
+        return Modifier.toString(ctMethod.getModifiers()) + " " + ctMethod.getReturnType().getSimpleName() + " " + ctMethod.getLongName();
     }
 
     public CtMethod makeNewMethod(CtMethod ctMethod, CtClass returnCtClass, String methodName, CtClass[] paramTypes, String methodBody) throws CannotCompileException, NotFoundException {
@@ -148,8 +149,8 @@ public class MethodGenerator {
                 ctClass);
     }
 
-    public String generateCallToSuper(String methodName, CtClass[] paramTypes) {
-        return "return super." + methodName + "(" + makeParameterReplacementList(paramTypes.length) + ");";
+    public String generateCallToSuper(CtMethod ctMethod) throws NotFoundException {
+        return "return super." + ctMethod.getName() + "(" + makeParameterReplacementList(ctMethod.getParameterTypes().length) + ");";
     }
 
     public String makeParameterReplacementList(int length) {
@@ -202,14 +203,45 @@ public class MethodGenerator {
         String methodBody;
         StringBuilder buf = new StringBuilder();
         buf.append("if (!");
-        buf.append(RobolectricInternals.class.getName());
-        buf.append(".shouldCallDirectly(");
-        buf.append(isStatic ? className + ".class" : "this");
-        buf.append(")) {\n");
+        generateCallToShouldCallDirectory(isStatic, className, buf);
+        buf.append(") {\n");
 
         if (!returnsVoid) {
             buf.append("Object x = ");
         }
+        generateCallToMethodInvoked(ctMethod, isStatic, className, buf);
+
+        if (!returnsVoid) {
+            buf.append("if (x != null) return ((");
+            buf.append(returnType.nonPrimitiveClassName(returnCtClass));
+            buf.append(") x)");
+            buf.append(returnType.unboxString());
+            buf.append(";\n");
+            if (shouldGenerateCallToSuper) {
+                buf.append(generateCallToSuper(ctMethod));
+            } else {
+                buf.append("return ");
+                buf.append(returnType.defaultReturnString());
+                buf.append(";\n");
+            }
+        } else {
+            buf.append("return;\n");
+        }
+
+        buf.append("}\n");
+
+        methodBody = buf.toString();
+        return methodBody;
+    }
+
+    public void generateCallToShouldCallDirectory(boolean isStatic, String className, StringBuilder buf) {
+        buf.append(RobolectricInternals.class.getName());
+        buf.append(".shouldCallDirectly(");
+        buf.append(isStatic ? className + ".class" : "this");
+        buf.append(")");
+    }
+
+    public void generateCallToMethodInvoked(CtMethod ctMethod, boolean isStatic, String className, StringBuilder buf) throws NotFoundException {
         buf.append(RobolectricInternals.class.getName());
         buf.append(".methodInvoked(\n  ");
         buf.append(className);
@@ -229,28 +261,6 @@ public class MethodGenerator {
 
         buf.append(")");
         buf.append(";\n");
-
-        if (!returnsVoid) {
-            buf.append("if (x != null) return ((");
-            buf.append(returnType.nonPrimitiveClassName(returnCtClass));
-            buf.append(") x)");
-            buf.append(returnType.unboxString());
-            buf.append(";\n");
-            if (shouldGenerateCallToSuper) {
-                buf.append(generateCallToSuper(ctMethod.getName(), ctMethod.getParameterTypes()));
-            } else {
-                buf.append("return ");
-                buf.append(returnType.defaultReturnString());
-                buf.append(";\n");
-            }
-        } else {
-            buf.append("return;\n");
-        }
-
-        buf.append("}\n");
-
-        methodBody = buf.toString();
-        return methodBody;
     }
 
     public void appendParamTypeArray(StringBuilder buf, CtMethod ctMethod) throws NotFoundException {
