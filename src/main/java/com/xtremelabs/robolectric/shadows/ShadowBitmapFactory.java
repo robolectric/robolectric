@@ -96,11 +96,20 @@ public class ShadowBitmapFactory {
             widthAndHeight = new Point(100, 100);
         }
 
-        shadowBitmap.setWidth(widthAndHeight.x);
-        shadowBitmap.setHeight(widthAndHeight.y);
+        Point p = new Point(widthAndHeight);
+        if (options != null && options.inSampleSize > 1) {
+        	p.x = p.x / options.inSampleSize;
+        	p.y = p.y / options.inSampleSize;
+        	
+        	p.x = p.x == 0 ? 1 : p.x;
+        	p.y = p.y == 0 ? 1 : p.y;
+        }
+        
+        shadowBitmap.setWidth(p.x);
+        shadowBitmap.setHeight(p.y);
         if (options != null) {
-            options.outWidth = widthAndHeight.x;
-            options.outHeight = widthAndHeight.y;
+            options.outWidth = p.x;
+            options.outHeight = p.y;
         }
         return bitmap;
     }
