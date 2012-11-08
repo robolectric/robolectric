@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.bytecode;
 
-import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
@@ -28,14 +27,5 @@ public class ShadowFoo extends ShadowWranglerTest.ShadowFooParent {
     @SuppressWarnings({"UnusedDeclaration"})
     public String getName() {
         return name;
-    }
-    
-    @Implementation
-    public String callGetName() {
-        return getName();
-    }
-    @Implementation
-    public boolean callInvokedDirectly() {
-        return false;
     }
 }

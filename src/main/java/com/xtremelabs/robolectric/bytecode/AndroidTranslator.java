@@ -34,6 +34,7 @@ public class AndroidTranslator implements Translator {
         instrumentingList.add("org.apache.http.impl.client.DefaultRequestDirector");
 
         instrumentingExcludeList.add("android.support.v4.app.NotificationCompat");
+        instrumentingExcludeList.add("android.support.v4.content.LocalBroadcastManager");
         instrumentingExcludeList.add("android.support.v4.util.LruCache");
     }
 
@@ -222,16 +223,13 @@ public class AndroidTranslator implements Translator {
 
         if (!hasDefault) {
             String methodBody = generateConstructorBody(ctClass, new CtClass[0]);
-            CtConstructor defaultConstrcutor = CtNewConstructor.make(new CtClass[0], new CtClass[0], "{\n" + methodBody + "}\n", ctClass);
-            wrapMethodInvocation(defaultConstrcutor, false);
-            ctClass.addConstructor(defaultConstrcutor);
+            ctClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], "{\n" + methodBody + "}\n", ctClass));
         }
     }
 
     private boolean fixConstructor(CtClass ctClass, boolean needsDefault, CtConstructor ctConstructor) throws NotFoundException, CannotCompileException {
         String methodBody = generateConstructorBody(ctClass, ctConstructor.getParameterTypes());
         ctConstructor.setBody("{\n" + methodBody + "}\n");
-        wrapMethodInvocation(ctConstructor, false);
         return needsDefault;
     }
 
@@ -315,30 +313,20 @@ public class AndroidTranslator implements Translator {
                 newMethod.setModifiers(newModifiers);
                 if (wasDeclaredInClass) {
                     ctMethod.insertBefore("{\n" + methodBody + "}\n");
-                    wrapMethodInvocation(ctMethod, isStatic);
                 } else {
-                    wrapMethodInvocation(newMethod, isStatic);
                     ctClass.addMethod(newMethod);
                 }
             } else if (wasAbstract || wasNative) {
                 CtMethod newMethod = makeNewMethod(ctClass, ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + "\n}");
                 ctMethod.setBody(newMethod, null);
-                wrapMethodInvocation(ctMethod, isStatic);
             } else {
                 ctMethod.insertBefore("{\n" + methodBody + "}\n");
-                wrapMethodInvocation(ctMethod, isStatic);
             }
-            
         } catch (Exception e) {
             throw new RuntimeException("problem instrumenting " + describeBefore, e);
         }
     }
 
-    private static void wrapMethodInvocation(CtBehavior ctMethodOrConstructor, boolean isStatic) throws CannotCompileException {
-        ctMethodOrConstructor.insertAfter(RobolectricInternals.class.getName() + ".onMethodInvocationFinish(" 
-    			+ (isStatic ? ctMethodOrConstructor.getDeclaringClass().getName() + ".class" : "this") + ");", true);
-    }
-    
     private CtMethod makeNewMethod(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, String methodName, CtClass[] paramTypes, String methodBody) throws CannotCompileException, NotFoundException {
         return CtNewMethod.make(
                 ctMethod.getModifiers(),
@@ -383,23 +371,6 @@ public class AndroidTranslator implements Translator {
     public String generateMethodBody(CtClass ctClass, CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean isStatic, boolean shouldGenerateCallToSuper) throws NotFoundException {
         boolean returnsVoid = returnType.isVoid();
         String className = ctClass.getName();
-
-        /*
-            METHOD BODY TEMPLATE:
-
-            if (!RobolectricInternals.shouldCallDirectly(isStatic ? class : this)) {
-                Object x = RobolectricInternals.methodInvoked(
-                    <className>.class, "<methodName>", isStatic ? null : this,
-                    <paramTypes>,
-                    <params>
-                );
-                if (x != null) {
-                    return ((<returnClass>)x)<unboxing>;
-                }
-                <optional super call or return default (null/0)>;
-            }
-
-        */
 
         String methodBody;
         StringBuilder buf = new StringBuilder();

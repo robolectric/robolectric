@@ -396,14 +396,6 @@ public class Robolectric {
         return RobolectricInternals.directlyOn(shadowedObject);
     }
 
-    public static <T> T directlyOnFullStack(T shadowedObject) {
-        return RobolectricInternals.directlyOnFullStack(shadowedObject);
-    }
-
-    public static <T> T directlyOnFullStack(FullStackDirectCallPolicy.Builder<T> builder) {
-        return RobolectricInternals.directlyOnFullStack(builder);
-    }
-
     public static ShadowAbsListView shadowOf(AbsListView instance) {
         return (ShadowAbsListView) shadowOf_(instance);
     }
