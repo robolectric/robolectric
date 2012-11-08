@@ -36,7 +36,7 @@ public class ClassCache {
                     }
                 }
             }
-            if (cacheVersion != expectedCacheVersion) {
+            if (cacheVersion != expectedCacheVersion || expectedCacheVersion == -1) {
                 cacheJarFile.delete();
             } else {
                 readEntries(cacheFile);
@@ -110,6 +110,7 @@ public class ClassCache {
                     jarOutputStream = new JarOutputStream(new FileOutputStream(file), manifest);
                     for (Map.Entry<String, byte[]> entry : cachedClasses.entrySet()) {
                         String key = entry.getKey();
+                        writeToFile(file, entry, key);
                         jarOutputStream.putNextEntry(new JarEntry(key.replace('.', '/') + ".class"));
                         jarOutputStream.write(entry.getValue());
                         jarOutputStream.closeEntry();
@@ -127,5 +128,14 @@ public class ClassCache {
             }
             startedWriting = false;
         }
+    }
+
+    private void writeToFile(File file, Map.Entry<String, byte[]> entry, String key) throws IOException {
+        File classFile = new File(new File(file.getParentFile(), "classes"), key.replaceAll("\\.", "/") + ".class");
+        System.out.println("classFile = " + classFile);
+        classFile.getParentFile().mkdirs();
+        FileOutputStream fileOutputStream = new FileOutputStream(classFile);
+        fileOutputStream.write(entry.getValue());
+        fileOutputStream.close();
     }
 }

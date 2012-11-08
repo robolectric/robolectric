@@ -6,6 +6,8 @@ import com.xtremelabs.robolectric.internal.Instrument;
 import javassist.*;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -15,7 +17,9 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 21;
+    public static final int CACHE_VERSION = 22;
+
+    static final String STATIC_INITIALIZER_METHOD_NAME = "__staticInitializer__";
 
     private static final List<ClassHandler> CLASS_HANDLERS = new ArrayList<ClassHandler>();
 
@@ -24,12 +28,33 @@ public class AndroidTranslator implements Translator {
     private final List<String> instrumentingList = new ArrayList<String>();
     private final List<String> instrumentingExcludeList = new ArrayList<String>();
 
+
+    public static ClassHandler getClassHandler(int index) {
+        return CLASS_HANDLERS.get(index);
+    }
+
+    public static void performStaticInitialization(Class<?> clazz) {
+        System.out.println("static initializing " + clazz);
+        try {
+            Method originalStaticInitializer = clazz.getDeclaredMethod(STATIC_INITIALIZER_METHOD_NAME);
+            originalStaticInitializer.setAccessible(true);
+            originalStaticInitializer.invoke(null);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     public AndroidTranslator(ClassHandler classHandler, ClassCache classCache) {
         this.classHandler = classHandler;
         this.classCache = classCache;
 
         // Initialize lists
         instrumentingList.add("android.");
+//        instrumentingList.add("libcore.");
         instrumentingList.add("com.google.android.maps");
         instrumentingList.add("org.apache.http.impl.client.DefaultRequestDirector");
 
@@ -51,10 +76,6 @@ public class AndroidTranslator implements Translator {
         }
     }
 
-    public static ClassHandler getClassHandler(int index) {
-        return CLASS_HANDLERS.get(index);
-    }
-
     @Override
     public void start(ClassPool classPool) throws NotFoundException, CannotCompileException {
         injectClassHandlerToInstrumentedClasses(classPool);
@@ -70,7 +91,7 @@ public class AndroidTranslator implements Translator {
         CtClass robolectricInternalsCtClass = classPool.get(RobolectricInternals.class.getName());
         robolectricInternalsCtClass.setModifiers(Modifier.PUBLIC);
 
-        robolectricInternalsCtClass.getClassInitializer().insertBefore("{\n" +
+        robolectricInternalsCtClass.makeClassInitializer().insertBefore("{\n" +
                 "classHandler = " + AndroidTranslator.class.getName() + ".getClassHandler(" + index + ");\n" +
                 "}");
     }
@@ -99,11 +120,19 @@ public class AndroidTranslator implements Translator {
                 ctClass.setModifiers(modifiers & ~Modifier.FINAL);
             }
 
+            if (ctClass.isInterface() || ctClass.isEnum()) return;
+
             classHandler.instrument(ctClass);
+
+            CtClass superclass = ctClass.getSuperclass();
+            if (!superclass.isFrozen()) {
+                onLoad(classPool, superclass.getName());
+            }
 
             MethodGenerator methodGenerator = new MethodGenerator(ctClass);
             methodGenerator.fixConstructors();
             methodGenerator.fixMethods();
+            methodGenerator.deferClassInitialization();
 
             try {
                 classCache.addClass(className, ctClass.toBytecode());
@@ -186,55 +215,4 @@ public class AndroidTranslator implements Translator {
             return prefix.replace(TOKEN, "") + suffix;
         }
     }
-
-    private void addBypassShadowField(CtClass ctClass, String fieldName) {
-        try {
-            try {
-                ctClass.getField(fieldName);
-            } catch (NotFoundException e) {
-                CtField field = new CtField(CtClass.booleanType, fieldName, ctClass);
-                field.setModifiers(java.lang.reflect.Modifier.PUBLIC | java.lang.reflect.Modifier.STATIC);
-                ctClass.addField(field);
-            }
-        } catch (CannotCompileException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private boolean declareField(CtClass ctClass, String fieldName, CtClass fieldType) throws CannotCompileException, NotFoundException {
-        CtMethod ctMethod = getMethod(ctClass, "get" + fieldName, "");
-        if (ctMethod == null) {
-            return false;
-        }
-        CtClass getterFieldType = ctMethod.getReturnType();
-
-        if (!getterFieldType.equals(fieldType)) {
-            return false;
-        }
-
-        if (getField(ctClass, fieldName) == null) {
-            CtField field = new CtField(fieldType, fieldName, ctClass);
-            field.setModifiers(Modifier.PRIVATE);
-            ctClass.addField(field);
-        }
-
-        return true;
-    }
-
-    private CtField getField(CtClass ctClass, String fieldName) {
-        try {
-            return ctClass.getField(fieldName);
-        } catch (NotFoundException e) {
-            return null;
-        }
-    }
-
-    private CtMethod getMethod(CtClass ctClass, String methodName, String desc) {
-        try {
-            return ctClass.getMethod(methodName, desc);
-        } catch (NotFoundException e) {
-            return null;
-        }
-    }
-
 }

@@ -2,9 +2,7 @@ package com.xtremelabs.robolectric;
 
 import android.app.Application;
 import android.net.Uri__FromAndroid;
-import com.xtremelabs.robolectric.bytecode.ClassHandler;
-import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
-import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
+import com.xtremelabs.robolectric.bytecode.*;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
 import com.xtremelabs.robolectric.res.ResourceLoader;
@@ -226,6 +224,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             delegateLoadingOf(RobolectricTestRunnerInterface.class.getName());
             delegateLoadingOf(RealObject.class.getName());
             delegateLoadingOf(ShadowWrangler.class.getName());
+            delegateLoadingOf(Vars.class.getName());
             delegateLoadingOf(RobolectricConfig.class.getName());
             delegateLoadingOf(DatabaseMap.class.getName());
             delegateLoadingOf(android.R.class.getName());

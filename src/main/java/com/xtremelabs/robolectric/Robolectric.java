@@ -120,7 +120,8 @@ public class Robolectric {
         }
     }
 
-    private static ShadowWrangler getShadowWranger() {
+    // todo: make private
+    public static ShadowWrangler getShadowWranger() {
         return ((ShadowWrangler) RobolectricInternals.getClassHandler());
     }
 
