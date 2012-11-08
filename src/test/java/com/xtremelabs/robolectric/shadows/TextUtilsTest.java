@@ -53,4 +53,30 @@ public class TextUtilsTest {
     	//two values with space
     	assertArrayEquals(TextUtils.split("abc, def", ","), new String[]{"abc", " def"});
    }
+
+    @Test
+    public void testEquals() {
+        assertThat(TextUtils.equals(null, null), equalTo(true));
+        assertThat(TextUtils.equals("", ""), equalTo(true));
+        assertThat(TextUtils.equals("a", "a"), equalTo(true));
+        assertThat(TextUtils.equals("ab", "ab"), equalTo(true));
+
+        assertThat(TextUtils.equals(null, ""), equalTo(false));
+        assertThat(TextUtils.equals("", null), equalTo(false));
+
+        assertThat(TextUtils.equals(null, "a"), equalTo(false));
+        assertThat(TextUtils.equals("a", null), equalTo(false));
+
+        assertThat(TextUtils.equals(null, "ab"), equalTo(false));
+        assertThat(TextUtils.equals("ab", null), equalTo(false));
+
+        assertThat(TextUtils.equals("", "a"), equalTo(false));
+        assertThat(TextUtils.equals("a", ""), equalTo(false));
+
+        assertThat(TextUtils.equals("", "ab"), equalTo(false));
+        assertThat(TextUtils.equals("ab", ""), equalTo(false));
+
+        assertThat(TextUtils.equals("a", "ab"), equalTo(false));
+        assertThat(TextUtils.equals("ab", "a"), equalTo(false));
+    }
 }

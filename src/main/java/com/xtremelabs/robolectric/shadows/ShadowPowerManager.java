@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.Context;
 import android.os.PowerManager;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -15,7 +16,9 @@ public class ShadowPowerManager {
 
     @Implementation
     public PowerManager.WakeLock newWakeLock(int flags, String tag) {
-        return Robolectric.newInstanceOf(PowerManager.WakeLock.class);
+    	PowerManager.WakeLock wl = Robolectric.newInstanceOf(PowerManager.WakeLock.class);
+    	Robolectric.getShadowApplication().addWakeLock(wl);
+        return wl;
     }
 
     @Implementation
@@ -25,6 +28,23 @@ public class ShadowPowerManager {
 
     public void setIsScreenOn(boolean screenOn) {
     	isScreenOn = screenOn;
+    }
+    
+    /**
+     * Non-Android accessor that discards the most recent {@code PowerManager.WakeLock}s
+     */
+    public static void reset() {
+    	Robolectric.getShadowApplication().clearWakeLocks();
+    }
+    
+    /**
+     * Non-Android accessor retrieves the most recent wakelock registered
+     * by the application
+     * 
+     * @return
+     */
+    public PowerManager.WakeLock getLatestWakeLock() {
+    	return Robolectric.getShadowApplication().getLatestWakeLock();
     }
 
     @Implements(PowerManager.WakeLock.class)

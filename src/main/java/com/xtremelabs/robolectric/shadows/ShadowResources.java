@@ -4,6 +4,7 @@ import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
@@ -185,6 +186,11 @@ public class ShadowResources {
     }
     
     @Implementation
+    public boolean getBoolean(int id) throws Resources.NotFoundException {
+    	return resourceLoader.getBooleanValue( id );
+    }
+    
+    @Implementation
     public int getDimensionPixelSize(int id) throws Resources.NotFoundException {
         // The int value returned from here is probably going to be handed to TextView.setTextSize(),
         // which takes a float. Avoid int-to-float conversion errors by returning a value generated from this
@@ -201,6 +207,16 @@ public class ShadowResources {
     @Implementation
     public AssetManager getAssets() {
         return ShadowAssetManager.bind(Robolectric.newInstanceOf(AssetManager.class), resourceLoader);
+    }
+    
+    @Implementation
+    public XmlResourceParser getXml(int id)
+    		throws Resources.NotFoundException {
+    	XmlResourceParser parser = resourceLoader.getXml(id);
+    	if (parser == null) {
+    		throw new Resources.NotFoundException();
+    	}
+    	return parser;
     }
 
     @Implementation
@@ -225,4 +241,5 @@ public class ShadowResources {
             return newInstanceOf(TypedArray.class);
         }
     }
+
 }

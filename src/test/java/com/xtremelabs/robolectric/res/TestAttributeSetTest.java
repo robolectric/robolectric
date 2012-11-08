@@ -14,6 +14,7 @@ import java.util.HashMap;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -136,5 +137,19 @@ public class TestAttributeSetTest {
         new DocumentLoader(attrResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, attrResourceLoader, CustomView.class, false);
         assertThat(testAttributeSet.getAttributeIntValue("some namespace", "itemType", 0), equalTo(1));
+    }
+
+    @Test
+    public void getAttributeValue_shouldReturnAttributeAssociatedWithResourceId() throws Exception {
+        attributes.put("ns:textStyle2", "expected value");
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, R.class);
+        assertThat(testAttributeSet.getAttributeValue(R.id.textStyle2), equalTo("expected value"));
+    }
+
+    @Test
+    public void getAttributeValue_shouldReturnNullIfNoAttributeSet() throws Exception {
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, R.class);
+        int nonExistantResource = 12345;
+        assertThat(testAttributeSet.getAttributeValue(nonExistantResource), nullValue());
     }
 }

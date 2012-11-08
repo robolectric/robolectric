@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.Intent;
+import android.os.Binder;
 import android.os.Bundle;
 import android.os.Parcel;
 import com.xtremelabs.robolectric.Robolectric;
@@ -11,6 +12,7 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -52,6 +54,11 @@ public class ParcelTest {
     @Test
     public void testReadStringWhenEmpty() {
         assertThat(parcel.readString(), nullValue());
+    }
+
+    @Test
+    public void testReadStrongBinderWhenEmpty() {
+        assertThat(parcel.readStrongBinder(), nullValue());
     }
 
     @Test
@@ -309,5 +316,33 @@ public class ParcelTest {
         assertEquals(2, rehydrated.size());
         assertEquals("str1", rehydrated.get(0));
         assertEquals("str2", rehydrated.get(1));
+    }
+
+    @Test
+    public void testReadWriteStrongBinder() throws Exception {
+        Binder expected = new Binder();
+        parcel.writeStrongBinder(expected);
+        assertEquals(expected, parcel.readStrongBinder());
+    }
+
+    @Test
+    public void testReadWriteMap() throws Exception {
+        HashMap<String, String> original = new HashMap<String, String>();
+        original.put("key", "value");
+        parcel.writeMap(original);
+        HashMap<String, String> rehydrated = parcel.readHashMap(null);
+
+        assertEquals("value", rehydrated.get("key"));
+    }
+    
+    @Test
+    public void testCreateStringArray() {
+    	String[] strs = {
+    			"a1",
+    			"b2"
+    	};
+    	parcel.writeStringArray(strs);
+    	String[] newStrs = parcel.createStringArray();
+    	assertTrue(Arrays.equals(strs, newStrs));
     }
 }

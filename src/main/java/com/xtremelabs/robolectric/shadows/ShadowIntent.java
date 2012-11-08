@@ -23,7 +23,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowIntent {
     @RealObject private Intent realIntent;
 
-    private HashMap<String, Object> extras = new HashMap<String, Object>();
+    private final Bundle extras = new Bundle();
     private String action;
     private ComponentName componentName;
     private String type;
@@ -31,7 +31,7 @@ public class ShadowIntent {
     private int flags;
     private Class<?> intentClass;
     private String packageName;
-    private Set<String> categories = new HashSet<String>();
+    private final Set<String> categories = new HashSet<String>();
     private String uri;
 
     public void __constructor__(Context packageContext, Class cls) {
@@ -101,23 +101,23 @@ public class ShadowIntent {
     public String getType() {
         return type;
     }
-    
+
     @Implementation
     public Intent addCategory(String category) {
         categories.add(category);
         return realIntent;
     }
-    
+
     @Implementation
     public void removeCategory(String category) {
         categories.remove(category);
     }
-    
+
     @Implementation
     public boolean hasCategory(String category) {
         return categories.contains(category);
     }
-    
+
     @Implementation
     public Set<String> getCategories() {
         return categories;
@@ -179,7 +179,7 @@ public class ShadowIntent {
         this.flags = flags;
         return realIntent;
     }
-    
+
     @Implementation
     public Intent addFlags(int flags) {
         this.flags |= flags;
@@ -188,177 +188,169 @@ public class ShadowIntent {
 
     @Implementation
     public Intent putExtras(Bundle src) {
-        ShadowBundle srcShadowBundle = Robolectric.shadowOf_(src);
-        extras = new HashMap<String, Object>(srcShadowBundle.map);
+        extras.putAll(src);
         return realIntent;
     }
-    
+
     @Implementation
     public Intent putExtras(Intent src) {
         ShadowIntent srcShadowIntent = shadowOf(src);
-        extras = new HashMap<String, Object>(srcShadowIntent.extras);
+        extras.putAll(srcShadowIntent.extras);
         return realIntent;
     }
 
     @Implementation
     public Bundle getExtras() {
-        if (extras.isEmpty()) {
-            return null;
-        }
-
-        Bundle bundle = new Bundle();
-        Map<String, Object> map = ((ShadowBundle) Robolectric.shadowOf_(bundle)).map;
-        map.putAll(extras);
-        return bundle;
+        return extras.isEmpty() ? null : new Bundle(extras);
     }
-    
+
     @Implementation
     public Intent putExtra(String key, int value) {
-        extras.put(key, value);
+        extras.putInt(key, value);
         return realIntent;
     }
 
     @Implementation
     public Intent putExtra(String key, double value) {
-        extras.put(key, value);
+        extras.putDouble(key, value);
         return realIntent;
     }
 
     @Implementation
     public Intent putExtra(String key, float value) {
-        extras.put(key, value);
+        extras.putFloat(key, value);
         return realIntent;
     }
 
     @Implementation
     public Intent putExtra(String key, long value) {
-        extras.put(key, value);
+        extras.putLong(key, value);
         return realIntent;
     }
 
     @Implementation
     public Intent putExtra(String key, Serializable value) {
-        extras.put(key, serializeCycle(value));
+        extras.putSerializable(key, serializeCycle(value));
         return realIntent;
     }
 
     @Implementation
     public Intent putExtra(String key, Parcelable value) {
-        extras.put(key, value);
+        extras.putParcelable(key, value);
         return realIntent;
     }
 
     @Implementation
     public Intent putExtra(String key, Parcelable[] value) {
-        extras.put(key, value);
+        extras.putParcelableArray(key, value);
         return realIntent;
     }
 
     @Implementation
     public Intent putExtra(String key, String value) {
-        extras.put(key, value);
+        extras.putString(key, value);
         return realIntent;
     }
 
     @Implementation
     public Intent putExtra(String key, String[] value) {
-        extras.put(key, value);
+        extras.putStringArray(key, value);
         return realIntent;
     }
-    
+
     @Implementation
     public Intent putExtra(String key, Bundle value) {
-        extras.put(key, value);
+        extras.putBundle(key, value);
         return realIntent;
     }
-    
+
     @Implementation
     public Intent putExtra(String key, boolean value) {
-        extras.put(key, value);
+        extras.putBoolean(key, value);
         return realIntent;
     }
 
     @Implementation
     public Intent putExtra(String key, int[] value) {
-        extras.put(key, value);
+        extras.putIntArray(key, value);
         return realIntent;
     }
-    
+
     @Implementation
     public Intent putExtra(String key, long[] value) {
-        extras.put(key, value);
+        extras.putLongArray(key, value);
         return realIntent;
     }
 
     @Implementation
     public int[] getIntArrayExtra(String name) {
-        return (int[]) extras.get(name);
+        return extras.getIntArray(name);
     }
-    
+
     @Implementation
     public long[] getLongArrayExtra(String name) {
-        return (long[]) extras.get(name);
+        return extras.getLongArray(name);
     }
 
     @Implementation
     public boolean getBooleanExtra(String name, boolean defaultValue) {
-        return extras.containsKey(name) ? (Boolean) extras.get(name) : defaultValue;
+        return extras.getBoolean(name, defaultValue);
     }
 
     @Implementation
     public String[] getStringArrayExtra(String name) {
-        return (String[]) extras.get(name);
+        return extras.getStringArray(name);
     }
 
     @Implementation
     public Intent putExtra(String key, CharSequence value) {
-        extras.put(key, value);
+        extras.putCharSequence(key, value);
         return realIntent;
     }
-    
+
     @Implementation
     public CharSequence getCharSequenceExtra(String name) {
-        return (CharSequence) extras.get(name);
+        return extras.getCharSequence(name);
     }
 
     @Implementation
     public void putExtra(String key, byte[] value) {
-        extras.put(key, value);
+        extras.putByteArray(key, value);
     }
 
     @Implementation
     public Intent putStringArrayListExtra(String key, ArrayList<String> value) {
-        extras.put(key, value);
+        extras.putStringArrayList(key, value);
         return realIntent;
     }
 
     @Implementation
     public ArrayList<String> getStringArrayListExtra(String name) {
-        return (ArrayList<String>) extras.get(name);
+        return extras.getStringArrayList(name);
     }
-    
+
     @Implementation
     public Intent putIntegerArrayListExtra(String key, ArrayList<Integer> value) {
-        extras.put(key, value);
+        extras.putIntegerArrayList(key, value);
         return realIntent;
     }
 
     @Implementation
     public ArrayList<Integer> getIntegerArrayListExtra(String name) {
-        return (ArrayList<Integer>) extras.get(name);
+        return extras.getIntegerArrayList(name);
     }
 
     @Implementation
     public Intent putParcelableArrayListExtra(String key, ArrayList<Parcelable> value) {
-        extras.put(key, value );
+        extras.putParcelableArrayList(key, value);
         return realIntent;
     }
 
     @Implementation
     public ArrayList<Parcelable> getParcelableArrayListExtra(String key) {
-        return (ArrayList<Parcelable>) extras.get(key);
+        return extras.getParcelableArrayList(key);
     }
-    
+
     @Implementation
     public boolean hasExtra(String name) {
         return extras.containsKey(name);
@@ -366,61 +358,54 @@ public class ShadowIntent {
 
     @Implementation
     public String getStringExtra(String name) {
-        return (String) extras.get(name);
+        return extras.getString(name);
     }
 
     @Implementation
     public Parcelable getParcelableExtra(String name) {
-        return (Parcelable) extras.get(name);
+        return extras.getParcelable(name);
     }
 
     @Implementation
     public Parcelable[] getParcelableArrayExtra(String name) {
-        if (extras.get(name) instanceof Parcelable[]) {
-            return (Parcelable[]) extras.get(name);
-        }
-        return null;
+        return extras.getParcelableArray(name);
     }
 
     @Implementation
     public int getIntExtra(String name, int defaultValue) {
-        Integer foundValue = (Integer) extras.get(name);
-        return foundValue == null ? defaultValue : foundValue;
+        return extras.getInt(name, defaultValue);
     }
 
     @Implementation
     public long getLongExtra(String name, long defaultValue) {
-        Long foundValue = (Long) extras.get(name);
-        return foundValue == null ? defaultValue : foundValue;
+        return extras.getLong(name, defaultValue);
     }
 
     @Implementation
     public double getDoubleExtra(String name, double defaultValue) {
-        Double foundValue = (Double) extras.get(name);
-        return foundValue == null ? defaultValue : foundValue;
+        return extras.getDouble(name, defaultValue);
     }
-    
+
     @Implementation
-    public Bundle getBundleExtra(String name) { 
-        return (Bundle) extras.get(name);
+    public Bundle getBundleExtra(String name) {
+        return extras.getBundle(name);
     }
 
     @Implementation
     public float getFloatExtra(String name, float defaultValue) {
-        Float foundValue = (Float) extras.get(name);
-        return foundValue == null ? defaultValue : foundValue;
+        return extras.getFloat(name, defaultValue);
     }
 
     @Implementation
     public byte[] getByteArrayExtra(String name) {
-        return (byte[]) extras.get(name);
+        return extras.getByteArray(name);
     }
 
     @Implementation
     public Serializable getSerializableExtra(String name) {
-        return (Serializable) extras.get(name);
+        return extras.getSerializable(name);
     }
-    
+
     @Implementation
     public void removeExtra(String name) {
         extras.remove(name);
@@ -441,12 +426,12 @@ public class ShadowIntent {
     public String toURI() {
         return uri;
     }
-    
+
     @Implementation
     public int fillIn(Intent otherIntent, int flags) {
         int changes = 0;
         ShadowIntent other = shadowOf(otherIntent);
-        
+
         if (other.action != null && (action == null || (flags & FILL_IN_ACTION) != 0)) {
             action = other.action;
             changes |= FILL_IN_ACTION;
@@ -462,7 +447,7 @@ public class ShadowIntent {
             categories.addAll(other.categories);
             changes |= FILL_IN_CATEGORIES;
         }
-        if (other.packageName != null 
+        if (other.packageName != null
                 && (packageName == null || (flags & FILL_IN_PACKAGE) != 0)) {
             packageName = other.packageName;
             changes |= FILL_IN_PACKAGE;
@@ -471,7 +456,7 @@ public class ShadowIntent {
             componentName = other.componentName;
             changes |= FILL_IN_COMPONENT;
         }
-   
+
         extras.putAll(other.extras);
         return changes;
     }
@@ -551,7 +536,7 @@ public class ShadowIntent {
 
         return true;
     }
-    
+
     /**
      * Compares an {@code Intent} with a {@code ShadowIntent} (obtained via a call to
      * {@link Robolectric#shadowOf(android.content.Intent)})
@@ -586,7 +571,7 @@ public class ShadowIntent {
         result = 31 * result + flags;
         return result;
     }
-    
+
     @Override
     @Implementation
     public boolean equals(Object o) {

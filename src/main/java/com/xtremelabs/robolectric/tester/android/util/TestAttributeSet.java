@@ -6,7 +6,8 @@ import com.xtremelabs.robolectric.res.AttrResourceLoader;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.util.I18nException;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
 
 public class TestAttributeSet implements AttributeSet {
     Map<String, String> attributes = new HashMap<String, String>();
@@ -39,10 +40,16 @@ public class TestAttributeSet implements AttributeSet {
     }
 
     public TestAttributeSet(Map<String, String> attributes) {
-        this.attributes = attributes;
-        this.resourceExtractor = new ResourceExtractor();
-        this.attrResourceLoader = new AttrResourceLoader(this.resourceExtractor);
-        this.viewClass = null;
+        this(attributes, new ResourceExtractor());
+    }
+
+    public TestAttributeSet(Map<String, String> attributes, ResourceExtractor resourceExtractor) {
+        this(attributes, resourceExtractor, new AttrResourceLoader(resourceExtractor), null, false);
+    }
+
+    public TestAttributeSet(Map<String, String> attributes, Class<?> rFileClass) throws Exception {
+        this(attributes, new ResourceExtractor());
+        this.resourceExtractor.addLocalRClass(rFileClass);
     }
 
     public TestAttributeSet put(String name, String value) {
@@ -83,8 +90,14 @@ public class TestAttributeSet implements AttributeSet {
     }
 
     @Override
-    public String getAttributeValue(int index) {
-        throw new UnsupportedOperationException();
+    public String getAttributeValue(int resourceId) {
+        String qualifiedResourceName = resourceExtractor.getResourceName(resourceId);
+        if (qualifiedResourceName != null) {
+            String resourceName = qualifiedResourceName.substring(qualifiedResourceName.indexOf('/') + 1);
+            return getAttributeValueInMap(null, resourceName);
+        } else {
+            return null;
+        }
     }
 
     @Override
@@ -202,7 +215,7 @@ public class TestAttributeSet implements AttributeSet {
             }
 
             if (mappedKeys[1].equals(attribute) && (
-                    namespace == null || namespace != "android" ||
+                    namespace == null || !namespace.equals("android") ||
                             (namespace.equals("android") && namespace.equals(mappedKeys[0])))) {
                 value = attributes.get(key);
                 break;

@@ -22,6 +22,7 @@ public class ShadowActivityManager {
 	
 	private String backgroundPackage;
     private ActivityManager.MemoryInfo memoryInfo;
+    private int memoryClass;
 
     @Implementation
 	public List<ActivityManager.RunningTaskInfo> getRunningTasks(int maxNum) {
@@ -70,6 +71,15 @@ public class ShadowActivityManager {
 
     public void setMemoryInfo(ActivityManager.MemoryInfo memoryInfo) {
         this.memoryInfo = memoryInfo;
+    }
+
+    @Implementation
+    public int getMemoryClass() {
+        return memoryClass;
+    }
+
+    public void setMemoryClass(int memoryClass) {
+        this.memoryClass = memoryClass;
     }
 
     @Implements(ActivityManager.MemoryInfo.class)

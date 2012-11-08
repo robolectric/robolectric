@@ -5,8 +5,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
+import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -84,6 +87,14 @@ public class ViewGroupTest {
         root.setLayoutAnimationListener(animationListener);
 
         assertThat(root.getLayoutAnimationListener(), sameInstance(animationListener));
+    }
+    
+    @Test
+    public void testLayoutAnimation() {
+    	assertThat(root.getLayoutAnimation(), nullValue());
+    	LayoutAnimationController layoutAnim = new LayoutAnimationController(context, null);
+    	root.setLayoutAnimation(layoutAnim);
+    	assertThat(root.getLayoutAnimation(), sameInstance(layoutAnim));
     }
 
     @Test
@@ -207,6 +218,11 @@ public class ViewGroupTest {
     @Test
     public void dump_shouldDumpStructure() throws Exception {
         child3.setId(R.id.snippet_text);
+        child3b.setVisibility(View.GONE);
+        TextView textView = new TextView(context);
+        textView.setText("Here's some text!");
+        textView.setVisibility(View.INVISIBLE);
+        child3.addView(textView);
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         shadowOf(root).dump(new PrintStream(out), 0);
@@ -215,8 +231,21 @@ public class ViewGroupTest {
                 "  <View/>\n" +
                 "  <FrameLayout id=\"id/snippet_text\">\n" +
                 "    <View/>\n" +
-                "    <View/>\n" +
+                "    <View visibility=\"GONE\"/>\n" +
+                "    <TextView visibility=\"INVISIBLE\" text=\"Here&apos;s some text!\"/>\n" +
                 "  </FrameLayout>\n" +
                 "</FrameLayout>\n", out.toString());
+    }
+
+    @Test
+    public void addViewWithLayoutParams_shouldStoreLayoutParams() throws Exception {
+        FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        FrameLayout.LayoutParams layoutParams2 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        ImageView child1 = new ImageView(Robolectric.application);
+        ImageView child2 = new ImageView(Robolectric.application);
+        root.addView(child1, layoutParams1);
+        root.addView(child2, 1, layoutParams2);
+        assertSame(layoutParams1, child1.getLayoutParams());
+        assertSame(layoutParams2, child2.getLayoutParams());
     }
 }

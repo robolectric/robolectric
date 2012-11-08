@@ -3,6 +3,8 @@ package com.xtremelabs.robolectric.shadows;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation.AnimationListener;
+import android.view.animation.LayoutAnimationController;
+
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -20,6 +22,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowViewGroup extends ShadowView {
     private List<View> children = new ArrayList<View>();
     private AnimationListener animListener;
+    private LayoutAnimationController layoutAnim;
     private boolean disallowInterceptTouchEvent = false;
 
     @Implementation
@@ -77,11 +80,12 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public void addView(View child, ViewGroup.LayoutParams params) {
-        ((ViewGroup) realView).addView(child, -1);
+        ((ViewGroup) realView).addView(child, -1, params);
     }
 
     @Implementation
     public void addView(View child, int index, ViewGroup.LayoutParams params) {
+        child.setLayoutParams(params);
         ((ViewGroup) realView).addView(child, index);
     }
 
@@ -195,6 +199,16 @@ public class ShadowViewGroup extends ShadowView {
     @Implementation
     public AnimationListener getLayoutAnimationListener() {
         return animListener;
+    }
+    
+    @Implementation
+    public void setLayoutAnimation(LayoutAnimationController layoutAnim) {
+    	this.layoutAnim = layoutAnim;
+    }
+    
+    @Implementation
+    public LayoutAnimationController getLayoutAnimation() {
+    	return layoutAnim;
     }
 
     @Implementation
