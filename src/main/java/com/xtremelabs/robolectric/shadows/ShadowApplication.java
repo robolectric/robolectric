@@ -479,6 +479,13 @@ public class ShadowApplication extends ShadowContextWrapper {
         return fakeHttpLayer;
     }
 
+    public void setFakeHttpLayer(FakeHttpLayer fakeHttpLayer) {
+        if (fakeHttpLayer == null) {
+            throw new IllegalArgumentException();
+        }
+        this.fakeHttpLayer = fakeHttpLayer;
+    }
+
     @Override
     @Implementation
     public Looper getMainLooper() {

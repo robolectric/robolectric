@@ -1,13 +1,5 @@
 package com.xtremelabs.robolectric.res;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
-import java.io.*;
-import java.lang.reflect.Field;
-import java.util.HashSet;
-import java.util.Properties;
-import java.util.Set;
-
 import android.R;
 import android.content.Context;
 import android.content.res.XmlResourceParser;
@@ -18,11 +10,24 @@ import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.shadows.ShadowContextWrapper;
 import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.lang.reflect.Field;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ResourceLoader {
 	private static final FileFilter MENU_DIR_FILE_FILTER = new FileFilter() {
@@ -69,12 +74,16 @@ public class ResourceLoader {
 	
 	private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
 
-	public ResourceLoader( int sdkVersion, Class rClass, File resourceDir, File assetsDir) throws Exception {
-		this.sdkVersion = sdkVersion;
-		this.assetsDir = assetsDir;
-		this.rClass = rClass;
-		
-		resourceExtractor = new ResourceExtractor();
+    public ResourceLoader( int sdkVersion, Class rClass, List<File> resourcePath, File assetsDir) throws Exception {
+        this(sdkVersion, rClass, resourcePath.get(0), assetsDir); // todo
+    }
+
+    public ResourceLoader( int sdkVersion, Class rClass, File resourceDir, File assetsDir) throws Exception {
+        this.sdkVersion = sdkVersion;
+        this.assetsDir = assetsDir;
+        this.rClass = rClass;
+
+        resourceExtractor = new ResourceExtractor();
 		resourceExtractor.addLocalRClass( rClass );
 		resourceExtractor.addSystemRClass( R.class );
 
@@ -144,8 +153,9 @@ public class ResourceLoader {
 				loadDrawableResources( resourceDir );
 				loadPreferenceResources( preferenceDir );
 				loadXmlFileResources( preferenceDir );
-				
-				listNinePatchResources(ninePatchDrawableIds, resourceDir);
+                loadOtherResources(resourceDir); // todo ?
+
+                listNinePatchResources(ninePatchDrawableIds, resourceDir);
 			} else {
 				viewLoader = null;
 				menuLoader = null;
@@ -249,7 +259,11 @@ public class ResourceLoader {
 		}
 	}
 
-	private void loadLayoutResourceXmlSubDirs( DocumentLoader layoutDocumentLoader, File xmlResourceDir, boolean isSystem )
+    // todo ?
+    protected void loadOtherResources(File xmlResourceDir) {
+    }
+
+    private void loadLayoutResourceXmlSubDirs( DocumentLoader layoutDocumentLoader, File xmlResourceDir, boolean isSystem )
 			throws Exception {
 		if ( xmlResourceDir != null ) {
 			layoutDocumentLoader.loadResourceXmlDirs( isSystem, xmlResourceDir.listFiles( LAYOUT_DIR_FILE_FILTER ) );

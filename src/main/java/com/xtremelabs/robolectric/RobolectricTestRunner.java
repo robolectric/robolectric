@@ -44,7 +44,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
   	private static InstrumentDetector instrumentDetector = InstrumentDetector.DEFAULT;
 
     private static RobolectricClassLoader defaultLoader;
-    private static Map<RobolectricConfig, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RobolectricConfig, ResourceLoader>();
+    protected static Map<RobolectricConfig, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RobolectricConfig, ResourceLoader>();
 
     // fields in the RobolectricTestRunner in the original ClassLoader
     private RobolectricClassLoader classLoader;
@@ -593,7 +593,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return new ApplicationResolver(robolectricConfig).resolveApplication();
     }
 
-    private ResourceLoader createResourceLoader(final RobolectricConfig robolectricConfig) {
+    protected ResourceLoader createResourceLoader(final RobolectricConfig robolectricConfig) {
         ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(robolectricConfig);
         
         if (resourceLoader == null ) {

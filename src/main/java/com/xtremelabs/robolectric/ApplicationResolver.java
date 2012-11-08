@@ -11,34 +11,35 @@ import org.w3c.dom.Document;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ApplicationResolver {
-    RobolectricConfig config;
+    private final RobolectricConfig config;
 
     public ApplicationResolver(RobolectricConfig config) {
         this.config = config;
     }
 
     public Application resolveApplication() {
-        String applicationName = config.getApplicationName();
-        String packageName = config.getPackageName();
-
         Application application;
-        if (applicationName != null) {
-            application = newApplicationInstance(packageName, applicationName);
+        if (config.getApplicationName() != null) {
+            application = newApplicationInstance();
         } else {
             application = new Application();
         }
 
-        ShadowApplication shadowApplication = shadowOf(application);
-        shadowApplication.setPackageName(packageName);
-        shadowApplication.setApplicationName(applicationName);
-
-        shadowApplication.setPackageManager(new RobolectricPackageManager(application, config));
-        registerBroadcastReceivers(shadowApplication);
+        injectShadow(application);
 
         return application;
     }
 
-    private void registerBroadcastReceivers(ShadowApplication shadowApplication) {
+    public void injectShadow(Application application) {
+        ShadowApplication shadowApplication = shadowOf(application);
+        shadowApplication.setPackageName(config.getPackageName());
+        shadowApplication.setApplicationName(config.getApplicationName());
+
+        shadowApplication.setPackageManager(new RobolectricPackageManager(application, config));
+        registerBroadcastReceivers(shadowApplication);
+    }
+
+  private void registerBroadcastReceivers(ShadowApplication shadowApplication) {
         for (int i = 0; i < config.getReceiverCount(); i++) {
             IntentFilter filter = new IntentFilter();
             for (String action : config.getReceiverIntentFilterActions(i)) {
@@ -65,11 +66,11 @@ public class ApplicationResolver {
         return doc.getElementsByTagName(tag).item(0).getAttributes().getNamedItem(attribute).getTextContent();
     }
 
-    private Application newApplicationInstance(String packageName, String applicationName) {
+    private Application newApplicationInstance() {
         Application application;
         try {
             Class<? extends Application> applicationClass =
-                    new ClassNameResolver<Application>(packageName, applicationName).resolve();
+                    new ClassNameResolver<Application>(config.getPackageName(), config.getApplicationName()).resolve();
             application = applicationClass.newInstance();
         } catch (Exception e) {
             throw new RuntimeException(e);
