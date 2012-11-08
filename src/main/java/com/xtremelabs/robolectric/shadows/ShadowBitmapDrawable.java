@@ -28,6 +28,10 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
         this.bitmap = bitmap;
     }
 
+    public void __constructor__(android.content.res.Resources res, Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
     /**
      * Draws the contained bitmap onto the canvas at 0,0 with a default {@code Paint}
      *
