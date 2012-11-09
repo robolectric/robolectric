@@ -17,7 +17,8 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 22;
+//    public static final int CACHE_VERSION = 22;
+    public static final int CACHE_VERSION = -1;
 
     static final String STATIC_INITIALIZER_METHOD_NAME = "__staticInitializer__";
 
@@ -27,6 +28,7 @@ public class AndroidTranslator implements Translator {
     private ClassCache classCache;
     private final List<String> instrumentingList = new ArrayList<String>();
     private final List<String> instrumentingExcludeList = new ArrayList<String>();
+    private boolean debug = false;
 
 
     public static ClassHandler getClassHandler(int index) {
@@ -114,7 +116,11 @@ public class AndroidTranslator implements Translator {
             throw new IgnorableClassNotFoundException(e);
         }
 
-        if (shouldInstrument(ctClass)) {
+        boolean shouldInstrument = shouldInstrument(ctClass);
+        if (debug)
+            System.out.println("Considering " + ctClass.getName() + ": " + (shouldInstrument ? "INSTRUMENTING" : "not instrumenting"));
+
+        if (shouldInstrument) {
             int modifiers = ctClass.getModifiers();
             if (Modifier.isFinal(modifiers)) {
                 ctClass.setModifiers(modifiers & ~Modifier.FINAL);
@@ -142,7 +148,7 @@ public class AndroidTranslator implements Translator {
         }
     }
 
-    /* package */ boolean shouldInstrument(CtClass ctClass) {
+    /* package */ boolean shouldInstrument(CtClass ctClass) throws NotFoundException {
         if (ctClass.hasAnnotation(Instrument.class)) {
             return true;
         } else if (ctClass.isInterface() || ctClass.hasAnnotation(DoNotInstrument.class)) {
@@ -158,6 +164,12 @@ public class AndroidTranslator implements Translator {
                     return true;
                 }
             }
+
+            CtClass superclass = ctClass.getSuperclass();
+            if (superclass != null && shouldInstrument(superclass)) {
+                return true;
+            }
+
             return false;
         }
     }
