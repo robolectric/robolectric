@@ -4,20 +4,19 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
-import android.view.*;
+import android.view.MotionEvent;
+import android.view.View;
 import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.util.TestAnimationListener;
-import com.xtremelabs.robolectric.util.TestOnClickListener;
-import com.xtremelabs.robolectric.util.TestOnLongClickListener;
-import com.xtremelabs.robolectric.util.TestRunnable;
-import com.xtremelabs.robolectric.util.Transcript;
+import com.xtremelabs.robolectric.util.*;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,9 +25,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ViewTest {
@@ -340,45 +337,45 @@ public class ViewTest {
         shadowOf(view1).finishedAnimation();
         assertTrue(view1.onAnimationEndWasCalled);
     }
-    
+
     @Test
     public void test_measuredDimension() {
-    	// View does not provide its own onMeasure implementation
-    	TestView view1 = new TestView(new Activity());
+        // View does not provide its own onMeasure implementation
+        TestView view1 = new TestView(new Activity());
 
-    	assertThat(view1.getHeight(), equalTo(0));
-    	assertThat(view1.getWidth(), equalTo(0)); 
-    	assertThat(view1.getMeasuredHeight(), equalTo(0));
-    	assertThat(view1.getMeasuredWidth(), equalTo(0));    
-    	
-    	view1.measure( MeasureSpec.makeMeasureSpec(150, MeasureSpec.AT_MOST),
-    				   MeasureSpec.makeMeasureSpec(300, MeasureSpec.AT_MOST) );
-    	
-    	assertThat(view1.getHeight(), equalTo(0));
-    	assertThat(view1.getWidth(), equalTo(0)); 
-    	assertThat(view1.getMeasuredHeight(), equalTo(300));
-    	assertThat(view1.getMeasuredWidth(), equalTo(150));  
+        assertThat(view1.getHeight(), equalTo(0));
+        assertThat(view1.getWidth(), equalTo(0));
+        assertThat(view1.getMeasuredHeight(), equalTo(0));
+        assertThat(view1.getMeasuredWidth(), equalTo(0));
+
+        view1.measure(MeasureSpec.makeMeasureSpec(150, MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec(300, MeasureSpec.AT_MOST));
+
+        assertThat(view1.getHeight(), equalTo(0));
+        assertThat(view1.getWidth(), equalTo(0));
+        assertThat(view1.getMeasuredHeight(), equalTo(300));
+        assertThat(view1.getMeasuredWidth(), equalTo(150));
     }
-    
+
     @Test
     public void test_measuredDimensionCustomView() {
-       	// View provides its own onMeasure implementation
-    	TestView2 view2 = new TestView2(new Activity());
+        // View provides its own onMeasure implementation
+        TestView2 view2 = new TestView2(new Activity());
 
-    	assertThat(view2.getHeight(), equalTo(0));
-    	assertThat(view2.getWidth(), equalTo(0)); 
-    	assertThat(view2.getMeasuredHeight(), equalTo(0));
-    	assertThat(view2.getMeasuredWidth(), equalTo(0));    
-    	
-    	view2.measure( MeasureSpec.makeMeasureSpec(1000, MeasureSpec.AT_MOST),
-    				   MeasureSpec.makeMeasureSpec(600, MeasureSpec.AT_MOST) );
-    	
-    	assertThat(view2.getHeight(), equalTo(0));
-    	assertThat(view2.getWidth(), equalTo(0)); 
-    	assertThat(view2.getMeasuredHeight(), equalTo(400));
-    	assertThat(view2.getMeasuredWidth(), equalTo(800));  
+        assertThat(view2.getHeight(), equalTo(0));
+        assertThat(view2.getWidth(), equalTo(0));
+        assertThat(view2.getMeasuredHeight(), equalTo(0));
+        assertThat(view2.getMeasuredWidth(), equalTo(0));
+
+        view2.measure(MeasureSpec.makeMeasureSpec(1000, MeasureSpec.AT_MOST),
+                MeasureSpec.makeMeasureSpec(600, MeasureSpec.AT_MOST));
+
+        assertThat(view2.getHeight(), equalTo(0));
+        assertThat(view2.getWidth(), equalTo(0));
+        assertThat(view2.getMeasuredHeight(), equalTo(400));
+        assertThat(view2.getMeasuredWidth(), equalTo(800));
     }
-    
+
     @Test
     public void shouldGetAndSetTranslations() throws Exception {
         view = new TestView(new Activity());
@@ -396,49 +393,60 @@ public class ViewTest {
 
         assertThat(view.getAlpha(), equalTo(9.1f));
     }
-    
+
     @Test
     public void itKnowsIfTheViewIsShown() {
-      view.setVisibility(View.VISIBLE);
-      assertThat(view.isShown(), is(true));
+        view.setVisibility(View.VISIBLE);
+        assertThat(view.isShown(), is(true));
     }
 
     @Test
     public void itKnowsIfTheViewIsNotShown() {
-      view.setVisibility(View.GONE);
-      assertThat(view.isShown(), is(false));
+        view.setVisibility(View.GONE);
+        assertThat(view.isShown(), is(false));
 
-      view.setVisibility(View.INVISIBLE);
-      assertThat(view.isShown(), is(false));
+        view.setVisibility(View.INVISIBLE);
+        assertThat(view.isShown(), is(false));
     }
-    
+
+    @Test
+    public void shouldTrackRequestLayoutCalls() throws Exception {
+        assertThat(shadowOf(view).didRequestLayout(), is(false));
+        view.requestLayout();
+        assertThat(shadowOf(view).didRequestLayout(), is(true));
+        shadowOf(view).setDidRequestLayout(false);
+        assertThat(shadowOf(view).didRequestLayout(), is(false));
+    }
+
     public void shouldClickAndNotClick() throws Exception {
-    	assertThat( view.isClickable(), equalTo(false) );
-    	view.setClickable(true);
-    	assertThat( view.isClickable(), equalTo(true) );
-    	view.setClickable(false);    	
-    	assertThat( view.isClickable(), equalTo(false) );
-    	view.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {;}
-    	});
-    	assertThat( view.isClickable(), equalTo(true) );
+        assertThat(view.isClickable(), equalTo(false));
+        view.setClickable(true);
+        assertThat(view.isClickable(), equalTo(true));
+        view.setClickable(false);
+        assertThat(view.isClickable(), equalTo(false));
+        view.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                ;
+            }
+        });
+        assertThat(view.isClickable(), equalTo(true));
     }
 
     @Test
     public void shouldLongClickAndNotLongClick() throws Exception {
-    	assertThat( view.isLongClickable(), equalTo(false) );
-    	view.setLongClickable(true);
-    	assertThat( view.isLongClickable(), equalTo(true) );
-    	view.setLongClickable(false);    	
-    	assertThat( view.isLongClickable(), equalTo(false) ); 
-    	view.setOnLongClickListener(new OnLongClickListener() {
-			@Override
-			public boolean onLongClick(View v) {
-				return false;
-			}
-    	});
-    	assertThat( view.isLongClickable(), equalTo(true) );
+        assertThat(view.isLongClickable(), equalTo(false));
+        view.setLongClickable(true);
+        assertThat(view.isLongClickable(), equalTo(true));
+        view.setLongClickable(false);
+        assertThat(view.isLongClickable(), equalTo(false));
+        view.setOnLongClickListener(new OnLongClickListener() {
+            @Override
+            public boolean onLongClick(View v) {
+                return false;
+            }
+        });
+        assertThat(view.isLongClickable(), equalTo(true));
     }
 
     private static class TestAnimation extends Animation {
@@ -471,15 +479,15 @@ public class ViewTest {
             onAnimationEndWasCalled = true;
         }
     }
-    
+
     private static class TestView2 extends View {
-    	public TestView2(Context context) {
+        public TestView2(Context context) {
             super(context);
         }
 
-		@Override
-		protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-			super.onMeasure(800, 400);
-		}
+        @Override
+        protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
+            super.onMeasure(800, 400);
+        }
     }
 }

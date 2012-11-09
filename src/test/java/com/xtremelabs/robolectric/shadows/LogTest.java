@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.util.Log;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -10,10 +9,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import static junit.framework.Assert.assertEquals;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.*;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class LogTest {
@@ -127,7 +124,8 @@ public class LogTest {
         try {
             ShadowLog.stream = new PrintStream(bos);
             Log.d("tag", "msg");
-            assertThat(new String(bos.toByteArray()), equalTo("D/tag: msg\n"));
+            assertThat(new String(bos.toByteArray()), equalTo("D/tag: msg" + System.getProperty("line.separator")));
+
 
             Log.w("tag", new RuntimeException());
             assertTrue(new String(bos.toByteArray()).contains("RuntimeException"));

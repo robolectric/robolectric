@@ -3,11 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.text.InputFilter;
-import android.text.Layout;
-import android.text.SpannableStringBuilder;
-import android.text.TextPaint;
-import android.text.TextWatcher;
+import android.text.*;
 import android.text.method.MovementMethod;
 import android.text.method.TransformationMethod;
 import android.text.style.URLSpan;
@@ -19,6 +15,7 @@ import android.widget.TextView;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,6 +48,7 @@ public class ShadowTextView extends ShadowView {
     protected int selectionEnd = -1;
     private Typeface typeface;
     private InputFilter[] inputFilters;
+    private TextPaint textPaint = new TextPaint();
 
     private List<TextWatcher> watchers = new ArrayList<TextWatcher>();
     private List<Integer> previousKeyCodes = new ArrayList<Integer>();
@@ -479,7 +477,7 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public TextPaint getPaint() {
-        return new TextPaint();
+        return textPaint;
     }
 
     @Implementation
@@ -545,6 +543,15 @@ public class ShadowTextView extends ShadowView {
 
     public void setLayout(Layout layout) {
         this.layout = layout;
+    }
+
+    @Override
+    protected void dumpAttributes(PrintStream out) {
+        super.dumpAttributes(out);
+        CharSequence text = getText();
+        if (text != null && text.length() > 0) {
+            dumpAttribute(out, "text", text.toString());
+        }
     }
 
     public static class CompoundDrawables {

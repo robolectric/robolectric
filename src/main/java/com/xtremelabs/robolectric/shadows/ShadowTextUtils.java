@@ -60,4 +60,33 @@ public class ShadowTextUtils {
     	
     	return text.split(expression);
     }
+
+    @Implementation
+    public static String htmlEncode(String s) {
+        StringBuilder sb = new StringBuilder();
+        char c;
+        for (int i = 0; i < s.length(); i++) {
+            c = s.charAt(i);
+            switch (c) {
+                case '<':
+                    sb.append("&lt;"); //$NON-NLS-1$
+                    break;
+                case '>':
+                    sb.append("&gt;"); //$NON-NLS-1$
+                    break;
+                case '&':
+                    sb.append("&amp;"); //$NON-NLS-1$
+                    break;
+                case '\'':
+                    sb.append("&apos;"); //$NON-NLS-1$
+                    break;
+                case '"':
+                    sb.append("&quot;"); //$NON-NLS-1$
+                    break;
+                default:
+                    sb.append(c);
+            }
+        }
+        return sb.toString();
+    }
 }

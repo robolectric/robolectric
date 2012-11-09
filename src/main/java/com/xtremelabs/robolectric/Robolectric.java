@@ -1,15 +1,5 @@
 package com.xtremelabs.robolectric;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.List;
-
-import org.apache.http.Header;
-import org.apache.http.HttpRequest;
-import org.apache.http.HttpResponse;
-import org.apache.http.impl.client.DefaultRequestDirector;
-
 import android.accounts.AccountManager;
 import android.app.*;
 import android.appwidget.AppWidgetManager;
@@ -62,10 +52,8 @@ import android.util.SparseIntArray;
 import android.view.*;
 import android.view.animation.*;
 import android.view.inputmethod.InputMethodManager;
-
 import android.webkit.*;
 import android.widget.*;
-
 import com.xtremelabs.robolectric.bytecode.DirectCallPolicy.FullStackDirectCallPolicy;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
@@ -74,6 +62,15 @@ import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.util.Scheduler;
+import org.apache.http.Header;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
+import org.apache.http.impl.client.DefaultRequestDirector;
+
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
+import java.util.List;
 
 public class Robolectric {
     public static Application application;
@@ -190,8 +187,9 @@ public class Robolectric {
                 ShadowContextThemeWrapper.class,
                 ShadowCookieManager.class,
                 ShadowCookieSyncManager.class,
-                ShadowCriteria.class,
+                ShadowCornerPathEffect.class,
                 ShadowCountDownTimer.class,
+                ShadowCriteria.class,
                 ShadowCursorAdapter.class,
                 ShadowCursorLoader.class,
                 ShadowCursorWrapper.class,
@@ -223,10 +221,13 @@ public class Robolectric {
                 ShadowHtml.class,
                 ShadowImageView.class,
                 ShadowInputMethodManager.class,
+                ShadowInputDevice.class,
+                ShadowInputEvent.class,
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowIntentFilterAuthorityEntry.class,
                 ShadowItemizedOverlay.class,
+                ShadowLayoutAnimationController.class,
                 ShadowJsPromptResult.class,
                 ShadowJsResult.class,
                 ShadowKeyEvent.class,
@@ -235,6 +236,7 @@ public class Robolectric {
                 ShadowLayerDrawable.class,
                 ShadowLayoutInflater.class,
                 ShadowLayoutParams.class,
+                ShadowLinearGradient.class,
                 ShadowLinearLayout.class,
                 ShadowLinkMovementMethod.class,
                 ShadowListActivity.class,
@@ -386,6 +388,7 @@ public class Robolectric {
         ShadowContentResolver.reset();
         ShadowLocalBroadcastManager.reset();
         ShadowMimeTypeMap.reset();
+        ShadowPowerManager.reset();
         ShadowStatFs.reset();
     }
 
@@ -447,6 +450,10 @@ public class Robolectric {
 
     public static ShadowAnimation shadowOf(Animation instance) {
         return (ShadowAnimation) shadowOf_(instance);
+    }
+
+    public static ShadowLayoutAnimationController shadowOf(LayoutAnimationController instance) {
+        return (ShadowLayoutAnimationController) shadowOf_(instance);
     }
 
     public static ShadowAnimationDrawable shadowOf(AnimationDrawable instance) {
@@ -590,6 +597,10 @@ public class Robolectric {
         return (ShadowContextWrapper) shadowOf_(instance);
     }
 
+    public static ShadowCornerPathEffect shadowOf(CornerPathEffect instance) {
+        return (ShadowCornerPathEffect) Robolectric.shadowOf_(instance);
+    }
+
     public static ShadowCountDownTimer shadowOf(CountDownTimer instance) {
         return (ShadowCountDownTimer) Robolectric.shadowOf_(instance);
     }
@@ -694,6 +705,10 @@ public class Robolectric {
         return (ShadowInputMethodManager) shadowOf_(instance);
     }
 
+    public static ShadowInputDevice shadowOf(InputDevice instance) {
+        return (ShadowInputDevice) shadowOf_(instance);
+    }
+
     public static ShadowIntent shadowOf(Intent instance) {
         return (ShadowIntent) shadowOf_(instance);
     }
@@ -704,6 +719,10 @@ public class Robolectric {
 
     public static ShadowJsResult shadowOf(JsResult instance) {
         return (ShadowJsResult) shadowOf_(instance);
+    }
+
+    public static ShadowKeyEvent shadowOf(KeyEvent instance) {
+        return (ShadowKeyEvent) shadowOf_(instance);
     }
 
     public static ShadowKeyguardManager shadowOf(KeyguardManager instance) {
@@ -720,6 +739,10 @@ public class Robolectric {
 
     public static ShadowLayoutInflater shadowOf(LayoutInflater instance) {
         return (ShadowLayoutInflater) shadowOf_(instance);
+    }
+
+    public static ShadowLinearGradient shadowOf(LinearGradient instance) {
+        return (ShadowLinearGradient) shadowOf_(instance);
     }
 
     public static ShadowListActivity shadowOf(ListActivity instance) {
@@ -1296,18 +1319,51 @@ public class Robolectric {
         return shadowOf(view).checkedPerformClick();
     }
 
+    /**
+     * Returns a textual representation of the appearance of the object.
+     *
+     * @param view the view to visualize
+     */
     public static String visualize(View view) {
         Canvas canvas = new Canvas();
         view.draw(canvas);
         return shadowOf(canvas).getDescription();
     }
 
+    /**
+     * Returns a textual representation of the appearance of the object.
+     *
+     * @param canvas the canvas to visualize
+     */
     public static String visualize(Canvas canvas) {
         return shadowOf(canvas).getDescription();
     }
 
+    /**
+     * Returns a textual representation of the appearance of the object.
+     *
+     * @param bitmap the bitmap to visualize
+     */
     public static String visualize(Bitmap bitmap) {
         return shadowOf(bitmap).getDescription();
+    }
+
+    /**
+     * Emits an xml-like representation of the view to System.out.
+     *
+     * @param view the view to dump
+     */
+    public static void dump(View view) {
+        shadowOf(view).dump();
+    }
+
+    /**
+     * Returns the text contained within this view.
+     *
+     * @param view the view to scan for text
+     */
+    public static String innerText(View view) {
+        return shadowOf(view).innerText();
     }
 
     /**
@@ -1330,7 +1386,7 @@ public class Robolectric {
                 throw new RuntimeException(e);
             } 
         }
-        
+
         public static Object setFinalStaticField(Field field, Object newValue) {
         	Object oldValue = null;
         	
@@ -1341,7 +1397,7 @@ public class Robolectric {
                 modifiersField.setAccessible(true);
                 modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
 
-            	oldValue = field.get(null);
+               oldValue = field.get(null);
                field.set(null, newValue);
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException(e);
