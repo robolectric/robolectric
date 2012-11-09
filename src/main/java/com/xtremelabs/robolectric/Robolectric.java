@@ -263,7 +263,7 @@ public class Robolectric {
                 ShadowMimeTypeMap.class,
                 ShadowMotionEvent.class,
                 ShadowNotification.class,
-				ShadowNotificationBuilder.class,
+                ShadowNotificationBuilder.class,
                 ShadowNdefMessage.class,
                 ShadowNdefRecord.class,
                 ShadowNfcAdapter.class,

@@ -10,15 +10,15 @@ import com.xtremelabs.robolectric.internal.RealObject;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Notification.class)
 public class ShadowNotification {
-	private CharSequence contentTitle;
-	private CharSequence contentText;
-	private CharSequence contentInfo;
-	private boolean isAutoCancel;
-	private boolean ongoing;
-	private boolean onlyAlertOnce;
-	private int progressMax;
-	private int progress;
-	private boolean progressIndeterminate;
+    private CharSequence contentTitle;
+    private CharSequence contentText;
+    private CharSequence contentInfo;
+    private boolean isAutoCancel;
+    private boolean ongoing;
+    private boolean onlyAlertOnce;
+    private int progressMax;
+    private int progress;
+    private boolean progressIndeterminate;
     @RealObject Notification realNotification;
     private LatestEventInfo latestEventInfo;
 
@@ -39,81 +39,81 @@ public class ShadowNotification {
         return latestEventInfo;
     }
 
-	public Notification getRealNotification() {
-		return realNotification;
-	}
+    public Notification getRealNotification() {
+        return realNotification;
+    }
 
-	public CharSequence getContentTitle() {
-		return contentTitle;
-	}
+    public CharSequence getContentTitle() {
+        return contentTitle;
+    }
 
-	public void setContentTitle(CharSequence contentTitle) {
-		this.contentTitle = contentTitle;
-	}
+    public void setContentTitle(CharSequence contentTitle) {
+        this.contentTitle = contentTitle;
+    }
 
-	public CharSequence getContentText() {
-		return contentText;
-	}
+    public CharSequence getContentText() {
+        return contentText;
+    }
 
-	public void setContentText(CharSequence contentText) {
-		this.contentText = contentText;
-	}
+    public void setContentText(CharSequence contentText) {
+        this.contentText = contentText;
+    }
 
-	public CharSequence getContentInfo() {
-		return contentInfo;
-	}
+    public CharSequence getContentInfo() {
+        return contentInfo;
+    }
 
-	public void setContentInfo(CharSequence contentInfo) {
-		this.contentInfo = contentInfo;
-	}
+    public void setContentInfo(CharSequence contentInfo) {
+        this.contentInfo = contentInfo;
+    }
 
-	public boolean isAutoCancel() {
-		return isAutoCancel;
-	}
+    public boolean isAutoCancel() {
+        return isAutoCancel;
+    }
 
-	public void setAutoCancel(boolean autoCancel) {
-		isAutoCancel = autoCancel;
-	}
+    public void setAutoCancel(boolean autoCancel) {
+        isAutoCancel = autoCancel;
+    }
 
-	public boolean isOngoing() {
-		return ongoing;
-	}
+    public boolean isOngoing() {
+        return ongoing;
+    }
 
-	public void setOngoing(boolean ongoing) {
-		this.ongoing = ongoing;
-	}
+    public void setOngoing(boolean ongoing) {
+        this.ongoing = ongoing;
+    }
 
-	public boolean isOnlyAlertOnce() {
-		return onlyAlertOnce;
-	}
+    public boolean isOnlyAlertOnce() {
+        return onlyAlertOnce;
+    }
 
-	public void setOnlyAlertOnce(boolean onlyAlertOnce) {
-		this.onlyAlertOnce = onlyAlertOnce;
-	}
+    public void setOnlyAlertOnce(boolean onlyAlertOnce) {
+        this.onlyAlertOnce = onlyAlertOnce;
+    }
 
-	public int getProgressMax() {
-		return progressMax;
-	}
+    public int getProgressMax() {
+        return progressMax;
+    }
 
-	public void setProgressMax(int progressMax) {
-		this.progressMax = progressMax;
-	}
+    public void setProgressMax(int progressMax) {
+        this.progressMax = progressMax;
+    }
 
-	public int getProgress() {
-		return progress;
-	}
+    public int getProgress() {
+        return progress;
+    }
 
-	public void setProgress(int progress) {
-		this.progress = progress;
-	}
+    public void setProgress(int progress) {
+        this.progress = progress;
+    }
 
-	public boolean isProgressIndeterminate() {
-		return progressIndeterminate;
-	}
+    public boolean isProgressIndeterminate() {
+        return progressIndeterminate;
+    }
 
-	public void setProgressIndeterminate(boolean progressIndeterminate) {
-		this.progressIndeterminate = progressIndeterminate;
-	}
+    public void setProgressIndeterminate(boolean progressIndeterminate) {
+        this.progressIndeterminate = progressIndeterminate;
+    }
 
     public static class LatestEventInfo {
         private final CharSequence contentTitle;
