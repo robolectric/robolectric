@@ -263,6 +263,7 @@ public class Robolectric {
                 ShadowMimeTypeMap.class,
                 ShadowMotionEvent.class,
                 ShadowNotification.class,
+                ShadowNotificationBuilder.class,
                 ShadowNdefMessage.class,
                 ShadowNdefRecord.class,
                 ShadowNfcAdapter.class,
@@ -803,6 +804,10 @@ public class Robolectric {
 
     public static ShadowNotification shadowOf(Notification other) {
         return (ShadowNotification) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowNotificationBuilder shadowOf(Notification.Builder other) {
+        return (ShadowNotificationBuilder) Robolectric.shadowOf_(other);
     }
 
     public static ShadowNotificationManager shadowOf(NotificationManager other) {
