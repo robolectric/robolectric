@@ -492,7 +492,6 @@ public class ShadowWrangler implements ClassHandler {
             try {
                 Method method = clazz.getDeclaredMethod(methodName, paramClasses);
                 method.setAccessible(true);
-                System.out.println("directly calling! " + clazz);
                 RobolectricInternals.directlyOn(instance == null ? clazz : instance);
                 return method.invoke(instance, params);
             } catch (NoSuchMethodException e) {

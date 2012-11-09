@@ -54,7 +54,7 @@ public class AndroidTranslator implements Translator {
 
         // Initialize lists
         instrumentingList.add("android.");
-//        instrumentingList.add("libcore.");
+        instrumentingList.add("libcore.");
         instrumentingList.add("com.google.android.maps");
         instrumentingList.add("org.apache.http.impl.client.DefaultRequestDirector");
 

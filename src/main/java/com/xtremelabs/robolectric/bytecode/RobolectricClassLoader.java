@@ -18,7 +18,11 @@ public class RobolectricClassLoader extends javassist.Loader {
     }
 
     public RobolectricClassLoader(ClassHandler classHandler, List<String> customClassNames) {
-        super(RobolectricClassLoader.class.getClassLoader(), null);
+        this(RobolectricClassLoader.class.getClassLoader(), classHandler, customClassNames);
+    }
+
+    public RobolectricClassLoader(ClassLoader classLoader, ClassHandler classHandler, List<String> customClassNames) {
+        super(classLoader, null);
 
         delegateLoadingOf(AndroidTranslator.class.getName());
         delegateLoadingOf(ClassHandler.class.getName());
@@ -34,7 +38,11 @@ public class RobolectricClassLoader extends javassist.Loader {
         classCache = new ClassCache(new File(classCacheDirectory, "cached-robolectric-classes.jar").getAbsolutePath(), AndroidTranslator.CACHE_VERSION);
         try {
             ClassPool classPool = new ClassPool();
-            classPool.appendClassPath(new LoaderClassPath(RobolectricClassLoader.class.getClassLoader()));
+            classPool.appendClassPath(new LoaderClassPath(classLoader));
+
+            if (classLoader != RobolectricClassLoader.class.getClassLoader()) {
+                classPool.appendClassPath(new LoaderClassPath(RobolectricClassLoader.class.getClassLoader()));
+            }
 
             androidTranslator = new AndroidTranslator(classHandler, classCache, customClassNames);
             addTranslator(classPool, androidTranslator);

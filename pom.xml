@@ -16,6 +16,12 @@
     <description>An alternative Android testing framework.</description>
     <url>http://pivotal.github.com/robolectric/</url>
 
+    <properties>
+        <aetherVersion>1.13.1</aetherVersion>
+        <mavenVersion>3.0.4</mavenVersion>
+        <wagonVersion>2.2</wagonVersion>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -100,6 +106,47 @@
             <artifactId>mockito-core</artifactId>
             <version>1.8.5</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.sonatype.aether</groupId>
+            <artifactId>aether-api</artifactId>
+            <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.sonatype.aether</groupId>
+            <artifactId>aether-util</artifactId>
+            <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.sonatype.aether</groupId>
+            <artifactId>aether-impl</artifactId>
+            <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.sonatype.aether</groupId>
+            <artifactId>aether-connector-file</artifactId>
+            <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.sonatype.aether</groupId>
+            <artifactId>aether-connector-asynchttpclient</artifactId>
+            <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.sonatype.aether</groupId>
+            <artifactId>aether-connector-wagon</artifactId>
+            <version>${aetherVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven</groupId>
+            <artifactId>maven-aether-provider</artifactId>
+            <version>${mavenVersion}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.maven.wagon</groupId>
+            <artifactId>wagon-ssh</artifactId>
+            <version>${wagonVersion}</version>
         </dependency>
     </dependencies>
 

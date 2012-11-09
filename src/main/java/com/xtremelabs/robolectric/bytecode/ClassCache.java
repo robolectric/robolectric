@@ -132,7 +132,6 @@ public class ClassCache {
 
     private void writeToFile(File file, Map.Entry<String, byte[]> entry, String key) throws IOException {
         File classFile = new File(new File(file.getParentFile(), "classes"), key.replaceAll("\\.", "/") + ".class");
-        System.out.println("classFile = " + classFile);
         classFile.getParentFile().mkdirs();
         FileOutputStream fileOutputStream = new FileOutputStream(classFile);
         fileOutputStream.write(entry.getValue());

@@ -13,10 +13,21 @@ import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
 import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import com.xtremelabs.robolectric.util.SQLiteMap;
 import javassist.Loader;
+import org.apache.maven.repository.internal.MavenRepositorySystemSession;
+import org.codehaus.plexus.DefaultPlexusContainer;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
+import org.sonatype.aether.RepositorySystem;
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.resolution.ArtifactRequest;
+import org.sonatype.aether.resolution.ArtifactResolutionException;
+import org.sonatype.aether.resolution.ArtifactResult;
+import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -31,6 +42,9 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -45,6 +59,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     private static RobolectricClassLoader defaultLoader;
     protected static Map<RobolectricConfig, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RobolectricConfig, ResourceLoader>();
+    private static final boolean USE_REAL_ANDROID_SOURCES = true;
 
     // fields in the RobolectricTestRunner in the original ClassLoader
     private RobolectricClassLoader classLoader;
@@ -55,11 +70,82 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 	// fields in the RobolectricTestRunner in the instrumented ClassLoader
     protected RobolectricConfig robolectricConfig;
 
-    private static RobolectricClassLoader getDefaultLoader() {
+    private static RobolectricClassLoader getDefaultLoader(final Class<?> testClass) {
         if (defaultLoader == null) {
-            defaultLoader = new RobolectricClassLoader(ShadowWrangler.getInstance());
+            ShadowWrangler shadowWrangler = ShadowWrangler.getInstance();
+            if (USE_REAL_ANDROID_SOURCES) {
+              shadowWrangler.delegateBackToInstrumented = true;
+              final ClassLoader parentClassLoader = testClass.getClassLoader();
+              ClassLoader realAndroidJarsClassLoader = new URLClassLoader(new URL[]{
+//                        parseUrl(getAndroidSdkHome() + "/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"),
+                        getRealAndroidArtifact("android-base"),
+                        getRealAndroidArtifact("android-kxml2"),
+                        getRealAndroidArtifact("android-luni")
+                }, null) {
+                  @Override protected Class<?> findClass(String s) throws ClassNotFoundException {
+                    try {
+                      return super.findClass(s);
+                    } catch (ClassNotFoundException e) {
+                      return parentClassLoader.loadClass(s);
+                    }
+                  }
+                };
+                defaultLoader = new RobolectricClassLoader(realAndroidJarsClassLoader, shadowWrangler, null);
+            } else {
+                defaultLoader = new RobolectricClassLoader(shadowWrangler);
+            }
         }
         return defaultLoader;
+    }
+
+    public static RepositorySystem newRepositorySystem() {
+        try {
+            return new DefaultPlexusContainer().lookup(RepositorySystem.class);
+        } catch (Exception e) {
+            throw new IllegalStateException("dependency injection failed", e);
+        }
+    }
+
+    private static RepositorySystemSession newSession(RepositorySystem system) {
+        MavenRepositorySystemSession session = new MavenRepositorySystemSession();
+        LocalRepository localRepo = new LocalRepository(new File(System.getProperty("user.home"), ".m2/repository"));
+        session.setLocalRepositoryManager(system.newLocalRepositoryManager(localRepo));
+
+        return session;
+    }
+
+    public static RemoteRepository newCentralRepository() {
+        return new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
+    }
+
+    private static URL getRealAndroidArtifact(String artifactId) {
+        return getArtifact(new DefaultArtifact("com.squareup.robolectric", artifactId, "real", "jar", "4.1.2_r1"));
+    }
+
+    private static URL getArtifact(String coords) {
+        return getArtifact(new DefaultArtifact(coords));
+    }
+
+    private static URL getArtifact(Artifact artifact) {
+        RepositorySystem repositorySystem = newRepositorySystem();
+        RepositorySystemSession session = newSession(repositorySystem);
+        ArtifactRequest artifactRequest = new ArtifactRequest().setArtifact(artifact);
+        artifactRequest.addRepository(newCentralRepository());
+
+        try {
+            ArtifactResult artifactResult = repositorySystem.resolveArtifact(session, artifactRequest);
+            return parseUrl("file:" + artifactResult.getArtifact().getFile().getAbsolutePath());
+        } catch (ArtifactResolutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static URL parseUrl(String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public static void setInstrumentDetector(final InstrumentDetector detector) {
@@ -109,7 +195,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             throws InitializationError {
         this(testClass,
                 isInstrumented() ? null : ShadowWrangler.getInstance(),
-                isInstrumented() ? null : getDefaultLoader(),
+                isInstrumented() ? null : getDefaultLoader(testClass),
                 robolectricConfig, new SQLiteMap());
     }
 
@@ -126,7 +212,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             throws InitializationError {
         this(testClass,
                 isInstrumented() ? null : ShadowWrangler.getInstance(),
-                isInstrumented() ? null : getDefaultLoader(),
+                isInstrumented() ? null : getDefaultLoader(testClass),
                 robolectricConfig, databaseMap);
     }
 
