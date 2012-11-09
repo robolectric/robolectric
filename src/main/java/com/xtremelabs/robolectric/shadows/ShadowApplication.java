@@ -21,6 +21,7 @@ import android.content.ServiceConnection;
 import android.content.res.Resources;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.PowerManager;
 import android.view.LayoutInflater;
 import android.widget.Toast;
 
@@ -84,6 +85,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private Scheduler backgroundScheduler = new Scheduler();
     private Map<String, Map<String, Object>> sharedPreferenceMap = new HashMap<String, Map<String, Object>>();
     private ArrayList<Toast> shownToasts = new ArrayList<Toast>();
+    private PowerManager.WakeLock latestWakeLock;
     private ShadowAlertDialog latestAlertDialog;
     private ShadowDialog latestDialog;
     private Object bluetoothAdapter = Robolectric.newInstanceOf("android.bluetooth.BluetoothAdapter");
@@ -122,7 +124,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     public List<Toast> getShownToasts() {
         return shownToasts;
     }
-
+    
     public Scheduler getBackgroundScheduler() {
         return backgroundScheduler;
     }
@@ -173,7 +175,7 @@ public class ShadowApplication extends ShadowContextWrapper {
             return service;
         }
     }
-
+    
     @Implementation
     @Override
     public void startActivity(Intent intent) {
@@ -524,6 +526,18 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     public void setSystemService(String key, Object service) {
         systemServices.put(key, service);
+    }
+    
+    public PowerManager.WakeLock getLatestWakeLock() {
+    	return latestWakeLock;
+    }
+    
+    public void addWakeLock( PowerManager.WakeLock wl ) {
+    	latestWakeLock = wl;
+    }
+    
+    public void clearWakeLocks() {
+    	latestWakeLock = null;
     }
 
     public List<StartActivityHandler> getStartActivityHandlers() {

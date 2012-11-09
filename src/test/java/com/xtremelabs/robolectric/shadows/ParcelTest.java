@@ -334,4 +334,15 @@ public class ParcelTest {
 
         assertEquals("value", rehydrated.get("key"));
     }
+    
+    @Test
+    public void testCreateStringArray() {
+    	String[] strs = {
+    			"a1",
+    			"b2"
+    	};
+    	parcel.writeStringArray(strs);
+    	String[] newStrs = parcel.createStringArray();
+    	assertTrue(Arrays.equals(strs, newStrs));
+    }
 }
