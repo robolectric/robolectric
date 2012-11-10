@@ -20,6 +20,8 @@ import java.io.InputStream;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class BitmapDrawableTest {
@@ -44,6 +46,15 @@ public class BitmapDrawableTest {
     public void getBitmap_shouldReturnBitmapUsedToDraw() throws Exception {
         BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
         assertEquals("Bitmap for resource:drawable/an_image", shadowOf(drawable.getBitmap()).getDescription());
+    }
+
+    @Test
+    public void mutate_createsDeepCopy() throws Exception {
+        BitmapDrawable original = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
+        Drawable mutated = original.mutate();
+        assertNotSame(original, mutated);
+        assertTrue(mutated instanceof BitmapDrawable);
+        assertEquals(original, mutated);
     }
 
     @Test
