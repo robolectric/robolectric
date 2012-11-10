@@ -6,10 +6,12 @@ import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -39,6 +41,16 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
         Paint paint = new Paint();
         paint.setColorFilter(colorFilter);
         canvas.drawBitmap(realBitmapDrawable.getBitmap(), 0, 0, paint);
+    }
+
+    @Implementation
+    public Drawable mutate() {
+        BitmapDrawable real = newInstanceOf(BitmapDrawable.class);
+        ShadowBitmapDrawable shadow = shadowOf(real);
+        shadow.bitmap = this.bitmap;
+        shadow.colorFilter = this.colorFilter;
+        shadow.drawableCreateFromStreamSource = drawableCreateFromStreamSource;
+        return real;
     }
 
     @Implementation
