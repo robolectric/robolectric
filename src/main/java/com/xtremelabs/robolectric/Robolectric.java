@@ -228,6 +228,7 @@ public class Robolectric {
                 ShadowIntentFilterAuthorityEntry.class,
                 ShadowItemizedOverlay.class,
                 ShadowLayoutAnimationController.class,
+                ShadowListFragment.class,
                 ShadowJsPromptResult.class,
                 ShadowJsResult.class,
                 ShadowKeyEvent.class,
