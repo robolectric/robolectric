@@ -13,8 +13,11 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
 
+import static java.util.Arrays.asList;
+
 public class ShadowWrangler implements ClassHandler {
     public static final String SHADOW_FIELD_NAME = "__shadow__";
+    private static final int MAX_CALL_DEPTH = 200;
     private static final boolean STRIP_SHADOW_STACK_TRACES = true;
 
     private static ShadowWrangler singleton;
@@ -27,6 +30,7 @@ public class ShadowWrangler implements ClassHandler {
     private Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
     private boolean logMissingShadowMethods = true;
     public boolean delegateBackToInstrumented = false; // todo: make this a configurable
+    private static int callDepth = 0;
 
     // sorry! it really only makes sense to have one per ClassLoader anyway though [xw/hu]
     public static ShadowWrangler getInstance() {
@@ -99,15 +103,33 @@ public class ShadowWrangler implements ClassHandler {
         if (debug) System.out.println("shadow " + realClassName + " with " + shadowClassName);
     }
 
+    private String indent(int count) {
+        StringBuilder buf = new StringBuilder();
+        for (int i = 0; i < count; i++) buf.append("  ");
+        return buf.toString();
+    }
+
     @Override
     public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Exception {
-        System.out.println("methodInvoked: " + clazz + "." + methodName);
         InvocationPlan invocationPlan = new InvocationPlan(clazz, methodName, instance, paramTypes);
         try {
-            if (!invocationPlan.prepare()) {
+            boolean hasShadowImplementation = invocationPlan.prepare();
+            if (debug) {
+                System.out.println(indent(callDepth) + " -> " +
+                        clazz.getName() + "." + methodName + "(" + Join.join(", ", paramTypes) + "): "
+                        + (hasShadowImplementation ? "shadowed by " + (invocationPlan.shadow == null ? "?" : invocationPlan.shadow.getClass().getName()) : "direct"));
+            }
+
+            if (!hasShadowImplementation) {
                 reportNoShadowMethodFound(clazz, methodName, paramTypes);
                 if (delegateBackToInstrumented) {
-                    return invocationPlan.callOriginal(params);
+                    if (callDepth > MAX_CALL_DEPTH) throw stripStackTrace(new StackOverflowError("too deep!"));
+                    try {
+                        callDepth++;
+                        return invocationPlan.callOriginal(params);
+                    } finally {
+                        callDepth--;
+                    }
                 } else {
                     return null;
                 }
@@ -399,7 +421,7 @@ public class ShadowWrangler implements ClassHandler {
 
             if (method == null) {
                 if (debug) {
-                    System.out.println("No method found for " + clazz + "." + methodName + "(" + Arrays.asList(paramClasses) + ") on " + declaredShadowClass.getName());
+                    System.out.println("No method found for " + clazz + "." + methodName + "(" + asList(paramClasses) + ") on " + declaredShadowClass.getName());
                 }
                 return false;
             }
