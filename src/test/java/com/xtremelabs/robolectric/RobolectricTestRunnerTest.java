@@ -1,20 +1,18 @@
 package com.xtremelabs.robolectric;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.junit.Assert.*;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.model.InitializationError;
-
 import android.app.Activity;
 import android.app.Application;
 import android.widget.TextView;
-
 import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
 import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
 import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.res.ResourceLoader;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.model.InitializationError;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunnerTest.RunnerForTesting.class)
 public class RobolectricTestRunnerTest {
@@ -29,7 +27,7 @@ public class RobolectricTestRunnerTest {
 
     @Test
     public void setStaticValue_shouldIgnoreFinalModifier() {
-        RobolectricTestRunner.setStaticValue(android.os.Build.class, "MODEL", "expected value");
+        RobolectricContext.setStaticValue(android.os.Build.class, "MODEL", "expected value");
 
         assertEquals("expected value", android.os.Build.MODEL);
     }
@@ -92,10 +90,12 @@ public class RobolectricTestRunnerTest {
     
     public static class RunnerForTesting extends WithTestDefaultsRunner {
     	public static RunnerForTesting instance;
- 
+        private final RobolectricConfig robolectricConfig;
+
         public RunnerForTesting(Class<?> testClass) throws InitializationError {
             super(testClass);
         	instance = this;
+            robolectricConfig = getRobolectricContext().getRobolectricConfig();
         }
 
         @Override protected Application createApplication() {

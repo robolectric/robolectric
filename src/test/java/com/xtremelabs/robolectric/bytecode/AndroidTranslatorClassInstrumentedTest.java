@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithCustomClassListTestRunner.class)
-public class AndroidTranslatorClassIntrumentedTest {
+public class AndroidTranslatorClassInstrumentedTest {
 
     @Test
     public void testNativeMethodsAreDelegated() throws Exception {

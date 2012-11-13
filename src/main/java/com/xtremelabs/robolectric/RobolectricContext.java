@@ -1,0 +1,241 @@
+package com.xtremelabs.robolectric;
+
+import android.net.Uri__FromAndroid;
+import com.xtremelabs.robolectric.bytecode.ClassHandler;
+import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
+import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
+import com.xtremelabs.robolectric.bytecode.Vars;
+import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
+import com.xtremelabs.robolectric.util.DatabaseConfig;
+import org.apache.maven.repository.internal.MavenRepositorySystemSession;
+import org.codehaus.plexus.DefaultPlexusContainer;
+import org.sonatype.aether.RepositorySystem;
+import org.sonatype.aether.RepositorySystemSession;
+import org.sonatype.aether.artifact.Artifact;
+import org.sonatype.aether.repository.LocalRepository;
+import org.sonatype.aether.repository.RemoteRepository;
+import org.sonatype.aether.resolution.ArtifactRequest;
+import org.sonatype.aether.resolution.ArtifactResolutionException;
+import org.sonatype.aether.resolution.ArtifactResult;
+import org.sonatype.aether.util.artifact.DefaultArtifact;
+
+import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.net.MalformedURLException;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.HashMap;
+import java.util.Map;
+
+import static com.xtremelabs.robolectric.RobolectricTestRunner.isBootstrapped;
+
+public class RobolectricContext {
+    private static final boolean USE_REAL_ANDROID_SOURCES = true;
+    private static Map<Class<? extends RobolectricTestRunner>, RobolectricContext> contextsByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, RobolectricContext>();
+
+    private final RobolectricConfig robolectricConfig;
+    private final RobolectricClassLoader robolectricClassLoader;
+    private final ClassHandler classHandler;
+    private final Class<? extends RobolectricTestRunner> originalTestRunnerClass;
+    private RepositorySystem repositorySystem;
+
+    public RobolectricContext(Class<? extends RobolectricTestRunner> robolectricTestRunnerClass) {
+        if (isBootstrapped(robolectricTestRunnerClass)) {
+            // this happens when a static ROBOLECTRIC_CONTEXT is created in the bootstrapped world; it'll never be used.
+            throw new RuntimeException("this should only be called from the original test runner");
+        } else {
+            this.originalTestRunnerClass = robolectricTestRunnerClass;
+            this.robolectricConfig = createRobolectricConfig();
+            this.robolectricClassLoader = createRobolectricClassLoader();
+            this.classHandler = createClassHandler();
+            init();
+        }
+    }
+
+    private ShadowWrangler createClassHandler() {
+        return ShadowWrangler.getInstance();
+    }
+
+    protected RobolectricConfig createRobolectricConfig() {
+        return new RobolectricConfig(new File("."));
+    }
+
+    public RobolectricConfig getRobolectricConfig() {
+        return robolectricConfig;
+    }
+
+    public ClassHandler getClassHandler() {
+        return classHandler;
+    }
+
+    private void init() {
+        performDelegations(robolectricClassLoader);
+    }
+
+    private void performDelegations(RobolectricClassLoader classLoader) {
+        classLoader.delegateLoadingOf(Uri__FromAndroid.class.getName());
+        classLoader.delegateLoadingOf(RobolectricTestRunnerInterface.class.getName());
+        classLoader.delegateLoadingOf(RealObject.class.getName());
+        classLoader.delegateLoadingOf(ShadowWrangler.class.getName());
+        classLoader.delegateLoadingOf(Vars.class.getName());
+        classLoader.delegateLoadingOf(RobolectricConfig.class.getName());
+        classLoader.delegateLoadingOf(DatabaseConfig.DatabaseMap.class.getName());
+        classLoader.delegateLoadingOf(android.R.class.getName());
+    }
+
+    public Class<?> bootstrap(Class<?> originalTestClass) {
+        Class<?> bootstrappedTestClass = robolectricClassLoader.bootstrap(originalTestClass);
+        Class<?> bootstrappedTestRunnerClass = robolectricClassLoader.bootstrap(originalTestRunnerClass);
+        setRobolectricContextField(originalTestRunnerClass);
+        setRobolectricContextField(bootstrappedTestRunnerClass);
+        return bootstrappedTestClass;
+    }
+
+    synchronized public static Class<?> bootstrap(Class<? extends RobolectricTestRunner> robolectricTestRunnerClass, Class<?> testClass) {
+        if (isBootstrapped(robolectricTestRunnerClass) || isBootstrapped(testClass)) {
+            if (!isBootstrapped(testClass)) throw new IllegalStateException("test class is somehow not bootstrapped");
+            return testClass;
+        }
+
+        RobolectricContext robolectricContext = contextsByTestRunner.get(robolectricTestRunnerClass);
+        if (robolectricContext == null) {
+            try {
+                Method method = robolectricTestRunnerClass.getDeclaredMethod("createRobolectricContext");
+                method.setAccessible(true);
+                robolectricContext = (RobolectricContext) method.invoke(null);
+                contextsByTestRunner.put(robolectricTestRunnerClass, robolectricContext);
+            } catch (NoSuchMethodException e) {
+                throw new RuntimeException("There's no static createRobolectricContext() method on " + robolectricTestRunnerClass.getName());
+            } catch (InvocationTargetException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return robolectricContext.bootstrap(testClass);
+    }
+
+    public RobolectricTestRunnerInterface getBootstrappedTestRunner(RobolectricTestRunnerInterface originalTestRunner) {
+        Class<?> originalTestClass = originalTestRunner.getTestClass().getJavaClass();
+        Class<?> bootstrappedTestClass = robolectricClassLoader.bootstrap(originalTestClass);
+        Class<?> bootstrappedTestRunnerClass = robolectricClassLoader.bootstrap(originalTestRunner.getClass());
+
+        try {
+            Constructor<?> constructorForDelegate = bootstrappedTestRunnerClass.getConstructor(Class.class);
+            return (RobolectricTestRunnerInterface) constructorForDelegate.newInstance(bootstrappedTestClass);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private void setRobolectricContextField(Class<?> instrumentedTestRunnerClass) {
+        Class<?> clazz = instrumentedTestRunnerClass;
+        while (!clazz.getName().equals(RobolectricTestRunner.class.getName())) {
+            clazz = clazz.getSuperclass();
+            if (clazz == null)
+                throw new RuntimeException(instrumentedTestRunnerClass + " doesn't extend RobolectricTestRunner");
+        }
+        try {
+            Field field = clazz.getDeclaredField("sharedRobolectricContext");
+            field.setAccessible(true);
+            field.set(null, this);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    protected RobolectricClassLoader createRobolectricClassLoader() {
+        ShadowWrangler shadowWrangler = createClassHandler();
+        if (USE_REAL_ANDROID_SOURCES) {
+            shadowWrangler.delegateBackToInstrumented = true;
+            final ClassLoader parentClassLoader = this.getClass().getClassLoader();
+            ClassLoader realAndroidJarsClassLoader = new URLClassLoader(new URL[]{
+//                        parseUrl(getAndroidSdkHome() + "/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"),
+                    getRealAndroidArtifact("android-base"),
+                    getRealAndroidArtifact("android-kxml2"),
+                    getRealAndroidArtifact("android-luni")
+            }, null) {
+                @Override
+                protected Class<?> findClass(String s) throws ClassNotFoundException {
+                    try {
+                        return super.findClass(s);
+                    } catch (ClassNotFoundException e) {
+                        return parentClassLoader.loadClass(s);
+                    }
+                }
+            };
+            return new RobolectricClassLoader(realAndroidJarsClassLoader, shadowWrangler, null);
+        } else {
+            return new RobolectricClassLoader(shadowWrangler);
+        }
+    }
+
+    public RobolectricClassLoader getRobolectricClassLoader() {
+        return robolectricClassLoader;
+    }
+
+    public RepositorySystem createRepositorySystem() {
+        try {
+            return new DefaultPlexusContainer().lookup(RepositorySystem.class);
+        } catch (Exception e) {
+            throw new IllegalStateException("dependency injection failed", e);
+        }
+    }
+
+    public RepositorySystem getRepositorySystem() {
+        return repositorySystem == null ? repositorySystem = createRepositorySystem() : repositorySystem;
+    }
+
+    private static RepositorySystemSession newSession(RepositorySystem system) {
+        MavenRepositorySystemSession session = new MavenRepositorySystemSession();
+        LocalRepository localRepo = new LocalRepository(new File(System.getProperty("user.home"), ".m2/repository"));
+        session.setLocalRepositoryManager(system.newLocalRepositoryManager(localRepo));
+
+        return session;
+    }
+
+    public RemoteRepository getCentralRepository() {
+        return new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
+    }
+
+    private URL getRealAndroidArtifact(String artifactId) {
+        return getArtifact(new DefaultArtifact("com.squareup.robolectric", artifactId, "real", "jar", "4.1.2_r1"));
+    }
+
+    private URL getArtifact(String coords) {
+        return getArtifact(new DefaultArtifact(coords));
+    }
+
+    private URL getArtifact(Artifact artifact) {
+        RepositorySystem repositorySystem = createRepositorySystem();
+        RepositorySystemSession session = newSession(repositorySystem);
+        ArtifactRequest artifactRequest = new ArtifactRequest().setArtifact(artifact);
+        artifactRequest.addRepository(getCentralRepository());
+
+        try {
+            ArtifactResult artifactResult = repositorySystem.resolveArtifact(session, artifactRequest);
+            return parseUrl("file:" + artifactResult.getArtifact().getFile().getAbsolutePath());
+        } catch (ArtifactResolutionException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static URL parseUrl(String url) {
+        try {
+            return new URL(url);
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    /** @deprecated use {@link com.xtremelabs.robolectric.Robolectric.Reflection#setFinalStaticField(Class, String, Object)} */
+    public static void setStaticValue(Class<?> clazz, String fieldName, Object value) {
+        Robolectric.Reflection.setFinalStaticField(clazz, fieldName, value);
+    }
+}

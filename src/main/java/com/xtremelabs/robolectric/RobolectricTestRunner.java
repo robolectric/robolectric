@@ -1,9 +1,8 @@
 package com.xtremelabs.robolectric;
 
 import android.app.Application;
-import android.net.Uri__FromAndroid;
-import com.xtremelabs.robolectric.bytecode.*;
-import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.bytecode.ClassHandler;
+import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
@@ -12,22 +11,10 @@ import com.xtremelabs.robolectric.util.DatabaseConfig;
 import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
 import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import com.xtremelabs.robolectric.util.SQLiteMap;
-import javassist.Loader;
-import org.apache.maven.repository.internal.MavenRepositorySystemSession;
-import org.codehaus.plexus.DefaultPlexusContainer;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.repository.LocalRepository;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.ArtifactRequest;
-import org.sonatype.aether.resolution.ArtifactResolutionException;
-import org.sonatype.aether.resolution.ArtifactResult;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -39,12 +26,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,124 +36,19 @@ import java.util.Map;
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
+    @SuppressWarnings("UnusedDeclaration")
+    private static RobolectricContext createRobolectricContext() {
+        return new RobolectricContext(RobolectricTestRunner.class);
+    }
 
-    /** Instrument detector. We use it to check whether the current instance is instrumented. */
-  	private static InstrumentDetector instrumentDetector = InstrumentDetector.DEFAULT;
-
-    private static RobolectricClassLoader defaultLoader;
     protected static Map<RobolectricConfig, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RobolectricConfig, ResourceLoader>();
-    private static final boolean USE_REAL_ANDROID_SOURCES = true;
+
+    // field in both the instrumented and original classes; set by RobolectricContext
+    static RobolectricContext sharedRobolectricContext;
 
     // fields in the RobolectricTestRunner in the original ClassLoader
-    private RobolectricClassLoader classLoader;
-    private ClassHandler classHandler;
     private RobolectricTestRunnerInterface delegate;
-    private DatabaseMap databaseMap;
-
-	// fields in the RobolectricTestRunner in the instrumented ClassLoader
-    protected RobolectricConfig robolectricConfig;
-
-    private static RobolectricClassLoader getDefaultLoader(final Class<?> testClass) {
-        if (defaultLoader == null) {
-            ShadowWrangler shadowWrangler = ShadowWrangler.getInstance();
-            if (USE_REAL_ANDROID_SOURCES) {
-              shadowWrangler.delegateBackToInstrumented = true;
-              final ClassLoader parentClassLoader = testClass.getClassLoader();
-              ClassLoader realAndroidJarsClassLoader = new URLClassLoader(new URL[]{
-//                        parseUrl(getAndroidSdkHome() + "/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"),
-                        getRealAndroidArtifact("android-base"),
-                        getRealAndroidArtifact("android-kxml2"),
-                        getRealAndroidArtifact("android-luni")
-                }, null) {
-                  @Override protected Class<?> findClass(String s) throws ClassNotFoundException {
-                    try {
-                      return super.findClass(s);
-                    } catch (ClassNotFoundException e) {
-                      return parentClassLoader.loadClass(s);
-                    }
-                  }
-                };
-                defaultLoader = new RobolectricClassLoader(realAndroidJarsClassLoader, shadowWrangler, null);
-            } else {
-                defaultLoader = new RobolectricClassLoader(shadowWrangler);
-            }
-        }
-        return defaultLoader;
-    }
-
-    public static RepositorySystem newRepositorySystem() {
-        try {
-            return new DefaultPlexusContainer().lookup(RepositorySystem.class);
-        } catch (Exception e) {
-            throw new IllegalStateException("dependency injection failed", e);
-        }
-    }
-
-    private static RepositorySystemSession newSession(RepositorySystem system) {
-        MavenRepositorySystemSession session = new MavenRepositorySystemSession();
-        LocalRepository localRepo = new LocalRepository(new File(System.getProperty("user.home"), ".m2/repository"));
-        session.setLocalRepositoryManager(system.newLocalRepositoryManager(localRepo));
-
-        return session;
-    }
-
-    public static RemoteRepository newCentralRepository() {
-        return new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
-    }
-
-    private static URL getRealAndroidArtifact(String artifactId) {
-        return getArtifact(new DefaultArtifact("com.squareup.robolectric", artifactId, "real", "jar", "4.1.2_r1"));
-    }
-
-    private static URL getArtifact(String coords) {
-        return getArtifact(new DefaultArtifact(coords));
-    }
-
-    private static URL getArtifact(Artifact artifact) {
-        RepositorySystem repositorySystem = newRepositorySystem();
-        RepositorySystemSession session = newSession(repositorySystem);
-        ArtifactRequest artifactRequest = new ArtifactRequest().setArtifact(artifact);
-        artifactRequest.addRepository(newCentralRepository());
-
-        try {
-            ArtifactResult artifactResult = repositorySystem.resolveArtifact(session, artifactRequest);
-            return parseUrl("file:" + artifactResult.getArtifact().getFile().getAbsolutePath());
-        } catch (ArtifactResolutionException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static URL parseUrl(String url) {
-        try {
-            return new URL(url);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    public static void setInstrumentDetector(final InstrumentDetector detector) {
-      instrumentDetector = detector;
-    }
-
-    public static void setDefaultLoader(Loader robolectricClassLoader) {
-    	//used by the RoboSpecs project to allow for mixed scala\java tests to be run with Maven Surefire (see the RoboSpecs project on github)
-        if (defaultLoader == null) {
-            defaultLoader = (RobolectricClassLoader)robolectricClassLoader;
-        } else throw new RuntimeException("You may not set the default robolectricClassLoader unless it is null!");
-    }
-
-    /**
-     * Call this if you would like Robolectric to rewrite additional classes and turn them
-     * into "do nothing" classes which proxy all method calls to shadow classes, just like it does
-     * with the android classes by default.
-     *
-     * @param classOrPackageToBeInstrumented fully-qualified class or package name
-     */
-    protected static void addClassOrPackageToInstrument(String classOrPackageToBeInstrumented) {
-        if (!isInstrumented()) {
-            defaultLoader.addCustomShadowClass(classOrPackageToBeInstrumented);
-        }
-    }
+    private final DatabaseMap databaseMap;
 
     /**
      * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
@@ -180,186 +58,33 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @throws InitializationError if junit says so
      */
     public RobolectricTestRunner(final Class<?> testClass) throws InitializationError {
-        this(testClass, new RobolectricConfig(new File(".")));
-    }
+        super(RobolectricContext.bootstrap(RobolectricTestRunner.class, testClass));
 
-    /**
-     * Call this constructor in subclasses in order to specify non-default configuration (e.g. location of the
-     * AndroidManifest.xml file and resource directory).
-     *
-     * @param testClass         the test class to be run
-     * @param robolectricConfig the configuration data
-     * @throws InitializationError if junit says so
-     */
-    protected RobolectricTestRunner(final Class<?> testClass, final RobolectricConfig robolectricConfig)
-            throws InitializationError {
-        this(testClass,
-                isInstrumented() ? null : ShadowWrangler.getInstance(),
-                isInstrumented() ? null : getDefaultLoader(testClass),
-                robolectricConfig, new SQLiteMap());
-    }
-
-    /**
-     * Call this constructor in subclasses in order to specify non-default configuration (e.g. location of the
-     * AndroidManifest.xml file, resource directory, and DatabaseMap).
-     *
-     * @param testClass         the test class to be run
-     * @param robolectricConfig the configuration data
-     * @param databaseMap		the database mapping
-     * @throws InitializationError if junit says so
-     */
-    protected RobolectricTestRunner(Class<?> testClass, RobolectricConfig robolectricConfig, DatabaseMap databaseMap)
-            throws InitializationError {
-        this(testClass,
-                isInstrumented() ? null : ShadowWrangler.getInstance(),
-                isInstrumented() ? null : getDefaultLoader(testClass),
-                robolectricConfig, databaseMap);
-    }
-
-    /**
-     * Call this constructor in subclasses in order to specify the project root directory.
-     *
-     * @param testClass          the test class to be run
-     * @param androidProjectRoot the directory containing your AndroidManifest.xml file and res dir
-     * @throws InitializationError if the test class is malformed
-     */
-    public RobolectricTestRunner(final Class<?> testClass, final File androidProjectRoot) throws InitializationError {
-        this(testClass, new RobolectricConfig(androidProjectRoot));
-    }
-
-    /**
-     * Call this constructor in subclasses in order to specify the project root directory.
-     *
-     * @param testClass          the test class to be run
-     * @param androidProjectRoot the directory containing your AndroidManifest.xml file and res dir
-     * @throws InitializationError if junit says so
-     * @deprecated Use {@link #RobolectricTestRunner(Class, File)} instead.
-     */
-    @Deprecated
-    public RobolectricTestRunner(final Class<?> testClass, final String androidProjectRoot) throws InitializationError {
-        this(testClass, new RobolectricConfig(new File(androidProjectRoot)));
-    }
-
-    /**
-     * Call this constructor in subclasses in order to specify the location of the AndroidManifest.xml file and the
-     * resource directory. The #androidManifestPath is used to locate the AndroidManifest.xml file which, in turn,
-     * contains package name for the {@code R} class which contains the identifiers for all of the resources. The
-     * resource directory is where the resource loader will look for resources to load.
-     *
-     * @param testClass           the test class to be run
-     * @param androidManifestPath the AndroidManifest.xml file
-     * @param resourceDirectory   the directory containing the project's resources
-     * @throws InitializationError if junit says so
-     */
-    protected RobolectricTestRunner(final Class<?> testClass, final File androidManifestPath, final File resourceDirectory)
-            throws InitializationError {
-        this(testClass, new RobolectricConfig(androidManifestPath, resourceDirectory));
-    }
-
-    /**
-     * Call this constructor in subclasses in order to specify the location of the AndroidManifest.xml file and the
-     * resource directory. The #androidManifestPath is used to locate the AndroidManifest.xml file which, in turn,
-     * contains package name for the {@code R} class which contains the identifiers for all of the resources. The
-     * resource directory is where the resource loader will look for resources to load.
-     *
-     * @param testClass           the test class to be run
-     * @param androidManifestPath the relative path to the AndroidManifest.xml file
-     * @param resourceDirectory   the relative path to the directory containing the project's resources
-     * @throws InitializationError if junit says so
-     * @deprecated Use {@link #RobolectricTestRunner(Class, File, File)} instead.
-     */
-    @Deprecated
-    protected RobolectricTestRunner(final Class<?> testClass, final String androidManifestPath, final String resourceDirectory)
-            throws InitializationError {
-        this(testClass, new RobolectricConfig(new File(androidManifestPath), new File(resourceDirectory)));
-    }
-
-    protected RobolectricTestRunner(Class<?> testClass, ClassHandler classHandler, RobolectricClassLoader classLoader, RobolectricConfig robolectricConfig) throws InitializationError {
-        this(testClass, classHandler, classLoader, robolectricConfig, new SQLiteMap());
-    }
-
-
-    /**
-     * This is not the constructor you are looking for... probably. This constructor creates a bridge between the test
-     * runner called by JUnit and a second instance of the test runner that is loaded via the instrumenting class
-     * loader. This instrumented instance of the test runner, along with the instrumented instance of the actual test,
-     * provides access to Robolectric's features and the un-instrumented instance of the test runner delegates most of
-     * the interesting test runner behavior to it. Providing your own class handler and class loader here in order to
-     * get different functionality is a difficult and dangerous project. If you need to customize the project root and
-     * resource directory, use {@link #RobolectricTestRunner(Class, String, String)}. For other extensions, consider
-     * creating a subclass and overriding the documented methods of this class.
-     *
-     * @param testClass         the test class to be run
-     * @param classHandler      the {@link ClassHandler} to use to in shadow delegation
-     * @param classLoader       the {@link RobolectricClassLoader}
-     * @param robolectricConfig the configuration
-     * @throws InitializationError if junit says so
-     */
-    protected RobolectricTestRunner(final Class<?> testClass, final ClassHandler classHandler, final RobolectricClassLoader classLoader, final RobolectricConfig robolectricConfig, final DatabaseMap map) throws InitializationError {
-        super(isInstrumented() ? testClass : classLoader.bootstrap(testClass));
-
-        if (!isInstrumented()) {
-            this.classHandler = classHandler;
-            this.classLoader = classLoader;
-            this.robolectricConfig = robolectricConfig;
-            this.databaseMap = setupDatabaseMap(testClass, map);
-
-            Thread.currentThread().setContextClassLoader(classLoader);
-
-            delegateLoadingOf(Uri__FromAndroid.class.getName());
-            delegateLoadingOf(RobolectricTestRunnerInterface.class.getName());
-            delegateLoadingOf(RealObject.class.getName());
-            delegateLoadingOf(ShadowWrangler.class.getName());
-            delegateLoadingOf(Vars.class.getName());
-            delegateLoadingOf(RobolectricConfig.class.getName());
-            delegateLoadingOf(DatabaseMap.class.getName());
-            delegateLoadingOf(android.R.class.getName());
-
-            Class<?> delegateClass = classLoader.bootstrap(this.getClass());
-            try {
-                Constructor<?> constructorForDelegate = delegateClass.getConstructor(Class.class);
-                this.delegate = (RobolectricTestRunnerInterface) constructorForDelegate.newInstance(classLoader.bootstrap(testClass));
-                this.delegate.setRobolectricConfig(robolectricConfig);
-                this.delegate.setDatabaseMap(databaseMap);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+        if (isBootstrapped(getClass())) {
+            databaseMap = setupDatabaseMap(testClass, new SQLiteMap());
+        } else {
+            delegate = sharedRobolectricContext.getBootstrappedTestRunner(this);
+            Thread.currentThread().setContextClassLoader(sharedRobolectricContext.getRobolectricClassLoader());
+            databaseMap = null;
         }
     }
 
-    protected static boolean isInstrumented() {
-        return instrumentDetector.isInstrumented();
+    public RobolectricContext getRobolectricContext() {
+        return sharedRobolectricContext;
     }
 
-    /**
-     * Only used when creating the delegate instance within the instrumented ClassLoader.
-     * <p/>
-     * This is not the constructor you are looking for.
-     */
-    @SuppressWarnings({"UnusedDeclaration", "JavaDoc"})
-    protected RobolectricTestRunner(final Class<?> testClass, final ClassHandler classHandler, final RobolectricConfig robolectricConfig) throws InitializationError {
-        super(testClass);
-        this.classHandler = classHandler;
-        this.robolectricConfig = robolectricConfig;
-    }
-
-    /** @deprecated use {@link Robolectric.Reflection#setFinalStaticField(Class, String, Object)} */
-    public static void setStaticValue(Class<?> clazz, String fieldName, Object value) {
-        Robolectric.Reflection.setFinalStaticField(clazz, fieldName, value);
-    }
-
-    protected void delegateLoadingOf(final String className) {
-        classLoader.delegateLoadingOf(className);
+    protected static boolean isBootstrapped(Class<?> clazz) {
+        return clazz.getClassLoader() instanceof RobolectricClassLoader;
     }
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
+        RobolectricConfig robolectricConfig = sharedRobolectricContext.getRobolectricConfig();
         setupI18nStrictState(method.getMethod(), robolectricConfig);
-        lookForLocaleAnnotation( method.getMethod(), robolectricConfig );
-        
-    	if (classHandler != null) {
-            classHandler.configure(robolectricConfig);
-            classHandler.beforeTest();
-        }
+        lookForLocaleAnnotation(method.getMethod(), robolectricConfig);
+
+        final ClassHandler classHandler = sharedRobolectricContext.getClassHandler();
+        classHandler.configure(robolectricConfig);
+        classHandler.beforeTest();
         delegate.internalBeforeTest(method.getMethod());
 
         final Statement statement = super.methodBlock(method);
@@ -381,9 +106,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
                 	}
                 } finally {
                     delegate.internalAfterTest(method.getMethod());
-                    if (classHandler != null) {
-                        classHandler.afterTest();
-                    }
+                    classHandler.afterTest();
                 }
             }
         };
@@ -393,17 +116,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * Called before each test method is run. Sets up the simulation of the Android runtime environment.
      */
     @Override public void internalBeforeTest(final Method method) {
-        setupApplicationState(robolectricConfig);
+        setupApplicationState(sharedRobolectricContext.getRobolectricConfig());
 
         beforeTest(method);
     }
 
     @Override public void internalAfterTest(final Method method) {
         afterTest(method);
-    }
-
-    @Override public void setRobolectricConfig(final RobolectricConfig robolectricConfig) {
-        this.robolectricConfig = robolectricConfig;
     }
 
     /**
@@ -443,7 +162,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     public void setupApplicationState(final RobolectricConfig robolectricConfig) {
         setupLogging();
-        
+
         ResourceLoader resourceLoader = createResourceLoader(robolectricConfig );
 
         Robolectric.bindDefaultShadowClasses();
@@ -457,7 +176,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
         Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
     }
-    
+
     /**
      * Override this method to bind your own shadow classes
      */
@@ -502,7 +221,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
 		robolectricConfig.setStrictI18n(strictI18n);
     }
-    
+
     /**
      * Default implementation of global switch for i18n-strict mode.
      * To enable i18n-strict mode globally, set the system property
@@ -546,14 +265,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 		String qualifiers = "";
 		// TODO: there are maybe better implementation for getAnnotation
 		// Have tried to use several other simple ways, but failed.
-		
+
 		Annotation[] annos = method.getDeclaredAnnotations();
 		for( Annotation anno: annos ){
-			
+
 			if( anno.annotationType().getName().equals( "com.xtremelabs.robolectric.annotation.Values" )){
 				try {
 					qualifiers = (String) getAnnotationFieldValue( anno, "qualifiers" );
-					
+
 					if( qualifiers.isEmpty() ){
 						qualifiers = (String) getAnnotationFieldValue( anno, "locale" );
 					}
@@ -562,42 +281,42 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 				}
 			}
 		}
-		
+
 		robolectricConfig.setValuesResQualifiers( qualifiers );
 	}
 
     private Object getAnnotationFieldValue(Annotation anno, String method ) throws Exception {
     	return anno.annotationType().getMethod(method).invoke(anno);
     }
-    
+
 	/**
 	 * Find all the class and method annotations and pass them to
 	 * addConstantFromAnnotation() for evaluation.
-	 * 
+	 *
 	 * TODO: Add compound annotations to suport defining more than one int and string at a time
-	 * TODO: See http://stackoverflow.com/questions/1554112/multiple-annotations-of-the-same-type-on-one-element 
-	 * 
+	 * TODO: See http://stackoverflow.com/questions/1554112/multiple-annotations-of-the-same-type-on-one-element
+	 *
 	 * @param method
-	 * @return 
+	 * @return
 	 */
     private HashMap<Field,Object> getWithConstantAnnotations(Method method) {
     	HashMap<Field,Object> constants = new HashMap<Field,Object>();
-    	
+
     	for(Annotation anno:method.getDeclaringClass().getAnnotations()) {
     		addConstantFromAnnotation(constants, anno);
     	}
- 
+
     	for(Annotation anno:method.getAnnotations()) {
     		addConstantFromAnnotation(constants, anno);
     	}
-    	
+
     	return constants;
     }
-    
-    
+
+
     /**
      * If the annotation is a constant redefinition, add it to the provided hash
-     * 
+     *
      * @param constants
      * @param anno
      */
@@ -620,18 +339,18 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 			Class classWithField = (Class) anno.annotationType().getMethod("classWithField").invoke(anno);
     		String fieldName = (String) anno.annotationType().getMethod("fieldName").invoke(anno);
             Field field = classWithField.getDeclaredField(fieldName);
-            constants.put(field, newValue);	    	
+            constants.put(field, newValue);
         } catch (Exception e) {
             throw new RuntimeException(e);
-        }   	
+        }
     }
-    
+
     /**
      * Defines static finals from the provided hash and stores the old values back
      * into the hash.
-     * 
+     *
      * Call it twice with the same hash, and it puts everything back the way it was originally.
-     * 
+     *
      * @param constants
      */
     private void setupConstants(HashMap<Field,Object> constants) {
@@ -641,7 +360,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     		constants.put(field,oldValue);
     	}
     }
-	
+
     private void setupLogging() {
         String logging = System.getProperty("robolectric.logging");
         if (logging != null && ShadowLog.stream == null) {
@@ -676,12 +395,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      *         Application if not specified.
      */
     protected Application createApplication() {
-        return new ApplicationResolver(robolectricConfig).resolveApplication();
+        return new ApplicationResolver(sharedRobolectricContext.getRobolectricConfig()).resolveApplication();
     }
 
     protected ResourceLoader createResourceLoader(final RobolectricConfig robolectricConfig) {
         ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(robolectricConfig);
-        
+
         if (resourceLoader == null ) {
             try {
                 robolectricConfig.validate();
@@ -694,7 +413,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
                 throw new RuntimeException(e);
             }
         }
-        
+
         // When locale has changed, reload values resource files.
         else if(robolectricConfig.isValuesResQualifiersChanged()){
         	resourceLoader.reloadValuesResouces( robolectricConfig.getValuesResQualifiers() );
@@ -733,32 +452,16 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     	return dbMap;
     }
 
-    public DatabaseMap getDatabaseMap() {
-		return databaseMap;
-	}
-
-	public void setDatabaseMap(DatabaseMap databaseMap) {
-		this.databaseMap = databaseMap;
-	}
-
-	/**
-	 * Detects whether current instance is already instrumented.
-	 */
-	public interface InstrumentDetector {
-
-	    /** Default detector. */
-	    InstrumentDetector DEFAULT = new InstrumentDetector() {
-	        @Override
-	        public boolean isInstrumented() {
-	            return RobolectricTestRunner.class.getClassLoader().getClass().getName().contains(RobolectricClassLoader.class.getName());
-	        }
-	    };
-
-	    /**
-	     * @return true if current instance is already instrumented
-	     */
-	    boolean isInstrumented();
-
-	}
-
+    /**
+     * Call this if you would like Robolectric to rewrite additional classes and turn them
+     * into "do nothing" classes which proxy all method calls to shadow classes, just like it does
+     * with the android classes by default.
+     *
+     * @param classOrPackageToBeInstrumented fully-qualified class or package name
+     */
+    protected void addClassOrPackageToInstrument(String classOrPackageToBeInstrumented) {
+        if (!RobolectricTestRunner.isBootstrapped(getTestClass().getJavaClass())) {
+            sharedRobolectricContext.getRobolectricClassLoader().addCustomShadowClass(classOrPackageToBeInstrumented);
+        }
+    }
 }
