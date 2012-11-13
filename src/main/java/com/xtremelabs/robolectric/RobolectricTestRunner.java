@@ -36,11 +36,6 @@ import java.util.Map;
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
-    @SuppressWarnings("UnusedDeclaration")
-    private static RobolectricContext createRobolectricContext() {
-        return new RobolectricContext(RobolectricTestRunner.class);
-    }
-
     protected static Map<RobolectricConfig, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RobolectricConfig, ResourceLoader>();
 
     // field in both the instrumented and original classes; set by RobolectricContext
@@ -58,7 +53,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @throws InitializationError if junit says so
      */
     public RobolectricTestRunner(final Class<?> testClass) throws InitializationError {
-        super(RobolectricContext.bootstrap(RobolectricTestRunner.class, testClass));
+        super(RobolectricContext.bootstrap(RobolectricTestRunner.class, testClass, new RobolectricContext.Factory() {
+            @Override
+            public RobolectricContext create() {
+                return new RobolectricContext();
+            }
+        }));
 
         if (isBootstrapped(getClass())) {
             databaseMap = setupDatabaseMap(testClass, new SQLiteMap());

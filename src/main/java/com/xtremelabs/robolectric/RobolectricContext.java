@@ -23,8 +23,6 @@ import org.sonatype.aether.util.artifact.DefaultArtifact;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -35,25 +33,40 @@ import static com.xtremelabs.robolectric.RobolectricTestRunner.isBootstrapped;
 
 public class RobolectricContext {
     private static final boolean USE_REAL_ANDROID_SOURCES = true;
-    private static Map<Class<? extends RobolectricTestRunner>, RobolectricContext> contextsByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, RobolectricContext>();
+    private static final Map<Class<? extends RobolectricTestRunner>, RobolectricContext> contextsByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, RobolectricContext>();
 
     private final RobolectricConfig robolectricConfig;
     private final RobolectricClassLoader robolectricClassLoader;
     private final ClassHandler classHandler;
-    private final Class<? extends RobolectricTestRunner> originalTestRunnerClass;
     private RepositorySystem repositorySystem;
 
-    public RobolectricContext(Class<? extends RobolectricTestRunner> robolectricTestRunnerClass) {
-        if (isBootstrapped(robolectricTestRunnerClass)) {
-            // this happens when a static ROBOLECTRIC_CONTEXT is created in the bootstrapped world; it'll never be used.
-            throw new RuntimeException("this should only be called from the original test runner");
-        } else {
-            this.originalTestRunnerClass = robolectricTestRunnerClass;
-            this.robolectricConfig = createRobolectricConfig();
-            this.robolectricClassLoader = createRobolectricClassLoader();
-            this.classHandler = createClassHandler();
-            init();
+    public interface Factory {
+        RobolectricContext create();
+    }
+
+    public static Class<?> bootstrap(Class<? extends RobolectricTestRunner> robolectricTestRunnerClass, Class<?> testClass, Factory factory) {
+        if (isBootstrapped(robolectricTestRunnerClass) || isBootstrapped(testClass)) {
+            if (!isBootstrapped(testClass)) throw new IllegalStateException("test class is somehow not bootstrapped");
+            return testClass;
         }
+
+        RobolectricContext robolectricContext;
+        synchronized(contextsByTestRunner) {
+            robolectricContext = contextsByTestRunner.get(robolectricTestRunnerClass);
+            if (robolectricContext == null) {
+                robolectricContext = factory.create();
+                contextsByTestRunner.put(robolectricTestRunnerClass, robolectricContext);
+            }
+        }
+
+        return robolectricContext.bootstrapTestClass(robolectricTestRunnerClass, testClass);
+    }
+
+    public RobolectricContext() {
+        this.robolectricConfig = createRobolectricConfig();
+        this.robolectricClassLoader = createRobolectricClassLoader();
+        this.classHandler = createClassHandler();
+        init();
     }
 
     private ShadowWrangler createClassHandler() {
@@ -87,36 +100,12 @@ public class RobolectricContext {
         classLoader.delegateLoadingOf(android.R.class.getName());
     }
 
-    public Class<?> bootstrap(Class<?> originalTestClass) {
-        Class<?> bootstrappedTestClass = robolectricClassLoader.bootstrap(originalTestClass);
-        Class<?> bootstrappedTestRunnerClass = robolectricClassLoader.bootstrap(originalTestRunnerClass);
-        setRobolectricContextField(originalTestRunnerClass);
+    private Class<?> bootstrapTestClass(Class<? extends RobolectricTestRunner> robolectricTestRunnerClass, Class<?> testClass) {
+        Class<?> bootstrappedTestClass = robolectricClassLoader.bootstrap(testClass);
+        Class<?> bootstrappedTestRunnerClass = robolectricClassLoader.bootstrap(robolectricTestRunnerClass);
+        setRobolectricContextField(robolectricTestRunnerClass);
         setRobolectricContextField(bootstrappedTestRunnerClass);
         return bootstrappedTestClass;
-    }
-
-    synchronized public static Class<?> bootstrap(Class<? extends RobolectricTestRunner> robolectricTestRunnerClass, Class<?> testClass) {
-        if (isBootstrapped(robolectricTestRunnerClass) || isBootstrapped(testClass)) {
-            if (!isBootstrapped(testClass)) throw new IllegalStateException("test class is somehow not bootstrapped");
-            return testClass;
-        }
-
-        RobolectricContext robolectricContext = contextsByTestRunner.get(robolectricTestRunnerClass);
-        if (robolectricContext == null) {
-            try {
-                Method method = robolectricTestRunnerClass.getDeclaredMethod("createRobolectricContext");
-                method.setAccessible(true);
-                robolectricContext = (RobolectricContext) method.invoke(null);
-                contextsByTestRunner.put(robolectricTestRunnerClass, robolectricContext);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException("There's no static createRobolectricContext() method on " + robolectricTestRunnerClass.getName());
-            } catch (InvocationTargetException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        return robolectricContext.bootstrap(testClass);
     }
 
     public RobolectricTestRunnerInterface getBootstrappedTestRunner(RobolectricTestRunnerInterface originalTestRunner) {
@@ -132,12 +121,12 @@ public class RobolectricContext {
         }
     }
 
-    private void setRobolectricContextField(Class<?> instrumentedTestRunnerClass) {
-        Class<?> clazz = instrumentedTestRunnerClass;
+    private void setRobolectricContextField(Class<?> testRunnerClass) {
+        Class<?> clazz = testRunnerClass;
         while (!clazz.getName().equals(RobolectricTestRunner.class.getName())) {
             clazz = clazz.getSuperclass();
             if (clazz == null)
-                throw new RuntimeException(instrumentedTestRunnerClass + " doesn't extend RobolectricTestRunner");
+                throw new RuntimeException(testRunnerClass + " doesn't extend RobolectricTestRunner");
         }
         try {
             Field field = clazz.getDeclaredField("sharedRobolectricContext");

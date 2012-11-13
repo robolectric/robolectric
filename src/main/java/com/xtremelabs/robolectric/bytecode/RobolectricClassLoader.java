@@ -26,6 +26,7 @@ public class RobolectricClassLoader extends javassist.Loader {
 
         delegateLoadingOf(RobolectricClassLoader.class.getName());
         delegateLoadingOf(RobolectricContext.class.getName());
+        delegateLoadingOf(RobolectricContext.Factory.class.getName());
         delegateLoadingOf(AndroidTranslator.class.getName());
         delegateLoadingOf(ClassHandler.class.getName());
 
