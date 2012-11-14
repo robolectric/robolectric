@@ -8,7 +8,7 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -17,7 +17,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class BitmapTest {
     @Test
     public void shouldCreateScaledBitmap() throws Exception {

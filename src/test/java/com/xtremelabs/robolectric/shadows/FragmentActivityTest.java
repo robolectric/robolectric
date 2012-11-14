@@ -6,7 +6,7 @@ import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.view.ViewGroup;
 import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.tester.android.util.TestFragmentManager;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -18,7 +18,7 @@ import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class FragmentActivityTest {
 
     private TestFragmentActivity activity;

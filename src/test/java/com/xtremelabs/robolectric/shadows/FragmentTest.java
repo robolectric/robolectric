@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class FragmentTest {
     private Fragment fragment;
     private FragmentActivity fragmentActivity;

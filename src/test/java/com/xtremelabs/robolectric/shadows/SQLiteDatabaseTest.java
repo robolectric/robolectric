@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.ContentValues;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
 import com.xtremelabs.robolectric.util.SQLiteMap;
 import org.junit.Test;
@@ -17,7 +17,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;
 
 @DatabaseConfig.UsingDatabaseMap(SQLiteMap.class)
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class SQLiteDatabaseTest extends DatabaseTestBase {
 
     @Test

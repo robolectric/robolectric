@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.ActivityManager;
 import android.content.Context;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -11,7 +11,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ActivityManagerTest {
     @Test
     public void canGetMemoryInfoForOurProcess() {

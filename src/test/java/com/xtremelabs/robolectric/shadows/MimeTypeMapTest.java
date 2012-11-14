@@ -2,14 +2,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.webkit.MimeTypeMap;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class MimeTypeMapTest {
 
     private static final String IMAGE_EXTENSION = "jpg";

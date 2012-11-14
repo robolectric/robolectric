@@ -4,7 +4,7 @@ import android.app.TabActivity;
 import android.widget.TabHost;
 import android.widget.TabWidget;
 import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -12,7 +12,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class TabActivityTest {
 
     @Test

@@ -10,7 +10,7 @@ import android.widget.*;
 import com.google.android.maps.MapView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.shadows.ShadowImageView;
 import com.xtremelabs.robolectric.shadows.ShadowTextView;
 import com.xtremelabs.robolectric.util.CustomView;
@@ -27,7 +27,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ViewLoaderTest {
     private ViewLoader viewLoader;
     private Context context;

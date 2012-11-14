@@ -4,7 +4,7 @@ import android.R;
 import android.view.animation.Animation;
 import android.view.animation.LinearInterpolator;
 import android.view.animation.Transformation;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.util.TestAnimationListener;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,7 +14,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class AnimationTest {
 	
 	private TestAnimation animation;

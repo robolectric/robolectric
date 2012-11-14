@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.content.res.AssetManager;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.util.Strings;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,7 +16,7 @@ import java.util.List;
 
 import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class AssetManagerTest {
     AssetManager assetManager;
     String sp = System.getProperty("file.separator");

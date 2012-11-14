@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.util;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 @DatabaseConfig.UsingDatabaseMap(H2Map.class)
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class H2Test {
     ContentValues values;
     @Before

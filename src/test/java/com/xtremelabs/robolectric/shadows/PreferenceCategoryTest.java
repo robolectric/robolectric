@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,9 +12,8 @@ import android.app.Activity;
 import android.preference.PreferenceCategory;
 
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class PreferenceCategoryTest {
 
 	private PreferenceCategory category;

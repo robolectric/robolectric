@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
 import com.xtremelabs.robolectric.tester.org.apache.http.TestHttpResponse;
@@ -34,7 +34,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class DefaultRequestDirectorTest {
     private DefaultRequestDirector requestDirector;
     private ConnectionKeepAliveStrategy connectionKeepAliveStrategy;

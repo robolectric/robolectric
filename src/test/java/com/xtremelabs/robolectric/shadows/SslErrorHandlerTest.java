@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,14 +8,13 @@ import org.junit.runner.RunWith;
 import android.webkit.SslErrorHandler;
 
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class SslErrorHandlerTest {
 
     private SslErrorHandler handler;

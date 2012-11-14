@@ -1,8 +1,6 @@
 package com.xtremelabs.robolectric.bytecode;
 
 import android.net.Uri;
-import com.xtremelabs.robolectric.internal.DoNotInstrument;
-import com.xtremelabs.robolectric.internal.Instrument;
 import javassist.*;
 
 import java.io.IOException;
@@ -17,19 +15,18 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-//    public static final int CACHE_VERSION = 22;
-    public static final int CACHE_VERSION = -1;
+    public static final int CACHE_VERSION = 22;
+//    public static final int CACHE_VERSION = -1;
 
     static final String STATIC_INITIALIZER_METHOD_NAME = "__staticInitializer__";
 
     private static final List<ClassHandler> CLASS_HANDLERS = new ArrayList<ClassHandler>();
 
-    private ClassHandler classHandler;
-    private ClassCache classCache;
-    private final List<String> instrumentingList = new ArrayList<String>();
-    private final List<String> instrumentingExcludeList = new ArrayList<String>();
-    private boolean debug = false;
+    private final ClassHandler classHandler;
+    private final ClassCache classCache;
+    private final Setup setup;
 
+    private boolean debug = false;
 
     public static ClassHandler getClassHandler(int index) {
         return CLASS_HANDLERS.get(index);
@@ -50,32 +47,10 @@ public class AndroidTranslator implements Translator {
         }
     }
 
-    public AndroidTranslator(ClassHandler classHandler, ClassCache classCache) {
+    public AndroidTranslator(ClassHandler classHandler, ClassCache classCache, Setup setup) {
         this.classHandler = classHandler;
         this.classCache = classCache;
-
-        // Initialize lists
-        instrumentingList.add("android.");
-        instrumentingList.add("libcore.");
-        instrumentingList.add("com.google.android.maps");
-        instrumentingList.add("org.apache.http.impl.client.DefaultRequestDirector");
-
-        instrumentingExcludeList.add("android.support.v4.app.NotificationCompat");
-        instrumentingExcludeList.add("android.support.v4.content.LocalBroadcastManager");
-        instrumentingExcludeList.add("android.support.v4.util.LruCache");
-    }
-
-    public AndroidTranslator(ClassHandler classHandler, ClassCache classCache, List<String> customShadowClassNames) {
-        this(classHandler, classCache);
-        if (customShadowClassNames != null && !customShadowClassNames.isEmpty()) {
-            instrumentingList.addAll(customShadowClassNames);
-        }
-    }
-
-    public void addCustomShadowClass(String customShadowClassName) {
-        if (!instrumentingList.contains(customShadowClassName)) {
-            instrumentingList.add(customShadowClassName);
-        }
+        this.setup = setup;
     }
 
     @Override
@@ -116,7 +91,7 @@ public class AndroidTranslator implements Translator {
             throw new IgnorableClassNotFoundException(e);
         }
 
-        boolean shouldInstrument = shouldInstrument(ctClass);
+        boolean shouldInstrument = setup.shouldInstrument(ctClass);
         if (debug)
             System.out.println("Considering " + ctClass.getName() + ": " + (shouldInstrument ? "INSTRUMENTING" : "not instrumenting"));
 
@@ -145,32 +120,6 @@ public class AndroidTranslator implements Translator {
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
-        }
-    }
-
-    /* package */ boolean shouldInstrument(CtClass ctClass) throws NotFoundException {
-        if (ctClass.hasAnnotation(Instrument.class)) {
-            return true;
-        } else if (ctClass.isInterface() || ctClass.hasAnnotation(DoNotInstrument.class)) {
-            return false;
-        } else {
-            for (String klassName : instrumentingExcludeList) {
-                if (ctClass.getName().startsWith(klassName)) {
-                    return false;
-                }
-            }
-            for (String klassName : instrumentingList) {
-                if (ctClass.getName().startsWith(klassName)) {
-                    return true;
-                }
-            }
-
-            CtClass superclass = ctClass.getSuperclass();
-            if (superclass != null && shouldInstrument(superclass)) {
-                return true;
-            }
-
-            return false;
         }
     }
 

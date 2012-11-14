@@ -4,15 +4,14 @@ import android.os.Binder;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.RemoteCallbackList;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class RemoteCallbackListTest {
     @Test
     public void testBasicWiring() throws Exception {

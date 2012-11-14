@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.bytecode;
 import android.graphics.Bitmap;
 import android.graphics.Paint;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithCustomClassListTestRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import org.junit.Test;
@@ -13,7 +13,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithCustomClassListTestRunner.class)
+@RunWith(TestRunners.WithCustomClassList.class)
 public class AndroidTranslatorClassInstrumentedTest {
 
     @Test

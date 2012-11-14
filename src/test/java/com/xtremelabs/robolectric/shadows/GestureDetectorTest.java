@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.view.GestureDetector;
 import android.view.MotionEvent;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class GestureDetectorTest {
 
     private GestureDetector detector;

@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.tester.android.database;
 import android.content.ContentResolver;
 import android.net.Uri;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.shadows.ShadowContentResolver;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,7 +15,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class SimpleTestCursorTest {
     private Uri uri;
     private SimpleTestCursor cursor;

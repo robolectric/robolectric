@@ -15,10 +15,7 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
-import com.xtremelabs.robolectric.ApplicationResolver;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.*;
 import com.xtremelabs.robolectric.shadows.testing.OnMethodTestActivity;
 import com.xtremelabs.robolectric.util.TestRunnable;
 import com.xtremelabs.robolectric.util.Transcript;
@@ -35,7 +32,7 @@ import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ActivityTest {
     @Test(expected = IllegalStateException.class)
     public void shouldComplainIfActivityIsDestroyedWithRegisteredBroadcastReceivers() throws Exception {

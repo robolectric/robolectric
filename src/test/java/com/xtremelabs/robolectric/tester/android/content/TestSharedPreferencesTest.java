@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.tester.android.content;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,12 +13,10 @@ import java.util.Map;
 
 import android.content.SharedPreferences;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
 /**
  * TestSharedPreferencesTest
  */
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class TestSharedPreferencesTest {
 	protected final static String FILENAME = "filename";
 	private HashMap<String, Map<String, Object>> content;

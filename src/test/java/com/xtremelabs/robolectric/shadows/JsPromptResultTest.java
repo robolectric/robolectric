@@ -1,13 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.webkit.JsPromptResult;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertNotNull;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class JsPromptResultTest {
 
     @Test

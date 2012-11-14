@@ -18,7 +18,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.util.SparseArray;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
  * @author Eric Bowman (ebowman@boboco.ie)
  * @since 2011-02-25 11:01
  */
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class SparseArrayTest {
     private static final int[] KEYS = {12, 23, 4, 6, 8, 1, 3, -12, 0, -3, 11, 14, -23};
     private static final Integer[] VALUES = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};

@@ -1,14 +1,14 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.widget.CheckBox;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class CheckBoxTest {
     @Test
     public void testWorks() throws Exception {

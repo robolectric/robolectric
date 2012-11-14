@@ -10,7 +10,7 @@ import java.io.StringReader;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class IncludedDependenciesTest {
     @Test
     public void jsonShouldWork() throws Exception {

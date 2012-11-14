@@ -8,7 +8,7 @@ import android.hardware.Camera;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 
 import org.junit.After;
 import org.junit.Before;
@@ -22,7 +22,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class CameraTest {
 
     private Camera camera;

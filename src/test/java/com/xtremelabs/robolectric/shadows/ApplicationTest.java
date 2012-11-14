@@ -12,10 +12,7 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
-import com.xtremelabs.robolectric.ApplicationResolver;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.*;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.StringResourceLoader;
 import com.xtremelabs.robolectric.util.TestBroadcastReceiver;
@@ -38,7 +35,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ApplicationTest {
     @Before
     public void setUp() throws Exception {

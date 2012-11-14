@@ -1,6 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -9,7 +9,7 @@ import static android.provider.MediaStore.Video;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class MediaStoreTest {
     @Test
     public void shouldInitializeFields() throws Exception {

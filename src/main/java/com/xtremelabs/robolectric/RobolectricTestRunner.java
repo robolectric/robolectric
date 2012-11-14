@@ -451,17 +451,4 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     	}
     	return dbMap;
     }
-
-    /**
-     * Call this if you would like Robolectric to rewrite additional classes and turn them
-     * into "do nothing" classes which proxy all method calls to shadow classes, just like it does
-     * with the android classes by default.
-     *
-     * @param classOrPackageToBeInstrumented fully-qualified class or package name
-     */
-    protected void addClassOrPackageToInstrument(String classOrPackageToBeInstrumented) {
-        if (!RobolectricTestRunner.isBootstrapped(getTestClass().getJavaClass())) {
-            sharedRobolectricContext.getRobolectricClassLoader().addCustomShadowClass(classOrPackageToBeInstrumented);
-        }
-    }
 }

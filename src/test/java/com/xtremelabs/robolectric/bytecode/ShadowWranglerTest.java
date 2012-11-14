@@ -1,14 +1,13 @@
 package com.xtremelabs.robolectric.bytecode;
 
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithoutTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.Instrument;
 import com.xtremelabs.robolectric.internal.RealObject;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,7 +20,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.junit.Assert.*;
 
-@RunWith(WithoutTestDefaultsRunner.class)
+@RunWith(TestRunners.WithoutDefaults.class)
 public class ShadowWranglerTest {
     private String name;
 

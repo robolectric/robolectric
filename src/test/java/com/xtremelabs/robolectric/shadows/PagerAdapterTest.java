@@ -3,14 +3,14 @@ package com.xtremelabs.robolectric.shadows;
 import android.database.DataSetObserver;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertTrue;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class PagerAdapterTest {
     @Test
     public void shouldNotifyDataSetChanged() throws Exception {

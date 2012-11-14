@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import java.util.concurrent.TimeUnit;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -9,7 +10,6 @@ import org.junit.runner.RunWith;
 import android.os.AsyncTask;
 
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Join;
 import com.xtremelabs.robolectric.util.Transcript;
 
@@ -17,7 +17,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class AsyncTaskTest {
     private Transcript transcript;
 

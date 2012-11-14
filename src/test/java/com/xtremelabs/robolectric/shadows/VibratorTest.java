@@ -5,6 +5,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,9 +14,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.os.Vibrator;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class VibratorTest {
     private Vibrator vibrator;
     private ShadowVibrator shadowVibrator;

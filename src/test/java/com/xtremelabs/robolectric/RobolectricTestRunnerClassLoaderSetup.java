@@ -7,7 +7,7 @@ import org.junit.runner.RunWith;
 import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class RobolectricTestRunnerClassLoaderSetup {
 
     @Test

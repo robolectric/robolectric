@@ -2,14 +2,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.widget.ViewFlipper;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ViewFlipperTest {
     protected ViewFlipper flipper;
 

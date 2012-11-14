@@ -7,6 +7,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,9 +16,7 @@ import android.text.SpannableString;
 import android.text.style.URLSpan;
 import android.text.style.UnderlineSpan;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class SpannableStringTest {
 	
 	private SpannableString spanStr;

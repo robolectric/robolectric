@@ -7,7 +7,7 @@ import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
@@ -19,7 +19,7 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.matchers.StartedMatcher.createIntent;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class StartedMatcherTest {
     private Activity activity;
     private Intent intentWithExtra;

@@ -2,19 +2,18 @@ package com.xtremelabs.robolectric.shadows;
 
 import java.util.List;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.view.animation.*;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class AnimationSetTest {
 	private AnimationSet set;
 	private ShadowAnimationSet shadow;

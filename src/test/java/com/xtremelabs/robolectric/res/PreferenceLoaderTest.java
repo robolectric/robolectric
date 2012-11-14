@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.res;
 
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,14 +18,13 @@ import android.preference.RingtonePreference;
 
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.I18nException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class PreferenceLoaderTest {
 	private PreferenceLoader prefLoader;
 	

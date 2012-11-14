@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -11,7 +11,7 @@ import android.os.StatFs;
 
 import java.io.File;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class StatFsTest {
     @Test
     public void shouldRegisterStats() throws Exception {

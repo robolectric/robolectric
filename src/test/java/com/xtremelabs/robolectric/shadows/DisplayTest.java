@@ -3,13 +3,13 @@ package com.xtremelabs.robolectric.shadows;
 import android.util.DisplayMetrics;
 import android.view.Display;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class DisplayTest {
     @Test
     public void shouldProvideDisplayMetrics() throws Exception {

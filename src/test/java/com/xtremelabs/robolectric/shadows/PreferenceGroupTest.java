@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.HashMap;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,10 +19,9 @@ import android.preference.PreferenceGroup;
 import android.util.AttributeSet;
 
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class PreferenceGroupTest {
 
 	private TestPreferenceGroup group;

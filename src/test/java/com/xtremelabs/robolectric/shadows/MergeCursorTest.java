@@ -11,7 +11,7 @@ import java.sql.ResultSet;
 import java.sql.Statement;
 
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
 
 import org.junit.Before;
@@ -22,7 +22,7 @@ import android.database.Cursor;
 import android.database.MergeCursor;
 import android.database.sqlite.SQLiteCursor;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class MergeCursorTest {
 	
     private Connection connection;

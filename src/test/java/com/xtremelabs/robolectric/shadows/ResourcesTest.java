@@ -10,7 +10,7 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.NinePatchDrawable;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.util.TestR;
 import org.junit.Before;
@@ -27,7 +27,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ResourcesTest {
 
 	private Resources resources;

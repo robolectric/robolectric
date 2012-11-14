@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -11,7 +11,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class RadioButtonTest {
     @Test
     public void canBeExplicitlyChecked() throws Exception {

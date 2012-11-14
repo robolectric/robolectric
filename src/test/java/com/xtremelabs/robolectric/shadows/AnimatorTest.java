@@ -3,14 +3,14 @@ package com.xtremelabs.robolectric.shadows;
 import android.animation.Animator;
 import android.animation.TimeInterpolator;
 import com.xtremelabs.robolectric.RobolectricShadowOfLevel16;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class AnimatorTest {
     @Test
     public void shouldBeAbleToNotifyListenersOfStartAndEnd() throws Exception {

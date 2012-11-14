@@ -1,6 +1,8 @@
 package com.xtremelabs.robolectric.shadows;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+
+import com.xtremelabs.robolectric.TestRunners;
 import junit.framework.Assert;
 
 import org.hamcrest.core.IsEqual;
@@ -10,9 +12,7 @@ import org.junit.runner.RunWith;
 
 import android.location.Criteria;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class CriteriaTest {
     private Criteria criteria;
 

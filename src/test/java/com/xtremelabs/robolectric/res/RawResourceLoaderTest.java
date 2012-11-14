@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.res;
 
 import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +17,7 @@ import java.io.Writer;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.junit.Assert.assertEquals;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class RawResourceLoaderTest {
 
     private RawResourceLoader rawResourceLoader;

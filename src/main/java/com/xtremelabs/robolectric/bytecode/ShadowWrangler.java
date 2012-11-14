@@ -20,29 +20,21 @@ public class ShadowWrangler implements ClassHandler {
     private static final int MAX_CALL_DEPTH = 200;
     private static final boolean STRIP_SHADOW_STACK_TRACES = true;
 
-    private static ShadowWrangler singleton;
+    private final Setup setup;
 
-    public boolean debug = false;
+    public boolean debug = true;
     private boolean strictI18n = false;
     
     private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
     private Map<String, String> shadowClassMap = new HashMap<String, String>();
     private Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
     private boolean logMissingShadowMethods = true;
-    public boolean delegateBackToInstrumented = false; // todo: make this a configurable
     private static int callDepth = 0;
 
-    // sorry! it really only makes sense to have one per ClassLoader anyway though [xw/hu]
-    public static ShadowWrangler getInstance() {
-        if (singleton == null) {
-            singleton = new ShadowWrangler();
-        }
-        return singleton;
+    public ShadowWrangler(Setup setup) {
+        this.setup = setup;
     }
 
-    private ShadowWrangler() {
-    }
-    
     @Override
     public void configure(RobolectricConfig robolectricConfig) {
     	strictI18n = robolectricConfig.getStrictI18n();
@@ -83,7 +75,9 @@ public class ShadowWrangler implements ClassHandler {
                 Method method = shadowClass.getMethod(AndroidTranslator.STATIC_INITIALIZER_METHOD_NAME);
                 method.invoke(null);
             } catch (NoSuchMethodException e) {
-                AndroidTranslator.performStaticInitialization(clazz);
+                if (setup.shouldPerformStaticInitializationIfShadowIsMissing()) {
+                    AndroidTranslator.performStaticInitialization(clazz);
+                }
             } catch (InvocationTargetException e) {
                 throw new RuntimeException(e);
             } catch (IllegalAccessException e) {
@@ -122,7 +116,7 @@ public class ShadowWrangler implements ClassHandler {
 
             if (!hasShadowImplementation) {
                 reportNoShadowMethodFound(clazz, methodName, paramTypes);
-                if (delegateBackToInstrumented) {
+                if (invocationPlan.shouldDelegateToRealMethodWhenMethodShadowIsMissing(clazz)) {
                     if (callDepth > MAX_CALL_DEPTH) throw stripStackTrace(new StackOverflowError("too deep!"));
                     try {
                         callDepth++;
@@ -519,6 +513,10 @@ public class ShadowWrangler implements ClassHandler {
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
+        }
+
+        public boolean shouldDelegateToRealMethodWhenMethodShadowIsMissing(Class clazz) {
+            return setup.invokeApiMethodBodiesWhenShadowMethodIsMissing(clazz);
         }
     }
 

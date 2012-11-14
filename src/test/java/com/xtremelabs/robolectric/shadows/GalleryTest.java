@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Gallery;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +13,7 @@ import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class GalleryTest {
     private Gallery gallery;
     private TestOnKeyListener listener;

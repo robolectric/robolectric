@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.view.MenuInflater;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.tester.android.view.TestMenu;
 import com.xtremelabs.robolectric.tester.android.view.TestMenuItem;
 import org.junit.Test;
@@ -13,7 +13,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class MenuInflaterTest {
     @Test
     public void canRetrieveMenuListAndFindMenuItemById() {

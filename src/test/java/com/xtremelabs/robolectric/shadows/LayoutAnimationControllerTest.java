@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -11,9 +12,8 @@ import android.app.Activity;
 import android.view.animation.LayoutAnimationController;
 
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class LayoutAnimationControllerTest {
 	private ShadowLayoutAnimationController shadow;
 	

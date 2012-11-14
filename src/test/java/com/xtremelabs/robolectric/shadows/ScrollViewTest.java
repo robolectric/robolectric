@@ -1,13 +1,13 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.widget.ScrollView;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static junit.framework.Assert.assertEquals;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ScrollViewTest {
     @Test
     public void shouldSmoothScrollTo() throws Exception {

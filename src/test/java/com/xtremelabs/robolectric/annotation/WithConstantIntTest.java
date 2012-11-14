@@ -3,12 +3,11 @@ package com.xtremelabs.robolectric.annotation;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class WithConstantIntTest {
 
 	private static final int NEW_VALUE = 9;

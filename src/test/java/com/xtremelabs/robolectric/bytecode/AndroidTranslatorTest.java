@@ -12,12 +12,10 @@ import android.widget.TextView;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.Instrument;
-import org.junit.After;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -32,20 +30,8 @@ import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class AndroidTranslatorTest {
-
-    private boolean originalDelegateBackToInstrumented;
-
-    @Before
-    public void setUp() throws Exception {
-        originalDelegateBackToInstrumented = Robolectric.getShadowWranger().delegateBackToInstrumented;
-    }
-
-    @After
-    public void tearDown() throws Exception {
-        Robolectric.getShadowWranger().delegateBackToInstrumented = originalDelegateBackToInstrumented;
-    }
 
     @Test
     public void testStaticMethodsAreDelegated() throws Exception {
@@ -157,7 +143,7 @@ public class AndroidTranslatorTest {
 
     @Test
     public void directlyOn_shouldCallThroughToOriginalMethodBody() throws Exception {
-        bindShadowClass(ShadowPony.class);
+        bindShadowClass(Pony.ShadowPony.class);
         Pony pony = new Pony();
 
         assertEquals("Fake whinny! You're on my neck!", pony.ride("neck"));
@@ -168,7 +154,7 @@ public class AndroidTranslatorTest {
 
     @Test
     public void testDirectlyOn_Statics() throws Exception {
-        bindShadowClass(ShadowPony.class);
+        bindShadowClass(Pony.ShadowPony.class);
 
         assertEquals("I'm shadily prancing to market!", Pony.prance("market"));
         directlyOn(Pony.class);
@@ -179,52 +165,9 @@ public class AndroidTranslatorTest {
 
     @Test
     public void whenShadowHandlerIsInClassicMode_shouldNotCallRealForUnshadowedMethod() throws Exception {
-        bindShadowClass(ShadowPony.class);
+        bindShadowClass(Pony.ShadowPony.class);
 
         assertEquals(null, new Pony().saunter("the salon"));
-    }
-
-    @Test
-    public void whenShadowHandlerIsInRealityBasedMode_shouldNotCallRealForUnshadowedMethod() throws Exception {
-        Robolectric.getShadowWranger().delegateBackToInstrumented = true;
-        bindShadowClass(ShadowPony.class);
-
-        assertEquals("Off I saunter to the salon!", new Pony("abc").saunter("the salon"));
-    }
-
-    @Instrument
-    public static class Pony {
-        public Pony() {
-        }
-
-        public Pony(String abc) {
-            System.out.println("abc = " + abc);
-        }
-
-        public String ride(String where) {
-            return "Whinny! You're on my " + where + "!";
-        }
-
-        public static String prance(String where) {
-            return "I'm prancing to " + where + "!";
-        }
-
-        public String saunter(String where) {
-            return "Off I saunter to " + where + "!";
-        }
-    }
-
-    @Implements(Pony.class)
-    public static class ShadowPony {
-        @Implementation
-        public String ride(String where) {
-            return "Fake whinny! You're on my " + where + "!";
-        }
-
-        @Implementation
-        public static String prance(String where) {
-            return "I'm shadily prancing to " + where + "!";
-        }
     }
 
     @Test
@@ -292,15 +235,6 @@ public class AndroidTranslatorTest {
         Robolectric.directlyOn(o);
         Method realConstructor = o.getClass().getMethod("__constructor__", String.class);
         realConstructor.invoke(o, "my name");
-        assertEquals("my name", o.name);
-    }
-
-    @Test
-    public void shouldCallOriginalConstructorBodySomehow() throws Exception {
-        Robolectric.getShadowWranger().delegateBackToInstrumented = true;
-
-        bindShadowClass(ShadowOfClassWithSomeConstructors.class);
-        ClassWithSomeConstructors o = new ClassWithSomeConstructors("my name");
         assertEquals("my name", o.name);
     }
 
@@ -373,6 +307,16 @@ public class AndroidTranslatorTest {
         View view = new View(null);
         assertEquals(view, view);
     }
+
+    @Test public void withNonApiSubclassesWhichExtendApi_shouldStillBeInvoked() throws Exception {
+        bindShadowClass(ShadowActivity.class);
+        assertEquals("did foo", new MyActivity().doSomething("foo"));
+    }
+
+    public static class MyActivity extends Activity { public String doSomething(String value) { return "did " + value; } }
+    @Instrument public static class Activity { }
+    @Implements(Activity.class) public static class ShadowActivity {}
+
 
     @Implements(ItemizedOverlay.class)
     public static class ItemizedOverlayForTests extends ItemizedOverlay {

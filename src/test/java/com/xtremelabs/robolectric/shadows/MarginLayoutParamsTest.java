@@ -1,6 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 
 import android.view.ViewGroup;
 
@@ -13,7 +13,7 @@ import static org.junit.Assert.assertThat;
 /**
  * {@link ShadowMarginLayoutParams} test suite.
  */
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class MarginLayoutParamsTest  {
 
     @Test

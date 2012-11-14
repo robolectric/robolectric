@@ -12,7 +12,7 @@ import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class RobolectricConfigTest {
     @Test
     public void shouldReadBroadcastReceivers() throws Exception {

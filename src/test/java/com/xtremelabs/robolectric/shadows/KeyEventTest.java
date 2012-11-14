@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.view.InputDevice;
 import android.view.KeyEvent;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -10,7 +10,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class KeyEventTest {
     @Test
     public void canSetInputDeviceOnKeyEvent() throws Exception {

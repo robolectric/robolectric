@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.text.format.Time;
 import android.util.TimeFormatException;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -10,7 +10,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class TimeTest {
     @Test
     public void shouldSetToNow() throws Exception {

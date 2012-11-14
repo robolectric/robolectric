@@ -4,8 +4,7 @@ package com.xtremelabs.robolectric.res;
 import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 
-import java.util.ArrayList;
-
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,21 +12,16 @@ import org.junit.runner.RunWith;
 
 import android.content.ComponentName;
 import android.content.Intent;
-import android.graphics.drawable.Drawable;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
-import android.view.ContextMenu.ContextMenuInfo;
-import android.view.MenuItem.OnMenuItemClickListener;
 
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import com.xtremelabs.robolectric.tester.android.view.TestMenuItem;
 import com.xtremelabs.robolectric.util.I18nException;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class MenuLoaderTest {
 
 	private MenuLoader menuLoader;

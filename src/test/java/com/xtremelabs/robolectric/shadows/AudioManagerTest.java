@@ -3,14 +3,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.media.AudioManager;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class AudioManagerTest {
     private AudioManager audioManager;
     private ShadowAudioManager shadowAudioManager;

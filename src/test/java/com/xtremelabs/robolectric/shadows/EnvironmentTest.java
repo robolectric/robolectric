@@ -4,17 +4,16 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.os.Environment;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
 import static org.hamcrest.CoreMatchers.equalTo;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class EnvironmentTest {
 
 	@After

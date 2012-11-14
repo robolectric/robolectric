@@ -6,13 +6,12 @@ import static org.junit.Assert.assertThat;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class H2Map_TypeForwardOnlyTest {
 
 	H2Map_TypeForwardOnly map;

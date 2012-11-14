@@ -88,7 +88,7 @@ public class RobolectricTestRunnerTest {
     	}
     }
     
-    public static class RunnerForTesting extends WithTestDefaultsRunner {
+    public static class RunnerForTesting extends TestRunners.WithDefaults {
     	public static RunnerForTesting instance;
         private final RobolectricConfig robolectricConfig;
 

@@ -2,15 +2,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import static org.junit.Assert.assertEquals;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 import android.view.View;
 import android.view.View.MeasureSpec;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ViewMeasureSpecTest {
 
 	@Test

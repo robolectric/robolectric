@@ -5,7 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.service.wallpaper.WallpaperService;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import static com.xtremelabs.robolectric.matchers.StartedServiceMatcher.createIntent;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class StartedServiceMatcherTest {
     private WallpaperService service;
     private Intent intentWithExtra;

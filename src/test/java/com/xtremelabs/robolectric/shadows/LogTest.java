@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.util.Log;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -12,7 +12,7 @@ import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class LogTest {
     @Test
     public void d_shouldLogAppropriately() {

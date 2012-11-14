@@ -7,7 +7,7 @@ import android.view.View;
 import android.widget.PopupWindow;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.tester.android.view.TestWindowManager;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,7 +28,7 @@ import static org.junit.Assert.assertTrue;
 @RunWith(Enclosed.class)
 public class PopupWindowTest {
 
-    @RunWith(WithTestDefaultsRunner.class)
+    @RunWith(TestRunners.WithDefaults.class)
     public static class WithoutContentView {
 
         private PopupWindow popupWindow;
@@ -121,7 +121,7 @@ public class PopupWindowTest {
         }
     }
 
-    @RunWith(WithTestDefaultsRunner.class)
+    @RunWith(TestRunners.WithDefaults.class)
     public static class WithContentView {
 
         private TestWindowManager windowManager;

@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 
 import android.database.sqlite.SQLiteQueryBuilder;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class SQLiteQueryBuilderTest {
 
     SQLiteQueryBuilder builder;

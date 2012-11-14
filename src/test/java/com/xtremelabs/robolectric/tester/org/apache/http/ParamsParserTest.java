@@ -1,6 +1,6 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.junit.Test;
@@ -11,7 +11,7 @@ import java.util.Map;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ParamsParserTest {
     @Test
     public void parseParams_shouldParsePostEntitiesIntoParams() throws Exception {

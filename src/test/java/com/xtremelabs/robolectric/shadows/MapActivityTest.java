@@ -2,11 +2,11 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.os.Bundle;
 import com.google.android.maps.MapActivity;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class MapActivityTest {
     @Test
     public void onDestroy_shouldNotComplainIfLifecycleIsCorrect() throws Exception {

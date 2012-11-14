@@ -3,13 +3,13 @@ package com.xtremelabs.robolectric.shadows;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.ResultReceiver;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.junit.Assert.assertEquals;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ResultReceiverTest {
     @Test
     public void callingSend_shouldCallOverridenOnReceiveResultWithTheSameArguments() throws Exception {

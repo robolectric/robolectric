@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.bytecode;
 
 import android.app.Application;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
@@ -50,7 +50,7 @@ public class CustomRobolectricTestRunnerTest {
         assertEquals(beforeCallCount, afterTestCallCount);
     }
 
-    public static class CustomRobolectricTestRunner extends WithTestDefaultsRunner {
+    public static class CustomRobolectricTestRunner extends TestRunners.WithDefaults {
         public CustomRobolectricTestRunner(Class<?> testClass) throws InitializationError {
             super(testClass);
         }

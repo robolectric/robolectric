@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,9 +26,8 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class RobolectricPackageManagerTest {
 
     private static final String TEST_PACKAGE_NAME = "com.some.other.package";

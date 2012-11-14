@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.webkit.JsResult;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -10,7 +10,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class JsResultTest {
 
     @Test

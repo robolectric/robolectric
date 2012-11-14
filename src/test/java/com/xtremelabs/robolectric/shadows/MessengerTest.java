@@ -2,19 +2,17 @@ package com.xtremelabs.robolectric.shadows;
 
 import static org.junit.Assert.*;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-import org.junit.Before;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.os.Messenger;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class MessengerTest {
 
     @Test

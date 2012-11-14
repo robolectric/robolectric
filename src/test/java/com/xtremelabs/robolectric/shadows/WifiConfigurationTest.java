@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.net.wifi.WifiConfiguration;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -10,7 +10,7 @@ import static junit.framework.Assert.assertNotNull;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class WifiConfigurationTest {
     @Test
     public void shouldSetTheBitSetsAndWepKeyArrays() throws Exception {

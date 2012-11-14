@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.database.sqlite.SQLiteCursor;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
 import org.junit.After;
 import org.junit.Before;
@@ -19,7 +19,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class SQLiteCursorTest {
 
     private Connection connection;

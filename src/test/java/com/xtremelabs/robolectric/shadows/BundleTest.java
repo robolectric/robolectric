@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.os.Bundle;
 import android.os.Parcelable;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import junit.framework.AssertionFailedError;
 import org.junit.Assert;
 import org.junit.Before;
@@ -14,7 +14,7 @@ import java.util.ArrayList;
 import static org.junit.Assert.*;
 
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class BundleTest {
 
     private Bundle bundle;

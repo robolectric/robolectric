@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.view.ViewTreeObserver;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -13,7 +13,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ViewTreeObserverTest {
 
     private ViewTreeObserver viewTreeObserver;

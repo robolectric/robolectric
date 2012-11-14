@@ -1,6 +1,6 @@
 package com.xtremelabs.robolectric.tester.org.apache.http;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -17,7 +17,7 @@ import java.io.IOException;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class FakeHttpLayerTest {
 
     private FakeHttpLayer.RequestMatcherBuilder requestMatcherBuilder;

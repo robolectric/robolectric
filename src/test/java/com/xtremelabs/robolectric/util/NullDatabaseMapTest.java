@@ -1,6 +1,6 @@
 package com.xtremelabs.robolectric.util;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.util.DatabaseConfig.CannotLoadDatabaseMapDriverException;
 import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import org.junit.Assert;
@@ -15,7 +15,7 @@ import java.sql.Connection;
  *
  */
 @UsingDatabaseMap(NullDatabaseMap.class)
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class NullDatabaseMapTest {
 
 	@Test

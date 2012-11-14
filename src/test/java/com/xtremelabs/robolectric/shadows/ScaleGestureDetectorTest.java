@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -12,7 +12,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertNull;
 import static junit.framework.Assert.assertSame;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ScaleGestureDetectorTest {
 
     private ScaleGestureDetector detector;

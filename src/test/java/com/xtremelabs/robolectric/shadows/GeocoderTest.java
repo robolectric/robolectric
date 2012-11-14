@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.location.Address;
 import android.location.Geocoder;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +15,7 @@ import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class GeocoderTest {
 
     private Geocoder geocoder;

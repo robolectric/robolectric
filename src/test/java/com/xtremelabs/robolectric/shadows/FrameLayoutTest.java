@@ -1,6 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -15,7 +15,7 @@ import static org.junit.Assert.assertThat;
 /**
  * {@link ShadowFrameLayout} test suite.
  */
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class FrameLayoutTest {
 
     @Test

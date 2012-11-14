@@ -13,7 +13,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import junit.framework.Assert;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
@@ -33,7 +33,7 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class TextViewTest {
 
     private static final String INITIAL_TEXT = "initial text";

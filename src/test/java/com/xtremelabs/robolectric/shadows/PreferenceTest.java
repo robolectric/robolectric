@@ -8,7 +8,7 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.util.AttributeSet;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Before;
 import org.junit.Test;
@@ -19,7 +19,7 @@ import java.util.HashMap;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class PreferenceTest {
 
 	private TestPreference preference;

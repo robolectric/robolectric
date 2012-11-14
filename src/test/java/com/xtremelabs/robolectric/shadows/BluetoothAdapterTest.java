@@ -1,14 +1,14 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.bluetooth.BluetoothAdapter;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertEquals;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class BluetoothAdapterTest {
     @Test
     public void canGetAndSetAddress() throws Exception {

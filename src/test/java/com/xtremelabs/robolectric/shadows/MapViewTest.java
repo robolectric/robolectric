@@ -6,7 +6,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.bytecode.AndroidTranslatorTest;
 import org.junit.Before;
 import org.junit.Test;
@@ -18,7 +18,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class MapViewTest {
     private MapView mapView;
     private MyOverlay overlay1;

@@ -5,12 +5,12 @@ import static org.junit.Assert.assertNotNull;
 import android.app.Activity;
 import android.widget.Toast;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.TestRunners;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ToastTest {
 
     @Test

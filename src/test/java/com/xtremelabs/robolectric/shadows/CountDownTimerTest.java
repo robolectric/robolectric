@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -7,7 +8,6 @@ import org.junit.runner.RunWith;
 import android.os.CountDownTimer;
 
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
@@ -15,7 +15,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class CountDownTimerTest {
 	
 	private ShadowCountDownTimer shadowCountDownTimer;

@@ -1,10 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import android.net.Uri__FromAndroid;
-import com.xtremelabs.robolectric.bytecode.ClassHandler;
-import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
-import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
-import com.xtremelabs.robolectric.bytecode.Vars;
+import com.xtremelabs.robolectric.bytecode.*;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
@@ -32,7 +29,6 @@ import java.util.Map;
 import static com.xtremelabs.robolectric.RobolectricTestRunner.isBootstrapped;
 
 public class RobolectricContext {
-    private static final boolean USE_REAL_ANDROID_SOURCES = true;
     private static final Map<Class<? extends RobolectricTestRunner>, RobolectricContext> contextsByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, RobolectricContext>();
 
     private final RobolectricConfig robolectricConfig;
@@ -64,13 +60,32 @@ public class RobolectricContext {
 
     public RobolectricContext() {
         this.robolectricConfig = createRobolectricConfig();
-        this.robolectricClassLoader = createRobolectricClassLoader();
-        this.classHandler = createClassHandler();
+        ClassCache classCache = createClassCache();
+        Setup setup = createSetup();
+        this.classHandler = createClassHandler(setup);
+        AndroidTranslator androidTranslator = createAndroidTranslator(classHandler, setup, classCache);
+        this.robolectricClassLoader = createRobolectricClassLoader(classCache, androidTranslator);
         init();
     }
 
-    private ShadowWrangler createClassHandler() {
-        return ShadowWrangler.getInstance();
+    private ClassHandler createClassHandler(Setup setup) {
+        return new ShadowWrangler(setup);
+    }
+
+    public ClassCache createClassCache() {
+        final String classCachePath = System.getProperty("cached.robolectric.classes.path");
+        final File classCacheDirectory;
+        if (null == classCachePath || "".equals(classCachePath.trim())) {
+            classCacheDirectory = new File("./tmp");
+        } else {
+            classCacheDirectory = new File(classCachePath);
+        }
+
+        return new ClassCache(new File(classCacheDirectory, "cached-robolectric-classes.jar").getAbsolutePath(), AndroidTranslator.CACHE_VERSION);
+    }
+
+    public AndroidTranslator createAndroidTranslator(ClassHandler classHandler, Setup setup, ClassCache classCache) {
+        return new AndroidTranslator(classHandler, classCache, setup);
     }
 
     protected RobolectricConfig createRobolectricConfig() {
@@ -139,34 +154,33 @@ public class RobolectricContext {
         }
     }
 
-    protected RobolectricClassLoader createRobolectricClassLoader() {
-        ShadowWrangler shadowWrangler = createClassHandler();
-        if (USE_REAL_ANDROID_SOURCES) {
-            shadowWrangler.delegateBackToInstrumented = true;
-            final ClassLoader parentClassLoader = this.getClass().getClassLoader();
-            ClassLoader realAndroidJarsClassLoader = new URLClassLoader(new URL[]{
+    protected RobolectricClassLoader createRobolectricClassLoader(ClassCache classCache, AndroidTranslator androidTranslator) {
+//            shadowWrangler.delegateBackToInstrumented = true;
+        final ClassLoader parentClassLoader = this.getClass().getClassLoader();
+        ClassLoader realAndroidJarsClassLoader = new URLClassLoader(new URL[]{
 //                        parseUrl(getAndroidSdkHome() + "/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"),
-                    getRealAndroidArtifact("android-base"),
-                    getRealAndroidArtifact("android-kxml2"),
-                    getRealAndroidArtifact("android-luni")
-            }, null) {
-                @Override
-                protected Class<?> findClass(String s) throws ClassNotFoundException {
-                    try {
-                        return super.findClass(s);
-                    } catch (ClassNotFoundException e) {
-                        return parentClassLoader.loadClass(s);
-                    }
+                getRealAndroidArtifact("android-base"),
+                getRealAndroidArtifact("android-kxml2"),
+                getRealAndroidArtifact("android-luni")
+        }, null) {
+            @Override
+            protected Class<?> findClass(String s) throws ClassNotFoundException {
+                try {
+                    return super.findClass(s);
+                } catch (ClassNotFoundException e) {
+                    return parentClassLoader.loadClass(s);
                 }
-            };
-            return new RobolectricClassLoader(realAndroidJarsClassLoader, shadowWrangler, null);
-        } else {
-            return new RobolectricClassLoader(shadowWrangler);
-        }
+            }
+        };
+        return new RobolectricClassLoader(realAndroidJarsClassLoader, classCache, androidTranslator);
     }
 
     public RobolectricClassLoader getRobolectricClassLoader() {
         return robolectricClassLoader;
+    }
+
+    public Setup createSetup() {
+        return new Setup();
     }
 
     public RepositorySystem createRepositorySystem() {

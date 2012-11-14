@@ -1,21 +1,21 @@
 package com.xtremelabs.robolectric.tester.android.view;
 
 import static org.junit.Assert.assertNotNull;
+
+import com.xtremelabs.robolectric.TestRunners;
 import junit.framework.Assert;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.shadows.ShadowActivity;
-import com.xtremelabs.robolectric.tester.android.view.TestMenuItem;
 
 import android.app.Activity;
 import android.content.Intent;
 
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class TestMenuTest {
 
     @Test

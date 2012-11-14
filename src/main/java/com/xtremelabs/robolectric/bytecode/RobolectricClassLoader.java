@@ -1,27 +1,17 @@
 package com.xtremelabs.robolectric.bytecode;
 
 import com.xtremelabs.robolectric.RobolectricContext;
+import com.xtremelabs.robolectric.internal.DoNotInstrument;
+import com.xtremelabs.robolectric.internal.Instrument;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 
-import java.io.File;
-import java.util.List;
-
 public class RobolectricClassLoader extends javassist.Loader {
-    private ClassCache classCache;
-    private AndroidTranslator androidTranslator;
+    private final ClassCache classCache;
 
-    public RobolectricClassLoader(ClassHandler classHandler) {
-        this(classHandler, null);
-    }
-
-    public RobolectricClassLoader(ClassHandler classHandler, List<String> customClassNames) {
-        this(RobolectricClassLoader.class.getClassLoader(), classHandler, customClassNames);
-    }
-
-    public RobolectricClassLoader(ClassLoader classLoader, ClassHandler classHandler, List<String> customClassNames) {
+    public RobolectricClassLoader(ClassLoader classLoader, ClassCache classCache, AndroidTranslator androidTranslator) {
         super(classLoader, null);
 
         delegateLoadingOf(RobolectricClassLoader.class.getName());
@@ -29,8 +19,10 @@ public class RobolectricClassLoader extends javassist.Loader {
         delegateLoadingOf(RobolectricContext.Factory.class.getName());
         delegateLoadingOf(AndroidTranslator.class.getName());
         delegateLoadingOf(ClassHandler.class.getName());
+        delegateLoadingOf(Instrument.class.getName());
+        delegateLoadingOf(DoNotInstrument.class.getName());
 
-        createClassCache();
+        this.classCache = classCache;
         try {
             ClassPool classPool = new ClassPool();
             classPool.appendClassPath(new LoaderClassPath(classLoader));
@@ -39,41 +31,12 @@ public class RobolectricClassLoader extends javassist.Loader {
                 classPool.appendClassPath(new LoaderClassPath(RobolectricClassLoader.class.getClassLoader()));
             }
 
-            androidTranslator = createAndroidTranslator(classHandler, customClassNames);
             addTranslator(classPool, androidTranslator);
         } catch (NotFoundException e) {
             throw new RuntimeException(e);
         } catch (CannotCompileException e) {
             throw new RuntimeException(e);
         }
-    }
-
-    protected AndroidTranslator createAndroidTranslator(ClassHandler classHandler, List<String> customClassNames) {
-        return new AndroidTranslator(classHandler, getClassCache(), customClassNames);
-    }
-
-    public ClassCache getClassCache() {
-        if (classCache == null) {
-            classCache = createClassCache();
-        }
-
-        return classCache;
-    }
-
-    protected ClassCache createClassCache() {
-        final String classCachePath = System.getProperty("cached.robolectric.classes.path");
-        final File classCacheDirectory;
-        if (null == classCachePath || "".equals(classCachePath.trim())) {
-            classCacheDirectory = new File("./tmp");
-        } else {
-            classCacheDirectory = new File(classCachePath);
-        }
-
-        return new ClassCache(new File(classCacheDirectory, "cached-robolectric-classes.jar").getAbsolutePath(), AndroidTranslator.CACHE_VERSION);
-    }
-
-    public void addCustomShadowClass(String classOrPackageToBeInstrumented) {
-        androidTranslator.addCustomShadowClass(classOrPackageToBeInstrumented);
     }
 
     @Override
@@ -103,7 +66,7 @@ public class RobolectricClassLoader extends javassist.Loader {
 
     @Override
     protected Class findClass(String name) throws ClassNotFoundException {
-        byte[] classBytes = getClassCache().getClassBytesFor(name);
+        byte[] classBytes = classCache.getClassBytesFor(name);
         if (classBytes != null) {
             return defineClass(name, classBytes, 0, classBytes.length);
         }

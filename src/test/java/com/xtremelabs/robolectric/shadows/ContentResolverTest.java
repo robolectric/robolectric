@@ -18,6 +18,7 @@ import java.util.List;
 import android.accounts.Account;
 import android.content.*;
 import android.os.Bundle;
+import com.xtremelabs.robolectric.TestRunners;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -28,10 +29,9 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
 
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.tester.android.database.TestCursor;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class ContentResolverTest {
     static final String AUTHORITY = "com.xtremelabs.robolectric";
 
