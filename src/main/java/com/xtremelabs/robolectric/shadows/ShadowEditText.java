@@ -64,4 +64,8 @@ public class ShadowEditText extends ShadowTextView {
         super.setSelection(0, text.length() - 1);
     }
 
+    public int getMaxLength() {
+		return maxLength;
+	}
+    
 }

@@ -27,4 +27,13 @@ public class ShadowTypedArray {
     public java.lang.String getString(int index) {
         return (String) values.get(index);
     }
+
+    @Implementation
+    public boolean getBoolean(int index, boolean defValue) {
+        final String value = (String)values.get(index);
+        if ("true".equals(value) || "false".equals(value)) {
+            return Boolean.valueOf(value);
+        }
+        return defValue;
+    }
 }

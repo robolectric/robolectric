@@ -36,7 +36,7 @@ public class EditTextTest {
 
         editText.setText(excessiveInput);
 
-        assertThat(editText.getText().toString(), equalTo(excessiveInput.subSequence(0, maxLength)));
+        assertThat(editText.getText().toString(), equalTo(excessiveInput.subSequence(0, maxLength).toString()));
     }
 
     @Test
@@ -70,6 +70,17 @@ public class EditTextTest {
         ShadowTextView shadowTextView = Robolectric.shadowOf(editText);
         assertThat(shadowTextView.getSelectionStart(), is(0));
         assertThat(shadowTextView.getSelectionEnd(), is(2));
+    }
+
+    @Test
+    public void givenInitializingWithAttributeSet_whenMaxLengthDefined_shouldReturnCorrectMaxLengthValue() {
+        int maxLength = anyInteger();
+        AttributeSet attrs = attributeSetWithMaxLength(maxLength);
+        EditText editText = new EditText(null, attrs);
+
+        ShadowEditText shadowEditText = Robolectric.shadowOf(editText);
+
+        assertThat(shadowEditText.getMaxLength(), equalTo(maxLength));
     }
 
     private String anyString() {

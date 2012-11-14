@@ -1,5 +1,14 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
@@ -15,6 +24,7 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.view.LayoutInflater;
 import android.widget.Toast;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -22,15 +32,6 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.util.Scheduler;
-
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadows the {@code android.app.Application} class.
@@ -98,6 +99,12 @@ public class ShadowApplication extends ShadowContextWrapper {
     private IBinder serviceForBindService;
     private List<String> unbindableActions = new ArrayList<String>();
 
+    public interface StartActivityHandler {
+    	void onStartActivityCalled(Intent intent);
+    }
+    
+    private List<StartActivityHandler> startActivityHandlers = new ArrayList<StartActivityHandler>();
+    
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
      *
@@ -173,6 +180,10 @@ public class ShadowApplication extends ShadowContextWrapper {
     @Override
     public void startActivity(Intent intent) {
         startedActivities.add(intent);
+        
+        for (StartActivityHandler handler : startActivityHandlers) {
+			handler.onStartActivityCalled(intent);
+		}
     }
 
     @Implementation
@@ -529,6 +540,14 @@ public class ShadowApplication extends ShadowContextWrapper {
     	latestWakeLock = null;
     }
 
+    public List<StartActivityHandler> getStartActivityHandlers() {
+		return startActivityHandlers;
+	}
+    
+    public void addStartActivityHandler(StartActivityHandler handler) {
+    	startActivityHandlers.add(handler);
+    }
+    
     public class Wrapper {
         public BroadcastReceiver broadcastReceiver;
         public IntentFilter intentFilter;

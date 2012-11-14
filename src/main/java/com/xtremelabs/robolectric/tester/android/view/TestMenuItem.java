@@ -16,6 +16,7 @@ public class TestMenuItem implements MenuItem {
     public int iconRes;
     private Intent intent;
     private SubMenu subMenu;
+    private boolean isVisible = true;
 
     public TestMenuItem() {
         super();
@@ -145,12 +146,13 @@ public class TestMenuItem implements MenuItem {
 
     @Override
     public MenuItem setVisible(boolean visible) {
-        return null;
+        isVisible = visible;
+        return this;
     }
 
     @Override
     public boolean isVisible() {
-        return false;
+        return isVisible;
     }
 
     @Override

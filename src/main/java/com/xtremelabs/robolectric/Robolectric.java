@@ -1006,6 +1006,10 @@ public class Robolectric {
         return (ShadowTextView) shadowOf_(instance);
     }
 
+    public static ShadowEditText shadowOf(EditText instance) {
+        return (ShadowEditText) shadowOf_(instance);
+    }
+    
     public static ShadowToast shadowOf(Toast instance) {
         return (ShadowToast) shadowOf_(instance);
     }
