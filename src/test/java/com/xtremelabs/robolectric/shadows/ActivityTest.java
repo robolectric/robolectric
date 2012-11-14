@@ -631,6 +631,15 @@ public class ActivityTest {
         shadowOf(activity).callOnStart();
     }
 
+	@Test
+	public void allowsAParentToBeSetThroughShadow()
+	{
+		final Activity activity = new Activity();
+		final Activity parentActivity = new Activity();
+		shadowOf(activity).setParent(parentActivity);
+		assertThat(activity.getParent(), is(sameInstance(parentActivity)));
+	}
+
     private static class MyActivity extends Activity {
         @Override protected void onDestroy() {
             super.onDestroy();
