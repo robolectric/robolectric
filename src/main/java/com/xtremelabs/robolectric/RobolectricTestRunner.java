@@ -38,8 +38,8 @@ import java.util.Map;
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
     protected static Map<RobolectricConfig, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RobolectricConfig, ResourceLoader>();
 
-    // field in both the instrumented and original classes; set by RobolectricContext
-    static RobolectricContext sharedRobolectricContext;
+    // field in both the instrumented and original classes
+    RobolectricContext sharedRobolectricContext;
 
     // fields in the RobolectricTestRunner in the original ClassLoader
     private RobolectricTestRunnerInterface delegate;
@@ -60,6 +60,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             }
         }));
 
+        sharedRobolectricContext = RobolectricContext.mostRecentRobolectricContext; // ick, race condition
+
         if (isBootstrapped(getClass())) {
             databaseMap = setupDatabaseMap(testClass, new SQLiteMap());
         } else {
@@ -78,18 +80,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
-        RobolectricConfig robolectricConfig = sharedRobolectricContext.getRobolectricConfig();
-        setupI18nStrictState(method.getMethod(), robolectricConfig);
-        lookForLocaleAnnotation(method.getMethod(), robolectricConfig);
-
-        final ClassHandler classHandler = sharedRobolectricContext.getClassHandler();
-        classHandler.configure(robolectricConfig);
-        classHandler.beforeTest();
-        delegate.internalBeforeTest(method.getMethod());
-
         final Statement statement = super.methodBlock(method);
         return new Statement() {
             @Override public void evaluate() throws Throwable {
+                sharedRobolectricContext.getClassHandler().reset();
+                delegate.internalBeforeTest(method.getMethod());
+
             	HashMap<Field,Object> withConstantAnnos = getWithConstantAnnotations(method.getMethod());
 
             	// todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
@@ -106,7 +102,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
                 	}
                 } finally {
                     delegate.internalAfterTest(method.getMethod());
-                    classHandler.afterTest();
                 }
             }
         };
@@ -116,6 +111,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * Called before each test method is run. Sets up the simulation of the Android runtime environment.
      */
     @Override public void internalBeforeTest(final Method method) {
+        RobolectricConfig robolectricConfig = sharedRobolectricContext.getRobolectricConfig();
+        setupI18nStrictState(method, robolectricConfig);
+        lookForLocaleAnnotation(method, robolectricConfig);
+
+        ClassHandler classHandler = sharedRobolectricContext.getClassHandler();
+        classHandler.configure(robolectricConfig);
         setupApplicationState(sharedRobolectricContext.getRobolectricConfig());
 
         beforeTest(method);

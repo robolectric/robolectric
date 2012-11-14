@@ -6,8 +6,6 @@ import javassist.*;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class AndroidTranslator implements Translator {
@@ -15,22 +13,16 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 22;
-//    public static final int CACHE_VERSION = -1;
+//    public static final int CACHE_VERSION = 22;
+    public static final int CACHE_VERSION = -1;
 
     static final String STATIC_INITIALIZER_METHOD_NAME = "__staticInitializer__";
-
-    private static final List<ClassHandler> CLASS_HANDLERS = new ArrayList<ClassHandler>();
 
     private final ClassHandler classHandler;
     private final ClassCache classCache;
     private final Setup setup;
 
     private boolean debug = false;
-
-    public static ClassHandler getClassHandler(int index) {
-        return CLASS_HANDLERS.get(index);
-    }
 
     public static void performStaticInitialization(Class<?> clazz) {
         System.out.println("static initializing " + clazz);
@@ -55,22 +47,6 @@ public class AndroidTranslator implements Translator {
 
     @Override
     public void start(ClassPool classPool) throws NotFoundException, CannotCompileException {
-        injectClassHandlerToInstrumentedClasses(classPool);
-    }
-
-    private void injectClassHandlerToInstrumentedClasses(ClassPool classPool) throws NotFoundException, CannotCompileException {
-        int index;
-        synchronized (CLASS_HANDLERS) {
-            CLASS_HANDLERS.add(classHandler);
-            index = CLASS_HANDLERS.size() - 1;
-        }
-
-        CtClass robolectricInternalsCtClass = classPool.get(RobolectricInternals.class.getName());
-        robolectricInternalsCtClass.setModifiers(Modifier.PUBLIC);
-
-        robolectricInternalsCtClass.makeClassInitializer().insertBefore("{\n" +
-                "classHandler = " + AndroidTranslator.class.getName() + ".getClassHandler(" + index + ");\n" +
-                "}");
     }
 
     @Override

@@ -43,7 +43,12 @@ public class TestRunners {
 
     public static class WithoutDefaults extends RobolectricTestRunner {
         public WithoutDefaults(Class<?> testClass) throws InitializationError {
-            super(testClass);
+            super(RobolectricContext.bootstrap(WithoutDefaults.class, testClass, new RobolectricContext.Factory() {
+                @Override
+                public RobolectricContext create() {
+                    return new RobolectricContext();
+                }
+            }));
         }
 
         @Override public void internalBeforeTest(Method method) {

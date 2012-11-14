@@ -22,13 +22,13 @@ public class ShadowWrangler implements ClassHandler {
 
     private final Setup setup;
 
-    public boolean debug = true;
+    public boolean debug = false;
     private boolean strictI18n = false;
     
     private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
     private Map<String, String> shadowClassMap = new HashMap<String, String>();
     private Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
-    private boolean logMissingShadowMethods = true;
+    private boolean logMissingShadowMethods = false;
     private static int callDepth = 0;
 
     public ShadowWrangler(Setup setup) {
@@ -59,12 +59,8 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     @Override
-    public void beforeTest() {
+    public void reset() {
         shadowClassMap.clear();
-    }
-
-    @Override
-    public void afterTest() {
     }
 
     @Override

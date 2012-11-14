@@ -34,7 +34,8 @@ public class RobolectricContext {
     private final RobolectricConfig robolectricConfig;
     private final RobolectricClassLoader robolectricClassLoader;
     private final ClassHandler classHandler;
-    private RepositorySystem repositorySystem;
+    private static RepositorySystem repositorySystem;
+    public static RobolectricContext mostRecentRobolectricContext; // ick, race condition
 
     public interface Factory {
         RobolectricContext create();
@@ -47,7 +48,7 @@ public class RobolectricContext {
         }
 
         RobolectricContext robolectricContext;
-        synchronized(contextsByTestRunner) {
+        synchronized (contextsByTestRunner) {
             robolectricContext = contextsByTestRunner.get(robolectricTestRunnerClass);
             if (robolectricContext == null) {
                 robolectricContext = factory.create();
@@ -55,16 +56,18 @@ public class RobolectricContext {
             }
         }
 
-        return robolectricContext.bootstrapTestClass(robolectricTestRunnerClass, testClass);
+        mostRecentRobolectricContext = robolectricContext;
+
+        return robolectricContext.bootstrapTestClass(testClass);
     }
 
     public RobolectricContext() {
-        this.robolectricConfig = createRobolectricConfig();
         ClassCache classCache = createClassCache();
         Setup setup = createSetup();
-        this.classHandler = createClassHandler(setup);
+        classHandler = createClassHandler(setup);
+        robolectricConfig = createRobolectricConfig();
         AndroidTranslator androidTranslator = createAndroidTranslator(classHandler, setup, classCache);
-        this.robolectricClassLoader = createRobolectricClassLoader(classCache, androidTranslator);
+        robolectricClassLoader = createRobolectricClassLoader(classCache, androidTranslator);
         init();
     }
 
@@ -115,11 +118,8 @@ public class RobolectricContext {
         classLoader.delegateLoadingOf(android.R.class.getName());
     }
 
-    private Class<?> bootstrapTestClass(Class<? extends RobolectricTestRunner> robolectricTestRunnerClass, Class<?> testClass) {
+    private Class<?> bootstrapTestClass(Class<?> testClass) {
         Class<?> bootstrappedTestClass = robolectricClassLoader.bootstrap(testClass);
-        Class<?> bootstrappedTestRunnerClass = robolectricClassLoader.bootstrap(robolectricTestRunnerClass);
-        setRobolectricContextField(robolectricTestRunnerClass);
-        setRobolectricContextField(bootstrappedTestRunnerClass);
         return bootstrappedTestClass;
     }
 
@@ -172,7 +172,23 @@ public class RobolectricContext {
                 }
             }
         };
-        return new RobolectricClassLoader(realAndroidJarsClassLoader, classCache, androidTranslator);
+        RobolectricClassLoader robolectricClassLoader = new RobolectricClassLoader(realAndroidJarsClassLoader, classCache, androidTranslator);
+        injectClassHandler(robolectricClassLoader);
+        return robolectricClassLoader;
+    }
+
+    private void injectClassHandler(RobolectricClassLoader robolectricClassLoader) {
+        try {
+            Field field = robolectricClassLoader.loadClass(RobolectricInternals.class.getName()).getDeclaredField("classHandler");
+            field.setAccessible(true);
+            field.set(null, classHandler);
+        } catch (NoSuchFieldException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public RobolectricClassLoader getRobolectricClassLoader() {
@@ -216,7 +232,7 @@ public class RobolectricContext {
     }
 
     private URL getArtifact(Artifact artifact) {
-        RepositorySystem repositorySystem = createRepositorySystem();
+        RepositorySystem repositorySystem = getRepositorySystem();
         RepositorySystemSession session = newSession(repositorySystem);
         ArtifactRequest artifactRequest = new ArtifactRequest().setArtifact(artifact);
         artifactRequest.addRepository(getCentralRepository());

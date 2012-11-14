@@ -5,7 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class RobolectricInternals {
-    // initialized via magic by AndroidTranslator
+    // initialized via magic by RobolectricContext
     private static ClassHandler classHandler;
 
     public static ClassHandler getClassHandler() {

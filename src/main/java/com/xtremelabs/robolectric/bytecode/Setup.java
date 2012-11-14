@@ -45,7 +45,7 @@ public class Setup {
             return true;
         }
 
-        return parentIsInstrumented(ctClass);
+        return false;
 
     }
 

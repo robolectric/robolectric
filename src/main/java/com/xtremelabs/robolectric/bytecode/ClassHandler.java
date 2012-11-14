@@ -9,9 +9,7 @@ public interface ClassHandler {
 	
     void instrument(CtClass ctClass);
 
-    void beforeTest();
-
-    void afterTest();
+    void reset();
 
     void classInitializing(Class clazz);
 
