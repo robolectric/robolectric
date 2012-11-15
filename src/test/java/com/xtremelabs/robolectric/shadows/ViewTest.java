@@ -449,6 +449,11 @@ public class ViewTest {
         assertThat(view.isLongClickable(), equalTo(true));
     }
 
+    @Test
+    public void shouldHaveOuyaOnlyMethod() throws Exception {
+        assertThat(shadowOf(view).ouyaOnlyMethod(), equalTo(true));
+    }
+
     private static class TestAnimation extends Animation {
     }
 

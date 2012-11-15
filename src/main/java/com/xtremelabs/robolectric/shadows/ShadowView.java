@@ -1045,4 +1045,8 @@ public class ShadowView {
     public TouchDelegate getTouchDelegate()  {
     	return touchDelegate;
     }
+
+    public boolean ouyaOnlyMethod() {
+        return true;
+    }
 }
