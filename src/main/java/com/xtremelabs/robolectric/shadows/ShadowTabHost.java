@@ -119,4 +119,8 @@ public class ShadowTabHost extends ShadowFrameLayout {
         }
         return null;
     }
+
+	public List<TabHost.TabSpec> getTabSpecs() {
+		return new ArrayList<TabHost.TabSpec>(tabSpecs);
+	}
 }
