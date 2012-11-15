@@ -2,10 +2,12 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -27,5 +29,15 @@ public class LinearLayoutTest {
         linearLayout.setLayoutParams(params);
 
         assertTrue(linearLayout.getLayoutParams() == params);
+    }
+
+    @Test
+    public void canAnswerOrientation() throws Exception {
+        LinearLayout linearLayout = new LinearLayout(Robolectric.application);
+        assertThat(linearLayout.getOrientation(), equalTo(LinearLayout.HORIZONTAL));
+        linearLayout.setOrientation(LinearLayout.VERTICAL);
+        assertThat(linearLayout.getOrientation(), equalTo(LinearLayout.VERTICAL));
+        linearLayout.setOrientation(LinearLayout.HORIZONTAL);
+        assertThat(linearLayout.getOrientation(), equalTo(LinearLayout.HORIZONTAL));
     }
 }
