@@ -25,6 +25,7 @@ public class ShadowMotionEvent {
     private long eventTime;
     private int[] pointerIds = new int[2];
     private int pointerIndex;
+    private int source;
 
     @Implementation
     public static MotionEvent obtain(long downTime, long eventTime, int action, float x, float y, int metaState) {
@@ -55,8 +56,18 @@ public class ShadowMotionEvent {
     }
 
     @Implementation
-    public void setAction(int action ) {
+    public void setAction(int action) {
         this.action = action;
+    }
+
+    @Implementation
+    public void setSource(int source) {
+        this.source = source;
+    }
+
+    @Implementation
+    public int getSource() {
+        return source;
     }
     
     @Implementation
@@ -67,6 +78,17 @@ public class ShadowMotionEvent {
     @Implementation
     public float getRawY() {
         return getY();
+    }
+
+    @Implementation
+    public final float getAxisValue(int axis) {
+        switch(axis) {
+            case MotionEvent.AXIS_X:
+                return getX();
+            case MotionEvent.AXIS_Y:
+                return getY();
+        }
+        return 0.0f;
     }
 
     @Implementation

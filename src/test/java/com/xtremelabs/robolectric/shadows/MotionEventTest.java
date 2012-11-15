@@ -80,4 +80,10 @@ public class MotionEventTest {
         assertEquals(10.0f, event.getX(), 0.0f);
         assertEquals(20.0f, event.getY(), 0.0f);
     }
+
+    @Test
+    public void canGetAxisValue() throws Exception {
+        assertEquals(5.0f, event.getAxisValue(MotionEvent.AXIS_X), 0.0f);
+        assertEquals(10.0f, event.getAxisValue(MotionEvent.AXIS_Y), 0.0f);
+    }
 }
