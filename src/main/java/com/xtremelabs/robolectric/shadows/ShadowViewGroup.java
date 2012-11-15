@@ -121,7 +121,16 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public void removeViewAt(int position) {
-        shadowOf(children.remove(position)).parent = null;
+        View child = children.remove(position);
+        shadowOf(child).parent = null;
+    }
+
+    @Implementation
+    public void removeView(View view) {
+        boolean removed = children.remove(view);
+        if (removed) {
+            shadowOf(view).parent = null;
+        }
     }
 
     @Override
