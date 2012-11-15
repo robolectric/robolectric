@@ -21,7 +21,7 @@ public class ShadowConnectivityManager {
 
     private Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<Integer, NetworkInfo>();
 
-    public void __constructor__() {
+    public ShadowConnectivityManager() {
         setActiveNetworkInfo(ShadowNetworkInfo.newInstance());
     }
 
