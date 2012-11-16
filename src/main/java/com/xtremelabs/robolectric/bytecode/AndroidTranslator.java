@@ -35,6 +35,7 @@ public class AndroidTranslator implements Translator {
 
         instrumentingExcludeList.add("android.support.v4.app.NotificationCompat");
         instrumentingExcludeList.add("android.support.v4.util.LruCache");
+        instrumentingExcludeList.add("android.support.v4.util.SparseArrayCompat");
     }
 
     public AndroidTranslator(ClassHandler classHandler, ClassCache classCache, List<String> customShadowClassNames) {
