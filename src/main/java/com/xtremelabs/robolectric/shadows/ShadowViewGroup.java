@@ -60,6 +60,10 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public void addView(View child) {
+        if (child.getParent() != null) {
+            throw new IllegalStateException("The specified child already has a parent. You must call removeView() " +
+                    "on the child's parent first.");
+        }
         ((ViewGroup) realView).addView(child, -1);
     }
 

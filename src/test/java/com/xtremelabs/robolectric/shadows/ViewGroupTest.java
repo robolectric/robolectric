@@ -267,4 +267,15 @@ public class ViewGroupTest {
         assertThat(root.getChildCount(), equalTo(3));
         assertThat(child3a.getParent(), sameInstance((ViewParent) child3));
     }
+
+    @Test
+    public void addView_whenChildAlreadyHasAParent_shouldThrow() throws Exception {
+        ViewGroup newRoot = new FrameLayout(context);
+        try {
+            newRoot.addView(child1);
+            fail("Expected IllegalStateException");
+        } catch (IllegalStateException e) {
+            // pass
+        }
+    }
 }
