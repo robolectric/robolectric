@@ -20,7 +20,6 @@ public class Setup {
         androidPackages.add("org.apache.http.impl.client.DefaultRequestDirector");
 
         instrumentingExcludeList.add("android.support.v4.app.NotificationCompat");
-        instrumentingExcludeList.add("android.support.v4.content.LocalBroadcastManager");
         instrumentingExcludeList.add("android.support.v4.util.LruCache");
     }
 

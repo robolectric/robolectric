@@ -14,7 +14,6 @@ import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
-import junit.framework.Assert;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,8 +25,6 @@ import java.util.Random;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
@@ -318,27 +315,27 @@ public class TextViewTest {
     public void testSetCompountDrawablesWithIntrinsicBounds_int_shouldCreateDrawablesWithResourceIds() throws Exception {
         textView.setCompoundDrawablesWithIntrinsicBounds(6, 7, 8, 9);
 
-        Assert.assertEquals(6, shadowOf(textView.getCompoundDrawables()[0]).getLoadedFromResourceId());
-        Assert.assertEquals(7, shadowOf(textView.getCompoundDrawables()[1]).getLoadedFromResourceId());
-        Assert.assertEquals(8, shadowOf(textView.getCompoundDrawables()[2]).getLoadedFromResourceId());
-        Assert.assertEquals(9, shadowOf(textView.getCompoundDrawables()[3]).getLoadedFromResourceId());
+        assertEquals(6, shadowOf(textView.getCompoundDrawables()[0]).getLoadedFromResourceId());
+        assertEquals(7, shadowOf(textView.getCompoundDrawables()[1]).getLoadedFromResourceId());
+        assertEquals(8, shadowOf(textView.getCompoundDrawables()[2]).getLoadedFromResourceId());
+        assertEquals(9, shadowOf(textView.getCompoundDrawables()[3]).getLoadedFromResourceId());
     }
 
     @Test
     public void testSetCompountDrawablesWithIntrinsicBounds_int_shouldNotCreateDrawablesForZero() throws Exception {
         textView.setCompoundDrawablesWithIntrinsicBounds(0, 0, 0, 0);
 
-        Assert.assertNull(textView.getCompoundDrawables()[0]);
-        Assert.assertNull(textView.getCompoundDrawables()[1]);
-        Assert.assertNull(textView.getCompoundDrawables()[2]);
-        Assert.assertNull(textView.getCompoundDrawables()[3]);
+        assertNull(textView.getCompoundDrawables()[0]);
+        assertNull(textView.getCompoundDrawables()[1]);
+        assertNull(textView.getCompoundDrawables()[2]);
+        assertNull(textView.getCompoundDrawables()[3]);
     }
 
     @Test
     public void canSetAndGetTypeface() throws Exception {
         Typeface typeface = Robolectric.newInstanceOf(Typeface.class);
         textView.setTypeface(typeface);
-        Assert.assertEquals(typeface, textView.getTypeface());
+        assertSame(typeface, textView.getTypeface());
     }
 
     @Test

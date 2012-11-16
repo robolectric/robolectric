@@ -110,16 +110,20 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     /*
      * Called before each test method is run. Sets up the simulation of the Android runtime environment.
      */
-    @Override public void internalBeforeTest(final Method method) {
+    @Override final public void internalBeforeTest(final Method method) {
         RobolectricConfig robolectricConfig = sharedRobolectricContext.getRobolectricConfig();
         setupI18nStrictState(method, robolectricConfig);
         lookForLocaleAnnotation(method, robolectricConfig);
-
         ClassHandler classHandler = sharedRobolectricContext.getClassHandler();
         classHandler.configure(robolectricConfig);
-        setupApplicationState(sharedRobolectricContext.getRobolectricConfig());
+
+        configureShadows();
 
         beforeTest(method);
+    }
+
+    protected void configureShadows() {
+        setupApplicationState(sharedRobolectricContext.getRobolectricConfig());
     }
 
     @Override public void internalAfterTest(final Method method) {
