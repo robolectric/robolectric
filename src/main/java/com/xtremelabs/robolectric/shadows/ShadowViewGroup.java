@@ -4,7 +4,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.LayoutAnimationController;
-
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -58,6 +57,10 @@ public class ShadowViewGroup extends ShadowView {
         return null;
     }
 
+    protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
+        return new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+    }
+
     @Implementation
     public void addView(View child) {
         ((ViewGroup) realView).addView(child, -1);
@@ -65,18 +68,23 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public void addView(View child, int index) {
-        if (index == -1) {
-            children.add(child);
-        } else {
-            children.add(index, child);
+        ViewGroup.LayoutParams params = child.getLayoutParams();
+        if (params == null) {
+            params = generateDefaultLayoutParams();
+            if (params == null) {
+                throw new IllegalArgumentException("generateDefaultLayoutParams() cannot return null");
+            }
         }
-        shadowOf(child).parent = this;
-        addedChild(child);
+        ((ViewGroup)realView).addView(child, index, params);
     }
 
     @Implementation
     public void addView(View child, int width, int height) {
-        ((ViewGroup) realView).addView(child, -1);
+        final ViewGroup.LayoutParams params = generateDefaultLayoutParams();
+        params.width = width;
+        params.height = height;
+
+        ((ViewGroup) realView).addView(child, -1, params);
     }
 
     @Implementation
@@ -87,16 +95,24 @@ public class ShadowViewGroup extends ShadowView {
     @Implementation
     public void addView(View child, int index, ViewGroup.LayoutParams params) {
         child.setLayoutParams(params);
-        ((ViewGroup) realView).addView(child, index);
+        if (index == -1) {
+            children.add(child);
+        } else {
+            children.add(index, child);
+        }
+        shadowOf(child).parent = this;
+
+        if (isAttachedToWindow()) shadowOf(child).callOnAttachedToWindow();
     }
 
     @Implementation
     public void removeView(View child) {
         // Android's ViewGroup ignores the child when it is null. Do the same here.
         if (child == null) return;
-        shadowOf(child).parent = null;
-        children.remove(child);
-        removedChild(child);
+        if (children.remove(child)) {
+            shadowOf(child).parent = null;
+            removedChild(child);
+        }
     }
 
     @Implementation
@@ -248,17 +264,8 @@ public class ShadowViewGroup extends ShadowView {
         return disallowInterceptTouchEvent;
     }
 
-    protected void addedChild(View child) {
-        if (isAttachedToWindow()) shadowOf(child).callOnAttachedToWindow();
-        setChildLayoutParams(child);
-    }
-
     protected void removedChild(View child) {
         if (isAttachedToWindow()) shadowOf(child).callOnDetachedFromWindow();
-    }
-
-    protected void setChildLayoutParams(View child) {
-        shadowOf(child).setLayoutParams(new ViewGroup.LayoutParams(0, 0));
     }
 
     private boolean isValidIndex(int i) {

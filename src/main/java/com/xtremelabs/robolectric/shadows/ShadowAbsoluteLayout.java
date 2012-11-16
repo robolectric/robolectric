@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AbsoluteLayout;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -32,7 +31,7 @@ public class ShadowAbsoluteLayout extends ShadowViewGroup {
     }
 
     @Override
-    protected void setChildLayoutParams(View child) {
-        child.setLayoutParams(new AbsoluteLayout.LayoutParams(0, 0, 0, 0));
+    protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
+        return new AbsoluteLayout.LayoutParams(0, 0, 0, 0);
     }
 }

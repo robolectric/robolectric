@@ -60,12 +60,11 @@ public class RobolectricTest {
         Robolectric.bindShadowClass(TestShadowView.class);
         Robolectric.logMissingInvokedShadowMethods();
 
-
         View aView = new View(null);
         // There's a shadow method for this
         aView.getContext();
         String output = buff.toString();
-        assertEquals("No Shadow method found for View.<init>(android.content.Context)\n", output);
+        assertEquals("No Shadow method found for View.__constructor__(android.content.Context)\n", output);
         buff.reset();
 
         aView.findViewById(27);

@@ -41,8 +41,13 @@ public class RobolectricClassLoader extends javassist.Loader {
 
     @Override
     public Class loadClass(String name) throws ClassNotFoundException {
-        boolean shouldComeFromThisClassLoader = !(name.startsWith("org.junit") || name.startsWith("org.hamcrest")
-                || name.startsWith("org.specs2") || name.startsWith("scala.")); //org.specs2 and scala. allows for android projects with mixed scala\java tests to be run with Maven Surefire (see the RoboSpecs project on github)
+        boolean shouldComeFromThisClassLoader = !(
+                name.startsWith("org.junit")
+                        || name.startsWith("org.hamcrest")
+                        || name.startsWith("org.specs2") // allows for android projects with mixed scala\java tests to be
+                        || name.startsWith("scala.")     //  run with Maven Surefire (see the RoboSpecs project on github)
+                        || name.startsWith("org.sqlite.") // ugh, javassist is barfing while loading org.sqlite now for some reason?!?
+        );
 
         Class<?> theClass;
         if (shouldComeFromThisClassLoader) {

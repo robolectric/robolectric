@@ -44,7 +44,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         // note that these are different!
     	// They specify concrete classes within Robolectric for interfaces or abstract classes defined by Android
         SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "com.xtremelabs.robolectric.tester.android.view.TestWindowManager");
-        SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "com.xtremelabs.robolectric.tester.android.text.TestClipboardManager");
+        SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.content.ClipboardManager");
         SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.TestSensorManager");
         SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.TestVibrator");
         

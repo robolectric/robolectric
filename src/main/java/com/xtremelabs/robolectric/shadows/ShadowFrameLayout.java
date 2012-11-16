@@ -2,7 +2,6 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
 import android.util.AttributeSet;
-import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -28,7 +27,7 @@ public class ShadowFrameLayout extends ShadowViewGroup {
     }
 
     @Override
-    protected void setChildLayoutParams(View child) {
-        child.setLayoutParams(new FrameLayout.LayoutParams(0, 0));
+    protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
+        return new FrameLayout.LayoutParams(0, 0);
     }
 }

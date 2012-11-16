@@ -281,6 +281,7 @@ public class ViewGroupTest {
     @Test
     public void removeView_resetsParentOnlyIfViewIsInViewGroup() throws Exception {
         assertThat(root.getChildCount(), equalTo(3));
+        assertNotSame(child3a.getParent(), root);
         root.removeView(child3a);
         assertThat(root.getChildCount(), equalTo(3));
         assertThat(child3a.getParent(), sameInstance((ViewParent) child3));

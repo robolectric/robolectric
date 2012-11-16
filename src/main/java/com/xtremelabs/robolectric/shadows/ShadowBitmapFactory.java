@@ -12,6 +12,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.util.Join;
 
 import java.io.*;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -83,26 +84,23 @@ public class ShadowBitmapFactory {
 
     @Implementation
     public static Bitmap decodeByteArray(byte[] data, int offset, int length) {
-    	return decodeByteArray( data, offset, length, new BitmapFactory.Options() );
+    	return decodeByteArray(data, offset, length, new BitmapFactory.Options());
     }
-
-    /*@Implementation
-    public static Bitmap decodeByteArray(byte[] data, int offset, int length, BitmapFactory.Options options) {
-        if ((offset | length) < 0 || data.length < offset + length) {
-            throw new ArrayIndexOutOfBoundsException();
-        }
-        String desc = new String(data);
-        if (offset != 0 && length != data.length) {
-            desc += " bytes " + offset + ".." + length;
-        }
-        return create(desc, options);
-    }*/
 
     @Implementation
     public static Bitmap decodeByteArray(byte[] data, int offset, int length, BitmapFactory.Options opts) {
-    	Checksum checksumEngine = new CRC32();
-    	checksumEngine.update(data, 0, data.length);
-    	return create("byte array, checksum:" + checksumEngine.getValue() + " offset: " + offset + " length: " + data.length, opts );
+        String desc = new String(data);
+        if (!Charset.forName("US-ASCII").newEncoder().canEncode(desc)) {
+            Checksum checksumEngine = new CRC32();
+            checksumEngine.update(data, 0, data.length);
+
+            desc = "byte array, checksum: " + checksumEngine.getValue();
+        }
+
+        if (offset != 0 || length != data.length) {
+            desc += " bytes " + offset + ".." + length;
+        }
+        return create(desc, opts);
     }
     
     static Bitmap create(String name) {

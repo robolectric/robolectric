@@ -16,12 +16,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.notNullValue;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class BitmapFactoryTest {
@@ -164,11 +162,11 @@ public class BitmapFactoryTest {
     
     @Test
     public void decodeByteArray_shouldSetDataChecksum() throws Exception {
-        byte[] data = { 23, 100, 23, 52, 23, 18, 76, 43 };
+        byte[] data = { 23, -125, 0, 52, 23, 18, 76, 43 };
          
         Bitmap bitmap = ShadowBitmapFactory.decodeByteArray(data, 0, data.length);
         assertThat( bitmap, notNullValue() );
-        assertThat( shadowOf(bitmap).getDescription(), equalTo( "Bitmap for byte array, checksum:80429753 offset: 0 length: 8" ) );
+        assertThat( shadowOf(bitmap).getDescription(), equalTo( "Bitmap for byte array, checksum: 3693078531" ) );
         assertThat( bitmap.getWidth(), equalTo(100) );
         assertThat( bitmap.getHeight(), equalTo(100) );
     
@@ -176,12 +174,12 @@ public class BitmapFactoryTest {
     
     @Test
     public void decodeByteArray_withOptionsShouldSetDataChecksum() throws Exception {
-        byte[] data = { 23, 100, 23, 52, 23, 18, 76, 43 };
+        byte[] data = { 23, -125, 0, 52, 23, 18, 76, 43 };
     
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 4;
-        Bitmap bitmap = ShadowBitmapFactory.decodeByteArray(data, 0, data.length, options);
-        assertThat( shadowOf(bitmap).getDescription(), equalTo( "Bitmap for byte array, checksum:80429753 offset: 0 length: 8 with options inSampleSize=4" ) );
+        Bitmap bitmap = ShadowBitmapFactory.decodeByteArray(data, 0, data.length - 1, options);
+        assertThat( shadowOf(bitmap).getDescription(), equalTo( "Bitmap for byte array, checksum: 3693078531 bytes 0..7 with options inSampleSize=4" ) );
         assertThat( bitmap.getWidth(), equalTo(25) );
         assertThat( bitmap.getHeight(), equalTo(25) );
     }

@@ -42,13 +42,14 @@ public class ViewTest {
     @Before
     public void setUp() throws Exception {
         transcript = new Transcript();
-        view = new View(new Activity());
+        view = new View(application);
     }
 
     @Test
-    public void testHasEmptyLayoutParams() throws Exception {
-        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
-        assertThat(layoutParams, notNullValue());
+    public void testHasNullLayoutParamsUntilAddedToParent() throws Exception {
+        assertThat(view.getLayoutParams(), nullValue());
+        new LinearLayout(application).addView(view);
+        assertThat(view.getLayoutParams(), notNullValue());
     }
 
     @Test
@@ -131,10 +132,11 @@ public class ViewTest {
     public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
         assertTrue(view.isShown());
 
-        ViewGroup grandParent = new LinearLayout(null);
         ViewGroup parent = new LinearLayout(null);
-        grandParent.addView(parent);
         parent.addView(view);
+
+        ViewGroup grandParent = new LinearLayout(null);
+        grandParent.addView(parent);
 
         grandParent.setVisibility(View.GONE);
 

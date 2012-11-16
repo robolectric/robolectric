@@ -103,7 +103,8 @@ public class ContextTest {
         File cacheTest = new File(context.getCacheDir(), "__test__");
 
         assertThat(cacheTest.getAbsolutePath(), startsWith(System.getProperty("java.io.tmpdir")));
-        assertThat(cacheTest.getAbsolutePath(), endsWith("android-cache" + File.separator + "__test__"));
+        assertThat(cacheTest.getAbsolutePath(), containsString("android-cache"));
+        assertThat(cacheTest.getAbsolutePath(), endsWith(File.separator + "__test__"));
 
         FileOutputStream fos = null;
         try {
@@ -122,7 +123,8 @@ public class ContextTest {
         File cacheTest = new File(context.getExternalCacheDir(), "__test__");
 
         assertThat(cacheTest.getAbsolutePath(), startsWith(System.getProperty("java.io.tmpdir")));
-        assertThat(cacheTest.getAbsolutePath(), endsWith("android-external-cache" + File.separator + "__test__"));
+        assertThat(cacheTest.getAbsolutePath(), containsString("android-external-cache"));
+        assertThat(cacheTest.getAbsolutePath(), endsWith(File.separator + "__test__"));
 
         FileOutputStream fos = null;
         try {
