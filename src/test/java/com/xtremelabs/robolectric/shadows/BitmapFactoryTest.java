@@ -10,6 +10,9 @@ import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.io.InputStream;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -34,6 +37,28 @@ public class BitmapFactoryTest {
     public void decodeFile_shouldSetDescription() throws Exception {
         Bitmap bitmap = BitmapFactory.decodeFile("/some/file.jpg");
         assertEquals("Bitmap for file:/some/file.jpg", shadowOf(bitmap).getDescription());
+        assertEquals(100, bitmap.getWidth());
+        assertEquals(100, bitmap.getHeight());
+    }
+
+    @Test
+    public void decodeFile_ifFileExists_shouldSetDescriptionToContentsOfFile() throws Exception {
+        File tempFile = File.createTempFile("temp-image", ".jpg");
+        writeTo(tempFile, "image bytes", " more image bytes");
+
+        Bitmap bitmap = BitmapFactory.decodeFile(tempFile.getPath());
+        assertEquals("Bitmap for image bytes more image bytes", shadowOf(bitmap).getDescription());
+        assertEquals(100, bitmap.getWidth());
+        assertEquals(100, bitmap.getHeight());
+    }
+
+    @Test
+    public void decodeFile_ifFileExists_shouldSetDescriptionToContentsOfFile_UsingOptions() throws Exception {
+        File tempFile = File.createTempFile("temp-image", ".jpg");
+        writeTo(tempFile, "image bytes", " more image bytes");
+
+        Bitmap bitmap = BitmapFactory.decodeFile(tempFile.getPath(), new BitmapFactory.Options());
+        assertEquals("Bitmap for image bytes more image bytes", shadowOf(bitmap).getDescription());
         assertEquals(100, bitmap.getWidth());
         assertEquals(100, bitmap.getHeight());
     }
@@ -105,6 +130,28 @@ public class BitmapFactoryTest {
     }
 
     @Test
+    public void decodeByteArray_shouldGetWidthAndHeightFromHints() throws Exception {
+        String data = "arbitrary bytes";
+        ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse(data), 123, 456);
+
+        byte[] bytes = data.getBytes();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        assertEquals("Bitmap for " + data, shadowOf(bitmap).getDescription());
+        assertEquals(123, bitmap.getWidth());
+        assertEquals(456, bitmap.getHeight());
+    }
+
+    @Test
+    public void decodeByteArray_shouldIncludeOffsets() throws Exception {
+        String data = "arbitrary bytes";
+        ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse(data), 123, 456);
+
+        byte[] bytes = data.getBytes();
+        Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 1, bytes.length - 2);
+        assertEquals("Bitmap for " + data + " bytes 1..13", shadowOf(bitmap).getDescription());
+    }
+
+    @Test
     public void decodeStream_shouldGetWidthAndHeightFromHints() throws Exception {
         ShadowBitmapFactory.provideWidthAndHeightHints(Uri.parse("content:/path"), 123, 456);
 
@@ -117,46 +164,56 @@ public class BitmapFactoryTest {
     
     @Test
     public void decodeByteArray_shouldSetDataChecksum() throws Exception {
-    	byte[] data = { 23, 100, 23, 52, 23, 18, 76, 43 };
-    	 
-    	Bitmap bitmap = ShadowBitmapFactory.decodeByteArray(data, 0, data.length);
-    	assertThat( bitmap, notNullValue() );
-    	assertThat( shadowOf(bitmap).getDescription(), equalTo( "Bitmap for byte array, checksum:80429753 offset: 0 length: 8" ) );
-    	assertThat( bitmap.getWidth(), equalTo(100) );
-    	assertThat( bitmap.getHeight(), equalTo(100) );
-
+        byte[] data = { 23, 100, 23, 52, 23, 18, 76, 43 };
+         
+        Bitmap bitmap = ShadowBitmapFactory.decodeByteArray(data, 0, data.length);
+        assertThat( bitmap, notNullValue() );
+        assertThat( shadowOf(bitmap).getDescription(), equalTo( "Bitmap for byte array, checksum:80429753 offset: 0 length: 8" ) );
+        assertThat( bitmap.getWidth(), equalTo(100) );
+        assertThat( bitmap.getHeight(), equalTo(100) );
+    
     }
     
     @Test
     public void decodeByteArray_withOptionsShouldSetDataChecksum() throws Exception {
-    	byte[] data = { 23, 100, 23, 52, 23, 18, 76, 43 };
-
-    	BitmapFactory.Options options = new BitmapFactory.Options();
-    	options.inSampleSize = 4;
-    	Bitmap bitmap = ShadowBitmapFactory.decodeByteArray(data, 0, data.length, options);
-    	assertThat( shadowOf(bitmap).getDescription(), equalTo( "Bitmap for byte array, checksum:80429753 offset: 0 length: 8 with options inSampleSize=4" ) );
-    	assertThat( bitmap.getWidth(), equalTo(25) );
-    	assertThat( bitmap.getHeight(), equalTo(25) );
+        byte[] data = { 23, 100, 23, 52, 23, 18, 76, 43 };
+    
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        options.inSampleSize = 4;
+        Bitmap bitmap = ShadowBitmapFactory.decodeByteArray(data, 0, data.length, options);
+        assertThat( shadowOf(bitmap).getDescription(), equalTo( "Bitmap for byte array, checksum:80429753 offset: 0 length: 8 with options inSampleSize=4" ) );
+        assertThat( bitmap.getWidth(), equalTo(25) );
+        assertThat( bitmap.getHeight(), equalTo(25) );
     }
     
     @Test
     public void decodeWithDifferentSampleSize() {
-    	String name = "test";
-    	BitmapFactory.Options options = new BitmapFactory.Options();
-    	
-    	options.inSampleSize = 0;    	
-    	Bitmap bm = ShadowBitmapFactory.create(name, options);
-    	assertThat( bm.getWidth(), equalTo(100) );
-    	assertThat( bm.getHeight(), equalTo(100) );
-   	
-    	options.inSampleSize = 2;    	
-    	bm = ShadowBitmapFactory.create(name, options);
-    	assertThat( bm.getWidth(), equalTo(50) );
-    	assertThat( bm.getHeight(), equalTo(50) );
-    	
-    	options.inSampleSize = 101;    	
-    	bm = ShadowBitmapFactory.create(name, options);
-    	assertThat( bm.getWidth(), equalTo(1) );
-    	assertThat( bm.getHeight(), equalTo(1) );
+        String name = "test";
+        BitmapFactory.Options options = new BitmapFactory.Options();
+        
+        options.inSampleSize = 0;    	
+        Bitmap bm = ShadowBitmapFactory.create(name, options);
+        assertThat( bm.getWidth(), equalTo(100) );
+        assertThat( bm.getHeight(), equalTo(100) );
+    
+        options.inSampleSize = 2;    	
+        bm = ShadowBitmapFactory.create(name, options);
+        assertThat( bm.getWidth(), equalTo(50) );
+        assertThat( bm.getHeight(), equalTo(50) );
+        
+        options.inSampleSize = 101;    	
+        bm = ShadowBitmapFactory.create(name, options);
+        assertThat( bm.getWidth(), equalTo(1) );
+        assertThat( bm.getHeight(), equalTo(1) );
+    }
+
+    //////////////////
+
+    private void writeTo(File tempFile, String... strings) throws IOException {
+        FileWriter fileWriter = new FileWriter(tempFile);
+        for (String s : strings) {
+            fileWriter.write(s);
+        }
+        fileWriter.close();
     }
 }

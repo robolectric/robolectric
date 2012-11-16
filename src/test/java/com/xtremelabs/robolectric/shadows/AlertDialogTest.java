@@ -47,6 +47,16 @@ public class AlertDialogTest {
     }
 
     @Test
+    public void nullTitleAndMessageAreOkay() throws Exception {
+        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null)) //
+                .setTitle(null) //
+                .setMessage(null);
+        ShadowAlertDialog shadowAlertDialog = shadowOf(builder.create());
+        assertThat(shadowAlertDialog.getTitle().toString(), equalTo(""));
+        assertThat(shadowAlertDialog.getMessage(), equalTo(""));
+    }
+    
+    @Test
     public void getLatestAlertDialog_shouldReturnARealAlertDialog() throws Exception {
         assertThat(ShadowAlertDialog.getLatestAlertDialog(), nullValue());
 

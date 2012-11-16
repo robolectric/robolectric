@@ -19,7 +19,6 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(ImageView.class)
 public class ShadowImageView extends ShadowView {
     private Drawable imageDrawable;
-    private int alpha;
     private int resourceId;
     private Bitmap imageBitmap;
     private ImageView.ScaleType scaleType;
@@ -92,14 +91,9 @@ public class ShadowImageView extends ShadowView {
      * @param resourceId Resource id
      * @return Boolean
      */
-    private boolean isDrawableXml(int resourceId) {
+    protected boolean isDrawableXml(int resourceId) {
         return shadowOf(Robolectric.application).getResourceLoader()
                 .isDrawableXml(resourceId);
-    }
-
-    @Implementation
-    public void setAlpha(int alpha) {
-        this.alpha = alpha;
     }
 
     @Implementation
@@ -144,7 +138,9 @@ public class ShadowImageView extends ShadowView {
             canvas.scale(shadowOf(matrix).getScaleX(), shadowOf(matrix)
                     .getScaleY());
         }
-        imageDrawable.draw(canvas);
+        if (imageDrawable != null) {
+            imageDrawable.draw(canvas);
+        }
     }
 
     private void applyImageAttribute() {

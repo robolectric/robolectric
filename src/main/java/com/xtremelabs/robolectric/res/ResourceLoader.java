@@ -27,6 +27,8 @@ import java.util.List;
 import java.util.Properties;
 import java.util.Set;
 
+import java.util.*;
+
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ResourceLoader {
@@ -49,36 +51,41 @@ public class ResourceLoader {
 		}
 	};
 
-	private File resourceDir;
-	private File assetsDir;
-	private int sdkVersion;
-	private Class rClass;
+    private List<File> resourcePath;
+    private File assetsDir;
+    private int sdkVersion;
+    private Class rClass;
 
-	private final ResourceExtractor resourceExtractor;
-	private ViewLoader viewLoader;
-	private MenuLoader menuLoader;
+    private final ResourceExtractor resourceExtractor;
+    private ViewLoader viewLoader;
+    private MenuLoader menuLoader;
 	private XmlFileLoader xmlFileLoader;
-	private PreferenceLoader preferenceLoader;
-	private final StringResourceLoader stringResourceLoader;
-	private final PluralResourceLoader pluralResourceLoader;
-	private final StringArrayResourceLoader stringArrayResourceLoader;
-	private final AttrResourceLoader attrResourceLoader;
-	private final ColorResourceLoader colorResourceLoader;
-	private final DrawableResourceLoader drawableResourceLoader;
-	private final RawResourceLoader rawResourceLoader;
-	private final DimenResourceLoader dimenResourceLoader;
-	private final IntegerResourceLoader integerResourceLoader;
-	private final BoolResourceLoader boolResourceLoader;
-	private boolean isInitialized = false;
-	private boolean strictI18n = false;
-	
-	private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
+    private PreferenceLoader preferenceLoader;
+    private final StringResourceLoader stringResourceLoader;
+    private final DimenResourceLoader dimenResourceLoader;
+    private final IntegerResourceLoader integerResourceLoader;
+    private final PluralResourceLoader pluralResourceLoader;
+    private final StringArrayResourceLoader stringArrayResourceLoader;
+    private final AttrResourceLoader attrResourceLoader;
+    private final ColorResourceLoader colorResourceLoader;
+    private final DrawableResourceLoader drawableResourceLoader;
+    private final BoolResourceLoader boolResourceLoader;
+    private final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
+    private boolean isInitialized = false;
+    private boolean strictI18n = false;
+    private boolean isSystem = false;
+    private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
 
-    public ResourceLoader( int sdkVersion, Class rClass, List<File> resourcePath, File assetsDir) throws Exception {
-        this(sdkVersion, rClass, resourcePath.get(0), assetsDir); // todo
+    @Deprecated
+    public ResourceLoader(int sdkVersion, Class rClass, File resourceDir, File assetsDir) throws Exception {
+        this(sdkVersion, rClass, safeFileList(resourceDir), assetsDir);
     }
 
-    public ResourceLoader( int sdkVersion, Class rClass, File resourceDir, File assetsDir) throws Exception {
+    private static List<File> safeFileList(File resourceDir) {
+        return resourceDir == null ? Collections.<File> emptyList() : Collections.singletonList(resourceDir);
+    }
+
+    public ResourceLoader(int sdkVersion, Class rClass, List<File> resourcePath, File assetsDir) throws Exception {
         this.sdkVersion = sdkVersion;
         this.assetsDir = assetsDir;
         this.rClass = rClass;
@@ -87,190 +94,226 @@ public class ResourceLoader {
 		resourceExtractor.addLocalRClass( rClass );
 		resourceExtractor.addSystemRClass( R.class );
 
-		stringResourceLoader = new StringResourceLoader( resourceExtractor );
-		pluralResourceLoader = new PluralResourceLoader( resourceExtractor, stringResourceLoader );
-		stringArrayResourceLoader = new StringArrayResourceLoader( resourceExtractor, stringResourceLoader );
-		colorResourceLoader = new ColorResourceLoader( resourceExtractor );
-		attrResourceLoader = new AttrResourceLoader( resourceExtractor );
-		drawableResourceLoader = new DrawableResourceLoader( resourceExtractor, resourceDir );
-		rawResourceLoader = new RawResourceLoader( resourceExtractor, resourceDir );
-		dimenResourceLoader = new DimenResourceLoader( resourceExtractor );
-		integerResourceLoader = new IntegerResourceLoader( resourceExtractor );
-		boolResourceLoader = new BoolResourceLoader( resourceExtractor );
+        stringResourceLoader = new StringResourceLoader(resourceExtractor);
+        dimenResourceLoader = new DimenResourceLoader( resourceExtractor );
+        integerResourceLoader = new IntegerResourceLoader(resourceExtractor);
+        pluralResourceLoader = new PluralResourceLoader(resourceExtractor, stringResourceLoader);
+        stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
+        colorResourceLoader = new ColorResourceLoader(resourceExtractor);
+        attrResourceLoader = new AttrResourceLoader(resourceExtractor);
+        drawableResourceLoader = new DrawableResourceLoader(resourceExtractor);
+        boolResourceLoader = new BoolResourceLoader( resourceExtractor );
 
-		this.resourceDir = resourceDir;
-	}
+        this.resourcePath = Collections.unmodifiableList(resourcePath);
+    }
+    
+    public ResourceLoader(ResourceLoader toCopy) throws Exception {
+        this.sdkVersion = toCopy.sdkVersion;
+        this.assetsDir = toCopy.assetsDir;
+        resourceExtractor = new ResourceExtractor();
+        resourceExtractor.addLocalRClass(toCopy.rClass);
+        resourceExtractor.addSystemRClass(R.class);
 
-	public void setStrictI18n( boolean strict ) {
-		this.strictI18n = strict;
-		if ( viewLoader != null ) {
-			viewLoader.setStrictI18n( strict );
-		}
-		if ( menuLoader != null ) {
-			menuLoader.setStrictI18n( strict );
-		}
-		if ( preferenceLoader != null ) {
-			preferenceLoader.setStrictI18n( strict );
-		}
-		if ( xmlFileLoader != null ) {
-			xmlFileLoader.setStrictI18n( strict );
-		}
-	}
+        stringResourceLoader = new StringResourceLoader(resourceExtractor);
+        dimenResourceLoader = new DimenResourceLoader(resourceExtractor);
+        integerResourceLoader = new IntegerResourceLoader(resourceExtractor);
+        pluralResourceLoader = new PluralResourceLoader(resourceExtractor, stringResourceLoader);
+        stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
+        colorResourceLoader = new ColorResourceLoader(resourceExtractor);
+        attrResourceLoader = new AttrResourceLoader(resourceExtractor);
+        drawableResourceLoader = new DrawableResourceLoader(resourceExtractor);
+        boolResourceLoader = new BoolResourceLoader(resourceExtractor);
 
-	public boolean getStrictI18n() {
-		return strictI18n;
-	}
+        this.resourcePath = Collections.unmodifiableList(toCopy.resourcePath);
+    }
 
-	private void init() {
-		if ( isInitialized ) {
-			return;
-		}
-		
-		try {
-			if ( resourceDir != null ) {
-				viewLoader = new ViewLoader( resourceExtractor, attrResourceLoader );
-				menuLoader = new MenuLoader( resourceExtractor, attrResourceLoader );
-				preferenceLoader = new PreferenceLoader( resourceExtractor );
-				xmlFileLoader = new XmlFileLoader( resourceExtractor );
+    /*
+     * For tests only...
+     */
+    protected ResourceLoader(StringResourceLoader stringResourceLoader) {
+        resourceExtractor = new ResourceExtractor();
+        resourcePath = Collections.emptyList();
+        this.stringResourceLoader = stringResourceLoader;
+        this.integerResourceLoader = null;
+        pluralResourceLoader = null;
+        viewLoader = null;
+        stringArrayResourceLoader = null;
+        attrResourceLoader = null;
+        colorResourceLoader = null;
+        drawableResourceLoader = null;
+        dimenResourceLoader = null;
+        boolResourceLoader = null;
+    }
 
-				viewLoader.setStrictI18n( strictI18n );
-				menuLoader.setStrictI18n( strictI18n );
-				preferenceLoader.setStrictI18n( strictI18n );
-				xmlFileLoader.setStrictI18n( strictI18n );
+    public void setStrictI18n(boolean strict) {
+    	this.strictI18n = strict;
+    	if (viewLoader != null ) 	   { viewLoader.setStrictI18n(strict); }
+    	if (menuLoader != null ) 	   { menuLoader.setStrictI18n(strict); }
+    	if (preferenceLoader != null ) { preferenceLoader.setStrictI18n(strict); }
+        if (xmlFileLoader != null)     { xmlFileLoader.setStrictI18n( strict ); }
+    }
+    
+    public boolean getStrictI18n() { return strictI18n; }
+    
+    private void init() {
+        if (isInitialized) {
+            return;
+        }
 
-				File systemResourceDir = getSystemResourceDir( getPathToAndroidResources() );
-				File localValueResourceDir = getValueResourceDir( resourceDir, null, true );
-				File systemValueResourceDir = getValueResourceDir( systemResourceDir, null, false );
-				File preferenceDir = getPreferenceResourceDir( resourceDir );
+        if (!resourcePath.isEmpty()) {
+            try {
+                viewLoader = new ViewLoader(resourceExtractor, attrResourceLoader);
+                menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
+                preferenceLoader = new PreferenceLoader(resourceExtractor);
+                
+                viewLoader.setStrictI18n(strictI18n);
+                menuLoader.setStrictI18n(strictI18n);
+                preferenceLoader.setStrictI18n(strictI18n);
 
-				loadStringResources( localValueResourceDir, systemValueResourceDir );
-				loadPluralsResources( localValueResourceDir, systemValueResourceDir );
-				loadValueResources( localValueResourceDir, systemValueResourceDir );
-				loadDimenResources( localValueResourceDir, systemValueResourceDir );
-				loadIntegerResource( localValueResourceDir, systemValueResourceDir );
-				loadViewResources( systemResourceDir, resourceDir );
-				loadMenuResources( resourceDir );
-				loadDrawableResources( resourceDir );
-				loadPreferenceResources( preferenceDir );
-				loadXmlFileResources( preferenceDir );
-                loadOtherResources(resourceDir); // todo ?
+                File systemResourceDir = getSystemResourceDir(getPathToAndroidResources());
+                File systemValueResourceDir = getValueResourceDir(systemResourceDir, null, false);
 
-                listNinePatchResources(ninePatchDrawableIds, resourceDir);
-			} else {
-				viewLoader = null;
-				menuLoader = null;
-				preferenceLoader = null;
-				xmlFileLoader = null;
-			}
-		} catch ( I18nException e ) {
-			throw e;
-		} catch ( Exception e ) {
-			throw new RuntimeException( e );
-		}
-		isInitialized = true;
-	}
+                loadStringResources(systemValueResourceDir, stringResourceLoader, true);
+                loadPluralsResources(systemValueResourceDir, true);
+                loadValueResources(systemValueResourceDir, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader, true);
+                loadDimenResources( systemValueResourceDir, true );
+                loadIntegerResources(systemValueResourceDir, integerResourceLoader, true);
+                loadViewResources(systemResourceDir, viewLoader, true);
 
-	/**
-	 * Reload values resources, include String, Plurals, Dimen, Prefs, Menu
-	 *
-	 * @param locale
-	 */
-	public void reloadValuesResouces( String qualifiers ) {
-		
-		File systemResourceDir = getSystemResourceDir( getPathToAndroidResources() );
-		File localValueResourceDir = getValueResourceDir( resourceDir, qualifiers, true );
-		File systemValueResourceDir = getValueResourceDir( systemResourceDir, null, false );
-		File preferenceDir = getPreferenceResourceDir( resourceDir );
-		
-		try {
-			loadStringResources( localValueResourceDir, systemValueResourceDir );
-			loadPluralsResources( localValueResourceDir, systemValueResourceDir );
-			loadValueResources( localValueResourceDir, systemValueResourceDir );
-			loadDimenResources( localValueResourceDir, systemValueResourceDir );
-			loadIntegerResource( localValueResourceDir, systemValueResourceDir );
-			loadMenuResources( resourceDir );
-			loadPreferenceResources( preferenceDir );
-		} catch ( Exception e ) {
-			throw new RuntimeException( e );
-		} 
-	}
-	
-	private File getSystemResourceDir( String pathToAndroidResources ) {
-		return pathToAndroidResources != null ? new File( pathToAndroidResources ) : null;
-	}
+                if (!isSystem) {
+                    loadLocalResources();
+                }
+            } catch(I18nException e) {
+                throw e;
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+        isInitialized = true;
+    }
 
-	private void loadStringResources( File localResourceDir, File systemValueResourceDir ) throws Exception {
-		DocumentLoader stringResourceDocumentLoader = new DocumentLoader( this.stringResourceLoader );
-		loadValueResourcesFromDirs( stringResourceDocumentLoader, localResourceDir, systemValueResourceDir );
-	}
+    private void loadLocalResources() throws Exception {
+        for (File resourceDir : resourcePath) {
+            File localValueResourceDir = getValueResourceDir(resourceDir, null, true);
+            RawResourceLoader rawResourceLoader = new RawResourceLoader(resourceExtractor, resourceDir);
+            File preferenceDir = getPreferenceResourceDir(resourceDir);
 
-	private void loadPluralsResources( File localResourceDir, File systemValueResourceDir ) throws Exception {
-		DocumentLoader stringResourceDocumentLoader = new DocumentLoader( this.pluralResourceLoader );
-		loadValueResourcesFromDirs( stringResourceDocumentLoader, localResourceDir, systemValueResourceDir );
-	}
+            loadStringResources(localValueResourceDir, stringResourceLoader, false);
+            loadPluralsResources(localValueResourceDir, false);
+            loadValueResources(localValueResourceDir, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader, false);
+            loadDimenResources(localValueResourceDir, false);
+            loadIntegerResources(localValueResourceDir, integerResourceLoader, false);
+            loadViewResources(resourceDir, viewLoader, false);
+            loadMenuResources(resourceDir, menuLoader);
+            loadDrawableResources(resourceDir);
+            loadPreferenceResources(preferenceDir);
+            loadOtherResources(resourceDir);
 
-	private void loadValueResources( File localResourceDir, File systemValueResourceDir ) throws Exception {
-		DocumentLoader valueResourceLoader = new DocumentLoader( stringArrayResourceLoader, colorResourceLoader,
-				attrResourceLoader );
-		loadValueResourcesFromDirs( valueResourceLoader, localResourceDir, systemValueResourceDir );
-	}
+            listNinePatchResources(ninePatchDrawableIds, resourceDir);
 
-	private void loadDimenResources( File localResourceDir, File systemValueResourceDir ) throws Exception {
-		DocumentLoader dimenResourceDocumentLoader = new DocumentLoader( this.dimenResourceLoader );
-		loadValueResourcesFromDirs( dimenResourceDocumentLoader, localResourceDir, systemValueResourceDir );
-	}
+            rawResourceLoaders.add(rawResourceLoader);
+        }
+    }
 
-	private void loadIntegerResource( File localResourceDir, File systemValueResourceDir ) throws Exception {
-		DocumentLoader integerResourceDocumentLoader = new DocumentLoader( this.integerResourceLoader );
-		loadValueResourcesFromDirs( integerResourceDocumentLoader, localResourceDir, systemValueResourceDir );
-	}
+    /**
+     * Reload values resources, include String, Plurals, Dimen, Prefs, Menu
+     *
+     * @param qualifiers
+     */
+    public void reloadValuesResouces( String qualifiers ) {
 
-	private void loadViewResources( File systemResourceDir, File xmlResourceDir ) throws Exception {
-		DocumentLoader viewDocumentLoader = new DocumentLoader( viewLoader );
-		loadLayoutResourceXmlSubDirs( viewDocumentLoader, xmlResourceDir, false );
-		loadLayoutResourceXmlSubDirs( viewDocumentLoader, systemResourceDir, true );
-	}
+        File systemResourceDir = getSystemResourceDir( getPathToAndroidResources() );
+        File systemValueResourceDir = getValueResourceDir( systemResourceDir, null, false );
 
-	private void loadMenuResources( File xmlResourceDir ) throws Exception {
-		DocumentLoader menuDocumentLoader = new DocumentLoader( menuLoader );
-		loadMenuResourceXmlDirs( menuDocumentLoader, xmlResourceDir );
-	}
+        try {
+            loadStringResources(systemValueResourceDir, stringResourceLoader, true);
+            loadPluralsResources(systemValueResourceDir, true);
+            loadValueResources(systemValueResourceDir, stringArrayResourceLoader, colorResourceLoader, attrResourceLoader, true);
+            loadDimenResources( systemValueResourceDir, true );
+            loadIntegerResources(systemValueResourceDir, integerResourceLoader, true);
+            loadViewResources(systemResourceDir, viewLoader, true);
 
-	private void loadDrawableResources( File xmlResourceDir ) throws Exception {
-		DocumentLoader drawableDocumentLoader = new DocumentLoader( drawableResourceLoader );
-		loadDrawableResourceXmlDirs( drawableDocumentLoader, xmlResourceDir );
-	}
+            if (!isSystem) {
+                loadLocalResources();
+            }
+        } catch ( Exception e ) {
+            throw new RuntimeException( e );
+        }
+    }
 
-	private void loadPreferenceResources( File xmlResourceDir ) throws Exception {
+
+    private File getSystemResourceDir(String pathToAndroidResources) {
+        return pathToAndroidResources != null ? new File(pathToAndroidResources) : null;
+    }
+
+    private void loadStringResources(File resourceDir, StringResourceLoader stringResourceLoader, boolean system) throws Exception {
+        DocumentLoader stringResourceDocumentLoader = new DocumentLoader(stringResourceLoader);
+        loadValueResourcesFromDirs(stringResourceDocumentLoader, resourceDir, system);
+    }
+
+    private void loadPluralsResources(File resourceDir, boolean system) throws Exception {
+        DocumentLoader stringResourceDocumentLoader = new DocumentLoader(this.pluralResourceLoader);
+        loadValueResourcesFromDirs(stringResourceDocumentLoader, resourceDir, system);
+    }
+
+    private void loadValueResources(File resourceDir, StringArrayResourceLoader stringArrayResourceLoader, ColorResourceLoader colorResourceLoader, AttrResourceLoader attrResourceLoader, boolean system) throws Exception {
+        DocumentLoader valueResourceLoader = new DocumentLoader(stringArrayResourceLoader, colorResourceLoader, attrResourceLoader);
+        loadValueResourcesFromDirs(valueResourceLoader, resourceDir, system);
+    }
+
+    private void loadDimenResources( File resourceDir, boolean system) throws Exception {
+        DocumentLoader dimenResourceDocumentLoader = new DocumentLoader( this.dimenResourceLoader );
+        loadValueResourcesFromDirs(dimenResourceDocumentLoader, resourceDir, system);
+    }
+
+    private void loadIntegerResources(File resourceDir, IntegerResourceLoader integerResourceLoader, boolean system) throws Exception {
+        DocumentLoader integerResourceDocumentLoader = new DocumentLoader(integerResourceLoader);
+        loadValueResourcesFromDirs(integerResourceDocumentLoader, resourceDir, system);
+    }
+
+    private void loadViewResources(File resourceDir, ViewLoader viewLoader, boolean system) throws Exception {
+        DocumentLoader viewDocumentLoader = new DocumentLoader(viewLoader);
+        loadLayoutResourceXmlSubDirs(viewDocumentLoader, resourceDir, system);
+    }
+
+    private void loadMenuResources(File xmlResourceDir, MenuLoader menuLoader /* todo , boolean system */) throws Exception {
+        DocumentLoader menuDocumentLoader = new DocumentLoader(menuLoader);
+        loadMenuResourceXmlDirs(menuDocumentLoader, xmlResourceDir);
+    }
+
+    private void loadDrawableResources( File xmlResourceDir ) throws Exception {
+        DocumentLoader drawableDocumentLoader = new DocumentLoader( drawableResourceLoader );
+        loadDrawableResourceXmlDirs( drawableDocumentLoader, xmlResourceDir );
+    }
+
+    private void loadPreferenceResources( File xmlResourceDir ) throws Exception {
 		if ( xmlResourceDir.exists() ) {
 			DocumentLoader preferenceDocumentLoader = new DocumentLoader( preferenceLoader );
 			preferenceDocumentLoader.loadResourceXmlDir( xmlResourceDir );
 		}
 	}
-	
+
 	/**
-	 * All the Xml files should be loaded. 
+	 * All the Xml files should be loaded.
 	 */
 	private void loadXmlFileResources( File xmlResourceDir ) throws Exception {
 		if ( xmlResourceDir.exists() ) {
-			DocumentLoader xmlFileDocumentLoader = 
+			DocumentLoader xmlFileDocumentLoader =
 					new DocumentLoader( xmlFileLoader );
 			xmlFileDocumentLoader.loadResourceXmlDir( xmlResourceDir );
 		}
 	}
 
-    // todo ?
     protected void loadOtherResources(File xmlResourceDir) {
     }
 
-    private void loadLayoutResourceXmlSubDirs( DocumentLoader layoutDocumentLoader, File xmlResourceDir, boolean isSystem )
-			throws Exception {
-		if ( xmlResourceDir != null ) {
-			layoutDocumentLoader.loadResourceXmlDirs( isSystem, xmlResourceDir.listFiles( LAYOUT_DIR_FILE_FILTER ) );
-		}
-	}
+    private void loadLayoutResourceXmlSubDirs(DocumentLoader layoutDocumentLoader, File xmlResourceDir, boolean isSystem) throws Exception {
+        if (xmlResourceDir != null) {
+            layoutDocumentLoader.loadResourceXmlDirs(isSystem, xmlResourceDir.listFiles(LAYOUT_DIR_FILE_FILTER));
+        }
+    }
 
-	private void loadMenuResourceXmlDirs( DocumentLoader menuDocumentLoader, File xmlResourceDir ) throws Exception {
+    private void loadMenuResourceXmlDirs( DocumentLoader menuDocumentLoader, File xmlResourceDir ) throws Exception {
 		if ( xmlResourceDir != null ) {
 			menuDocumentLoader.loadResourceXmlDirs( xmlResourceDir.listFiles( MENU_DIR_FILE_FILTER ) );
 		}
@@ -282,11 +325,13 @@ public class ResourceLoader {
 		}
 	}
 
-	private void loadValueResourcesFromDirs( DocumentLoader documentLoader, File localValueResourceDir,
-			File systemValueResourceDir ) throws Exception {
-		loadValueResourcesFromDir( documentLoader, localValueResourceDir );
-		loadSystemResourceXmlDir( documentLoader, systemValueResourceDir );
-	}
+    private void loadValueResourcesFromDirs(DocumentLoader documentLoader, File resourceDir, boolean system) throws Exception {
+        if (system) {
+            loadSystemResourceXmlDir(documentLoader, resourceDir);
+        } else {
+            loadValueResourcesFromDir(documentLoader, resourceDir);
+        }
+    }
 
 	private void loadValueResourcesFromDir( DocumentLoader documentloader, File xmlResourceDir ) throws Exception {
 		if ( xmlResourceDir != null ) {
@@ -332,32 +377,32 @@ public class ResourceLoader {
 		return null;
 	}
 
-	private String getAndroidResourcePathFromLocalProperties() {
-		// Hand tested
-		// This is the path most often taken by IntelliJ
-		File rootDir = resourceDir.getParentFile();
-		String localPropertiesFileName = "local.properties";
-		File localPropertiesFile = new File( rootDir, localPropertiesFileName );
-		if ( !localPropertiesFile.exists() ) {
-			localPropertiesFile = new File( localPropertiesFileName );
-		}
-		if ( localPropertiesFile.exists() ) {
-			Properties localProperties = new Properties();
-			try {
-				localProperties.load( new FileInputStream( localPropertiesFile ) );
-				PropertiesHelper.doSubstitutions( localProperties );
-				String sdkPath = localProperties.getProperty( "sdk.dir" );
-				if ( sdkPath != null ) {
-					return getResourcePathFromSdkPath( sdkPath );
-				}
-			} catch ( IOException e ) {
-				// fine, we'll try something else
-			}
-		}
-		return null;
-	}
+    private String getAndroidResourcePathFromLocalProperties() {
+        // Hand tested
+        // This is the path most often taken by IntelliJ
+        File rootDir = resourcePath.get(0).getParentFile();
+        String localPropertiesFileName = "local.properties";
+        File localPropertiesFile = new File(rootDir, localPropertiesFileName);
+        if (!localPropertiesFile.exists()) {
+            localPropertiesFile = new File(localPropertiesFileName);
+        }
+        if (localPropertiesFile.exists()) {
+            Properties localProperties = new Properties();
+            try {
+                localProperties.load(new FileInputStream(localPropertiesFile));
+                PropertiesHelper.doSubstitutions(localProperties);
+                String sdkPath = localProperties.getProperty("sdk.dir");
+                if (sdkPath != null) {
+                    return getResourcePathFromSdkPath(sdkPath);
+                }
+            } catch (IOException e) {
+                // fine, we'll try something else
+            }
+        }
+        return null;
+    }
 
-	private String getAndroidResourcePathFromSystemEnvironment() {
+    private String getAndroidResourcePathFromSystemEnvironment() {
 		// Hand tested
 		String resourcePath = System.getenv().get( "ANDROID_HOME" );
 		if ( resourcePath != null ) {
@@ -375,23 +420,23 @@ public class ResourceLoader {
 		return null;
 	}
 
-	private String getAndroidResourcePathByExecingWhichAndroid() {
-		// Hand tested
-		// Should always work from the command line. Often fails in IDEs because
-		// they don't pass the full PATH in the environment
-		try {
-			Process process = Runtime.getRuntime().exec( new String[] { "which", "android" } );
-			String sdkPath = new BufferedReader( new InputStreamReader( process.getInputStream() ) ).readLine();
-			if ( sdkPath != null && sdkPath.endsWith( "tools/android" ) ) {
-				return getResourcePathFromSdkPath( sdkPath.substring( 0, sdkPath.indexOf( "tools/android" ) ) );
-			}
-		} catch ( IOException e ) {
-			// fine we'll try something else
-		}
-		return null;
-	}
+    private String getAndroidResourcePathByExecingWhichAndroid() {
+        // Hand tested
+        // Should always work from the command line. Often fails in IDEs because
+        // they don't pass the full PATH in the environment
+        try {
+            Process process = Runtime.getRuntime().exec( new String[] { "which", "android" } );
+            String sdkPath = new BufferedReader( new InputStreamReader( process.getInputStream() ) ).readLine();
+            if ( sdkPath != null && sdkPath.endsWith( "tools/android" ) ) {
+                return getResourcePathFromSdkPath( sdkPath.substring( 0, sdkPath.indexOf( "tools/android" ) ) );
+            }
+        } catch ( IOException e ) {
+            // fine we'll try something else
+        }
+        return null;
+    }
 
-	private String getResourcePathFromSdkPath( String sdkPath ) {
+    private String getResourcePathFromSdkPath( String sdkPath ) {
 		File androidResourcePath = new File( sdkPath, getAndroidResourceSubPath() );
 		return androidResourcePath.exists() ? androidResourcePath.toString() : null;
 	}
@@ -400,35 +445,17 @@ public class ResourceLoader {
 		return "platforms/android-" + sdkVersion + "/data/res";
 	}
 
-	static boolean isLayoutDirectory( String path ) {
-		return path.contains( File.separator + "layout" );
-	}
+    static boolean isLayoutDirectory( String path ) {
+        return path.contains( File.separator + "layout" );
+    }
 
-	static boolean isDrawableDirectory( String path ) {
-		return path.contains( File.separator + "drawable" );
-	}
+    static boolean isDrawableDirectory( String path ) {
+        return path.contains( File.separator + "drawable" );
+    }
 
-	static boolean isMenuDirectory( String path ) {
-		return path.contains( File.separator + "menu" );
-	}
-
-	/*
-	 * For tests only...
-	 */
-	protected ResourceLoader( StringResourceLoader stringResourceLoader ) {
-		resourceExtractor = new ResourceExtractor();
-		this.stringResourceLoader = stringResourceLoader;
-		pluralResourceLoader = null;
-		viewLoader = null;
-		stringArrayResourceLoader = null;
-		attrResourceLoader = null;
-		colorResourceLoader = null;
-		drawableResourceLoader = null;
-		rawResourceLoader = null;
-		dimenResourceLoader = null;
-		integerResourceLoader = null;
-		boolResourceLoader = null;
-	}
+    static boolean isMenuDirectory( String path ) {
+        return path.contains( File.separator + "menu" );
+    }
 
 	public static ResourceLoader getFrom( Context context ) {
 		ResourceLoader resourceLoader = shadowOf( context.getApplicationContext() ).getResourceLoader();
@@ -441,42 +468,58 @@ public class ResourceLoader {
 		return resourceExtractor.getResourceName( viewId );
 	}
 
-	public View inflateView( Context context, int resource, ViewGroup viewGroup ) {
-		init();
-		return viewLoader.inflateView( context, resource, viewGroup );
-	}
+    public View inflateView(Context context, int resource, ViewGroup viewGroup) {
+        init();
 
-	public int getColorValue( int id ) {
-		init();
-		return colorResourceLoader.getValue( id );
-	}
+        View viewNode = viewLoader.inflateView(context, resource, viewGroup);
+        if (viewNode != null) return viewNode;
 
-	public String getStringValue( int id ) {
-		init();
-		return stringResourceLoader.getValue( id );
-	}
+        throw new RuntimeException("Could not find layout " + resourceExtractor.getResourceName(resource));
+    }
 
-	public String getPluralStringValue( int id, int quantity ) {
-		init();
-		return pluralResourceLoader.getValue( id, quantity );
-	}
+    public int getColorValue(int id) {
+        init();
 
-	public float getDimenValue( int id ) {
-		init();
-		return dimenResourceLoader.getValue( id );
-	}
+        int value = colorResourceLoader.getValue(id);
+        if (value != -1) return value;
 
-	public int getIntegerValue( int id ) {
-		init();
-		return integerResourceLoader.getValue( id );
-	}
-	
-	public boolean getBooleanValue( int id ) {
-		init();
-		return boolResourceLoader.getValue( id );
-	}
-	
-	public XmlResourceParser getXml( int id ) {
+        return -1;
+    }
+
+    public String getStringValue(int id) {
+        init();
+
+        String value = stringResourceLoader.getValue(id);
+        if (value != null) return value;
+
+        return null;
+    }
+
+    public String getPluralStringValue(int id, int quantity) {
+        init();
+        return pluralResourceLoader.getValue(id, quantity);
+    }
+
+    public float getDimenValue( int id ) {
+        init();
+        return dimenResourceLoader.getValue( id );
+    }
+
+    public int getIntegerValue(int id) {
+        init();
+
+        Integer value = integerResourceLoader.getValue(id);
+        if (value != null) return value;
+
+        return 0;
+    }
+
+    public boolean getBooleanValue( int id ) {
+        init();
+        return boolResourceLoader.getValue( id );
+    }
+
+    public XmlResourceParser getXml( int id ) {
 		init();
 		return xmlFileLoader.getXml( id );
 	}
@@ -568,20 +611,33 @@ public class ResourceLoader {
 		}
 	}
 
-	public InputStream getRawValue( int id ) {
-		init();
-		return rawResourceLoader.getValue( id );
-	}
+    public InputStream getRawValue(int id) {
+        init();
 
-	public String[] getStringArrayValue( int id ) {
-		init();
-		return stringArrayResourceLoader.getArrayValue( id );
-	}
+        for (RawResourceLoader rawResourceLoader : rawResourceLoaders) {
+            InputStream stream = rawResourceLoader.getValue(id);
+            if (stream != null) return stream;
+        }
 
-	public void inflateMenu( Context context, int resource, Menu root ) {
-		init();
-		menuLoader.inflateMenu( context, resource, root );
-	}
+        return null;
+    }
+
+    public String[] getStringArrayValue(int id) {
+        init();
+
+        String[] arrayValue = stringArrayResourceLoader.getArrayValue(id);
+        if (arrayValue != null) return arrayValue;
+
+        return null;
+    }
+
+    public void inflateMenu(Context context, int resource, Menu root) {
+        init();
+
+        if (menuLoader.inflateMenu(context, resource, root)) return;
+
+        throw new RuntimeException("Could not find menu " + resourceExtractor.getResourceName(resource));
+    }
 
 	public PreferenceScreen inflatePreferences( Context context, int resourceId ) {
 		init();
@@ -597,20 +653,24 @@ public class ResourceLoader {
 		return rClass;
 	}
 
-	public void setLocalRClass( Class clazz ) {
-		rClass = clazz;
-	}
+    public ViewLoader.ViewNode getLayoutViewNode(String layoutName) {
+        return viewLoader.viewNodesByLayoutName.get(layoutName);
+    }
 
-	public ResourceExtractor getResourceExtractor() {
-		return resourceExtractor;
-	}
+    public void setSystem(boolean isSystem) {
+        this.isSystem = isSystem;
+    }
 
-	public ViewLoader.ViewNode getLayoutViewNode( String layoutName ) {
-		return viewLoader.viewNodesByLayoutName.get( layoutName );
-	}
+    public void setLayoutQualifierSearchPath( String... locations ) {
+        init();
+        viewLoader.setLayoutQualifierSearchPath( locations );
+    }
 
-	public void setLayoutQualifierSearchPath( String... locations ) {
-		init();
-		viewLoader.setLayoutQualifierSearchPath( locations );
-	}
+    public void setLocalRClass( Class clazz ) {
+        rClass = clazz;
+    }
+
+    public ResourceExtractor getResourceExtractor() {
+        return resourceExtractor;
+    }
 }

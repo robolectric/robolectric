@@ -14,7 +14,6 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.tester.android.view.TestWindow;
-
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -149,12 +148,11 @@ public class ShadowDialog {
 
     @Implementation
     public View findViewById(int viewId) {
-        if (inflatedView != null) {
-            return inflatedView.findViewById(viewId);
-        }
-        if (layoutId > 0 && context != null) {
-            inflatedView = ShadowLayoutInflater.from(context).inflate(layoutId, null);
-            return inflatedView.findViewById(viewId);
+        if (context != null) {
+            if (inflatedView == null && layoutId > 0) {
+                inflatedView = ShadowLayoutInflater.from(context).inflate(layoutId, null);
+            }
+            if (inflatedView != null) return inflatedView.findViewById(viewId);
         }
         return null;
     }
@@ -211,7 +209,6 @@ public class ShadowDialog {
         return window;
     }
 
-
     @Implementation
     public LayoutInflater getLayoutInflater() {
         return LayoutInflater.from(realDialog.getContext());
@@ -238,6 +235,12 @@ public class ShadowDialog {
             inflatedView = ShadowLayoutInflater.from(context).inflate(layoutId, null);
         }
         String text = getContext().getResources().getString(textId);
+        if (!clickOnText(inflatedView, text)) {
+            throw new IllegalArgumentException("Text not found: " + text);
+        }
+    }
+
+    public void clickOnText(String text) {
         if (!clickOnText(inflatedView, text)) {
             throw new IllegalArgumentException("Text not found: " + text);
         }

@@ -26,6 +26,7 @@ public class FakeHttpLayer {
     HttpResponse defaultHttpResponse;
     private HttpResponse defaultResponse;
     private boolean interceptHttpRequests = true;
+    private boolean logHttpRequests = false;
 
     public HttpRequestInfo getLastSentHttpRequestInfo() {
         List<HttpRequestInfo> requestInfos = Robolectric.getFakeHttpLayer().getSentHttpRequestInfos();
@@ -101,12 +102,20 @@ public class FakeHttpLayer {
             }
         }
 
+        System.err.println("Unexpected HTTP call " + httpRequest.getRequestLine());
+
         return defaultHttpResponse;
     }
 
     public HttpResponse emulateRequest(HttpHost httpHost, HttpRequest httpRequest, HttpContext httpContext, RequestDirector requestDirector) throws HttpException, IOException {
+        if (logHttpRequests) {
+            System.out.println("  <-- " + httpRequest.getRequestLine());
+        }
         HttpResponse httpResponse = findResponse(httpRequest);
-
+        if (logHttpRequests) {
+            System.out.println("  --> " + (httpResponse == null ? null : httpResponse.getStatusLine().getStatusCode()));
+        }
+        
         if (httpResponse == null) {
             throw new RuntimeException("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse(). Request was: " +
                     httpRequest.getRequestLine().getMethod() + " " + httpRequest.getRequestLine().getUri());
@@ -124,7 +133,6 @@ public class FakeHttpLayer {
         addHttpResponse(httpResponse);
         return httpResponse;
     }
-
     public boolean hasPendingResponses() {
         return !pendingHttpResponses.isEmpty();
     }
@@ -169,6 +177,18 @@ public class FakeHttpLayer {
 
     public HttpRequestInfo getSentHttpRequestInfo(int index) {
         return httpRequestInfos.get(index);
+    }
+
+    public HttpRequestInfo getNextSentHttpRequestInfo() {
+        return httpRequestInfos.size() > 0 ? httpRequestInfos.remove(0) : null;
+    }
+
+    public void logHttpRequests() {
+        logHttpRequests = true;
+    }
+
+    public void silence() {
+        logHttpRequests = false;
     }
 
     public List<HttpRequestInfo> getSentHttpRequestInfos() {

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.res.Resources;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
@@ -29,9 +30,7 @@ import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -288,6 +287,10 @@ public class ApplicationTest {
         }
 
         @Override
+        public void dumpAsync(FileDescriptor fileDescriptor, String[] strings) throws RemoteException {
+        }
+
+        @Override
         public boolean transact(int code, Parcel data, Parcel reply, int flags) throws RemoteException {
             return false;
         }
@@ -300,9 +303,19 @@ public class ApplicationTest {
         public boolean unlinkToDeath(DeathRecipient recipient, int flags) {
             return false;
         }
+    }
 
-        @Override
-        public void dumpAsync(FileDescriptor fd, String[] args) throws RemoteException {
-        }
+    @Test
+    public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
+        Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
+        assertSame(application.getResources(), application.getResources());
+    }
+
+    @Test
+    public void shouldBeAbleToResetResources() throws Exception {
+        Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
+        Resources res = application.getResources();
+        shadowOf(application).resetResources();
+        assertFalse(res == application.getResources());
     }
 }

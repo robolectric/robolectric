@@ -1,15 +1,14 @@
 package com.xtremelabs.robolectric.shadows;
 
-import java.util.Map;
-
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderOperation.Builder;
 import android.net.Uri;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+
+import java.util.Map;
 
 @Implements(ContentProviderOperation.Builder.class)
 public class ShadowContentProviderOperationBuilder {
@@ -17,7 +16,7 @@ public class ShadowContentProviderOperationBuilder {
     private ContentProviderOperation contentProviderOperation;
     private ShadowContentProviderOperation shadowContentProviderOperation;
     
-    public void __constructor__() {
+    public ShadowContentProviderOperationBuilder() {
         contentProviderOperation = Robolectric.newInstanceOf(ContentProviderOperation.class);
         shadowContentProviderOperation = Robolectric.shadowOf(contentProviderOperation);
     }

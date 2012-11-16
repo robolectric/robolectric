@@ -2,8 +2,15 @@ package com.xtremelabs.robolectric.util;
 
 import com.xtremelabs.robolectric.RobolectricConfig;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.io.StringWriter;
+import java.io.Writer;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
@@ -92,5 +99,20 @@ public abstract class TestUtil {
        }
 
         return file(new File(sdkDir, "platforms/android-" + DEFAULT_SDK_VERSION + "/data/res/"), paths);
+    }
+
+    public static String readString(InputStream is) throws IOException {
+        Writer writer = new StringWriter();
+        char[] buffer = new char[1024];
+        try {
+            Reader reader = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            int n;
+            while ((n = reader.read(buffer)) != -1) {
+                writer.write(buffer, 0, n);
+            }
+        } finally {
+            is.close();
+        }
+        return writer.toString();
     }
 }

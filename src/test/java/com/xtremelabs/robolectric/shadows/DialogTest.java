@@ -1,8 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Activity;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -17,6 +19,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -37,6 +40,18 @@ public class DialogTest {
         dialog.dismiss();
 
         transcript.assertEventsSoFar("onDismiss called!");
+    }
+
+    @Test
+    public void setContentViewWithViewAllowsFindById() throws Exception {
+        final int viewId = 1234;
+        Activity context = new Activity();
+        final Dialog dialog = new Dialog(context);
+        final View view = new View(context);
+        view.setId(viewId);
+        dialog.setContentView(view);
+
+        assertSame(view, dialog.findViewById(viewId));
     }
 
     @Test

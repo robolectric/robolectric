@@ -20,6 +20,7 @@ import android.hardware.Camera;
 import android.hardware.SensorManager;
 import android.location.Address;
 import android.location.Geocoder;
+import android.location.Location;
 import android.location.LocationManager;
 import android.media.AudioManager;
 import android.media.MediaPlayer;
@@ -165,6 +166,7 @@ public class Robolectric {
         return Arrays.asList(
                 ShadowAbsListView.class,
                 ShadowAbsoluteLayout.class,
+                ShadowAbsoluteLayout.ShadowLayoutParams.class,
                 ShadowAbsSeekBar.class,
                 ShadowAbsSpinner.class,
                 ShadowAbstractCursor.class,
@@ -243,6 +245,9 @@ public class Robolectric {
                 ShadowDialog.class,
                 ShadowDialogFragment.class,
                 ShadowDialogPreference.class,
+                ShadowDownloadManager.class,
+                ShadowDownloadManager.ShadowRequest.class,
+                ShadowDownloadManager.ShadowQuery.class,
                 ShadowEditText.class,
                 ShadowEditTextPreference.class,
                 ShadowEnvironment.class,
@@ -261,6 +266,7 @@ public class Robolectric {
                 ShadowHandler.class,
                 ShadowHandlerThread.class,
                 ShadowHtml.class,
+                ShadowImageButton.class,
                 ShadowImageView.class,
                 ShadowInputMethodManager.class,
                 ShadowInputDevice.class,
@@ -284,6 +290,7 @@ public class Robolectric {
                 ShadowListActivity.class,
                 ShadowListPreference.class,
                 ShadowListView.class,
+                ShadowLocalActivityManager.class,
                 ShadowLocalBroadcastManager.class,
                 ShadowLocation.class,
                 ShadowLocationManager.class,
@@ -295,6 +302,7 @@ public class Robolectric {
                 ShadowMarginLayoutParams.class,
                 ShadowMatrix.class,
                 ShadowMatrixCursor.class,
+                ShadowMeasureSpec.class,
                 ShadowMediaPlayer.class,
                 ShadowMediaRecorder.class,
                 ShadowMediaStore.ShadowImages.ShadowMedia.class,
@@ -338,6 +346,7 @@ public class Robolectric {
                 ShadowRadioGroup.class,
                 ShadowRatingBar.class,
                 ShadowRect.class,
+                ShadowRectF.class,
                 ShadowRelativeLayout.class,
                 ShadowRelativeLayoutParams.class,
                 ShadowResolveInfo.class,
@@ -362,6 +371,7 @@ public class Robolectric {
                 ShadowSmsManager.class,
                 ShadowSpannableString.class,
                 ShadowSpannableStringBuilder.class,
+                ShadowSpannedString.class,
                 ShadowSparseArray.class,
                 ShadowSparseBooleanArray.class,
                 ShadowSparseIntArray.class,
@@ -685,6 +695,10 @@ public class Robolectric {
 
     public static ShadowExpandableListView shadowOf(ExpandableListView instance) {
         return (ShadowExpandableListView) shadowOf_(instance);
+    }
+
+    public static ShadowLocation shadowOf(Location instance) {
+        return (ShadowLocation) shadowOf_(instance);
     }
 
     public static ShadowFilter shadowOf(Filter instance) {
@@ -1040,6 +1054,10 @@ public class Robolectric {
         return (ShadowTextView) shadowOf_(instance);
     }
 
+    public static ShadowResources.ShadowTheme shadowOf(Resources.Theme instance) {
+        return (ShadowResources.ShadowTheme) shadowOf_(instance);
+    }
+
     public static ShadowToast shadowOf(Toast instance) {
         return (ShadowToast) shadowOf_(instance);
     }
@@ -1198,7 +1216,7 @@ public class Robolectric {
      * @return the requested request.
      */
     public static HttpRequest getSentHttpRequest(int index) {
-        return ShadowDefaultRequestDirector.getSentHttpRequest(index);
+        return getFakeHttpLayer().getSentHttpRequestInfo(index).getHttpRequest();
     }
 
     public static HttpRequest getLatestSentHttpRequest() {
@@ -1225,7 +1243,26 @@ public class Robolectric {
      * @return the requested request metadata.
      */
     public static HttpRequestInfo getSentHttpRequestInfo(int index) {
-        return ShadowDefaultRequestDirector.getSentHttpRequestInfo(index);
+        return getFakeHttpLayer().getSentHttpRequestInfo(index);
+    }
+
+    /**
+     * Accessor to obtain HTTP requests made during the current test in the order in which they were made.
+     *
+     * @return the requested request or null if there are none.
+     */
+    public static HttpRequest getNextSentHttpRequest() {
+        HttpRequestInfo httpRequestInfo = getFakeHttpLayer().getNextSentHttpRequestInfo();
+        return httpRequestInfo == null ? null : httpRequestInfo.getHttpRequest();
+    }
+
+    /**
+     * Accessor to obtain metadata for an HTTP request made during the current test in the order in which they were made.
+     *
+     * @return the requested request metadata or null if there are none.
+     */
+    public static HttpRequestInfo getNextSentHttpRequestInfo() {
+        return getFakeHttpLayer().getNextSentHttpRequestInfo();
     }
 
     /**
@@ -1442,5 +1479,4 @@ public class Robolectric {
             return oldValue;
         }
     }
-
 }

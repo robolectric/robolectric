@@ -1,20 +1,16 @@
 package com.xtremelabs.robolectric.tester.android.view;
 
+import android.R;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
-import android.view.InputQueue;
-import android.view.KeyEvent;
-import android.view.LayoutInflater;
-import android.view.MotionEvent;
-import android.view.SurfaceHolder;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
-import android.view.WindowManager;
+import android.view.*;
+import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.Robolectric;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class TestWindow extends Window {
     public int flags;
@@ -23,6 +19,7 @@ public class TestWindow extends Window {
     public int featureDrawableResourceResId;
     public int softInputMode;
     private TestWindowManager windowManager;
+    private View contentView;
 
     public TestWindow(Context context) {
         super(context);
@@ -58,15 +55,21 @@ public class TestWindow extends Window {
     }
 
     @Override public void setContentView(int layoutResID) {
+        setContentView(getLayoutInflater().inflate(layoutResID, null));
     }
 
     @Override public void setContentView(View view) {
+        if (contentView != null) shadowOf(contentView).callOnDetachedFromWindow();
+        contentView = view;
+        if (contentView != null) shadowOf(contentView).callOnAttachedToWindow();
     }
 
     @Override public void setContentView(View view, ViewGroup.LayoutParams params) {
+        setContentView(view);
     }
 
     @Override public void addContentView(View view, ViewGroup.LayoutParams params) {
+        setContentView(view);
     }
 
     @Override public View getCurrentFocus() {
@@ -74,7 +77,7 @@ public class TestWindow extends Window {
     }
 
     @Override public LayoutInflater getLayoutInflater() {
-        return null;
+        return LayoutInflater.from(Robolectric.application);
     }
 
     @Override public void setTitle(CharSequence title) {
@@ -90,6 +93,10 @@ public class TestWindow extends Window {
     }
 
     @Override public void togglePanel(int featureId, KeyEvent event) {
+    }
+
+    @Override
+    public void invalidatePanelMenu(int i) {
     }
 
     @Override public boolean performPanelShortcut(int featureId, int keyCode, KeyEvent event, int flags) {
@@ -145,12 +152,33 @@ public class TestWindow extends Window {
         return false;
     }
 
+    @Override
+    public boolean superDispatchGenericMotionEvent(MotionEvent motionEvent) {
+        return false;
+    }
+
     @Override public View getDecorView() {
-        return new View(Robolectric.application);
+        final FrameLayout decorView = new FrameLayout(Robolectric.application);
+
+        // On a typical Android device you can call:
+        //   myWindow.getDecorView().findViewById(android.R.content)
+        final FrameLayout contentWrapper = new FrameLayout(Robolectric.application);
+        contentWrapper.setId(R.id.content);
+
+        decorView.addView(contentWrapper);
+        if (contentView != null) {
+            contentWrapper.addView(contentView);
+        }
+        return decorView;
     }
 
     @Override public View peekDecorView() {
         return null;
+    }
+
+    @Override
+    public View findViewById(int id) {
+        return getDecorView().findViewById(id);
     }
 
     @Override public Bundle saveHierarchyState() {
@@ -184,14 +212,7 @@ public class TestWindow extends Window {
         this.softInputMode = softInputMode;
     }
 
-	@Override public void invalidatePanelMenu(int featureId) {
-	}
-
 	@Override public boolean superDispatchKeyShortcutEvent(KeyEvent event) {
-		return false;
-	}
-
-	@Override public boolean superDispatchGenericMotionEvent(MotionEvent event) {
 		return false;
 	}
 }

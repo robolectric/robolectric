@@ -26,24 +26,24 @@ public class TestWebSettings extends WebSettings {
     private boolean supportMultipleWindows = false;
     private boolean supportZoom = true;
 
-	public TestWebSettings() {		
-	}
-
-	public boolean getAllowFileAccessFromFileURLs() {
-		return allowFileAccessFromFile;
-	}
-
-	public boolean getAllowUniversalAccessFromFileURLs() {
-		return allowUniversalAccessFromFile;
-	}
-
-	public void setAllowFileAccessFromFileURLs(boolean allow) {
-		allowFileAccessFromFile = allow;
-	}
-
-	public void setAllowUniversalAccessFromFileURLs(boolean allow) {
-		allowUniversalAccessFromFile = allow;
-	}
+    public TestWebSettings() {
+    }
+    
+    public boolean getAllowFileAccessFromFileURLs() {
+        return allowFileAccessFromFile;
+    }
+    
+    public boolean getAllowUniversalAccessFromFileURLs() {
+        return allowUniversalAccessFromFile;
+    }
+    
+    public void setAllowFileAccessFromFileURLs(boolean allow) {
+        allowFileAccessFromFile = allow;
+    }
+    
+    public void setAllowUniversalAccessFromFileURLs(boolean allow) {
+        allowUniversalAccessFromFile = allow;
+    }
 
     @Implementation
     public boolean getAllowFileAccess() {

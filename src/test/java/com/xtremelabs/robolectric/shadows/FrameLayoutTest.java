@@ -30,4 +30,11 @@ public class FrameLayoutTest {
         ViewGroup.LayoutParams layoutParams = frameLayout.getLayoutParams();
         assertThat(layoutParams, instanceOf(ViewGroup.MarginLayoutParams.class));
     }
+
+    @Test
+    public void getLayoutParams_shouldReturnFrameLayoutParams() throws Exception {
+        ViewGroup.LayoutParams layoutParams = new FrameLayout(null).getLayoutParams();
+
+        assertThat(layoutParams, instanceOf(FrameLayout.LayoutParams.class));
+    }
 }

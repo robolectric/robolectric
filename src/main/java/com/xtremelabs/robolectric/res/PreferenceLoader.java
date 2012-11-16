@@ -1,5 +1,18 @@
 package com.xtremelabs.robolectric.res;
 
+import android.content.Context;
+import android.preference.Preference;
+import android.preference.PreferenceGroup;
+import android.preference.PreferenceScreen;
+import android.util.AttributeSet;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import com.xtremelabs.robolectric.util.I18nException;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
@@ -7,35 +20,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
-import com.xtremelabs.robolectric.util.I18nException;
-
-import android.content.Context;
-import android.preference.Preference;
-import android.preference.PreferenceGroup;
-import android.preference.PreferenceScreen;
-import android.util.AttributeSet;
-
 public class PreferenceLoader extends XmlLoader {
-	
+
     private Map<String, PreferenceNode> prefNodesByResourceName = new HashMap<String, PreferenceNode>();
 
-	public PreferenceLoader(ResourceExtractor resourceExtractor) {
-		super(resourceExtractor);
-	}
+    public PreferenceLoader(ResourceExtractor resourceExtractor) {
+        super(resourceExtractor);
+    }
 
-	@Override
-	protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
-		PreferenceNode topLevelNode = new PreferenceNode("top-level", new HashMap<String, String>());
-		processChildren(document.getChildNodes(), topLevelNode);
-		prefNodesByResourceName.put( "xml/" + xmlFile.getName().replace(".xml", ""), topLevelNode.getChildren().get(0));
-	}
+    @Override
+    protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
+        PreferenceNode topLevelNode = new PreferenceNode("top-level", new HashMap<String, String>());
+        processChildren(document.getChildNodes(), topLevelNode);
+        prefNodesByResourceName.put( "xml/" + xmlFile.getName().replace(".xml", ""), topLevelNode.getChildren().get(0));
+    }
 
     private void processChildren(NodeList childNodes, PreferenceNode parent) {
         for (int i = 0; i < childNodes.getLength(); i++) {
@@ -43,12 +41,12 @@ public class PreferenceLoader extends XmlLoader {
             processNode(node, parent);
         }
     }
-	
+
     private void processNode(Node node, PreferenceNode parent) {
         String name = node.getNodeName();
         NamedNodeMap attributes = node.getAttributes();
         Map<String, String> attrMap = new HashMap<String, String>();
-        
+
         if (attributes != null) {
             int length = attributes.getLength();
             for (int i = 0; i < length; i++) {
@@ -56,34 +54,34 @@ public class PreferenceLoader extends XmlLoader {
                 attrMap.put(attr.getNodeName(), attr.getNodeValue());
             }
         }
-        
+
         if (!name.startsWith("#")) {
-	        PreferenceNode prefNode = new PreferenceNode(name, attrMap);
-	        if (parent != null) parent.addChild(prefNode);
-	
-	        processChildren(node.getChildNodes(), prefNode);  
+            PreferenceNode prefNode = new PreferenceNode(name, attrMap);
+            if (parent != null) parent.addChild(prefNode);
+
+            processChildren(node.getChildNodes(), prefNode);
         }
     }
- 
-	public PreferenceScreen inflatePreferences(Context context, int resourceId) {
-		return inflatePreferences(context, resourceExtractor.getResourceName(resourceId));		
-	}
-	
-	public PreferenceScreen inflatePreferences(Context context, String key) {
+
+    public PreferenceScreen inflatePreferences(Context context, int resourceId) {
+        return inflatePreferences(context, resourceExtractor.getResourceName(resourceId));
+    }
+
+    public PreferenceScreen inflatePreferences(Context context, String key) {
         try {
-        	PreferenceNode prefNode = prefNodesByResourceName.get(key);
-        	return (PreferenceScreen) prefNode.inflate(context, null);
+            PreferenceNode prefNode = prefNodesByResourceName.get(key);
+            return (PreferenceScreen) prefNode.inflate(context, null);
         } catch (I18nException e) {
-        	throw e;
+            throw e;
         } catch (Exception e) {
             throw new RuntimeException("error inflating " + key, e);
         }
-	}
+    }
 
     public class PreferenceNode {
         private String name;
         private final Map<String, String> attributes;
-        
+
         private List<PreferenceNode> children = new ArrayList<PreferenceNode>();
 
         public PreferenceNode(String name, Map<String, String> attributes) {
@@ -98,47 +96,56 @@ public class PreferenceLoader extends XmlLoader {
         public void addChild(PreferenceNode prefNode) {
             children.add(prefNode);
         }
-        
+
         public Preference inflate(Context context, Preference parent) throws Exception {
-        	Preference preference = create(context, (PreferenceGroup) parent);
+            Preference preference = create(context, (PreferenceGroup) parent);
 
             for (PreferenceNode child : children) {
                 child.inflate(context, preference);
             }
-     
-        	return preference;
-        }
-        
-        private Preference create(Context context, PreferenceGroup parent) throws Exception {
-        	Preference preference = constructPreference(context, parent);
-            if (parent != null && parent != preference) {
-                parent.addPreference(preference);
-            } 
+
             return preference;
         }
-  
+
+        private Preference create(Context context, PreferenceGroup parent) throws Exception {
+            Preference preference = constructPreference(context, parent);
+            if (parent != null && parent != preference) {
+                parent.addPreference(preference);
+            }
+            return preference;
+        }
+
         private Preference constructPreference(Context context, PreferenceGroup parent) throws Exception {
-        	Class<? extends Preference> clazz = pickViewClass();
-        	
-           	if (clazz.equals(PreferenceScreen.class)) {
-        		return Robolectric.newInstanceOf(PreferenceScreen.class);
-        	}
-           	
-           	try {
-                TestAttributeSet attributeSet = new TestAttributeSet(attributes);
-                if (strictI18n) {
-                	attributeSet.validateStrictI18n();
-                }
+            Class<? extends Preference> clazz = pickViewClass();
+
+            TestAttributeSet attributeSet = new TestAttributeSet(attributes);
+            if (strictI18n) {
+                attributeSet.validateStrictI18n();
+            }
+
+            /**
+             * This block is required because the PreferenceScreen(Context, AttributeSet) constructor is somehow hidden
+             * from reflection. The only way to set keys/titles/summaries on PreferenceScreens is to set them manually.
+             */
+               if (clazz.equals(PreferenceScreen.class)) {
+                PreferenceScreen screen = Robolectric.newInstanceOf(PreferenceScreen.class);
+                screen.setKey(attributes.get("android:key"));
+                screen.setTitle(attributes.get("android:title"));
+                screen.setSummary(attributes.get("android:summary"));
+                return screen;
+            }
+
+               try {
                 return ((Constructor<? extends Preference>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
             } catch (NoSuchMethodException e) {
-	            try {
-	                return ((Constructor<? extends Preference>) clazz.getConstructor(Context.class)).newInstance(context);
-	            } catch (NoSuchMethodException e1) {
-	                return ((Constructor<? extends Preference>) clazz.getConstructor(Context.class, String.class)).newInstance(context, "");
-	            }  
+                try {
+                    return ((Constructor<? extends Preference>) clazz.getConstructor(Context.class)).newInstance(context);
+                } catch (NoSuchMethodException e1) {
+                    return ((Constructor<? extends Preference>) clazz.getConstructor(Context.class, String.class)).newInstance(context, "");
+                }
             }
         }
-  
+
         private Class<? extends Preference> pickViewClass() {
             Class<? extends Preference> clazz = loadClass(name);
             if (clazz == null) {
@@ -149,7 +156,7 @@ public class PreferenceLoader extends XmlLoader {
             }
             return clazz;
         }
-        
+
         private Class<? extends Preference> loadClass(String className) {
             try {
                 //noinspection unchecked
@@ -157,6 +164,6 @@ public class PreferenceLoader extends XmlLoader {
             } catch (ClassNotFoundException e) {
                 return null;
             }
-        }        
+        }
     }
 }

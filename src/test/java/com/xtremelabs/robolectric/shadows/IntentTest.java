@@ -295,7 +295,7 @@ public class IntentTest {
         String category = "category";
         intentB.addCategory(category);
         intentB.setPackage("com.foobar.app");
-        ComponentName cn = new ComponentName("com.foobar.app", "activity");
+        ComponentName cn = new ComponentName("com.foobar.app", "fragmentActivity");
         intentB.setComponent(cn);
         intentB.putExtra("FOO", 23);
 

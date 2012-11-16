@@ -38,4 +38,12 @@ public class CheckedTextViewTest {
         assertTrue(checkedTextView.isChecked());
     }
 
+    @Test public void toggle_shouldChangeCheckedness() throws Exception {
+        CheckedTextView view = new CheckedTextView(null);
+        assertFalse(view.isChecked());
+        view.toggle();
+        assertTrue(view.isChecked());
+        view.performClick();
+        assertFalse(view.isChecked());
+    }
 }

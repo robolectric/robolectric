@@ -6,26 +6,17 @@ import android.content.res.TypedArray;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
-import org.hamcrest.CoreMatchers;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
+import java.io.*;
 import java.util.HashMap;
 import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ContextTest {
@@ -111,7 +102,8 @@ public class ContextTest {
         assertNotNull(context.getCacheDir());
         File cacheTest = new File(context.getCacheDir(), "__test__");
 
-        assertThat(cacheTest.getPath(), CoreMatchers.containsString("android-cache"));
+        assertThat(cacheTest.getAbsolutePath(), startsWith(System.getProperty("java.io.tmpdir")));
+        assertThat(cacheTest.getAbsolutePath(), endsWith("android-cache" + File.separator + "__test__"));
 
         FileOutputStream fos = null;
         try {
@@ -129,7 +121,8 @@ public class ContextTest {
         assertNotNull(context.getExternalCacheDir());
         File cacheTest = new File(context.getExternalCacheDir(), "__test__");
 
-        assertThat(cacheTest.getPath(), containsString("android-external-cache"));
+        assertThat(cacheTest.getAbsolutePath(), startsWith(System.getProperty("java.io.tmpdir")));
+        assertThat(cacheTest.getAbsolutePath(), endsWith("android-external-cache" + File.separator + "__test__"));
 
         FileOutputStream fos = null;
         try {

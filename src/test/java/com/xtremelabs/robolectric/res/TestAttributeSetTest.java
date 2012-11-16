@@ -113,11 +113,19 @@ public class TestAttributeSetTest {
     }
 
     @Test
-    public void getAttributeValue_shouldReturnValueFromAttribute() throws Exception {
+    public void getAttributeValue_byName_shouldReturnValueFromAttribute() throws Exception {
         attributes.put("isSugary", "oh heck yeah");
 
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
         assertThat(testAttributeSet.getAttributeValue("com.some.namespace", "isSugary"), equalTo("oh heck yeah"));
+    }
+
+    @Test
+    public void getAttributeValue_byId_shouldReturnValueFromAttribute() throws Exception {
+        attributes.put("isSugary", "oh heck yeah");
+
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
+        assertThat(testAttributeSet.getAttributeValue(R.attr.isSugary), equalTo("oh heck yeah"));
     }
 
     @Test
@@ -151,5 +159,67 @@ public class TestAttributeSetTest {
         TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, R.class);
         int nonExistantResource = 12345;
         assertThat(testAttributeSet.getAttributeValue(nonExistantResource), nullValue());
+    }
+
+    @Test
+    public void getAttributeIntValue_shouldReturnValueFromAttributeWhenNotInAttributeSet() throws Exception {
+        AttrResourceLoader resourceLoader = new AttrResourceLoader(resourceExtractor);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, resourceLoader, null, false);
+        assertThat(testAttributeSet.getAttributeIntValue("some namespace", "sugarinessPercent", 42), equalTo(42));
+    }
+
+    @Test
+    public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributesWhenNotInAttributeSet() throws Exception {
+        AttrResourceLoader resourceLoader = new AttrResourceLoader(resourceExtractor);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, resourceLoader, null, false);
+        assertThat(testAttributeSet.getAttributeIntValue("some namespace", "itemType", 24), equalTo(24));
+    }
+
+    @Test
+    public void getAttributeFloatValue_shouldGetFloatValuesFromAttributes() throws Exception {
+        attributes.put("sugaryScale", "1234.456");
+
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
+        assertThat(testAttributeSet.getAttributeFloatValue("some namespace", "sugaryScale", 78.9f), equalTo(1234.456f));
+    }
+
+    @Test
+    public void getAttributeFloatValue_withNamespace_shouldGetFloatValuesFromAttributes() throws Exception {
+        attributes.put("xxx:sugaryScale", "1234.456");
+
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
+        assertThat(testAttributeSet.getAttributeFloatValue("some namespace", "sugaryScale", 78.9f), equalTo(1234.456f));
+    }
+
+    @Test
+    public void getAttributeFloatValue_shouldReturnDefaultFloatValueWhenNotInAttributeSet() throws Exception {
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
+        assertThat(testAttributeSet.getAttributeFloatValue("some namespace", "sugaryScale", 78.9f), equalTo(78.9f));
+    }
+    
+    @Test
+    public void getStyleAttribute_doesNotThrowException() throws Exception {
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
+        testAttributeSet.getStyleAttribute();
+    }
+
+    @Test
+    public void getStyleAttribute_returnsZeroWhenNoStyle() throws Exception {
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
+        assertThat(testAttributeSet.getStyleAttribute(), equalTo(0));
+    }
+
+    @Test
+    public void getStyleAttribute_returnsCorrectValue() throws Exception {
+        attributes.put("style", "@style/FancyStyle");
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
+        assertThat(testAttributeSet.getStyleAttribute(), equalTo(R.style.FancyStyle));
+    }
+
+    @Test
+    public void getStyleAttribute_doesNotThrowException_whenStyleIsBogus() throws Exception {
+        attributes.put("style", "@style/bogus_style");
+        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
+        assertThat(testAttributeSet.getStyleAttribute(), equalTo(0));
     }
 }

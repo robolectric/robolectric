@@ -9,7 +9,7 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 
 /**
- * Shadow implementation of {@code Point}
+ * Shadow implementation of {@code PointF}
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(PointF.class)

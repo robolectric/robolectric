@@ -38,18 +38,13 @@ public class DrawableResourceLoader extends XmlLoader {
     /** document */
     protected Map<String, Document> documents = new HashMap<String, Document>();
 
-    /** resource directory */
-    protected File resourceDirectory;
-
     /**
      * DrawableResourceLoader constructor.
      *
      * @param extractor         Extractor
-     * @param resourceDirectory Resource directory
      */
-    public DrawableResourceLoader(ResourceExtractor extractor, File resourceDirectory) {
+    public DrawableResourceLoader(ResourceExtractor extractor) {
         super(extractor);
-        this.resourceDirectory = resourceDirectory;
     }
 
     /**

@@ -34,7 +34,7 @@ public class DrawableResourceLoaderTest {
         extractor.addLocalRClass(R.class);
         extractor.addSystemRClass(android.R.class);
 
-        resourceLoader = new DrawableResourceLoader(extractor, resourceFile("res"));
+        resourceLoader = new DrawableResourceLoader(extractor);
         DocumentLoader documentLoader = new DocumentLoader(resourceLoader);
 
         documentLoader.loadResourceXmlDir(resourceFile("res", "drawable"));

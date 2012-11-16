@@ -1,24 +1,22 @@
 package com.xtremelabs.robolectric.res;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
 import android.content.Context;
 import android.text.TextUtils;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
-
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.I18nException;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
+import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class MenuLoader extends XmlLoader {
     private Map<String, MenuNode> menuNodesByMenuName = new HashMap<String, MenuNode>();
@@ -94,21 +92,20 @@ public class MenuLoader extends XmlLoader {
                 || nodei.getNodeName().equals("group");
     }
 
-    public void inflateMenu(Context context, String key, Menu root) {
-        inflateMenu(context, key, null, root);
+    public boolean inflateMenu(Context context, String key, Menu root) {
+        return inflateMenu(context, key, null, root);
     }
 
-    public void inflateMenu(Context context, int resourceId, Menu root) {
-        inflateMenu(context, resourceExtractor.getResourceName(resourceId),
+    public boolean inflateMenu(Context context, int resourceId, Menu root) {
+        return inflateMenu(context, resourceExtractor.getResourceName(resourceId),
                 root);
     }
 
-    private void inflateMenu(Context context, String key,
+    private boolean inflateMenu(Context context, String key, 
                              Map<String, String> attributes, Menu root) {
         MenuNode menuNode = menuNodesByMenuName.get(key);
-        if (menuNode == null) {
-            throw new RuntimeException("Could not find menu " + key);
-        }
+        if (menuNode == null) return false;
+
         try {
             if (attributes != null) {
                 for (Map.Entry<String, String> entry : attributes.entrySet()) {
@@ -119,6 +116,7 @@ public class MenuLoader extends XmlLoader {
                 }
             }
             menuNode.inflate(context, root);
+            return true;
         } catch (I18nException e) {
             throw e;
         } catch (Exception e) {

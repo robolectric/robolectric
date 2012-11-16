@@ -8,7 +8,6 @@ import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.NotFoundException;
-
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;

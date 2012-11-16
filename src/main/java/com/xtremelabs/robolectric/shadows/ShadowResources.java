@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.res.AssetManager;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
@@ -18,17 +19,17 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-
 import java.io.InputStream;
 import java.util.Locale;
 
+import static com.xtremelabs.robolectric.Robolectric.getShadowApplication;
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
  *
- * @see com.xtremelabs.robolectric.RobolectricTestRunner#RobolectricTestRunner(Class, String, String)
+ * @see com.xtremelabs.robolectric.RobolectricTestRunner#RobolectricTestRunner(Class)
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)
@@ -37,6 +38,8 @@ public class ShadowResources {
     Configuration configuration = null;
     private DisplayMetrics displayMetrics;
     private Display display;
+
+    private static Resources system = null;
 
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
         ShadowResources shadowResources = shadowOf(resources);
@@ -48,6 +51,21 @@ public class ShadowResources {
     @RealObject
     Resources realResources;
     private ResourceLoader resourceLoader;
+
+    public ShadowResources() {
+        Configuration configuration = new Configuration();
+        configuration.setToDefaults();
+        setConfiguration(configuration);
+    }
+
+    /**
+     * Non-Android accessor that sets the value to be returned by {@link #getConfiguration()}
+     *
+     * @param configuration Configuration instance to set on this Resources obj
+     */
+    public void setConfiguration(Configuration configuration) {
+        this.configuration = configuration;
+    }
 
     @Implementation
     public int getIdentifier(String name, String defType, String defPackage) {
@@ -65,6 +83,11 @@ public class ShadowResources {
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
         return resourceLoader.getColorValue(id);
+    }
+
+    @Implementation
+    public ColorStateList getColorStateList(int id) {
+        return new ColorStateList(null, null);
     }
 
     @Implementation
@@ -221,11 +244,17 @@ public class ShadowResources {
 
     @Implementation
     public final android.content.res.Resources.Theme newTheme() {
-        return newInstanceOf(Resources.Theme.class);
+        return inject(realResources, newInstanceOf(Resources.Theme.class));
     }
 
     @Implements(Resources.Theme.class)
-    public static class ShadowTheme {
+    public static class ShadowTheme implements UsesResources {
+        protected Resources resources;
+
+        public void injectResources(Resources resources) {
+            this.resources = resources;
+        }
+
         @Implementation
         public TypedArray obtainStyledAttributes(int[] attrs) {
             return obtainStyledAttributes(0, attrs);
@@ -238,8 +267,41 @@ public class ShadowResources {
 
         @Implementation
         public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-            return newInstanceOf(TypedArray.class);
+            return inject(resources, newInstanceOf(TypedArray.class));
         }
+    }
+
+    @Implementation
+    public static Resources getSystem() {
+        if (system == null) {
+            try {
+                initSystemResources();
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        return system;
+    }
+
+    public static <T> T inject(Resources resources, T instance) {
+        Object shadow = Robolectric.shadowOf_(instance);
+        if (shadow instanceof UsesResources) {
+            ((UsesResources) shadow).injectResources(resources);
+        }
+        return instance;
+    }
+
+
+  /**
+     * Creates system resource loader from a copy of the application resource loader. Sets
+     * a flag to exclude local resources on initialization.
+     */
+    private static void initSystemResources() throws Exception {
+        final ResourceLoader appResourceLoader = getShadowApplication().getResourceLoader();
+        final ResourceLoader systemResourceLoader = new ResourceLoader(appResourceLoader);
+        systemResourceLoader.setSystem(true);
+        system = ShadowResources.bind(new Resources(null, null, null), systemResourceLoader);
     }
 
 }

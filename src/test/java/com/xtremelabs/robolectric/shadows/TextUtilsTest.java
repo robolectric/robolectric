@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.text.TextPaint;
 import android.text.TextUtils;
 import com.xtremelabs.robolectric.TestRunners;
 
@@ -79,5 +80,11 @@ public class TextUtilsTest {
 
         assertThat(TextUtils.equals("a", "ab"), equalTo(false));
         assertThat(TextUtils.equals("ab", "a"), equalTo(false));
+    }
+
+    @Test public void testEllipsize() {
+        TextPaint p = new TextPaint();
+        assertThat(TextUtils.ellipsize("apples", p, 100, TextUtils.TruncateAt.END).toString(), equalTo("apples"));
+        assertThat(TextUtils.ellipsize("", p, 100, TextUtils.TruncateAt.END).toString(), equalTo(""));
     }
 }

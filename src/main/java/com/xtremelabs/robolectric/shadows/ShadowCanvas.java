@@ -85,7 +85,7 @@ public class ShadowCanvas {
         int y = (int) (top + translateY);
         if (x != 0 || y != 0) {
             appendDescription(" at (" + x + "," + y + ")");
-        }
+    }
 
         if (scaleX != 1 && scaleY != 1) {
             appendDescription(" scaled by (" + scaleX + "," + scaleY + ")");

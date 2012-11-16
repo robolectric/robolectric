@@ -15,6 +15,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.application;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.Robolectric.visualize;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -65,6 +66,11 @@ public class ImageViewTest {
         imageView.setImageMatrix(matrix);
         assertEquals("Bitmap for resource:drawable/an_image at (30,40)",
                 visualize(imageView));
+    }
+
+    @Test
+    public void visualizeWithEmpty() throws Exception {
+        assertEquals("", Robolectric.visualize(new ImageView(application)));
     }
 
     @Test

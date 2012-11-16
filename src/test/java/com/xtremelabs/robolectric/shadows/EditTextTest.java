@@ -1,7 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.app.Activity;
+import android.content.Context;
 import android.util.AttributeSet;
+import android.view.LayoutInflater;
 import android.widget.EditText;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
@@ -99,5 +103,13 @@ public class EditTextTest {
         AttributeSet attrs = mock(AttributeSet.class);
         when(attrs.getAttributeIntValue("android", "maxLength", Integer.MAX_VALUE)).thenReturn(Integer.MAX_VALUE);
         return attrs;
+    }
+
+    @Test
+    public void shouldGetHintFromXml() {
+        Context context = new Activity();
+        LayoutInflater inflater = LayoutInflater.from(context);
+        EditText editText = (EditText) inflater.inflate(R.layout.edit_text, null);
+        assertThat(editText.getHint().toString(), equalTo("Hello, Hint"));
     }
 }

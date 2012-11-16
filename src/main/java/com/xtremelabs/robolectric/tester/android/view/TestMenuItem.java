@@ -1,11 +1,9 @@
 package com.xtremelabs.robolectric.tester.android.view;
 
-import com.xtremelabs.robolectric.Robolectric;
-
-import android.app.Application;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.*;
+import com.xtremelabs.robolectric.Robolectric;
 
 public class TestMenuItem implements MenuItem {
 

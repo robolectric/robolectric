@@ -39,6 +39,13 @@ public class ConfigurationTest {
 
     	shConfiguration.setLocale( Locale.FRANCE);
     	assertThat( configuration.locale, equalTo( Locale.FRANCE ) );
-}
+    }
+
+    @Test
+    public void testConstructCopy() {
+        configuration.setToDefaults();
+        Configuration clone = new Configuration(configuration);
+        assertThat( configuration, equalTo( clone ) );
+    }
 
 }

@@ -32,11 +32,18 @@ public class SpannableStringBuilderTest {
     }
 
     @Test
+    public void testReplaceFromSquare() throws Exception {
+        SpannableStringBuilder builder = new SpannableStringBuilder("abcd");
+        builder.replace(1,3,"XXX");
+        assertThat(builder.toString(), equalTo("aXXXd"));
+    }
+
+    @Test
     public void testInsert() throws Exception {
         SpannableStringBuilder builder = new SpannableStringBuilder("abc");
         assertThat(builder.insert(1, "xy").toString(), equalTo("axybc"));
     }
-    
+
     @Test
     public void testDelete() throws Exception {
         SpannableStringBuilder builder = new SpannableStringBuilder("abc");
@@ -44,4 +51,11 @@ public class SpannableStringBuilderTest {
         builder.delete( 0, 3 );
         assertThat( builder.length(), equalTo(0));
     }    
+
+    @Test
+    public void testReplace_extraParams() throws Exception {
+        SpannableStringBuilder builder = new SpannableStringBuilder("abcd");
+        builder.replace(1,3,"ignoreXXXignore", 6, 9);
+        assertThat(builder.toString(), equalTo("aXXXd"));
+    }
 }

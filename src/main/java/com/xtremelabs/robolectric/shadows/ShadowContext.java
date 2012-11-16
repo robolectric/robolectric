@@ -11,11 +11,8 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
+import java.util.UUID;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -81,7 +78,7 @@ abstract public class ShadowContext {
         if( set == null ){
         	return getTheme().obtainStyledAttributes( attrs );
         }
-        
+
         ShadowTypedArray styledAttributes = Robolectric.shadowOf(result);
         for(int attr : attrs) {
             styledAttributes.add(set.getAttributeValue(attr));
@@ -190,6 +187,7 @@ abstract public class ShadowContext {
         try {
             File tmp = File.createTempFile(name, "robolectric");
             if (!tmp.delete()) throw new IOException("could not delete "+tmp);
+            tmp = new File(tmp, UUID.randomUUID().toString());
             if (!tmp.mkdirs()) throw new IOException("could not create "+tmp);
             tmp.deleteOnExit();
 

@@ -1,15 +1,18 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 import static android.graphics.Shader.TileMode;
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -28,6 +31,10 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
         this.bitmap = bitmap;
     }
 
+    public void __constructor__(Resources resources, Bitmap bitmap) {
+        this.bitmap = bitmap;
+    }
+
     /**
      * Draws the contained bitmap onto the canvas at 0,0 with a default {@code Paint}
      *
@@ -38,6 +45,16 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
         Paint paint = new Paint();
         paint.setColorFilter(colorFilter);
         canvas.drawBitmap(realBitmapDrawable.getBitmap(), 0, 0, paint);
+    }
+
+    @Implementation
+    public Drawable mutate() {
+        BitmapDrawable real = newInstanceOf(BitmapDrawable.class);
+        ShadowBitmapDrawable shadow = shadowOf(real);
+        shadow.bitmap = this.bitmap;
+        shadow.colorFilter = this.colorFilter;
+        shadow.drawableCreateFromStreamSource = drawableCreateFromStreamSource;
+        return real;
     }
 
     @Implementation

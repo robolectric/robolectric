@@ -30,7 +30,30 @@ public class ShadowLocationManager {
     private Criteria lastBestProviderCriteria;
     private boolean lastBestProviderEnabled;
     private String bestEnabledProvider, bestDisabledProvider;
-    private final Map<LocationListener, Set<String>> requestLocationUpdateListenersMap = new LinkedHashMap<LocationListener, Set<String>>();
+
+    /** Location listeners along with metadata on when they should be fired. */
+    private static final class ListenerRegistration {
+        final long minTime;
+        final float minDistance;
+        final LocationListener listener;
+        final String provider;
+        Location lastSeenLocation;
+        long lastSeenTime;
+
+        ListenerRegistration(String provider, long minTime, float minDistance, Location locationAtCreation,
+                             LocationListener listener) {
+            this.provider = provider;
+            this.minTime = minTime;
+            this.minDistance = minDistance;
+            this.lastSeenTime = locationAtCreation == null ? 0 : locationAtCreation.getTime();
+            this.lastSeenLocation = locationAtCreation;
+            this.listener = listener;
+        }
+    }
+
+    /** Mapped by provider. */
+    private final Map<String, List<ListenerRegistration>> locationListeners =
+            new HashMap<String, List<ListenerRegistration>>();
 
     @Implementation
     public boolean isProviderEnabled(String provider) {
@@ -72,7 +95,7 @@ public class ShadowLocationManager {
         providerEntry.enabled = isEnabled;
         providerEntry.criteria = criteria;
         providersEnabled.put(provider, providerEntry);
-        List<LocationListener> locationUpdateListeners = new ArrayList<LocationListener>(requestLocationUpdateListenersMap.keySet());
+        List<LocationListener> locationUpdateListeners = new ArrayList<LocationListener>(getRequestLocationUpdateListeners());
         for (LocationListener locationUpdateListener : locationUpdateListeners) {
             if (isEnabled) {
                 locationUpdateListener.onProviderEnabled(provider);
@@ -204,20 +227,24 @@ public class ShadowLocationManager {
 
     @Implementation
     public void requestLocationUpdates(String provider, long minTime, float minDistance, LocationListener listener) {
-        addLocationListener(provider, listener);
+        addLocationListener(provider, listener, minTime, minDistance);
     }
 
-    private void addLocationListener(String provider, LocationListener listener) {
-        if (!requestLocationUpdateListenersMap.containsKey(listener)) {
-            requestLocationUpdateListenersMap.put(listener, new HashSet<String>());
+    private void addLocationListener(String provider, LocationListener listener, long minTime, float minDistance) {
+        List<ListenerRegistration> providerListeners = locationListeners.get(provider);
+        if (providerListeners == null) {
+            providerListeners = new ArrayList<ListenerRegistration>();
+            locationListeners.put(provider, providerListeners);
         }
-        requestLocationUpdateListenersMap.get(listener).add(provider);
+        providerListeners.add(new ListenerRegistration(provider,
+                minTime, minDistance, copyOf(getLastKnownLocation(provider)), listener));
+
     }
 
     @Implementation
     public void requestLocationUpdates(String provider, long minTime, float minDistance, LocationListener listener,
             Looper looper) {
-        addLocationListener(provider, listener);
+        addLocationListener(provider, listener, minTime, minDistance);
     }
 
     @Implementation
@@ -246,7 +273,12 @@ public class ShadowLocationManager {
 
     @Implementation
     public void removeUpdates(LocationListener listener) {
-        requestLocationUpdateListenersMap.remove(listener);
+        for (Map.Entry<String, List<ListenerRegistration>> entry : locationListeners.entrySet()) {
+            List<ListenerRegistration> listenerRegistrations = entry.getValue();
+            for (int i = listenerRegistrations.size() - 1; i >= 0; i--) {
+                if (listenerRegistrations.get(i).listener.equals(listener)) listenerRegistrations.remove(i);
+            }
+        }
     }
 
     @Implementation
@@ -350,7 +382,68 @@ public class ShadowLocationManager {
      * @return lastRequestedLocationUpdatesLocationListener
      */
     public List<LocationListener> getRequestLocationUpdateListeners() {
-        return new ArrayList<LocationListener>(requestLocationUpdateListenersMap.keySet());
+        List<LocationListener> all = new ArrayList<LocationListener>();
+        for (Map.Entry<String, List<ListenerRegistration>> entry : locationListeners.entrySet()) {
+            for (ListenerRegistration reg : entry.getValue()) {
+                all.add(reg.listener);
+            }
+        }
+
+        return all;
+    }
+
+    public void simulateLocation(Location location) {
+        setLastKnownLocation(location.getProvider(), location);
+
+        List<ListenerRegistration> providerListeners = locationListeners.get(
+                location.getProvider());
+        if (providerListeners == null) return;
+
+        for (ListenerRegistration listenerReg : providerListeners) {
+            if(listenerReg.lastSeenLocation != null && location != null) {
+                float distanceChange = distanceBetween(location, listenerReg.lastSeenLocation);
+                boolean withinMinDistance = distanceChange < listenerReg.minDistance;
+                boolean exceededMinTime = location.getTime() - listenerReg.lastSeenTime > listenerReg.minTime;
+                if (withinMinDistance && !exceededMinTime) continue;
+            }
+            listenerReg.lastSeenLocation = copyOf(location);
+            listenerReg.lastSeenTime = location == null ? 0 : location.getTime();
+            listenerReg.listener.onLocationChanged(copyOf(location));
+        }
+    }
+
+    private Location copyOf(Location location) {
+        if (location == null) return null;
+        Location copy = new Location(location);
+        copy.setAccuracy(location.getAccuracy());
+        copy.setAltitude(location.getAltitude());
+        copy.setBearing(location.getBearing());
+        copy.setExtras(location.getExtras());
+        copy.setLatitude(location.getLatitude());
+        copy.setLongitude(location.getLongitude());
+        copy.setProvider(location.getProvider());
+        copy.setSpeed(location.getSpeed());
+        copy.setTime(location.getTime());
+        return copy;
+    }
+
+    /**
+     * Returns the distance between the two locations in meters.
+     * Adapted from: http://stackoverflow.com/questions/837872/calculate-distance-in-meters-when-you-know-longitude-and-latitude-in-java
+     */
+    private static float distanceBetween(Location location1, Location location2) {
+        double earthRadius = 3958.75;
+        double latDifference = Math.toRadians(location2.getLatitude() - location1.getLatitude());
+        double lonDifference = Math.toRadians(location2.getLongitude() - location2.getLongitude());
+        double a = Math.sin(latDifference/2) * Math.sin(latDifference/2) +
+                Math.cos(Math.toRadians(location1.getLatitude())) * Math.cos(Math.toRadians(location2.getLatitude())) *
+                        Math.sin(lonDifference/2) * Math.sin(lonDifference/2);
+        double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
+        double dist = Math.abs(earthRadius * c);
+
+        int meterConversion = 1609;
+
+        return new Float(dist * meterConversion);
     }
 
     public Map<PendingIntent, Criteria> getRequestLocationUdpateCriteriaPendingIntents() {
@@ -362,8 +455,15 @@ public class ShadowLocationManager {
     }
 
     public Collection<String> getProvidersForListener(LocationListener listener) {
-        Set<String> providers = requestLocationUpdateListenersMap.get(listener);
-        return providers == null ? Collections.<String>emptyList() : new ArrayList<String>(providers);
+        Set<String> providers = new HashSet<String>();
+        for (List<ListenerRegistration> listenerRegistrations : locationListeners.values()) {
+            for (ListenerRegistration listenerRegistration : listenerRegistrations) {
+                if (listenerRegistration.listener == listener) {
+                    providers.add(listenerRegistration.provider);
+                }
+            }
+        }
+        return providers;
     }
 
     final private class LocationProviderEntry implements Map.Entry<Boolean, List<Criteria>> {

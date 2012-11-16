@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.text.TextPaint;
 import android.text.TextUtils;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -54,11 +55,18 @@ public class ShadowTextUtils {
     
     @Implementation
     public static String[] split(String text, String expression) {
-    	if(text.length() == 0) {
-    		return new String[]{};
-    	}
-    	
-    	return text.split(expression);
+        if(text.length() == 0) {
+            return new String[]{};
+        }
+        
+        return text.split(expression);
+    }
+
+    @Implementation
+    public static CharSequence ellipsize(CharSequence text,
+                                         TextPaint p,
+                                         float avail, TextUtils.TruncateAt where) {
+        return text;
     }
 
     @Implementation

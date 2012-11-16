@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TypedArrayTest {
@@ -27,5 +28,30 @@ public class TypedArrayTest {
         shadowArray.add("expected value");
 
         assertThat(array.getString(0), equalTo("expected value"));
+    }
+    
+    @Test
+    public void getResources() throws Exception {
+        assertNotNull(context.obtainStyledAttributes(null).getResources());
+    }
+
+    @Test
+    public void getInt_shouldReturnDefaultValue() throws Exception {
+        assertThat(context.obtainStyledAttributes(null).getInt(1, -1), equalTo(-1));
+    }
+
+    @Test
+    public void getInteger_shouldReturnDefaultValue() throws Exception {
+        assertThat(context.obtainStyledAttributes(null).getInteger(1, -1), equalTo(-1));
+    }
+
+    @Test
+    public void getResourceId_shouldReturnDefaultValue() throws Exception {
+        assertThat(context.obtainStyledAttributes(null).getResourceId(1, -1), equalTo(-1));
+    }
+
+    @Test
+    public void getDimension_shouldReturnDefaultValue() throws Exception {
+        assertThat(context.obtainStyledAttributes(null).getDimension(1, -1f), equalTo(-1f));
     }
 }

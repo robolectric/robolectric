@@ -7,7 +7,6 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
@@ -25,8 +24,7 @@ import java.io.PrintStream;
 
 import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
 import static org.junit.Assert.*;
@@ -72,6 +70,11 @@ public class ViewGroupTest {
     }
 
     @Test
+    public void removeNullView_doesNothing() {
+        root.removeView(null);
+    }
+
+    @Test
     public void testLayoutAnimationListener() {
         assertThat(root.getLayoutAnimationListener(), nullValue());
 
@@ -89,7 +92,7 @@ public class ViewGroupTest {
 
         assertThat(root.getLayoutAnimationListener(), sameInstance(animationListener));
     }
-    
+
     @Test
     public void testLayoutAnimation() {
     	assertThat(root.getLayoutAnimation(), nullValue());
@@ -242,11 +245,25 @@ public class ViewGroupTest {
     public void addViewWithLayoutParams_shouldStoreLayoutParams() throws Exception {
         FrameLayout.LayoutParams layoutParams1 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
         FrameLayout.LayoutParams layoutParams2 = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        ImageView child1 = new ImageView(Robolectric.application);
-        ImageView child2 = new ImageView(Robolectric.application);
+        View child1 = new View(Robolectric.application);
+        View child2 = new View(Robolectric.application);
         root.addView(child1, layoutParams1);
         root.addView(child2, 1, layoutParams2);
         assertSame(layoutParams1, child1.getLayoutParams());
         assertSame(layoutParams2, child2.getLayoutParams());
+    }
+
+    @Test
+    public void getChildAt_shouldReturnNullForInvalidIndices() {
+        assertThat(root.getChildCount(), equalTo(3));
+        assertThat(root.getChildAt(13), nullValue());
+        assertThat(root.getChildAt(3), nullValue());
+        assertThat(root.getChildAt(-1), nullValue());
+    }
+
+    @Test
+    public void layoutParams_shouldBeViewGroupLayoutParams() {
+        assertThat(child1.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
+        assertThat(child1.getLayoutParams(), instanceOf(ViewGroup.LayoutParams.class));
     }
 }

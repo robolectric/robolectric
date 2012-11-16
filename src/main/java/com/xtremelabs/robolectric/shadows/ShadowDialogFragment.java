@@ -38,10 +38,10 @@ public class ShadowDialogFragment extends ShadowFragment {
 
         shadowOf(realDialogFragment).setActivity(activityFromManager);
 
-        realDialogFragment.onAttach(activity);
+        realDialogFragment.onAttach(fragmentActivity);
         realDialogFragment.onCreate(null);
         dialog = realDialogFragment.onCreateDialog(null);
-        view = realDialogFragment.onCreateView(ShadowLayoutInflater.from(activity), null, null);
+        view = realDialogFragment.onCreateView(ShadowLayoutInflater.from(fragmentActivity), null, null);
         if (dialog == null) {
             dialog = new Dialog(activityFromManager);
             dialog.setContentView(view);

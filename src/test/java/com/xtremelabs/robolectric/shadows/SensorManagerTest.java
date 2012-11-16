@@ -68,6 +68,13 @@ public class SensorManagerTest {
 		assertTrue(shadow.createSensorEvent() instanceof SensorEvent);
 	}
 	
+    @Test
+    public void getSensor_shouldBeConfigurable() {
+        Sensor sensor = Robolectric.newInstanceOf(Sensor.class);
+        shadowOf(sensorManager).addSensor(Sensor.TYPE_ACCELEROMETER, sensor);
+        assertSame(sensor, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+    }
+
 	private class TestSensorEventListener implements SensorEventListener {
 
 		@Override

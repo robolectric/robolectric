@@ -49,14 +49,14 @@ public class ResourceLoaderTest {
         ViewGroup vg = new FrameLayout(Robolectric.application);
     	resourceLoader.inflateView(Robolectric.application, R.layout.text_views, vg);
     }
-    
+
     @Test(expected=I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflateMenu() throws Exception {
         ResourceLoader resourceLoader = new ResourceLoader(DEFAULT_SDK_VERSION, R.class, resourceFile("res"), resourceFile("menu"));
         resourceLoader.setStrictI18n(true);
     	resourceLoader.inflateMenu(Robolectric.application, R.menu.test, null);
     }
-    
+
     @Test(expected=I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflatePreferences() throws Exception {
         ResourceLoader resourceLoader = new ResourceLoader(DEFAULT_SDK_VERSION, R.class, resourceFile("res"), resourceFile("xml"));

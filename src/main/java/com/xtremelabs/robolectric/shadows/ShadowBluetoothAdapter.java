@@ -18,6 +18,7 @@ public class ShadowBluetoothAdapter {
     private Set<BluetoothDevice> bondedDevices = new HashSet<BluetoothDevice>();
     private boolean isDiscovering;
     private String address;
+    private boolean enabled;
 
     @Implementation
     public static BluetoothAdapter getDefaultAdapter() {
@@ -50,6 +51,14 @@ public class ShadowBluetoothAdapter {
         return isDiscovering;
     }
 
+    @Implementation
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    public void setEnabled(boolean enabled) {
+      this.enabled = enabled;
+    }
     @Implementation
     public String getAddress() {
         return this.address;

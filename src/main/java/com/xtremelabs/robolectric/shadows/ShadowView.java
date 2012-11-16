@@ -3,9 +3,12 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Point;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.LayerDrawable;
 import android.util.AttributeSet;
 import android.view.*;
 import android.view.View.MeasureSpec;
@@ -14,7 +17,7 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-
+import com.xtremelabs.robolectric.util.ReflectionUtil;
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -34,6 +37,9 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(View.class)
 public class ShadowView {
+    // This is dumb, we should have a Robolectric-wide way of warning about weird states. todo [xw]
+    public static boolean strict = false;
+
     @RealObject
     protected View realView;
 
@@ -41,6 +47,7 @@ public class ShadowView {
     ShadowView parent;
     protected Context context;
     private boolean selected;
+    private boolean pressed;
     private View.OnClickListener onClickListener;
     private View.OnLongClickListener onLongClickListener;
     private Object tag;
@@ -83,6 +90,7 @@ public class ShadowView {
     private float translationX = 0.0f;
     private float translationY = 0.0f;
     private float alpha = 1.0f;
+    private boolean attachedToWindow;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -248,6 +256,40 @@ public class ShadowView {
         return context.getResources();
     }
 
+    /**
+     * Build drawable, either LayerDrawable or BitmapDrawable.
+     *
+     * @param resourceId Resource id
+     * @return Drawable
+     */
+    protected Drawable buildDrawable(int resourceId) {
+        if (isDrawableXml(resourceId)) {
+            int[] resourceIds = shadowOf(Robolectric.application)
+                .getResourceLoader().getDrawableIds(resourceId);
+
+            Drawable[] drawables = new Drawable[resourceIds.length];
+
+            for (int i = 0; i < resourceIds.length; i++) {
+                drawables[i] = buildDrawable(resourceIds[i]);
+            }
+
+            return new LayerDrawable(drawables);
+        } else {
+            return new BitmapDrawable(BitmapFactory.decodeResource(getResources(), resourceId));
+        }
+    }
+
+    /**
+     * Does the resource id point to xml resource.
+     *
+     * @param resourceId Resource id
+     * @return Boolean
+     */
+    protected boolean isDrawableXml(int resourceId) {
+        return shadowOf(Robolectric.application).getResourceLoader()
+            .isDrawableXml(resourceId);
+    }
+
     @Implementation
     public void setBackgroundResource(int backgroundResourceId) {
         this.backgroundResourceId = backgroundResourceId;
@@ -306,6 +348,16 @@ public class ShadowView {
     @Implementation
     public boolean isSelected() {
         return this.selected;
+    }
+
+    @Implementation
+    public void setPressed(boolean pressed) {
+        this.pressed = pressed;
+    }
+
+    @Implementation
+    public boolean isPressed() {
+        return this.pressed;
     }
 
     @Implementation
@@ -420,14 +472,28 @@ public class ShadowView {
     		throw new RuntimeException(e); 
     	} 
     }
-    
+
+    @Implementation
+    public void draw(android.graphics.Canvas canvas) {
+        if (background != null) {
+            shadowOf(canvas).appendDescription("background:");
+            background.draw(canvas);
+        }
+    }
+
     @Implementation
     public final void layout(int l, int t, int r, int b) {
-        left = l;
-        top = t;
-        right = r;
-        bottom = b;
-// todo:       realView.onLayout();
+        if (l != left || r != right || t != top || b != bottom) {
+            left = l;
+            top = t;
+            right = r;
+            bottom = b;
+
+            realView.invalidate();
+            ReflectionUtil.invoke(realView, "onLayout",
+                new Class<?>[]{Boolean.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE},
+                true, l, t, r, b);
+        }
     }
 
     @Implementation
@@ -1044,5 +1110,43 @@ public class ShadowView {
     @Implementation
     public TouchDelegate getTouchDelegate()  {
     	return touchDelegate;
+    }
+
+    @Implementation
+    public void onAttachedToWindow() {
+        if (strict && attachedToWindow) throw new IllegalStateException("already attached!");
+        attachedToWindow = true;
+    }
+
+    @Implementation
+    public void onDetachedFromWindow() {
+        if (strict && !attachedToWindow) throw new IllegalStateException("not attached!");
+        attachedToWindow = false;
+    }
+
+    public boolean isAttachedToWindow() {
+        return attachedToWindow;
+    }
+
+    public void callOnAttachedToWindow() {
+        invokeReflectively("onAttachedToWindow");
+    }
+
+    public void callOnDetachedFromWindow() {
+        invokeReflectively("onDetachedFromWindow");
+    }
+
+    private void invokeReflectively(String methodName) {
+        try {
+            Method method = View.class.getDeclaredMethod(methodName);
+            method.setAccessible(true);
+            method.invoke(realView);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

@@ -24,6 +24,9 @@ import java.util.*;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ViewLoader extends XmlLoader {
+    /**
+     * Map of "layout/foo" to the View nodes for that layout file
+     */
     protected Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
     private AttrResourceLoader attrResourceLoader;
     private List<String> qualifierSearchPath = new ArrayList<String>();
@@ -37,11 +40,19 @@ public class ViewLoader extends XmlLoader {
     protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
         ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>(), isSystem);
         processChildren(document.getChildNodes(), topLevelNode);
-        String layoutName = xmlFile.getParentFile().getName() + "/" + xmlFile.getName().replace(".xml", "");
+        String parentDir = xmlFile.getParentFile().getName();
+        String layoutName = "layout/" + xmlFile.getName().replace(".xml", "");
+        String specificLayoutName = parentDir + "/" + xmlFile.getName().replace(".xml", "");
         if (isSystem) {
             layoutName = "android:" + layoutName;
+            specificLayoutName = "android:" + specificLayoutName;
         }
-        viewNodesByLayoutName.put(layoutName, topLevelNode.getChildren().get(0));
+        // Check to see if the generic "layout/foo" is already in the map.  If not, add it.
+        if (!viewNodesByLayoutName.containsKey(layoutName)) {
+            viewNodesByLayoutName.put(layoutName, topLevelNode.getChildren().get(0));
+        }
+        // Add the specific "layout-land/foo" to the map.  If this happens to be "layout/foo", it's a no-op.
+        viewNodesByLayoutName.put(specificLayoutName, topLevelNode.getChildren().get(0));
     }
 
     private void processChildren(NodeList childNodes, ViewNode parent) {
@@ -68,7 +79,7 @@ public class ViewLoader extends XmlLoader {
             parent.requestFocusOverride = true;
         } else if (!name.startsWith("#")) {
             ViewNode viewNode = new ViewNode(name, attrMap, parent.isSystem);
-            if (parent != null) parent.addChild(viewNode);
+            parent.addChild(viewNode);
 
             processChildren(node.getChildNodes(), viewNode);
         }
@@ -153,7 +164,9 @@ public class ViewLoader extends XmlLoader {
                 child.inflate(context, view);
             }
 
-            invokeOnFinishInflate(view);
+            if (view != null) {
+                invokeOnFinishInflate(view);
+            }
             return view;
         }
 
@@ -166,8 +179,7 @@ public class ViewLoader extends XmlLoader {
         private View create(Context context, ViewGroup parent) throws Exception {
             if (name.equals("include")) {
                 String layout = attributes.get("layout");
-                View view = inflateView(context, layout.substring(1), attributes, parent);
-                return view;
+                return inflateView(context, layout.substring(1), attributes, parent);
             } else if (name.equals("merge")) {
                 return parent;
             } else if (name.equals("fragment")) {

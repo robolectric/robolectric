@@ -72,9 +72,11 @@ public class TestAttributeSet implements AttributeSet {
     public int getAttributeIntValue(String namespace, String attribute, int defaultValue) {
         String value = getAttributeValueInMap(namespace, attribute);
 
-        if (attrResourceLoader.hasAttributeFor(viewClass, "xxx", attribute)) {
-            value = attrResourceLoader.convertValueToEnum(viewClass, "xxx", attribute, value);
+        if (attrResourceLoader.hasAttributeFor(viewClass, namespace, attribute)) {
+            value = attrResourceLoader.convertValueToEnum(viewClass, namespace, attribute, value);
         }
+
+        if (value != null && value.startsWith("0x")) value = value.substring(2);
 
         return (value != null) ? Integer.valueOf(value) : defaultValue;
     }
@@ -123,11 +125,6 @@ public class TestAttributeSet implements AttributeSet {
     @Override
     public float getAttributeFloatValue(String namespace, String attribute, float defaultValue) {
         String value = getAttributeValueInMap(namespace, attribute);
-
-        if (attrResourceLoader.hasAttributeFor(viewClass, "xxx", attribute)) {
-            value = attrResourceLoader.convertValueToEnum(viewClass, "xxx", attribute, value);
-        }
-
         return (value != null) ? Float.valueOf(value) : defaultValue;
     }
 
@@ -141,8 +138,7 @@ public class TestAttributeSet implements AttributeSet {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
+    @Override public int getAttributeResourceValue(String namespace, String attribute, int defaultValue) {
         String value = getAttributeValueInMap(namespace, attribute);
         Integer resourceId = defaultValue;
         if (value != null) {
@@ -155,7 +151,9 @@ public class TestAttributeSet implements AttributeSet {
     public int getAttributeResourceValue(int resourceId, int defaultValue) {
         String attrName = resourceExtractor.getResourceName(resourceId);
         String value = getAttributeValueInMap(null, attrName);
-        return (value == null) ? defaultValue : resourceExtractor.getResourceId(value);
+        Integer extracted = null;
+        if (value != null) extracted = resourceExtractor.getResourceId(value);
+        return (extracted == null) ? defaultValue : extracted;
     }
 
     @Override
@@ -188,9 +186,17 @@ public class TestAttributeSet implements AttributeSet {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public int getStyleAttribute() {
-        throw new UnsupportedOperationException();
+    @Override public int getStyleAttribute() {
+        String value = attributes.get("style");
+        if (value == null) {
+            // Per Android specifications, return 0 if there is no style.
+            return 0;
+        }
+        if (resourceExtractor != null) {
+            Integer i = resourceExtractor.getResourceId(value);
+            if (i != null) return i;
+        }
+        return 0;
     }
 
     public void validateStrictI18n() {

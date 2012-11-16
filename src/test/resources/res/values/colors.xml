@@ -11,6 +11,8 @@
 
     <color name="android_namespaced_black">@android:color/black</color>
 
+    <color name="android_namespaced_transparent">@android:color/transparent</color>
+
     <color name="android_red">red</color>
 
 </resources>

@@ -1,14 +1,18 @@
 package com.xtremelabs.robolectric;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.io.File;
+import java.util.List;
 
 import static android.content.pm.ApplicationInfo.*;
+import static com.xtremelabs.robolectric.RobolectricConfig.fromBaseDirWithLibraries;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
+import static com.xtremelabs.robolectric.util.TestUtil.resourcesBaseDir;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -62,6 +66,19 @@ public class RobolectricConfigTest {
     @Test
     public void shouldReturnPackageNameWhenNoProcessIsSpecifiedInTheManifest() {
     	assertEquals("com.xtremelabs.robolectric", newConfig("TestAndroidManifestWithNoProcess.xml").getProcessName());
+    }
+    
+    @Test public void shouldLoadAllResourcesForLibraries() {
+        // This intentionally loads from the non standard resources/project.properties
+        RobolectricConfig config = fromBaseDirWithLibraries(resourcesBaseDir());
+
+        List<File> resourceFileDirs = config.getResourcePath();
+        assertEquals("there should be 5 resource locations", 5, resourceFileDirs.size());
+        assertEquals("./src/test/resources/res", resourceFileDirs.get(0).getPath());
+        assertEquals("./src/test/resources/../lib1/res", resourceFileDirs.get(1).getPath());
+        assertEquals("./src/test/resources/../lib2/res", resourceFileDirs.get(2).getPath());
+        assertEquals("./src/test/resources/../lib3/res", resourceFileDirs.get(3).getPath());
+        assertEquals("./src/test/resources/../lib4/res", resourceFileDirs.get(4).getPath());
     }
 
     @Test

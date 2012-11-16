@@ -11,7 +11,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.util.Join;
 
-import java.io.InputStream;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -27,47 +27,76 @@ public class ShadowBitmapFactory {
     private static Map<String, Point> widthAndHeightMap = new HashMap<String, Point>();
 
     @Implementation
-    public static Bitmap decodeResource(Resources res, int id) {
-        Bitmap bitmap = create("resource:" + getResourceName(id));
-        shadowOf(bitmap).setLoadedFromResourceId(id);
-        return bitmap;
-    }
-
-    @Implementation
     public static Bitmap decodeResource(Resources res, int id, BitmapFactory.Options options) {
         Bitmap bitmap = create("resource:" + getResourceName(id), options);
         shadowOf(bitmap).setLoadedFromResourceId(id);
         return bitmap;
     }
 
+    @Implementation
+    public static Bitmap decodeResource(Resources res, int id) {
+        return decodeResource(res, id, null);
+    }
+    
     private static String getResourceName(int id) {
         return shadowOf(Robolectric.application).getResourceLoader().getNameForId(id);
     }
 
     @Implementation
     public static Bitmap decodeFile(String pathName) {
-        return create("file:" + pathName);
+        return decodeFile(pathName, null);
     }
 
     @Implementation
     public static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
+        File file = new File(pathName);
+        if (file.exists()){
+            try {
+                BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
+                String line = bufferedReader.readLine();
+                StringBuilder sb = new StringBuilder();
+                while (line != null){
+                    sb.append(line);
+                    line = bufferedReader.readLine();
+                }
+                bufferedReader.close();
+
+                return create(sb.toString());
+
+            } catch (FileNotFoundException ignore) {
+            } catch (IOException ignore) {
+            }
+        }
+
         return create("file:" + pathName, options);
     }
 
     @Implementation
     public static Bitmap decodeStream(InputStream is) {
-        return decodeStream(is, null, new BitmapFactory.Options());
+        return decodeStream(is, null, null);
     }
 
     @Implementation
     public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
         return create(is.toString().replaceFirst("stream for ", ""), opts);
     }
-    
+
     @Implementation
     public static Bitmap decodeByteArray(byte[] data, int offset, int length) {
     	return decodeByteArray( data, offset, length, new BitmapFactory.Options() );
     }
+
+    /*@Implementation
+    public static Bitmap decodeByteArray(byte[] data, int offset, int length, BitmapFactory.Options options) {
+        if ((offset | length) < 0 || data.length < offset + length) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
+        String desc = new String(data);
+        if (offset != 0 && length != data.length) {
+            desc += " bytes " + offset + ".." + length;
+        }
+        return create(desc, options);
+    }*/
 
     @Implementation
     public static Bitmap decodeByteArray(byte[] data, int offset, int length, BitmapFactory.Options opts) {
@@ -77,10 +106,12 @@ public class ShadowBitmapFactory {
     }
     
     static Bitmap create(String name) {
-        return create(name, new BitmapFactory.Options());
+        return create(name, null);
     }
 
     public static Bitmap create(String name, BitmapFactory.Options options) {
+        if (options == null) options = new BitmapFactory.Options();
+        
         Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(bitmap);
         shadowBitmap.appendDescription("Bitmap for " + name);

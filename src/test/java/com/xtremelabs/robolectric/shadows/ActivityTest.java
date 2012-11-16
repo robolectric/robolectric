@@ -60,6 +60,21 @@ public class ActivityTest {
     }
 
     @Test
+    public void startActivity_shouldDelegateToStartActivityForResult() {
+        final Transcript transcript = new Transcript();
+        Activity activity = new Activity() {
+            @Override protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+                transcript.add("onActivityResult called with requestCode " + requestCode + ", resultCode " + resultCode + ", intent data " + data.getData());
+            }
+        };
+        activity.startActivity(new Intent().setType("image/*"));
+
+        shadowOf(activity).receiveResult(new Intent().setType("image/*"), Activity.RESULT_OK,
+                new Intent().setData(Uri.parse("content:foo")));
+        transcript.assertEventsSoFar("onActivityResult called with requestCode -1, resultCode -1, intent data content:foo");
+    }
+
+    @Test
     public void startActivityForResultAndReceiveResult_shouldSendResponsesBackToActivity() throws Exception {
         final Transcript transcript = new Transcript();
         Activity activity = new Activity() {
@@ -340,7 +355,7 @@ public class ActivityTest {
         int id = activity.getResources().getIdentifier("just_alot_of_crap", "string", "com.xtremelabs.robolectric");
         assertTrue(id == 0);
     }
-    
+
     @Test
     public void setDefaultKeyMode_shouldSetKeyMode() {
     	int[] modes = {
@@ -626,6 +641,32 @@ public class ActivityTest {
     public void callOnXxxMethods_shouldWorkIfNotDeclaredOnConcreteClass() throws Exception {
         Activity activity = new Activity() {};
         shadowOf(activity).callOnStart();
+    }
+
+    @Test
+    public void getAndSetParentActivity_shouldWorkForTestingPurposes() throws Exception {
+        Activity parentActivity = new Activity(){};
+        Activity activity = new Activity(){};
+        shadowOf(activity).setParent(parentActivity);
+        assertSame(parentActivity, activity.getParent());
+    }
+
+    @Test
+    public void getAndSetRequestedOrientation_shouldRemember() throws Exception {
+        Activity activity = new Activity(){};
+        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
+    }
+
+    @Test
+    public void getAndSetRequestedOrientation_shouldDelegateToParentIfPresent() throws Exception {
+        Activity parentActivity = new Activity(){};
+        Activity activity = new Activity(){};
+        shadowOf(activity).setParent(parentActivity);
+        parentActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
+        activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE);
+        assertEquals(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE, parentActivity.getRequestedOrientation());
     }
 
     private static class MyActivity extends Activity {

@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.res.Resources;
+import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorMatrix;
 import android.graphics.ColorMatrixColorFilter;
@@ -20,6 +21,8 @@ import java.io.InputStream;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class BitmapDrawableTest {
@@ -31,9 +34,28 @@ public class BitmapDrawableTest {
     }
 
     @Test
+    public void constructors_shouldSetBitmap() throws Exception {
+        Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
+        BitmapDrawable drawable = new BitmapDrawable(bitmap);
+        assertEquals(bitmap, drawable.getBitmap());
+
+        drawable = new BitmapDrawable(resources, bitmap);
+        assertEquals(bitmap, drawable.getBitmap());
+    }
+
+    @Test
     public void getBitmap_shouldReturnBitmapUsedToDraw() throws Exception {
         BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
         assertEquals("Bitmap for resource:drawable/an_image", shadowOf(drawable.getBitmap()).getDescription());
+    }
+
+    @Test
+    public void mutate_createsDeepCopy() throws Exception {
+        BitmapDrawable original = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
+        Drawable mutated = original.mutate();
+        assertNotSame(original, mutated);
+        assertTrue(mutated instanceof BitmapDrawable);
+        assertEquals(original, mutated);
     }
 
     @Test

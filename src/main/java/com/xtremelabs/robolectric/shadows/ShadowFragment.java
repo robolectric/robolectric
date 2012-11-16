@@ -9,11 +9,16 @@ import android.support.v4.app.FragmentManager;
 import android.view.View;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
+
+import java.lang.reflect.Field;
 
 @Implements(Fragment.class)
 public class ShadowFragment {
+    @RealObject Fragment realFragment;
+
     protected View view;
-    protected FragmentActivity activity;
+    protected FragmentActivity fragmentActivity;
     private String tag;
     private Bundle savedInstanceState;
     private int containerViewId;
@@ -21,12 +26,26 @@ public class ShadowFragment {
     private Bundle arguments;
     private boolean attached;
 
+    private int fragmentId;
+
+    private Fragment targetFragment;
+    private boolean resumed;
+
     public void setView(View view) {
         this.view = view;
     }
 
     public void setActivity(FragmentActivity activity) {
-        this.activity = activity;
+        if (fragmentActivity != null) realFragment.onDetach();
+        fragmentActivity = activity;
+        if (activity != null) realFragment.onAttach(activity);
+        try {
+            Field field = Fragment.class.getDeclaredField("mActivity");
+            field.setAccessible(true);
+            field.set(realFragment, activity);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Unable to set mActivity field");
+        }
     }
 
     @Implementation
@@ -36,22 +55,28 @@ public class ShadowFragment {
 
     @Implementation
     public FragmentActivity getActivity() {
-        return activity;
+        return fragmentActivity;
     }
 
     @Implementation
     public void startActivity(Intent intent) {
-        new FragmentActivity().startActivity(intent);
+        if (fragmentActivity == null) {
+            throw new IllegalStateException("Fragment " + this + " not attached to Activity");
+        }
+        fragmentActivity.startActivity(intent);
     }
 
     @Implementation
     public void startActivityForResult(Intent intent, int requestCode) {
-        activity.startActivityForResult(intent, requestCode);
+        if (fragmentActivity == null) {
+            throw new IllegalStateException("Fragment " + this + " not attached to Activity");
+        }
+        fragmentActivity.startActivityForResult(intent, requestCode);
     }
 
     @Implementation
     final public FragmentManager getFragmentManager() {
-        return activity.getSupportFragmentManager();
+        return fragmentActivity.getSupportFragmentManager();
     }
 
     @Implementation
@@ -61,17 +86,14 @@ public class ShadowFragment {
 
     @Implementation
     public Resources getResources() {
-        if (activity == null) {
+        if (fragmentActivity == null) {
             throw new IllegalStateException("Fragment " + this + " not attached to Activity");
         }
-        return activity.getResources();
+        return fragmentActivity.getResources();
     }
 
     @Implementation
     public String getString(int id) {
-        if (activity == null) {
-            throw new IllegalStateException("Fragment " + this + " not attached to Activity");
-        }
         return getResources().getString(id);
     }
 
@@ -119,5 +141,73 @@ public class ShadowFragment {
 
     public boolean isAttached() {
         return attached;
+    }
+    
+    @Implementation
+    public final CharSequence getText(int resId) {
+        return getResources().getText(resId);
+    }
+
+    @Implementation
+    public final String getString(int resId, Object... formatArgs) {
+        return getResources().getString(resId, formatArgs);
+    }
+
+    @Implementation
+    public int getId() {
+        return fragmentId;
+    }
+
+    @Implementation
+    public boolean isAdded() {
+        return fragmentActivity != null;
+    }
+
+    @Implementation
+    public boolean isVisible() {
+        return fragmentActivity != null;
+    }
+
+    @Implementation
+    public Fragment getTargetFragment() {
+        return targetFragment;
+    }
+
+    @Implementation
+    public void setTargetFragment(Fragment targetFragment, int requestCode) {
+        this.targetFragment = targetFragment;
+    }
+
+    @Implementation
+    public void onResume() {
+        this.resumed = true;
+    }
+
+    public void resume() {
+        realFragment.onResume();
+    }
+
+    @Implementation
+    public void onPause() {
+        this.resumed = false;
+    }
+
+    public void pause() {
+        realFragment.onPause();
+    }
+
+    @Implementation
+    public boolean isResumed() {
+        return resumed;
+    }
+
+    public void createView() {
+        final FragmentActivity activity = getActivity();
+        view = realFragment.onCreateView(activity.getLayoutInflater(), null, null);
+        realFragment.onViewCreated(view, null);
+    }
+
+    public void setFragmentId(int fragmentId) {
+        this.fragmentId = fragmentId;
     }
 }

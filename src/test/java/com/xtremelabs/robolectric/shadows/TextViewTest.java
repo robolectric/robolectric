@@ -150,14 +150,14 @@ public class TextViewTest {
         view.setTransformationMethod(new ShadowPasswordTransformationMethod());
         assertEquals(view.getTransformationMethod().getClass(), ShadowPasswordTransformationMethod.class);
     }
-
+    
     @Test
     public void testGetInputType() throws Exception {
         assertThat(textView.getInputType(), not(equalTo(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)));
         textView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         assertThat(textView.getInputType(), equalTo(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD));
     }
-
+    
     @Test
     public void givenATextViewWithATextWatcherAdded_WhenSettingTextWithTextResourceId_ShouldNotifyTextWatcher() {
         MockTextWatcher mockTextWatcher = new MockTextWatcher();
@@ -167,7 +167,7 @@ public class TextViewTest {
 
         assertEachTextWatcherEventWasInvoked(mockTextWatcher);
     }
-
+    
     @Test
     public void givenATextViewWithATextWatcherAdded_WhenSettingTextWithCharSequence_ShouldNotifyTextWatcher() {
         MockTextWatcher mockTextWatcher = new MockTextWatcher();
@@ -234,6 +234,7 @@ public class TextViewTest {
         assertThat(mockTextWatcher.afterTextChangeArgument.toString(), equalTo(NEW_TEXT));
     }
 
+    
     @Test
     public void whenAppendingText_ShouldAppendNewTextAfterOldOne() {
         textView.setText(INITIAL_TEXT);
@@ -384,6 +385,26 @@ public class TextViewTest {
     public void testHasSelectionReturnsFalse() {
         textView.setText("1");
         assertFalse(textView.hasSelection());
+    }
+
+    @Test
+    public void whenSettingTextToNull_WatchersSeeEmptyString() {
+        TextWatcher mockTextWatcher = mock(TextWatcher.class);
+        textView.addTextChangedListener(mockTextWatcher);
+        textView.setText(null);
+        verify(mockTextWatcher).onTextChanged("", 0, 0, 0);
+    }
+
+    @Test
+    public void getPaint_returnsNonNull() {
+        assertNotNull(textView.getPaint());
+    }
+
+    @Test
+    public void testNoArgAppend() {
+        textView.setText("a");
+        textView.append("b");
+        assertThat(textView.getText().toString(), equalTo("ab"));
     }
 
     private List<MockTextWatcher> anyNumberOfTextWatchers() {

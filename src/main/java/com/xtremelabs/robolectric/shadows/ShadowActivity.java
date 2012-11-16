@@ -278,6 +278,14 @@ public class ShadowActivity extends ShadowContextWrapper {
         return parent;
     }
 
+    /**
+     * Allow setting of Parent fragmentActivity (for unit testing purposes only)
+     * @param parent Parent fragmentActivity to set on this fragmentActivity
+     */
+    public void setParent(Activity parent){
+        this.parent = parent;
+    }
+
     @Implementation
     public void onBackPressed() {
         finish();
@@ -346,12 +354,20 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     @Implementation
     public void setRequestedOrientation(int requestedOrientation) {
-        this.requestedOrientation = requestedOrientation;
+        if (getParent() != null){
+            getParent().setRequestedOrientation(requestedOrientation);
+        } else {
+            this.requestedOrientation = requestedOrientation;
+        }
     }
 
     @Implementation
     public int getRequestedOrientation() {
-        return requestedOrientation;
+        if (getParent() != null){
+            return getParent().getRequestedOrientation();
+        } else {
+            return this.requestedOrientation;
+        }
     }
 
     @Implementation
@@ -480,6 +496,11 @@ public class ShadowActivity extends ShadowContextWrapper {
             this.intent = intent;
             this.requestCode = requestCode;
         }
+    }
+
+    @Implementation
+    public void startActivity(Intent intent) {
+        startActivityForResult(intent, -1);
     }
 
     @Implementation

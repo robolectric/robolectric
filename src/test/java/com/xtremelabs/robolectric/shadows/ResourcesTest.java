@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
@@ -19,12 +20,8 @@ import org.junit.runner.RunWith;
 import org.xmlpull.v1.XmlPullParser;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -36,9 +33,9 @@ public class ResourcesTest {
 	@Before
 	public void setup() {
 		resources = new Activity().getResources();
-		shadowApp = shadowOf( Robolectric.application );		
+		shadowApp = shadowOf( Robolectric.application );
 	}
-	
+
     @Test(expected = Resources.NotFoundException.class)
     public void getStringArray_shouldThrowExceptionIfNotFound() throws Exception {
         resources.getStringArray(-1);
@@ -61,6 +58,16 @@ public class ResourcesTest {
         assertThat(resources.newTheme(), notNullValue());
     }
 
+    @Test
+    public void testGetAndSetConfiguration_SameInstance() throws Exception {
+        Activity activity = new Activity();
+        Resources resources = activity.getResources();
+        assertSame(resources.getConfiguration(), resources.getConfiguration());
+        Configuration diffConfig = new Configuration();
+        shadowOf(resources).setConfiguration(diffConfig);
+        assertSame(diffConfig, resources.getConfiguration());
+    }
+
     /**
      * a missing R.class will result in an BitmapDrawable getting returned
      * by default
@@ -70,7 +77,7 @@ public class ResourcesTest {
     	shadowApp.getResourceLoader().setLocalRClass( null );
     	assertThat( resources.getDrawable( TestR.anim.test_anim_1 ), instanceOf( BitmapDrawable.class ) );
     }
-    
+
     /**
      * given an R.anim.id value, will return an AnimationDrawable
      */
@@ -84,7 +91,7 @@ public class ResourcesTest {
     @Values( qualifiers="fr" )
     public void testGetValuesResFromSpecifiecQualifiers(){
     	String hello=resources.getString( R.string.hello );
-    	assertThat( hello, equalTo( "Bonjour" ) );
+    	assertThat( hello, equalTo("Bonjour") );
     }
     
     /**
@@ -93,7 +100,25 @@ public class ResourcesTest {
     @Test
     public void testGetColorDrawable() {
     	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
-    	assertThat( resources.getDrawable( TestR.color.test_color_1 ), instanceOf( ColorDrawable.class ) );    	
+    	assertThat( resources.getDrawable( TestR.color.test_color_1 ), instanceOf( ColorDrawable.class ) );
+    }
+
+    /**
+     * given an R.color.id value, will return a Color
+     */
+    @Test
+    public void testGetColor() {
+        shadowApp.getResourceLoader().setLocalRClass( TestR.class );
+        assertThat( resources.getColor( TestR.color.test_color_1 ), not( 0 ) );
+    }
+
+    /**
+     * given an R.color.id value, will return a ColorStateList
+     */
+    @Test
+    public void testGetColorStateList() {
+        shadowApp.getResourceLoader().setLocalRClass( TestR.class );
+        assertThat( resources.getColorStateList( TestR.color.test_color_1 ), instanceOf( ColorStateList.class ) );
     }
 
     /**
@@ -101,16 +126,16 @@ public class ResourcesTest {
      */
     @Test
     public void testGetBitmapDrawable() {
-    	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
-    	assertThat( resources.getDrawable( TestR.drawable.test_drawable_1 ), instanceOf( BitmapDrawable.class ) );    	    	    	
+        shadowApp.getResourceLoader().setLocalRClass( TestR.class );
+        assertThat( resources.getDrawable( TestR.drawable.test_drawable_1 ), instanceOf( BitmapDrawable.class ) );
     }
-    
+
     /**
      * given an R.drawable.id value, will return a NinePatchDrawable for .9.png file
      */
     @Test
     public void testGetNinePatchDrawable() {
-    	assertThat(resources.getDrawable(R.drawable.nine_patch_drawable ), instanceOf(NinePatchDrawable.class ) );  
+        assertThat(resources.getDrawable(R.drawable.nine_patch_drawable ), instanceOf(NinePatchDrawable.class ) );  
     }
     
     /**
@@ -118,8 +143,8 @@ public class ResourcesTest {
      */
     @Test
     public void testGetBitmapDrawableForUnknownId() {
-    	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
-    	assertThat(resources.getDrawable( Integer.MAX_VALUE ), instanceOf( BitmapDrawable.class ));    	    	
+        shadowApp.getResourceLoader().setLocalRClass( TestR.class );
+        assertThat(resources.getDrawable( Integer.MAX_VALUE ), instanceOf( BitmapDrawable.class ));    	    	
     }
     @Test
     public void testDensity() {
@@ -138,6 +163,40 @@ public class ResourcesTest {
         Activity activity = new Activity();
         assertThat(activity.getResources().getDisplayMetrics().heightPixels, equalTo(800));
         assertThat(activity.getResources().getDisplayMetrics().widthPixels, equalTo(480));
+    }
+
+    @Test
+    public void getSystemShouldReturnSystemResources() throws Exception {
+        assertThat(Resources.getSystem(), instanceOf(Resources.class));
+    }
+
+    @Test
+    public void multipleCallsToGetSystemShouldReturnSameInstance() throws Exception {
+        assertThat(Resources.getSystem(), equalTo(Resources.getSystem()));
+    }
+
+    @Test
+    public void applicationResourcesShouldHaveBothSystemAndLocalValues() throws Exception {
+        Activity activity = new Activity();
+        assertThat(activity.getResources().getString(android.R.string.copy), equalTo("Copy"));
+        assertThat(activity.getResources().getString(R.string.copy), equalTo("Local Copy"));
+    }
+
+    @Test
+    public void systemResourcesShouldHaveSystemValuesOnly() throws Exception {
+        assertThat(Resources.getSystem().getString(android.R.string.copy), equalTo("Copy"));
+        assertThat(Resources.getSystem().getString(R.string.copy), nullValue());
+    }
+
+    @Test
+    public void systemResourcesShouldReturnCorrectSystemId() throws Exception {
+        assertThat(Resources.getSystem().getIdentifier("copy", "android:string", null),
+                   equalTo(android.R.string.copy));
+    }
+
+    @Test
+    public void systemResourcesShouldReturnZeroForLocalId() throws Exception {
+        assertThat(Resources.getSystem().getIdentifier("copy", "string", null), equalTo(0));
     }
     
     @Test

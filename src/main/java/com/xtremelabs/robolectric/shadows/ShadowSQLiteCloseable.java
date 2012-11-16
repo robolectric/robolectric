@@ -13,8 +13,8 @@ import com.xtremelabs.robolectric.internal.Implements;
 @Implements(SQLiteClosable.class)
 public class ShadowSQLiteCloseable {
 
-	@Implementation
-	public void close() {
-	}
-	
+    @Implementation
+    public void close() {
+    }
+
 }

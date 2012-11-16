@@ -7,6 +7,8 @@ import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -14,8 +16,8 @@ public class DisplayTest {
     @Test
     public void shouldProvideDisplayMetrics() throws Exception {
 
-        Display display = Robolectric.newInstanceOf(Display.class);
-        ShadowDisplay shadow = Robolectric.shadowOf(display);
+        Display display = newInstanceOf(Display.class);
+        ShadowDisplay shadow = shadowOf(display);
 
         shadow.setDensity(1.5f);
         shadow.setDensityDpi(DisplayMetrics.DENSITY_MEDIUM);
@@ -36,6 +38,18 @@ public class DisplayTest {
         assertEquals(600, metrics.heightPixels);
         assertEquals(183.0f, metrics.xdpi, 0.05);
         assertEquals(184.0f, metrics.ydpi, 0.05);
+    }
+
+    /**
+     * The {@link android.view.Display#getOrientation()} method is deprecated, but for
+     * testing purposes, return the value gotten from {@link android.view.Display#getRotation()}
+     */
+    @Test
+    public void deprecatedGetOrientation_returnsGetRotation() {
+        Display display = newInstanceOf(Display.class);
+        int testValue = 33;
+        shadowOf(display).setRotation(testValue);
+        assertEquals(testValue, display.getOrientation());
     }
 
 }

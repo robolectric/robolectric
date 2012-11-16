@@ -137,6 +137,14 @@ public class ShadowApplication extends ShadowContextWrapper {
         return resources;
     }
 
+    /**
+     * Reset (set to null) resources instance, so they will be reloaded next time they are
+     * {@link #getResources gotten}
+     */
+    public void resetResources(){
+        resources = null;
+    }
+
     @Implementation
     @Override
     public ContentResolver getContentResolver() {

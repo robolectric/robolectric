@@ -54,6 +54,15 @@ public final class R {
         public static final int fragment = nextId++;
         public static final int dynamic_fragment_container = nextId++;
         public static final int content_view = nextId++;
+
+        public static final int portrait = nextId++;
+        public static final int landscape = nextId++;
+        public static final int tacos = nextId++;
+        public static final int burritos = nextId++;
+        public static int lam_container = nextId++;
+        public static int lam_inner_contents = nextId++;
+        public static int my_fragment = nextId++;
+        public static int my_landscape_fragment = nextId++;
     }
 
     public static final class string {
@@ -87,6 +96,7 @@ public final class R {
         public static final int clear = nextId++;
         public static final int color_with_alpha = nextId++;
         public static final int android_namespaced_black = nextId++;
+        public static final int android_namespaced_transparent = nextId++;
         public static final int android_red = nextId++;
     }
 
@@ -115,6 +125,7 @@ public final class R {
         public static final int media = nextId++;
         public static final int inner_merge = nextId++;
         public static final int included_linear_layout = nextId++;
+        public static final int edit_text = nextId++;
         public static final int with_invalid_onclick = nextId++;
         public static final int text_views = nextId++;
         public static final int text_views_hints = nextId++;
@@ -122,11 +133,18 @@ public final class R {
         public static final int tab_activity = nextId++;
         public static final int different_screen_sizes = nextId++;
         public static final int fragment_activity = nextId++;
+        public static final int fragment_contents = nextId++;
+        public static final int lam_outer = nextId++;
+        public static final int lam_inner = nextId++;
     }
 
     public static final class raw {
         public static final int raw_resource = nextId++;
         public static final int raw_no_ext = nextId++;
+    }
+
+    public static final class attr {
+        public static final int isSugary = nextId++;
     }
 
     public static final class menu {
@@ -160,12 +178,20 @@ public final class R {
         public static final int test_integer1 = nextId++;
         public static final int test_integer2 = nextId++;
         public static final int test_large_hex = nextId++;
+        public static final int meaning_of_life = nextId++;
+        public static final int loneliest_number = nextId++;
+        public static final int there_can_be_only = nextId++;
+        public static final int hex_int = nextId++;
     }
-    
+
     public static final class bool {
     	public static final int false_bool_value = nextId++;
     	public static final int true_bool_value = nextId++;
     	public static final int zero_is_false = nextId++;
     	public static final int integers_are_true = nextId++;
+    }
+
+    public static final class style {
+        public static int FancyStyle = nextId++;
     }
 }

@@ -1,8 +1,5 @@
 package com.xtremelabs.robolectric.res;
 
-import java.util.*;
-import java.util.Map.Entry;
-
 import android.content.ComponentName;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -11,9 +8,10 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
-
 import com.xtremelabs.robolectric.RobolectricConfig;
 import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
+
+import java.util.*;
 
 public class RobolectricPackageManager extends StubPackageManager {
 
@@ -119,7 +117,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     	drawableList.put( intent.getComponent(), d);
     }
 
-	@Override
+  @Override
 	public Intent getLaunchIntentForPackage(String packageName) {
 		Intent i = new Intent();
 		i.setComponent( new ComponentName(packageName, "") );

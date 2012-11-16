@@ -9,10 +9,13 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import static android.content.pm.ApplicationInfo.*;
 import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
@@ -69,11 +72,58 @@ public class RobolectricConfig {
     }
 
     public static RobolectricConfig fromBaseDirWithLibraries(File baseDir) {
-        return new RobolectricConfig(baseDir);
-        // todo:
-//        List<File> resources = new ArrayList<File>();
-//        buildResourcePath(baseDir, resources);
-//        return new RobolectricConfig(new File(baseDir, "AndroidManifest.xml"), resources, new File(baseDir, "assets"));
+        List<File> resources = new ArrayList<File>();
+        buildResourcePath(baseDir, resources);
+        return new RobolectricConfig(new File(baseDir, "AndroidManifest.xml"), resources, new File(baseDir, "assets"));
+    }
+
+    private static void buildResourcePath(File baseDir, List<File> resources) {
+        resources.add(new File(baseDir, "res"));
+
+        Properties properties = getProperties(new File(baseDir, "project.properties"));
+        if (properties != null) {
+            int libRef = 1;
+            String lib;
+            while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
+                buildResourcePath(new File(baseDir, lib), resources);
+                libRef++;
+            }
+            return;
+        } else {
+            // Try unpack folder from maven.
+            File unpack = new File(baseDir, "target/unpack/apklibs");
+            if (unpack.exists()) {
+                File[] libs = unpack.listFiles();
+                if (libs != null) {
+                    for (File lib : libs) {
+                        resources.add(new File(lib, "res"));
+                    }
+                }
+            }
+        }
+    }
+
+    private static Properties getProperties(File propertiesFile) {
+        if (!propertiesFile.exists()) return null;
+
+        Properties properties = new Properties();
+        FileInputStream stream;
+        try {
+            stream = new FileInputStream(propertiesFile);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            try {
+                properties.load(stream);
+            } finally {
+                stream.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return properties;
     }
 
     public String getRClassName() throws Exception {
@@ -86,8 +136,10 @@ public class RobolectricConfig {
             throw new FileNotFoundException(androidManifestFile.getAbsolutePath() + " not found or not a file; it should point to your project's AndroidManifest.xml");
         }
 
-        if (!getResourceDirectory().exists() || !getResourceDirectory().isDirectory()) {
-            throw new FileNotFoundException(getResourceDirectory().getAbsolutePath() + " not found or not a directory; it should point to your project's res directory");
+        for (File f : getResourcePath()) {
+            if (!f.exists() || !f.isDirectory()) {
+                throw new FileNotFoundException(f.getAbsolutePath() + " not found or not a directory; it should point to a res directory");
+            }
         }
     }
 
@@ -120,7 +172,7 @@ public class RobolectricConfig {
 
             processName = getTagAttributeText(manifestDocument, "application", "android:process");
             if (processName == null) {
-            	processName = packageName;
+                processName = packageName;
             }
 
             parseApplicationFlags(manifestDocument);
@@ -187,14 +239,14 @@ public class RobolectricConfig {
     }
 
     private int getApplicationFlag(final Document doc, final String attribute, final int attributeValue) {
-    	String flagString = getTagAttributeText(doc, "application", attribute);
-    	return "true".equalsIgnoreCase(flagString) ? attributeValue : 0;
+        String flagString = getTagAttributeText(doc, "application", attribute);
+        return "true".equalsIgnoreCase(flagString) ? attributeValue : 0;
     }
-    
+
     private Integer getTagAttributeIntValue(final Document doc, final String tag, final String attribute) {
         return getTagAttributeIntValue(doc, tag, attribute, null);
     }
-    
+
     private Integer getTagAttributeIntValue(final Document doc, final String tag, final String attribute, final Integer defaultValue) {
         String valueString = getTagAttributeText(doc, tag, attribute);
         if (valueString != null) {
@@ -212,11 +264,11 @@ public class RobolectricConfig {
         parseAndroidManifest();
         return packageName;
     }
-    
+
     public int getMinSdkVersion() {
-    	parseAndroidManifest();
-		return minSdkVersion;
-	}
+        parseAndroidManifest();
+        return minSdkVersion;
+    }
 
     public int getSdkVersion() {
         parseAndroidManifest();
@@ -224,8 +276,8 @@ public class RobolectricConfig {
     }
 
     public int getApplicationFlags() {
-    	parseAndroidManifest();
-    	return applicationFlags;
+        parseAndroidManifest();
+        return applicationFlags;
     }
 
     public String getProcessName() {
@@ -262,11 +314,11 @@ public class RobolectricConfig {
     }
 
     public boolean getStrictI18n() {
-    	return strictI18n;
+        return strictI18n;
     }
-    
+
     public void setStrictI18n(boolean strict) {
-    	strictI18n = strict;
+        strictI18n = strict;
     }
 
     public void setValuesResQualifiers( String qualifiers ){
@@ -293,7 +345,7 @@ public class RobolectricConfig {
         }
         return null;
     }
-    
+
     private static Application newApplicationInstance(final String packageName, final String applicationName) {
         Application application;
         try {
@@ -323,7 +375,8 @@ public class RobolectricConfig {
         if (getAssetsDirectory() != null ? !getAssetsDirectory().equals(that.getAssetsDirectory()) : that.getAssetsDirectory() != null) {
             return false;
         }
-        if (getResourceDirectory() != null ? !getResourceDirectory().equals(that.getResourceDirectory()) : that.getResourceDirectory() != null) {
+
+        if (getResourcePath() != null ? !getResourcePath().equals(that.getResourcePath()) : that.getResourcePath() != null) {
             return false;
         }
 
@@ -333,11 +386,11 @@ public class RobolectricConfig {
     @Override
     public int hashCode() {
         int result = androidManifestFile != null ? androidManifestFile.hashCode() : 0;
-        result = 31 * result + (getResourceDirectory() != null ? getResourceDirectory().hashCode() : 0);
+        result = 31 * result + (getResourcePath() != null ? getResourcePath().hashCode() : 0);
         result = 31 * result + (getAssetsDirectory() != null ? getAssetsDirectory().hashCode() : 0);
         return result;
     }
-    
+
     public int getRealSdkVersion() {
         parseAndroidManifest();
         if (sdkVersionSpecified) {
