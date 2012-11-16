@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 
 import android.content.Context;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -14,6 +15,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.fail;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class SQLiteOpenHelperTest {
@@ -22,6 +24,7 @@ public class SQLiteOpenHelperTest {
 
     @Before
     public void setUp() throws Exception {
+    	ShadowSQLiteDatabase.resetInMemoryDatabases();
         helper = new TestOpenHelper(null, "path", null, 1);
     }
 
@@ -128,5 +131,23 @@ public class SQLiteOpenHelperTest {
             onUpgradeCalled = false;
             onOpenCalled = false;
         }
+    }
+    
+    @Test
+    public void testDataRetained() throws Exception {
+		final String createTableSql = "create table x(id int primary key)";
+
+		// Create table the first time - no worries
+		SQLiteDatabase db = helper.getWritableDatabase();
+		db.execSQL(createTableSql);
+		db.close();
+
+		// Create table the second time - should fail if the same database is in use
+		db = helper.getWritableDatabase();
+		try {
+			db.execSQL(createTableSql);
+			fail("Data isn't being retained. The same CREATE TABLE statement worked twice in a row,");
+		} catch (SQLException e) {
+		}
     }
 }

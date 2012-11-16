@@ -4,6 +4,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
 import android.database.sqlite.*;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -35,13 +36,23 @@ import static com.xtremelabs.robolectric.util.SQLite.buildWhereClause;
 @Implements(SQLiteDatabase.class)
 public class ShadowSQLiteDatabase  {
 	@RealObject	SQLiteDatabase realSQLiteDatabase;
-    private static Connection connection;
     private final ReentrantLock mLock = new ReentrantLock(true);
     private boolean mLockingEnabled = true;
     private WeakHashMap<SQLiteClosable, Object> mPrograms;
     private boolean inTransaction = false;
     private boolean transactionSuccess = false;
     private boolean throwOnInsert;
+    private Connection connection, closedConnection;
+    
+	/**
+	 * Drops all in-memory databases. Subsequent new instances of
+	 * {@link SQLiteOpenHelper} will behave as if being called for the first
+	 * time.
+	 */
+	public static void resetInMemoryDatabases() {
+		// Having this method here is more intuitive
+		ShadowSQLiteOpenHelper.resetInMemoryDatabases();
+	}
 
     @Implementation
     public void setLockingEnabled(boolean lockingEnabled) {
@@ -62,12 +73,13 @@ public class ShadowSQLiteDatabase  {
         this.throwOnInsert = throwOnInsert;
     }
 
-    @Implementation
-    public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
-     	connection = DatabaseConfig.getMemoryConnection();
-        return newInstanceOf(SQLiteDatabase.class);
-    }
-    
+	@Implementation
+	public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
+		final SQLiteDatabase db = newInstanceOf(SQLiteDatabase.class);
+		shadowOf(db).connection = DatabaseConfig.getMemoryConnection();
+		return db;
+	}
+
     @Implementation
     public long insert(String table, String nullColumnHack, ContentValues values) {
         try {
@@ -281,18 +293,22 @@ public class ShadowSQLiteDatabase  {
         return (connection != null);
     }
 
-    @Implementation
-    public void close() {
-        if (!isOpen()) {
-            return;
-        }
-        try {
-            connection.close();
-            connection = null;
-        } catch (SQLException e) {
-            throw new RuntimeException("SQL exception in close", e);
-        }
-    }
+	public void reOpen() {
+		if (!isOpen()) {
+			connection = closedConnection;
+			closedConnection = null;
+		}
+	}
+
+	@Implementation
+	public void close() {
+		// Closing an in-memory connection results in the entire database being destroyed.
+		// This method is usually called after a single DB operation and can
+		// validly be called multiple times in a single test case with the
+		// expectation that data will be retained.
+		closedConnection = connection;
+		connection = null;
+	}
 
 	@Implementation
 	public void beginTransaction() {

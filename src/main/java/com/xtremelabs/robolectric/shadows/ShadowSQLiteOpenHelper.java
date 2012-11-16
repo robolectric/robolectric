@@ -1,9 +1,15 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.util.HashMap;
+import java.util.Map;
+
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 import android.database.sqlite.SQLiteOpenHelper;
+
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -16,14 +22,14 @@ import com.xtremelabs.robolectric.internal.RealObject;
 @Implements(SQLiteOpenHelper.class)
 public class ShadowSQLiteOpenHelper {
 
+	private static final Map<String, SQLiteDatabase> DATABASES = new HashMap<String, SQLiteDatabase>();
+	
     @RealObject private SQLiteOpenHelper realHelper;
-    private static SQLiteDatabase database;
+	private SQLiteDatabase database;
+	private String name;
 
     public void __constructor__(Context context, String name, CursorFactory factory, int version) {
-        if (database != null) {
-            database.close();
-        }
-        database = null;
+		this.name = name;
     }
 
     @Implementation
@@ -33,26 +39,33 @@ public class ShadowSQLiteOpenHelper {
         }
         database = null;
     }
+    
+	private synchronized void open() {
+		if (database == null) {
+			database = DATABASES.get(name);
+			if (database == null) {
+				database = ShadowSQLiteDatabase.openDatabase(name, null, 0);
+				DATABASES.put(name, database);
+				realHelper.onCreate(database);
+			}
+		}
+		shadowOf(database).reOpen();
+		realHelper.onOpen(database);
+	}
 
-    @Implementation
-    public synchronized SQLiteDatabase getReadableDatabase() {
-        if (database == null) {
-            database = SQLiteDatabase.openDatabase("path", null, 0);
-            realHelper.onCreate(database);
-        }
+	@Implementation
+	public synchronized SQLiteDatabase getReadableDatabase() {
+		open();
+		return database;
+	}
 
-        realHelper.onOpen(database);
-        return database;
-    }
+	@Implementation
+	public synchronized SQLiteDatabase getWritableDatabase() {
+		open();
+		return database;
+	}
 
-    @Implementation
-    public synchronized SQLiteDatabase getWritableDatabase() {
-        if (database == null) {
-            database = SQLiteDatabase.openDatabase("path", null, 0);
-            realHelper.onCreate(database);
-        }
-
-        realHelper.onOpen(database);
-        return database;
-    }
+	static void resetInMemoryDatabases() {
+		DATABASES.clear();
+	}
 }
