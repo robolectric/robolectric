@@ -55,7 +55,9 @@ public class MethodGenerator {
         }
 
         if (!hasDefault) {
-            ctClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], "{\n}\n", ctClass));
+            CtConstructor defaultConstructor = CtNewConstructor.make(new CtClass[0], new CtClass[0], "{\n}\n", ctClass);
+            ctClass.addConstructor(defaultConstructor);
+            createPlaceholderConstructorMethod(defaultConstructor);
         }
     }
 
