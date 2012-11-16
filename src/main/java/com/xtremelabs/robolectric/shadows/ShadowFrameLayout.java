@@ -3,7 +3,6 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.View.MeasureSpec;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -22,14 +21,6 @@ public class ShadowFrameLayout extends ShadowViewGroup {
         super.__constructor__(context, attributeSet, defStyle);
     }
     
-    @Implementation
-    public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-    	int width = MeasureSpec.getSize(widthMeasureSpec);
-    	int height = MeasureSpec.getSize(heightMeasureSpec);
-    	
-    	layout(right, top, right + width, top + height);
-    }
-
     @Implementation
     @Override
     public ViewGroup.LayoutParams getLayoutParams() {

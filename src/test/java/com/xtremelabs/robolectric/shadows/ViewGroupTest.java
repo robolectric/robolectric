@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Application;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.LayoutAnimationController;
@@ -265,5 +266,23 @@ public class ViewGroupTest {
     public void layoutParams_shouldBeViewGroupLayoutParams() {
         assertThat(child1.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
         assertThat(child1.getLayoutParams(), instanceOf(ViewGroup.LayoutParams.class));
+    }
+
+    @Test
+    public void removeView_removesView() throws Exception {
+        assertThat(root.getChildCount(), equalTo(3));
+        root.removeView(child1);
+        assertThat(root.getChildCount(), equalTo(2));
+        assertThat(root.getChildAt(0), sameInstance(child2));
+        assertThat(root.getChildAt(1), sameInstance((View) child3));
+        assertThat(child1.getParent(), nullValue());
+    }
+
+    @Test
+    public void removeView_resetsParentOnlyIfViewIsInViewGroup() throws Exception {
+        assertThat(root.getChildCount(), equalTo(3));
+        root.removeView(child3a);
+        assertThat(root.getChildCount(), equalTo(3));
+        assertThat(child3a.getParent(), sameInstance((ViewParent) child3));
     }
 }
