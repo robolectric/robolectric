@@ -8,8 +8,7 @@ import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertSame;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class NotificationTest {
@@ -18,6 +17,6 @@ public class NotificationTest {
         PendingIntent pendingIntent = PendingIntent.getActivity(new Activity(), 0, new Intent(), 0);
         Notification notification = new Notification();
         notification.setLatestEventInfo(new Activity(), "title", "content", pendingIntent);
-        assertThat(pendingIntent, is(notification.contentIntent));
+        assertSame(pendingIntent, notification.contentIntent);
     }
 }

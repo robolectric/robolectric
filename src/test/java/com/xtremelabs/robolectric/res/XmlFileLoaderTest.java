@@ -4,20 +4,9 @@
 package com.xtremelabs.robolectric.res;
 
 
-import static org.junit.Assert.*;
-import static org.hamcrest.CoreMatchers.*;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.util.HashSet;
-import java.util.Set;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
+import android.content.res.XmlResourceParser;
+import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.res.XmlFileLoader.XmlResourceParserImpl;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -26,9 +15,18 @@ import org.w3c.dom.Document;
 import org.xmlpull.v1.XmlPullParser;
 import org.xmlpull.v1.XmlPullParserException;
 
-import android.content.res.XmlResourceParser;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.res.XmlFileLoader.XmlResourceParserImpl;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.*;
+
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 /**
  * Test class for {@link XmlFileLoader} and its inner 
@@ -265,22 +263,20 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testGetDepth() throws XmlPullParserException, IOException {
 		// Recorded depths from preference file elements
-		int[] expected = new int[] {
-				1, 2, 3, 2, 2, 2, 2, 2
-		};
-		int index = -1;
+		List<Integer> expectedDepths = asList(1, 2, 3, 2, 3, 2, 2, 2, 2, 2);
+		List<Integer> actualDepths = new ArrayList<Integer>();
 		int evt;
 		while ((evt = parser.next()) != XmlResourceParser.END_DOCUMENT) {
 			switch (evt) {
 				case (XmlResourceParser.START_TAG): {
-					index ++;
-					assertThat(parser.getDepth(), equalTo(expected[index]));
+                    actualDepths.add(parser.getDepth());
 					break;
 				}
 			}
 			
 		}
-	}
+        assertThat(actualDepths, equalTo(expectedDepths));
+    }
 
 	@Test
 	public void testGetText() throws XmlPullParserException, IOException {
@@ -468,34 +464,44 @@ public class XmlFileLoaderTest {
 	@Test
 	public void testNext() throws XmlPullParserException, IOException {
 		// Recorded events while parsing preferences from Android
-		int[] expectedEvents = {
-				XmlPullParser.START_DOCUMENT,
-					XmlPullParser.START_TAG, // PreferenceScreen
-						XmlPullParser.START_TAG, // PreferenceCategory
-							XmlPullParser.START_TAG, // Preference
-							XmlPullParser.END_TAG, 
-						XmlPullParser.END_TAG,
-						XmlPullParser.START_TAG, // CheckBoxPreference
-						XmlPullParser.END_TAG, 
-						XmlPullParser.START_TAG, // EditTextPreference
-						XmlPullParser.END_TAG,
-						XmlPullParser.START_TAG, // ListPreference
-						XmlPullParser.END_TAG,
-						XmlPullParser.START_TAG, // Preference
-						XmlPullParser.END_TAG,
-						XmlPullParser.START_TAG, //RingtonePreference
-						XmlPullParser.END_TAG,
-					XmlPullParser.END_TAG,
-				XmlPullParser.END_DOCUMENT
-		};
-		
-		int evt = -1;
-		int index = -1;
-		
-		do {
-			evt = parser.next();
-			assertThat(evt, equalTo(expectedEvents[++index]));
+		List<String> expectedEvents = Arrays.asList(
+				"<xml>",
+					"<", // PreferenceScreen
+						"<", // PreferenceCategory
+							"<", // Preference
+							">",
+						">",
+
+                        "<", // PreferenceScreen
+                            "<", // Preference
+                            ">",
+                        ">",
+
+                        "<", // CheckBoxPreference
+						">",
+                        "<", // EditTextPreference
+                        ">",
+                        "<", // ListPreference
+                        ">",
+                        "<", // Preference
+						">",
+						"<", //RingtonePreference
+						">",
+					">",
+				"</xml>");
+		List<String> actualEvents = new ArrayList<String>();
+
+        int evt;
+        do {
+            evt = parser.next();
+            switch(evt) {
+                case XmlPullParser.START_DOCUMENT: actualEvents.add("<xml>"); break;
+                case XmlPullParser.END_DOCUMENT: actualEvents.add("</xml>"); break;
+                case XmlPullParser.START_TAG: actualEvents.add("<"); break;
+                case XmlPullParser.END_TAG: actualEvents.add(">"); break;
+            }
 		} while (evt != XmlResourceParser.END_DOCUMENT);
+        assertThat(actualEvents, equalTo(expectedEvents));
 	}
 
 	@Test
