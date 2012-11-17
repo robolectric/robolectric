@@ -84,4 +84,21 @@ public class Setup {
     public boolean shouldPerformStaticInitializationIfShadowIsMissing() {
         return false;
     }
+
+    public static class FakeSubclass {}
+
+    /**
+     * Map from a requested class to an alternate stand-in, or not.
+     * @param className
+     * @return
+     */
+    public String translateClassName(String className) {
+        if (className.equals("com.android.i18n.phonenumbers.NumberParseException")) {
+            return Exception.class.getName();
+        } else if (className.equals("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber")) {
+            return FakeSubclass.class.getName();
+        } else {
+            return className;
+        }
+    }
 }

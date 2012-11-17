@@ -84,7 +84,7 @@ public class ResourcesTest {
     @Test
     public void testGetAnimationDrawable() {
     	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
-    	assertThat( resources.getDrawable( TestR.anim.test_anim_1 ), instanceOf( AnimationDrawable.class ) );
+    	assertThat( resources.getDrawable( TestR.anim.test_anim_1 ), instanceOf(AnimationDrawable.class) );
     }
     
     @Test
@@ -108,7 +108,7 @@ public class ResourcesTest {
      */
     @Test
     public void testGetColor() {
-        shadowApp.getResourceLoader().setLocalRClass( TestR.class );
+        shadowApp.getResourceLoader().setLocalRClass(TestR.class);
         assertThat( resources.getColor( TestR.color.test_color_1 ), not( 0 ) );
     }
 
@@ -118,7 +118,7 @@ public class ResourcesTest {
     @Test
     public void testGetColorStateList() {
         shadowApp.getResourceLoader().setLocalRClass( TestR.class );
-        assertThat( resources.getColorStateList( TestR.color.test_color_1 ), instanceOf( ColorStateList.class ) );
+        assertThat( resources.getColorStateList(TestR.color.test_color_1), instanceOf( ColorStateList.class ) );
     }
 
     /**
@@ -214,14 +214,9 @@ public class ResourcesTest {
     	assertThat(parser.getName(), equalTo("PreferenceScreen"));
     }
     
-    @Test
-    public void testGetXml_unexistentResource() {
-    	try {
-    		resources.getXml(0);
-    		fail("Attempting to load a non existent resource should have raised an exception");
-    	} catch (Resources.NotFoundException ex) {
-    		// pass
-    	}
+    @Test(expected = Resources.NotFoundException.class)
+    public void testGetXml_nonexistentResource() {
+        resources.getXml(0);
     }
     
 }

@@ -1,6 +1,9 @@
 package com.xtremelabs.robolectric;
 
 import android.app.Application;
+import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
+import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
+import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.bytecode.ClassHandler;
 import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
@@ -168,10 +171,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     public void setupApplicationState(final RobolectricConfig robolectricConfig) {
         setupLogging();
 
-        ResourceLoader resourceLoader = createResourceLoader(robolectricConfig );
-
         Robolectric.bindDefaultShadowClasses();
         bindShadowClasses();
+
+        ResourceLoader resourceLoader = createResourceLoader(robolectricConfig);
 
         resourceLoader.setLayoutQualifierSearchPath();
         Robolectric.resetStaticState();
@@ -254,11 +257,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 	private boolean lookForI18nAnnotations(boolean strictI18n, Annotation[] annos) {
 		for ( int i = 0; i < annos.length; i++ ) {
     		String name = annos[i].annotationType().getName();
-    		if (name.equals("com.xtremelabs.robolectric.annotation.EnableStrictI18n")) {
+    		if (name.equals(EnableStrictI18n.class.getName())) {
     			strictI18n = true;
     			break;
     		}
-    		if (name.equals("com.xtremelabs.robolectric.annotation.DisableStrictI18n")) {
+    		if (name.equals(DisableStrictI18n.class.getName())) {
     			strictI18n = false;
     			break;
     		}
@@ -267,27 +270,16 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 	}
 
 	private void lookForLocaleAnnotation( Method method, RobolectricConfig robolectricConfig ) {
-		String qualifiers = "";
-		// TODO: there are maybe better implementation for getAnnotation
-		// Have tried to use several other simple ways, but failed.
+        String qualifiers = "";
+        Values values = method.getAnnotation(Values.class);
+        if (values != null) {
+            qualifiers = values.qualifiers();
+            if (qualifiers.isEmpty()) {
+                qualifiers = values.locale();
+            }
+        }
 
-		Annotation[] annos = method.getDeclaredAnnotations();
-		for( Annotation anno: annos ){
-
-			if( anno.annotationType().getName().equals( "com.xtremelabs.robolectric.annotation.Values" )){
-				try {
-					qualifiers = (String) getAnnotationFieldValue( anno, "qualifiers" );
-
-					if( qualifiers.isEmpty() ){
-						qualifiers = (String) getAnnotationFieldValue( anno, "locale" );
-					}
-				} catch ( Exception e ) {
-					throw new RuntimeException( e );
-				}
-			}
-		}
-
-		robolectricConfig.setValuesResQualifiers( qualifiers );
+		robolectricConfig.setValuesResQualifiers(qualifiers);
 	}
 
     private Object getAnnotationFieldValue(Annotation anno, String method ) throws Exception {
@@ -420,8 +412,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         }
 
         // When locale has changed, reload values resource files.
-        else if(robolectricConfig.isValuesResQualifiersChanged()){
-        	resourceLoader.reloadValuesResouces( robolectricConfig.getValuesResQualifiers() );
+        if(robolectricConfig.isValuesResQualifiersChanged()){
+        	resourceLoader.reloadValuesResources(robolectricConfig.getValuesResQualifiers());
         }
 
         resourceLoader.setStrictI18n(robolectricConfig.getStrictI18n());

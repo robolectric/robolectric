@@ -62,7 +62,12 @@ public class AndroidTranslator implements Translator {
 
         CtClass ctClass;
         try {
-            ctClass = classPool.get(className);
+            String translatedClassName = setup.translateClassName(className);
+            ctClass = classPool.get(translatedClassName);
+
+            if (!translatedClassName.equals(className)) {
+                ctClass.setName(className);
+            }
         } catch (NotFoundException e) {
             throw new IgnorableClassNotFoundException(e);
         }

@@ -355,6 +355,7 @@ public class Robolectric {
                 ShadowResultReceiver.class,
                 ShadowResourceCursorAdapter.class,
                 ShadowResources.class,
+                ShadowNotFoundException.class,
                 ShadowResources.ShadowTheme.class,
                 ShadowScaleGestureDetector.class,
                 ShadowScanResult.class,
@@ -529,8 +530,8 @@ public class Robolectric {
     }
     
     @SuppressWarnings("rawtypes")
-	public static ShadowAsyncTask shadowOf(AsyncTask instance){
-    	return (ShadowAsyncTask) Robolectric.shadowOf_( instance );
+    public static ShadowAsyncTask shadowOf(AsyncTask instance){
+        return (ShadowAsyncTask) Robolectric.shadowOf_(instance);
     }
 
     public static ShadowAudioManager shadowOf(AudioManager instance) {

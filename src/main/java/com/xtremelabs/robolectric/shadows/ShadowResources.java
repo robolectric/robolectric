@@ -205,7 +205,7 @@ public class ShadowResources {
 
     @Implementation
     public int getInteger(int id) throws Resources.NotFoundException {
-    	return resourceLoader.getIntegerValue( id );
+    	return resourceLoader.getIntegerValue(id);
     }
     
     @Implementation
@@ -303,5 +303,4 @@ public class ShadowResources {
         systemResourceLoader.setSystem(true);
         system = ShadowResources.bind(new Resources(null, null, null), systemResourceLoader);
     }
-
 }
