@@ -135,7 +135,7 @@ public class SQLiteOpenHelperTest {
     
     @Test
     public void testDataRetained() throws Exception {
-		final String createTableSql = "create table x(id int primary key)";
+		final String createTableSql = "create table datarentiontest(id int primary key)";
 
 		// Create table the first time - no worries
 		SQLiteDatabase db = helper.getWritableDatabase();
@@ -150,4 +150,21 @@ public class SQLiteOpenHelperTest {
 		} catch (SQLException e) {
 		}
     }
+
+	@Test
+	public void testReset() throws Exception {
+		final String createTableSql = "create table resettest(id int primary key)";
+
+		// Create a table
+		SQLiteDatabase db = helper.getWritableDatabase();
+		db.execSQL(createTableSql);
+		db.close();
+
+		ShadowSQLiteDatabase.resetInMemoryDatabases();
+
+		// Create table second time - should work if wiped properly
+		db = helper.getWritableDatabase();
+		db.execSQL(createTableSql);
+		db.close();
+	}
 }

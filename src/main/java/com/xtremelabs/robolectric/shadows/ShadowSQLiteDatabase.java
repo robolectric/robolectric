@@ -306,8 +306,26 @@ public class ShadowSQLiteDatabase  {
 		// This method is usually called after a single DB operation and can
 		// validly be called multiple times in a single test case with the
 		// expectation that data will be retained.
-		closedConnection = connection;
-		connection = null;
+		if (connection != null) {
+			closedConnection = connection;
+			connection = null;
+		}
+	}
+
+	boolean closedForReal() {
+		return connection == null && closedConnection == null;
+	}
+
+	void closeForReal() {
+		close();
+		if (closedConnection != null) {
+			try {
+				closedConnection.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+			closedConnection = null;
+		}
 	}
 
 	@Implementation

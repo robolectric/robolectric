@@ -41,12 +41,14 @@ public class ShadowSQLiteOpenHelper {
     }
     
 	private synchronized void open() {
-		if (database == null) {
-			database = DATABASES.get(name);
-			if (database == null) {
-				database = ShadowSQLiteDatabase.openDatabase(name, null, 0);
-				DATABASES.put(name, database);
-				realHelper.onCreate(database);
+		if (database == null || shadowOf(database).closedForReal()) {
+			synchronized (DATABASES) {
+				database = DATABASES.get(name);
+				if (database == null || shadowOf(database).closedForReal()) {
+					database = ShadowSQLiteDatabase.openDatabase(name, null, 0);
+					DATABASES.put(name, database);
+					realHelper.onCreate(database);
+				}
 			}
 		}
 		shadowOf(database).reOpen();
@@ -66,6 +68,11 @@ public class ShadowSQLiteOpenHelper {
 	}
 
 	static void resetInMemoryDatabases() {
-		DATABASES.clear();
+		synchronized (DATABASES) {
+			for (SQLiteDatabase db : DATABASES.values()) {
+				shadowOf(db).closeForReal();
+			}
+			DATABASES.clear();
+		}
 	}
 }
