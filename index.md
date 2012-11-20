@@ -82,14 +82,17 @@ drive the development of Android applications.
 
 #### Robolectric's current maintainers are:
 
-* [Christian Williams](http://github.com/Xian), Pivotal Labs
-* [Tyler Schultz](http://github.com/tylerschultz), Pivotal Labs
-* [Phil Goodwin](mailto:phil@pivotallabs.com), Pivotal Labs
-* [Joe Moore](http://github.com/joemoore), Pivotal Labs
+* [Aaron VonderHaar](https://github.com/avh4), Pivotal Labs
+* [Christian Williams](http://github.com/Xian), Square
+* [Jan Berkel](https://github.com/jberkel), SoundCloud
+* [Michael Portuesi](https://github.com/mportuesisf), Zoodles
+* [Phil Goodwin](https://github.com/pgoodwin), Pivotal Labs
+* [Rick Kawala](https://github.com/rkawala), Pivotal Labs
+* [Tyler Schultz](https://github.com/tylerschultz), Pivotal Labs
 
 ## Acknowledgments
 
-* Robolectric (previously known as "droid-sugar") was originally developed by [Christian Williams](http://github.com/Xian) at [XtremeLabs](http://www.xtremelabs.com/). Big thanks to XtremeLabs for their support.
+* Robolectric was originally developed by [Christian Williams](http://github.com/Xian) at [XtremeLabs](http://www.xtremelabs.com/). Big thanks to XtremeLabs for their support.
 * Considerable contributions have been made by numerous Pivots, including [Ian Fisher](mailto:ifisher@pivotallabs.com), [Phil Goodwin](mailto:phil@pivotallabs.com), [Ryan Richard](mailto:rrichard@pivotallabs.com), [Joe Moore](mailto:joe@pivotallabs.com) and [Harry Ugol](mailto:harry@pivotallabs.com).
 * Thanks to [Shane Francis](http://shanefrancis.com/) for the inspired name, and to Pivots [Ofri Afek](mailto:ofri@pivotallabs.com) and [Jessica Miller](mailto:jessica@pivotallabs.com) for our logo!
 
