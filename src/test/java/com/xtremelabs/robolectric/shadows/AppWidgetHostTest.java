@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
@@ -28,5 +29,10 @@ public class AppWidgetHostTest {
     @Test
     public void shouldKnowItsContext() throws Exception {
         assertThat(shadowAppWidgetHost.getContext(), sameInstance(context));
+    }
+
+    @Test
+    public void shouldKnowItsHostId() throws Exception {
+        assertThat(shadowAppWidgetHost.getHostId(), is(404));
     }
 }
