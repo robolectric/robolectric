@@ -107,7 +107,7 @@ public class Robolectric {
         }
 
         try {
-            getShadowWranger().bindShadowClass(realClass.value(), shadowClass);
+            getShadowWrangler().bindShadowClass(realClass.value(), shadowClass);
         } catch (TypeNotPresentException typeLoadingException) {
             String unloadableClassName = shadowClass.getSimpleName();
             if (isIgnorableClassLoadingException(typeLoadingException)) {
@@ -122,7 +122,7 @@ public class Robolectric {
     }
 
     // todo: make private
-    public static ShadowWrangler getShadowWranger() {
+    public static ShadowWrangler getShadowWrangler() {
         return ((ShadowWrangler) RobolectricInternals.getClassHandler());
     }
 
@@ -159,7 +159,7 @@ public class Robolectric {
      * output for the current test only.
      */
     public static void logMissingInvokedShadowMethods() {
-        getShadowWranger().logMissingInvokedShadowMethods();
+        getShadowWrangler().logMissingInvokedShadowMethods();
     }
 
     public static List<Class<?>> getDefaultShadowClasses() {
@@ -429,8 +429,8 @@ public class Robolectric {
     }
 
     public static void resetStaticState() {
-        getShadowWranger().silence();
-        Robolectric.application = new Application();
+        getShadowWrangler().silence();
+        Robolectric.application = null;
         ShadowBitmapFactory.reset();
         ShadowDrawable.reset();
         ShadowMediaStore.reset();
@@ -1141,7 +1141,7 @@ public class Robolectric {
 
     @SuppressWarnings({"unchecked"})
     public static <P, R> P shadowOf_(R instance) {
-        return (P) getShadowWranger().shadowOf(instance);
+        return (P) getShadowWrangler().shadowOf(instance);
     }
 
     /**
@@ -1368,7 +1368,7 @@ public class Robolectric {
     }
 
     public static ShadowApplication getShadowApplication() {
-        return shadowOf(Robolectric.application);
+        return Robolectric.application == null ? null : shadowOf(Robolectric.application);
     }
 
     public static void setDisplayMetricsDensity(float densityMultiplier) {

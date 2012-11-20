@@ -27,7 +27,8 @@ public class ShadowFrameLayout extends ShadowViewGroup {
     }
 
     @Override
-    protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
+    @Implementation
+    public ViewGroup.LayoutParams generateDefaultLayoutParams() {
         return new FrameLayout.LayoutParams(0, 0);
     }
 }

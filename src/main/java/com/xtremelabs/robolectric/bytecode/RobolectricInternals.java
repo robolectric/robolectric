@@ -67,8 +67,8 @@ public class RobolectricInternals {
             if (vars.callDirectly != directInstance) {
                 Object expectedInstance = vars.callDirectly;
                 vars.callDirectly = null;
-                throw new RuntimeException("expected to perform direct call on <" + expectedInstance.getClass().getName()
-                        + "> but got <" + directInstance.getClass().getName() + ">");
+                throw new RuntimeException("expected to perform direct call on " + desc(expectedInstance)
+                        + " but got " + desc(directInstance));
             } else {
                 vars.callDirectly = null;
             }
@@ -76,6 +76,10 @@ public class RobolectricInternals {
         } else {
             return false;
         }
+    }
+
+    private static String desc(Object expectedInstance) {
+        return (expectedInstance instanceof Class) ? "class " + ((Class) expectedInstance).getName() : "instance of " + expectedInstance.getClass().getName();
     }
 
     @SuppressWarnings({"UnusedDeclaration"})

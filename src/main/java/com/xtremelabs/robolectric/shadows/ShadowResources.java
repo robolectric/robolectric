@@ -298,7 +298,10 @@ public class ShadowResources {
      * a flag to exclude local resources on initialization.
      */
     private static void initSystemResources() throws Exception {
-        final ResourceLoader appResourceLoader = getShadowApplication().getResourceLoader();
+        ShadowApplication shadowApplication = getShadowApplication();
+        if (shadowApplication == null) return; // short-circuit if we're called before an application has been created
+
+        final ResourceLoader appResourceLoader = shadowApplication.getResourceLoader();
         final ResourceLoader systemResourceLoader = new ResourceLoader(appResourceLoader);
         systemResourceLoader.setSystem(true);
         system = ShadowResources.bind(new Resources(null, null, null), systemResourceLoader);

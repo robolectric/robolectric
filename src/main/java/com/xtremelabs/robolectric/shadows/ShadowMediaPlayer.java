@@ -15,6 +15,10 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
  */
 @Implements(MediaPlayer.class)
 public class ShadowMediaPlayer {
+    @SuppressWarnings("UnusedDeclaration")
+    public static void __staticInitializer__() {
+        // don't bind the JNI library
+    }
 
 	@RealObject private MediaPlayer player;
 

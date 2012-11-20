@@ -14,7 +14,8 @@ public class ShadowLinearLayout extends ShadowViewGroup {
     }
 
     @Override
-    protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
+    @Implementation
+    public ViewGroup.LayoutParams generateDefaultLayoutParams() {
         return new LinearLayout.LayoutParams(0, 0);
     }
 

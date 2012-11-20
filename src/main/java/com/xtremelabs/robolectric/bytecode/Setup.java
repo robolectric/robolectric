@@ -82,7 +82,7 @@ public class Setup {
     }
 
     public boolean shouldPerformStaticInitializationIfShadowIsMissing() {
-        return false;
+        return true;
     }
 
     public static class FakeSubclass {}

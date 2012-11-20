@@ -11,6 +11,11 @@ import java.util.Collection;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextUtils.class)
 public class ShadowTextUtils {
+    @SuppressWarnings("UnusedDeclaration")
+    public static void __staticInitializer__() {
+        // don't set some private constants
+    }
+
     @Implementation
     public static boolean equals(CharSequence a, CharSequence b) {
         return (a == b) || (a instanceof String && a.equals(b));

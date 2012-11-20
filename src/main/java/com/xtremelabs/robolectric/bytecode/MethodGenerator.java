@@ -7,9 +7,11 @@ import javassist.expr.MethodCall;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.regex.Pattern;
 
 public class MethodGenerator {
     public static final String CONSTRUCTOR_METHOD_NAME = "__constructor__";
+    private static final Pattern ANONYMOUS_INNER_CLASS_NAME = Pattern.compile("\\$\\d+$");
 
     private final CtClass ctClass;
     private CtClass objectCtClass;
@@ -31,19 +33,10 @@ public class MethodGenerator {
             return;
         }
 
+        boolean hasDefault = false;
         for (CtConstructor ctConstructor : ctClass.getDeclaredConstructors()) {
             try {
                 createPlaceholderConstructorMethod(ctConstructor);
-            } catch (Exception e) {
-                throw new RuntimeException("problem instrumenting " + ctConstructor, e);
-            }
-        }
-
-        boolean hasDefault = false;
-
-        for (CtConstructor ctConstructor : ctClass.getDeclaredConstructors()) {
-            try {
-                fixConstructor(ctConstructor);
 
                 if (ctConstructor.getParameterTypes().length == 0) {
                     hasDefault = true;
@@ -54,11 +47,22 @@ public class MethodGenerator {
             }
         }
 
-        if (!hasDefault) {
-            CtConstructor defaultConstructor = CtNewConstructor.make(new CtClass[0], new CtClass[0], "{\n}\n", ctClass);
-            ctClass.addConstructor(defaultConstructor);
-            createPlaceholderConstructorMethod(defaultConstructor);
+        if (!hasDefault && !isAnonymousInnerClass()) {
+            ctClass.addMethod(CtNewMethod.make(CtClass.voidType, CONSTRUCTOR_METHOD_NAME, new CtClass[0], new CtClass[0], "{}", ctClass));
+            ctClass.addConstructor(CtNewConstructor.make(new CtClass[0], new CtClass[0], "{\n" + CONSTRUCTOR_METHOD_NAME + "();\n}\n", ctClass));
         }
+
+        for (CtConstructor ctConstructor : ctClass.getDeclaredConstructors()) {
+            try {
+                fixConstructor(ctConstructor);
+            } catch (Exception e) {
+                throw new RuntimeException("problem instrumenting " + ctConstructor, e);
+            }
+        }
+    }
+
+    private boolean isAnonymousInnerClass() {
+        return ANONYMOUS_INNER_CLASS_NAME.matcher(ctClass.getName()).find();
     }
 
     public void createPlaceholderConstructorMethod(CtConstructor ctConstructor) throws NotFoundException, CannotCompileException {

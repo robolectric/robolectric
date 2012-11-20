@@ -83,12 +83,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
+        sharedRobolectricContext.getClassHandler().reset();
+        delegate.internalBeforeTest(method.getMethod());
+
         final Statement statement = super.methodBlock(method);
         return new Statement() {
             @Override public void evaluate() throws Throwable {
-                sharedRobolectricContext.getClassHandler().reset();
-                delegate.internalBeforeTest(method.getMethod());
-
             	HashMap<Field,Object> withConstantAnnos = getWithConstantAnnotations(method.getMethod());
 
             	// todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
@@ -120,13 +120,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         ClassHandler classHandler = sharedRobolectricContext.getClassHandler();
         classHandler.configure(robolectricConfig);
 
+        setupLogging();
         configureShadows();
 
-        beforeTest(method);
-    }
+        Robolectric.resetStaticState();
+        resetStaticState();
 
-    protected void configureShadows() {
-        setupApplicationState(sharedRobolectricContext.getRobolectricConfig());
+        DatabaseConfig.setDatabaseMap(this.databaseMap); //Set static DatabaseMap in DBConfig
+
+        setupApplicationState();
+
+        beforeTest(method);
     }
 
     @Override public void internalAfterTest(final Method method) {
@@ -168,21 +172,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     public void prepareTest(final Object test) {
     }
 
-    public void setupApplicationState(final RobolectricConfig robolectricConfig) {
-        setupLogging();
-
-        Robolectric.bindDefaultShadowClasses();
-        bindShadowClasses();
-
+    public void setupApplicationState() {
+        RobolectricConfig robolectricConfig = sharedRobolectricContext.getRobolectricConfig();
         ResourceLoader resourceLoader = createResourceLoader(robolectricConfig);
-
         resourceLoader.setLayoutQualifierSearchPath();
-        Robolectric.resetStaticState();
-        resetStaticState();
-
-        DatabaseConfig.setDatabaseMap(this.databaseMap);//Set static DatabaseMap in DBConfig
 
         Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
+    }
+
+    protected void configureShadows() {
+        Robolectric.bindDefaultShadowClasses();
+        bindShadowClasses();
     }
 
     /**

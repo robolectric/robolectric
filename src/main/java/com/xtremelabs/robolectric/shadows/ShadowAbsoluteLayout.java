@@ -31,7 +31,8 @@ public class ShadowAbsoluteLayout extends ShadowViewGroup {
     }
 
     @Override
-    protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
+    @Implementation
+    public ViewGroup.LayoutParams generateDefaultLayoutParams() {
         return new AbsoluteLayout.LayoutParams(0, 0, 0, 0);
     }
 }

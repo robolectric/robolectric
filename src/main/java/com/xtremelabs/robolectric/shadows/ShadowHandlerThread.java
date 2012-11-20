@@ -1,11 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.os.HandlerThread;
+import android.os.Looper;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-
-import android.os.HandlerThread;
-import android.os.Looper;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -14,8 +13,7 @@ import java.lang.reflect.Method;
 public class ShadowHandlerThread {
     private Looper looper;
 
-    @RealObject
-    private HandlerThread thread;
+    @RealObject private HandlerThread realObject;
 
     public void __constructor__(String name) {
         __constructor__(name, -1);
@@ -28,25 +26,37 @@ public class ShadowHandlerThread {
     @Implementation
     public void run() {
         Looper.prepare();
-        synchronized (this) {
+        synchronized (realObject) {
             looper = Looper.myLooper();
-            onLooperPrepared();
-            notifyAll();
+            callOnLooperPrepared();
+            realObject.notifyAll();
         }
         Looper.loop();
     }
 
+    private void callOnLooperPrepared() {
+        Method prepared;
+        try {
+            prepared = HandlerThread.class.getDeclaredMethod("onLooperPrepared");
+            prepared.setAccessible(true);
+            prepared.invoke(realObject);
+        } catch (NoSuchMethodException ignored) {
+        } catch (InvocationTargetException ignored) {
+        } catch (IllegalAccessException ignored) {
+        }
+    }
+
     @Implementation
     public Looper getLooper() {
-        if (!thread.isAlive()) {
+        if (!realObject.isAlive()) {
             return null;
         }
 
         // If the thread has been started, wait until the looper has been created.
-        synchronized (this) {
-            while (thread.isAlive() && looper == null) {
+        synchronized (realObject) {
+            while (realObject.isAlive() && looper == null) {
                 try {
-                    wait();
+                    realObject.wait();
                 } catch (InterruptedException ignored) {
                 }
             }
@@ -63,18 +73,4 @@ public class ShadowHandlerThread {
         }
         return false;
     }
-
-    @Implementation
-    public void onLooperPrepared() {
-        Method prepared;
-        try {
-            prepared = HandlerThread.class.getDeclaredMethod("onLooperPrepared");
-            prepared.setAccessible(true);
-            prepared.invoke(thread);
-        } catch (NoSuchMethodException ignored) {
-        } catch (InvocationTargetException ignored) {
-        } catch (IllegalAccessException ignored) {
-        }
-    }
-
-}
+ }

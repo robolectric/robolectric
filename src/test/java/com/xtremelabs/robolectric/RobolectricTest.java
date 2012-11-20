@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -64,7 +65,7 @@ public class RobolectricTest {
         // There's a shadow method for this
         aView.getContext();
         String output = buff.toString();
-        assertEquals("No Shadow method found for View.__constructor__(android.content.Context)\n", output);
+        assertThat(output, containsString("No Shadow method found for View.__constructor__(android.content.Context)\n"));
         buff.reset();
 
         aView.findViewById(27);

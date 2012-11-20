@@ -1,17 +1,15 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static org.junit.Assert.*;
-
+import android.os.HandlerThread;
+import android.os.Looper;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
-
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.os.HandlerThread;
-import android.os.Looper;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class HandlerThreadTest {

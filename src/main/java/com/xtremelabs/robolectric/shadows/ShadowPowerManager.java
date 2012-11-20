@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.Context;
 import android.os.PowerManager;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -34,7 +33,10 @@ public class ShadowPowerManager {
      * Non-Android accessor that discards the most recent {@code PowerManager.WakeLock}s
      */
     public static void reset() {
-    	Robolectric.getShadowApplication().clearWakeLocks();
+        ShadowApplication shadowApplication = Robolectric.getShadowApplication();
+        if (shadowApplication != null) {
+            shadowApplication.clearWakeLocks();
+        }
     }
     
     /**

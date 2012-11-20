@@ -11,6 +11,10 @@ import com.xtremelabs.robolectric.internal.Implements;
  */
 @Implements(MediaRecorder.class)
 public class ShadowMediaRecorder {
+    @SuppressWarnings("UnusedDeclaration")
+    public static void __staticInitializer__() {
+        // don't bind the JNI library
+    }
 
     // Recording machine state, as per:
     // http://developer.android.com/reference/android/media/MediaRecorder.html

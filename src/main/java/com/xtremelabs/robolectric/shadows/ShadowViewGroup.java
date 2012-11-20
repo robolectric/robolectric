@@ -57,7 +57,8 @@ public class ShadowViewGroup extends ShadowView {
         return null;
     }
 
-    protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
+    @Implementation
+    public ViewGroup.LayoutParams generateDefaultLayoutParams() {
         return new ViewGroup.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
     }
 

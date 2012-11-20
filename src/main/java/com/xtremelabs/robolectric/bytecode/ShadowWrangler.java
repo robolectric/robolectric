@@ -68,6 +68,10 @@ public class ShadowWrangler implements ClassHandler {
         if (shadowClass != null) {
             try {
                 Method method = shadowClass.getMethod(AndroidTranslator.STATIC_INITIALIZER_METHOD_NAME);
+                if (!Modifier.isStatic(method.getModifiers())) {
+                    throw new RuntimeException(shadowClass.getName() + "." + method.getName() + " is not static");
+                }
+                method.setAccessible(true);
                 method.invoke(null);
             } catch (NoSuchMethodException e) {
                 if (setup.shouldPerformStaticInitializationIfShadowIsMissing()) {

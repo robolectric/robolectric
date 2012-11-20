@@ -38,7 +38,6 @@ public class ShadowFragment {
     public void setActivity(FragmentActivity activity) {
         if (fragmentActivity != null) realFragment.onDetach();
         fragmentActivity = activity;
-        if (activity != null) realFragment.onAttach(activity);
         try {
             Field field = Fragment.class.getDeclaredField("mActivity");
             field.setAccessible(true);

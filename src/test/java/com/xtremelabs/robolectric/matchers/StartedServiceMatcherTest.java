@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.service.wallpaper.WallpaperService;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
@@ -13,6 +12,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.internal.matchers.TypeSafeMatcher;
 import org.junit.runner.RunWith;
+
 import static com.xtremelabs.robolectric.matchers.StartedServiceMatcher.createIntent;
 import static org.junit.Assert.assertThat;
 
@@ -23,9 +23,6 @@ public class StartedServiceMatcherTest {
 
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-        Robolectric.resetStaticState();
-
         service = new WallpaperService() {
             @Override
             public Engine onCreateEngine() {
@@ -34,7 +31,7 @@ public class StartedServiceMatcherTest {
         };
         intentWithExtra = createIntent(WallpaperService.class, "someExtra", "value");
     }
-//
+
     @Test
     public void shouldSayDidntStartAnythingIfNothingWasStarted() throws Exception {
         assertThat(new StartedServiceMatcher(WallpaperService.class),

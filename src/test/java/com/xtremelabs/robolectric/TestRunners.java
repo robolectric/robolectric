@@ -50,7 +50,12 @@ public class TestRunners {
         }
 
         @Override protected void configureShadows() {
-            // Don't do any resource loading or shadow class binding, because that's what we're trying to test here.
+            // Don't do any class binding, because that's what we're trying to test here.
+        }
+
+        @Override
+        public void setupApplicationState() {
+            // Don't do any resource loading or app init, because that's what we're trying to test here.
         }
     }
 
@@ -117,7 +122,12 @@ public class TestRunners {
         }
 
         @Override protected void configureShadows() {
-            // Don't do any resource loading or shadow class binding, because that's what we're trying to test here.
+            // Don't do any class binding, because that's what we're trying to test here.
+        }
+
+        @Override
+        public void setupApplicationState() {
+            // Don't do any resource loading or app init, because that's what we're trying to test here.
         }
     }
 }

@@ -4,6 +4,7 @@ import android.os.Looper;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.Scheduler;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -20,6 +21,7 @@ public class ShadowLooper {
     private static ThreadLocal<Looper> looperForThread = makeThreadLocalLoopers();
     private Scheduler scheduler = new Scheduler();
     private Thread myThread = Thread.currentThread();
+    private @RealObject Looper realObject;
 
     boolean quit;
 
@@ -43,9 +45,10 @@ public class ShadowLooper {
 
     @Implementation
     public static void loop() {
-        final ShadowLooper looper = shadowOf(myLooper());
-        if (looper != shadowOf(getMainLooper())) {
-            while (!looper.quit) {
+        Looper looper = myLooper();
+        final ShadowLooper shadowLooper = shadowOf(looper);
+        if (shadowLooper != shadowOf(getMainLooper())) {
+            while (!shadowLooper.quit) {
                 try {
                     synchronized (looper) {
                         looper.wait();
@@ -64,10 +67,10 @@ public class ShadowLooper {
     @Implementation
     public void quit() {
         if (this == shadowOf(getMainLooper())) throw new RuntimeException("Main thread not allowed to quit");
-        synchronized (this) {
+        synchronized (realObject) {
             quit = true;
             scheduler.reset();
-            notify();
+            realObject.notify();
         }
     }
 
@@ -77,7 +80,9 @@ public class ShadowLooper {
     }
     
     public boolean hasQuit() {
-        return quit;
+        synchronized (realObject) {
+            return quit;
+        }
     }
 
     public static void pauseLooper(Looper looper) {

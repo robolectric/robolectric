@@ -53,7 +53,8 @@ public class ShadowDialog {
     }
 
     public static void setLatestDialog(ShadowDialog latestDialog) {
-        Robolectric.getShadowApplication().setLatestDialog(latestDialog);
+        ShadowApplication shadowApplication = Robolectric.getShadowApplication();
+        if (shadowApplication != null) shadowApplication.setLatestDialog(latestDialog);
     }
 
     public void __constructor__(Context context) {

@@ -36,7 +36,9 @@ public class ShadowMimeTypeMap {
     }
 
     public static void reset() {
-        shadowOf(getSingleton()).clearMappings();
+        if (sSingleton != null) {
+            shadowOf(getSingleton()).clearMappings();
+        }
     }
 
     @Implementation
