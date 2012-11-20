@@ -93,8 +93,8 @@ drive the development of Android applications.
 ## Acknowledgments
 
 * Robolectric was originally developed by [Christian Williams](http://github.com/Xian) at [XtremeLabs](http://www.xtremelabs.com/). Big thanks to XtremeLabs for their support.
-* Considerable contributions have been made by numerous Pivots, including [Ian Fisher](mailto:ifisher@pivotallabs.com), [Phil Goodwin](mailto:phil@pivotallabs.com), [Ryan Richard](mailto:rrichard@pivotallabs.com), [Joe Moore](mailto:joe@pivotallabs.com) and [Harry Ugol](mailto:harry@pivotallabs.com).
-* Thanks to [Shane Francis](http://shanefrancis.com/) for the inspired name, and to Pivots [Ofri Afek](mailto:ofri@pivotallabs.com) and [Jessica Miller](mailto:jessica@pivotallabs.com) for our logo!
+* Considerable contributions have been made by the teams at Pivotal Labs, Zoodles, and Soundcloud. Thanks to those companies for their support!
+* Thanks to [Shane Francis](http://shanefrancis.com/) for the (Philip K. Dick-)inspired name, and to Pivots [Ofri Afek](mailto:ofri@pivotallabs.com) and [Jessica Miller](mailto:jessica@pivotallabs.com) for our logo!
 
 ## Support
 
