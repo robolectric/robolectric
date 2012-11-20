@@ -12,14 +12,21 @@ public class ShadowAppWidgetHostView extends ShadowFrameLayout {
     @RealObject
     private AppWidgetHostView realAppWidgetHostView;
     private int appWidgetId;
+    private AppWidgetProviderInfo appWidgetInfo;
 
     @Implementation
     public void setAppWidget(int appWidgetId, AppWidgetProviderInfo info) {
         this.appWidgetId = appWidgetId;
+        this.appWidgetInfo = info;
     }
 
     @Implementation
     public int getAppWidgetId() {
         return appWidgetId;
+    }
+
+    @Implementation
+    public AppWidgetProviderInfo getAppWidgetInfo() {
+        return appWidgetInfo;
     }
 }
