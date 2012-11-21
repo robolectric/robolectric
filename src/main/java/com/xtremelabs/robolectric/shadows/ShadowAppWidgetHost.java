@@ -1,11 +1,20 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.appwidget.AppWidgetHost;
+import android.appwidget.AppWidgetHostView;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
+import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @Implements(AppWidgetHost.class)
 public class ShadowAppWidgetHost {
+
+    @RealObject
+    private AppWidgetHost realAppWidgetHost;
 
     private Context context;
     private int hostId;
@@ -21,5 +30,14 @@ public class ShadowAppWidgetHost {
 
     public int getHostId() {
         return hostId;
+    }
+
+    @Implementation
+    public AppWidgetHostView createView(Context context, int appWidgetId,
+                                        AppWidgetProviderInfo appWidget) {
+        AppWidgetHostView hostView = new AppWidgetHostView(context);
+        hostView.setAppWidget(appWidgetId, appWidget);
+        shadowOf(hostView).setHost(realAppWidgetHost);
+        return hostView;
     }
 }
