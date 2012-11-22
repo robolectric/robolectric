@@ -70,19 +70,16 @@ abstract public class ShadowContext {
 
     @Implementation
     public final TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs) {
-        TypedArray result = Robolectric.newInstanceOf(TypedArray.class);
+        TypedArray result = ShadowResources.inject(realContext.getResources(), Robolectric.newInstanceOf(TypedArray.class));
         if (attrs == null) {
             return result;
         }
-        
-        if( set == null ){
-        	return getTheme().obtainStyledAttributes( attrs );
+
+        if (set == null) {
+            return getTheme().obtainStyledAttributes(attrs);
         }
 
-        ShadowTypedArray styledAttributes = Robolectric.shadowOf(result);
-        for(int attr : attrs) {
-            styledAttributes.add(set.getAttributeValue(attr));
-        }
+        Robolectric.shadowOf(result).populate(set, attrs);
         return result;
     }
 

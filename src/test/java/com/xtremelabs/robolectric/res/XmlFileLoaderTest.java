@@ -7,6 +7,7 @@ package com.xtremelabs.robolectric.res;
 import android.content.res.XmlResourceParser;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.res.XmlFileLoader.XmlResourceParserImpl;
+import com.xtremelabs.robolectric.util.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -23,7 +24,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static com.xtremelabs.robolectric.util.TestUtil.systemResources;
+import static com.xtremelabs.robolectric.util.TestUtil.testResources;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
@@ -47,12 +49,10 @@ public class XmlFileLoaderTest {
 	
 	@Before
 	public void setUp() throws Exception {
-        ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
-        resourceExtractor.addSystemRClass(android.R.class);
+        ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
 
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
-        new DocumentLoader(xmlFileLoader).loadResourceXmlDir(resourceFile("res", "xml"));
+        new DocumentLoader(xmlFileLoader).loadResourceXmlDir(testResources(), "xml");
         
         parser = (XmlResourceParserImpl)xmlFileLoader.getXml(R.xml.preferences);
 	}
@@ -104,7 +104,7 @@ public class XmlFileLoaderTest {
 	
 	private int attributeIndexOutOfIndex() {
 		return parser.getAttributeCount() + 1;
-	};
+	}
 	
 	@Test
 	public void testGetXmlInt() throws XmlPullParserException, IOException {
@@ -115,7 +115,7 @@ public class XmlFileLoaderTest {
 
 	@Test
 	public void testGetXmlString() {
-		XmlResourceParser parser = xmlFileLoader.getXml("xml/preferences");
+		XmlResourceParser parser = xmlFileLoader.getXml(TestUtil.TEST_PACKAGE + ":xml/preferences");
 		assertThat(parser, notNullValue());
 	}
 

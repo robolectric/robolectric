@@ -4,24 +4,24 @@ import com.xtremelabs.robolectric.R;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import java.io.File;
+
+import static com.xtremelabs.robolectric.util.TestUtil.systemResources;
+import static com.xtremelabs.robolectric.util.TestUtil.testResources;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 public class IntegerResourceLoaderTest {
-
 	protected IntegerResourceLoader resourceLoader;
 
 	@Before
 	public void setup() throws Exception {
-        ResourceExtractor extractor = new ResourceExtractor();
-        extractor.addLocalRClass( R.class );
-        extractor.addSystemRClass( android.R.class );
+        ResourceExtractor extractor = new ResourceExtractor(testResources(), systemResources());
 
         resourceLoader = new IntegerResourceLoader( extractor );
         DocumentLoader documentLoader = new DocumentLoader(resourceLoader);
 
-        documentLoader.loadResourceXmlDir(resourceFile("res", "values"));
+        documentLoader.loadResourceXmlDirs(testResources(), new File(testResources().resourceBase, "values"));
     }
 
 	@Test

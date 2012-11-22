@@ -6,6 +6,7 @@ import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.util.AttributeSet;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.I18nException;
 import org.w3c.dom.Document;
@@ -29,37 +30,43 @@ public class PreferenceLoader extends XmlLoader {
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
-        PreferenceNode topLevelNode = new PreferenceNode("top-level", new HashMap<String, String>());
-        processChildren(document.getChildNodes(), topLevelNode);
-        prefNodesByResourceName.put( "xml/" + xmlFile.getName().replace(".xml", ""), topLevelNode.getChildren().get(0));
+    protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
+        PreferenceNode topLevelNode = new PreferenceNode("top-level", new ArrayList<Attribute>());
+        processChildren(document.getChildNodes(), topLevelNode, xmlContext);
+        prefNodesByResourceName.put(xmlContext.packageName + ":xml/" + xmlFile.getName().replace(".xml", ""), topLevelNode.getChildren().get(0));
     }
 
-    private void processChildren(NodeList childNodes, PreferenceNode parent) {
+    private void processChildren(NodeList childNodes, PreferenceNode parent, XmlContext xmlContext) {
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node node = childNodes.item(i);
-            processNode(node, parent);
+            processNode(node, parent, xmlContext);
         }
     }
 
-    private void processNode(Node node, PreferenceNode parent) {
+    private void processNode(Node node, PreferenceNode parent, XmlContext xmlContext) {
         String name = node.getNodeName();
         NamedNodeMap attributes = node.getAttributes();
-        Map<String, String> attrMap = new HashMap<String, String>();
+        List<Attribute> attrList = new ArrayList<Attribute>();
 
         if (attributes != null) {
             int length = attributes.getLength();
             for (int i = 0; i < length; i++) {
                 Node attr = attributes.item(i);
-                attrMap.put(attr.getNodeName(), attr.getNodeValue());
+                String attrName = ResourceExtractor.qualifyResourceName(attr.getNodeName(), xmlContext.packageName);
+                if (attrName.startsWith("xmlns:")) {
+                    // ignore for now, but not long!
+                    System.out.println("attrName = " + attrName);
+                } else {
+                    attrList.add(new Attribute(Attribute.addType(attrName, "attr"), attr.getNodeValue(), xmlContext.packageName));
+                }
             }
         }
 
         if (!name.startsWith("#")) {
-            PreferenceNode prefNode = new PreferenceNode(name, attrMap);
+            PreferenceNode prefNode = new PreferenceNode(name, attrList);
             if (parent != null) parent.addChild(prefNode);
 
-            processChildren(node.getChildNodes(), prefNode);
+            processChildren(node.getChildNodes(), prefNode, xmlContext);
         }
     }
 
@@ -80,11 +87,11 @@ public class PreferenceLoader extends XmlLoader {
 
     public class PreferenceNode {
         private String name;
-        private final Map<String, String> attributes;
+        private final List<Attribute> attributes;
 
         private List<PreferenceNode> children = new ArrayList<PreferenceNode>();
 
-        public PreferenceNode(String name, Map<String, String> attributes) {
+        public PreferenceNode(String name, List<Attribute> attributes) {
             this.name = name;
             this.attributes = attributes;
         }
@@ -128,12 +135,12 @@ public class PreferenceLoader extends XmlLoader {
              * from reflection. The only way to set keys/titles/summaries on PreferenceScreens is to set them manually.
              */
                if (clazz.equals(PreferenceScreen.class)) {
-                PreferenceScreen screen = Robolectric.newInstanceOf(PreferenceScreen.class);
-                screen.setKey(attributes.get("android:key"));
-                screen.setTitle(attributes.get("android:title"));
-                screen.setSummary(attributes.get("android:summary"));
-                return screen;
-            }
+                   PreferenceScreen screen = Robolectric.newInstanceOf(PreferenceScreen.class);
+                   screen.setKey(Attribute.findValue(attributes, "android:attr/key"));
+                   screen.setTitle(Attribute.findValue(attributes, "android:attr/title"));
+                   screen.setSummary(Attribute.findValue(attributes, "android:attr/summary"));
+                   return screen;
+               }
 
                try {
                 return ((Constructor<? extends Preference>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);

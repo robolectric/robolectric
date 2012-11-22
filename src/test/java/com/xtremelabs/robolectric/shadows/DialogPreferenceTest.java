@@ -4,14 +4,17 @@ import android.app.Activity;
 import android.content.Context;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -30,8 +33,8 @@ public class DialogPreferenceTest {
 
     @Before
     public void setup() {
-        HashMap<String, String> hash = new HashMap<String, String>();
-        hash.put("dialogMessage", TEST_DIALOG_MESSAGE);
+        List<Attribute> hash = new ArrayList<Attribute>();
+        hash.add(new Attribute("android:attr/dialogMessage", TEST_DIALOG_MESSAGE, R.class.getPackage().getName()));
         context = new Activity();
         attrs = new TestAttributeSet(hash);
         preference = new TestDialogPreference(context, attrs);

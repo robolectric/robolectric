@@ -5,8 +5,8 @@ import com.xtremelabs.robolectric.R;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static com.xtremelabs.robolectric.util.TestUtil.systemResources;
+import static com.xtremelabs.robolectric.util.TestUtil.testResources;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -14,12 +14,10 @@ public class ColorResourceLoaderTest {
     private ColorResourceLoader colorResourceLoader;
 
     @Before public void setUp() throws Exception {
-        ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
-        resourceExtractor.addSystemRClass(android.R.class);
+        ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
         colorResourceLoader = new ColorResourceLoader(resourceExtractor);
-        new DocumentLoader(colorResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
-        new DocumentLoader(colorResourceLoader).loadSystemResourceXmlDir(getSystemResourceDir("values"));
+        new DocumentLoader(colorResourceLoader).loadResourceXmlDir(testResources(), "values");
+        new DocumentLoader(colorResourceLoader).loadResourceXmlDir(systemResources(), "values");
     }
 
     @Test

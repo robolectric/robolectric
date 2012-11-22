@@ -8,13 +8,14 @@ import java.io.File;
 import java.io.FileFilter;
 
 public class DocumentLoader {
-    private final XmlLoader[] xmlLoaders;
-    private final DocumentBuilderFactory documentBuilderFactory;
-    private FileFilter xmlFileFilter = new FileFilter() {
+    private static final FileFilter ENDS_WITH_XML = new FileFilter() {
         @Override public boolean accept(File file) {
             return file.getName().endsWith(".xml");
         }
     };
+
+    private final XmlLoader[] xmlLoaders;
+    private final DocumentBuilderFactory documentBuilderFactory;
 
     public DocumentLoader(XmlLoader... xmlLoaders) {
         this.xmlLoaders = xmlLoaders;
@@ -25,37 +26,30 @@ public class DocumentLoader {
         documentBuilderFactory.setIgnoringElementContentWhitespace(true);
     }
 
-    public void loadResourceXmlDirs(File... resourceXmlDirs) throws Exception {
-        loadResourceXmlDirs(false, resourceXmlDirs);
-    }
-
-    public void loadResourceXmlDirs(boolean isSystem, File... resourceXmlDirs) throws Exception {
-        for (File resourceXmlDir : resourceXmlDirs) {
-            loadResourceXmlDir(resourceXmlDir, isSystem);
+    public void loadResourceXmlDirs(ResourcePath resourcePath, File... dirs) throws Exception {
+        for (File dir : dirs) {
+            loadResourceXmlDir(resourcePath, dir);
         }
     }
 
-    public void loadResourceXmlDir(File resourceXmlDir) throws Exception {
-        loadResourceXmlDir(resourceXmlDir, false);
+    void loadResourceXmlDir(ResourcePath resourcePath, String dirName) throws Exception {
+        loadResourceXmlDir(resourcePath, new File(resourcePath.resourceBase, dirName));
     }
 
-    public void loadSystemResourceXmlDir(File resourceXmlDir) throws Exception {
-        loadResourceXmlDir(resourceXmlDir, true);
-    }
-
-    private void loadResourceXmlDir(File resourceXmlDir, boolean isSystem) throws Exception {
-        if (!resourceXmlDir.exists()) {
-            throw new RuntimeException("no such directory " + resourceXmlDir);
+    private void loadResourceXmlDir(ResourcePath resourcePath, File dir) throws Exception {
+        if (!dir.exists()) {
+            throw new RuntimeException("no such directory " + dir);
         }
 
-        for (File file : resourceXmlDir.listFiles(xmlFileFilter)) {
-            loadResourceXmlFile(file, isSystem);
+        for (File file : dir.listFiles(ENDS_WITH_XML)) {
+            loadResourceXmlFile(file, resourcePath.getPackageName());
         }
     }
 
-    private void loadResourceXmlFile(File file, boolean isSystem) throws Exception {
+    private void loadResourceXmlFile(File file, String packageName) throws Exception {
+        Document document = parse(file);
         for (XmlLoader xmlLoader : xmlLoaders) {
-            xmlLoader.processResourceXml(file, parse(file), isSystem);
+            xmlLoader.processResourceXml(file, document, packageName);
         }
     }
 

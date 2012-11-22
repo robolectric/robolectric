@@ -1,6 +1,9 @@
 package com.xtremelabs.robolectric.util;
 
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.RobolectricConfig;
+import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.res.ResourcePath;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -16,9 +19,14 @@ import java.util.Map;
 import java.util.Properties;
 
 import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertTrue;
 
 public abstract class TestUtil {
+    public static final ResourcePath TEST_RESOURCE_PATH = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
+    public static final String TEST_PACKAGE = R.class.getPackage().getName();
+    public static final ResourcePath SYSTEM_RESOURCE_PATH = ResourceLoader.getSystemResourcePath(DEFAULT_SDK_VERSION, asList(testResources()));
+    public static final String SYSTEM_PACKAGE = android.R.class.getPackage().getName();
     public static File testDirLocation;
 
     public static void assertEquals(Collection<?> expected, Collection<?> actual) {
@@ -79,6 +87,14 @@ public abstract class TestUtil {
 
     public static File resourceFile(String... pathParts) {
         return file(resourcesBaseDir(), pathParts);
+    }
+
+    public static ResourcePath testResources() {
+        return TEST_RESOURCE_PATH;
+    }
+
+    public static ResourcePath systemResources() {
+        return SYSTEM_RESOURCE_PATH;
     }
 
     public static RobolectricConfig newConfig(String androidManifestFile) {

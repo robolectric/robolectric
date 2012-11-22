@@ -13,8 +13,8 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-//    public static final int CACHE_VERSION = 22;
-    public static final int CACHE_VERSION = -1;
+    public static final int CACHE_VERSION = 22;
+//    public static final int CACHE_VERSION = -1;
 
     static final String STATIC_INITIALIZER_METHOD_NAME = "__staticInitializer__";
 

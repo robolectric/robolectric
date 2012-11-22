@@ -12,9 +12,21 @@ public abstract class XmlLoader {
         this.resourceExtractor = resourceExtractor;
     }
 
-    protected abstract void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception;
-    
+    protected void processResourceXml(File xmlFile, Document document, String packageName) throws Exception {
+        processResourceXml(xmlFile, document, new XmlContext(packageName));
+    }
+
+    protected abstract void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception;
+
     public void setStrictI18n(boolean strict) {
     	this.strictI18n = strict;
+    }
+
+    public class XmlContext {
+        public final String packageName;
+
+        public XmlContext(String packageName) {
+            this.packageName = packageName;
+        }
     }
 }

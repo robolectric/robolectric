@@ -4,7 +4,7 @@ import com.xtremelabs.robolectric.R;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static com.xtremelabs.robolectric.util.TestUtil.testResources;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -12,10 +12,9 @@ public class StringResourceLoaderTest {
     private StringResourceLoader stringResourceLoader;
 
     @Before public void setUp() throws Exception {
-        ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
+        ResourceExtractor resourceExtractor = new ResourceExtractor(testResources());
         stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
     }
 
     @Test

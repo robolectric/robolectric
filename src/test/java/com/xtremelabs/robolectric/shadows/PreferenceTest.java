@@ -9,12 +9,14 @@ import android.util.AttributeSet;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -33,7 +35,7 @@ public class PreferenceTest {
 	@Before
 	public void setup() {
 		context = new Activity();
-		attrs = new TestAttributeSet( new HashMap<String, String>() );
+		attrs = new TestAttributeSet();
 		preference = new TestPreference(context, attrs);
 		shadow = Robolectric.shadowOf( preference );
 	}
@@ -64,8 +66,8 @@ public class PreferenceTest {
 	@Test
 	public void shouldInitializeFromAttributes() {
 		String key = "key_value";
-		HashMap<String, String> hash = new HashMap<String, String>();
-		hash.put( "android:key", key );
+		List<Attribute> hash = new ArrayList<Attribute>();
+		hash.add(new Attribute("android:attr/key", key, R.class.getPackage().getName()));
 		attrs = new TestAttributeSet( hash );
 
 		preference = new TestPreference(context, attrs);

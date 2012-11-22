@@ -1,15 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.res.AssetManager;
-import android.content.res.ColorStateList;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.BitmapDrawable;
+import android.content.res.*;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.NinePatchDrawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Display;
@@ -19,12 +11,12 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+
 import java.io.InputStream;
 import java.util.Locale;
 
-import static com.xtremelabs.robolectric.Robolectric.getShadowApplication;
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.Robolectric.*;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
@@ -48,8 +40,7 @@ public class ShadowResources {
         return resources;
     }
 
-    @RealObject
-    Resources realResources;
+    @RealObject Resources realResources;
     private ResourceLoader resourceLoader;
 
     public ShadowResources() {
@@ -69,11 +60,9 @@ public class ShadowResources {
 
     @Implementation
     public int getIdentifier(String name, String defType, String defPackage) {
-        Integer index = 0;
-
         ResourceExtractor resourceExtractor = resourceLoader.getResourceExtractor();
 
-        index = resourceExtractor.getResourceId(defType + "/" + name);
+        Integer index = resourceExtractor.getResourceId(defType + "/" + name, defPackage);
         if (index == null) {
             return 0;
         }
@@ -173,29 +162,7 @@ public class ShadowResources {
 
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
-
-        ResourceLoader resLoader = Robolectric.shadowOf(Robolectric.application).getResourceLoader();
-
-        Drawable xmlDrawable = resLoader.getXmlDrawable(drawableResourceId);
-        if (xmlDrawable != null) {
-            return xmlDrawable;
-        }
-
-        Drawable animDrawable = resLoader.getAnimDrawable(drawableResourceId);
-        if (animDrawable != null) {
-            return animDrawable;
-        }
-
-        Drawable colorDrawable = resLoader.getColorDrawable(drawableResourceId);
-        if (colorDrawable != null) {
-            return colorDrawable;
-        }
-        
-        if (resLoader.isNinePatchDrawable(drawableResourceId)) {
-        	return new NinePatchDrawable(realResources, null);
-        }
-
-        return new BitmapDrawable(BitmapFactory.decodeResource(realResources, drawableResourceId));
+        return resourceLoader.getDrawable(drawableResourceId, realResources);
     }
 
     @Implementation
@@ -247,6 +214,10 @@ public class ShadowResources {
         return inject(realResources, newInstanceOf(Resources.Theme.class));
     }
 
+    public ResourceLoader getResourceLoader() {
+        return resourceLoader;
+    }
+
     @Implements(Resources.Theme.class)
     public static class ShadowTheme implements UsesResources {
         protected Resources resources;
@@ -267,7 +238,12 @@ public class ShadowResources {
 
         @Implementation
         public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-            return inject(resources, newInstanceOf(TypedArray.class));
+            TypedArray typedArray = inject(resources, newInstanceOf(TypedArray.class));
+            if (set == null) {
+                set = new TestAttributeSet();
+            }
+            shadowOf(typedArray).populate(set, attrs);
+            return typedArray;
         }
     }
 
@@ -302,8 +278,7 @@ public class ShadowResources {
         if (shadowApplication == null) return; // short-circuit if we're called before an application has been created
 
         final ResourceLoader appResourceLoader = shadowApplication.getResourceLoader();
-        final ResourceLoader systemResourceLoader = new ResourceLoader(appResourceLoader);
-        systemResourceLoader.setSystem(true);
+        final ResourceLoader systemResourceLoader = appResourceLoader.copy();
         system = ShadowResources.bind(new Resources(null, null, null), systemResourceLoader);
     }
 }

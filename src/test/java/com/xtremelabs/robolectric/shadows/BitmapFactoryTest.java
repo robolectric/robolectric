@@ -26,7 +26,7 @@ public class BitmapFactoryTest {
     @Test
     public void decodeResource_shouldSetDescription() throws Exception {
         Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image);
-        assertEquals("Bitmap for resource:drawable/an_image", shadowOf(bitmap).getDescription());
+        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image", shadowOf(bitmap).getDescription());
         assertEquals(100, bitmap.getWidth());
         assertEquals(100, bitmap.getHeight());
     }
@@ -84,7 +84,7 @@ public class BitmapFactoryTest {
         ShadowBitmapFactory.provideWidthAndHeightHints(R.drawable.an_image, 123, 456);
 
         Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image);
-        assertEquals("Bitmap for resource:drawable/an_image", shadowOf(bitmap).getDescription());
+        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image", shadowOf(bitmap).getDescription());
         assertEquals(123, bitmap.getWidth());
         assertEquals(456, bitmap.getHeight());
     }

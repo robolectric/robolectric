@@ -33,7 +33,7 @@ public class PluralResourceLoader extends XpathResourceXmlLoader implements Reso
         return null;
     }
 
-    @Override protected void processNode(Node node, String name, boolean isSystem) throws XPathExpressionException {
+    @Override protected void processNode(Node node, String name, XmlContext xmlContext) throws XPathExpressionException {
         XPathExpression itemXPath = XPathFactory.newInstance().newXPath().compile("item");
         NodeList childNodes = (NodeList) itemXPath.evaluate(node, XPathConstants.NODESET);
         PluralRules rules = new PluralRules();
@@ -42,13 +42,12 @@ public class PluralResourceLoader extends XpathResourceXmlLoader implements Reso
             String value = childNode.getTextContent();
             String quantity = childNode.getAttributes().getNamedItem("quantity").getTextContent();
             if (value.startsWith("@")) {
-                value = value.substring(1);
-                rules.add(new Plural(quantity, stringResourceLoader.getValue(value, isSystem)));
-            } else {
-                rules.add(new Plural(quantity, value));
+                // todo we should dereference this at request time, not load time
+                value = stringResourceLoader.getValue(value.substring(1), xmlContext.packageName);
             }
+            rules.add(new Plural(quantity, value));
         }
-        plurals.put("plurals/" + name, rules);
+        plurals.put(xmlContext.packageName + ":plurals/" + name, rules);
     }
 
     @Override public Object convertRawValue(String rawValue) {

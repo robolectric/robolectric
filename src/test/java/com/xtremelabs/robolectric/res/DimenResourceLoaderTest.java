@@ -1,13 +1,12 @@
 package com.xtremelabs.robolectric.res;
 
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-
+import com.xtremelabs.robolectric.R;
 import org.junit.Before;
 import org.junit.Test;
 
-import com.xtremelabs.robolectric.R;
+import static com.xtremelabs.robolectric.util.TestUtil.testResources;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class DimenResourceLoaderTest {
 
@@ -15,11 +14,11 @@ public class DimenResourceLoaderTest {
 
 	@Before
 	public void setUp() throws Exception {
-		ResourceExtractor resourceExtractor = new ResourceExtractor();
-		resourceExtractor.addLocalRClass(R.class);
+
+        ResourceExtractor resourceExtractor = new ResourceExtractor(testResources());
 		dimenResourceLoader = new DimenResourceLoader(resourceExtractor);
 		new DocumentLoader(dimenResourceLoader)
-				.loadResourceXmlDir(resourceFile("res", "values"));
+				.loadResourceXmlDir(testResources(), "values");
 	}
 
 	@Test

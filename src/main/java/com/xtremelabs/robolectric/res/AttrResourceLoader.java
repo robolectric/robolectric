@@ -16,9 +16,6 @@ import java.util.Map;
 import java.util.Set;
 
 public class AttrResourceLoader extends XmlLoader {
-    private static final String ANDROID_XML_NAMESPACE = "http://schemas.android.com/apk/res/android";
-    private static final String ANDROID_PREFIX = "android:";
-
     Map<String, EnumDef> enums = new HashMap<String, EnumDef>();
     Map<String, EnumRef> enumRefs = new HashMap<String, EnumRef>();
     boolean resolved = false;
@@ -47,7 +44,7 @@ public class AttrResourceLoader extends XmlLoader {
         }
     }
 
-    @Override protected void processResourceXml(File xmlFile, Document document, boolean system) throws Exception {
+    @Override protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
 
         // Pick up inline enum definitions
         {
@@ -55,7 +52,7 @@ public class AttrResourceLoader extends XmlLoader {
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
                 String viewName = node.getParentNode().getParentNode().getAttributes().getNamedItem("name").getNodeValue();
-                String enumName = enumName(node.getParentNode().getAttributes().getNamedItem("name").getNodeValue(), system);
+                String enumName = enumName(node.getParentNode().getAttributes().getNamedItem("name").getNodeValue(), xmlContext.packageName);
                 String name = node.getAttributes().getNamedItem("name").getNodeValue();
                 String value = node.getAttributes().getNamedItem("value").getNodeValue();
 
@@ -70,7 +67,7 @@ public class AttrResourceLoader extends XmlLoader {
             for (int i = 0; i < nodeList.getLength(); i++) {
                 Node node = nodeList.item(i);
 
-                String enumName = enumName(node.getParentNode().getAttributes().getNamedItem("name").getNodeValue(), system);
+                String enumName = enumName(node.getParentNode().getAttributes().getNamedItem("name").getNodeValue(), xmlContext.packageName);
                 EnumDef enumDef = enums.get(enumName);
                 if (enumDef == null) {
                     enumDef = new EnumDef(enumName);
@@ -88,7 +85,7 @@ public class AttrResourceLoader extends XmlLoader {
                 Node node = nodeList.item(i);
 
                 String viewName = node.getParentNode().getAttributes().getNamedItem("name").getNodeValue();
-                String enumName = enumName(node.getAttributes().getNamedItem("name").getNodeValue(), system);
+                String enumName = enumName(node.getAttributes().getNamedItem("name").getNodeValue(), xmlContext.packageName);
 
                 enumRefs.put(key(viewName, enumName), new EnumRef(viewName, enumName));
             }
@@ -97,21 +94,19 @@ public class AttrResourceLoader extends XmlLoader {
 
     public String convertValueToEnum(Class<? extends View> viewClass, String namespace, String attrName, String attrValue) {
         resolveReferences();
-        if (ANDROID_XML_NAMESPACE.equals(namespace)) attrName = ANDROID_PREFIX + attrName;
-        String className = findKnownAttrClass(attrName, viewClass).getSimpleName();
-        return classEnumToValue.get(key(className, attrName, attrValue));
+        String qualifiedAttrName = namespace + ":" + attrName;
+        String className = findKnownAttrClass(qualifiedAttrName, viewClass).getSimpleName();
+        return classEnumToValue.get(key(className, qualifiedAttrName, attrValue));
     }
 
     public boolean hasAttributeFor(Class<? extends View> viewClass, String namespace, String attrName) {
         resolveReferences();
-        if (ANDROID_XML_NAMESPACE.equals(namespace)) attrName = ANDROID_PREFIX + attrName;
-        return findKnownAttrClass(attrName, viewClass) != null;
+        String qualifiedAttrName = namespace + ":" + attrName;
+        return findKnownAttrClass(qualifiedAttrName, viewClass) != null;
     }
 
-    private String enumName(String name, boolean system) {
-        String enumName = name;
-        enumName = system ? ANDROID_PREFIX + enumName : enumName;
-        return enumName;
+    private String enumName(String name, String packageName) {
+        return packageName + ":" + name;
     }
 
     private NodeList findNodes(Document document, String path) throws XPathExpressionException {

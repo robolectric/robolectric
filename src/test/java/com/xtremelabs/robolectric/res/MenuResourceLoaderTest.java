@@ -6,20 +6,28 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.tester.android.view.TestMenu;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static com.xtremelabs.robolectric.util.TestUtil.systemResources;
+import static com.xtremelabs.robolectric.util.TestUtil.testResources;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MenuResourceLoaderTest {
-	@Test
+
+    private ResourceLoader resourceLoader;
+
+    @Before
+    public void setUp() throws Exception {
+        resourceLoader = new ResourceLoader(testResources(), systemResources());
+    }
+
+    @Test
     public void shouldInflateComplexMenu() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(DEFAULT_SDK_VERSION, R.class, resourceFile("res"), resourceFile("menu"));
         TestMenu testMenu = new TestMenu();
     	resourceLoader.inflateMenu(Robolectric.application, R.menu.test_withchilds, testMenu);
     	assertThat(testMenu.size(), equalTo(4));
@@ -27,7 +35,6 @@ public class MenuResourceLoaderTest {
 
 	@Test
     public void shouldParseSubItemCorrectly() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(DEFAULT_SDK_VERSION, R.class, resourceFile("res"), resourceFile("menu"));
         TestMenu testMenu = new TestMenu();
     	resourceLoader.inflateMenu(Robolectric.application, R.menu.test_withchilds, testMenu);
     	MenuItem mi = testMenu.findItem(R.id.test_submenu_1);

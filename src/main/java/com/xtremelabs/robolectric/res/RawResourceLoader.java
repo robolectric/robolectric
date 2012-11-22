@@ -1,5 +1,7 @@
 package com.xtremelabs.robolectric.res;
 
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -16,29 +18,23 @@ public class RawResourceLoader {
     }
 
     public InputStream getValue(int resourceId) {
-        String resourceFileName = resourceExtractor.getResourceName(resourceId);
-        String resourceName = resourceFileName.substring("/raw".length());
-
+        String resourceFileName = Attribute.getResourceName(resourceExtractor.getResourceName(resourceId));
         File rawResourceDir = new File(resourceDir, "raw");
 
-        try {
-            File[] files = rawResourceDir.listFiles();
-            for (int i = 0; i < files.length; i++) {
-                File file = files[i];
+        File[] files = rawResourceDir.listFiles();
+        if (files != null) {
+            for (File file : files) {
                 String name = file.getName();
                 int dotIndex = name.indexOf(".");
-                String fileBaseName = null;
-                if (dotIndex >= 0) {
-                    fileBaseName = name.substring(0, dotIndex);
-                } else {
-                    fileBaseName = name;
-                }
-                if (fileBaseName.equals(resourceName)) {
-                    return new FileInputStream(file);
+                String fileBaseName = dotIndex >= 0 ? name.substring(0, dotIndex) : name;
+                if (fileBaseName.equals(resourceFileName)) {
+                    try {
+                        return new FileInputStream(file);
+                    } catch (FileNotFoundException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
-        } catch (FileNotFoundException e) {
-            return null;
         }
         return null;
     }

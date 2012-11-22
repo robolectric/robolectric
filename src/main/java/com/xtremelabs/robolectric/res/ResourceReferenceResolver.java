@@ -18,15 +18,12 @@ class ResourceReferenceResolver<T> {
         return attributeNamesToValues.get(resourceName);
     }
 
-    public void processResource(String name, String rawValue, ResourceValueConverter loader, boolean isSystem) {
+    public void processResource(String name, String rawValue, ResourceValueConverter loader, String packageName) {
         String valuePointer = prefix + "/" + name;
         if (rawValue.startsWith("@" + prefix) || rawValue.startsWith("@android:" + prefix)) {
-            addAttributeReference(rawValue, valuePointer);
+            addAttributeReference(rawValue, valuePointer, packageName);
         } else {
-            if (isSystem) {
-                valuePointer = "android:" + valuePointer;
-            }
-            addAttribute(valuePointer, (T) loader.convertRawValue(rawValue));
+            addAttribute(packageName + ":" + valuePointer, (T) loader.convertRawValue(rawValue));
         }
     }
 
@@ -54,13 +51,14 @@ class ResourceReferenceResolver<T> {
         references.add(valuePointer);
     }
 
-    private void addAttributeReference(String rawValue, String valuePointer) {
-        String attributeName = rawValue.substring(1);
+    private void addAttributeReference(String rawValue, String valuePointer, String packageName) {
+        String attributeName = ResourceExtractor.qualifyResourceName(rawValue.substring(1), packageName);
+        String qualifiedValuePointer = ResourceExtractor.qualifyResourceName(valuePointer, packageName);
         T value = attributeNamesToValues.get(attributeName);
         if (value == null) {
-            addUnresolvedReference(valuePointer, attributeName);
+            addUnresolvedReference(qualifiedValuePointer, attributeName);
         } else {
-            attributeNamesToValues.put(valuePointer, value);
+            attributeNamesToValues.put(qualifiedValuePointer, value);
         }
     }
 }

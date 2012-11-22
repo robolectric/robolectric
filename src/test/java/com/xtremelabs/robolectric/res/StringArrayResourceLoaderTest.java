@@ -4,11 +4,10 @@ import com.xtremelabs.robolectric.R;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
 import java.util.Arrays;
 
-import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static com.xtremelabs.robolectric.util.TestUtil.systemResources;
+import static com.xtremelabs.robolectric.util.TestUtil.testResources;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.assertThat;
 
@@ -16,20 +15,15 @@ public class StringArrayResourceLoaderTest {
     private StringArrayResourceLoader stringArrayResourceLoader;
 
     @Before public void setUp() throws Exception {
-        ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
-        resourceExtractor.addSystemRClass(android.R.class);
-
-        File resourceXmlDir = resourceFile("res", "values");
-        File systemResourceXmlDir = getSystemResourceDir("values");
+        ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
 
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceXmlDir);
-        new DocumentLoader(stringResourceLoader).loadSystemResourceXmlDir(systemResourceXmlDir);
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(systemResources(), "values");
 
         stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
-        new DocumentLoader(stringArrayResourceLoader).loadResourceXmlDir(resourceXmlDir);
-        new DocumentLoader(stringArrayResourceLoader).loadSystemResourceXmlDir(systemResourceXmlDir);
+        new DocumentLoader(stringArrayResourceLoader).loadResourceXmlDir(testResources(), "values");
+        new DocumentLoader(stringArrayResourceLoader).loadResourceXmlDir(systemResources(), "values");
     }
 
     @Test

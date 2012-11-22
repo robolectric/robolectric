@@ -1,25 +1,23 @@
 package com.xtremelabs.robolectric.res;
 
 
-import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-
-import com.xtremelabs.robolectric.TestRunners;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.content.ComponentName;
 import android.content.Intent;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
-
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.util.I18nException;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static com.xtremelabs.robolectric.util.TestUtil.systemResources;
+import static com.xtremelabs.robolectric.util.TestUtil.testResources;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MenuLoaderTest {
@@ -28,16 +26,14 @@ public class MenuLoaderTest {
 	
 	@Before
 	public void setUp() throws Exception {
-        ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
-        resourceExtractor.addSystemRClass(android.R.class);
+        ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
 
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
-        new DocumentLoader(stringResourceLoader).loadSystemResourceXmlDir(getSystemResourceDir("values"));
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(systemResources(), "values");
 
         menuLoader = new MenuLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
-        new DocumentLoader(menuLoader).loadResourceXmlDir(resourceFile("res", "menu"));
+        new DocumentLoader(menuLoader).loadResourceXmlDir(testResources(), "menu");
 	}
 
 	@After

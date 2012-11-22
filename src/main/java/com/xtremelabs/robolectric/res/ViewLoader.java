@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.I18nException;
 import org.w3c.dom.Document;
@@ -24,6 +25,9 @@ import java.util.*;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ViewLoader extends XmlLoader {
+    public static final String ATTR_LAYOUT = ":attr/layout";
+    public static final String XMLNS_URI = "http://www.w3.org/2000/xmlns/";
+
     /**
      * Map of "layout/foo" to the View nodes for that layout file
      */
@@ -37,16 +41,12 @@ public class ViewLoader extends XmlLoader {
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
-        ViewNode topLevelNode = new ViewNode("top-level", new HashMap<String, String>(), isSystem);
-        processChildren(document.getChildNodes(), topLevelNode);
+    protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
+        ViewNode topLevelNode = new ViewNode("top-level", new ArrayList<Attribute>(), xmlContext);
+        processChildren(document.getChildNodes(), topLevelNode, xmlContext);
         String parentDir = xmlFile.getParentFile().getName();
-        String layoutName = "layout/" + xmlFile.getName().replace(".xml", "");
-        String specificLayoutName = parentDir + "/" + xmlFile.getName().replace(".xml", "");
-        if (isSystem) {
-            layoutName = "android:" + layoutName;
-            specificLayoutName = "android:" + specificLayoutName;
-        }
+        String layoutName = xmlContext.packageName + ":layout/" + xmlFile.getName().replace(".xml", "");
+        String specificLayoutName = xmlContext.packageName + ":" + parentDir + "/" + xmlFile.getName().replace(".xml", "");
         // Check to see if the generic "layout/foo" is already in the map.  If not, add it.
         if (!viewNodesByLayoutName.containsKey(layoutName)) {
             viewNodesByLayoutName.put(layoutName, topLevelNode.getChildren().get(0));
@@ -55,33 +55,34 @@ public class ViewLoader extends XmlLoader {
         viewNodesByLayoutName.put(specificLayoutName, topLevelNode.getChildren().get(0));
     }
 
-    private void processChildren(NodeList childNodes, ViewNode parent) {
+    private void processChildren(NodeList childNodes, ViewNode parent, XmlContext xmlContext) {
         for (int i = 0; i < childNodes.getLength(); i++) {
             Node node = childNodes.item(i);
-            processNode(node, parent);
+            processNode(node, parent, xmlContext);
         }
     }
 
-    private void processNode(Node node, ViewNode parent) {
+    private void processNode(Node node, ViewNode parent, XmlContext xmlContext) {
         String name = node.getNodeName();
         NamedNodeMap attributes = node.getAttributes();
-        Map<String, String> attrMap = new HashMap<String, String>();
+        List<Attribute> attrList = new ArrayList<Attribute>();
         if (attributes != null) {
             int length = attributes.getLength();
             for (int i = 0; i < length; i++) {
                 Node attr = attributes.item(i);
-                attrMap.put(attr.getNodeName(), attr.getNodeValue());
+                if (!XMLNS_URI.equals(attr.getNamespaceURI())) {
+                    attrList.add(new Attribute(attr, xmlContext));
+                }
             }
         }
 
         if (name.equals("requestFocus")) {
-            parent.attributes.put("android:focus", "true");
-            parent.requestFocusOverride = true;
+            parent.focusRequested(xmlContext);
         } else if (!name.startsWith("#")) {
-            ViewNode viewNode = new ViewNode(name, attrMap, parent.isSystem);
+            ViewNode viewNode = new ViewNode(name, attrList, parent.xmlContext);
             parent.addChild(viewNode);
 
-            processChildren(node.getChildNodes(), viewNode);
+            processChildren(node.getChildNodes(), viewNode, xmlContext);
         }
     }
 
@@ -90,27 +91,21 @@ public class ViewLoader extends XmlLoader {
     }
 
     public View inflateView(Context context, String key, View parent) {
-        return inflateView(context, key, null, parent);
+        return inflateView(context, key, new ArrayList<Attribute>(), parent);
     }
 
     public View inflateView(Context context, int resourceId, View parent) {
         return inflateView(context, resourceExtractor.getResourceName(resourceId), parent);
     }
 
-    private View inflateView(Context context, String layoutName, Map<String, String> attributes, View parent) {
+    private View inflateView(Context context, String layoutName, List<Attribute> attributes, View parent) {
         ViewNode viewNode = getViewNodeByLayoutName(layoutName);
         if (viewNode == null) {
             throw new RuntimeException("Could not find layout " + layoutName);
         }
+
         try {
-            if (attributes != null) {
-                for (Map.Entry<String, String> entry : attributes.entrySet()) {
-                    if (!entry.getKey().equals("layout")) {
-                        viewNode.attributes.put(entry.getKey(), entry.getValue());
-                    }
-                }
-            }
-            return viewNode.inflate(context, parent);
+            return viewNode.plusAttributes(attributes).inflate(context, parent);
         } catch (I18nException e) {
             throw e;
         } catch (Exception e) {
@@ -119,10 +114,11 @@ public class ViewLoader extends XmlLoader {
     }
 
     private ViewNode getViewNodeByLayoutName(String layoutName) {
-        if (layoutName.startsWith("layout/") && !qualifierSearchPath.isEmpty()) {
-            String rawLayoutName = layoutName.substring("layout/".length());
+        String[] parts = layoutName.split("/");
+        if (parts[0].endsWith(":layout") && !qualifierSearchPath.isEmpty()) {
+            String rawLayoutName = parts[1];
             for (String location : qualifierSearchPath) {
-                ViewNode foundNode = viewNodesByLayoutName.get("layout-" + location + "/" + rawLayoutName);
+                ViewNode foundNode = viewNodesByLayoutName.get(parts[0] + "-" + location + "/" + rawLayoutName);
                 if (foundNode != null) {
                     return foundNode;
                 }
@@ -136,17 +132,17 @@ public class ViewLoader extends XmlLoader {
     }
 
     public class ViewNode {
-        private String name;
-        private final Map<String, String> attributes;
+        private final String name;
+        private final List<Attribute> attributes;
+        private final XmlContext xmlContext;
 
         private List<ViewNode> children = new ArrayList<ViewNode>();
-        boolean requestFocusOverride = false;
-        boolean isSystem = false;
+        private boolean requestFocusOverride = false;
 
-        public ViewNode(String name, Map<String, String> attributes, boolean isSystem) {
+        public ViewNode(String name, List<Attribute> attributes, XmlContext xmlContext) {
             this.name = name;
-            this.attributes = attributes;
-            this.isSystem = isSystem;
+            this.attributes = Collections.unmodifiableList(attributes);
+            this.xmlContext = xmlContext;
         }
 
         public List<ViewNode> getChildren() {
@@ -176,10 +172,18 @@ public class ViewLoader extends XmlLoader {
             onFinishInflate.invoke(view);
         }
 
+        @Override
+        public String toString() {
+            return "ViewNode{" +
+                    "name='" + name + '\'' +
+                    '}';
+        }
+
         private View create(Context context, ViewGroup parent) throws Exception {
             if (name.equals("include")) {
-                String layout = attributes.get("layout");
-                return inflateView(context, layout.substring(1), attributes, parent);
+                Attribute layoutAttribute = Attribute.find(attributes, ATTR_LAYOUT);
+                String layoutName = layoutAttribute.qualifiedValue();
+                return inflateView(context, layoutName, attributes, parent);
             } else if (name.equals("merge")) {
                 return parent;
             } else if (name.equals("fragment")) {
@@ -196,12 +200,12 @@ public class ViewLoader extends XmlLoader {
         }
 
         private FrameLayout constructFragment(Context context) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
-            TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, View.class, isSystem);
+            TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, View.class);
             if (strictI18n) {
                 attributeSet.validateStrictI18n();
             }
 
-            Class<? extends Fragment> clazz = loadFragmentClass(attributes.get("android:name"));
+            Class<? extends Fragment> clazz = loadFragmentClass(Attribute.find(attributes, "android:attr/name").value);
             Fragment fragment = ((Constructor<? extends Fragment>) clazz.getConstructor()).newInstance();
             if (!(context instanceof FragmentActivity)) {
                 throw new RuntimeException("Cannot inflate a fragment unless the activity is a FragmentActivity");
@@ -233,7 +237,7 @@ public class ViewLoader extends XmlLoader {
         private View constructView(Context context) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
             Class<? extends View> clazz = pickViewClass();
             try {
-                TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, clazz, isSystem);
+                TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, clazz);
                 if (strictI18n) {
                     attributeSet.validateStrictI18n();
                 }
@@ -294,6 +298,32 @@ public class ViewLoader extends XmlLoader {
                 }
                 ancestor.clearFocus();
             }
+        }
+
+        /**
+         * Create a new ViewLoader with the given attributes merged in. If there's a layout attribute, it'll be excluded.
+         */
+        public ViewNode plusAttributes(List<Attribute> attributes) {
+            if (attributes.size() == 0 || attributes.size() == 1 && attributes.get(0).fullyQualifiedName.equals(":attr/layout")) {
+                return this; // don't make a new one if it'll be identical
+            }
+
+            List<Attribute> newAttrs = new ArrayList<Attribute>(this.attributes);
+            for (Attribute attribute : attributes) {
+                if (!attribute.fullyQualifiedName.equals(ATTR_LAYOUT)) {
+                    Attribute.put(newAttrs, attribute);
+                }
+            }
+
+            ViewNode viewNode = new ViewNode(name, newAttrs, xmlContext);
+            viewNode.children = children;
+            viewNode.requestFocusOverride = requestFocusOverride;
+            return viewNode;
+        }
+
+        private void focusRequested(XmlContext xmlContext) {
+            requestFocusOverride = true;
+//            attributes.add(new Attribute("android:attr/focus", "true", xmlContext.packageName));
         }
     }
 }

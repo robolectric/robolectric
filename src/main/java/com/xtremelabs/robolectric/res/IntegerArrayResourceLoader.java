@@ -32,7 +32,7 @@ public class IntegerArrayResourceLoader extends XpathResourceXmlLoader {
         return results;
     }
 
-    @Override protected void processNode(Node node, String name, boolean isSystem) throws XPathExpressionException {
+    @Override protected void processNode(Node node, String name, XmlContext xmlContext) throws XPathExpressionException {
         XPathExpression itemXPath = XPathFactory.newInstance().newXPath().compile("item");
         NodeList childNodes = (NodeList) itemXPath.evaluate(node, XPathConstants.NODESET);
         List<Integer> arrayValues = new ArrayList<Integer>();
@@ -42,12 +42,12 @@ public class IntegerArrayResourceLoader extends XpathResourceXmlLoader {
             String value = childNode.getTextContent();
             if (value.startsWith("@")) {
                 value = value.substring(1);
-                arrayValues.add(integerResourceLoader.getValue(value , isSystem));
+                arrayValues.add(integerResourceLoader.getValue(value, xmlContext.packageName));
             } else {
                 arrayValues.add(Integer.parseInt(value));
             }
         }
-        String valuePointer = (isSystem ? "android:" : "") + "array/" + name;
+        String valuePointer = xmlContext.packageName + ":array/" + name;
         integerArrayValues.put(valuePointer, arrayValues.toArray(new Integer[arrayValues.size()]));
     }
 }

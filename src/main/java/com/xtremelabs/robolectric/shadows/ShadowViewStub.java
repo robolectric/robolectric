@@ -26,20 +26,13 @@ public class ShadowViewStub extends ShadowView {
     @Override public void applyAttributes() {
         super.applyAttributes();
 
-        String inflatedId = attributeSet.getAttributeValue("android", "inflatedId");
-        if (inflatedId != null) {
-            mInflatedId = getResourceId(inflatedId);
-        }
-
+        mInflatedId = attributeSet.getAttributeResourceValue("android", "inflatedId", 0);
         String layoutResId = attributeSet.getAttributeValue("android", "layout");
         if (layoutResId != null) {
-            mLayoutResource = getResourceId(layoutResId);
+            ResourceExtractor resourceExtractor = Robolectric.getShadowApplication().getResourceLoader().getResourceExtractor();
+            // todo what should the package be here?
+            mLayoutResource = resourceExtractor.getResourceId(layoutResId, null);
         }
-    }
-
-    private Integer getResourceId(String inflatedId) {
-        ResourceExtractor resourceExtractor = Robolectric.getShadowApplication().getResourceLoader().getResourceExtractor();
-        return resourceExtractor.getResourceId(inflatedId, false);
     }
 
     @Implementation

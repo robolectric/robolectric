@@ -71,6 +71,7 @@ public final class R {
         public static final int some_html = nextId++;
         public static final int greeting = nextId++;
         public static final int copy = nextId++;
+        public static final int ok = nextId++;
     }
 
     public static final class plurals {

@@ -13,6 +13,8 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.annotation.Values;
+import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.res.ResourcePath;
 import com.xtremelabs.robolectric.util.TestR;
 import org.junit.Before;
 import org.junit.Test;
@@ -20,21 +22,22 @@ import org.junit.runner.RunWith;
 import org.xmlpull.v1.XmlPullParser;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
 
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ResourcesTest {
-
 	private Resources resources;
-	private ShadowContextWrapper shadowApp;
 
 	@Before
-	public void setup() {
-		resources = new Activity().getResources();
-		shadowApp = shadowOf( Robolectric.application );
-	}
+	public void setup() throws Exception {
+        ResourceLoader resourceLoader = new ResourceLoader(new ResourcePath(TestR.class, resourceFile("res"), null));
+        resources = new Resources(null, null, null);
+        ShadowResources.bind(resources, resourceLoader);
+    }
 
     @Test(expected = Resources.NotFoundException.class)
     public void getStringArray_shouldThrowExceptionIfNotFound() throws Exception {
@@ -73,9 +76,12 @@ public class ResourcesTest {
      * by default
      */
     @Test
-    public void testGetDrawableNullRClass() {
-    	shadowApp.getResourceLoader().setLocalRClass( null );
-    	assertThat( resources.getDrawable( TestR.anim.test_anim_1 ), instanceOf( BitmapDrawable.class ) );
+    public void testGetDrawableNullRClass() throws Exception {
+        ResourceLoader resourceLoader = new ResourceLoader();
+        resources = new Resources(null, null, null);
+        ShadowResources.bind(resources, resourceLoader);
+
+        assertThat( resources.getDrawable( TestR.anim.test_anim_1 ), instanceOf( BitmapDrawable.class ) );
     }
 
     /**
@@ -83,7 +89,6 @@ public class ResourcesTest {
      */
     @Test
     public void testGetAnimationDrawable() {
-    	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
     	assertThat( resources.getDrawable( TestR.anim.test_anim_1 ), instanceOf(AnimationDrawable.class) );
     }
     
@@ -99,7 +104,6 @@ public class ResourcesTest {
      */
     @Test
     public void testGetColorDrawable() {
-    	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
     	assertThat( resources.getDrawable( TestR.color.test_color_1 ), instanceOf( ColorDrawable.class ) );
     }
 
@@ -108,7 +112,6 @@ public class ResourcesTest {
      */
     @Test
     public void testGetColor() {
-        shadowApp.getResourceLoader().setLocalRClass(TestR.class);
         assertThat( resources.getColor( TestR.color.test_color_1 ), not( 0 ) );
     }
 
@@ -117,7 +120,6 @@ public class ResourcesTest {
      */
     @Test
     public void testGetColorStateList() {
-        shadowApp.getResourceLoader().setLocalRClass( TestR.class );
         assertThat( resources.getColorStateList(TestR.color.test_color_1), instanceOf( ColorStateList.class ) );
     }
 
@@ -126,7 +128,6 @@ public class ResourcesTest {
      */
     @Test
     public void testGetBitmapDrawable() {
-        shadowApp.getResourceLoader().setLocalRClass( TestR.class );
         assertThat( resources.getDrawable( TestR.drawable.test_drawable_1 ), instanceOf( BitmapDrawable.class ) );
     }
 
@@ -143,8 +144,7 @@ public class ResourcesTest {
      */
     @Test
     public void testGetBitmapDrawableForUnknownId() {
-        shadowApp.getResourceLoader().setLocalRClass( TestR.class );
-        assertThat(resources.getDrawable( Integer.MAX_VALUE ), instanceOf( BitmapDrawable.class ));    	    	
+        assertThat(resources.getDrawable( Integer.MAX_VALUE ), instanceOf( BitmapDrawable.class ));
     }
     @Test
     public void testDensity() {
@@ -202,7 +202,7 @@ public class ResourcesTest {
     @Test
     public void testGetXml() throws Exception {
     	int resId = R.xml.preferences;    	
-    	XmlResourceParser parser = resources.getXml(resId);
+    	XmlResourceParser parser = Robolectric.application.getResources().getXml(resId);
     	// Assert that a resource file is returned
     	assertThat(parser, notNullValue());
     	

@@ -7,11 +7,14 @@ import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.util.TestUtil.TEST_PACKAGE;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -50,9 +53,10 @@ public class ViewStubTest {
     @Test
     public void shouldApplyAttributes() throws Exception {
         ViewStub viewStub = new ViewStub(ctxt,
-                new TestAttributeSet()
-                        .put("android:inflatedId", "@+id/include_id")
-                        .put("android:layout", "@layout/media")
+                new TestAttributeSet(asList(
+                        new Attribute("android:attr/inflatedId", "@+id/include_id", TEST_PACKAGE),
+                        new Attribute("android:attr/layout", "@layout/media", TEST_PACKAGE)
+                ), Robolectric.getShadowApplication().getResourceLoader().getResourceExtractor())
         );
 
         assertEquals(R.id.include_id, viewStub.getInflatedId());

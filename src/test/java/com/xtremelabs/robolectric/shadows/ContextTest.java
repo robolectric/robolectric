@@ -5,6 +5,8 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.res.ResourceExtractor;
+import com.xtremelabs.robolectric.res.ResourcePath;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.After;
 import org.junit.Before;
@@ -12,8 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.*;
-import java.util.HashMap;
-import java.util.Map;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
@@ -257,10 +257,9 @@ public class ContextTest {
 
     @Test
     public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
-        Map<String, String> attributes = new HashMap<String, String>();
-        attributes.put("ns:textStyle2", "one");
-        attributes.put("ns:textStyle3", "two");
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, R.class);
+        TestAttributeSet testAttributeSet = new TestAttributeSet(new ResourceExtractor(new ResourcePath(R.class, null, null)));
+        testAttributeSet.put(R.class.getPackage().getName() + ":id/textStyle2", "one", R.class.getPackage().getName());
+        testAttributeSet.put(R.class.getPackage().getName() + ":id/textStyle3", "two", R.class.getPackage().getName());
         TypedArray typedArray = context.obtainStyledAttributes(testAttributeSet, new int[]{R.id.textStyle2, R.id.textStyle3});
 
         assertThat(typedArray.getString(R.styleable.HeaderBar_textStyle2), equalTo("one"));

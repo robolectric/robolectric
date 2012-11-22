@@ -87,6 +87,10 @@ public class ShadowWrangler implements ClassHandler {
         }
     }
 
+    public void bindShadowClass(String realClassName, Class<?> shadowClass) {
+        bindShadowClass(realClassName, shadowClass.getName());
+    }
+
     public void bindShadowClass(Class<?> realClass, Class<?> shadowClass) {
         bindShadowClass(realClass.getName(), shadowClass.getName());
     }
@@ -467,7 +471,7 @@ public class ShadowWrangler implements ClassHandler {
         }
 
         private Method getMethod(Class<?> clazz, String methodName, Class<?>[] paramClasses) {
-            Method method = null;
+            Method method;
             try {
                 method = clazz.getMethod(methodName, paramClasses);
             } catch (NoSuchMethodException e) {
@@ -489,7 +493,7 @@ public class ShadowWrangler implements ClassHandler {
             Class<?> declaringClass = method.getDeclaringClass();
             // why doesn't getAnnotation(com.xtremelabs.robolectric.internal.Implements) work here? It always returns null. pg 20101115
             // It doesn't work because the method and declaringClass were loaded by the delegate class loader. Different classloaders so types don't match. mp 20110823
-            for (Annotation annotation : declaringClass.getAnnotations()) {
+            for (Annotation annotation : declaringClass.getAnnotations()) { // todo fix
                 if (annotation.annotationType().toString().equals("interface com.xtremelabs.robolectric.internal.Implements")) {
                     return true;
                 }

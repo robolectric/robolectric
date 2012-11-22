@@ -1,13 +1,13 @@
 package com.xtremelabs.robolectric.res;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
 /**
  * 
@@ -35,7 +35,7 @@ public abstract class XTagXmlResourceLoader extends XmlLoader {
 	}
 
 	@Override
-	protected void processResourceXml( File xmlFile, Document document, boolean isSystem ) throws Exception {
+	protected void processResourceXml( File xmlFile, Document document, XmlContext xmlContext) throws Exception {
 
 		String resourceName = toResourceName( xmlFile );
 		if ( xPathXmlFiles.contains( resourceName ) )
@@ -45,7 +45,7 @@ public abstract class XTagXmlResourceLoader extends XmlLoader {
 		for ( int i = 0; i < items.getLength(); i++ ) {
 			Node node = items.item( i );
 			String name = node.getAttributes().getNamedItem( "name" ).getNodeValue();
-			processNode( node, name, isSystem );
+			processNode(node, name, xmlContext);
 		}
 
 	}
@@ -66,6 +66,6 @@ public abstract class XTagXmlResourceLoader extends XmlLoader {
 		}
 	}
 
-	protected abstract void processNode( Node node, String name, boolean isSystem );
+	protected abstract void processNode(Node node, String name, XmlContext xmlContext);
 
 }

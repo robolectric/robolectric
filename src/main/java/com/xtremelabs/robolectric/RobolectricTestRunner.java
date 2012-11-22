@@ -8,6 +8,7 @@ import com.xtremelabs.robolectric.bytecode.ClassHandler;
 import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
 import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.res.ResourcePath;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
 import com.xtremelabs.robolectric.shadows.ShadowLog;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
@@ -33,6 +34,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
+
+import static java.util.Arrays.asList;
 
 /**
  * Installs a {@link RobolectricClassLoader} and {@link com.xtremelabs.robolectric.res.ResourceLoader} in order to
@@ -84,9 +87,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
         sharedRobolectricContext.getClassHandler().reset();
+      try {
         delegate.internalBeforeTest(method.getMethod());
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw new RuntimeException(e);
+      }
 
-        final Statement statement = super.methodBlock(method);
+      final Statement statement = super.methodBlock(method);
         return new Statement() {
             @Override public void evaluate() throws Throwable {
             	HashMap<Field,Object> withConstantAnnos = getWithConstantAnnotations(method.getMethod());
@@ -180,7 +188,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
     }
 
-    protected void configureShadows() {
+    protected void configureShadows() { // todo: dedupe this/bindShadowClasses
         Robolectric.bindDefaultShadowClasses();
         bindShadowClasses();
     }
@@ -404,7 +412,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
                 String rClassName = robolectricConfig.getRClassName();
                 Class rClass = Class.forName(rClassName);
-                resourceLoader = new ResourceLoader(robolectricConfig.getRealSdkVersion(), rClass, robolectricConfig.getResourceDirectory(), robolectricConfig.getAssetsDirectory() );
+
+                ResourcePath appResourcePath = new ResourcePath(rClass, robolectricConfig.getResourceDirectory(), robolectricConfig.getAssetsDirectory());
+                ResourcePath systemResourcePath = ResourceLoader.getSystemResourcePath(robolectricConfig.getRealSdkVersion(), asList(appResourcePath));
+                resourceLoader = new ResourceLoader(appResourcePath, systemResourcePath);
                 resourceLoaderForRootAndDirectory.put(robolectricConfig, resourceLoader);
             } catch (Exception e) {
                 throw new RuntimeException(e);

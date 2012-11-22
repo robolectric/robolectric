@@ -108,6 +108,13 @@
         </dependency>
 
         <dependency>
+            <groupId>com.intellij</groupId>
+            <artifactId>annotations</artifactId>
+            <version>9.0.4</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.sonatype.aether</groupId>
             <artifactId>aether-api</artifactId>
             <version>${aetherVersion}</version>

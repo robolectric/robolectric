@@ -1,14 +1,17 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.widget.EditText;
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
@@ -19,8 +22,8 @@ public class ShadowEditTextTest {
 
     @Before
     public void setup() {
-        HashMap<String, String> hash = new HashMap<String, String>();
-        hash.put("android:maxLength", "5");
+        List<Attribute> hash = new ArrayList<Attribute>();
+        hash.add(new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName()));
         TestAttributeSet attributeSet = new TestAttributeSet(hash);
         editText = new EditText(Robolectric.application, attributeSet);
     }

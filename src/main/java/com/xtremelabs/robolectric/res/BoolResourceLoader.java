@@ -30,10 +30,10 @@ public class BoolResourceLoader extends XTagXmlResourceLoader
         return value;
 	}
 
-	public boolean getValue( String resourceName, boolean isSystem ) {
-        Integer resourceId = resourceExtractor.getResourceId(resourceName, isSystem);
+	public boolean getValue( String resourceName, String packageName ) {
+        Integer resourceId = resourceExtractor.getResourceId(resourceName, packageName);
         if (resourceName == null) {
-            throw new IllegalArgumentException("No such resource (" + isSystem + "): " + resourceName);
+            throw new IllegalArgumentException("No such resource (" + packageName + "): " + resourceName);
         }
         return getValue(resourceId);
 	}
@@ -57,9 +57,8 @@ public class BoolResourceLoader extends XTagXmlResourceLoader
 	}
 
 	@Override
-	protected void processNode(Node node, String name, boolean isSystem) {
-		boolResolver.processResource(
-				name, node.getTextContent(), this, isSystem);
+	protected void processNode(Node node, String name, XmlContext xmlContext) {
+		boolResolver.processResource(name, node.getTextContent(), this, xmlContext.packageName);
 	}
 
 }

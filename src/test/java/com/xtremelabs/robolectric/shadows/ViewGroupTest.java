@@ -20,11 +20,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.PrintStream;
 
-import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.util.TestUtil.systemResources;
+import static com.xtremelabs.robolectric.util.TestUtil.testResources;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -44,7 +44,7 @@ public class ViewGroupTest {
     @Before
     public void setUp() throws Exception {
         context = new Application();
-        ShadowApplication.bind(context, new ResourceLoader(DEFAULT_SDK_VERSION, R.class, (File) null, null));
+        ShadowApplication.bind(context, new ResourceLoader(testResources(), systemResources()));
 
         root = new FrameLayout(context);
 
@@ -234,7 +234,7 @@ public class ViewGroupTest {
         assertEquals("<FrameLayout>\n" +
                 "  <View/>\n" +
                 "  <View/>\n" +
-                "  <FrameLayout id=\"id/snippet_text\">\n" +
+                "  <FrameLayout id=\"com.xtremelabs.robolectric:id/snippet_text\">\n" +
                 "    <View/>\n" +
                 "    <View visibility=\"GONE\"/>\n" +
                 "    <TextView visibility=\"INVISIBLE\" text=\"Here&apos;s some text!\"/>\n" +

@@ -7,6 +7,7 @@ import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.StateListDrawable;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.shadows.ShadowStateListDrawable;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -35,8 +36,17 @@ public class DrawableResourceLoader extends XmlLoader {
         stateMap.put("android:state_window_focused", R.attr.state_window_focused);
     }
 
-    /** document */
-    protected Map<String, Document> documents = new HashMap<String, Document>();
+    protected Map<String, DocumentAndContext> documents = new HashMap<String, DocumentAndContext>();
+
+    private static class DocumentAndContext {
+        private final @NotNull Document document;
+        private final @NotNull XmlContext xmlContext;
+
+        DocumentAndContext(@NotNull Document document, @NotNull XmlContext xmlContext) {
+            this.document = document;
+            this.xmlContext = xmlContext;
+        }
+    }
 
     /**
      * DrawableResourceLoader constructor.
@@ -63,10 +73,11 @@ public class DrawableResourceLoader extends XmlLoader {
             return null;
         }
 
-        Document xmlDoc = documents.get(resourceExtractor.getResourceName(resId));
+        DocumentAndContext documentAndContext = documents.get(resourceExtractor.getResourceName(resId));
+        Document xmlDoc = documentAndContext.document;
         NodeList nodes = xmlDoc.getElementsByTagName("selector");
         if (nodes != null && nodes.getLength() > 0) {
-            return buildStateListDrawable(xmlDoc);
+            return buildStateListDrawable(documentAndContext);
         }
 
         nodes = xmlDoc.getElementsByTagName("layer-list");
@@ -85,21 +96,19 @@ public class DrawableResourceLoader extends XmlLoader {
     /**
      * Store document locally keyed by resource name.
      *
+     *
+     *
      * @param xmlFile  Xml file
      * @param document Document
-     * @param isSystem System resource
+     * @param xmlContext System resource
      * @throws Exception
-     * @see com.xtremelabs.robolectric.res.XmlLoader#processResourceXml(java.io.File,
-     *      org.w3c.dom.Document, boolean)
+     * @see XmlLoader#processResourceXml(java.io.File, org.w3c.dom.Document, XmlContext)
      */
     @Override
-    protected void processResourceXml(File xmlFile, Document document, boolean isSystem) throws Exception {
+    protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
         String name = toResourceName(xmlFile);
         if (!documents.containsKey(name)) {
-            if (isSystem) {
-                name = "android:" + name;
-            }
-            documents.put(name, document);
+            documents.put(xmlContext.packageName + ":" + name, new DocumentAndContext(document, xmlContext));
         }
     }
 
@@ -127,7 +136,8 @@ public class DrawableResourceLoader extends XmlLoader {
      */
     protected int[] getDrawableIds(int resourceId) {
         String resourceName = resourceExtractor.getResourceName(resourceId);
-        Document document = documents.get(resourceName);
+        DocumentAndContext documentAndContext = documents.get(resourceName);
+        Document document = documentAndContext.document;
 
         NodeList items = document.getElementsByTagName("item");
         int[] drawableIds = new int[items.getLength()];
@@ -139,7 +149,7 @@ public class DrawableResourceLoader extends XmlLoader {
                 Node item = items.item(i);
                 Node drawableName = item.getAttributes().getNamedItem("android:drawable");
                 if (drawableName != null) {
-                    drawableIds[i] = resourceExtractor.getResourceId(drawableName.getNodeValue());
+                    drawableIds[i] = resourceExtractor.getResourceId(drawableName.getNodeValue(), documentAndContext.xmlContext.packageName);
                 }
             }
         }
@@ -148,19 +158,20 @@ public class DrawableResourceLoader extends XmlLoader {
     }
 
     public boolean isAnimationDrawable(int resourceId) {
-        Document document = documents.get(resourceExtractor.getResourceName(resourceId));
+        DocumentAndContext documentAndContext = documents.get(resourceExtractor.getResourceName(resourceId));
+        Document document = documentAndContext.document;
         return "animation-list".equals(document.getDocumentElement().getLocalName());
     }
 
-    private StateListDrawable buildStateListDrawable(Document d) {
+    private StateListDrawable buildStateListDrawable(DocumentAndContext documentAndContext) {
         StateListDrawable drawable = new StateListDrawable();
         ShadowStateListDrawable shDrawable = Robolectric.shadowOf(drawable);
-        NodeList items = d.getElementsByTagName("item");
+        NodeList items = documentAndContext.document.getElementsByTagName("item");
         for (int i = 0; i < items.getLength(); i++) {
             Node node = items.item(i);
             Node drawableName = node.getAttributes().getNamedItem("android:drawable");
             if (drawableName != null) {
-                int resId = resourceExtractor.getResourceId(drawableName.getNodeValue());
+                int resId = resourceExtractor.getResourceId(drawableName.getNodeValue(), documentAndContext.xmlContext.packageName);
                 int stateId = getStateId(node);
                 shDrawable.addState(stateId, resId);
             }

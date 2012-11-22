@@ -3,223 +3,210 @@ package com.xtremelabs.robolectric.res;
 import android.view.View;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.CustomView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.util.HashMap;
-
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-import static junit.framework.Assert.assertEquals;
+import static com.xtremelabs.robolectric.util.TestUtil.*;
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TestAttributeSetTest {
-    private HashMap<String, String> attributes;
+
+    private TestAttributeSet testAttributeSet;
     private ResourceExtractor resourceExtractor;
 
     @Before
     public void setUp() throws Exception {
-        attributes = new HashMap<String, String>();
-
-        resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
-        resourceExtractor.addSystemRClass(android.R.class);
+        resourceExtractor = new ResourceExtractor(testResources(), systemResources());
     }
 
     @Test
     public void getSystemAttributeResourceValue_shouldReturnTheResourceValue() throws Exception {
-        attributes.put("android:id", "@android:id/text1");
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
-        assertThat(testAttributeSet.getAttributeResourceValue("android", "id", 0), equalTo(android.R.id.text1));
+        createTestAttributeSet(new Attribute("android:attr/text", "@android:string/ok", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeResourceValue("android", "text", 0), equalTo(android.R.string.ok));
+    }
+
+    @Test
+    public void getAttributeResourceValue_shouldReturnTheResourceValue() throws Exception {
+        createTestAttributeSet(new Attribute("android:attr/text", "@string/ok", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeResourceValue("android", "text", 0), equalTo(R.string.ok));
     }
 
     @Test
     public void getSystemAttributeResourceValue_shouldNotReturnTheResourceValueIfNameSpaceDoesNotMatch() throws Exception {
-        attributes.put("id", "@id/text1");
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
-        assertEquals(0, testAttributeSet.getAttributeResourceValue("android", "id", 0));
+        createTestAttributeSet(new Attribute("com.another.domain:attr/text", "@android:string/ok", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeResourceValue("android", "text", 0), equalTo(0));
+    }
+
+    @Test
+    public void getAttributeResourceValue_shouldReturnTheResourceValueFromSystemNamespace() throws Exception {
+        createTestAttributeSet(new Attribute("com.another.domain:attr/text", "@android:string/ok", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeResourceValue("com.another.domain", "text", 0), equalTo(android.R.string.ok));
     }
 
     @Test
     public void getSystemAttributeResourceValue_shouldReturnDefaultValueForNullResourceId() throws Exception {
-        attributes.put("id", "@null");
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
-        assertEquals(0, testAttributeSet.getAttributeResourceValue("com.some.namespace", "id", 0));
+        createTestAttributeSet(new Attribute("android:attr/text", "@null", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeResourceValue("com.some.namespace", "text", 0), equalTo(0));
+    }
+
+    @Test
+    public void getSystemAttributeResourceValue_shouldReturnValueForMatchingNamespace() throws Exception {
+        createTestAttributeSet(new Attribute("com.some.namespace:attr/id", "@id/burritos", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeResourceValue("com.some.namespace", "id", 0), equalTo(R.id.burritos));
+    }
+
+    @Test
+    public void getSystemAttributeResourceValue_shouldReturnDefaultValueForNonMatchingNamespaceId() throws Exception {
+        createTestAttributeSet(new Attribute("com.some.namespace:attr/id", "@id/burritos", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeResourceValue("com.some.other.namespace", "id", 0), equalTo(0));
     }
 
     @Test
     public void shouldCopeWithDefiningSystemIds() throws Exception {
-        attributes.put("android:id", "@+id/text1");
-
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, true);
+        createTestAttributeSet(new Attribute("android:attr/id", "@+id/text1", SYSTEM_PACKAGE));
         assertThat(testAttributeSet.getAttributeResourceValue("android", "id", 0), equalTo(android.R.id.text1));
     }
 
     @Test
     public void shouldCopeWithDefiningLocalIds() throws Exception {
-        attributes.put("android:id", "@+id/text1");
-
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
+        createTestAttributeSet(new Attribute("android:attr/id", "@+id/text1", TEST_PACKAGE));
         assertThat(testAttributeSet.getAttributeResourceValue("android", "id", 0), equalTo(R.id.text1));
     }
 
     @Test
-    public void getAttributeResourceValue_shouldReturnTheResourceValue() throws Exception {
-        attributes.put("message", "@string/howdy");
-
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
-        assertThat(testAttributeSet.getAttributeResourceValue("com.some.namespace", "message", 0), equalTo(R.string.howdy));
-    }
-
-    @Test
     public void getAttributeResourceValue_withNamespace_shouldReturnTheResourceValue() throws Exception {
-        attributes.put("message", "@string/howdy");
-
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
-        assertThat(testAttributeSet.getAttributeResourceValue("com.some.namespace", "message", 0), equalTo(R.string.howdy));
+        createTestAttributeSet(new Attribute(TEST_PACKAGE + ":attr/message", "@string/howdy", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeResourceValue(TEST_PACKAGE, "message", 0), equalTo(R.string.howdy));
     }
 
     @Test
     public void getAttributeResourceValue_shouldReturnDefaultValueWhenNotInAttributeSet() throws Exception {
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
+        createTestAttributeSet();
         assertThat(testAttributeSet.getAttributeResourceValue("com.some.namespace", "message", -1), equalTo(-1));
     }
 
     @Test
     public void getAttributeBooleanValue_shouldGetBooleanValuesFromAttributes() throws Exception {
-        attributes.put("isSugary", "true");
-
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
-        assertThat(testAttributeSet.getAttributeBooleanValue("com.some.namespace", "isSugary", false), equalTo(true));
+        createTestAttributeSet(new Attribute(TEST_PACKAGE + ":attr/isSugary", "true", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeBooleanValue(TEST_PACKAGE, "isSugary", false), equalTo(true));
     }
 
     @Test
     public void getAttributeBooleanValue_withNamespace_shouldGetBooleanValuesFromAttributes() throws Exception {
-        attributes.put("xxx:isSugary", "true");
-
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
-        assertThat(testAttributeSet.getAttributeBooleanValue("com.some.namespace", "isSugary", false), equalTo(true));
+        createTestAttributeSet(new Attribute("xxx:attr/isSugary", "true", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeBooleanValue("xxx", "isSugary", false), equalTo(true));
     }
 
     @Test
     public void getAttributeBooleanValue_shouldReturnDefaultBooleanValueWhenNotInAttributeSet() throws Exception {
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
+        createTestAttributeSet();
         assertThat(testAttributeSet.getAttributeBooleanValue("com.some.namespace", "isSugary", true), equalTo(true));
     }
 
     @Test
     public void getAttributeValue_byName_shouldReturnValueFromAttribute() throws Exception {
-        attributes.put("isSugary", "oh heck yeah");
-
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
-        assertThat(testAttributeSet.getAttributeValue("com.some.namespace", "isSugary"), equalTo("oh heck yeah"));
+        createTestAttributeSet(new Attribute(TEST_PACKAGE + ":attr/isSugary", "oh heck yeah", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeValue(TEST_PACKAGE, "isSugary"), equalTo("oh heck yeah"));
     }
 
     @Test
     public void getAttributeValue_byId_shouldReturnValueFromAttribute() throws Exception {
-        attributes.put("isSugary", "oh heck yeah");
-
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
-        assertThat(testAttributeSet.getAttributeValue(R.attr.isSugary), equalTo("oh heck yeah"));
+        createTestAttributeSet(new Attribute(TEST_PACKAGE + ":attr/isSugary", "oh heck yeah", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeValue(0), equalTo("oh heck yeah"));
     }
 
     @Test
     public void getAttributeIntValue_shouldReturnValueFromAttribute() throws Exception {
-        attributes.put("sugarinessPercent", "100");
-
-        AttrResourceLoader resourceLoader = new AttrResourceLoader(resourceExtractor);
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, resourceLoader, View.class, false);
-        assertThat(testAttributeSet.getAttributeIntValue("some namespace", "sugarinessPercent", 0), equalTo(100));
+        testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "100", TEST_PACKAGE)),
+                null, new AttrResourceLoader(resourceExtractor), View.class);
+        assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "sugarinessPercent", 0), equalTo(100));
     }
 
     @Test
     public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributes() throws Exception {
-        attributes.put("itemType", "string");
-
         AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
-        new DocumentLoader(attrResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, attrResourceLoader, CustomView.class, false);
-        assertThat(testAttributeSet.getAttributeIntValue("some namespace", "itemType", 0), equalTo(1));
+        new DocumentLoader(attrResourceLoader).loadResourceXmlDir(testResources(), "values");
+        testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/itemType", "string", TEST_PACKAGE)),
+                null, attrResourceLoader, CustomView.class);
+        assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "itemType", 0), equalTo(1));
     }
 
     @Test
     public void getAttributeValue_shouldReturnAttributeAssociatedWithResourceId() throws Exception {
-        attributes.put("ns:textStyle2", "expected value");
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, R.class);
-        assertThat(testAttributeSet.getAttributeValue(R.id.textStyle2), equalTo("expected value"));
+        createTestAttributeSet(new Attribute("ns:attr/textStyle2", "expected value", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeValue(0), equalTo("expected value"));
     }
 
     @Test
     public void getAttributeValue_shouldReturnNullIfNoAttributeSet() throws Exception {
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, R.class);
+        createTestAttributeSet();
         int nonExistantResource = 12345;
         assertThat(testAttributeSet.getAttributeValue(nonExistantResource), nullValue());
     }
 
     @Test
     public void getAttributeIntValue_shouldReturnValueFromAttributeWhenNotInAttributeSet() throws Exception {
-        AttrResourceLoader resourceLoader = new AttrResourceLoader(resourceExtractor);
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, resourceLoader, null, false);
+        createTestAttributeSet();
         assertThat(testAttributeSet.getAttributeIntValue("some namespace", "sugarinessPercent", 42), equalTo(42));
     }
 
     @Test
     public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributesWhenNotInAttributeSet() throws Exception {
-        AttrResourceLoader resourceLoader = new AttrResourceLoader(resourceExtractor);
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, resourceLoader, null, false);
+        createTestAttributeSet();
         assertThat(testAttributeSet.getAttributeIntValue("some namespace", "itemType", 24), equalTo(24));
     }
 
     @Test
     public void getAttributeFloatValue_shouldGetFloatValuesFromAttributes() throws Exception {
-        attributes.put("sugaryScale", "1234.456");
-
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
-        assertThat(testAttributeSet.getAttributeFloatValue("some namespace", "sugaryScale", 78.9f), equalTo(1234.456f));
+        createTestAttributeSet(new Attribute(TEST_PACKAGE + ":attr/sugaryScale", "1234.456", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeFloatValue(TEST_PACKAGE, "sugaryScale", 78.9f), equalTo(1234.456f));
     }
 
     @Test
     public void getAttributeFloatValue_withNamespace_shouldGetFloatValuesFromAttributes() throws Exception {
-        attributes.put("xxx:sugaryScale", "1234.456");
-
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
-        assertThat(testAttributeSet.getAttributeFloatValue("some namespace", "sugaryScale", 78.9f), equalTo(1234.456f));
+        createTestAttributeSet(new Attribute("xxx:attr/sugaryScale", "1234.456", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeFloatValue("xxx", "sugaryScale", 78.9f), equalTo(1234.456f));
     }
 
     @Test
     public void getAttributeFloatValue_shouldReturnDefaultFloatValueWhenNotInAttributeSet() throws Exception {
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
-        assertThat(testAttributeSet.getAttributeFloatValue("some namespace", "sugaryScale", 78.9f), equalTo(78.9f));
+        createTestAttributeSet();
+        assertThat(testAttributeSet.getAttributeFloatValue(TEST_PACKAGE, "sugaryScale", 78.9f), equalTo(78.9f));
     }
     
     @Test
     public void getStyleAttribute_doesNotThrowException() throws Exception {
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
+        createTestAttributeSet();
         testAttributeSet.getStyleAttribute();
     }
 
     @Test
     public void getStyleAttribute_returnsZeroWhenNoStyle() throws Exception {
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, null, null, null, false);
+        createTestAttributeSet();
         assertThat(testAttributeSet.getStyleAttribute(), equalTo(0));
     }
 
     @Test
     public void getStyleAttribute_returnsCorrectValue() throws Exception {
-        attributes.put("style", "@style/FancyStyle");
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
+        createTestAttributeSet(new Attribute(":attr/style", "@style/FancyStyle", TEST_PACKAGE));
         assertThat(testAttributeSet.getStyleAttribute(), equalTo(R.style.FancyStyle));
     }
 
     @Test
     public void getStyleAttribute_doesNotThrowException_whenStyleIsBogus() throws Exception {
-        attributes.put("style", "@style/bogus_style");
-        TestAttributeSet testAttributeSet = new TestAttributeSet(attributes, resourceExtractor, null, null, false);
+        createTestAttributeSet(new Attribute(":attr/style", "@style/bogus_style", TEST_PACKAGE));
         assertThat(testAttributeSet.getStyleAttribute(), equalTo(0));
+    }
+
+    private void createTestAttributeSet(Attribute... attributes) {
+        testAttributeSet = new TestAttributeSet(asList(attributes), resourceExtractor, null, null);
     }
 }

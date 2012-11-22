@@ -1,26 +1,25 @@
 package com.xtremelabs.robolectric.res;
 
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
-
 import com.xtremelabs.robolectric.R;
 import org.junit.Before;
 import org.junit.Test;
+
+import static com.xtremelabs.robolectric.util.TestUtil.testResources;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 public class PluralResourceLoaderTest {
     private PluralResourceLoader pluralResourceLoader;
 
     @Before
     public void setUp() throws Exception {
-        ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
+        ResourceExtractor extractor = new ResourceExtractor(testResources());
 
-        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        pluralResourceLoader = new PluralResourceLoader(resourceExtractor, stringResourceLoader);
+        StringResourceLoader stringResourceLoader = new StringResourceLoader(extractor);
+        pluralResourceLoader = new PluralResourceLoader(extractor, stringResourceLoader);
 
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
-        new DocumentLoader(pluralResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
+        new DocumentLoader(pluralResourceLoader).loadResourceXmlDir(testResources(), "values");
     }
 
     @Test

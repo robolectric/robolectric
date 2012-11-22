@@ -1,25 +1,16 @@
 package com.xtremelabs.robolectric.res;
 
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-
+import android.app.Activity;
+import android.preference.*;
+import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.util.I18nException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.app.Activity;
-import android.preference.CheckBoxPreference;
-import android.preference.EditTextPreference;
-import android.preference.ListPreference;
-import android.preference.Preference;
-import android.preference.PreferenceCategory;
-import android.preference.PreferenceScreen;
-import android.preference.RingtonePreference;
-
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.util.I18nException;
-
+import static com.xtremelabs.robolectric.util.TestUtil.*;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 
@@ -29,19 +20,17 @@ public class PreferenceLoaderTest {
 
     @Before
     public void setUp() throws Exception {
-        Robolectric.bindDefaultShadowClasses();
-
-        ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
+        ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
+
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
         prefLoader = new PreferenceLoader(resourceExtractor);
-        new DocumentLoader(prefLoader).loadResourceXmlDir(resourceFile("res", "xml"));
+        new DocumentLoader(prefLoader).loadResourceXmlDir(testResources(), "xml");
     }
 
     @Test
     public void shouldCreateCorrectClasses() {
-        PreferenceScreen screen = prefLoader.inflatePreferences(new Activity(), "xml/preferences");
+        PreferenceScreen screen = prefLoader.inflatePreferences(new Activity(), TEST_PACKAGE + ":xml/preferences");
         assertThatScreenMatchesExpected(screen);
     }
 
@@ -53,13 +42,13 @@ public class PreferenceLoaderTest {
 
     @Test(expected=I18nException.class)
     public void shouldThrowI18nExceptionOnPrefsWithBareStrings() throws Exception {
-        ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
+        ResourceExtractor resourceExtractor = new ResourceExtractor(testResources());
+
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
         prefLoader = new PreferenceLoader(resourceExtractor);
         prefLoader.setStrictI18n(true);
-        new DocumentLoader(prefLoader).loadResourceXmlDir(resourceFile("res", "xml"));
+        new DocumentLoader(prefLoader).loadResourceXmlDir(testResources(), "xml");
 
         prefLoader.inflatePreferences(Robolectric.application, R.xml.preferences);
     }

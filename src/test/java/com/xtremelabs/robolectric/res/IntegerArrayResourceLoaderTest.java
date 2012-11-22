@@ -4,10 +4,8 @@ import com.xtremelabs.robolectric.R;
 import org.junit.Before;
 import org.junit.Test;
 
-import java.io.File;
-
-import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static com.xtremelabs.robolectric.util.TestUtil.systemResources;
+import static com.xtremelabs.robolectric.util.TestUtil.testResources;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertThat;
@@ -16,20 +14,15 @@ public class IntegerArrayResourceLoaderTest {
     private IntegerArrayResourceLoader integerArrayResourceLoader;
 
     @Before public void setUp() throws Exception {
-        ResourceExtractor resourceExtractor = new ResourceExtractor();
-        resourceExtractor.addLocalRClass(R.class);
-        resourceExtractor.addSystemRClass(android.R.class);
-
-        File resourceXmlDir = resourceFile("res", "values");
-        File systemResourceXmlDir = getSystemResourceDir("values");
+        ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
 
         IntegerResourceLoader integerResourceLoader = new IntegerResourceLoader(resourceExtractor);
-        new DocumentLoader(integerResourceLoader).loadResourceXmlDir(resourceXmlDir);
-        new DocumentLoader(integerResourceLoader).loadSystemResourceXmlDir(systemResourceXmlDir);
+        new DocumentLoader(integerResourceLoader).loadResourceXmlDir(testResources(), "values");
+        new DocumentLoader(integerResourceLoader).loadResourceXmlDir(systemResources(), "values");
 
         integerArrayResourceLoader = new IntegerArrayResourceLoader(resourceExtractor, integerResourceLoader);
-        new DocumentLoader(integerArrayResourceLoader).loadResourceXmlDir(resourceXmlDir);
-        new DocumentLoader(integerArrayResourceLoader).loadSystemResourceXmlDir(systemResourceXmlDir);
+        new DocumentLoader(integerArrayResourceLoader).loadResourceXmlDir(testResources(), "values");
+        new DocumentLoader(integerArrayResourceLoader).loadResourceXmlDir(systemResources(), "values");
     }
 
     @Test

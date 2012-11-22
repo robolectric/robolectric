@@ -11,15 +11,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.util.TestUtil.getSystemResourceDir;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.nullValue;
+import static com.xtremelabs.robolectric.util.TestUtil.*;
+import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 /**
  * DrawableResourceLoaderTest
@@ -30,20 +25,18 @@ public class DrawableResourceLoaderTest {
 
     @Before
     public void setup() throws Exception {
-        ResourceExtractor extractor = new ResourceExtractor();
-        extractor.addLocalRClass(R.class);
-        extractor.addSystemRClass(android.R.class);
+        ResourceExtractor extractor = new ResourceExtractor(testResources(), systemResources());
 
         resourceLoader = new DrawableResourceLoader(extractor);
         DocumentLoader documentLoader = new DocumentLoader(resourceLoader);
 
-        documentLoader.loadResourceXmlDir(resourceFile("res", "drawable"));
-        documentLoader.loadSystemResourceXmlDir(getSystemResourceDir("drawable"));
+        documentLoader.loadResourceXmlDir(testResources(), "drawable");
+        documentLoader.loadResourceXmlDir(systemResources(), "drawable");
     }
 
     @Test
     public void testProcessResourceXml() throws Exception {
-        assertTrue("drawable/rainbow", resourceLoader.documents.containsKey("drawable/rainbow"));
+        assertTrue(TEST_PACKAGE + ":drawable/rainbow", resourceLoader.documents.containsKey(TEST_PACKAGE + ":drawable/rainbow"));
         assertEquals("documents.size", 218, resourceLoader.documents.size());
     }
 

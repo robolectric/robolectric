@@ -2,20 +2,17 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
 import android.content.res.Resources;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
-import com.xtremelabs.robolectric.*;
+import com.xtremelabs.robolectric.ApplicationResolver;
+import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.res.StringResourceLoader;
 import com.xtremelabs.robolectric.util.TestBroadcastReceiver;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,8 +28,6 @@ import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ApplicationTest {
@@ -49,14 +44,14 @@ public class ApplicationTest {
 
     @Test
     public void shouldBeBindableToAResourceLoader() throws Exception {
-        ResourceLoader resourceLoader1 = new ResourceLoader(mock(StringResourceLoader.class)) {
+        ResourceLoader resourceLoader1 = new ResourceLoader() {
+            @Override public String getStringValue(int id) { return "title from resourceLoader1"; }
         };
-        when(resourceLoader1.getStringValue(R.id.title)).thenReturn("title from resourceLoader1");
         Application app1 = ShadowApplication.bind(new Application(), resourceLoader1);
 
-        ResourceLoader resourceLoader2 = new ResourceLoader(mock(StringResourceLoader.class)) {
+        ResourceLoader resourceLoader2 = new ResourceLoader() {
+            @Override public String getStringValue(int id) { return "title from resourceLoader2"; }
         };
-        when(resourceLoader2.getStringValue(R.id.title)).thenReturn("title from resourceLoader2");
         Application app2 = ShadowApplication.bind(new Application(), resourceLoader2);
 
         assertEquals("title from resourceLoader1", new ContextWrapper(app1).getResources().getString(R.id.title));

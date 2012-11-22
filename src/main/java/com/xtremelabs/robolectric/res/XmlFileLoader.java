@@ -1,5 +1,12 @@
 package com.xtremelabs.robolectric.res;
 
+import android.content.res.Resources;
+import android.content.res.XmlResourceParser;
+import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.xmlpull.v1.XmlPullParserException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -8,14 +15,6 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.Node;
-import org.xmlpull.v1.XmlPullParserException;
-
-import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
 
 /**
  * Loader for xml property files.
@@ -31,8 +30,7 @@ import android.content.res.XmlResourceParser;
  */
 public class XmlFileLoader extends XmlLoader {
 	
-	private Map<String, Document> mXmlDocuments = 
-			new HashMap<String, Document>();
+	private Map<String, Document> mXmlDocuments = new HashMap<String, Document>();
 	
 	/**
 	 * All the parser features currently supported by Android. 
@@ -70,11 +68,8 @@ public class XmlFileLoader extends XmlLoader {
 	}
 
 	@Override
-	protected void processResourceXml(
-			File xmlFile, Document document, boolean isSystem)
-					throws Exception {
-		mXmlDocuments.put(
-				"xml/" + xmlFile.getName().replace(".xml", ""), document);
+	protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
+		mXmlDocuments.put(xmlContext.packageName + ":xml/" + xmlFile.getName().replace(".xml", ""), document);
 	}
 
  

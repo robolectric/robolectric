@@ -24,10 +24,10 @@ public class IntegerResourceLoader extends XTagXmlResourceLoader implements Reso
         return value;
 	}
 
-	public int getValue( String resourceName, boolean isSystem ) {
-        Integer resourceId = resourceExtractor.getResourceId(resourceName, isSystem);
+	public int getValue( String resourceName, String packageName) {
+        Integer resourceId = resourceExtractor.getResourceId(resourceName, packageName);
         if (resourceName == null) {
-            throw new IllegalArgumentException("No such resource (" + isSystem + "): " + resourceName);
+            throw new IllegalArgumentException("No such resource " + packageName + ": " + resourceName);
         }
         return getValue(resourceId);
 	}
@@ -45,8 +45,8 @@ public class IntegerResourceLoader extends XTagXmlResourceLoader implements Reso
 	}
 
 	@Override
-	protected void processNode( Node node, String name, boolean isSystem ) {
-		integerResolver.processResource( name, node.getTextContent(), this, isSystem );
-	}
+    protected void processNode(Node node, String name, XmlContext xmlContext) {
+        integerResolver.processResource(name, node.getTextContent(), this, xmlContext.packageName);
+    }
 
 }

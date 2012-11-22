@@ -1480,4 +1480,8 @@ public class Robolectric {
             return oldValue;
         }
     }
+
+    // marker for shadow classes when the implementation class is unlinkable
+    public interface Anything {
+    }
 }

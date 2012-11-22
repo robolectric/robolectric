@@ -279,7 +279,7 @@ public class ViewTest {
     @Test
     public void shouldAddOnClickListenerFromAttribute() throws Exception {
       TestAttributeSet attrs = new TestAttributeSet();
-      attrs.put("android:onClick", "clickMe");
+      attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
       view = new View(null, attrs);
       assertNotNull(shadowOf(view).getOnClickListener());
@@ -294,7 +294,7 @@ public class ViewTest {
         }
       };
       TestAttributeSet attrs = new TestAttributeSet();
-      attrs.put("android:onClick", "clickMe");
+      attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
       view = new View(context, attrs);
       view.performClick();
@@ -310,7 +310,7 @@ public class ViewTest {
         }
       };
       TestAttributeSet attrs = new TestAttributeSet();
-      attrs.put("android:onClick", "clickYou");
+      attrs.put("android:onClick", "clickYou", R.class.getPackage().getName());
 
       view = new View(context, attrs);
       view.performClick();

@@ -46,7 +46,7 @@ public class BitmapDrawableTest {
     @Test
     public void getBitmap_shouldReturnBitmapUsedToDraw() throws Exception {
         BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
-        assertEquals("Bitmap for resource:drawable/an_image", shadowOf(drawable.getBitmap()).getDescription());
+        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image", shadowOf(drawable.getBitmap()).getDescription());
     }
 
     @Test
@@ -64,7 +64,7 @@ public class BitmapDrawableTest {
         Canvas canvas = new Canvas();
         drawable.draw(canvas);
 
-        assertEquals("Bitmap for resource:drawable/an_image", shadowOf(canvas).getDescription());
+        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image", shadowOf(canvas).getDescription());
     }
 
     @Test
@@ -81,7 +81,7 @@ public class BitmapDrawableTest {
         Canvas canvas = new Canvas();
         drawable.draw(canvas);
 
-        assertEquals("Bitmap for resource:drawable/an_image with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>",
+        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>",
                 shadowOf(canvas).getDescription());
     }
 

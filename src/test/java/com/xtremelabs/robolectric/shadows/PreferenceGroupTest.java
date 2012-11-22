@@ -1,25 +1,19 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
-
-import java.util.HashMap;
-
-import com.xtremelabs.robolectric.TestRunners;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.app.Activity;
 import android.content.Context;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
 import android.util.AttributeSet;
-
 import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceGroupTest {
@@ -33,7 +27,7 @@ public class PreferenceGroupTest {
     @Before
     public void setUp() throws Exception {
     	context = new Activity();
-    	attrs = new TestAttributeSet( new HashMap<String, String>() );
+    	attrs = new TestAttributeSet();
 
     	group = new TestPreferenceGroup(context, attrs);
     	shadow = Robolectric.shadowOf(group);

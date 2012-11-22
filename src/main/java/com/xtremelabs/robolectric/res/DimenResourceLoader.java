@@ -15,13 +15,13 @@ public class DimenResourceLoader extends XpathResourceXmlLoader implements Resou
         return dimenResolver.getValue(resourceExtractor.getResourceName(resourceId));
     }
 
-    public float getValue(String resourceName, boolean isSystem) {
-        return getValue(resourceExtractor.getResourceId(resourceName, isSystem));
+    public float getValue(String resourceName, String packageName) {
+        return getValue(resourceExtractor.getResourceId(resourceName, packageName));
     }
 
     @Override
-    protected void processNode(Node node, String name, boolean isSystem) {
-        dimenResolver.processResource(name, node.getTextContent(), this, isSystem);
+    protected void processNode(Node node, String name, XmlContext xmlContext) {
+        dimenResolver.processResource(name, node.getTextContent(), this, xmlContext.packageName);
     }
 
     @Override

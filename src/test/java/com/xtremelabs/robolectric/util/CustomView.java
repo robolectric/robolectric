@@ -11,6 +11,6 @@ public class CustomView extends LinearLayout {
     public CustomView(Context context, AttributeSet attrs) {
         super(context, attrs);
         inflate(context, R.layout.inner_merge, this);
-        attributeResourceValue = attrs.getAttributeResourceValue("some namespace", "message", -1);
+        attributeResourceValue = attrs.getAttributeResourceValue(R.class.getPackage().getName(), "message", -1);
     }
 }
