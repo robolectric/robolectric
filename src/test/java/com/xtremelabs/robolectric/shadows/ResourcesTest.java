@@ -95,7 +95,29 @@ public class ResourcesTest {
     	shadowApp.getResourceLoader().setLocalRClass( TestR.class );
     	assertThat( resources.getDrawable( TestR.color.test_color_1 ), instanceOf( ColorDrawable.class ) );    	
     }
+    
+    @Test
+    public void testGetResourceEntryName() {
+    	assertThat( resources.getResourceEntryName( R.drawable.nine_patch_drawable ), equalTo( "nine_patch_drawable" ) );
+    	assertThat( resources.getResourceEntryName( R.color.android_red ), equalTo( "android_red" ) );
+    }
+    
+    @Test
+    public void testGetResourceTypeName() {
+    	assertThat( resources.getResourceTypeName( R.drawable.nine_patch_drawable ), equalTo( "drawable" ) );
+    	assertThat( resources.getResourceTypeName( R.color.android_red ), equalTo( "color" ) );
+    }
 
+    @Test
+    public void testGetResourceName() {
+    	assertThat( resources.getResourceName( R.drawable.nine_patch_drawable ), equalTo( "test:drawable/nine_patch_drawable" ) );
+    }
+    
+    @Test
+    public void testGetResourcePackageName() {
+    	assertThat( resources.getResourcePackageName( R.drawable.nine_patch_drawable ), equalTo( "test" ) );
+    }
+    
     /**
      * given an R.drawable.id value, will return a BitmapDrawable
      */

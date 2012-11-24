@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.Resources.NotFoundException;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
 import android.graphics.BitmapFactory;
@@ -242,4 +243,23 @@ public class ShadowResources {
         }
     }
 
+	@Implementation
+	public String getResourceName(int resid) throws NotFoundException {
+		return "test:" + resourceLoader.getNameForId(resid);
+	}
+
+	@Implementation
+	public String getResourceEntryName(int resid) throws NotFoundException {
+		return getResourceName(resid).replaceFirst("^.+/", "");
+	}
+
+	@Implementation
+	public String getResourceTypeName(int resid) throws NotFoundException {
+		return getResourceName(resid).replaceFirst("^.*:", "").replaceFirst("/.+$", "");
+	}
+
+	@Implementation
+	public String getResourcePackageName(int resid) throws NotFoundException {
+		return getResourceName(resid).replaceFirst(":.+$", "");
+	}
 }
