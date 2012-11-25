@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.bytecode;
 
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.Instrument;
@@ -151,8 +151,8 @@ public class ShadowWranglerTest {
     }
 
     @Test(expected=RuntimeException.class)
-    @EnableStrictI18n
     public void shouldThrowExceptionOnI18nStrictMode() {
+        Robolectric.getShadowWrangler().setStrictI18n(true);
     	bindShadowClass(ShadowFooI18n.class);
     	Foo foo = new Foo(null);
     	foo.getName();
@@ -203,7 +203,7 @@ public class ShadowWranglerTest {
     @Implements(Foo.class)
     public static class ShadowFooI18n {
     	String name;
-    	
+
         public void __constructor__(String name) {
            this.name = name;
         }
