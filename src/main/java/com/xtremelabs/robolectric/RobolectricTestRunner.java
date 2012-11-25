@@ -248,12 +248,19 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     	boolean strictI18n = globalI18nStrictEnabled();
 
     	// Test case class
-    	Annotation[] annos = method.getDeclaringClass().getAnnotations();
-    	strictI18n = lookForI18nAnnotations(strictI18n, annos);
+        Class<?> testClass = method.getDeclaringClass();
+        if (testClass.getAnnotation(EnableStrictI18n.class) != null) {
+            strictI18n = true;
+        } else if (testClass.getAnnotation(DisableStrictI18n.class) != null) {
+            strictI18n = false;
+        }
 
-    	// Test case methods
-    	annos = method.getAnnotations();
-    	strictI18n = lookForI18nAnnotations(strictI18n, annos);
+    	// Test case method
+        if (method.getAnnotation(EnableStrictI18n.class) != null) {
+            strictI18n = true;
+        } else if (method.getAnnotation(DisableStrictI18n.class) != null) {
+            strictI18n = false;
+        }
 
 		return strictI18n;
     }
@@ -274,30 +281,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     /**
-     * As test methods are loaded by the delegate's class loader, the normal
- 	 * method#isAnnotationPresent test fails. Look at string versions of the
-     * annotation names to test for their presence.
-     *
-     * @param strictI18n
-     * @param annos
-     * @return
-     */
-	private boolean lookForI18nAnnotations(boolean strictI18n, Annotation[] annos) {
-		for ( int i = 0; i < annos.length; i++ ) {
-    		String name = annos[i].annotationType().getName();
-    		if (name.equals(EnableStrictI18n.class.getName())) {
-    			strictI18n = true;
-    			break;
-    		}
-    		if (name.equals(DisableStrictI18n.class.getName())) {
-    			strictI18n = false;
-    			break;
-    		}
-    	}
-		return strictI18n;
-	}
-
-	/**
 	 * Find all the class and method annotations and pass them to
 	 * addConstantFromAnnotation() for evaluation.
 	 *
