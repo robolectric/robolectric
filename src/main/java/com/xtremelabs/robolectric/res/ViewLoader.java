@@ -86,10 +86,6 @@ public class ViewLoader extends XmlLoader {
         }
     }
 
-    public View inflateView(Context context, String key) {
-        return inflateView(context, key, null);
-    }
-
     public View inflateView(Context context, String key, View parent) {
         return inflateView(context, key, new ArrayList<Attribute>(), parent);
     }

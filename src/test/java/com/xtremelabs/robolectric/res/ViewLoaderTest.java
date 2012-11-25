@@ -25,36 +25,22 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.TestUtil.*;
-import static java.util.Arrays.asList;
+import static com.xtremelabs.robolectric.util.TestUtil.TEST_PACKAGE;
+import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ViewLoaderTest {
     private ViewLoader viewLoader;
-    private FragmentActivity context;
+    private Activity context;
 
     @Before
     public void setUp() throws Exception {
-        ResourcePath localResourcePath = new ResourcePath(R.class, resourceFile("res"), null);
-        ResourcePath systemResourcePath = ResourceLoader.getSystemResourcePath(DEFAULT_SDK_VERSION, asList(localResourcePath));
-        ResourceExtractor resourceExtractor = new ResourceExtractor(localResourcePath, systemResourcePath);
-
-        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(localResourcePath, "values");
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(systemResourcePath, "values");
-        
-        viewLoader =  new ViewLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
-        new DocumentLoader(viewLoader).loadResourceXmlDir(localResourcePath, "layout");
-        new DocumentLoader(viewLoader).loadResourceXmlDir(localResourcePath, "layout-xlarge");
-        new DocumentLoader(viewLoader).loadResourceXmlDir(localResourcePath, "layout-land");
-        new DocumentLoader(viewLoader).loadResourceXmlDir(systemResourcePath, "layout");
-
-        context = new FragmentActivity();
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+        viewLoader =  resourceLoader.getViewLoader();
+        context = new Activity() {};
     }
 
     @Test
@@ -268,15 +254,19 @@ public class ViewLoaderTest {
     @Test
     @Ignore
     public void testFragment() throws Exception {
+        FragmentActivity fragmentActivity = new FragmentActivity();
+        context = fragmentActivity;
         View v = inflate("layout/fragment");
         TestUtil.assertInstanceOf(TextView.class, v);
-        final FragmentManager fragmentManager = context.getSupportFragmentManager();
+        final FragmentManager fragmentManager = fragmentActivity.getSupportFragmentManager();
         Fragment fragment = fragmentManager.findFragmentById(R.id.my_fragment);
         assertNotNull(fragment);
     }
 
     @Test
     public void testMultiOrientation() throws Exception {
+        context = new FragmentActivity();
+
         // Default screen orientation should be portrait.
         ViewGroup view = (ViewGroup) inflate("layout/multi_orientation");
         TestUtil.assertInstanceOf(LinearLayout.class, view);
@@ -375,9 +365,10 @@ public class ViewLoaderTest {
         inflate("layout/text_views");
     }
 
-    private View inflate(String key) {
-        String layoutName = ResourceExtractor.qualifyResourceName(key, R.class.getPackage().getName());
-        return viewLoader.inflateView(context, layoutName);
+    private View inflate(String layoutName) {
+        ResourceLoader resourceLoader = shadowOf(context.getResources()).getResourceLoader();
+        layoutName = ResourceExtractor.qualifyResourceName(layoutName, TEST_PACKAGE);
+        return resourceLoader.getViewLoader().inflateView(context, layoutName, null);
     }
 
     public static class ClickActivity extends FragmentActivity {

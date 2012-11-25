@@ -144,6 +144,8 @@ public class ResourceLoader {
     }
 
     public void setQualifiers(String qualifiers) {
+        if (qualifiers == null) throw new NullPointerException();
+
         if (!this.qualifiers.equals(qualifiers)) {
             System.out.println("switching from '" + this.qualifiers + "' to '" + qualifiers + "'");
             this.qualifiers = qualifiers;
@@ -159,7 +161,7 @@ public class ResourceLoader {
     }
 
     private void loadValueResourcesFromDirs(DocumentLoader documentLoader, ResourcePath resourcePath, String qualifiers) throws Exception {
-        File qualifiedValuesDir = new File(resourcePath.resourceBase, qualifiers == null ? "values" : "values-" + qualifiers);
+        File qualifiedValuesDir = new File(resourcePath.resourceBase, "".equals(qualifiers) ? "values" : "values-" + qualifiers);
         if (qualifiedValuesDir.exists()) {
             documentLoader.loadResourceXmlDirs(resourcePath, qualifiedValuesDir);
         }
@@ -506,6 +508,10 @@ public class ResourceLoader {
 
     public ResourceExtractor getResourceExtractor() {
         return resourceExtractor;
+    }
+
+    ViewLoader getViewLoader() {
+        return viewLoader;
     }
 
     private static class DirectoryMatchingFileFilter implements FileFilter {

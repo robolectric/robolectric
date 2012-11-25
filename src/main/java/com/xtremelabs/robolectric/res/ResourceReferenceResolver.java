@@ -20,6 +20,7 @@ class ResourceReferenceResolver<T> {
 
     public void processResource(String name, String rawValue, ResourceValueConverter loader, String packageName) {
         String valuePointer = prefix + "/" + name;
+        // todo: seems wrong
         if (rawValue.startsWith("@" + prefix) || rawValue.startsWith("@android:" + prefix)) {
             addAttributeReference(rawValue, valuePointer, packageName);
         } else {
