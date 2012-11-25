@@ -41,13 +41,13 @@ public class ImageViewTest {
     @Test
     public void shouldDrawWithImageMatrix() throws Exception {
         imageView.setImageMatrix(new Matrix());
-        assertEquals("Bitmap for resource:drawable/an_image",
+        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image",
                 visualize(imageView));
 
         Matrix matrix = new Matrix();
         matrix.setTranslate(15, 20);
         imageView.setImageMatrix(matrix);
-        assertEquals("Bitmap for resource:drawable/an_image at (15,20)",
+        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image at (15,20)",
                 visualize(imageView));
     }
 
@@ -56,15 +56,15 @@ public class ImageViewTest {
         Matrix matrix = new Matrix();
         matrix.setTranslate(15, 20);
         imageView.setImageMatrix(matrix);
-        assertEquals("Bitmap for resource:drawable/an_image at (15,20)",
+        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image at (15,20)",
                 visualize(imageView));
 
         matrix.setTranslate(30, 40);
-        assertEquals("Bitmap for resource:drawable/an_image at (15,20)",
+        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image at (15,20)",
                 visualize(imageView));
 
         imageView.setImageMatrix(matrix);
-        assertEquals("Bitmap for resource:drawable/an_image at (30,40)",
+        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image at (30,40)",
                 visualize(imageView));
     }
 

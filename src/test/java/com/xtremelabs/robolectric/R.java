@@ -99,6 +99,7 @@ public final class R {
         public static final int android_namespaced_black = nextId++;
         public static final int android_namespaced_transparent = nextId++;
         public static final int android_red = nextId++;
+        public static final int test_color_1 = nextId++;
     }
 
     public static final class drawable {
@@ -119,6 +120,7 @@ public final class R {
         public static final int state_drawable = nextId++;
         public static final int animation_list = nextId++;
         public static final int nine_patch_drawable = nextId++;
+        public static final int test_drawable_1 = nextId++;
     }
 
     public static final class layout {
@@ -138,6 +140,10 @@ public final class R {
         public static final int lam_outer = nextId++;
         public static final int lam_inner = nextId++;
     }
+
+    public static final class anim {
+   		public static final int test_anim_1 = nextId++;
+   	}
 
     public static final class raw {
         public static final int raw_resource = nextId++;
