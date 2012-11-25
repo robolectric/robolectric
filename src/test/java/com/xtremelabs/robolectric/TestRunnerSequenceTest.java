@@ -38,12 +38,12 @@ public class TestRunnerSequenceTest {
             transcript.add("resetStaticState");
         }
 
-        @Override protected void configureShadows() {
+        @Override protected void configureShadows(Method testMethod) {
             transcript.add("configureShadows");
         }
 
         @Override
-        public void setupApplicationState() {
+        public void setupApplicationState(Method testMethod) {
             transcript.add("setupApplicationState");
         }
     }

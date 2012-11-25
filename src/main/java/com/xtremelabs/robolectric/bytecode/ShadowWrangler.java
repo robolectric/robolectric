@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.bytecode;
 
-import com.xtremelabs.robolectric.RobolectricConfig;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.Join;
@@ -8,6 +7,7 @@ import javassist.CannotCompileException;
 import javassist.CtClass;
 import javassist.CtField;
 import javassist.NotFoundException;
+
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 import java.util.*;
@@ -35,8 +35,8 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     @Override
-    public void configure(RobolectricConfig robolectricConfig) {
-    	strictI18n = robolectricConfig.getStrictI18n();
+    public void setStrictI18n(boolean strictI18n) {
+        this.strictI18n = strictI18n;
     }
 
     @Override
@@ -132,6 +132,7 @@ public class ShadowWrangler implements ClassHandler {
                 }
             }
 
+            // todo: a little strange that this lives here...
             if (strictI18n && !invocationPlan.isI18nSafe()) {
                 throw new I18nException("Method " + methodName + " on class " + clazz.getName() + " is not i18n-safe.");
             }

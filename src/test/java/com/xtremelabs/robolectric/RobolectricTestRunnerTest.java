@@ -31,34 +31,39 @@ public class RobolectricTestRunnerTest {
 
         assertEquals("expected value", android.os.Build.MODEL);
     }
-    
+
     @Test
     @EnableStrictI18n
     public void internalBeforeTest_setsI18nStrictModeFromProperty() {
-    	assertTrue(RunnerForTesting.instance.robolectricConfig.getStrictI18n());
+        assertTrue(Robolectric.getShadowApplication().getResourceLoader().getStrictI18n());
     }
 
     @Test
     @DisableStrictI18n
     public void internalBeforeTest_clearsI18nStrictModeFromProperty() {
-    	assertFalse(RunnerForTesting.instance.robolectricConfig.getStrictI18n());
+        assertFalse(Robolectric.getShadowApplication().getResourceLoader().getStrictI18n());
     }
-    
+
     @Test
-    @Values( locale="fr")
-    public void internalBeforeTest_setLocale(){
-    	assertEquals( RunnerForTesting.instance.robolectricConfig.getValuesResQualifiers(), "fr" );
+    @Values(locale = "fr")
+    public void internalBeforeTest_setLocale() {
+        assertEquals(Robolectric.getShadowApplication().getResourceLoader().getQualifiers(), "fr");
     }
-    
+
     @Test
-    @Values( qualifiers="fr")
+    @Values(qualifiers = "fr")
     public void internalBeforeTest_testValuesResQualifiers() {
-    	assertEquals( RunnerForTesting.instance.robolectricConfig.getValuesResQualifiers(), "fr" );
+        assertEquals(Robolectric.getShadowApplication().getResourceLoader().getQualifiers(), "fr");
     }
-    
+
     @Test
-    public void internalBeforeTest_doesNotsetI18nStrictModeFromSystemIfPropertyAbsent() {
-    	assertFalse(RunnerForTesting.instance.robolectricConfig.getStrictI18n());
+    public void internalBeforeTest_resetsValuesResQualifiers() {
+        assertEquals(Robolectric.getShadowApplication().getResourceLoader().getQualifiers(), "");
+    }
+
+    @Test
+    public void internalBeforeTest_doesNotSetI18nStrictModeFromSystemIfPropertyAbsent() {
+        assertFalse(Robolectric.getShadowApplication().getResourceLoader().getStrictI18n());
     }
     
     @Test
@@ -78,7 +83,7 @@ public class RobolectricTestRunnerTest {
     @EnableStrictI18n
     public void createResourceLoader_setsI18nStrictModeForResourceLoader() {
     	ResourceLoader loader = Robolectric.shadowOf(Robolectric.application).getResourceLoader();
-    	assertTrue(RunnerForTesting.instance.robolectricConfig.getStrictI18n());
+    	assertTrue(Robolectric.getShadowApplication().getResourceLoader().getStrictI18n());
 		assertTrue(loader.getStrictI18n());
     	try {
     		loader.inflateView(Robolectric.application, R.layout.text_views, null);

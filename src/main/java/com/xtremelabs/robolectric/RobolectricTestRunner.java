@@ -122,21 +122,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * Called before each test method is run. Sets up the simulation of the Android runtime environment.
      */
     @Override final public void internalBeforeTest(final Method method) {
-        RobolectricConfig robolectricConfig = sharedRobolectricContext.getRobolectricConfig();
-        setupI18nStrictState(method, robolectricConfig);
-        lookForLocaleAnnotation(method, robolectricConfig);
-        ClassHandler classHandler = sharedRobolectricContext.getClassHandler();
-        classHandler.configure(robolectricConfig);
-
         setupLogging();
-        configureShadows();
+        configureShadows(method);
 
         Robolectric.resetStaticState();
         resetStaticState();
 
-        DatabaseConfig.setDatabaseMap(this.databaseMap); //Set static DatabaseMap in DBConfig
+        DatabaseConfig.setDatabaseMap(databaseMap); //Set static DatabaseMap in DBConfig
 
-        setupApplicationState();
+        setupApplicationState(method);
 
         beforeTest(method);
     }
@@ -180,16 +174,30 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     public void prepareTest(final Object test) {
     }
 
-    public void setupApplicationState() {
-        RobolectricConfig robolectricConfig = sharedRobolectricContext.getRobolectricConfig();
-        ResourceLoader resourceLoader = createResourceLoader(robolectricConfig);
+    public void setupApplicationState(Method testMethod) {
+        boolean strictI18n = determineI18nStrictState(testMethod);
+
+        ResourceLoader resourceLoader = getResourceLoader(sharedRobolectricContext.getRobolectricConfig());
         resourceLoader.setLayoutQualifierSearchPath();
+        resourceLoader.setQualifiers(determineResourceQualifiers(testMethod));
+        resourceLoader.setStrictI18n(strictI18n);
+
+        ClassHandler classHandler = sharedRobolectricContext.getClassHandler();
+        classHandler.setStrictI18n(strictI18n);
 
         Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
     }
 
-    protected void configureShadows() { // todo: dedupe this/bindShadowClasses
+    protected void configureShadows(Method testMethod) { // todo: dedupe this/bindShadowClasses
         Robolectric.bindDefaultShadowClasses();
+        bindShadowClasses(testMethod);
+    }
+
+    /**
+     * Override this method to bind your own shadow classes
+     */
+    @SuppressWarnings("UnusedParameters")
+    protected void bindShadowClasses(Method testMethod) {
         bindShadowClasses();
     }
 
@@ -203,6 +211,18 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * Override this method to reset the state of static members before each test.
      */
     protected void resetStaticState() {
+    }
+
+    private String determineResourceQualifiers(Method method) {
+        String qualifiers = "";
+        Values values = method.getAnnotation(Values.class);
+        if (values != null) {
+            qualifiers = values.qualifiers();
+            if (qualifiers.isEmpty()) {
+                qualifiers = values.locale();
+            }
+        }
+        return qualifiers;
     }
 
     /**
@@ -221,9 +241,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * By default, I18n-strict mode is disabled.
      *
      * @param method
-     * @param robolectricConfig
+     *
      */
-    private void setupI18nStrictState(Method method, RobolectricConfig robolectricConfig) {
+    private boolean determineI18nStrictState(Method method) {
     	// Global
     	boolean strictI18n = globalI18nStrictEnabled();
 
@@ -235,7 +255,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     	annos = method.getAnnotations();
     	strictI18n = lookForI18nAnnotations(strictI18n, annos);
 
-		robolectricConfig.setStrictI18n(strictI18n);
+		return strictI18n;
     }
 
     /**
@@ -276,23 +296,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     	}
 		return strictI18n;
 	}
-
-	private void lookForLocaleAnnotation( Method method, RobolectricConfig robolectricConfig ) {
-        String qualifiers = "";
-        Values values = method.getAnnotation(Values.class);
-        if (values != null) {
-            qualifiers = values.qualifiers();
-            if (qualifiers.isEmpty()) {
-                qualifiers = values.locale();
-            }
-        }
-
-		robolectricConfig.setValuesResQualifiers(qualifiers);
-	}
-
-    private Object getAnnotationFieldValue(Annotation anno, String method ) throws Exception {
-    	return anno.annotationType().getMethod(method).invoke(anno);
-    }
 
 	/**
 	 * Find all the class and method annotations and pass them to
@@ -403,32 +406,28 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return new ApplicationResolver(sharedRobolectricContext.getRobolectricConfig()).resolveApplication();
     }
 
-    protected ResourceLoader createResourceLoader(final RobolectricConfig robolectricConfig) {
+    protected ResourceLoader getResourceLoader(final RobolectricConfig robolectricConfig) {
         ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(robolectricConfig);
-
         if (resourceLoader == null ) {
-            try {
-                robolectricConfig.validate();
-
-                String rClassName = robolectricConfig.getRClassName();
-                Class rClass = Class.forName(rClassName);
-
-                ResourcePath appResourcePath = new ResourcePath(rClass, robolectricConfig.getResourceDirectory(), robolectricConfig.getAssetsDirectory());
-                ResourcePath systemResourcePath = ResourceLoader.getSystemResourcePath(robolectricConfig.getRealSdkVersion(), asList(appResourcePath));
-                resourceLoader = new ResourceLoader(appResourcePath, systemResourcePath);
-                resourceLoaderForRootAndDirectory.put(robolectricConfig, resourceLoader);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            resourceLoader = createResourceLoader(robolectricConfig);
+            resourceLoaderForRootAndDirectory.put(robolectricConfig, resourceLoader);
         }
-
-        // When locale has changed, reload values resource files.
-        if(robolectricConfig.isValuesResQualifiersChanged()){
-        	resourceLoader.reloadValuesResources(robolectricConfig.getValuesResQualifiers());
-        }
-
-        resourceLoader.setStrictI18n(robolectricConfig.getStrictI18n());
         return resourceLoader;
+    }
+
+    private ResourceLoader createResourceLoader(RobolectricConfig robolectricConfig) {
+        try {
+            robolectricConfig.validate();
+
+            String rClassName = robolectricConfig.getRClassName();
+            Class rClass = Class.forName(rClassName);
+
+            ResourcePath appResourcePath = new ResourcePath(rClass, robolectricConfig.getResourceDirectory(), robolectricConfig.getAssetsDirectory());
+            ResourcePath systemResourcePath = ResourceLoader.getSystemResourcePath(robolectricConfig.getRealSdkVersion(), asList(appResourcePath));
+            return new ResourceLoader(appResourcePath, systemResourcePath);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     private String findResourcePackageName(final File projectManifestFile) throws ParserConfigurationException, IOException, SAXException {

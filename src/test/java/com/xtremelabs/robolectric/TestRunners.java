@@ -5,6 +5,8 @@ import javassist.CtClass;
 import javassist.NotFoundException;
 import org.junit.runners.model.InitializationError;
 
+import java.lang.reflect.Method;
+
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 
 public class TestRunners {
@@ -49,12 +51,12 @@ public class TestRunners {
             }));
         }
 
-        @Override protected void configureShadows() {
+        @Override protected void configureShadows(Method testMethod) {
             // Don't do any class binding, because that's what we're trying to test here.
         }
 
         @Override
-        public void setupApplicationState() {
+        public void setupApplicationState(Method testMethod) {
             // Don't do any resource loading or app init, because that's what we're trying to test here.
         }
     }
@@ -121,12 +123,12 @@ public class TestRunners {
             }));
         }
 
-        @Override protected void configureShadows() {
+        @Override protected void configureShadows(Method testMethod) {
             // Don't do any class binding, because that's what we're trying to test here.
         }
 
         @Override
-        public void setupApplicationState() {
+        public void setupApplicationState(Method testMethod) {
             // Don't do any resource loading or app init, because that's what we're trying to test here.
         }
     }

@@ -41,6 +41,7 @@ public class ResourceLoader {
     private boolean isInitialized = false;
     private boolean strictI18n = false;
     private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
+    private String qualifiers = "";
 
     public static ResourcePath getSystemResourcePath(int sdkVersion, List<ResourcePath> resourcePaths) {
         String pathToAndroidResources = new AndroidResourcePathFinder(sdkVersion, resourcePaths).getPathToAndroidResources();
@@ -91,10 +92,9 @@ public class ResourceLoader {
 
     private void init() {
         if (isInitialized) return;
-        isInitialized = true;
 
         try {
-            loadEverything(null);
+            loadEverything(qualifiers);
         } catch (I18nException e) {
             throw e;
         } catch (Exception e) {
@@ -126,6 +126,8 @@ public class ResourceLoader {
 
             rawResourceLoaders.add(new RawResourceLoader(resourceExtractor, resourcePath.resourceBase));
         }
+
+        isInitialized = true;
     }
 
     /**
@@ -139,8 +141,14 @@ public class ResourceLoader {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+    }
 
-        isInitialized = true;
+    public void setQualifiers(String qualifiers) {
+        if (!this.qualifiers.equals(qualifiers)) {
+            System.out.println("switching from '" + this.qualifiers + "' to '" + qualifiers + "'");
+            this.qualifiers = qualifiers;
+            this.isInitialized = false;
+        }
     }
 
     protected void loadOtherResources(ResourcePath resourcePath) {
@@ -170,6 +178,10 @@ public class ResourceLoader {
 
     private File getPreferenceResourceDir(File xmlResourceDir) {
         return xmlResourceDir != null ? new File(xmlResourceDir, "xml") : null;
+    }
+
+    public String getQualifiers() {
+        return qualifiers;
     }
 
     public static class AndroidResourcePathFinder {

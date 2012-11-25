@@ -136,7 +136,7 @@ public class ResourcesTest {
      */
     @Test
     public void testGetNinePatchDrawable() {
-        assertThat(resources.getDrawable(R.drawable.nine_patch_drawable ), instanceOf(NinePatchDrawable.class ) );  
+        assertThat(Robolectric.getShadowApplication().getResources().getDrawable(R.drawable.nine_patch_drawable ), instanceOf(NinePatchDrawable.class ) );
     }
     
     /**
