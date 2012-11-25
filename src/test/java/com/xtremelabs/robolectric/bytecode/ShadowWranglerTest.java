@@ -6,6 +6,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.Instrument;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.util.I18nException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -150,12 +151,12 @@ public class ShadowWranglerTest {
         assertThat(stackTrace, not(containsString(RobolectricInternals.class.getName() + ".")));
     }
 
-    @Test(expected=RuntimeException.class)
+    @Test(expected = I18nException.class)
     public void shouldThrowExceptionOnI18nStrictMode() {
         Robolectric.getShadowWrangler().setStrictI18n(true);
-    	bindShadowClass(ShadowFooI18n.class);
-    	Foo foo = new Foo(null);
-    	foo.getName();
+        bindShadowClass(ShadowFooI18n.class);
+        Foo foo = new Foo(null);
+        foo.getName();
     }
 
     private ShadowFoo shadowOf(Foo foo) {
