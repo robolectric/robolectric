@@ -6,6 +6,7 @@ import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
 import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.internal.DoNotInstrument;
 import com.xtremelabs.robolectric.internal.Instrument;
+import com.xtremelabs.robolectric.util.I18nException;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.LoaderClassPath;
@@ -27,6 +28,7 @@ public class RobolectricClassLoader extends javassist.Loader {
         delegateLoadingOf(Values.class.getName());
         delegateLoadingOf(EnableStrictI18n.class.getName());
         delegateLoadingOf(DisableStrictI18n.class.getName());
+        delegateLoadingOf(I18nException.class.getName());
 
         this.classCache = classCache;
         try {

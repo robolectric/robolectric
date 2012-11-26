@@ -33,7 +33,7 @@ public class ResourceLoader {
     private final IntegerResourceLoader integerResourceLoader;
     private final PluralResourceLoader pluralResourceLoader;
     private final StringArrayResourceLoader stringArrayResourceLoader;
-    private final AttrResourceLoader attrResourceLoader;
+    protected final AttrResourceLoader attrResourceLoader;
     private final ColorResourceLoader colorResourceLoader;
     private final DrawableResourceLoader drawableResourceLoader;
     private final BoolResourceLoader boolResourceLoader;
