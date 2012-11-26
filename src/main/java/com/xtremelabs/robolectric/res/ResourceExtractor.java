@@ -4,13 +4,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class ResourceExtractor {
     private Map<String, Integer> resourceNameToId = new HashMap<String, Integer>();
     private Map<Integer, String> resourceIdToFullyQualifiedName = new HashMap<Integer, String>();
+    private Set<Class> processedRFiles = new HashSet<Class>();
 
     public ResourceExtractor() {
     }
@@ -28,6 +27,10 @@ public class ResourceExtractor {
     }
 
     private void addRClass(Class<?> rClass) {
+        if (!processedRFiles.add(rClass)) {
+            System.out.println("WARN: already extracted resources for " + rClass.getPackage().getName() + ", skipping. You should probably fix this.");
+            return;
+        }
         String packageName = rClass.getPackage().getName();
 
         for (Class innerClass : rClass.getClasses()) {

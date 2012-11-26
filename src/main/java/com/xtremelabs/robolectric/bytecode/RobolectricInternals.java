@@ -50,10 +50,11 @@ public class RobolectricInternals {
         if (vars.callDirectly != null) {
             Object expectedInstance = vars.callDirectly;
             vars.callDirectly = null;
-            throw new RuntimeException("already expecting a direct call on <" + expectedInstance + "> but here's a new request for <" + shadowedObject + ">");
+            throw new RuntimeException("already expecting a direct call on <" + expectedInstance + "> but here's a new request for <" + shadowedObject + ">", vars.stackTraceThrowable);
         }
 
         vars.callDirectly = shadowedObject;
+        vars.stackTraceThrowable = new Throwable("original call to directlyOn()");
         return shadowedObject;
     }
 
@@ -68,7 +69,7 @@ public class RobolectricInternals {
                 Object expectedInstance = vars.callDirectly;
                 vars.callDirectly = null;
                 throw new RuntimeException("expected to perform direct call on " + desc(expectedInstance)
-                        + " but got " + desc(directInstance));
+                        + " but got " + desc(directInstance), vars.stackTraceThrowable);
             } else {
                 vars.callDirectly = null;
             }

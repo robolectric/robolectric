@@ -8,6 +8,7 @@ public class Vars {
     };
 
     public Object callDirectly;
+    public Throwable stackTraceThrowable;
 
     Vars() {
     }

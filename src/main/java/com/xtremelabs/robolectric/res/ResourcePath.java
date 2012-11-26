@@ -13,7 +13,7 @@ public class ResourcePath {
         this.assetsDir = assetsDir;
     }
 
-    String getPackageName() {
+    public String getPackageName() {
         return rClass.getPackage().getName();
     }
 }

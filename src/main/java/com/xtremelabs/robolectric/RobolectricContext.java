@@ -4,6 +4,8 @@ import android.net.Uri__FromAndroid;
 import com.xtremelabs.robolectric.bytecode.*;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
+import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.res.ResourcePath;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -23,7 +25,9 @@ import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.RobolectricTestRunner.isBootstrapped;
@@ -101,6 +105,12 @@ public class RobolectricContext {
 
     public ClassHandler getClassHandler() {
         return classHandler;
+    }
+
+    public List<ResourcePath> getResourcePaths(RobolectricConfig robolectricConfig) {
+        List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>(robolectricConfig.getResourcePaths());
+        resourcePaths.add(ResourceLoader.getSystemResourcePath(robolectricConfig.getRealSdkVersion(), resourcePaths));
+        return resourcePaths;
     }
 
     private void init() {

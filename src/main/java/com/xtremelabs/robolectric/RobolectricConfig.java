@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric;
 
 import android.app.Application;
 import com.xtremelabs.robolectric.internal.ClassNameResolver;
+import com.xtremelabs.robolectric.res.ResourcePath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -320,6 +321,28 @@ public class RobolectricConfig {
             }
         }
         return null;
+    }
+
+    public List<ResourcePath> getResourcePaths() {
+        try {
+            validate();
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        Class rClass;
+        try {
+            String rClassName = getRClassName();
+            rClass = Class.forName(rClassName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>();
+        for (File resDir : getResourcePath()) {
+            resourcePaths.add(new ResourcePath(rClass, resDir, getAssetsDirectory()));
+        }
+        return Collections.unmodifiableList(resourcePaths);
     }
 
     private static Application newApplicationInstance(final String packageName, final String applicationName) {

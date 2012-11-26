@@ -32,7 +32,6 @@ import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -42,7 +41,7 @@ import java.util.Map;
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
-    protected static Map<RobolectricConfig, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RobolectricConfig, ResourceLoader>();
+    private static Map<RobolectricConfig, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<RobolectricConfig, ResourceLoader>();
 
     // field in both the instrumented and original classes
     RobolectricContext sharedRobolectricContext;
@@ -392,28 +391,16 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     private ResourceLoader getResourceLoader(final RobolectricConfig robolectricConfig) {
         ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(robolectricConfig);
         if (resourceLoader == null ) {
-            resourceLoader = createResourceLoader(robolectricConfig);
+            List<ResourcePath> resourcePaths = sharedRobolectricContext.getResourcePaths(robolectricConfig);
+            resourceLoader = createResourceLoader(resourcePaths);
             resourceLoaderForRootAndDirectory.put(robolectricConfig, resourceLoader);
         }
         return resourceLoader;
     }
 
-    protected ResourceLoader createResourceLoader(RobolectricConfig robolectricConfig) {
-        try {
-            robolectricConfig.validate();
-
-            String rClassName = robolectricConfig.getRClassName();
-            Class rClass = Class.forName(rClassName);
-
-            List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>();
-            for (File resDir : robolectricConfig.getResourcePath()) {
-              resourcePaths.add(new ResourcePath(rClass, resDir, robolectricConfig.getAssetsDirectory()));
-            }
-            resourcePaths.add(ResourceLoader.getSystemResourcePath(robolectricConfig.getRealSdkVersion(), resourcePaths));
-            return new ResourceLoader(resourcePaths);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    // this method must live on a RobolectricClassLoader-loaded class, so it can't be on RobolectricContext
+    protected ResourceLoader createResourceLoader(List<ResourcePath> resourcePaths) {
+        return new ResourceLoader(resourcePaths);
     }
 
     private String findResourcePackageName(final File projectManifestFile) throws ParserConfigurationException, IOException, SAXException {

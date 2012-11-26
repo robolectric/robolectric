@@ -48,7 +48,7 @@ public class ResourceLoader {
         return new ResourcePath(R.class, new File(pathToAndroidResources), null);
     }
 
-    public ResourceLoader(List<ResourcePath> resourcePaths) throws Exception {
+    public ResourceLoader(List<ResourcePath> resourcePaths) {
         this(new ResourceExtractor(resourcePaths), resourcePaths);
     }
 
@@ -104,6 +104,8 @@ public class ResourceLoader {
 
     private void loadEverything(String qualifiers) throws Exception {
         for (ResourcePath resourcePath : resourcePaths) {
+            System.out.println("DEBUG: Loading resources for " + resourcePath.getPackageName() + " from " + resourcePath.resourceBase + "...");
+
             validateQualifiers(resourcePath, qualifiers);
 
             DocumentLoader valuesDocumentLoader = new DocumentLoader(

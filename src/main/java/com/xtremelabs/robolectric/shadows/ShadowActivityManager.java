@@ -22,7 +22,7 @@ public class ShadowActivityManager {
 	
 	private String backgroundPackage;
     private ActivityManager.MemoryInfo memoryInfo;
-    private int memoryClass;
+    private int memoryClass = 16;
 
     @Implementation
 	public List<ActivityManager.RunningTaskInfo> getRunningTasks(int maxNum) {

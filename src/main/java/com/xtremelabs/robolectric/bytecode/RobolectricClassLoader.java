@@ -6,11 +6,20 @@ import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
 import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.internal.DoNotInstrument;
 import com.xtremelabs.robolectric.internal.Instrument;
+import com.xtremelabs.robolectric.res.ResourcePath;
 import com.xtremelabs.robolectric.util.I18nException;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
+import org.jetbrains.annotations.Nullable;
+
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.List;
 
 public class RobolectricClassLoader extends javassist.Loader {
     private final ClassCache classCache;
@@ -21,6 +30,7 @@ public class RobolectricClassLoader extends javassist.Loader {
         delegateLoadingOf(RobolectricClassLoader.class.getName());
         delegateLoadingOf(RobolectricContext.class.getName());
         delegateLoadingOf(RobolectricContext.Factory.class.getName());
+        delegateLoadingOf(ResourcePath.class.getName());
         delegateLoadingOf(AndroidTranslator.class.getName());
         delegateLoadingOf(ClassHandler.class.getName());
         delegateLoadingOf(Instrument.class.getName());
@@ -84,5 +94,27 @@ public class RobolectricClassLoader extends javassist.Loader {
             return defineClass(name, classBytes, 0, classBytes.length);
         }
         return super.findClass(name);
+    }
+
+    @Nullable
+    @Override
+    public URL getResource(String s) {
+        URL resource = super.getResource(s);
+        if (resource != null) return resource;
+        return RobolectricClassLoader.class.getClassLoader().getResource(s);
+    }
+
+    @Override
+    public InputStream getResourceAsStream(String s) {
+        InputStream resourceAsStream = super.getResourceAsStream(s);
+        if (resourceAsStream != null) return resourceAsStream;
+        return RobolectricClassLoader.class.getClassLoader().getResourceAsStream(s);
+    }
+
+    @Override
+    public Enumeration<URL> getResources(String s) throws IOException {
+        List<URL> resources = Collections.list(super.getResources(s));
+        if (!resources.isEmpty()) return Collections.enumeration(resources);
+        return RobolectricClassLoader.class.getClassLoader().getResources(s);
     }
 }
