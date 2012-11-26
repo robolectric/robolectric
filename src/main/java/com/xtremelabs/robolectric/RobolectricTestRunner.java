@@ -32,10 +32,10 @@ import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-
-import static java.util.Arrays.asList;
 
 /**
  * Installs a {@link RobolectricClassLoader} and {@link com.xtremelabs.robolectric.res.ResourceLoader} in order to
@@ -389,7 +389,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return new ApplicationResolver(sharedRobolectricContext.getRobolectricConfig()).resolveApplication();
     }
 
-    protected ResourceLoader getResourceLoader(final RobolectricConfig robolectricConfig) {
+    private ResourceLoader getResourceLoader(final RobolectricConfig robolectricConfig) {
         ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(robolectricConfig);
         if (resourceLoader == null ) {
             resourceLoader = createResourceLoader(robolectricConfig);
@@ -398,16 +398,19 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return resourceLoader;
     }
 
-    private ResourceLoader createResourceLoader(RobolectricConfig robolectricConfig) {
+    protected ResourceLoader createResourceLoader(RobolectricConfig robolectricConfig) {
         try {
             robolectricConfig.validate();
 
             String rClassName = robolectricConfig.getRClassName();
             Class rClass = Class.forName(rClassName);
 
-            ResourcePath appResourcePath = new ResourcePath(rClass, robolectricConfig.getResourceDirectory(), robolectricConfig.getAssetsDirectory());
-            ResourcePath systemResourcePath = ResourceLoader.getSystemResourcePath(robolectricConfig.getRealSdkVersion(), asList(appResourcePath));
-            return new ResourceLoader(appResourcePath, systemResourcePath);
+            List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>();
+            for (File resDir : robolectricConfig.getResourcePath()) {
+              resourcePaths.add(new ResourcePath(rClass, resDir, robolectricConfig.getAssetsDirectory()));
+            }
+            resourcePaths.add(ResourceLoader.getSystemResourcePath(robolectricConfig.getRealSdkVersion(), resourcePaths));
+            return new ResourceLoader(resourcePaths);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
