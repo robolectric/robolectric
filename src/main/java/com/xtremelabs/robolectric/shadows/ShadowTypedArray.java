@@ -25,6 +25,9 @@ public class ShadowTypedArray {
 
     @Implementation
     public java.lang.String getString(int index) {
+        if(values.size() <= index) {
+            return null;
+        }
         return (String) values.get(index);
     }
 }
