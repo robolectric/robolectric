@@ -3,9 +3,9 @@ package com.xtremelabs.robolectric.res;
 import org.w3c.dom.Node;
 public class DimenResourceLoader extends XpathResourceXmlLoader implements ResourceValueConverter {
 
-    private static final String[] UNITS = { "dp", "dip", "pt", "px", "sp" };
+	private static final String[] UNITS = { "dp", "dip", "in", "mm", "pt", "px", "sp" };
 	
-    private ResourceReferenceResolver<Float> dimenResolver = new ResourceReferenceResolver<Float>("dimen");
+    private final ResourceReferenceResolver<Float> dimenResolver = new ResourceReferenceResolver<Float>("dimen");
 
     public DimenResourceLoader(ResourceExtractor resourceExtractor) {
         super(resourceExtractor, "/resources/dimen");
