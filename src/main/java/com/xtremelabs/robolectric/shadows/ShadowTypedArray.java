@@ -6,7 +6,7 @@ import android.util.AttributeSet;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
+import com.xtremelabs.robolectric.tester.android.util.ResName;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -30,34 +30,40 @@ public class ShadowTypedArray implements UsesResources {
 
     @Implementation
     public CharSequence getText(int index) {
-        CharSequence str = values.getAttributeValue(namespace(index), name(index));
+        ResName resName = getResName(index);
+        CharSequence str = values.getAttributeValue(resName.namespace, resName.name);
         return str == null ? "" : str;
     }
 
     @Implementation
     public String getString(int index) {
-        String str = values.getAttributeValue(namespace(index), name(index));
+        ResName resName = getResName(index);
+        String str = values.getAttributeValue(resName.namespace, resName.name);
         return str == null ? "" : str;
     }
 
     @Implementation
     public boolean getBoolean(int index, boolean defValue) {
-        return values.getAttributeBooleanValue(namespace(index), name(index), defValue);
+        ResName resName = getResName(index);
+        return values.getAttributeBooleanValue(resName.namespace, resName.name, defValue);
     }
 
     @Implementation
     public int getInt(int index, int defValue) {
-        return values.getAttributeIntValue(namespace(index), name(index), defValue);
+        ResName resName = getResName(index);
+        return values.getAttributeIntValue(resName.namespace, resName.name, defValue);
     }
 
     @Implementation
     public float getFloat(int index, float defValue) {
-        return values.getAttributeFloatValue(namespace(index), name(index), defValue);
+        ResName resName = getResName(index);
+        return values.getAttributeFloatValue(resName.namespace, resName.name, defValue);
     }
 
     @Implementation
     public int getInteger(int index, int defValue) {
-        return values.getAttributeIntValue(namespace(index), name(index), defValue);
+        ResName resName = getResName(index);
+        return values.getAttributeIntValue(resName.namespace, resName.name, defValue);
     }
 
     @Implementation
@@ -70,12 +76,8 @@ public class ShadowTypedArray implements UsesResources {
         return defValue;
     }
 
-    private String namespace(int index) {
-        return Attribute.getNamespace(resourceExtractor.getFullyQualifiedResourceName(attrs[index]));
-    }
-
-    private String name(int index) {
-        return Attribute.getName(resourceExtractor.getFullyQualifiedResourceName(attrs[index]));
+    private ResName getResName(int index) {
+        return resourceExtractor.getResName(attrs[index]);
     }
 
     public void populate(AttributeSet set, int[] attrs) {
@@ -83,4 +85,5 @@ public class ShadowTypedArray implements UsesResources {
         this.values = set;
         this.attrs = attrs;
     }
+
 }

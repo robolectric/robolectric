@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.res;
 
+import com.xtremelabs.robolectric.tester.android.util.ResName;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;
@@ -7,8 +8,8 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class ResourceExtractor {
-    private Map<String, Integer> resourceNameToId = new HashMap<String, Integer>();
-    private Map<Integer, String> resourceIdToFullyQualifiedName = new HashMap<Integer, String>();
+    private Map<ResName, Integer> resourceNameToId = new HashMap<ResName, Integer>();
+    private Map<Integer, ResName> resourceIdToFullyQualifiedName = new HashMap<Integer, ResName>();
     private Set<Class> processedRFiles = new HashSet<Class>();
 
     public ResourceExtractor() {
@@ -37,7 +38,6 @@ public class ResourceExtractor {
             for (Field field : innerClass.getDeclaredFields()) {
                 if (field.getType().equals(Integer.TYPE) && Modifier.isStatic(field.getModifiers())) {
                     String section = innerClass.getSimpleName();
-                    String name = section + "/" + field.getName();
                     int value;
                     try {
                         value = field.getInt(null);
@@ -45,16 +45,16 @@ public class ResourceExtractor {
                         throw new RuntimeException(e);
                     }
 
-                    String fullyQualifiedName = packageName + ":" + name;
+                    ResName resName = new ResName(packageName, section, field.getName());
 
                     if (!section.equals("styleable")) {
-                        resourceNameToId.put(fullyQualifiedName, value);
+                        resourceNameToId.put(resName, value);
 
                         if (resourceIdToFullyQualifiedName.containsKey(value)) {
-                            throw new RuntimeException(value + " is already defined with name: " + resourceIdToFullyQualifiedName.get(value) + " can't also call it: " + fullyQualifiedName);
+                            throw new RuntimeException(value + " is already defined with name: " + resourceIdToFullyQualifiedName.get(value) + " can't also call it: " + resName);
                         }
 
-                        resourceIdToFullyQualifiedName.put(value, fullyQualifiedName);
+                        resourceIdToFullyQualifiedName.put(value, resName);
                     }
                 }
             }
@@ -73,7 +73,7 @@ public class ResourceExtractor {
         String fullyQualifiedResourceName = qualifyResourceName(possiblyQualifiedResourceName, contextPackageName);
 
         fullyQualifiedResourceName = fullyQualifiedResourceName.replaceAll("[@+]", "");
-        Integer resourceId = resourceNameToId.get(fullyQualifiedResourceName);
+        Integer resourceId = resourceNameToId.get(new ResName(fullyQualifiedResourceName));
         // todo warn if resourceId is null
         return resourceId;
 
@@ -88,10 +88,11 @@ public class ResourceExtractor {
     }
 
     public String getResourceName(int resourceId) {
-        return resourceIdToFullyQualifiedName.get(resourceId);
+        ResName resName = getResName(resourceId);
+        return (resName != null) ? resName.getFullyQualifiedName() : null;
     }
 
-    public String getFullyQualifiedResourceName(int resourceId) {
-        return getResourceName(resourceId);
+    public ResName getResName(int resourceId) {
+        return resourceIdToFullyQualifiedName.get(resourceId);
     }
 }

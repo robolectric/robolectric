@@ -43,7 +43,7 @@ public class ResourceExtractorTest {
     }
 
     @Test public void shouldRetainPackageNameForFullyQualifiedQueries() throws Exception {
-        assertThat(resourceExtractor.getFullyQualifiedResourceName(android.R.id.text1), equalTo("android:id/text1"));
-        assertThat(resourceExtractor.getFullyQualifiedResourceName(R.id.burritos), equalTo("com.xtremelabs.robolectric:id/burritos"));
+        assertThat(resourceExtractor.getResName(android.R.id.text1).getFullyQualifiedName(), equalTo("android:id/text1"));
+        assertThat(resourceExtractor.getResName(R.id.burritos).getFullyQualifiedName(), equalTo("com.xtremelabs.robolectric:id/burritos"));
     }
 }

@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
+import com.xtremelabs.robolectric.tester.android.util.ResName;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.I18nException;
 import org.w3c.dom.Document;
@@ -25,7 +26,7 @@ import java.util.*;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ViewLoader extends XmlLoader {
-    public static final String ATTR_LAYOUT = ":attr/layout";
+    public static final ResName ATTR_LAYOUT = new ResName(":attr/layout");
     public static final String XMLNS_URI = "http://www.w3.org/2000/xmlns/";
 
     /**
@@ -300,13 +301,13 @@ public class ViewLoader extends XmlLoader {
          * Create a new ViewLoader with the given attributes merged in. If there's a layout attribute, it'll be excluded.
          */
         public ViewNode plusAttributes(List<Attribute> attributes) {
-            if (attributes.size() == 0 || attributes.size() == 1 && attributes.get(0).fullyQualifiedName.equals(":attr/layout")) {
+            if (attributes.size() == 0 || attributes.size() == 1 && attributes.get(0).resName.equals(ATTR_LAYOUT)) {
                 return this; // don't make a new one if it'll be identical
             }
 
             List<Attribute> newAttrs = new ArrayList<Attribute>(this.attributes);
             for (Attribute attribute : attributes) {
-                if (!attribute.fullyQualifiedName.equals(ATTR_LAYOUT)) {
+                if (!attribute.resName.equals(ATTR_LAYOUT)) {
                     Attribute.put(newAttrs, attribute);
                 }
             }

@@ -14,30 +14,20 @@ import java.util.regex.Pattern;
 
 public class Attribute {
     private static final Logger LOGGER = LoggerFactory.getLogger(Attribute.class);
-
-    private static final Pattern FQN_PATTERN = Pattern.compile("^([^:]*):([^/]+)/(.+)$");
-    private static final int NAMESPACE = 1;
-    private static final int TYPE = 2;
-    private static final int NAME = 3;
     private static final Pattern NS_URI_PATTERN = Pattern.compile("^http://schemas.android.com/apk/res/(.*)$");
 
-    public final @NotNull String fullyQualifiedName;
+    public final @NotNull ResName resName;
     public final @NotNull String value;
     public final @NotNull String contextPackageName;
 
     public Attribute(@NotNull String fullyQualifiedName, @NotNull String value, @NotNull String contextPackageName) {
-        Matcher matcher = FQN_PATTERN.matcher(fullyQualifiedName);
-        if (!matcher.find()) {
-            throw new IllegalStateException("\"" + fullyQualifiedName + "\" is not fully qualified");
-        }
-        if (matcher.group(NAMESPACE).equals("xmlns")) {
-            throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
-        }
-        if (!matcher.group(TYPE).equals("attr")) {
-            throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
-        }
+        this(new ResName(fullyQualifiedName), value, contextPackageName);
+    }
 
-        this.fullyQualifiedName = fullyQualifiedName;
+    public Attribute(@NotNull ResName resName, @NotNull String value, @NotNull String contextPackageName) {
+        if (!resName.type.equals("attr")) throw new IllegalStateException("\"" + resName.getFullyQualifiedName() + "\" unexpected");
+
+        this.resName = resName;
         this.value = value;
         this.contextPackageName = contextPackageName;
     }
@@ -60,35 +50,22 @@ public class Attribute {
         return matcher.group(1);
     }
 
-    public static String getNamespace(String fullyQualifiedName) {
-        return match(fullyQualifiedName, NAMESPACE);
-    }
-
-    public static String getName(String fullyQualifiedName) {
-        return match(fullyQualifiedName, NAME);
-    }
-
-    private static String match(String fullyQualifiedName, int partIndex) {
-        Matcher matcher = FQN_PATTERN.matcher(fullyQualifiedName);
-        if (matcher.find()) {
-            return matcher.group(partIndex);
-        } else {
-            throw new IllegalStateException("unexpected: \"" + fullyQualifiedName + "\"");
-        }
-    }
-
     @Override
     public String toString() {
         return "Attribute{" +
-                "name='" + fullyQualifiedName + '\'' +
+                "name='" + resName + '\'' +
                 ", value='" + value + '\'' +
                 ", contextPackageName='" + contextPackageName + '\'' +
                 '}';
     }
 
     public static Attribute find(List<Attribute> attributes, String fullyQualifiedName) {
+        return find(attributes, new ResName(fullyQualifiedName));
+    }
+
+    public static Attribute find(List<Attribute> attributes, ResName resName) {
         for (Attribute attribute : attributes) {
-            if (fullyQualifiedName.equals(attribute.fullyQualifiedName)) {
+            if (resName.equals(attribute.resName)) {
                 return attribute;
             }
         }
@@ -105,14 +82,18 @@ public class Attribute {
     }
 
     public static void put(List<Attribute> attributes, Attribute attribute) {
-        remove(attributes, attribute.fullyQualifiedName);
+        remove(attributes, attribute.resName);
         attributes.add(attribute);
     }
 
     public static Attribute remove(List<Attribute> attributes, String fullyQualifiedName) {
+        return remove(attributes, new ResName(fullyQualifiedName));
+    }
+
+    public static Attribute remove(List<Attribute> attributes, ResName resName) {
         for (int i = 0; i < attributes.size(); i++) {
             Attribute attribute = attributes.get(i);
-            if (fullyQualifiedName.equals(attribute.fullyQualifiedName)) {
+            if (resName.equals(attribute.resName)) {
                 attributes.remove(i);
                 return attribute;
             }

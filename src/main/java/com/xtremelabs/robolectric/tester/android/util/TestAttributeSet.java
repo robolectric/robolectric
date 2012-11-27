@@ -99,7 +99,7 @@ public class TestAttributeSet implements AttributeSet {
 
     @Override
     public String getAttributeName(int index) {
-        return attributes.get(index).fullyQualifiedName;
+        return attributes.get(index).resName.getFullyQualifiedName();
     }
 
     @Override

@@ -1,7 +1,5 @@
 package com.xtremelabs.robolectric.res;
 
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -18,7 +16,7 @@ public class RawResourceLoader {
     }
 
     public InputStream getValue(int resourceId) {
-        String resourceFileName = Attribute.getName(resourceExtractor.getResourceName(resourceId));
+        String resourceFileName = resourceExtractor.getResName(resourceId).name;
         File rawResourceDir = new File(resourceDir, "raw");
 
         File[] files = rawResourceDir.listFiles();
