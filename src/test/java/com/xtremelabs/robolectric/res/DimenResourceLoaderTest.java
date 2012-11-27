@@ -4,10 +4,10 @@ import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.xtremelabs.robolectric.R;
+
 import org.junit.Before;
 import org.junit.Test;
-
-import com.xtremelabs.robolectric.R;
 
 public class DimenResourceLoaderTest {
 
@@ -28,6 +28,10 @@ public class DimenResourceLoaderTest {
 				equalTo(8.0f));
 		assertThat(dimenResourceLoader.getValue(R.dimen.test_dip_dimen),
 				equalTo(20.0f));
+		assertThat(dimenResourceLoader.getValue(R.dimen.test_in_dimen),
+		        equalTo(19.0f));
+	    assertThat(dimenResourceLoader.getValue(R.dimen.test_mm_dimen),
+		        equalTo(86.0f));
 		assertThat(dimenResourceLoader.getValue(R.dimen.test_pt_dimen),
 				equalTo(12.0f));
 		assertThat(dimenResourceLoader.getValue(R.dimen.test_px_dimen),
