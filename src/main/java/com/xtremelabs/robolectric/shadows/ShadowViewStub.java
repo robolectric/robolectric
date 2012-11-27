@@ -1,15 +1,9 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.ViewParent;
-import android.view.ViewStub;
-import com.xtremelabs.robolectric.Robolectric;
+import android.view.*;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.res.ResourceExtractor;
 
 import java.lang.ref.WeakReference;
 
@@ -27,12 +21,7 @@ public class ShadowViewStub extends ShadowView {
         super.applyAttributes();
 
         mInflatedId = attributeSet.getAttributeResourceValue("android", "inflatedId", 0);
-        String layoutResId = attributeSet.getAttributeValue("android", "layout");
-        if (layoutResId != null) {
-            ResourceExtractor resourceExtractor = Robolectric.getShadowApplication().getResourceLoader().getResourceExtractor();
-            // todo what should the package be here?
-            mLayoutResource = resourceExtractor.getResourceId(layoutResId, null);
-        }
+        mLayoutResource = attributeSet.getAttributeResourceValue("android", "layout", 0);
     }
 
     @Implementation
