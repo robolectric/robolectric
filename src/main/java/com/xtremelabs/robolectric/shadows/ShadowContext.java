@@ -92,8 +92,7 @@ abstract public class ShadowContext {
     @Implementation
     public final TypedArray obtainStyledAttributes(
             AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-        return getTheme().obtainStyledAttributes(
-            set, attrs, defStyleAttr, defStyleRes);
+        return this.obtainStyledAttributes(set, attrs);
     }
 
     @Implementation
