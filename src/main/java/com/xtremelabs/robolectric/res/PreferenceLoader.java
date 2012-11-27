@@ -54,8 +54,7 @@ public class PreferenceLoader extends XmlLoader {
                 Node attr = attributes.item(i);
                 String attrName = ResourceExtractor.qualifyResourceName(attr.getNodeName(), xmlContext.packageName);
                 if (attrName.startsWith("xmlns:")) {
-                    // ignore for now, but not long!
-                    System.out.println("attrName = " + attrName);
+                    // ignore
                 } else {
                     attrList.add(new Attribute(Attribute.addType(attrName, "attr"), attr.getNodeValue(), xmlContext.packageName));
                 }

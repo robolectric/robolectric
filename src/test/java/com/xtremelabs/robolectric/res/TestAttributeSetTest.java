@@ -134,7 +134,7 @@ public class TestAttributeSetTest {
     public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributes() throws Exception {
         AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
         new DocumentLoader(attrResourceLoader).loadResourceXmlDir(testResources(), "values");
-        testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/itemType", "string", TEST_PACKAGE)),
+        testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE)),
                 null, attrResourceLoader, CustomView.class);
         assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "itemType", 0), equalTo(1));
     }

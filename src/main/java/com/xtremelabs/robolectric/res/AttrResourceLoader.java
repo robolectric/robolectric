@@ -96,7 +96,11 @@ public class AttrResourceLoader extends XmlLoader {
         resolveReferences();
         String qualifiedAttrName = namespace + ":" + attrName;
         String className = findKnownAttrClass(qualifiedAttrName, viewClass).getSimpleName();
-        return classEnumToValue.get(key(className, qualifiedAttrName, attrValue));
+        String value = classEnumToValue.get(key(className, qualifiedAttrName, attrValue));
+        if (value == null) {
+            throw new RuntimeException("Unknown value \"" + attrValue + "\" for enum " + className + "." + qualifiedAttrName);
+        }
+        return value;
     }
 
     public boolean hasAttributeFor(Class<? extends View> viewClass, String namespace, String attrName) {

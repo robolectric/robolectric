@@ -2,8 +2,6 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.res.TypedArray;
-import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,19 +15,11 @@ import static org.junit.Assert.assertNotNull;
 public class TypedArrayTest {
     private Context context;
 
-    @Before public void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         context = new Activity();
     }
 
-    @Test
-    public void shouldGetAndSetStringAttributes() throws Exception {
-        TypedArray array = Robolectric.newInstanceOf(TypedArray.class);
-        ShadowTypedArray shadowArray = Robolectric.shadowOf(array);
-        shadowArray.add("expected value");
-
-        assertThat(array.getString(0), equalTo("expected value"));
-    }
-    
     @Test
     public void getResources() throws Exception {
         assertNotNull(context.obtainStyledAttributes(null).getResources());
@@ -37,21 +27,21 @@ public class TypedArrayTest {
 
     @Test
     public void getInt_shouldReturnDefaultValue() throws Exception {
-        assertThat(context.obtainStyledAttributes(null).getInt(1, -1), equalTo(-1));
+        assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getInt(0, -1), equalTo(-1));
     }
 
     @Test
     public void getInteger_shouldReturnDefaultValue() throws Exception {
-        assertThat(context.obtainStyledAttributes(null).getInteger(1, -1), equalTo(-1));
+        assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getInteger(0, -1), equalTo(-1));
     }
 
     @Test
     public void getResourceId_shouldReturnDefaultValue() throws Exception {
-        assertThat(context.obtainStyledAttributes(null).getResourceId(1, -1), equalTo(-1));
+        assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getResourceId(0, -1), equalTo(-1));
     }
 
     @Test
     public void getDimension_shouldReturnDefaultValue() throws Exception {
-        assertThat(context.obtainStyledAttributes(null).getDimension(1, -1f), equalTo(-1f));
+        assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getDimension(0, -1f), equalTo(-1f));
     }
 }

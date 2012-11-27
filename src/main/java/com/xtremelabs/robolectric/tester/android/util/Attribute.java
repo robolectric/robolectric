@@ -16,6 +16,9 @@ public class Attribute {
     private static final Logger LOGGER = LoggerFactory.getLogger(Attribute.class);
 
     private static final Pattern FQN_PATTERN = Pattern.compile("^([^:]*):([^/]+)/(.+)$");
+    private static final int NAMESPACE = 1;
+    private static final int TYPE = 2;
+    private static final int NAME = 3;
     private static final Pattern NS_URI_PATTERN = Pattern.compile("^http://schemas.android.com/apk/res/(.*)$");
 
     public final @NotNull String fullyQualifiedName;
@@ -27,10 +30,10 @@ public class Attribute {
         if (!matcher.find()) {
             throw new IllegalStateException("\"" + fullyQualifiedName + "\" is not fully qualified");
         }
-        if (matcher.group(1).equals("xmlns")) {
+        if (matcher.group(NAMESPACE).equals("xmlns")) {
             throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
         }
-        if (!matcher.group(2).equals("attr")) {
+        if (!matcher.group(TYPE).equals("attr")) {
             throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
         }
 
@@ -57,10 +60,18 @@ public class Attribute {
         return matcher.group(1);
     }
 
-    public static String getResourceName(String fullyQualifiedName) {
+    public static String getNamespace(String fullyQualifiedName) {
+        return match(fullyQualifiedName, NAMESPACE);
+    }
+
+    public static String getName(String fullyQualifiedName) {
+        return match(fullyQualifiedName, NAME);
+    }
+
+    private static String match(String fullyQualifiedName, int partIndex) {
         Matcher matcher = FQN_PATTERN.matcher(fullyQualifiedName);
         if (matcher.find()) {
-            return matcher.group(3);
+            return matcher.group(partIndex);
         } else {
             throw new IllegalStateException("unexpected: \"" + fullyQualifiedName + "\"");
         }

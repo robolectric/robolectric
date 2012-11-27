@@ -2,18 +2,22 @@
 <resources>
     <declare-styleable name="CustomView">
         <attr name="itemType" format="enum">
-            <enum name="integer" value="0"/>
-            <enum name="string" value="1"/>
+            <enum name="marsupial" value="0"/>
+            <enum name="ungulate" value="1"/>
         </attr>
 
         <attr name="scrollbars">
             <flag name="horizontal" value="0x00000100" />
             <flag name="vertical" value="0x00000200" />
+            <flag name="sideways" value="0x00000400" />
         </attr>
 
         <attr name="gravity"/>
 
         <attr name="keycode"/>
+
+        <attr name="aspectRatio" format="float" />
+        <attr name="aspectRatioEnabled" format="boolean" />
     </declare-styleable>
 
     <attr name="gravity">

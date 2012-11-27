@@ -29,10 +29,10 @@ public class AttrResourceLoaderTest {
 
     @Test
     public void testInlineEnumAttributesAreResolved() throws Exception {
-        assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, TEST_PACKAGE, "itemType", "integer"), equalTo("0"));
+        assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, TEST_PACKAGE, "itemType", "marsupial"), equalTo("0"));
         assertThat(attrResourceLoader.hasAttributeFor(CustomView.class, TEST_PACKAGE, "itemType"), equalTo(true));
 
-        assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, TEST_PACKAGE, "itemType", "string"), equalTo("1"));
+        assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, TEST_PACKAGE, "itemType", "ungulate"), equalTo("1"));
         assertThat(attrResourceLoader.hasAttributeFor(CustomView.class, TEST_PACKAGE, "otherItemType"), equalTo(false));
     }
 
@@ -69,7 +69,7 @@ public class AttrResourceLoaderTest {
 
     @Test
     public void shouldResolveAttributesForSubClasses() throws Exception {
-        assertThat(attrResourceLoader.convertValueToEnum(SubCustomView.class, TEST_PACKAGE, "itemType", "integer"), equalTo("0"));
+        assertThat(attrResourceLoader.convertValueToEnum(SubCustomView.class, TEST_PACKAGE, "itemType", "marsupial"), equalTo("0"));
         assertThat(attrResourceLoader.hasAttributeFor(SubCustomView.class, TEST_PACKAGE, "itemType"), equalTo(true));
     }
     

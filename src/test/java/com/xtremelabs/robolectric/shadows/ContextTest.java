@@ -6,7 +6,6 @@ import android.content.res.TypedArray;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
-import com.xtremelabs.robolectric.res.ResourcePath;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.After;
 import org.junit.Before;
@@ -15,6 +14,8 @@ import org.junit.runner.RunWith;
 
 import java.io.*;
 
+import static com.xtremelabs.robolectric.util.TestUtil.TEST_PACKAGE;
+import static com.xtremelabs.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
@@ -257,12 +258,23 @@ public class ContextTest {
 
     @Test
     public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
-        TestAttributeSet testAttributeSet = new TestAttributeSet(new ResourceExtractor(new ResourcePath(R.class, null, null)));
-        testAttributeSet.put(R.class.getPackage().getName() + ":id/textStyle2", "one", R.class.getPackage().getName());
-        testAttributeSet.put(R.class.getPackage().getName() + ":id/textStyle3", "two", R.class.getPackage().getName());
-        TypedArray typedArray = context.obtainStyledAttributes(testAttributeSet, new int[]{R.id.textStyle2, R.id.textStyle3});
+        TestAttributeSet testAttributeSet = new TestAttributeSet(new ResourceExtractor(TEST_RESOURCE_PATH));
+        testAttributeSet.put(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE);
+        testAttributeSet.put(TEST_PACKAGE + ":attr/scrollBars", "horizontal|vertical", TEST_PACKAGE);
+        testAttributeSet.put(TEST_PACKAGE + ":attr/keycode", "^q", TEST_PACKAGE);
+        testAttributeSet.put(TEST_PACKAGE + ":attr/aspectRatio", "1.5", TEST_PACKAGE);
+        testAttributeSet.put(TEST_PACKAGE + ":attr/aspectRatioEnabled", "true", TEST_PACKAGE);
 
-        assertThat(typedArray.getString(R.styleable.HeaderBar_textStyle2), equalTo("one"));
-        assertThat(typedArray.getString(R.styleable.HeaderBar_textStyle3), equalTo("two"));
+        TypedArray a = context.obtainStyledAttributes(testAttributeSet, R.styleable.CustomView);
+// todo   assertThat(a.getInt(R.styleable.CustomView_itemType, -1234), equalTo(R.id.ungulate));
+// todo   assertThat(a.getInt(R.styleable.CustomView_scrollBars, -1234), equalTo(0x300));
+        assertThat(a.getString(R.styleable.CustomView_keycode), equalTo("^q"));
+        assertThat(a.getText(R.styleable.CustomView_keycode).toString(), equalTo("^q"));
+        assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 1f), equalTo(1.5f));
+        assertThat(a.getBoolean(R.styleable.CustomView_aspectRatioEnabled, false), equalTo(true));
+
+        TypedArray typedArray = context.obtainStyledAttributes(testAttributeSet, new int[]{R.id.keycode, R.id.itemType});
+        assertThat(typedArray.getString(0), equalTo("^q"));
+// todo   assertThat(typedArray.getInt(1, -1234), equalTo(R.id.ungulate));
     }
 }
