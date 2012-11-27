@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.database.DatabaseUtils;
 import android.database.sqlite.SQLiteProgram;
+
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -40,5 +41,22 @@ public class ShadowDatabaseUtils {
 		builder.append( "'" ).append( value ).append( "'" );	
 		
 		return builder.toString();
+	}
+    
+    @Implementation
+	public static void appendEscapedSQLString(StringBuilder sb, String sqlString){
+		sb.append('\'');
+        if (sqlString.indexOf('\'') != -1) {
+            int length = sqlString.length();
+            for (int i = 0; i < length; i++) {
+                char c = sqlString.charAt(i);
+                if (c == '\'') {
+                    sb.append('\'');
+                }
+                sb.append(c);
+            }
+        } else
+            sb.append(sqlString);
+        sb.append('\'');
 	}
 }
