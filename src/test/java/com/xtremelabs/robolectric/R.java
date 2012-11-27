@@ -8,159 +8,173 @@
 package com.xtremelabs.robolectric;
 
 public final class R {
-    private static int nextId = 1234;
+    /* To regenerate ids, run this ruby script:
+
+        path_to_r = "/path/to/src/test/java/com/xtremelabs/robolectric/R.java"
+
+        if path_to_r =~ /^\/path\/to/
+            raise "please change the path to this file!"
+        else
+            original_contents = File.read(path_to_r)
+            x = 0xffff
+            new_contents = original_contents.gsub(/0x[0-9a-fA-F]+;/) { |_| "0x#{"%x" % (x += 1)};" }
+            File.open(path_to_r, "w") { |f| f << new_contents }
+        end
+
+     */
+
 
     public static final class id {
-        public static final int time = nextId++;
-        public static final int title = nextId++;
-        public static final int subtitle = nextId++;
-        public static final int snippet_text = nextId++;
-        public static final int include_id = nextId++;
-        public static final int inner_text = nextId++;
-        public static final int map_view = nextId++;
-        public static final int true_checkbox = nextId++;
-        public static final int false_checkbox = nextId++;
-        public static final int default_checkbox = nextId++;
-        public static final int image = nextId++;
-        public static final int icon = nextId++;
-        public static final int text1 = nextId++;
-        public static final int button = nextId++;
-        public static final int invalid_onclick_button = nextId++;
-        public static final int edit_text = nextId++;
-        public static final int edit_text2 = nextId++;
-        public static final int outer_merge = nextId++;
-        public static final int web_view = nextId++;
+        public static final int time = 0x10000;
+        public static final int title = 0x10001;
+        public static final int subtitle = 0x10002;
+        public static final int snippet_text = 0x10003;
+        public static final int include_id = 0x10004;
+        public static final int inner_text = 0x10005;
+        public static final int map_view = 0x10006;
+        public static final int true_checkbox = 0x10007;
+        public static final int false_checkbox = 0x10008;
+        public static final int default_checkbox = 0x10009;
+        public static final int image = 0x1000a;
+        public static final int icon = 0x1000b;
+        public static final int text1 = 0x1000c;
+        public static final int button = 0x1000d;
+        public static final int invalid_onclick_button = 0x1000e;
+        public static final int edit_text = 0x1000f;
+        public static final int edit_text2 = 0x10010;
+        public static final int outer_merge = 0x10011;
+        public static final int web_view = 0x10012;
 
-        public static final int black_text_view = nextId++;
-        public static final int white_text_view = nextId++;
-        public static final int grey_text_view = nextId++;
+        public static final int black_text_view = 0x10013;
+        public static final int white_text_view = 0x10014;
+        public static final int grey_text_view = 0x10015;
 
-        public static final int black_text_view_hint = nextId++;
-        public static final int white_text_view_hint = nextId++;
-        public static final int grey_text_view_hint = nextId++;
+        public static final int black_text_view_hint = 0x10016;
+        public static final int white_text_view_hint = 0x10017;
+        public static final int grey_text_view_hint = 0x10018;
 
-        public static final int textStyle = nextId++;
-        public static final int textStyle2 = nextId++;
-        public static final int textStyle3 = nextId++;
+        public static final int textStyle = 0x10019;
+        public static final int textStyle2 = 0x1001a;
+        public static final int textStyle3 = 0x1001b;
 
-        public static final int test_menu_1 = nextId++;
-        public static final int test_menu_2 = nextId++;
-        public static final int test_menu_3 = nextId++;
+        public static final int test_menu_1 = 0x1001c;
+        public static final int test_menu_2 = 0x1001d;
+        public static final int test_menu_3 = 0x1001e;
 
-        public static final int group_id_1 = nextId++;
+        public static final int group_id_1 = 0x1001f;
 
-        public static final int test_submenu_1 = nextId++;
+        public static final int test_submenu_1 = 0x10020;
 
-        public static final int fragment = nextId++;
-        public static final int dynamic_fragment_container = nextId++;
-        public static final int content_view = nextId++;
+        public static final int fragment = 0x10021;
+        public static final int dynamic_fragment_container = 0x10022;
+        public static final int content_view = 0x10023;
 
-        public static final int portrait = nextId++;
-        public static final int landscape = nextId++;
-        public static final int tacos = nextId++;
-        public static final int burritos = nextId++;
-        public static int lam_container = nextId++;
-        public static int lam_inner_contents = nextId++;
-        public static int my_fragment = nextId++;
-        public static int my_landscape_fragment = nextId++;
+        public static final int portrait = 0x10024;
+        public static final int landscape = 0x10025;
+        public static final int tacos = 0x10026;
+        public static final int burritos = 0x10027;
+        public static int lam_container = 0x10028;
+        public static int lam_inner_contents = 0x10029;
+        public static int my_fragment = 0x1002a;
+        public static int my_landscape_fragment = 0x1002b;
     }
 
     public static final class string {
-        public static final int howdy = nextId++;
-        public static final int hello = nextId++;
-        public static final int some_html = nextId++;
-        public static final int greeting = nextId++;
-        public static final int copy = nextId++;
-        public static final int ok = nextId++;
+        public static final int howdy = 0x1002c;
+        public static final int hello = 0x1002d;
+        public static final int some_html = 0x1002e;
+        public static final int greeting = 0x1002f;
+        public static final int copy = 0x10030;
+        public static final int ok = 0x10031;
     }
 
     public static final class plurals {
-        public static final int beer = nextId++;
+        public static final int beer = 0x10032;
     }
 
     public static final class array {
-        public static final int items = nextId++;
-        public static final int greetings = nextId++;
-        public static final int alertDialogTestItems = nextId++;
-        public static final int emailAddressTypes = nextId++;
-        public static final int zero_to_four_int_array = nextId++;
-        public static final int empty_int_array = nextId++;
-        public static final int with_references_int_array = nextId++;
+        public static final int items = 0x10033;
+        public static final int greetings = 0x10034;
+        public static final int alertDialogTestItems = 0x10035;
+        public static final int emailAddressTypes = 0x10036;
+        public static final int zero_to_four_int_array = 0x10037;
+        public static final int empty_int_array = 0x10038;
+        public static final int with_references_int_array = 0x10039;
     }
 
     public static final class color {
-        public static final int background = nextId++;
-        public static final int foreground = nextId++;
-        public static final int grey42 = nextId++;
-        public static final int black = nextId++;
-        public static final int white = nextId++;
-        public static final int clear = nextId++;
-        public static final int color_with_alpha = nextId++;
-        public static final int android_namespaced_black = nextId++;
-        public static final int android_namespaced_transparent = nextId++;
-        public static final int android_red = nextId++;
-        public static final int test_color_1 = nextId++;
+        public static final int background = 0x1003a;
+        public static final int foreground = 0x1003b;
+        public static final int grey42 = 0x1003c;
+        public static final int black = 0x1003d;
+        public static final int white = 0x1003e;
+        public static final int clear = 0x1003f;
+        public static final int color_with_alpha = 0x10040;
+        public static final int android_namespaced_black = 0x10041;
+        public static final int android_namespaced_transparent = 0x10042;
+        public static final int android_red = 0x10043;
+        public static final int test_color_1 = 0x10044;
     }
 
     public static final class drawable {
-        public static final int an_image = nextId++;
-        public static final int an_other_image = nextId++;
-        public static final int third_image = nextId++;
-        public static final int fourth_image = nextId++;
-        public static final int image_background = nextId++;
-        public static final int l0_red = nextId++;
-        public static final int l1_orange = nextId++;
-        public static final int l2_yellow = nextId++;
-        public static final int l3_green = nextId++;
-        public static final int l4_blue = nextId++;
-        public static final int l5_indigo = nextId++;
-        public static final int l6_violet = nextId++;
-        public static final int l7_white = nextId++;
-        public static final int rainbow = nextId++;
-        public static final int state_drawable = nextId++;
-        public static final int animation_list = nextId++;
-        public static final int nine_patch_drawable = nextId++;
-        public static final int test_drawable_1 = nextId++;
+        public static final int an_image = 0x10045;
+        public static final int an_other_image = 0x10046;
+        public static final int third_image = 0x10047;
+        public static final int fourth_image = 0x10048;
+        public static final int image_background = 0x10049;
+        public static final int l0_red = 0x1004a;
+        public static final int l1_orange = 0x1004b;
+        public static final int l2_yellow = 0x1004c;
+        public static final int l3_green = 0x1004d;
+        public static final int l4_blue = 0x1004e;
+        public static final int l5_indigo = 0x1004f;
+        public static final int l6_violet = 0x10050;
+        public static final int l7_white = 0x10051;
+        public static final int rainbow = 0x10052;
+        public static final int state_drawable = 0x10053;
+        public static final int animation_list = 0x10054;
+        public static final int nine_patch_drawable = 0x10055;
+        public static final int test_drawable_1 = 0x10056;
     }
 
     public static final class layout {
-        public static final int main = nextId++;
-        public static final int media = nextId++;
-        public static final int inner_merge = nextId++;
-        public static final int included_linear_layout = nextId++;
-        public static final int edit_text = nextId++;
-        public static final int with_invalid_onclick = nextId++;
-        public static final int text_views = nextId++;
-        public static final int text_views_hints = nextId++;
-        public static final int toplevel_merge = nextId++;
-        public static final int tab_activity = nextId++;
-        public static final int different_screen_sizes = nextId++;
-        public static final int fragment_activity = nextId++;
-        public static final int fragment_contents = nextId++;
-        public static final int lam_outer = nextId++;
-        public static final int lam_inner = nextId++;
+        public static final int main = 0x10057;
+        public static final int media = 0x10058;
+        public static final int inner_merge = 0x10059;
+        public static final int included_linear_layout = 0x1005a;
+        public static final int edit_text = 0x1005b;
+        public static final int with_invalid_onclick = 0x1005c;
+        public static final int text_views = 0x1005d;
+        public static final int text_views_hints = 0x1005e;
+        public static final int toplevel_merge = 0x1005f;
+        public static final int tab_activity = 0x10060;
+        public static final int different_screen_sizes = 0x10061;
+        public static final int fragment_activity = 0x10062;
+        public static final int fragment_contents = 0x10063;
+        public static final int lam_outer = 0x10064;
+        public static final int lam_inner = 0x10065;
     }
 
     public static final class anim {
-   		public static final int test_anim_1 = nextId++;
-   	}
+        public static final int test_anim_1 = 0x10066;
+    }
 
     public static final class raw {
-        public static final int raw_resource = nextId++;
-        public static final int raw_no_ext = nextId++;
+        public static final int raw_resource = 0x10067;
+        public static final int raw_no_ext = 0x10068;
     }
 
     public static final class attr {
-        public static final int isSugary = nextId++;
+        public static final int isSugary = 0x10069;
     }
 
     public static final class menu {
-        public static final int test = nextId++;
-        public static final int test_withchilds = nextId++;
+        public static final int test = 0x1006a;
+        public static final int test_withchilds = 0x1006b;
     }
 
     public static final class xml {
-        public static final int preferences = nextId++;
+        public static final int preferences = 0x1006c;
     }
 
     public static final class styleable {
@@ -173,32 +187,32 @@ public final class R {
     }
 
     public static final class dimen {
-        public static final int test_dp_dimen = nextId++;
-        public static final int test_dip_dimen = nextId++;
-        public static final int test_pt_dimen = nextId++;
-        public static final int test_px_dimen = nextId++;
-        public static final int test_sp_dimen = nextId++;
+        public static final int test_dp_dimen = 0x1006d;
+        public static final int test_dip_dimen = 0x1006e;
+        public static final int test_pt_dimen = 0x1006f;
+        public static final int test_px_dimen = 0x10070;
+        public static final int test_sp_dimen = 0x10071;
     }
 
     public static final class integer {
-        public static final int test_non_integer = nextId++;
-        public static final int test_integer1 = nextId++;
-        public static final int test_integer2 = nextId++;
-        public static final int test_large_hex = nextId++;
-        public static final int meaning_of_life = nextId++;
-        public static final int loneliest_number = nextId++;
-        public static final int there_can_be_only = nextId++;
-        public static final int hex_int = nextId++;
+        public static final int test_non_integer = 0x10072;
+        public static final int test_integer1 = 0x10073;
+        public static final int test_integer2 = 0x10074;
+        public static final int test_large_hex = 0x10075;
+        public static final int meaning_of_life = 0x10076;
+        public static final int loneliest_number = 0x10077;
+        public static final int there_can_be_only = 0x10078;
+        public static final int hex_int = 0x10079;
     }
 
     public static final class bool {
-    	public static final int false_bool_value = nextId++;
-    	public static final int true_bool_value = nextId++;
-    	public static final int zero_is_false = nextId++;
-    	public static final int integers_are_true = nextId++;
+        public static final int false_bool_value = 0x1007a;
+        public static final int true_bool_value = 0x1007b;
+        public static final int zero_is_false = 0x1007c;
+        public static final int integers_are_true = 0x1007d;
     }
 
     public static final class style {
-        public static int FancyStyle = nextId++;
+        public static int FancyStyle = 0x1007e;
     }
 }
