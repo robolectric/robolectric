@@ -138,7 +138,7 @@ public class ShadowRect {
 	 * 
 	 * @hide
 	 */
-	@Implementation
+//	@Implementation
 	public String toShortString(StringBuilder sb) {
 		sb.setLength(0);
 		sb.append('[');
@@ -195,7 +195,7 @@ public class ShadowRect {
 	 * 
 	 * @hide
 	 */
-	@Implementation
+//	@Implementation
 	public void printShortString(PrintWriter pw) {
 		pw.print('[');
 		pw.print(realRect.left);
@@ -368,6 +368,7 @@ public class ShadowRect {
 	 * 
 	 * @param r The rectangle being unioned with this rectangle
 	 */
+	@Implementation
 	public void union(Rect r) {
 		union(r.left, r.top, r.right, r.bottom);
 	}
@@ -379,6 +380,7 @@ public class ShadowRect {
 	 * @param x The x coordinate of the point to add to the rectangle
 	 * @param y The y coordinate of the point to add to the rectangle
 	 */
+	@Implementation
 	public void union(int x, int y) {
 		if (x < realRect.left) {
 			realRect.left = x;
@@ -398,6 +400,7 @@ public class ShadowRect {
 	 * have crossed over each other. If the edges are already correct (i.e. realRect.left <= realRect.right and
 	 * realRect.top <= realRect.bottom) then nothing is done.
 	 */
+	@Implementation
 	public void sort() {
 		if (realRect.left > realRect.right) {
 			int temp = realRect.left;
@@ -414,6 +417,7 @@ public class ShadowRect {
 	/**
 	 * Parcelable interface methods
 	 */
+	@Implementation
 	public int describeContents() {
 		return 0;
 	}
@@ -423,6 +427,7 @@ public class ShadowRect {
 	 * 
 	 * @param out The parcel to write the rectangle's coordinates into
 	 */
+	@Implementation
 	public void writeToParcel(Parcel out, int flags) {
 		out.writeInt(realRect.left);
 		out.writeInt(realRect.top);
@@ -456,6 +461,7 @@ public class ShadowRect {
 	 * 
 	 * @param in The parcel to read the rectangle's coordinates from
 	 */
+	@Implementation
 	public void readFromParcel(Parcel in) {
 		realRect.left = in.readInt();
 		realRect.top = in.readInt();
@@ -468,6 +474,7 @@ public class ShadowRect {
 	 * 
 	 * @hide
 	 */
+//	@Implementation
 	public void scale(float scale) {
 		if (scale != 1.0f) {
 			realRect.left = (int) (realRect.left * scale + 0.5f);
