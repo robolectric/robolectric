@@ -16,6 +16,8 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(MediaPlayer.class)
 public class ShadowMediaPlayer {
 
+    private static MediaPlayer latestMediaPlayer;
+
 	@RealObject private MediaPlayer player;
 
 	private boolean playing;
@@ -33,7 +35,8 @@ public class ShadowMediaPlayer {
 		try {
 			mp.prepare();
 		} catch (Exception e) { return null; }
-		
+
+        latestMediaPlayer = mp;
 		return mp;
 	}
 	
@@ -51,8 +54,12 @@ public class ShadowMediaPlayer {
 	public void __constructor__() {
 		playing = true;
 	}
-	
-	@Implementation
+
+    public static MediaPlayer getLatestMediaPlayer() {
+        return latestMediaPlayer;
+    }
+
+    @Implementation
 	public void	setDataSource(Context context, Uri uri) {
 		this.sourceUri = uri;
 	}
