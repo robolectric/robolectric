@@ -5,8 +5,12 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.res.AttrResourceLoader;
+import com.xtremelabs.robolectric.res.DocumentLoader;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import com.xtremelabs.robolectric.util.CustomView;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,6 +20,7 @@ import java.io.*;
 
 import static com.xtremelabs.robolectric.util.TestUtil.TEST_PACKAGE;
 import static com.xtremelabs.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
+import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 
@@ -258,16 +263,22 @@ public class ContextTest {
 
     @Test
     public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
-        TestAttributeSet testAttributeSet = new TestAttributeSet(new ResourceExtractor(TEST_RESOURCE_PATH));
-        testAttributeSet.put(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE);
-        testAttributeSet.put(TEST_PACKAGE + ":attr/scrollBars", "horizontal|vertical", TEST_PACKAGE);
-        testAttributeSet.put(TEST_PACKAGE + ":attr/keycode", "^q", TEST_PACKAGE);
-        testAttributeSet.put(TEST_PACKAGE + ":attr/aspectRatio", "1.5", TEST_PACKAGE);
-        testAttributeSet.put(TEST_PACKAGE + ":attr/aspectRatioEnabled", "true", TEST_PACKAGE);
+        ResourceExtractor resourceExtractor = new ResourceExtractor(TEST_RESOURCE_PATH);
+        AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
+        new DocumentLoader(attrResourceLoader)
+                .loadResourceXmlDirs(TEST_RESOURCE_PATH, new File(TEST_RESOURCE_PATH.resourceBase, "values"));
+
+        TestAttributeSet testAttributeSet = new TestAttributeSet(asList(
+                new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE),
+                new Attribute(TEST_PACKAGE + ":attr/scrollBars", "horizontal|vertical", TEST_PACKAGE),
+                new Attribute(TEST_PACKAGE + ":attr/keycode", "^q", TEST_PACKAGE),
+                new Attribute(TEST_PACKAGE + ":attr/aspectRatio", "1.5", TEST_PACKAGE),
+                new Attribute(TEST_PACKAGE + ":attr/aspectRatioEnabled", "true", TEST_PACKAGE)
+        ), resourceExtractor, attrResourceLoader, CustomView.class);
 
         TypedArray a = context.obtainStyledAttributes(testAttributeSet, R.styleable.CustomView);
-// todo   assertThat(a.getInt(R.styleable.CustomView_itemType, -1234), equalTo(R.id.ungulate));
-// todo   assertThat(a.getInt(R.styleable.CustomView_scrollBars, -1234), equalTo(0x300));
+        assertThat(a.getInt(R.styleable.CustomView_itemType, -1234), equalTo(1 /* ungulate */));
+        assertThat(a.getInt(R.styleable.CustomView_scrollBars, -1234), equalTo(0x300));
         assertThat(a.getString(R.styleable.CustomView_keycode), equalTo("^q"));
         assertThat(a.getText(R.styleable.CustomView_keycode).toString(), equalTo("^q"));
         assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 1f), equalTo(1.5f));
@@ -275,6 +286,6 @@ public class ContextTest {
 
         TypedArray typedArray = context.obtainStyledAttributes(testAttributeSet, new int[]{R.id.keycode, R.id.itemType});
         assertThat(typedArray.getString(0), equalTo("^q"));
-// todo   assertThat(typedArray.getInt(1, -1234), equalTo(R.id.ungulate));
+        assertThat(typedArray.getInt(1, -1234), equalTo(1 /* ungulate */));
     }
 }

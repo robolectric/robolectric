@@ -77,19 +77,34 @@ public class TestAttributeSet implements AttributeSet {
         if (attr == null) return defaultValue;
         String value = attr.value;
 
-        if (attrResourceLoader.hasAttributeFor(viewClass, namespace, attribute)) {
-            value = attrResourceLoader.convertValueToEnum(viewClass, namespace, attribute, value);
-            if (value != null && value.startsWith("0x")) value = value.substring(2);
-
-            return (value != null) ? Integer.valueOf(value) : defaultValue;
-        } else {
-            if (value.startsWith("0x")) {
-                value = value.substring(2);
-                return (value != null) ? Integer.valueOf(value) : defaultValue;
-            } else {
-                return Integer.valueOf(value);
-            }
+        if (isEnum(namespace, attribute)) {
+            return getEnumValue(namespace, attribute, value);
         }
+
+        return extractInt(value, defaultValue);
+    }
+
+    private int extractInt(String value, int defaultValue) {
+        if (value == null) return defaultValue;
+        if (value.startsWith("0x")) return Integer.parseInt(value.substring(2), 16);
+      try {
+        return Integer.parseInt(value);
+      } catch (NumberFormatException e) {
+        System.out.println("WARN: couldn't parse \"" + value + "\" as an integer");
+        return defaultValue;
+      }
+    }
+
+    public boolean isEnum(String namespace, String attribute) {
+        return attrResourceLoader.hasAttributeFor(viewClass, namespace, attribute);
+    }
+
+    public int getEnumValue(String namespace, String attribute, String value) {
+        int intValue = 0;
+        for (String part : value.split("\\|")) {
+            intValue |= extractInt(attrResourceLoader.convertValueToEnum(viewClass, namespace, attribute, part), 0);
+        }
+        return intValue;
     }
 
     @Override

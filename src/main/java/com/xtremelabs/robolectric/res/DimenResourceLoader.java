@@ -12,7 +12,11 @@ public class DimenResourceLoader extends XpathResourceXmlLoader implements Resou
     }
 
     public float getValue(int resourceId) {
-        return dimenResolver.getValue(resourceExtractor.getResourceName(resourceId));
+        Float value = dimenResolver.getValue(resourceExtractor.getResourceName(resourceId));
+        if (value == null) {
+            System.out.println("WARN: no value found for dimension " + resourceExtractor.getResourceName(resourceId));
+        }
+        return value;
     }
 
     public float getValue(String resourceName, String packageName) {

@@ -7,8 +7,11 @@ import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.CustomView;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.io.File;
 
 import static com.xtremelabs.robolectric.util.TestUtil.*;
 import static java.util.Arrays.asList;
@@ -126,8 +129,33 @@ public class TestAttributeSetTest {
     @Test
     public void getAttributeIntValue_shouldReturnValueFromAttribute() throws Exception {
         testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "100", TEST_PACKAGE)),
-                null, new AttrResourceLoader(resourceExtractor), View.class);
+                null, new AttrResourceLoader(resourceExtractor), null);
         assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "sugarinessPercent", 0), equalTo(100));
+    }
+
+    @Test
+    public void getAttributeIntValue_shouldReturnHexValueFromAttribute() throws Exception {
+        testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "0x10", TEST_PACKAGE)),
+                null, new AttrResourceLoader(resourceExtractor), null);
+        assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "sugarinessPercent", 0), equalTo(16));
+    }
+
+    @Test
+    public void getAttributeIntValue_shouldReturnStyledValueFromAttribute() throws Exception {
+        testAttributeSet = new TestAttributeSet(asList(
+                new Attribute(TEST_PACKAGE + ":attr/gravity", "center|fill_vertical", TEST_PACKAGE),
+                new Attribute("android:attr/orientation", "vertical", TEST_PACKAGE)
+        ), resourceExtractor, createAttrResourceLoader(), CustomView.class);
+        assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "gravity", 0), equalTo(0x11 | 0x70));
+        assertThat(testAttributeSet.getAttributeIntValue("android", "orientation", -1), equalTo(1)); // style from LinearLayout
+    }
+
+    @Ignore
+    @Test
+    public void getAttributeIntValue_shouldNotReturnStyledValueFromAttributeForSuperclass() throws Exception {
+        testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/gravity", "center|fill_vertical", TEST_PACKAGE)),
+                resourceExtractor, createAttrResourceLoader(), View.class);
+        assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "gravity", 0), equalTo(0)); // todo: what do we expect here?
     }
 
     @Test
@@ -208,5 +236,14 @@ public class TestAttributeSetTest {
 
     private void createTestAttributeSet(Attribute... attributes) {
         testAttributeSet = new TestAttributeSet(asList(attributes), resourceExtractor, null, null);
+    }
+
+    private AttrResourceLoader createAttrResourceLoader() throws Exception {
+        AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
+        new DocumentLoader(attrResourceLoader)
+                .loadResourceXmlDirs(TEST_RESOURCE_PATH, new File(TEST_RESOURCE_PATH.resourceBase, "values"));
+        new DocumentLoader(attrResourceLoader)
+                .loadResourceXmlDirs(SYSTEM_RESOURCE_PATH, new File(SYSTEM_RESOURCE_PATH.resourceBase, "values"));
+        return attrResourceLoader;
     }
 }

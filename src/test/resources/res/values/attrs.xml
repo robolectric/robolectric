@@ -6,7 +6,7 @@
             <enum name="ungulate" value="1"/>
         </attr>
 
-        <attr name="scrollbars">
+        <attr name="scrollBars">
             <flag name="horizontal" value="0x00000100" />
             <flag name="vertical" value="0x00000200" />
             <flag name="sideways" value="0x00000400" />

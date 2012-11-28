@@ -111,7 +111,7 @@ public class ResourceLoader {
             DocumentLoader valuesDocumentLoader = new DocumentLoader(
                     stringResourceLoader, pluralResourceLoader,
                     stringArrayResourceLoader, colorResourceLoader, attrResourceLoader,
-                    dimenResourceLoader, integerResourceLoader
+                    dimenResourceLoader, integerResourceLoader, boolResourceLoader
             );
 
             loadValueResourcesFromDirs(valuesDocumentLoader, resourcePath, qualifiers);

@@ -53,10 +53,10 @@ public class AttrResourceLoaderTest {
 
     @Test
     public void testInlineFlagAttributesAreResolved() throws Exception {
-        assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, TEST_PACKAGE, "scrollbars", "horizontal"), equalTo("0x00000100"));
-        assertThat(attrResourceLoader.hasAttributeFor(CustomView.class, TEST_PACKAGE, "scrollbars"), equalTo(true));
+        assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, TEST_PACKAGE, "scrollBars", "horizontal"), equalTo("0x00000100"));
+        assertThat(attrResourceLoader.hasAttributeFor(CustomView.class, TEST_PACKAGE, "scrollBars"), equalTo(true));
 
-        assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, TEST_PACKAGE, "scrollbars", "vertical"), equalTo("0x00000200"));
+        assertThat(attrResourceLoader.convertValueToEnum(CustomView.class, TEST_PACKAGE, "scrollBars", "vertical"), equalTo("0x00000200"));
     }
 
     @Test
