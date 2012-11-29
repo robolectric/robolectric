@@ -1,9 +1,15 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.graphics.drawable.Drawable;
 import android.text.Html;
+import android.text.Html.ImageGetter;
+import android.text.Html.TagHandler;
 import android.text.Spanned;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Html.class)
@@ -20,6 +26,42 @@ public class ShadowHtml {
 			throw new NullPointerException();
 		}
         return new SpannedThatActsLikeString(source);
+    }
+
+    private static String extractSourceFromImgTag(String imgTag) {
+        final String SRC_TAG = "src=\"";
+        int start = imgTag.indexOf("src=\"");
+        int end = imgTag.indexOf("\"", start + SRC_TAG.length());
+
+        String source = imgTag.substring(start + SRC_TAG.length(), end);
+        if (!source.endsWith("/")) {
+            source += "/";
+        }
+        return source;
+    }
+
+    private static List<Drawable> latestHtmlDrawables = new ArrayList<Drawable>();
+    public static List<Drawable> getLatestHtmlDrawables() {
+        return latestHtmlDrawables;
+    }
+
+    @Implementation
+    public static Spanned fromHtml(String source, ImageGetter imageGetter, TagHandler tagHandler) {
+        latestHtmlDrawables.clear();
+        final String IMG_START = "<img";
+        final String IMG_END = ">";
+        while(source.contains(IMG_START)) {
+            int start = source.indexOf(IMG_START);
+            int end = source.indexOf(IMG_END, start + IMG_START.length());
+
+            String imgTag = source.substring(start, end + 1);
+            source = source.substring(0, start) + source.substring(end + 1);
+
+            String imgSrc = extractSourceFromImgTag(imgTag);
+            Drawable d = imageGetter.getDrawable(imgSrc);
+            latestHtmlDrawables.add(d);
+        }
+        return fromHtml(source);
     }
 
     private static class SpannedThatActsLikeString implements Spanned {
