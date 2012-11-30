@@ -1,12 +1,18 @@
 package com.xtremelabs.robolectric.bytecode;
 
+import android.R;
+import android.net.Uri__FromAndroid;
+import com.xtremelabs.robolectric.RobolectricConfig;
 import com.xtremelabs.robolectric.RobolectricContext;
 import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
 import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
 import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.internal.DoNotInstrument;
 import com.xtremelabs.robolectric.internal.Instrument;
+import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
 import com.xtremelabs.robolectric.res.ResourcePath;
+import com.xtremelabs.robolectric.util.DatabaseConfig;
 import com.xtremelabs.robolectric.util.I18nException;
 import javassist.CtClass;
 import javassist.NotFoundException;
@@ -33,9 +39,27 @@ public class Setup {
     public List<Class<?>> getClassesToDelegateFromRcl() {
         //noinspection unchecked
         return Arrays.asList(
-                RobolectricClassLoader.class, RobolectricContext.class, RobolectricContext.Factory.class, ResourcePath.class,
-                AndroidTranslator.class, ClassHandler.class, Instrument.class, DoNotInstrument.class, Values.class,
-                EnableStrictI18n.class, DisableStrictI18n.class, I18nException.class
+                Uri__FromAndroid.class,
+                RobolectricTestRunnerInterface.class,
+                RealObject.class,
+                ShadowWrangler.class,
+                Vars.class,
+                RobolectricConfig.class,
+                DatabaseConfig.DatabaseMap.class,
+                R.class,
+
+                RobolectricClassLoader.class,
+                RobolectricContext.class,
+                RobolectricContext.Factory.class,
+                ResourcePath.class,
+                AndroidTranslator.class,
+                ClassHandler.class,
+                Instrument.class,
+                DoNotInstrument.class,
+                Values.class,
+                EnableStrictI18n.class,
+                DisableStrictI18n.class,
+                I18nException.class
         );
     }
 

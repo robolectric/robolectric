@@ -1,12 +1,9 @@
 package com.xtremelabs.robolectric;
 
-import android.net.Uri__FromAndroid;
 import com.xtremelabs.robolectric.bytecode.*;
-import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.ResourcePath;
-import com.xtremelabs.robolectric.util.DatabaseConfig;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.codehaus.plexus.DefaultPlexusContainer;
 import org.sonatype.aether.RepositorySystem;
@@ -72,7 +69,6 @@ public class RobolectricContext {
         robolectricConfig = createRobolectricConfig();
         AndroidTranslator androidTranslator = createAndroidTranslator(classHandler, setup, classCache);
         robolectricClassLoader = createRobolectricClassLoader(setup, classCache, androidTranslator);
-        init();
     }
 
     private ClassHandler createClassHandler(Setup setup) {
@@ -111,21 +107,6 @@ public class RobolectricContext {
         List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>(robolectricConfig.getResourcePaths());
         resourcePaths.add(ResourceLoader.getSystemResourcePath(robolectricConfig.getRealSdkVersion(), resourcePaths));
         return resourcePaths;
-    }
-
-    private void init() {
-        performDelegations(robolectricClassLoader);
-    }
-
-    private void performDelegations(RobolectricClassLoader classLoader) {
-        classLoader.delegateLoadingOf(Uri__FromAndroid.class.getName());
-        classLoader.delegateLoadingOf(RobolectricTestRunnerInterface.class.getName());
-        classLoader.delegateLoadingOf(RealObject.class.getName());
-        classLoader.delegateLoadingOf(ShadowWrangler.class.getName());
-        classLoader.delegateLoadingOf(Vars.class.getName());
-        classLoader.delegateLoadingOf(RobolectricConfig.class.getName());
-        classLoader.delegateLoadingOf(DatabaseConfig.DatabaseMap.class.getName());
-        classLoader.delegateLoadingOf(android.R.class.getName());
     }
 
     private Class<?> bootstrapTestClass(Class<?> testClass) {
