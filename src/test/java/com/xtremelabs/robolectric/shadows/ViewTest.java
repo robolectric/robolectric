@@ -471,6 +471,14 @@ public class ViewTest {
         assertThat(shadowOf(view).lastHapticFeedbackPerformed(), equalTo(HapticFeedbackConstants.LONG_PRESS));
     }
 
+    @Test
+    public void canAssertThatSuperDotOnLayoutWasCalledFromViewSubclasses() throws Exception {
+        TestView2 view = new TestView2(new Activity());
+        assertThat(shadowOf(view).onLayoutWasCalled(), equalTo(false));
+        view.onLayout(true, 1, 2, 3, 4);
+        assertThat(shadowOf(view).onLayoutWasCalled(), equalTo(true));
+    }
+
     private static class TestAnimation extends Animation {
     }
 
@@ -505,6 +513,11 @@ public class ViewTest {
     private static class TestView2 extends View {
         public TestView2(Context context) {
             super(context);
+        }
+
+        @Override
+        public void onLayout(boolean changed, int l, int t, int r, int b) {
+            super.onLayout(changed, l, t, r, b);
         }
 
         @Override
