@@ -1,13 +1,5 @@
 package com.xtremelabs.robolectric.bytecode;
 
-import com.xtremelabs.robolectric.RobolectricContext;
-import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
-import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
-import com.xtremelabs.robolectric.annotation.Values;
-import com.xtremelabs.robolectric.internal.DoNotInstrument;
-import com.xtremelabs.robolectric.internal.Instrument;
-import com.xtremelabs.robolectric.res.ResourcePath;
-import com.xtremelabs.robolectric.util.I18nException;
 import javassist.CannotCompileException;
 import javassist.ClassPool;
 import javassist.LoaderClassPath;
@@ -23,22 +15,17 @@ import java.util.List;
 
 public class RobolectricClassLoader extends javassist.Loader {
     private final ClassCache classCache;
+    private final Setup setup;
 
-    public RobolectricClassLoader(ClassLoader classLoader, ClassCache classCache, AndroidTranslator androidTranslator) {
+    public RobolectricClassLoader(ClassLoader classLoader, ClassCache classCache, AndroidTranslator androidTranslator, Setup setup) {
         super(classLoader, null);
+        this.setup = setup;
 
-        delegateLoadingOf(RobolectricClassLoader.class.getName());
-        delegateLoadingOf(RobolectricContext.class.getName());
-        delegateLoadingOf(RobolectricContext.Factory.class.getName());
-        delegateLoadingOf(ResourcePath.class.getName());
-        delegateLoadingOf(AndroidTranslator.class.getName());
-        delegateLoadingOf(ClassHandler.class.getName());
-        delegateLoadingOf(Instrument.class.getName());
-        delegateLoadingOf(DoNotInstrument.class.getName());
-        delegateLoadingOf(Values.class.getName());
-        delegateLoadingOf(EnableStrictI18n.class.getName());
-        delegateLoadingOf(DisableStrictI18n.class.getName());
-        delegateLoadingOf(I18nException.class.getName());
+        List<Class<?>> classesToDelegate = setup.getClassesToDelegateFromRcl();
+        for (Class<?> aClass : classesToDelegate) {
+            delegateLoadingOf(aClass.getName());
+        }
+
 
         this.classCache = classCache;
         try {
@@ -59,13 +46,7 @@ public class RobolectricClassLoader extends javassist.Loader {
 
     @Override
     public Class loadClass(String name) throws ClassNotFoundException {
-        boolean shouldComeFromThisClassLoader = !(
-                name.startsWith("org.junit")
-                        || name.startsWith("org.hamcrest")
-                        || name.startsWith("org.specs2") // allows for android projects with mixed scala\java tests to be
-                        || name.startsWith("scala.")     //  run with Maven Surefire (see the RoboSpecs project on github)
-                        || name.startsWith("org.sqlite.") // ugh, javassist is barfing while loading org.sqlite now for some reason?!?
-        );
+        boolean shouldComeFromThisClassLoader = setup.shouldAcquire(name);
 
         Class<?> theClass;
         if (shouldComeFromThisClassLoader) {

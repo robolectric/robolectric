@@ -1,11 +1,18 @@
 package com.xtremelabs.robolectric.bytecode;
 
+import com.xtremelabs.robolectric.RobolectricContext;
+import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
+import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
+import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.internal.DoNotInstrument;
 import com.xtremelabs.robolectric.internal.Instrument;
+import com.xtremelabs.robolectric.res.ResourcePath;
+import com.xtremelabs.robolectric.util.I18nException;
 import javassist.CtClass;
 import javassist.NotFoundException;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Setup {
@@ -22,6 +29,16 @@ public class Setup {
         instrumentingExcludeList.add("android.support.v4.app.NotificationCompat");
         instrumentingExcludeList.add("android.support.v4.util.LruCache");
     }
+
+    public List<Class<?>> getClassesToDelegateFromRcl() {
+        //noinspection unchecked
+        return Arrays.asList(
+                RobolectricClassLoader.class, RobolectricContext.class, RobolectricContext.Factory.class, ResourcePath.class,
+                AndroidTranslator.class, ClassHandler.class, Instrument.class, DoNotInstrument.class, Values.class,
+                EnableStrictI18n.class, DisableStrictI18n.class, I18nException.class
+        );
+    }
+
 
     public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz) {
         return !isFromAndroidSdk(clazz);
@@ -83,6 +100,16 @@ public class Setup {
 
     public boolean shouldPerformStaticInitializationIfShadowIsMissing() {
         return true;
+    }
+
+    public boolean shouldAcquire(String name) {
+        return !(
+                name.startsWith("org.junit")
+                        || name.startsWith("org.hamcrest")
+                        || name.startsWith("org.specs2") // allows for android projects with mixed scala\java tests to be
+                        || name.startsWith("scala.")     //  run with Maven Surefire (see the RoboSpecs project on github)
+                        || name.startsWith("org.sqlite.") // ugh, javassist is barfing while loading org.sqlite now for some reason?!?
+        );
     }
 
     public static class FakeSubclass {}

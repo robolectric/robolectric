@@ -71,7 +71,7 @@ public class RobolectricContext {
         classHandler = createClassHandler(setup);
         robolectricConfig = createRobolectricConfig();
         AndroidTranslator androidTranslator = createAndroidTranslator(classHandler, setup, classCache);
-        robolectricClassLoader = createRobolectricClassLoader(classCache, androidTranslator);
+        robolectricClassLoader = createRobolectricClassLoader(setup, classCache, androidTranslator);
         init();
     }
 
@@ -164,7 +164,7 @@ public class RobolectricContext {
         }
     }
 
-    protected RobolectricClassLoader createRobolectricClassLoader(ClassCache classCache, AndroidTranslator androidTranslator) {
+    protected RobolectricClassLoader createRobolectricClassLoader(Setup setup, ClassCache classCache, AndroidTranslator androidTranslator) {
 //            shadowWrangler.delegateBackToInstrumented = true;
         final ClassLoader parentClassLoader = this.getClass().getClassLoader();
         ClassLoader realAndroidJarsClassLoader = new URLClassLoader(new URL[]{
@@ -182,7 +182,7 @@ public class RobolectricContext {
                 }
             }
         };
-        RobolectricClassLoader robolectricClassLoader = new RobolectricClassLoader(realAndroidJarsClassLoader, classCache, androidTranslator);
+        RobolectricClassLoader robolectricClassLoader = new RobolectricClassLoader(realAndroidJarsClassLoader, classCache, androidTranslator, setup);
         injectClassHandler(robolectricClassLoader);
         return robolectricClassLoader;
     }
