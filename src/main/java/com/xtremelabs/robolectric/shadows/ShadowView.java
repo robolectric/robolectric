@@ -83,6 +83,8 @@ public class ShadowView {
     private float translationX = 0.0f;
     private float translationY = 0.0f;
     private float alpha = 1.0f;
+    private float scaleX = 1.0f;
+    private float scaleY = 1.0f;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -974,6 +976,26 @@ public class ShadowView {
     @Implementation
     public int getScrollX() {
         return scrollToCoordinates != null ? scrollToCoordinates.x : 0;
+    }
+
+    @Implementation
+    public void setScaleX(float scaleX) {
+        this.scaleX = scaleX;
+    }
+
+    @Implementation
+    public float getScaleX() {
+        return scaleX;
+    }
+
+    @Implementation
+    public void setScaleY(float scaleY) {
+        this.scaleY = scaleY;
+    }
+
+    @Implementation
+    public float getScaleY() {
+        return scaleY;
     }
 
     @Implementation

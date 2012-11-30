@@ -449,6 +449,24 @@ public class ViewTest {
         assertThat(view.isLongClickable(), equalTo(true));
     }
 
+    @Test
+    public void setScaleX_shouldSetScaleX() throws Exception {
+        assertThat(shadowOf(view).getScaleX(), equalTo(1f));
+        shadowOf(view).setScaleX(2.5f);
+        assertThat(shadowOf(view).getScaleX(), equalTo(2.5f));
+        shadowOf(view).setScaleX(0.5f);
+        assertThat(shadowOf(view).getScaleX(), equalTo(0.5f));
+    }
+
+    @Test
+    public void setScaleY_shouldSetScaleY() throws Exception {
+        assertThat(shadowOf(view).getScaleX(), equalTo(1f));
+        shadowOf(view).setScaleY(2.5f);
+        assertThat(shadowOf(view).getScaleY(), equalTo(2.5f));
+        shadowOf(view).setScaleY(0.5f);
+        assertThat(shadowOf(view).getScaleY(), equalTo(0.5f));
+    }
+
     private static class TestAnimation extends Animation {
     }
 
