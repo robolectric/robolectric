@@ -15,6 +15,7 @@ public class DimenResourceLoader extends XpathResourceXmlLoader implements Resou
         Float value = dimenResolver.getValue(resourceExtractor.getResourceName(resourceId));
         if (value == null) {
             System.out.println("WARN: no value found for dimension " + resourceExtractor.getResourceName(resourceId));
+            return 0;
         }
         return value;
     }

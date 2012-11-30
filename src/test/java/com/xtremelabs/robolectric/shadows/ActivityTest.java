@@ -60,6 +60,13 @@ public class ActivityTest {
     }
 
     @Test
+    public void shouldReportDestroyedStatus() {
+        DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
+        activity.onDestroy();
+        assertThat(shadowOf(activity).isDestroyed(), equalTo(true));
+    }
+
+    @Test
     public void startActivity_shouldDelegateToStartActivityForResult() {
         final Transcript transcript = new Transcript();
         Activity activity = new Activity() {

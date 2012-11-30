@@ -61,6 +61,7 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     private int mDefaultKeyMode = Activity.DEFAULT_KEYS_DISABLE;
     private SpannableStringBuilder mDefaultKeySsb = null;
+    private boolean destroyed = false;
 
     public void callOnCreate(Bundle bundle) {
         invokeReflectively("onCreate", Bundle.class, bundle);
@@ -345,6 +346,11 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public void onDestroy() {
         assertNoBroadcastListenersRegistered();
+        this.destroyed = true;
+    }
+
+    public boolean isDestroyed() {
+        return destroyed;
     }
 
     @Implementation
