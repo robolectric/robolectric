@@ -85,6 +85,7 @@ public class ShadowView {
     private float alpha = 1.0f;
     private float scaleX = 1.0f;
     private float scaleY = 1.0f;
+    private int hapticFeedbackPerformed = -1;
 
     public void __constructor__(Context context) {
         __constructor__(context, null);
@@ -1066,5 +1067,15 @@ public class ShadowView {
     @Implementation
     public TouchDelegate getTouchDelegate()  {
     	return touchDelegate;
+    }
+
+    @Implementation
+    public boolean performHapticFeedback(int hapticFeedbackType) {
+        hapticFeedbackPerformed = hapticFeedbackType;
+        return true;
+    }
+
+    public int lastHapticFeedbackPerformed() {
+        return hapticFeedbackPerformed;
     }
 }

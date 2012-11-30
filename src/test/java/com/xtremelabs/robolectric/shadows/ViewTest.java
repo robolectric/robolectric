@@ -4,13 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
-import android.view.MotionEvent;
-import android.view.View;
+import android.view.*;
 import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
@@ -465,6 +462,13 @@ public class ViewTest {
         assertThat(shadowOf(view).getScaleY(), equalTo(2.5f));
         shadowOf(view).setScaleY(0.5f);
         assertThat(shadowOf(view).getScaleY(), equalTo(0.5f));
+    }
+
+    @Test
+    public void performHapticFeedback_shouldSetLastPerformedHapticFeedback() throws Exception {
+        assertThat(shadowOf(view).lastHapticFeedbackPerformed(), equalTo(-1));
+        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+        assertThat(shadowOf(view).lastHapticFeedbackPerformed(), equalTo(HapticFeedbackConstants.LONG_PRESS));
     }
 
     private static class TestAnimation extends Animation {
