@@ -32,8 +32,8 @@ public class Setup {
         androidPackages.add("com.google.android.maps");
         androidPackages.add("org.apache.http.impl.client.DefaultRequestDirector");
 
-        instrumentingExcludeList.add("android.support.v4.app.NotificationCompat");
-        instrumentingExcludeList.add("android.support.v4.util.LruCache");
+        instrumentingExcludeList.add("android.support.v4");
+        instrumentingExcludeList.add("com.actionbarsherlock");
     }
 
     public List<Class<?>> getClassesToDelegateFromRcl() {
