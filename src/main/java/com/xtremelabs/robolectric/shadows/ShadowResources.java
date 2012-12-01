@@ -238,12 +238,11 @@ public class ShadowResources {
 
         @Implementation
         public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-            TypedArray typedArray = inject(resources, newInstanceOf(TypedArray.class));
             if (set == null) {
                 set = new TestAttributeSet();
             }
-            shadowOf(typedArray).populate(set, attrs);
-            return typedArray;
+
+            return ShadowTypedArray.create(resources, set, attrs);
         }
     }
 

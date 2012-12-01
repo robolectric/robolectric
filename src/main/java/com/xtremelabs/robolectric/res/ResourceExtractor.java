@@ -76,7 +76,10 @@ public class ResourceExtractor {
         Integer resourceId = resourceNameToId.get(new ResName(fullyQualifiedResourceName));
         // todo warn if resourceId is null
         return resourceId;
+    }
 
+    public Integer getResourceId(ResName resName) {
+      return resourceNameToId.get(resName);
     }
 
     public static @NotNull String qualifyResourceName(String possiblyQualifiedResourceName, String contextPackageName) {

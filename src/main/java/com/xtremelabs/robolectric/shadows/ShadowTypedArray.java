@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
@@ -17,6 +18,12 @@ public class ShadowTypedArray implements UsesResources {
     private AttributeSet values;
     private int[] attrs;
     private ResourceExtractor resourceExtractor;
+
+    public static TypedArray create(Resources resources, AttributeSet set, int[] attrs) {
+        TypedArray result = ShadowResources.inject(resources, Robolectric.newInstanceOf(TypedArray.class));
+        Robolectric.shadowOf(result).populate(set, attrs);
+        return result;
+    }
 
     public void injectResources(Resources resources) {
         this.resources = resources;
@@ -74,6 +81,13 @@ public class ShadowTypedArray implements UsesResources {
     @Implementation
     public int getResourceId(int index, int defValue) {
         return defValue;
+    }
+
+    @Implementation
+    public java.lang.CharSequence[] getTextArray(int index) {
+        ResName resName = getResName(index);
+        int resourceId = values.getAttributeResourceValue(resName.namespace, resName.name, -1);
+        return resourceId == -1 ? null : resources.getTextArray(resourceId);
     }
 
     private ResName getResName(int index) {

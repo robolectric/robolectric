@@ -14,7 +14,8 @@ import static org.junit.Assert.assertThat;
 public class StringArrayResourceLoaderTest {
     private StringArrayResourceLoader stringArrayResourceLoader;
 
-    @Before public void setUp() throws Exception {
+    @Before
+    public void setUp() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
 
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
@@ -33,6 +34,17 @@ public class StringArrayResourceLoaderTest {
 
     @Test
     public void testStringsAreWithReferences() throws Exception {
+        assertThat(Arrays.asList(stringArrayResourceLoader.getArrayValue(R.array.greetings)), hasItems("hola", "Hello"));
+    }
+
+    @Test
+    public void testLazyResolution_ReferencesWorkEvenIfLoadedOutOfOrder() throws Exception {
+        ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
+        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
+        stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
+        new DocumentLoader(stringArrayResourceLoader).loadResourceXmlDir(testResources(), "values");
+        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
+
         assertThat(Arrays.asList(stringArrayResourceLoader.getArrayValue(R.array.greetings)), hasItems("hola", "Hello"));
     }
 
