@@ -4,13 +4,10 @@ import android.app.Activity;
 import android.content.Context;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
-import android.view.MotionEvent;
-import android.view.View;
+import android.view.*;
 import android.view.View.MeasureSpec;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
-import android.view.ViewGroup;
-import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
@@ -449,6 +446,39 @@ public class ViewTest {
         assertThat(view.isLongClickable(), equalTo(true));
     }
 
+    @Test
+    public void setScaleX_shouldSetScaleX() throws Exception {
+        assertThat(shadowOf(view).getScaleX(), equalTo(1f));
+        shadowOf(view).setScaleX(2.5f);
+        assertThat(shadowOf(view).getScaleX(), equalTo(2.5f));
+        shadowOf(view).setScaleX(0.5f);
+        assertThat(shadowOf(view).getScaleX(), equalTo(0.5f));
+    }
+
+    @Test
+    public void setScaleY_shouldSetScaleY() throws Exception {
+        assertThat(shadowOf(view).getScaleX(), equalTo(1f));
+        shadowOf(view).setScaleY(2.5f);
+        assertThat(shadowOf(view).getScaleY(), equalTo(2.5f));
+        shadowOf(view).setScaleY(0.5f);
+        assertThat(shadowOf(view).getScaleY(), equalTo(0.5f));
+    }
+
+    @Test
+    public void performHapticFeedback_shouldSetLastPerformedHapticFeedback() throws Exception {
+        assertThat(shadowOf(view).lastHapticFeedbackPerformed(), equalTo(-1));
+        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+        assertThat(shadowOf(view).lastHapticFeedbackPerformed(), equalTo(HapticFeedbackConstants.LONG_PRESS));
+    }
+
+    @Test
+    public void canAssertThatSuperDotOnLayoutWasCalledFromViewSubclasses() throws Exception {
+        TestView2 view = new TestView2(new Activity());
+        assertThat(shadowOf(view).onLayoutWasCalled(), equalTo(false));
+        view.onLayout(true, 1, 2, 3, 4);
+        assertThat(shadowOf(view).onLayoutWasCalled(), equalTo(true));
+    }
+
     private static class TestAnimation extends Animation {
     }
 
@@ -483,6 +513,11 @@ public class ViewTest {
     private static class TestView2 extends View {
         public TestView2(Context context) {
             super(context);
+        }
+
+        @Override
+        public void onLayout(boolean changed, int l, int t, int r, int b) {
+            super.onLayout(changed, l, t, r, b);
         }
 
         @Override

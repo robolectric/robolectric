@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.Application;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -77,25 +78,28 @@ public class ViewGroupTest {
 
         AnimationListener animationListener = new AnimationListener() {
             @Override
-            public void onAnimationEnd(Animation a) { }
+            public void onAnimationEnd(Animation a) {
+            }
 
             @Override
-            public void onAnimationRepeat(Animation a) { }
+            public void onAnimationRepeat(Animation a) {
+            }
 
             @Override
-            public void onAnimationStart(Animation a) { }
+            public void onAnimationStart(Animation a) {
+            }
         };
         root.setLayoutAnimationListener(animationListener);
 
         assertThat(root.getLayoutAnimationListener(), sameInstance(animationListener));
     }
-    
+
     @Test
     public void testLayoutAnimation() {
-    	assertThat(root.getLayoutAnimation(), nullValue());
-    	LayoutAnimationController layoutAnim = new LayoutAnimationController(context, null);
-    	root.setLayoutAnimation(layoutAnim);
-    	assertThat(root.getLayoutAnimation(), sameInstance(layoutAnim));
+        assertThat(root.getLayoutAnimation(), nullValue());
+        LayoutAnimationController layoutAnim = new LayoutAnimationController(context, null);
+        root.setLayoutAnimation(layoutAnim);
+        assertThat(root.getLayoutAnimation(), sameInstance(layoutAnim));
     }
 
     @Test
@@ -277,5 +281,15 @@ public class ViewGroupTest {
         } catch (IllegalStateException e) {
             // pass
         }
+    }
+
+    @Test
+    public void shouldKnowWhenOnInterceptTouchEventWasCalled() throws Exception {
+        ViewGroup viewGroup = new FrameLayout(context);
+
+        MotionEvent touchEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0);
+        viewGroup.onInterceptTouchEvent(touchEvent);
+
+        assertThat(shadowOf(viewGroup).getInterceptedTouchEvent(), equalTo(touchEvent));
     }
 }
