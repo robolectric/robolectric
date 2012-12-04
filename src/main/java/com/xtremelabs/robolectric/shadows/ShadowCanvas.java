@@ -96,11 +96,16 @@ public class ShadowCanvas {
     public void drawBitmap(Bitmap bitmap, Rect src, Rect dst, Paint paint) {
         describeBitmap(bitmap, paint);
 
-        appendDescription(" at (" +
-                dst.left + "," + dst.top +
-                ") with height=" + dst.height() +
-                " and width=" + dst.width() +
-                " taken from " + src.toString());
+        StringBuilder descriptionBuilder = new StringBuilder();
+        if (dst != null) {
+            descriptionBuilder.append(" at (").append(dst.left).append(",").append(dst.top)
+                    .append(") with height=").append(dst.height()).append(" and width=").append(dst.width());
+        }
+
+        if (src != null) {
+            descriptionBuilder.append( " taken from ").append(src.toString());
+        }
+        appendDescription(descriptionBuilder.toString());
     }
 
     @Implementation
