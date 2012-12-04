@@ -10,6 +10,8 @@ import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
+import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
 
@@ -69,7 +71,7 @@ public class ResourceLoader {
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
         drawableResourceLoader = new DrawableResourceLoader(resourceExtractor);
         boolResourceLoader = new BoolResourceLoader(resourceExtractor);
-        viewLoader = new ViewLoader(resourceExtractor, attrResourceLoader);
+        viewLoader = new ViewLoader(resourceExtractor);
         menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
         preferenceLoader = new PreferenceLoader(resourceExtractor);
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
@@ -188,6 +190,14 @@ public class ResourceLoader {
         return qualifiers;
     }
 
+    public TestAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
+        TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, viewClass);
+        if (strictI18n) {
+            attributeSet.validateStrictI18n();
+        }
+        return attributeSet;
+    }
+
     public static class AndroidResourcePathFinder {
         private final int sdkVersion;
         private final ResourcePath resourcePath;
@@ -300,6 +310,10 @@ public class ResourceLoader {
         if (viewNode != null) return viewNode;
 
         throw new RuntimeException("Could not find layout " + resourceExtractor.getResourceName(resource));
+    }
+
+    public View inflateView(Context context, String layoutName, List<Attribute> attributes, ViewGroup parent) {
+        return viewLoader.inflateView(context, layoutName, attributes, parent);
     }
 
     public int getColorValue(int id) {
@@ -499,7 +513,7 @@ public class ResourceLoader {
         return resourcePaths.get(0).assetsDir; // todo: do something better
     }
 
-    public ViewLoader.ViewNode getLayoutViewNode(String layoutName) {
+    public ViewNode getLayoutViewNode(String layoutName) {
         return viewLoader.viewNodesByLayoutName.get(layoutName);
     }
 

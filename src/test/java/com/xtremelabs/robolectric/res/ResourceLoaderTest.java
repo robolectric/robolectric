@@ -36,7 +36,7 @@ public class ResourceLoaderTest {
         String stringValue = resourceLoader.getStringValue(android.R.string.copy);
         assertEquals("Copy", stringValue);
 
-        ViewLoader.ViewNode node = resourceLoader.getLayoutViewNode("android:layout/simple_spinner_item");
+        ViewNode node = resourceLoader.getLayoutViewNode("android:layout/simple_spinner_item");
         assertNotNull(node);
     }
 
