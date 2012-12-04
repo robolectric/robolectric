@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 public class Attribute {
     private static final Logger LOGGER = LoggerFactory.getLogger(Attribute.class);
     private static final Pattern NS_URI_PATTERN = Pattern.compile("^http://schemas.android.com/apk/res/(.*)$");
+    private static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
 
     public final @NotNull ResName resName;
     public final @NotNull String value;
@@ -33,13 +34,19 @@ public class Attribute {
     }
 
     public Attribute(Node attr, XmlLoader.XmlContext xmlContext) {
-        this(extractPackageName(attr.getNamespaceURI()) + ":attr/" + attr.getLocalName(), attr.getNodeValue(), xmlContext.packageName);
+        this(extractPackageName(attr.getNamespaceURI(), xmlContext) + ":attr/" + attr.getLocalName(),
+                attr.getNodeValue(),
+                xmlContext.packageName);
     }
 
-    private static String extractPackageName(String namespaceUri) {
+    private static String extractPackageName(String namespaceUri, XmlLoader.XmlContext xmlContext) {
         if (namespaceUri == null) {
             LOGGER.warn("unexpected ns uri null");
             return "";
+        }
+
+        if (RES_AUTO_NS_URI.equals(namespaceUri)) {
+            return xmlContext.packageName;
         }
 
         Matcher matcher = NS_URI_PATTERN.matcher(namespaceUri);

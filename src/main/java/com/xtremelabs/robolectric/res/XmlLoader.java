@@ -22,7 +22,7 @@ public abstract class XmlLoader {
     	this.strictI18n = strict;
     }
 
-    public class XmlContext {
+    public static class XmlContext {
         public final String packageName;
 
         public XmlContext(String packageName) {
