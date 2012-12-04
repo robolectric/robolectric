@@ -1,8 +1,8 @@
 package com.xtremelabs.robolectric;
 
+import com.xtremelabs.robolectric.bytecode.AndroidTranslatorClassInstrumentedTest;
 import com.xtremelabs.robolectric.bytecode.Setup;
 import javassist.CtClass;
-import javassist.NotFoundException;
 import org.junit.runners.model.InitializationError;
 
 import java.lang.reflect.Method;
@@ -25,10 +25,10 @@ public class TestRunners {
                         public Setup createSetup() {
                             return new Setup() {
                                 @Override
-                                public boolean shouldInstrument(CtClass ctClass) throws NotFoundException {
+                                public boolean shouldInstrument(CtClass ctClass) {
                                     String name = ctClass.getName();
-                                    if (name.equals("com.xtremelabs.robolectric.bytecode.AndroidTranslatorClassInstrumentedTest$CustomPaint")
-                                            || name.equals("com.xtremelabs.robolectric.bytecode.AndroidTranslatorClassInstrumentedTest$ClassWithPrivateConstructor")) {
+                                    if (name.equals(AndroidTranslatorClassInstrumentedTest.CustomPaint.class.getName())
+                                            || name.equals(AndroidTranslatorClassInstrumentedTest.ClassWithPrivateConstructor.class.getName())) {
                                         return true;
                                     }
                                     return super.shouldInstrument(ctClass);

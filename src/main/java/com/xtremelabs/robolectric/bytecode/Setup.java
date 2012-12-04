@@ -15,27 +15,11 @@ import com.xtremelabs.robolectric.res.ResourcePath;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
 import com.xtremelabs.robolectric.util.I18nException;
 import javassist.CtClass;
-import javassist.NotFoundException;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class Setup {
-    private final List<String> androidPackages = new ArrayList<String>();
-    private final List<String> instrumentingExcludeList = new ArrayList<String>();
-
-    public Setup() {
-        // Initialize lists
-        androidPackages.add("android.");
-        androidPackages.add("libcore.");
-        androidPackages.add("com.google.android.maps");
-        androidPackages.add("org.apache.http.impl.client.DefaultRequestDirector");
-
-        instrumentingExcludeList.add("android.support.v4");
-        instrumentingExcludeList.add("com.actionbarsherlock");
-    }
-
     public List<Class<?>> getClassesToDelegateFromRcl() {
         //noinspection unchecked
         return Arrays.asList(
@@ -68,15 +52,7 @@ public class Setup {
         return !isFromAndroidSdk(clazz);
     }
 
-    public boolean shouldInstrument(CtClass ctClass) throws NotFoundException {
-        String name = ctClass.getName();
-
-        for (String klassName : instrumentingExcludeList) {
-            if (name.startsWith(klassName)) {
-                return false;
-            }
-        }
-
+    public boolean shouldInstrument(CtClass ctClass) {
         if (ctClass.isInterface() || ctClass.isAnnotation() || ctClass.hasAnnotation(DoNotInstrument.class)) {
             return false;
         }
@@ -89,37 +65,23 @@ public class Setup {
 
     }
 
-    private boolean parentIsInstrumented(CtClass ctClass) throws NotFoundException {
-        CtClass superclass = ctClass.getSuperclass();
-        return superclass != null && shouldInstrument(superclass);
-    }
-
     public boolean isFromAndroidSdk(CtClass ctClass) {
-        if (ctClass.hasAnnotation(Instrument.class)) { // fakey for tests
-            return true;
-        }
+        // allow explicit control with @Instrument, mostly for tests
+        return ctClass.hasAnnotation(Instrument.class) || isFromAndroidSdk(ctClass.getName());
 
-        for (String klassName : androidPackages) {
-            if (ctClass.getName().startsWith(klassName)) {
-                return true;
-            }
-        }
-
-        return false;
     }
 
     public boolean isFromAndroidSdk(Class clazz) {
-        if (clazz.getAnnotation(Instrument.class) != null) { // fakey for tests
-            return true;
-        }
+        // allow explicit control with @Instrument, mostly for tests
+        //noinspection unchecked
+        return clazz.getAnnotation(Instrument.class) != null || isFromAndroidSdk(clazz.getName());
+    }
 
-        for (String klassName : androidPackages) {
-            if (clazz.getName().startsWith(klassName)) {
-                return true;
-            }
-        }
-
-        return false;
+    public boolean isFromAndroidSdk(String className) {
+        return className.startsWith("android")
+                || className.startsWith("libcore.")
+                || className.startsWith("com.google.android.maps")
+                || className.startsWith("org.apache.http.impl.client.DefaultRequestDirector");
     }
 
     public boolean shouldPerformStaticInitializationIfShadowIsMissing() {
