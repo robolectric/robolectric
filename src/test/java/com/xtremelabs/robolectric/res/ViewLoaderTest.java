@@ -33,13 +33,12 @@ import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ViewLoaderTest {
-    private ViewLoader viewLoader;
     private Activity context;
+    private ResourceLoader resourceLoader;
 
     @Before
     public void setUp() throws Exception {
-        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-        viewLoader =  resourceLoader.getViewLoader();
+        resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
         context = new Activity() {};
     }
 
@@ -60,7 +59,7 @@ public class ViewLoaderTest {
 
     @Test
     public void testChoosesLayoutBasedOnSearchPath_choosesFirstFileFoundOnPath() throws Exception {
-        viewLoader.setLayoutQualifierSearchPath("xlarge", "land");
+        resourceLoader.setLayoutQualifierSearchPath("xlarge", "land");
         ViewGroup view = (ViewGroup) inflate("layout/different_screen_sizes");
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
         assertThat(textView.getText().toString(), equalTo("xlarge"));
@@ -68,7 +67,7 @@ public class ViewLoaderTest {
 
     @Test
     public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
-        viewLoader.setLayoutQualifierSearchPath("does-not-exist", "land", "xlarge");
+        resourceLoader.setLayoutQualifierSearchPath("does-not-exist", "land", "xlarge");
         ViewGroup view = (ViewGroup) inflate("layout/different_screen_sizes");
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
         assertThat(textView.getText().toString(), equalTo("land"));
@@ -241,7 +240,7 @@ public class ViewLoaderTest {
 
     @Test
     public void shouldInflateMergeLayoutIntoParent() throws Exception {
-        View innerMerge = viewLoader.inflateView(context, R.layout.inner_merge, new LinearLayout(null));
+        View innerMerge = resourceLoader.getRoboLayoutInflater().inflateView(context, R.layout.inner_merge, new LinearLayout(null));
         assertNotNull(innerMerge);
     }
 
@@ -280,7 +279,7 @@ public class ViewLoaderTest {
         assertEquals(view.getId(), R.id.portrait);
         assertSame(context, view.getContext());
 
-        viewLoader.setLayoutQualifierSearchPath("land");
+        resourceLoader.setLayoutQualifierSearchPath("land");
 
         // Confirm explicit "orientation = landscape" works.
         context.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
@@ -361,14 +360,14 @@ public class ViewLoaderTest {
     
     @Test(expected=I18nException.class)
     public void shouldThrowI18nExceptionOnLayoutWithBareStrings() throws Exception {
-    	viewLoader.setStrictI18n(true);
+        resourceLoader.setStrictI18n(true);
         inflate("layout/text_views");
     }
 
     private View inflate(String layoutName) {
         ResourceLoader resourceLoader = shadowOf(context.getResources()).getResourceLoader();
         layoutName = ResourceExtractor.qualifyResourceName(layoutName, TEST_PACKAGE);
-        return resourceLoader.getViewLoader().inflateView(context, layoutName, null);
+        return resourceLoader.getRoboLayoutInflater().inflateView(context, layoutName, null);
     }
 
     public static class ClickActivity extends FragmentActivity {

@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -49,10 +50,10 @@ public class ResourceLoaderTest {
 
     @Test(expected=I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflateView() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(resourcePath);
+        ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
         resourceLoader.setStrictI18n(true);
         ViewGroup vg = new FrameLayout(Robolectric.application);
-    	resourceLoader.inflateView(Robolectric.application, R.layout.text_views, vg);
+    	resourceLoader.getRoboLayoutInflater().inflateView(Robolectric.application, R.layout.text_views, vg);
     }
 
     @Test(expected=I18nException.class)
@@ -64,7 +65,7 @@ public class ResourceLoaderTest {
 
     @Test(expected=I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflatePreferences() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(resourcePath);
+        ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
         resourceLoader.setStrictI18n(true);
     	resourceLoader.inflatePreferences(Robolectric.application, R.xml.preferences);
     }
@@ -74,7 +75,7 @@ public class ResourceLoaderTest {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
         resourceLoader.setLayoutQualifierSearchPath("does-not-exist", "land", "xlarge");
         ViewGroup viewGroup = new FrameLayout(Robolectric.application);
-        ViewGroup view = (ViewGroup) resourceLoader.inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup);
+        ViewGroup view = (ViewGroup) resourceLoader.getRoboLayoutInflater().inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup);
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
         assertThat(textView.getText().toString(), equalTo("land"));
     }
@@ -92,7 +93,7 @@ public class ResourceLoaderTest {
     private void checkForPollutionHelper() {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
         ViewGroup viewGroup = new FrameLayout(Robolectric.application);
-        ViewGroup view = (ViewGroup) resourceLoader.inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup);
+        ViewGroup view = (ViewGroup) resourceLoader.getRoboLayoutInflater().inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup);
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
         assertThat(textView.getText().toString(), equalTo("default"));
         resourceLoader.setLayoutQualifierSearchPath("land"); // testing if this pollutes the other test

@@ -1,37 +1,25 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import android.util.SparseBooleanArray;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.*;
+import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.util.Transcript;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import com.xtremelabs.robolectric.TestRunners;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import android.util.SparseBooleanArray;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.BaseAdapter;
-import android.widget.LinearLayout;
-import android.widget.ListView;
-
-import com.xtremelabs.robolectric.util.Transcript;
+import static com.xtremelabs.robolectric.Robolectric.application;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ListViewTest {
@@ -242,7 +230,7 @@ public class ListViewTest {
         adapterFileList.add("Item 1");
         adapterFileList.add("Item 2");
         adapterFileList.add("Item 3");
-        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(null, android.R.layout.simple_list_item_1, adapterFileList);
+        final ArrayAdapter<String> adapter = new ArrayAdapter<String>(application, android.R.layout.simple_list_item_1, adapterFileList);
         listView.setAdapter(adapter);
         ShadowHandler.idleMainLooper();
         ShadowListView shadowListView = shadowOf(listView);

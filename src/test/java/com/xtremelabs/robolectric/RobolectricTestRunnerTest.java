@@ -7,6 +7,7 @@ import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
 import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
 import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.util.I18nException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
@@ -86,10 +87,11 @@ public class RobolectricTestRunnerTest {
     	assertTrue(Robolectric.getShadowApplication().getResourceLoader().getStrictI18n());
 		assertTrue(loader.getStrictI18n());
     	try {
-    		loader.inflateView(Robolectric.application, R.layout.text_views, null);
+    		loader.getRoboLayoutInflater().inflateView(Robolectric.application, R.layout.text_views, null);
     		fail("ResourceLoader#inflateView should produce an i18nException");
     	} catch (Exception e) {
-    		assertEquals("com.xtremelabs.robolectric.util.I18nException", e.getClass().getName());
+            // classes may not be identical (different classloaders) but should have the same name
+    		assertEquals(I18nException.class.getName(), e.getClass().getName());
     	}
     }
     

@@ -10,7 +10,6 @@ import android.view.ViewParent;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
-import com.xtremelabs.robolectric.util.I18nException;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -40,27 +39,22 @@ public class ViewNode {
     }
 
     public List<ViewNode> getChildren() {
-        return children;
+        return Collections.unmodifiableList(children);
     }
 
     public void addChild(ViewNode viewNode) {
         children.add(viewNode);
     }
 
-    public View inflate(Context context, View parent) throws Exception {
-        View view = create(context, (ViewGroup) parent);
-
-        for (ViewNode child : children) {
-            child.inflate(context, view);
-        }
-
-        if (view != null) {
-            invokeOnFinishInflate(view);
-        }
-        return view;
+    boolean isInclude() {
+        return name.equals("include");
     }
 
-    private void invokeOnFinishInflate(View view) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+    public List<Attribute> getAttributes() {
+        return attributes;
+    }
+
+    void invokeOnFinishInflate(View view) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
         Method onFinishInflate = View.class.getDeclaredMethod("onFinishInflate");
         onFinishInflate.setAccessible(true);
         onFinishInflate.invoke(view);
@@ -73,12 +67,9 @@ public class ViewNode {
                 '}';
     }
 
-    private View create(Context context, ViewGroup parent) throws Exception {
-        if (name.equals("include")) {
-            Attribute layoutAttribute = Attribute.find(attributes, ViewLoader.ATTR_LAYOUT);
-            String layoutName = layoutAttribute.qualifiedValue();
-            ResourceLoader resourceLoader = getResourceLoader(context);
-            return resourceLoader.inflateView(context, layoutName, attributes, parent);
+    View create(Context context, ViewGroup parent) throws Exception {
+        if (isInclude()) {
+            throw new IllegalStateException();
         } else if (name.equals("merge")) {
             return parent;
         } else if (name.equals("fragment")) {
@@ -199,13 +190,13 @@ public class ViewNode {
      * Create a new ViewLoader with the given attributes merged in. If there's a layout attribute, it'll be excluded.
      */
     public ViewNode plusAttributes(List<Attribute> attributes) {
-        if (attributes.size() == 0 || attributes.size() == 1 && attributes.get(0).resName.equals(ViewLoader.ATTR_LAYOUT)) {
+        if (attributes.size() == 0 || attributes.size() == 1 && attributes.get(0).resName.equals(RoboLayoutInflater.ATTR_LAYOUT)) {
             return this; // don't make a new one if it'll be identical
         }
 
         List<Attribute> newAttrs = new ArrayList<Attribute>(this.attributes);
         for (Attribute attribute : attributes) {
-            if (!attribute.resName.equals(ViewLoader.ATTR_LAYOUT)) {
+            if (!attribute.resName.equals(RoboLayoutInflater.ATTR_LAYOUT)) {
                 Attribute.put(newAttrs, attribute);
             }
         }
@@ -216,18 +207,7 @@ public class ViewNode {
         return viewNode;
     }
 
-    void focusRequested(XmlLoader.XmlContext xmlContext) {
+    void focusRequested() {
         requestFocusOverride = true;
-//            attributes.add(new Attribute("android:attr/focus", "true", xmlContext.packageName));
-    }
-
-    public View inflate(Context context, String layoutName, List<Attribute> attributes, View parent) {
-        try {
-            return plusAttributes(attributes).inflate(context, parent);
-        } catch (I18nException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("error inflating " + layoutName, e);
-        }
     }
 }

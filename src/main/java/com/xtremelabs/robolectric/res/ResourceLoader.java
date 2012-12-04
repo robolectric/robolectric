@@ -9,7 +9,6 @@ import android.graphics.drawable.*;
 import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
-import android.view.ViewGroup;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.I18nException;
@@ -26,6 +25,7 @@ public class ResourceLoader {
 
     private List<ResourcePath> resourcePaths;
     private final ResourceExtractor resourceExtractor;
+
     private final ViewLoader viewLoader;
     private final MenuLoader menuLoader;
     private final PreferenceLoader preferenceLoader;
@@ -40,9 +40,13 @@ public class ResourceLoader {
     private final DrawableResourceLoader drawableResourceLoader;
     private final BoolResourceLoader boolResourceLoader;
     private final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
+
+    private final RoboLayoutInflater roboLayoutInflater;
+
     private boolean isInitialized = false;
     private boolean strictI18n = false;
     private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
+    private Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
     private String qualifiers = "";
 
     public static ResourcePath getSystemResourcePath(int sdkVersion, List<ResourcePath> resourcePaths) {
@@ -71,10 +75,12 @@ public class ResourceLoader {
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
         drawableResourceLoader = new DrawableResourceLoader(resourceExtractor);
         boolResourceLoader = new BoolResourceLoader(resourceExtractor);
-        viewLoader = new ViewLoader(resourceExtractor);
+        viewLoader = new ViewLoader(resourceExtractor, viewNodesByLayoutName);
         menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
         preferenceLoader = new PreferenceLoader(resourceExtractor);
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
+
+        roboLayoutInflater = new RoboLayoutInflater(resourceExtractor, viewNodesByLayoutName);
     }
 
     public ResourceLoader copy() {
@@ -303,19 +309,6 @@ public class ResourceLoader {
         return resourceExtractor.getResourceName(viewId);
     }
 
-    public View inflateView(Context context, int resource, ViewGroup viewGroup) {
-        init();
-
-        View viewNode = viewLoader.inflateView(context, resource, viewGroup);
-        if (viewNode != null) return viewNode;
-
-        throw new RuntimeException("Could not find layout " + resourceExtractor.getResourceName(resource));
-    }
-
-    public View inflateView(Context context, String layoutName, List<Attribute> attributes, ViewGroup parent) {
-        return viewLoader.inflateView(context, layoutName, attributes, parent);
-    }
-
     public int getColorValue(int id) {
         init();
 
@@ -513,13 +506,13 @@ public class ResourceLoader {
         return resourcePaths.get(0).assetsDir; // todo: do something better
     }
 
-    public ViewNode getLayoutViewNode(String layoutName) {
-        return viewLoader.viewNodesByLayoutName.get(layoutName);
+    ViewNode getLayoutViewNode(String layoutName) {
+        return viewNodesByLayoutName.get(layoutName);
     }
 
     public void setLayoutQualifierSearchPath(String... locations) {
         init();
-        viewLoader.setLayoutQualifierSearchPath(locations);
+        roboLayoutInflater.setLayoutQualifierSearchPath(Arrays.asList(locations));
     }
 
     public ResourceExtractor getResourceExtractor() {
@@ -528,6 +521,11 @@ public class ResourceLoader {
 
     ViewLoader getViewLoader() {
         return viewLoader;
+    }
+
+    public RoboLayoutInflater getRoboLayoutInflater() {
+        init();
+        return roboLayoutInflater;
     }
 
     private static class DirectoryMatchingFileFilter implements FileFilter {

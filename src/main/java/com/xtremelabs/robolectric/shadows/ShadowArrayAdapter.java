@@ -123,7 +123,7 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
         View view;
 
         if (convertView == null) {
-            view = getResourceLoader().inflateView(context,resource, null);
+            view = getResourceLoader().getRoboLayoutInflater().inflateView(context,resource, null);
         } else {
             view = convertView;
         }
