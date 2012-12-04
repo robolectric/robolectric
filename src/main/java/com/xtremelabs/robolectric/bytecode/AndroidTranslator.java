@@ -2,10 +2,10 @@ package com.xtremelabs.robolectric.bytecode;
 
 import android.net.Uri;
 import javassist.*;
+import javassist.Modifier;
 
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
+import java.lang.reflect.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class AndroidTranslator implements Translator {
@@ -16,9 +16,9 @@ public class AndroidTranslator implements Translator {
     public static final int CACHE_VERSION = 22;
 //    public static final int CACHE_VERSION = -1;
 
+    public static final String CLASS_HANDLER_DATA_FIELD_NAME = "__shadow__"; // todo: rename
     static final String STATIC_INITIALIZER_METHOD_NAME = "__staticInitializer__";
 
-    private final ClassHandler classHandler;
     private final ClassCache classCache;
     private final Setup setup;
 
@@ -39,8 +39,7 @@ public class AndroidTranslator implements Translator {
         }
     }
 
-    public AndroidTranslator(ClassHandler classHandler, ClassCache classCache, Setup setup) {
-        this.classHandler = classHandler;
+    public AndroidTranslator(ClassCache classCache, Setup setup) {
         this.classCache = classCache;
         this.setup = setup;
     }
@@ -84,7 +83,14 @@ public class AndroidTranslator implements Translator {
 
             if (ctClass.isInterface() || ctClass.isEnum()) return;
 
-            classHandler.instrument(ctClass);
+            CtClass objectClass = classPool.get(Object.class.getName());
+            try {
+                ctClass.getField(CLASS_HANDLER_DATA_FIELD_NAME);
+            } catch (NotFoundException e1) {
+                CtField field = new CtField(objectClass, CLASS_HANDLER_DATA_FIELD_NAME, ctClass);
+                field.setModifiers(java.lang.reflect.Modifier.PUBLIC);
+                ctClass.addField(field);
+            }
 
             CtClass superclass = ctClass.getSuperclass();
             if (!superclass.isFrozen()) {

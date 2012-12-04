@@ -1,10 +1,6 @@
 package com.xtremelabs.robolectric.bytecode;
 
-import javassist.CtClass;
-
 public interface ClassHandler {
-    void instrument(CtClass ctClass);
-
     void reset();
 
     void classInitializing(Class clazz);

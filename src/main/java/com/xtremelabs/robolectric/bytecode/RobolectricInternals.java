@@ -1,12 +1,16 @@
 package com.xtremelabs.robolectric.bytecode;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class RobolectricInternals {
     // initialized via magic by RobolectricContext
     private static ClassHandler classHandler;
+    private static final Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
 
     public static ClassHandler getClassHandler() {
         return classHandler;
@@ -81,6 +85,20 @@ public class RobolectricInternals {
 
     private static String desc(Object expectedInstance) {
         return (expectedInstance instanceof Class) ? "class " + ((Class) expectedInstance).getName() : "instance of " + expectedInstance.getClass().getName();
+    }
+
+    public static Field getShadowField(Object instance) {
+        Class clazz = instance.getClass();
+        Field field = shadowFieldMap.get(clazz);
+        if (field == null) {
+            try {
+                field = clazz.getField(AndroidTranslator.CLASS_HANDLER_DATA_FIELD_NAME);
+            } catch (NoSuchFieldException e) {
+                throw new RuntimeException(instance.getClass().getName() + " has no shadow field", e);
+            }
+            shadowFieldMap.put(clazz, field);
+        }
+        return field;
     }
 
     @SuppressWarnings({"UnusedDeclaration"})

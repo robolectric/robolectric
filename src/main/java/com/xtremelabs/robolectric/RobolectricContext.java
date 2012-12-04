@@ -88,7 +88,7 @@ public class RobolectricContext {
     }
 
     public AndroidTranslator createAndroidTranslator(ClassHandler classHandler, Setup setup, ClassCache classCache) {
-        return new AndroidTranslator(classHandler, classCache, setup);
+        return new AndroidTranslator(classCache, setup);
     }
 
     protected RobolectricConfig createRobolectricConfig() {

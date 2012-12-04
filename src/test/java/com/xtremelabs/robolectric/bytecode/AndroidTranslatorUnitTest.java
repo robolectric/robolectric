@@ -15,21 +15,19 @@ public class AndroidTranslatorUnitTest {
 
     @Test
     public void testOnLoadWithNonInstrumentedClass() throws Exception {
-        ClassHandler handler = mock(ClassHandler.class);
         ClassCache cache = mock(ClassCache.class);
 
-        AndroidTranslator translator = new AndroidTranslator(handler, cache, new Setup());
+        AndroidTranslator translator = new AndroidTranslator(cache, new Setup());
 
         translator.onLoad(classPool, "java.lang.Object");
         verify(cache).isWriting();
         verifyNoMoreInteractions(cache);
-        verifyZeroInteractions(handler);
     }
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowIllegalStateIfClassCacheIsWriting() throws Exception {
         ClassCache cache = mock(ClassCache.class);
         when(cache.isWriting()).thenReturn(true);
-        new AndroidTranslator(null, cache, new Setup()).onLoad(classPool, "java.lang.Object");
+        new AndroidTranslator(cache, new Setup()).onLoad(classPool, "java.lang.Object");
     }
 }

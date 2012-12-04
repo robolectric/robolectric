@@ -3,10 +3,6 @@ package com.xtremelabs.robolectric.bytecode;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.Join;
-import javassist.CannotCompileException;
-import javassist.CtClass;
-import javassist.CtField;
-import javassist.NotFoundException;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -15,7 +11,6 @@ import java.util.*;
 import static java.util.Arrays.asList;
 
 public class ShadowWrangler implements ClassHandler {
-    public static final String SHADOW_FIELD_NAME = "__shadow__";
     private static final int MAX_CALL_DEPTH = 200;
     private static final boolean STRIP_SHADOW_STACK_TRACES = true;
 
@@ -26,7 +21,6 @@ public class ShadowWrangler implements ClassHandler {
     
     private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
     private Map<String, String> shadowClassMap = new HashMap<String, String>();
-    private Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
     private boolean logMissingShadowMethods = false;
     private static int callDepth = 0;
 
@@ -37,24 +31,6 @@ public class ShadowWrangler implements ClassHandler {
     @Override
     public void setStrictI18n(boolean strictI18n) {
         this.strictI18n = strictI18n;
-    }
-
-    @Override
-    public void instrument(CtClass ctClass) {
-        try {
-            CtClass objectClass = ctClass.getClassPool().get(Object.class.getName());
-            try {
-                ctClass.getField(SHADOW_FIELD_NAME);
-            } catch (NotFoundException e) {
-                CtField field = new CtField(objectClass, SHADOW_FIELD_NAME, ctClass);
-                field.setModifiers(Modifier.PUBLIC);
-                ctClass.addField(field);
-            }
-        } catch (CannotCompileException e) {
-            throw new RuntimeException(e);
-        } catch (NotFoundException e) {
-            throw new RuntimeException(e);
-        }
     }
 
     @Override
@@ -205,7 +181,7 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     public Object shadowFor(Object instance) {
-        Field field = getShadowField(instance);
+        Field field = RobolectricInternals.getShadowField(instance);
         field.setAccessible(true);
         Object shadow = readField(instance, field);
 
@@ -296,25 +272,11 @@ public class ShadowWrangler implements ClassHandler {
         return constructor;
     }
 
-    private Field getShadowField(Object instance) {
-        Class clazz = instance.getClass();
-        Field field = shadowFieldMap.get(clazz);
-        if (field == null) {
-            try {
-                field = clazz.getField(SHADOW_FIELD_NAME);
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(instance.getClass().getName() + " has no shadow field", e);
-            }
-            shadowFieldMap.put(clazz, field);
-        }
-        return field;
-    }
-
     public Object shadowOf(Object instance) {
         if (instance == null) {
             throw new NullPointerException("can't get a shadow for null");
         }
-        Field field = getShadowField(instance);
+        Field field = RobolectricInternals.getShadowField(instance);
         Object shadow = readField(instance, field);
         if (shadow == null) {
             shadow = shadowFor(instance);
