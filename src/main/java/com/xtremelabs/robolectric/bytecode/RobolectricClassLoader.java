@@ -9,11 +9,10 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Collections;
-import java.util.Enumeration;
-import java.util.List;
+import java.util.*;
 
 public class RobolectricClassLoader extends javassist.Loader {
+    private final Map<String, Class> classes = new HashMap<String, Class>();
     private final ClassCache classCache;
     private final Setup setup;
 
@@ -69,12 +68,29 @@ public class RobolectricClassLoader extends javassist.Loader {
     }
 
     @Override
-    protected Class findClass(String name) throws ClassNotFoundException {
-        byte[] classBytes = classCache.getClassBytesFor(name);
-        if (classBytes != null) {
-            return defineClass(name, classBytes, 0, classBytes.length);
+    synchronized protected Class findClass(String name) throws ClassNotFoundException {
+        Class<?> clazz = classes.get(name);
+
+        if (clazz == null) {
+            if (classes.containsKey(name)) throw new ClassNotFoundException(name);
+
+            byte[] classBytes = classCache.getClassBytesFor(name);
+
+            try {
+                if (classBytes != null) {
+                    clazz = defineClass(name, classBytes, 0, classBytes.length);
+                } else {
+                    clazz = super.findClass(name);
+                }
+
+                classes.put(name, clazz);
+            } catch (ClassNotFoundException e) {
+                classes.put(name, null);
+                throw e;
+            }
         }
-        return super.findClass(name);
+
+        return clazz;
     }
 
     @Nullable
