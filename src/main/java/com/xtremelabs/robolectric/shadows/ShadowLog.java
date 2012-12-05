@@ -5,11 +5,11 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
 import java.io.PrintStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Implements(Log.class)
 public class ShadowLog {
+    private static Map<String,List<LogItem>> logsByTag = new HashMap<String,List<LogItem>>();
     private static List<LogItem> logs = new ArrayList<LogItem>();
     public static PrintStream stream;
 
@@ -88,9 +88,20 @@ public class ShadowLog {
         if (stream != null) {
             logToStream(stream, level, tag, msg, throwable);
         }
-        logs.add(new LogItem(level, tag, msg, throwable));
+        
+        LogItem item = new LogItem(level, tag, msg, throwable);
+        List<LogItem> itemList = null;
+        
+        if (!logsByTag.containsKey(tag)) {
+        	itemList = new ArrayList<LogItem>();
+        	logsByTag.put(tag, itemList);
+        } else {
+        	itemList = logsByTag.get(tag);
+        }
+        
+        itemList.add(item);
+        logs.add(item);
     }
-
 
     private static void logToStream(PrintStream ps, int level, String tag, String msg, Throwable throwable) {
         final char c;
@@ -109,12 +120,27 @@ public class ShadowLog {
         }
     }
 
+    /**
+     * Non-Android accessor.  Returns ordered list of all log entries.
+     * @return
+     */
     public static List<LogItem> getLogs() {
-        return logs;
+    	return logs;
+    }
+    
+    /**
+     * Non-Android accessor.  Returns ordered list of all log items for a specific tag.
+     * 
+     * @param tag
+     * @return
+     */
+    public static List<LogItem> getLogsForTag( String tag ) {
+    	return logsByTag.get(tag);
     }
 
     public static void reset() {
         logs.clear();
+        logsByTag.clear();
     }
 
     public static class LogItem {
