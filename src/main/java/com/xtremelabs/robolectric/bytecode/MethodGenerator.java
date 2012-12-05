@@ -14,11 +14,14 @@ public class MethodGenerator {
     private static final Pattern ANONYMOUS_INNER_CLASS_NAME = Pattern.compile("\\$\\d+$");
 
     private final CtClass ctClass;
+    private final Set<Setup.MethodRef> methodsToIntercept;
+
     private CtClass objectCtClass;
     private Set<String> instrumentedMethods = new HashSet<String>();
 
-    public MethodGenerator(CtClass ctClass) {
+    public MethodGenerator(CtClass ctClass, Setup setup) {
         this.ctClass = ctClass;
+        this.methodsToIntercept = setup.methodsToIntercept();
 
         try {
             objectCtClass = ctClass.getClassPool().get(Object.class.getName());
@@ -408,6 +411,33 @@ public class MethodGenerator {
             staticInitializerMethod = classInitializer.toMethod(AndroidTranslator.STATIC_INITIALIZER_METHOD_NAME, ctClass);
         }
         staticInitializerMethod.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
+
+        if (!methodsToIntercept.isEmpty()) {
+            staticInitializerMethod.instrument(new ExprEditor() {
+                @Override
+                public void edit(MethodCall m) throws CannotCompileException {
+                    String methodName = m.getMethodName();
+                    Setup.MethodRef methodRef = new Setup.MethodRef(m.getClassName(), methodName);
+                    if (methodsToIntercept.contains(methodRef)) {
+                        try {
+                            CtMethod method = m.getMethod();
+                            StringBuilder buf = new StringBuilder();
+                            buf.append("$_ = ");
+                            buf.append(RobolectricInternals.class.getName());
+                            buf.append(".intercept($class, \"");
+                            buf.append(methodName);
+                            buf.append("\", (Object) $0, $args, ");
+                            appendParamArray(buf, method);
+                            buf.append(");");
+                            m.replace(buf.toString(), this);
+                        } catch (NotFoundException e) {
+                            throw new RuntimeException(e);
+                        }
+                    }
+                }
+            });
+        }
+
         ctClass.addMethod(staticInitializerMethod);
 
         ctClass.makeClassInitializer().setBody("{\n" +

@@ -116,6 +116,16 @@ public class RobolectricInternals {
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
+    public static Object intercept(Class clazz, String methodName, Object instance, Object[] paramTypes, Object[] params) throws Throwable {
+        try {
+            return classHandler.intercept(clazz, methodName, instance, paramTypes, params);
+        } catch(java.lang.LinkageError e) {
+            throw new Exception(e);
+        }
+    }
+
+
+    @SuppressWarnings({"UnusedDeclaration"})
     public static Object autobox(Object o) {
         return o;
     }

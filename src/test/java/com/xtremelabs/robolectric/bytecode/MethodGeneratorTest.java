@@ -12,15 +12,17 @@ import static org.junit.Assert.assertEquals;
 
 public class MethodGeneratorTest {
     private ClassPool classPool;
+    private Setup setup;
 
     @Before public void setUp() throws Exception {
         classPool = new ClassPool(true);
+        setup = new Setup();
     }
 
     @Test
     public void whenMethodReturnsObject_shouldGenerateMethodBody() throws Exception {
         CtClass ctClass = classPool.get("java.lang.String");
-        String methodBody = new MethodGenerator(ctClass).generateMethodBody(
+        String methodBody = new MethodGenerator(ctClass, setup).generateMethodBody(
                 ctClass.getDeclaredMethod("substring", new CtClass[]{CtClass.intType}),
                 ctClass, Type.OBJECT, false, false);
         assertEquals("if (!com.xtremelabs.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
@@ -34,7 +36,7 @@ public class MethodGeneratorTest {
     @Test
     public void whenMethodReturnsPrimitive_shouldGenerateMethodBody() throws Exception {
         CtClass ctClass = classPool.get("java.lang.String");
-        String methodBody = new MethodGenerator(ctClass).generateMethodBody(
+        String methodBody = new MethodGenerator(ctClass, setup).generateMethodBody(
                 ctClass.getDeclaredMethod("length"),
                 ctClass, Type.OBJECT, false, false);
         assertEquals("if (!com.xtremelabs.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
@@ -48,7 +50,7 @@ public class MethodGeneratorTest {
     @Test
     public void whenMethodReturnsVoid_shouldGenerateMethodBody() throws Exception {
         CtClass ctClass = classPool.get("java.lang.Object");
-        String methodBody = new MethodGenerator(ctClass).generateMethodBody(
+        String methodBody = new MethodGenerator(ctClass, setup).generateMethodBody(
                 ctClass.getDeclaredMethod("wait"),
                 ctClass, Type.VOID, false, false);
         assertEquals("if (!com.xtremelabs.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
@@ -61,7 +63,7 @@ public class MethodGeneratorTest {
     @Test
     public void whenMethodIsStatic_shouldGenerateMethodBody() throws Exception {
         CtClass ctClass = classPool.get("java.lang.String");
-        String methodBody = new MethodGenerator(ctClass).generateMethodBody(
+        String methodBody = new MethodGenerator(ctClass, setup).generateMethodBody(
                 ctClass.getDeclaredMethod("valueOf", new CtClass[]{CtClass.intType}),
                 ctClass, Type.OBJECT, true, false);
         assertEquals("if (!com.xtremelabs.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(java.lang.String.class)) {\n" +
@@ -74,7 +76,7 @@ public class MethodGeneratorTest {
 
     @Test
     public void shouldGenerateParameterList() throws Exception {
-        MethodGenerator methodGenerator = new MethodGenerator(classPool.getCtClass(Object.class.getName()));
+        MethodGenerator methodGenerator = new MethodGenerator(classPool.getCtClass(Object.class.getName()), setup);
         assertEquals(methodGenerator.makeParameterList(0), "");
         assertEquals(methodGenerator.makeParameterList(1), "$1");
         assertEquals(methodGenerator.makeParameterList(2), "$1, $2");
@@ -84,7 +86,7 @@ public class MethodGeneratorTest {
     public void shouldGenerateMethodBodyForEquals() throws Exception {
         CtClass subCtClass = classPool.get(TextView.class.getName());
         CtClass objectCtClass = classPool.get(Object.class.getName());
-        String methodBody = new MethodGenerator(subCtClass).generateMethodBody(
+        String methodBody = new MethodGenerator(subCtClass, setup).generateMethodBody(
                 objectCtClass.getDeclaredMethod("equals", new CtClass[]{objectCtClass}),
                 subCtClass, Type.BOOLEAN, false, true);
         assertEquals("if (!com.xtremelabs.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
@@ -99,7 +101,7 @@ public class MethodGeneratorTest {
     public void shouldGenerateMethodBodyForEqualsWithoutDirectBypassIfSuperclassIsNotInstrumented() throws Exception {
         CtClass subCtClass = classPool.get(View.class.getName());
         CtClass objectCtClass = classPool.get(Object.class.getName());
-        String methodBody = new MethodGenerator(subCtClass).generateMethodBody(
+        String methodBody = new MethodGenerator(subCtClass, setup).generateMethodBody(
                 objectCtClass.getDeclaredMethod("equals", new CtClass[]{objectCtClass}),
                 subCtClass, Type.BOOLEAN, false, true);
         assertEquals("if (!com.xtremelabs.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
@@ -112,7 +114,7 @@ public class MethodGeneratorTest {
     @Test
     public void shouldGenerateConstructorMethodBodyWhichCallsShadowWranglerInitAndThisConstructor() throws Exception {
         CtClass ctClass = classPool.get(View.class.getName());
-        String methodBody = new MethodGenerator(ctClass).generateConstructorBody(
+        String methodBody = new MethodGenerator(ctClass, setup).generateConstructorBody(
                 new CtClass[]{classPool.get(Context.class.getName())});
         assertEquals("{\n" +
                 "__constructor__($1);\n" +

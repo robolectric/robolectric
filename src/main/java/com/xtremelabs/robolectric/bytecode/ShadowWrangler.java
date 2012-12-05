@@ -129,6 +129,12 @@ public class ShadowWrangler implements ClassHandler {
         }
     }
 
+    @Override
+    public Object intercept(Class clazz, String methodName, Object instance, Object[] paramTypes, Object[] params) throws Throwable {
+        if (debug) System.out.println("DEBUG: intercepted call to " + clazz.getName() + "." + methodName + "(" + Join.join(", ", params) + ")");
+        return null;
+    }
+
     private <T extends Throwable> T stripStackTrace(T throwable) {
         if (STRIP_SHADOW_STACK_TRACES) {
             List<StackTraceElement> stackTrace = new ArrayList<StackTraceElement>();

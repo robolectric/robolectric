@@ -16,13 +16,14 @@ import com.xtremelabs.robolectric.util.DatabaseConfig;
 import com.xtremelabs.robolectric.util.I18nException;
 import javassist.CtClass;
 
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
+import static java.util.Arrays.asList;
 
 public class Setup {
     public List<Class<?>> getClassesToDelegateFromRcl() {
         //noinspection unchecked
-        return Arrays.asList(
+        return asList(
                 Uri__FromAndroid.class,
                 RobolectricTestRunnerInterface.class,
                 RealObject.class,
@@ -98,6 +99,12 @@ public class Setup {
         );
     }
 
+    public Set<MethodRef> methodsToIntercept() {
+        return Collections.unmodifiableSet(new HashSet<MethodRef>(asList(
+                new MethodRef(System.class, "loadLibrary")
+        )));
+    }
+
     public static class FakeSubclass {}
 
     /**
@@ -112,6 +119,40 @@ public class Setup {
             return FakeSubclass.class.getName();
         } else {
             return className;
+        }
+    }
+
+    public static class MethodRef {
+        private final String className;
+        private final String methodName;
+
+        public MethodRef(Class<?> clazz, String methodName) {
+            this(clazz.getName(), methodName);
+        }
+
+        public MethodRef(String className, String methodName) {
+            this.className = className;
+            this.methodName = methodName;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+
+            MethodRef methodRef = (MethodRef) o;
+
+            if (!className.equals(methodRef.className)) return false;
+            if (!methodName.equals(methodRef.methodName)) return false;
+
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            int result = className.hashCode();
+            result = 31 * result + methodName.hashCode();
+            return result;
         }
     }
 }
