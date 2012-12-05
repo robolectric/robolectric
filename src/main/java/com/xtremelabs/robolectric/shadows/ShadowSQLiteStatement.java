@@ -39,7 +39,7 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
             if (resultSet.next()) {
                 return resultSet.getLong(1);
             } else {
-                throw new RuntimeException("Could not retrive generatedKeys");
+                throw new RuntimeException("Could not retrieve generatedKeys");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
