@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
+import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.text.TextWatcher;
@@ -14,7 +15,6 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
-
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,6 +26,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 @Implements(TextView.class)
 public class ShadowTextView extends ShadowView {
     private CharSequence text = "";
+    private TextView.BufferType bufferType = TextView.BufferType.NORMAL;
     private CompoundDrawables compoundDrawablesImpl;
     private Integer textColorHexValue;
     private Integer hintColorHexValue;
@@ -61,54 +62,67 @@ public class ShadowTextView extends ShadowView {
         setText(getText().toString() + text);
     }
 
+    @Implementation
+    public void setText(int textResourceId) {
+        setText(getResources().getText(textResourceId));
+    }
+
+    @Implementation
+    public void setText(int textResourceId, TextView.BufferType type) {
+        setText(getResources().getText(textResourceId), type);
+    }
+
     @Implementation(i18nSafe=false)
     public void setText(CharSequence text) {
-    	sendBeforeTextChanged(text);
+        setText(text, bufferType);
+    }
 
-    	if (text == null) {
+    @Implementation
+    public void setText(CharSequence text, TextView.BufferType type) {
+        sendBeforeTextChanged(text);
+
+        if (text == null) {
             text = "";
         }
 
-    	CharSequence oldValue = this.text;
+        CharSequence oldValue = this.text;
         this.text = text;
+        this.bufferType = type;
 
         sendOnTextChanged(oldValue);
         sendAfterTextChanged();
     }
 
-    @Implementation
-    public void setText(int textResourceId) {
-    	sendBeforeTextChanged(text);
-
-    	CharSequence oldValue = this.text;
-        this.text = getResources().getText(textResourceId);
-
-    	sendOnTextChanged(oldValue);
-        sendAfterTextChanged();
-    }
-
     private void sendAfterTextChanged() {
-		for (TextWatcher watcher : watchers) {
+		    for (TextWatcher watcher : watchers) {
             watcher.afterTextChanged(new SpannableStringBuilder(getText()));
         }
-	}
+	  }
 
-	private void sendOnTextChanged(CharSequence oldValue) {
-		for (TextWatcher watcher : watchers) {
-    	    watcher.onTextChanged(text, 0, oldValue.length(), text.length());
+    private void sendOnTextChanged(CharSequence oldValue) {
+        for (TextWatcher watcher : watchers) {
+            watcher.onTextChanged(text, 0, oldValue.length(), text.length());
         }
-	}
+    }
 
-	private void sendBeforeTextChanged(CharSequence newValue) {
+    private void sendBeforeTextChanged(CharSequence newValue) {
         if (newValue == null) newValue = "";
-		for (TextWatcher watcher : watchers) {
-    		watcher.beforeTextChanged(this.text, 0, this.text.length(), newValue.length());
+        for (TextWatcher watcher : watchers) {
+            watcher.beforeTextChanged(this.text, 0, this.text.length(), newValue.length());
         }
-	}
+    }
 
     @Implementation
     public CharSequence getText() {
-        return text;
+        // Don't use a switch, you'll get an NPE on the bufferType shadow.
+        if (bufferType == TextView.BufferType.NORMAL) {
+            return text;
+        } else if (bufferType == TextView.BufferType.SPANNABLE) {
+            return new SpannableString(text);
+        } else {
+            throw new UnsupportedOperationException(
+                String.format("BufferType %s not yet supported!", bufferType));
+        }
     }
 
     @Implementation
