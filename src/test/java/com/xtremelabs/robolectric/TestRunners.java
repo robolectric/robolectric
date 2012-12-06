@@ -92,7 +92,7 @@ public class TestRunners {
                         public Setup createSetup() {
                             return new Setup() {
                                 @Override
-                                public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz) {
+                                public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz, String methodName, Class<?>[] paramClasses) {
                                     return true;
                                 }
                             };
@@ -113,7 +113,7 @@ public class TestRunners {
                         public Setup createSetup() {
                             return new Setup() {
                                 @Override
-                                public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz) {
+                                public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz, String methodName, Class<?>[] paramClasses) {
                                     return true;
                                 }
                             };

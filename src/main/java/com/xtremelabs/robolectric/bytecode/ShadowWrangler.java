@@ -95,7 +95,7 @@ public class ShadowWrangler implements ClassHandler {
 
             if (!hasShadowImplementation) {
                 reportNoShadowMethodFound(clazz, methodName, paramTypes);
-                if (invocationPlan.shouldDelegateToRealMethodWhenMethodShadowIsMissing(clazz)) {
+                if (invocationPlan.shouldDelegateToRealMethodWhenMethodShadowIsMissing()) {
                     if (callDepth > MAX_CALL_DEPTH) throw stripStackTrace(new StackOverflowError("too deep!"));
                     try {
                         callDepth++;
@@ -487,8 +487,11 @@ public class ShadowWrangler implements ClassHandler {
             }
         }
 
-        public boolean shouldDelegateToRealMethodWhenMethodShadowIsMissing(Class clazz) {
-            return setup.invokeApiMethodBodiesWhenShadowMethodIsMissing(clazz);
+        public boolean shouldDelegateToRealMethodWhenMethodShadowIsMissing() {
+            boolean delegateToReal = setup.invokeApiMethodBodiesWhenShadowMethodIsMissing(clazz, methodName, paramClasses);
+            System.out.println("DEBUG: Shall we invoke real method on " + clazz + "." + methodName + "("
+                    + Join.join(", ", paramClasses) + ")? " + (delegateToReal ? "yup!" : "nope!"));
+            return delegateToReal;
         }
     }
 

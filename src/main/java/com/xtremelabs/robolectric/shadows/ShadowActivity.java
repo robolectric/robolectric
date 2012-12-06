@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric.shadows;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -163,7 +164,12 @@ public class ShadowActivity extends ShadowContextWrapper {
     public Intent getIntent() {
         return intent;
     }
-    
+
+    @Implementation
+    public ComponentName getCallingActivity() {
+        return null;
+    }
+
     @Implementation
     public void setDefaultKeyMode(int keyMode) {
     	mDefaultKeyMode = keyMode;

@@ -64,6 +64,12 @@ public class ShadowLooper {
         return looperForThread.get();
     }
 
+    public void __constructor__() {
+    }
+
+    public void __constructor__(boolean quitAllowed) {
+    }
+
     @Implementation
     public void quit() {
         if (this == shadowOf(getMainLooper())) throw new RuntimeException("Main thread not allowed to quit");

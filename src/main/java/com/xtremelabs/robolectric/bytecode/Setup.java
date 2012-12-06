@@ -49,7 +49,7 @@ public class Setup {
     }
 
 
-    public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz) {
+    public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz, String methodName, Class<?>[] paramClasses) {
         return !isFromAndroidSdk(clazz);
     }
 
