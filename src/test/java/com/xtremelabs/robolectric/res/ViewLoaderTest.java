@@ -1,11 +1,13 @@
 package com.xtremelabs.robolectric.res;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.pm.ActivityInfo;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
+import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewGroup;
 import android.webkit.WebView;
@@ -350,6 +352,19 @@ public class ViewLoaderTest {
         CustomView2 innerCustomView = (CustomView2) outerCustomView.getChildAt(0);
         assertThat(outerCustomView.childCountAfterInflate, equalTo(1));
         assertThat(innerCustomView.childCountAfterInflate, equalTo(3));
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    public static class CustomView3 extends TextView {
+        public CustomView3(Context context) { super(context); }
+        public CustomView3(Context context, AttributeSet attrs) { super(context, attrs); }
+        public CustomView3(Context context, AttributeSet attrs, int defStyle) { super(context, attrs, defStyle); }
+    }
+
+    @Test
+    public void shouldInflateViewsWithClassAttr() throws Exception {
+        CustomView3 outerCustomView = (CustomView3) inflate("layout/custom_layout3");
+        assertThat(outerCustomView.getText().toString(), equalTo("Hello bonjour"));
     }
 
     @Test

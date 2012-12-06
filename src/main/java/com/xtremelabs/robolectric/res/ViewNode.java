@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
+import com.xtremelabs.robolectric.tester.android.util.ResName;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 
 import java.lang.reflect.Constructor;
@@ -138,6 +139,14 @@ public class ViewNode {
     }
 
     private Class<? extends View> pickViewClass() {
+        String name = this.name;
+
+        if ("view".equals(name)) {
+            Attribute attribute = Attribute.find(attributes, new ResName("", "attr", "class"));
+            if (attribute == null) throw new RuntimeException("no class attr for node " + this);
+            name = attribute.value;
+        }
+
         Class<? extends View> clazz = loadViewClass(name);
         if (clazz == null) {
             clazz = loadViewClass("android.view." + name);
