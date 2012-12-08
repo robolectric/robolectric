@@ -73,17 +73,16 @@ public class MenuLoader extends XmlLoader {
     }
 
     private static boolean childToIgnore(Node nodei) {
-        return isEmpty(nodei.getNodeName())
-                || nodei.getNodeName().startsWith("#");
+        return isEmpty(nodei.getNodeName()) || nodei.getNodeName().startsWith("#");
+    }
+
+    public static boolean isEmpty(CharSequence str) {
+        return str == null || str.length() == 0;
     }
 
     private static boolean validChildren(Node nodei) {
         return nodei.getNodeName().equals("item")
                 || nodei.getNodeName().equals("menu")
                 || nodei.getNodeName().equals("group");
-    }
-
-    public static boolean isEmpty(CharSequence str) {
-        return str == null || str.length() == 0;
     }
 }

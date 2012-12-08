@@ -18,7 +18,7 @@ public class ShadowWrangler implements ClassHandler {
 
     public boolean debug = false;
     private boolean strictI18n = false;
-    
+
     private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
     private Map<String, String> shadowClassMap = new HashMap<String, String>();
     private boolean logMissingShadowMethods = false;
@@ -43,7 +43,7 @@ public class ShadowWrangler implements ClassHandler {
         Class<?> shadowClass = findDirectShadowClass(clazz);
         if (shadowClass != null) {
             try {
-                Method method = shadowClass.getMethod(AndroidTranslator.STATIC_INITIALIZER_METHOD_NAME);
+                Method method = shadowClass.getMethod(InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME);
                 if (!Modifier.isStatic(method.getModifiers())) {
                     throw new RuntimeException(shadowClass.getName() + "." + method.getName() + " is not static");
                 }
@@ -84,48 +84,48 @@ public class ShadowWrangler implements ClassHandler {
 
     @Override
     public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Exception {
-        InvocationPlan invocationPlan = new InvocationPlan(clazz, methodName, instance, paramTypes);
+        if (callDepth > MAX_CALL_DEPTH) throw stripStackTrace(new StackOverflowError("too deep!"));
         try {
-            boolean hasShadowImplementation = invocationPlan.prepare();
-            if (debug) {
-                System.out.println(indent(callDepth) + " -> " +
-                        clazz.getName() + "." + methodName + "(" + Join.join(", ", paramTypes) + "): "
-                        + (hasShadowImplementation ? "shadowed by " + (invocationPlan.shadow == null ? "?" : invocationPlan.shadow.getClass().getName()) : "direct"));
-            }
-
-            if (!hasShadowImplementation) {
-                reportNoShadowMethodFound(clazz, methodName, paramTypes);
-                if (invocationPlan.shouldDelegateToRealMethodWhenMethodShadowIsMissing()) {
-                    if (callDepth > MAX_CALL_DEPTH) throw stripStackTrace(new StackOverflowError("too deep!"));
-                    try {
-                        callDepth++;
-                        return invocationPlan.callOriginal(params);
-                    } finally {
-                        callDepth--;
-                    }
-                } else {
-                    return null;
+            callDepth++;
+            InvocationPlan invocationPlan = new InvocationPlan(clazz, methodName, instance, paramTypes);
+            try {
+                boolean hasShadowImplementation = invocationPlan.prepare();
+                if (debug) {
+                    System.out.println(indent(callDepth) + " -> " +
+                            clazz.getName() + "." + methodName + "(" + Join.join(", ", paramTypes) + "): "
+                            + (hasShadowImplementation ? "shadowed by " + (invocationPlan.shadow == null ? "?" : invocationPlan.shadow.getClass().getName()) : "direct"));
                 }
-            }
 
-            // todo: a little strange that this lives here...
-            if (strictI18n && !invocationPlan.isI18nSafe()) {
-                throw new I18nException("Method " + methodName + " on class " + clazz.getName() + " is not i18n-safe.");
-            }
+                if (!hasShadowImplementation) {
+                    reportNoShadowMethodFound(clazz, methodName, paramTypes);
+                    if (invocationPlan.shouldDelegateToRealMethodWhenMethodShadowIsMissing()) {
+                        return invocationPlan.callOriginal(params);
+                    } else {
+                        return null;
+                    }
+                }
 
-            return invocationPlan.getMethod().invoke(invocationPlan.getShadow(), params);
-        } catch (IllegalArgumentException e) {
-            Object shadow = invocationPlan.getShadow();
-            Class<? extends Object> aClass = shadow == null ? null:shadow.getClass();
-            String aClassName = aClass == null ? "<unknown class>":aClass.getName();
-            throw new RuntimeException(aClassName + " is not assignable from " +
-                    invocationPlan.getDeclaredShadowClass().getName(), e);
-        } catch (InvocationTargetException e) {
-            Throwable cause = e.getCause();
-            if (cause instanceof Exception) {
-                throw stripStackTrace((Exception) cause);
+                // todo: a little strange that this lives here...
+                if (strictI18n && !invocationPlan.isI18nSafe()) {
+                    throw new I18nException("Method " + methodName + " on class " + clazz.getName() + " is not i18n-safe.");
+                }
+
+                return invocationPlan.getMethod().invoke(invocationPlan.getShadow(), params);
+            } catch (IllegalArgumentException e) {
+                Object shadow = invocationPlan.getShadow();
+                Class<? extends Object> aClass = shadow == null ? null:shadow.getClass();
+                String aClassName = aClass == null ? "<unknown class>":aClass.getName();
+                throw new RuntimeException(aClassName + " is not assignable from " +
+                        invocationPlan.getDeclaredShadowClass().getName(), e);
+            } catch (InvocationTargetException e) {
+                Throwable cause = e.getCause();
+                if (cause instanceof Exception) {
+                    throw stripStackTrace((Exception) cause);
+                }
+                throw new RuntimeException(cause);
             }
-            throw new RuntimeException(cause);
+        } finally {
+            callDepth--;
         }
     }
 
@@ -344,7 +344,7 @@ public class ShadowWrangler implements ClassHandler {
         public Object getShadow() {
             return shadow;
         }
-        
+
         public boolean isI18nSafe() {
         	// method is loaded by another class loader. So do everything reflectively.
         	Annotation[] annos = method.getAnnotations();
@@ -359,8 +359,8 @@ public class ShadowWrangler implements ClassHandler {
 					}
         		}
         	}
-        	
-        	return true;	
+
+        	return true;
         }
 
         public boolean prepare() {
@@ -374,12 +374,17 @@ public class ShadowWrangler implements ClassHandler {
             }
 
             if (methodName.equals("<init>")) {
-                methodName = "__constructor__";
+                methodName = InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME;
             }
 
             if (instance != null) {
                 shadow = shadowFor(instance);
-                method = getMethod(shadow.getClass(), methodName, paramClasses);
+                String directShadowMethodName = RobolectricInternals.directMethodName(declaredShadowClass.getName(), methodName);
+
+                method = getMethod(shadow.getClass(), directShadowMethodName, paramClasses);
+                if (method == null) {
+                    method = getMethod(shadow.getClass(), methodName, paramClasses);
+                }
             } else {
                 shadow = null;
                 method = getMethod(findShadowClass(clazz), methodName, paramClasses);
@@ -416,7 +421,7 @@ public class ShadowWrangler implements ClassHandler {
 
         private Class<?> findDeclaringClassForMethod(String methodName, Class<?>[] paramClasses, Class<?> originalClass) {
             Class<?> declaringClass;
-            if (this.methodName.equals("<init>")) {
+            if (this.methodName.equals(InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME)) {
                 declaringClass = originalClass;
             } else {
                 Method originalMethod;
@@ -478,9 +483,8 @@ public class ShadowWrangler implements ClassHandler {
 
         public Object callOriginal(Object[] params) throws InvocationTargetException, IllegalAccessException {
             try {
-                Method method = clazz.getDeclaredMethod(methodName, paramClasses);
+                Method method = clazz.getDeclaredMethod(RobolectricInternals.directMethodName(clazz.getName(), methodName), paramClasses);
                 method.setAccessible(true);
-                RobolectricInternals.directlyOn(instance == null ? clazz : instance);
                 return method.invoke(instance, params);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);

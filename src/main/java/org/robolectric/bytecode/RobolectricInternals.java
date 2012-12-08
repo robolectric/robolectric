@@ -1,8 +1,6 @@
 package org.robolectric.bytecode;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,13 +46,18 @@ public class RobolectricInternals {
         }
     }
 
+    public static <T> T directlyOn(T shadowedObject, Class<T> clazz) {
+        return newInstance(clazz, new Class[]{DirectObjectMarker.class, clazz},
+                new Object[]{DirectObjectMarker.INSTANCE, shadowedObject});
+    }
+
     public static <T> T directlyOn(T shadowedObject) {
         Vars vars = getVars();
 
         if (vars.callDirectly != null) {
             Object expectedInstance = vars.callDirectly;
             vars.callDirectly = null;
-            throw new RuntimeException("already expecting a direct call on <" + expectedInstance + "> but here's a new request for <" + shadowedObject + ">", vars.stackTraceThrowable);
+            throw new RuntimeException("already expecting a direct call on <" + desc(expectedInstance) + "> but here's a new request for <" + desc(shadowedObject) + ">", vars.stackTraceThrowable);
         }
 
         vars.callDirectly = shadowedObject;
@@ -83,8 +86,8 @@ public class RobolectricInternals {
         }
     }
 
-    private static String desc(Object expectedInstance) {
-        return (expectedInstance instanceof Class) ? "class " + ((Class) expectedInstance).getName() : "instance of " + expectedInstance.getClass().getName();
+    private static String desc(Object o) {
+        return (o instanceof Class) ? "class " + ((Class) o).getName() : "instance " + System.identityHashCode(o) + " of " + o.getClass().getName();
     }
 
     public static Field getShadowField(Object instance) {
@@ -92,7 +95,7 @@ public class RobolectricInternals {
         Field field = shadowFieldMap.get(clazz);
         if (field == null) {
             try {
-                field = clazz.getField(AndroidTranslator.CLASS_HANDLER_DATA_FIELD_NAME);
+                field = clazz.getField(InstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME);
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException(instance.getClass().getName() + " has no shadow field", e);
             }
@@ -168,5 +171,16 @@ public class RobolectricInternals {
     @SuppressWarnings({"UnusedDeclaration"})
     public static Object autobox(double o) {
         return o;
+    }
+
+    public static String directMethodName(String methodName) {
+        return String.format("$$robo$$%s", methodName);
+    }
+
+    public static String directMethodName(String className, String methodName) {
+        String simpleName = className;
+        int lastDotIndex = simpleName.lastIndexOf(".");
+        if (lastDotIndex != -1) simpleName = simpleName.substring(lastDotIndex + 1);
+        return String.format("$$robo$$%s_%04x_%s", simpleName, className.hashCode() & 0xffff, methodName);
     }
 }

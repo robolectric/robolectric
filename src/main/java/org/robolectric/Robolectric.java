@@ -261,7 +261,7 @@ public class Robolectric {
                 ShadowFrameLayout.class,
                 ShadowGallery.class,
                 ShadowGeocoder.class,
-                ShadowGeoPoint.class,
+                //ShadowGeoPoint.class,
                 ShadowGestureDetector.class,
                 ShadowGridView.class,
                 ShadowHandler.class,
@@ -275,7 +275,7 @@ public class Robolectric {
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowIntentFilterAuthorityEntry.class,
-                ShadowItemizedOverlay.class,
+                //ShadowItemizedOverlay.class,
                 ShadowLayoutAnimationController.class,
                 ShadowJsPromptResult.class,
                 ShadowJsResult.class,
@@ -297,9 +297,9 @@ public class Robolectric {
                 ShadowLocationManager.class,
                 ShadowLog.class,
                 ShadowLooper.class,
-                ShadowMapController.class,
-                ShadowMapActivity.class,
-                ShadowMapView.class,
+                //ShadowMapController.class,
+                //ShadowMapActivity.class,
+                //ShadowMapView.class,
                 ShadowMarginLayoutParams.class,
                 ShadowMatrix.class,
                 ShadowMatrixCursor.class,
@@ -319,7 +319,7 @@ public class Robolectric {
                 ShadowNfcAdapter.class,
                 ShadowNotificationManager.class,
                 ShadowNetworkInfo.class,
-                ShadowOverlayItem.class,
+                //ShadowOverlayItem.class,
                 ShadowObjectAnimator.class,
                 ShadowPagerAdapter.class,
                 ShadowPaint.class,
@@ -434,7 +434,7 @@ public class Robolectric {
         Robolectric.application = null;
         ShadowBitmapFactory.reset();
         ShadowDrawable.reset();
-        ShadowMediaStore.reset();
+//        ShadowMediaStore.reset();
         ShadowLog.reset();
         ShadowContext.clearFilesAndCache();
         ShadowLooper.resetThreadLoopers();
@@ -448,6 +448,10 @@ public class Robolectric {
 
     public static <T> T directlyOn(T shadowedObject) {
         return RobolectricInternals.directlyOn(shadowedObject);
+    }
+
+    public static <T> T directlyOn(T shadowedObject, Class<T> clazz) {
+        return RobolectricInternals.directlyOn(shadowedObject, clazz);
     }
 
     public static ShadowAbsListView shadowOf(AbsListView instance) {

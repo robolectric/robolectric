@@ -2,6 +2,7 @@ package org.robolectric.bytecode;
 
 import android.R;
 import android.net.Uri__FromAndroid;
+import javassist.CtClass;
 import org.robolectric.AndroidManifest;
 import org.robolectric.RobolectricContext;
 import org.robolectric.annotation.DisableStrictI18n;
@@ -15,6 +16,7 @@ import org.robolectric.res.ResourcePath;
 import org.robolectric.util.DatabaseConfig;
 import org.robolectric.util.I18nException;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
@@ -23,31 +25,44 @@ import java.util.Set;
 import static java.util.Arrays.asList;
 
 public class Setup {
-    public List<Class<?>> getClassesToDelegateFromRcl() {
-        //noinspection unchecked
-        return asList(
-                Uri__FromAndroid.class,
-                RobolectricTestRunnerInterface.class,
-                RealObject.class,
-                ShadowWrangler.class,
-                Vars.class,
-                AndroidManifest.class,
-                DatabaseConfig.DatabaseMap.class,
-                R.class,
+    public static final List<String> CLASSES_TO_ALWAYS_DELEGATE = stringify(
+            Uri__FromAndroid.class,
+            RobolectricTestRunnerInterface.class,
+            RealObject.class,
+            ShadowWrangler.class,
+            Vars.class,
+            AndroidManifest.class,
+            DatabaseConfig.DatabaseMap.class,
+            R.class,
 
-                RobolectricClassLoader.class,
-                RobolectricContext.class,
-                RobolectricContext.Factory.class,
-                ResourcePath.class,
-                AndroidTranslator.class,
-                ClassHandler.class,
-                Instrument.class,
-                DoNotInstrument.class,
-                Values.class,
-                EnableStrictI18n.class,
-                DisableStrictI18n.class,
-                I18nException.class
-        );
+            org.robolectric.bytecode.InstrumentingClassLoader.class,
+            org.robolectric.bytecode.JavassistInstrumentingClassLoader.class,
+            org.robolectric.bytecode.AsmInstrumentingClassLoader.class,
+            RobolectricContext.class,
+            RobolectricContext.Factory.class,
+            ResourcePath.class,
+            AndroidTranslator.class,
+            ClassHandler.class,
+            Instrument.class,
+            DoNotInstrument.class,
+            Values.class,
+            EnableStrictI18n.class,
+            DisableStrictI18n.class,
+            I18nException.class,
+            org.robolectric.bytecode.DirectObjectMarker.class
+    );
+
+    private static List<String> stringify(Class... classes) {
+        ArrayList<String> strings = new ArrayList<String>();
+        for (Class aClass : classes) {
+            strings.add(aClass.getName());
+        }
+        return strings;
+    }
+
+    public List<String> getClassesToDelegateFromRcl() {
+        //noinspection unchecked
+        return CLASSES_TO_ALWAYS_DELEGATE;
     }
 
 
@@ -65,7 +80,18 @@ public class Setup {
         }
 
         return false;
+    }
 
+    public boolean shouldInstrument(Class clazz) {
+        if (clazz.isInterface() || clazz.isAnnotation() || clazz.getAnnotation(DoNotInstrument.class) != null) {
+            return false;
+        }
+
+        if (isFromAndroidSdk(clazz)) {
+            return true;
+        }
+
+        return false;
     }
 
     public boolean isFromAndroidSdk(ClassInfo classInfo) {
@@ -93,6 +119,13 @@ public class Setup {
     public boolean shouldAcquire(String name) {
         return !(
                 name.matches(".*\\.R(|\\$[a-z]+)$")
+                        || CLASSES_TO_ALWAYS_DELEGATE.contains(name)
+                        || name.startsWith("java.")
+                        || name.startsWith("javax.")
+                        || name.startsWith("sun.")
+                        || name.startsWith("com.sun.")
+                        || name.startsWith("org.w3c.")
+                        || name.startsWith("org.xml.")
                         || name.startsWith("org.junit")
                         || name.startsWith("org.hamcrest")
                         || name.startsWith("org.specs2") // allows for android projects with mixed scala\java tests to be

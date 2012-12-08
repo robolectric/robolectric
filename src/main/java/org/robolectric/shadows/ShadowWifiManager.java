@@ -44,9 +44,9 @@ public class ShadowWifiManager {
     @Implementation
     public WifiInfo getConnectionInfo() {
         checkAccessWifiStatePermission();
-        if (wifiInfo == null) {
-            wifiInfo = Robolectric.newInstanceOf(WifiInfo.class);
-        }
+        //if (wifiInfo == null) {
+        //    wifiInfo = Robolectric.newInstanceOf(WifiInfo.class);
+        //}
         return wifiInfo;
     }
 

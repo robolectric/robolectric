@@ -5,23 +5,30 @@ import javassist.ClassPool;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 import org.jetbrains.annotations.Nullable;
+import org.robolectric.bytecode.AndroidTranslator;
+import org.robolectric.bytecode.ClassCache;
+import org.robolectric.bytecode.InstrumentingClassLoader;
+import org.robolectric.bytecode.Setup;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
-public class RobolectricClassLoader extends javassist.Loader {
+public class JavassistInstrumentingClassLoader extends javassist.Loader implements InstrumentingClassLoader {
     private final Map<String, Class> classes = new HashMap<String, Class>();
     private final ClassCache classCache;
     private final Setup setup;
 
-    public RobolectricClassLoader(ClassLoader classLoader, ClassCache classCache, AndroidTranslator androidTranslator, Setup setup) {
+    public JavassistInstrumentingClassLoader(ClassLoader classLoader, ClassCache classCache, AndroidTranslator androidTranslator, Setup setup) {
         super(classLoader, null);
         this.setup = setup;
 
-        List<String> classesToDelegate = setup.getClassesToDelegateFromRcl();
-        for (String className : classesToDelegate) {
+        for (String className : setup.getClassesToDelegateFromRcl()) {
             delegateLoadingOf(className);
         }
 
@@ -31,8 +38,8 @@ public class RobolectricClassLoader extends javassist.Loader {
             ClassPool classPool = new ClassPool();
             classPool.appendClassPath(new LoaderClassPath(classLoader));
 
-            if (classLoader != RobolectricClassLoader.class.getClassLoader()) {
-                classPool.appendClassPath(new LoaderClassPath(RobolectricClassLoader.class.getClassLoader()));
+            if (classLoader != JavassistInstrumentingClassLoader.class.getClassLoader()) {
+                classPool.appendClassPath(new LoaderClassPath(JavassistInstrumentingClassLoader.class.getClassLoader()));
             }
 
             addTranslator(classPool, androidTranslator);
@@ -98,20 +105,20 @@ public class RobolectricClassLoader extends javassist.Loader {
     public URL getResource(String s) {
         URL resource = super.getResource(s);
         if (resource != null) return resource;
-        return RobolectricClassLoader.class.getClassLoader().getResource(s);
+        return JavassistInstrumentingClassLoader.class.getClassLoader().getResource(s);
     }
 
     @Override
     public InputStream getResourceAsStream(String s) {
         InputStream resourceAsStream = super.getResourceAsStream(s);
         if (resourceAsStream != null) return resourceAsStream;
-        return RobolectricClassLoader.class.getClassLoader().getResourceAsStream(s);
+        return JavassistInstrumentingClassLoader.class.getClassLoader().getResourceAsStream(s);
     }
 
     @Override
     public Enumeration<URL> getResources(String s) throws IOException {
         List<URL> resources = Collections.list(super.getResources(s));
         if (!resources.isEmpty()) return Collections.enumeration(resources);
-        return RobolectricClassLoader.class.getClassLoader().getResources(s);
+        return JavassistInstrumentingClassLoader.class.getClassLoader().getResources(s);
     }
 }

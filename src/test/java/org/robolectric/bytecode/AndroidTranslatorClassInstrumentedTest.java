@@ -43,7 +43,7 @@ public class AndroidTranslatorClassInstrumentedTest {
 
     /*
      * Test "foreign class" getting its methods shadowed whe it's
-     * in the RobolectricClassLoader CustomClassNames arrayList
+     * in the InstrumentingClassLoader CustomClassNames arrayList
      */
     @Test
     public void testCustomMethodShadowed() throws Exception {
@@ -56,7 +56,7 @@ public class AndroidTranslatorClassInstrumentedTest {
 
     /*
      * Test "foreign class" not getting its methods shadowed when it's
-     * not in the RobolectricClassLoader CustomClassNames arrayList
+     * not in the InstrumentingClassLoader CustomClassNames arrayList
      */
     @Test
     public void testCustomMethodNotShadowed() throws Exception {

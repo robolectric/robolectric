@@ -2,11 +2,15 @@ package org.robolectric;
 
 import android.app.Application;
 import android.content.res.Resources;
+import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.Statement;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
 import org.robolectric.annotation.Values;
 import org.robolectric.bytecode.ClassHandler;
-import org.robolectric.bytecode.RobolectricClassLoader;
+import org.robolectric.bytecode.InstrumentingClassLoader;
 import org.robolectric.internal.RobolectricTestRunnerInterface;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
@@ -19,10 +23,6 @@ import org.robolectric.util.DatabaseConfig;
 import org.robolectric.util.DatabaseConfig.DatabaseMap;
 import org.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import org.robolectric.util.SQLiteMap;
-import org.junit.runners.BlockJUnit4ClassRunner;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.Statement;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,7 +38,8 @@ import java.util.Map;
 import static org.robolectric.Robolectric.shadowOf;
 
 /**
- * Installs a {@link RobolectricClassLoader} and {@link org.robolectric.res.ResourceLoader} in order to
+ * Installs a {@link org.robolectric.bytecode.InstrumentingClassLoader} and
+ * {@link org.robolectric.res.ResourceLoader} in order to
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
@@ -83,7 +84,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     protected static boolean isBootstrapped(Class<?> clazz) {
-        return clazz.getClassLoader() instanceof RobolectricClassLoader;
+        return clazz.getClassLoader() instanceof InstrumentingClassLoader;
     }
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
@@ -126,7 +127,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         setupLogging();
         configureShadows(method);
 
-        Robolectric.resetStaticState();
         resetStaticState();
 
         DatabaseConfig.setDatabaseMap(databaseMap); //Set static DatabaseMap in DBConfig
@@ -218,6 +218,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * Override this method to reset the state of static members before each test.
      */
     protected void resetStaticState() {
+        Robolectric.resetStaticState();
     }
 
     private String determineResourceQualifiers(Method method) {
@@ -414,7 +415,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return resourceLoader;
     }
 
-    // this method must live on a RobolectricClassLoader-loaded class, so it can't be on RobolectricContext
+    // this method must live on a InstrumentingClassLoader-loaded class, so it can't be on RobolectricContext
     protected ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
         Map<String, ResourceLoader> resourceLoaders = new HashMap<String, ResourceLoader>();
 
