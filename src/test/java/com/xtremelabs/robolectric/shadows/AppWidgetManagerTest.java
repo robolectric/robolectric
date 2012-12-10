@@ -103,6 +103,14 @@ public class AppWidgetManagerTest {
         assertEquals(null, appWidgetManager.getAppWidgetInfo(27));
     }
 
+    @Test
+    public void bindAppWidgetIdifAllowed_shouldReturnThePresetBoolean() throws Exception {
+        shadowAppWidgetManager.setAllowedToBindAppWidgets(false);
+        assertEquals(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), false);
+        shadowAppWidgetManager.setAllowedToBindAppWidgets(true);
+        assertEquals(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), true);
+    }
+
     private void assertContains(String expectedText, View view) {
         String actualText = shadowOf(view).innerText();
         assertTrue("Expected <" + actualText + "> to contain <" + expectedText + ">", actualText.contains(expectedText));

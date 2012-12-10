@@ -52,6 +52,7 @@ public class ShadowAppWidgetManager {
     private int nextWidgetId = 1;
     private boolean alwaysRecreateViewsDuringUpdate = false;
     private Map<Integer, AppWidgetProviderInfo> appWidgetProviderInfoForId = new HashMap<Integer, AppWidgetProviderInfo>();
+    private boolean allowedToBindWidgets;
 
     private static void bind(AppWidgetManager appWidgetManager, Context context) {
         // todo: implement
@@ -119,6 +120,11 @@ public class ShadowAppWidgetManager {
     @Implementation
     public AppWidgetProviderInfo getAppWidgetInfo(int appWidgetId) {
         return appWidgetProviderInfoForId.get(appWidgetId);
+    }
+
+    @Implementation
+    public boolean bindAppWidgetIdIfAllowed(int appWidgetId, ComponentName provider) {
+        return allowedToBindWidgets;
     }
 
     /**
@@ -219,6 +225,10 @@ public class ShadowAppWidgetManager {
 
     private WidgetInfo getWidgetInfo(int widgetId) {
         return widgetInfos.get(widgetId);
+    }
+
+    public void setAllowedToBindAppWidgets(boolean allowed) {
+        allowedToBindWidgets = allowed;
     }
 
     private class WidgetInfo {
