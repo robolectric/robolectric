@@ -6,6 +6,7 @@ import android.text.*;
 import android.text.method.ArrowKeyMovementMethod;
 import android.text.method.MovementMethod;
 import android.text.style.URLSpan;
+import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -384,6 +385,29 @@ public class TextViewTest {
     public void testHasSelectionReturnsFalse() {
         textView.setText("1");
         assertFalse(textView.hasSelection());
+    }
+
+    @Test
+    public void setTextSize_shouldHandleDips() throws Exception {
+        shadowOf(Robolectric.application.getResources()).setDensity(1.5f);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
+        assertThat(textView.getTextSize(), equalTo(15f));
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
+        assertThat(textView.getTextSize(), equalTo(30f));
+    }
+
+    @Test
+    public void setTextSize_shouldHandlePixels() throws Exception {
+        shadowOf(Robolectric.application.getResources()).setDensity(1.5f);
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 10);
+        assertThat(textView.getTextSize(), equalTo(10f));
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 20);
+        assertThat(textView.getTextSize(), equalTo(20f));
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void setTextSize_shouldThrowAnArgumentErrorForOtherUnits() throws Exception {
+        textView.setTextSize(TypedValue.COMPLEX_UNIT_MM, 13);
     }
 
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
