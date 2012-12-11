@@ -3,7 +3,6 @@ package com.xtremelabs.robolectric.shadows;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +32,20 @@ public class LooperTest {
         ShadowLooper.idleMainLooper(1999);
         assertFalse(wasRun[0]);
         ShadowLooper.idleMainLooper(1);
+        assertTrue(wasRun[0]);
+    }
+
+    @Test
+    public void idleConstantly_runsPostDelayedTasksImmediately() {
+        ShadowLooper.idleMainLooperConstantly(true);
+        final boolean[] wasRun = new boolean[]{false};
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                wasRun[0] = true;
+            }
+        }, 2000);
+
         assertTrue(wasRun[0]);
     }
 
