@@ -15,11 +15,12 @@ import com.xtremelabs.robolectric.internal.RealObject;
  */
 @Implements(SQLiteOpenHelper.class)
 public class ShadowSQLiteOpenHelper {
-
     @RealObject private SQLiteOpenHelper realHelper;
     private static SQLiteDatabase database;
+    private String name;
 
     public void __constructor__(Context context, String name, CursorFactory factory, int version) {
+        this.name = name;
         if (database != null) {
             database.close();
         }
@@ -54,5 +55,10 @@ public class ShadowSQLiteOpenHelper {
 
         realHelper.onOpen(database);
         return database;
+    }
+
+    @Implementation
+    public String getDatabaseName() {
+        return name;
     }
 }
