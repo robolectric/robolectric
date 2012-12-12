@@ -164,7 +164,7 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public void setTextSize(int unit, float value) {
-        if(unit == TypedValue.COMPLEX_UNIT_DIP) {
+        if(unit == TypedValue.COMPLEX_UNIT_DIP || unit == TypedValue.COMPLEX_UNIT_SP ) {
             textSize = value * getResources().getDisplayMetrics().density;
         } else if(unit == TypedValue.COMPLEX_UNIT_PX) {
             textSize = value;
