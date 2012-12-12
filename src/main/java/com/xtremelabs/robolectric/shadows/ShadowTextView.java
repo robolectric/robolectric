@@ -8,6 +8,7 @@ import android.text.method.MovementMethod;
 import android.text.method.TransformationMethod;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.inputmethod.EditorInfo;
@@ -159,6 +160,17 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public void setTextSize(float size) {
         textSize = size;
+    }
+
+    @Implementation
+    public void setTextSize(int unit, float value) {
+        if(unit == TypedValue.COMPLEX_UNIT_DIP) {
+            textSize = value * getResources().getDisplayMetrics().density;
+        } else if(unit == TypedValue.COMPLEX_UNIT_PX) {
+            textSize = value;
+        } else {
+            throw new IllegalArgumentException("ShadowTextView#setTextSize(int unit, float value) does not support that unit");
+        }
     }
 
     @Implementation

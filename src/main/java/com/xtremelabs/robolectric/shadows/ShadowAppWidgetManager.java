@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.view.View;
@@ -50,6 +51,8 @@ public class ShadowAppWidgetManager {
     private Map<Integer, WidgetInfo> widgetInfos = new HashMap<Integer, WidgetInfo>();
     private int nextWidgetId = 1;
     private boolean alwaysRecreateViewsDuringUpdate = false;
+    private Map<Integer, AppWidgetProviderInfo> appWidgetProviderInfoForId = new HashMap<Integer, AppWidgetProviderInfo>();
+    private boolean allowedToBindWidgets;
 
     private static void bind(AppWidgetManager appWidgetManager, Context context) {
         // todo: implement
@@ -108,6 +111,20 @@ public class ShadowAppWidgetManager {
             ids[i] = idList.get(i);
         }
         return ids;
+    }
+
+    public void putWidgetInfo(int appWidgetId, AppWidgetProviderInfo expectedWidgetInfo) {
+        this.appWidgetProviderInfoForId.put(appWidgetId, expectedWidgetInfo);
+    }
+
+    @Implementation
+    public AppWidgetProviderInfo getAppWidgetInfo(int appWidgetId) {
+        return appWidgetProviderInfoForId.get(appWidgetId);
+    }
+
+    @Implementation
+    public boolean bindAppWidgetIdIfAllowed(int appWidgetId, ComponentName provider) {
+        return allowedToBindWidgets;
     }
 
     /**
@@ -208,6 +225,10 @@ public class ShadowAppWidgetManager {
 
     private WidgetInfo getWidgetInfo(int widgetId) {
         return widgetInfos.get(widgetId);
+    }
+
+    public void setAllowedToBindAppWidgets(boolean allowed) {
+        allowedToBindWidgets = allowed;
     }
 
     private class WidgetInfo {

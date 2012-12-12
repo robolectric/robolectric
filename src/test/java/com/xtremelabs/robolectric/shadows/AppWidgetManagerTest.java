@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
@@ -93,13 +94,31 @@ public class AppWidgetManagerTest {
         assertEquals(expectedWidgetId, appWidgetIds[0]);
     }
 
+    @Test
+    public void getAppWidgetInfo_shouldReturnSpecifiedAppWidgetInfo() throws Exception {
+        AppWidgetProviderInfo expectedWidgetInfo = new AppWidgetProviderInfo(null);
+        shadowAppWidgetManager.putWidgetInfo(26, expectedWidgetInfo);
+
+        assertEquals(expectedWidgetInfo, appWidgetManager.getAppWidgetInfo(26));
+        assertEquals(null, appWidgetManager.getAppWidgetInfo(27));
+    }
+
+    @Test
+    public void bindAppWidgetIdifAllowed_shouldReturnThePresetBoolean() throws Exception {
+        shadowAppWidgetManager.setAllowedToBindAppWidgets(false);
+        assertEquals(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), false);
+        shadowAppWidgetManager.setAllowedToBindAppWidgets(true);
+        assertEquals(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), true);
+    }
+
     private void assertContains(String expectedText, View view) {
         String actualText = shadowOf(view).innerText();
         assertTrue("Expected <" + actualText + "> to contain <" + expectedText + ">", actualText.contains(expectedText));
     }
 
     public static class SpanishTestAppWidgetProvider extends AppWidgetProvider {
-        @Override public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
+        @Override
+        public void onUpdate(Context context, AppWidgetManager appWidgetManager, int[] appWidgetIds) {
             RemoteViews remoteViews = new RemoteViews(context.getPackageName(), R.layout.main);
             remoteViews.setTextViewText(R.id.subtitle, "Hola");
             appWidgetManager.updateAppWidget(appWidgetIds, remoteViews);
