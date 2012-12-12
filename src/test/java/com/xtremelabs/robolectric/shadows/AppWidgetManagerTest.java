@@ -111,6 +111,12 @@ public class AppWidgetManagerTest {
         assertEquals(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), true);
     }
 
+    @Test(expected = IllegalArgumentException.class)
+    public void bindAppWidgetIdIfAllowed_shouldThrowIllegalArgumentExceptionWhenPrompted() throws Exception {
+        shadowAppWidgetManager.setValidWidgetProviderComponentName(false);
+        shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", ""));
+    }
+
     private void assertContains(String expectedText, View view) {
         String actualText = shadowOf(view).innerText();
         assertTrue("Expected <" + actualText + "> to contain <" + expectedText + ">", actualText.contains(expectedText));
