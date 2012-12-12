@@ -1,19 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.Context;
-import android.content.res.Resources;
-import android.graphics.Bitmap;
-import android.graphics.Point;
-import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.Drawable;
-import android.util.AttributeSet;
-import android.view.*;
-import android.view.View.MeasureSpec;
-import android.view.animation.Animation;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static com.xtremelabs.robolectric.Robolectric.Reflection.newInstanceOf;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -21,8 +9,31 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.Robolectric.Reflection.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import android.content.Context;
+import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.Point;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.util.AttributeSet;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.TouchDelegate;
+import android.view.View;
+import android.view.View.MeasureSpec;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.view.ViewTreeObserver;
+import android.view.animation.Animation;
+import android.widget.AbsoluteLayout;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.internal.Implementation;
+import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 /**
  * Shadow implementation of {@code View} that simulates the behavior of this
@@ -234,7 +245,36 @@ public class ShadowView {
 
     @Implementation
     public void setLayoutParams(ViewGroup.LayoutParams params) {
+        if (params == null) {
+            throw new NullPointerException("Layout parameters cannot be null");
+        }
+        if (parent != null) {
+            assertLayoutParamsCompatibleWith(parent.realView, params);
+        }
         layoutParams = params;
+    }
+
+    @SuppressWarnings("deprecation")
+    private void assertLayoutParamsCompatibleWith(View view, ViewGroup.LayoutParams lp) {
+        if (RelativeLayout.class.isInstance(view)) {
+            assertLayoutParamsType(RelativeLayout.LayoutParams.class, lp);
+        } else if (LinearLayout.class.isInstance(view)) {
+            assertLayoutParamsType(LinearLayout.LayoutParams.class, lp);
+        } else if (FrameLayout.class.isInstance(view)) {
+            assertLayoutParamsType(FrameLayout.LayoutParams.class, lp);
+        } else if (AbsoluteLayout.class.isInstance(view)) {
+            assertLayoutParamsType(AbsoluteLayout.LayoutParams.class, lp);
+        }
+    }
+
+    private void assertLayoutParamsType(Class<? extends ViewGroup.LayoutParams> expected, ViewGroup.LayoutParams lp) {
+        if (!expected.isInstance(lp)) {
+            IllegalArgumentException err = new IllegalArgumentException(String.format(
+                            "Invalid LayoutParams provided.\n  Expected: %s\n  Got: %s",
+                            expected.getCanonicalName(), lp.getClass().getCanonicalName()
+                    ));
+            throw err;
+        }
     }
 
     @Implementation
