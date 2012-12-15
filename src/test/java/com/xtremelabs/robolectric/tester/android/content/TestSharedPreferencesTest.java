@@ -1,14 +1,18 @@
 package com.xtremelabs.robolectric.tester.android.content;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
-
-import java.util.HashMap;
-import java.util.Map;
 
 import android.content.SharedPreferences;
 
@@ -23,7 +27,16 @@ public class TestSharedPreferencesTest {
 	private HashMap<String, Map<String, Object>> content;
     private SharedPreferences.Editor editor;
     private TestSharedPreferences sharedPreferences;
-
+    
+    private static final Set<String> stringSet;
+    
+    static {
+    	stringSet = new HashSet<String>();
+    	stringSet.add( "string1" );
+    	stringSet.add( "string2" );
+    	stringSet.add( "string3" );
+    }
+    
     @Before
     public void setUp() {
         content = new HashMap<String, Map<String, Object>>();
@@ -35,6 +48,7 @@ public class TestSharedPreferencesTest {
         editor.putInt("int", 2);
         editor.putLong("long", 3l);
         editor.putString("string", "foobar");
+        editor.putStringSet( "stringSet", stringSet );
     }
 
     @Test
@@ -47,13 +61,14 @@ public class TestSharedPreferencesTest {
         assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(2));
         assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(3l));
         assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
+        assertThat(anotherSharedPreferences.getStringSet( "stringSet", null ), equalTo(stringSet ));
     }
 
     @Test
     public void getAll_shouldReturnAllValues() throws Exception {
         editor.commit();
         Map<String, ?> all = sharedPreferences.getAll();
-        assertThat(all.size(), equalTo(5));
+        assertThat(all.size(), equalTo(6));
         assertThat((Integer) all.get("int"), equalTo(2));
     }
 

@@ -9,23 +9,18 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
-import com.xtremelabs.robolectric.util.SQLite.SQLStringAndBindings;
+import com.xtremelabs.robolectric.util.SQLite.*;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.SQLite.buildDeleteString;
-import static com.xtremelabs.robolectric.util.SQLite.buildInsertString;
-import static com.xtremelabs.robolectric.util.SQLite.buildUpdateString;
-import static com.xtremelabs.robolectric.util.SQLite.buildWhereClause;
+import static com.xtremelabs.robolectric.util.SQLite.*;
 
 /**
  * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.
@@ -42,6 +37,7 @@ public class ShadowSQLiteDatabase  {
     private boolean inTransaction = false;
     private boolean transactionSuccess = false;
     private boolean throwOnInsert;
+    private Set<Cursor> cursors = new HashSet<Cursor>();
 
     @Implementation
     public void setLockingEnabled(boolean lockingEnabled) {
@@ -146,6 +142,7 @@ public class ShadowSQLiteDatabase  {
 
         SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
         shadowOf(cursor).setResultSet(resultSet,sql);
+        cursors.add(cursor);
         return cursor;
     }
 
@@ -273,6 +270,7 @@ public class ShadowSQLiteDatabase  {
           
         SQLiteCursor cursor = (SQLiteCursor) cursorFactory.newCursor(null, null, null, null);
         shadowOf(cursor).setResultSet(resultSet, sqlBody);
+        cursors.add(cursor);
         return cursor;
     }
     
@@ -370,9 +368,9 @@ public class ShadowSQLiteDatabase  {
         }
     }
     
-	   /**
-     * @param closable
-     */
+     /**
+      * @param closable
+      */
     void addSQLiteClosable(SQLiteClosable closable) {
         lock();
         try {
@@ -389,6 +387,14 @@ public class ShadowSQLiteDatabase  {
         } finally {
             unlock();
         }
-    }  
-    
+    }
+
+    public boolean hasOpenCursors() {
+        for (Cursor cursor : cursors) {
+            if(!cursor.isClosed()) {
+                return true;
+            }
+        }
+        return false;
+    }
 }

@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.ContentValues;
+import android.database.Cursor;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
 import com.xtremelabs.robolectric.util.SQLiteMap;
@@ -71,6 +72,16 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
         assertThat(secondId, equalTo(id));
         assertThat(firstResultSet.getString(1), equalTo(stringValueA));
         assertThat(secondResultSet.getString(1), equalTo(stringValueB));
+    }
+
+    @Test
+    public void shouldKeepTrackOfOpenCursors() throws Exception {
+        Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);
+
+        assertThat(shadowOf(database).hasOpenCursors(), equalTo(true));
+        cursor.close();
+        assertThat(shadowOf(database).hasOpenCursors(), equalTo(false));
+
     }
 
     private ResultSet executeQuery(String query) throws SQLException {

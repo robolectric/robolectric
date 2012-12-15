@@ -10,6 +10,7 @@ public class Scheduler {
     private long currentTime = 0;
     private boolean paused = false;
     private Thread associatedThread = Thread.currentThread();
+    private boolean isConstantlyIdling = false;
 
     public synchronized long getCurrentTime() {
         return currentTime;
@@ -29,7 +30,7 @@ public class Scheduler {
     }
 
     public synchronized void postDelayed(Runnable runnable, long delayMillis) {
-        if (paused || delayMillis > 0 || Thread.currentThread() != associatedThread) {
+        if ((!isConstantlyIdling && (paused || delayMillis > 0)) || Thread.currentThread() != associatedThread) {
 	        postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
 	        Collections.sort(postedRunnables);
         } else {
@@ -131,10 +132,15 @@ public class Scheduler {
     public synchronized void reset() {
         postedRunnables.clear();
         paused = false;
+        isConstantlyIdling = false;
     }
 
     public synchronized int size() {
         return postedRunnables.size();
+    }
+
+    public void idleConstantly(boolean shouldIdleConstantly) {
+        isConstantlyIdling = shouldIdleConstantly;
     }
 
     class PostedRunnable implements Comparable<PostedRunnable> {
