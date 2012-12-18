@@ -1,19 +1,5 @@
 package com.xtremelabs.robolectric.res;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -23,9 +9,20 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.shadows.ShadowDrawable;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.List;
+
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class RobolectricPackageManagerTest {
@@ -159,7 +156,7 @@ public class RobolectricPackageManagerTest {
 		IntentFilter filter = new IntentFilter(Intent.ACTION_MAIN);
 	    filter.addCategory(Intent.CATEGORY_HOME);
 	    final String packageName = "com.example.dummy";
-	    ComponentName name = new ComponentName( packageName, "LauncherAcitivity" );
+	    ComponentName name = new ComponentName( packageName, "LauncherActivity" );
 	    rpm.addPreferredActivity( filter, 0, null, name);
 	    
 	    // Test match
@@ -183,5 +180,12 @@ public class RobolectricPackageManagerTest {
 	    
 	    assertThat( activities.size(), equalTo(0) );
     }
-    
+
+    @Test
+    public void canResolveDrawableGivenPackageAndResourceId() throws Exception {
+        Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
+        rpm.addDrawableResolution("com.example.foo", 4334, drawable);
+        Drawable actual = rpm.getDrawable("com.example.foo", 4334, null);
+        assertThat(actual, sameInstance(drawable));
+    }
 }
