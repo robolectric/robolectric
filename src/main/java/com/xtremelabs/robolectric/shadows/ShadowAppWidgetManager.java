@@ -114,6 +114,15 @@ public class ShadowAppWidgetManager {
         return ids;
     }
 
+    @Implementation
+    public List<AppWidgetProviderInfo> getInstalledProviders() {
+        List<AppWidgetProviderInfo> result = new ArrayList<AppWidgetProviderInfo>();
+        for (AppWidgetProviderInfo appWidgetProviderInfo : appWidgetProviderInfoForId.values()) {
+            result.add(appWidgetProviderInfo);
+        }
+        return result;
+    }
+
     public void putWidgetInfo(int appWidgetId, AppWidgetProviderInfo expectedWidgetInfo) {
         this.appWidgetProviderInfoForId.put(appWidgetId, expectedWidgetInfo);
     }
