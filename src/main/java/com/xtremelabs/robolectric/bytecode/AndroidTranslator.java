@@ -22,10 +22,10 @@ public class AndroidTranslator implements Translator {
     private final ClassCache classCache;
     private final Setup setup;
 
-    private boolean debug = false;
+    private static boolean debug = false;
 
     public static void performStaticInitialization(Class<?> clazz) {
-        System.out.println("static initializing " + clazz);
+        if (debug) System.out.println("static initializing " + clazz);
         try {
             Method originalStaticInitializer = clazz.getDeclaredMethod(STATIC_INITIALIZER_METHOD_NAME);
             originalStaticInitializer.setAccessible(true);

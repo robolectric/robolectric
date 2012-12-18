@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.res;
 
+import android.content.res.Resources;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -24,6 +25,7 @@ public class StringArrayResourceLoader extends XpathResourceXmlLoader {
     public String[] getArrayValue(int resourceId) {
         String resourceName = resourceExtractor.getResourceName(resourceId);
         Value[] values = stringArrayValues.get(resourceName);
+        if (values == null) throw new Resources.NotFoundException(resourceName);
         String[] result = new String[values.length];
         for (int i = 0; i < values.length; i++) {
             Value value = values[i];
