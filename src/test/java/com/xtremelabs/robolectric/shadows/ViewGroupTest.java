@@ -325,4 +325,22 @@ public class ViewGroupTest {
         viewGroup.removeAllViews();
         assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
     }
+
+    @Test
+    public void addView_shouldRequestLayout() throws Exception {
+        View view = new View(context);
+        ViewGroup viewGroup = new FrameLayout(context);
+        viewGroup.addView(view);
+
+        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+    }
+
+    @Test
+    public void addView_withIndex_shouldRequestLayout() throws Exception {
+        View view = new View(context);
+        ViewGroup viewGroup = new FrameLayout(context);
+        viewGroup.addView(view, 0);
+
+        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+    }
 }

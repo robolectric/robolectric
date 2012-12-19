@@ -10,7 +10,6 @@ import com.xtremelabs.robolectric.internal.Implements;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -20,7 +19,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewGroup.class)
 public class ShadowViewGroup extends ShadowView {
-    private List<View> children = new ArrayList<View>();
+    private ArrayList<View> children = new ArrayList<View>();
     private AnimationListener animListener;
     private LayoutAnimationController layoutAnim;
     private boolean disallowInterceptTouchEvent = false;
@@ -66,6 +65,7 @@ public class ShadowViewGroup extends ShadowView {
                     "on the child's parent first.");
         }
         ((ViewGroup) realView).addView(child, -1);
+        requestLayout();
     }
 
     @Implementation
@@ -76,6 +76,7 @@ public class ShadowViewGroup extends ShadowView {
             children.add(index, child);
         }
         shadowOf(child).parent = this;
+        requestLayout();
     }
 
     @Implementation
