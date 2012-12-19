@@ -12,12 +12,12 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 @Implements(AppWidgetHost.class)
 public class ShadowAppWidgetHost {
-
     @RealObject
     private AppWidgetHost realAppWidgetHost;
 
     private Context context;
     private int hostId;
+    private int appWidgetIdToAllocate;
 
     public void __constructor__(Context context, int hostId) {
         this.context = context;
@@ -30,6 +30,15 @@ public class ShadowAppWidgetHost {
 
     public int getHostId() {
         return hostId;
+    }
+
+    public void setAppWidgetIdToAllocate(int idToAllocate) {
+        appWidgetIdToAllocate = idToAllocate;
+    }
+
+    @Implementation
+    public int allocateAppWidgetId() {
+        return appWidgetIdToAllocate;
     }
 
     @Implementation

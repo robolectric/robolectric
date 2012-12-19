@@ -1,31 +1,25 @@
 package com.xtremelabs.robolectric.res;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
-
-import java.util.ArrayList;
-import java.util.List;
-
+import android.content.ComponentName;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.pm.*;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
+import com.xtremelabs.robolectric.Robolectric;
+import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.shadows.ShadowDrawable;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import android.content.ComponentName;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.pm.ApplicationInfo;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.ResolveInfo;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
+import java.io.ByteArrayInputStream;
+import java.util.ArrayList;
+import java.util.List;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class RobolectricPackageManagerTest {
@@ -64,6 +58,19 @@ public class RobolectricPackageManagerTest {
         assertThat(info, notNullValue());
         assertThat(info.packageName, equalTo(TEST_PACKAGE_NAME));
         assertThat(rpm.getApplicationLabel(info).toString(), equalTo(TEST_PACKAGE_LABEL));
+    }
+
+    @Test(expected = PackageManager.NameNotFoundException.class)
+    public void removePackage_shouldHideItFromGetApplicationInfo() throws Exception {
+        PackageInfo packageInfo = new PackageInfo();
+        packageInfo.packageName = TEST_PACKAGE_NAME;
+        packageInfo.applicationInfo = new ApplicationInfo();
+        packageInfo.applicationInfo.packageName = TEST_PACKAGE_NAME;
+        packageInfo.applicationInfo.name = TEST_PACKAGE_LABEL;
+        rpm.addPackage(packageInfo);
+        rpm.removePackage(TEST_PACKAGE_NAME);
+
+        rpm.getApplicationInfo(TEST_PACKAGE_NAME, 0);
     }
 
     @Test
@@ -122,6 +129,20 @@ public class RobolectricPackageManagerTest {
     }
 
     @Test
+    public void removeResolveInfosForIntent_shouldCauseResolveActivityToReturnNull() throws Exception {
+        Intent intent = new Intent(Intent.ACTION_MAIN, null).addCategory(Intent.CATEGORY_LAUNCHER);
+        ResolveInfo info = new ResolveInfo();
+        info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
+        info.activityInfo = new ActivityInfo();
+        info.activityInfo.packageName = "com.org";
+        rpm.addResolveInfoForIntent(intent, info);
+
+        rpm.removeResolveInfosForIntent(intent, "com.org");
+
+        assertThat(rpm.resolveActivity(intent, 0), nullValue());
+    }
+
+    @Test
     public void resolveService__NoMatch() throws Exception {
         Intent i = new Intent();
         i.setComponent(new ComponentName("foo.bar", "No Activity"));
@@ -152,36 +173,43 @@ public class RobolectricPackageManagerTest {
         rpm.setSystemFeature(PackageManager.FEATURE_CAMERA, false);
         assertThat(rpm.hasSystemFeature(PackageManager.FEATURE_CAMERA), equalTo(false));
     }
-    
+
     @Test
     public void testGetPreferredActivities() throws Exception {
-    	// Setup an intentfilter and add to packagemanager
-		IntentFilter filter = new IntentFilter(Intent.ACTION_MAIN);
-	    filter.addCategory(Intent.CATEGORY_HOME);
-	    final String packageName = "com.example.dummy";
-	    ComponentName name = new ComponentName( packageName, "LauncherAcitivity" );
-	    rpm.addPreferredActivity( filter, 0, null, name);
-	    
-	    // Test match
-	    List<IntentFilter> filters = new ArrayList<IntentFilter>();
-	    filters.add( filter );
-	    
-	    List<ComponentName> activities = new ArrayList<ComponentName>();
-	    rpm.getPreferredActivities( filters, activities, null );
-	    
-	    assertThat( activities.size(), equalTo(1) );
-	    assertThat( activities.get( 0 ).getPackageName(), equalTo(packageName));
-	    
-	    // Test not match
-	    IntentFilter filter1 = new IntentFilter(Intent.ACTION_VIEW );
-	    filters.add( filter1 );
-	    filters.clear();
-	    activities.clear();
-	    filters.add( filter1 );
-	    
-	    rpm.getPreferredActivities( filters, activities, null );
-	    
-	    assertThat( activities.size(), equalTo(0) );
+        // Setup an intentfilter and add to packagemanager
+        IntentFilter filter = new IntentFilter(Intent.ACTION_MAIN);
+        filter.addCategory(Intent.CATEGORY_HOME);
+        final String packageName = "com.example.dummy";
+        ComponentName name = new ComponentName(packageName, "LauncherActivity");
+        rpm.addPreferredActivity(filter, 0, null, name);
+
+        // Test match
+        List<IntentFilter> filters = new ArrayList<IntentFilter>();
+        filters.add(filter);
+
+        List<ComponentName> activities = new ArrayList<ComponentName>();
+        rpm.getPreferredActivities(filters, activities, null);
+
+        assertThat(activities.size(), equalTo(1));
+        assertThat(activities.get(0).getPackageName(), equalTo(packageName));
+
+        // Test not match
+        IntentFilter filter1 = new IntentFilter(Intent.ACTION_VIEW);
+        filters.add(filter1);
+        filters.clear();
+        activities.clear();
+        filters.add(filter1);
+
+        rpm.getPreferredActivities(filters, activities, null);
+
+        assertThat(activities.size(), equalTo(0));
     }
-    
+
+    @Test
+    public void canResolveDrawableGivenPackageAndResourceId() throws Exception {
+        Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
+        rpm.addDrawableResolution("com.example.foo", 4334, drawable);
+        Drawable actual = rpm.getDrawable("com.example.foo", 4334, null);
+        assertThat(actual, sameInstance(drawable));
+    }
 }
