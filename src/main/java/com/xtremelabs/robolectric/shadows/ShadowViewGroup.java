@@ -124,12 +124,14 @@ public class ShadowViewGroup extends ShadowView {
             shadowOf(child).parent = null;
         }
         children.clear();
+        requestLayout();
     }
 
     @Implementation
     public void removeViewAt(int position) {
         View child = children.remove(position);
         shadowOf(child).parent = null;
+        requestLayout();
     }
 
     @Implementation
@@ -138,6 +140,7 @@ public class ShadowViewGroup extends ShadowView {
         if (removed) {
             shadowOf(view).parent = null;
         }
+        requestLayout();
     }
 
     @Override

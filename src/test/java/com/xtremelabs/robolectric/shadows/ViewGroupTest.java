@@ -292,4 +292,37 @@ public class ViewGroupTest {
 
         assertThat(shadowOf(viewGroup).getInterceptedTouchEvent(), equalTo(touchEvent));
     }
+
+    @Test
+    public void removeView_shouldRequestLayout() throws Exception {
+        View view = new View(context);
+        ViewGroup viewGroup = new FrameLayout(context);
+        viewGroup.addView(view);
+        shadowOf(viewGroup).setDidRequestLayout(false);
+
+        viewGroup.removeView(view);
+        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+    }
+
+    @Test
+    public void removeViewAt_shouldRequestLayout() throws Exception {
+        View view = new View(context);
+        ViewGroup viewGroup = new FrameLayout(context);
+        viewGroup.addView(view);
+        shadowOf(viewGroup).setDidRequestLayout(false);
+
+        viewGroup.removeViewAt(0);
+        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+    }
+
+    @Test
+    public void removeAllViews_shouldRequestLayout() throws Exception {
+        View view = new View(context);
+        ViewGroup viewGroup = new FrameLayout(context);
+        viewGroup.addView(view);
+        shadowOf(viewGroup).setDidRequestLayout(false);
+
+        viewGroup.removeAllViews();
+        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+    }
 }
