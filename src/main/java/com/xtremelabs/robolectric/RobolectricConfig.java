@@ -288,6 +288,7 @@ public class RobolectricConfig {
         return resourcePath.get(0);
     }
 
+    @Deprecated
     public List<File> getResourcePath() {
         return resourcePath;
     }

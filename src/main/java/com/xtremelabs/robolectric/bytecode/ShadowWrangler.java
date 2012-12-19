@@ -489,8 +489,10 @@ public class ShadowWrangler implements ClassHandler {
 
         public boolean shouldDelegateToRealMethodWhenMethodShadowIsMissing() {
             boolean delegateToReal = setup.invokeApiMethodBodiesWhenShadowMethodIsMissing(clazz, methodName, paramClasses);
-            System.out.println("DEBUG: Shall we invoke real method on " + clazz + "." + methodName + "("
-                    + Join.join(", ", paramClasses) + ")? " + (delegateToReal ? "yup!" : "nope!"));
+            if (debug) {
+                System.out.println("DEBUG: Shall we invoke real method on " + clazz + "." + methodName + "("
+                          + Join.join(", ", paramClasses) + ")? " + (delegateToReal ? "yup!" : "nope!"));
+            }
             return delegateToReal;
         }
     }

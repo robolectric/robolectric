@@ -1,6 +1,12 @@
 package com.xtremelabs.robolectric;
 
-import com.xtremelabs.robolectric.bytecode.*;
+import com.xtremelabs.robolectric.bytecode.AndroidTranslator;
+import com.xtremelabs.robolectric.bytecode.ClassCache;
+import com.xtremelabs.robolectric.bytecode.ClassHandler;
+import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
+import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
+import com.xtremelabs.robolectric.bytecode.Setup;
+import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.ResourcePath;
