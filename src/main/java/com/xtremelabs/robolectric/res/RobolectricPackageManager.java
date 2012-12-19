@@ -17,7 +17,7 @@ import java.util.*;
 public class RobolectricPackageManager extends StubPackageManager {
 
     private Map<String, PackageInfo> packageList;
-    private Map<Intent, List<ResolveInfo>> resolveList = new HashMap<Intent, List<ResolveInfo>>();
+    private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new HashMap<Intent, List<ResolveInfo>>();
     private Map<ComponentName, ComponentState> componentList = new HashMap<ComponentName, ComponentState>();
     private Map<ComponentName, Drawable> drawableList = new HashMap<ComponentName, Drawable>();
     private Map<String, Boolean> systemFeatureList = new HashMap<String, Boolean>();
@@ -73,7 +73,7 @@ public class RobolectricPackageManager extends StubPackageManager {
 
     @Override
     public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
-        List<ResolveInfo> result = resolveList.get(intent);
+        List<ResolveInfo> result = resolveInfoForIntent.get(intent);
         return (result == null) ? new ArrayList<ResolveInfo>() : result;
     }
 
@@ -89,16 +89,22 @@ public class RobolectricPackageManager extends StubPackageManager {
     }
 
     public void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info) {
-        resolveList.put(intent, info);
+        resolveInfoForIntent.put(intent, info);
     }
 
     public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
-        List<ResolveInfo> l = resolveList.get(intent);
-        if (l == null) {
-            l = new ArrayList<ResolveInfo>();
-            resolveList.put(intent, l);
+        List<ResolveInfo> infoList = findOrCreateInfoList(intent);
+        infoList.add(info);
+    }
+
+    public void removeResolveInfosForIntent(Intent intent, String packageName) {
+        List<ResolveInfo> infoList = findOrCreateInfoList(intent);
+        for (Iterator<ResolveInfo> iterator = infoList.iterator(); iterator.hasNext(); ) {
+            ResolveInfo resolveInfo = iterator.next();
+            if (resolveInfo.activityInfo.packageName.equals(packageName)) {
+                iterator.remove();
+            }
         }
-        l.add(info);
     }
 
     @Override
@@ -203,6 +209,10 @@ public class RobolectricPackageManager extends StubPackageManager {
         packageList.put(packageInfo.packageName, packageInfo);
     }
 
+    public void removePackage(String packageName) {
+        packageList.remove(packageName);
+    }
+
     public void addPackage(String packageName) {
         PackageInfo info = new PackageInfo();
         info.packageName = packageName;
@@ -255,5 +265,14 @@ public class RobolectricPackageManager extends StubPackageManager {
     @Override
     public Drawable getDrawable(String packageName, int resourceId, ApplicationInfo applicationInfo) {
         return drawables.get(new Pair(packageName, resourceId));
+    }
+
+    private List<ResolveInfo> findOrCreateInfoList(Intent intent) {
+        List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
+        if (infoList == null) {
+            infoList = new ArrayList<ResolveInfo>();
+            resolveInfoForIntent.put(intent, infoList);
+        }
+        return infoList;
     }
 }
