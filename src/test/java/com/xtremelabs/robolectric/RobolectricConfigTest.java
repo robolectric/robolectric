@@ -3,16 +3,15 @@ package com.xtremelabs.robolectric;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import com.xtremelabs.robolectric.res.ResourcePath;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
 import java.util.List;
 
 import static android.content.pm.ApplicationInfo.*;
-import static com.xtremelabs.robolectric.AndroidManifest.fromBaseDirWithLibraries;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
-import static com.xtremelabs.robolectric.util.TestUtil.resourcesBaseDir;
+import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -70,15 +69,18 @@ public class RobolectricConfigTest {
     
     @Test public void shouldLoadAllResourcesForLibraries() {
         // This intentionally loads from the non standard resources/project.properties
-        AndroidManifest config = fromBaseDirWithLibraries(resourcesBaseDir());
-
-        List<File> resourceFileDirs = config.getResourcePath();
-        assertEquals("there should be 5 resource locations", 5, resourceFileDirs.size());
-        assertEquals("./src/test/resources/res", resourceFileDirs.get(0).getPath());
-        assertEquals("./src/test/resources/../lib1/res", resourceFileDirs.get(1).getPath());
-        assertEquals("./src/test/resources/../lib2/res", resourceFileDirs.get(2).getPath());
-        assertEquals("./src/test/resources/../lib3/res", resourceFileDirs.get(3).getPath());
-        assertEquals("./src/test/resources/../lib4/res", resourceFileDirs.get(4).getPath());
+        List<ResourcePath> resourcePaths = new RobolectricContext() {
+            @Override
+            protected AndroidManifest createAppManifest() {
+                return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
+            }
+        }.getResourcePaths();
+        assertEquals("there should be 5 resource locations", 5, resourcePaths.size());
+        assertEquals("./src/test/resources/res", resourcePaths.get(0).resourceBase.getPath());
+        assertEquals("./src/test/resources/lib1/res", resourcePaths.get(1).resourceBase.getPath());
+        assertEquals("./src/test/resources/lib1/../lib3/res", resourcePaths.get(2).resourceBase.getPath());
+        assertEquals("./src/test/resources/lib2/res", resourcePaths.get(3).resourceBase.getPath());
+        assertEquals("system", resourcePaths.get(4).resourceBase.getPath());
     }
 
     @Test

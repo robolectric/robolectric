@@ -17,7 +17,7 @@ public class TestRunners {
                 public RobolectricContext create() {
                     return new RobolectricContext() {
                         @Override
-                        protected AndroidManifest createAndroidManifest() {
+                        protected AndroidManifest createAppManifest() {
                             return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
                         }
 
@@ -68,7 +68,7 @@ public class TestRunners {
                 public RobolectricContext create() {
                     return new RobolectricContext() {
                         @Override
-                        protected AndroidManifest createAndroidManifest() {
+                        protected AndroidManifest createAppManifest() {
                             return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
                         }
                     };
@@ -84,7 +84,7 @@ public class TestRunners {
                 public RobolectricContext create() {
                     return new RobolectricContext() {
                         @Override
-                        protected AndroidManifest createAndroidManifest() {
+                        protected AndroidManifest createAppManifest() {
                             return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
                         }
 

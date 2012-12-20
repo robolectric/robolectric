@@ -176,7 +176,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     public void setupApplicationState(Method testMethod) {
         boolean strictI18n = determineI18nStrictState(testMethod);
 
-        ResourceLoader resourceLoader = getResourceLoader(sharedRobolectricContext.getAndroidManifest());
+        ResourceLoader resourceLoader = getResourceLoader(sharedRobolectricContext.getAppManifest());
         resourceLoader.setLayoutQualifierSearchPath();
         resourceLoader.setQualifiers(determineResourceQualifiers(testMethod));
         resourceLoader.setStrictI18n(strictI18n);
@@ -385,13 +385,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      *         Application if not specified.
      */
     protected Application createApplication() {
-        return new ApplicationResolver(sharedRobolectricContext.getAndroidManifest()).resolveApplication();
+        return new ApplicationResolver(sharedRobolectricContext.getAppManifest()).resolveApplication();
     }
 
     private ResourceLoader getResourceLoader(final AndroidManifest androidManifest) {
         ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(androidManifest);
         if (resourceLoader == null ) {
-            List<ResourcePath> resourcePaths = sharedRobolectricContext.getResourcePaths(androidManifest);
+            List<ResourcePath> resourcePaths = sharedRobolectricContext.getResourcePaths();
             resourceLoader = createResourceLoader(resourcePaths);
             resourceLoaderForRootAndDirectory.put(androidManifest, resourceLoader);
         }

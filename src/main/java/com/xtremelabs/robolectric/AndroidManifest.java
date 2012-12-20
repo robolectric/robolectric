@@ -10,20 +10,15 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
-import java.util.Properties;
 
 import static android.content.pm.ApplicationInfo.*;
 import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 
 public class AndroidManifest {
     private final File androidManifestFile;
-    private final List<File> resourcePath;
+    private final File resDirectory;
     private final File assetsDirectory;
     private String rClassName;
     private String packageName;
@@ -48,80 +43,21 @@ public class AndroidManifest {
         this(new File(baseDir, "AndroidManifest.xml"), new File(baseDir, "res"), new File(baseDir, "assets"));
     }
 
-    public AndroidManifest(final File androidManifestFile, final File resourceDirectory) {
-        this(androidManifestFile, resourceDirectory, new File(resourceDirectory.getParent(), "assets"));
+    public AndroidManifest(final File androidManifestFile, final File resDirectory) {
+        this(androidManifestFile, resDirectory, new File(resDirectory.getParent(), "assets"));
     }
 
     /**
      * Creates a Robolectric configuration using specified locations.
      *
      * @param androidManifestFile location of the AndroidManifest.xml file
-     * @param resourceDirectory   location of the res directory
+     * @param resDirectory        location of the res directory
      * @param assetsDirectory     location of the assets directory
      */
-    public AndroidManifest(File androidManifestFile, File resourceDirectory, File assetsDirectory) {
-        this(androidManifestFile, Collections.singletonList(resourceDirectory), assetsDirectory);
-    }
-
-    public AndroidManifest(File androidManifestFile, List<File> resourcePath, File assetsDirectory) {
+    public AndroidManifest(File androidManifestFile, File resDirectory, File assetsDirectory) {
         this.androidManifestFile = androidManifestFile;
-        this.resourcePath = Collections.unmodifiableList(resourcePath);
+        this.resDirectory = resDirectory;
         this.assetsDirectory = assetsDirectory;
-    }
-
-    public static AndroidManifest fromBaseDirWithLibraries(File baseDir) {
-        List<File> resources = new ArrayList<File>();
-        buildResourcePath(baseDir, resources);
-        return new AndroidManifest(new File(baseDir, "AndroidManifest.xml"), resources, new File(baseDir, "assets"));
-    }
-
-    private static void buildResourcePath(File baseDir, List<File> resources) {
-        resources.add(new File(baseDir, "res"));
-
-        Properties properties = getProperties(new File(baseDir, "project.properties"));
-        if (properties != null) {
-            int libRef = 1;
-            String lib;
-            while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
-                buildResourcePath(new File(baseDir, lib), resources);
-                libRef++;
-            }
-            return;
-        } else {
-            // Try unpack folder from maven.
-            File unpack = new File(baseDir, "target/unpack/apklibs");
-            if (unpack.exists()) {
-                File[] libs = unpack.listFiles();
-                if (libs != null) {
-                    for (File lib : libs) {
-                        resources.add(new File(lib, "res"));
-                    }
-                }
-            }
-        }
-    }
-
-    private static Properties getProperties(File propertiesFile) {
-        if (!propertiesFile.exists()) return null;
-
-        Properties properties = new Properties();
-        FileInputStream stream;
-        try {
-            stream = new FileInputStream(propertiesFile);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            try {
-                properties.load(stream);
-            } finally {
-                stream.close();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return properties;
     }
 
     public String getRClassName() throws Exception {
@@ -129,15 +65,18 @@ public class AndroidManifest {
         return rClassName;
     }
 
-    public void validate() throws FileNotFoundException {
-        if (!androidManifestFile.exists() || !androidManifestFile.isFile()) {
-            throw new FileNotFoundException(androidManifestFile.getAbsolutePath() + " not found or not a file; it should point to your project's AndroidManifest.xml");
+    public Class getRClass() {
+        try {
+            String rClassName = getRClassName();
+            return Class.forName(rClassName);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
         }
+    }
 
-        for (File f : getResourcePath()) {
-            if (!f.exists() || !f.isDirectory()) {
-                throw new FileNotFoundException(f.getAbsolutePath() + " not found or not a directory; it should point to a res directory");
-            }
+    public void validate() {
+        if (!androidManifestFile.exists() || !androidManifestFile.isFile()) {
+            throw new RuntimeException(androidManifestFile.getAbsolutePath() + " not found or not a file; it should point to your project's AndroidManifest.xml");
         }
     }
 
@@ -283,14 +222,13 @@ public class AndroidManifest {
         return processName;
     }
 
-    @Deprecated
-    public File getResourceDirectory() {
-        return resourcePath.get(0);
+    public ResourcePath getResourcePath() {
+        validate();
+        return new ResourcePath(getRClass(), resDirectory, assetsDirectory);
     }
 
-    @Deprecated
-    public List<File> getResourcePath() {
-        return resourcePath;
+    public File getResDirectory() {
+        return resDirectory;
     }
 
     public File getAssetsDirectory() {
@@ -324,28 +262,6 @@ public class AndroidManifest {
         return null;
     }
 
-    public List<ResourcePath> getResourcePaths() {
-        try {
-            validate();
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        Class rClass;
-        try {
-            String rClassName = getRClassName();
-            rClass = Class.forName(rClassName);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-
-        List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>();
-        for (File resDir : getResourcePath()) {
-            resourcePaths.add(new ResourcePath(rClass, resDir, getAssetsDirectory()));
-        }
-        return Collections.unmodifiableList(resourcePaths);
-    }
-
     private static Application newApplicationInstance(final String packageName, final String applicationName) {
         Application application;
         try {
@@ -359,26 +275,17 @@ public class AndroidManifest {
     }
 
     @Override
-    public boolean equals(final Object o) {
-        if (this == o) {
-            return true;
-        }
-        if (o == null || getClass() != o.getClass()) {
-            return false;
-        }
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
 
         AndroidManifest that = (AndroidManifest) o;
 
-        if (androidManifestFile != null ? !androidManifestFile.equals(that.androidManifestFile) : that.androidManifestFile != null) {
+        if (androidManifestFile != null ? !androidManifestFile.equals(that.androidManifestFile) : that.androidManifestFile != null)
             return false;
-        }
-        if (getAssetsDirectory() != null ? !getAssetsDirectory().equals(that.getAssetsDirectory()) : that.getAssetsDirectory() != null) {
+        if (assetsDirectory != null ? !assetsDirectory.equals(that.assetsDirectory) : that.assetsDirectory != null)
             return false;
-        }
-
-        if (getResourcePath() != null ? !getResourcePath().equals(that.getResourcePath()) : that.getResourcePath() != null) {
-            return false;
-        }
+        if (resDirectory != null ? !resDirectory.equals(that.resDirectory) : that.resDirectory != null) return false;
 
         return true;
     }
@@ -386,8 +293,8 @@ public class AndroidManifest {
     @Override
     public int hashCode() {
         int result = androidManifestFile != null ? androidManifestFile.hashCode() : 0;
-        result = 31 * result + (getResourcePath() != null ? getResourcePath().hashCode() : 0);
-        result = 31 * result + (getAssetsDirectory() != null ? getAssetsDirectory().hashCode() : 0);
+        result = 31 * result + (resDirectory != null ? resDirectory.hashCode() : 0);
+        result = 31 * result + (assetsDirectory != null ? assetsDirectory.hashCode() : 0);
         return result;
     }
 

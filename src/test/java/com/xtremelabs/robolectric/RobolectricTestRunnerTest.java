@@ -102,7 +102,7 @@ public class RobolectricTestRunnerTest {
         public RunnerForTesting(Class<?> testClass) throws InitializationError {
             super(testClass);
         	instance = this;
-            androidManifest = getRobolectricContext().getAndroidManifest();
+            androidManifest = getRobolectricContext().getAppManifest();
         }
 
         @Override protected Application createApplication() {
