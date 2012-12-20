@@ -39,7 +39,7 @@ public class ApplicationResolver {
         registerBroadcastReceivers(shadowApplication);
     }
 
-  private void registerBroadcastReceivers(ShadowApplication shadowApplication) {
+    private void registerBroadcastReceivers(ShadowApplication shadowApplication) {
         for (int i = 0; i < androidManifest.getReceiverCount(); i++) {
             IntentFilter filter = new IntentFilter();
             for (String action : androidManifest.getReceiverIntentFilterActions(i)) {
@@ -55,8 +55,8 @@ public class ApplicationResolver {
         String staticInnerClassRegex = "[A-Z][a-zA-Z]*";
         if (splits[splits.length - 1].matches(staticInnerClassRegex) && splits[splits.length - 2].matches(staticInnerClassRegex)) {
             int lastDotIndex = receiverClassName.lastIndexOf(".");
-            StringBuffer buffer = new StringBuffer(receiverClassName);
-            buffer.setCharAt(lastDotIndex,'$');
+            StringBuilder buffer = new StringBuilder(receiverClassName);
+            buffer.setCharAt(lastDotIndex, '$');
             return buffer.toString();
         }
         return receiverClassName;
