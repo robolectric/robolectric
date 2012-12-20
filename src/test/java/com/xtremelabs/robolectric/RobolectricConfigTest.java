@@ -10,7 +10,7 @@ import java.io.File;
 import java.util.List;
 
 import static android.content.pm.ApplicationInfo.*;
-import static com.xtremelabs.robolectric.RobolectricConfig.fromBaseDirWithLibraries;
+import static com.xtremelabs.robolectric.AndroidManifest.fromBaseDirWithLibraries;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static com.xtremelabs.robolectric.util.TestUtil.resourcesBaseDir;
 import static org.junit.Assert.assertEquals;
@@ -20,7 +20,7 @@ import static org.junit.Assert.assertTrue;
 public class RobolectricConfigTest {
     @Test
     public void shouldReadBroadcastReceivers() throws Exception {
-        RobolectricConfig config = newConfig("TestAndroidManifestWithReceivers.xml");
+        AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
 
         assertEquals(7, config.getReceiverCount());
 
@@ -70,7 +70,7 @@ public class RobolectricConfigTest {
     
     @Test public void shouldLoadAllResourcesForLibraries() {
         // This intentionally loads from the non standard resources/project.properties
-        RobolectricConfig config = fromBaseDirWithLibraries(resourcesBaseDir());
+        AndroidManifest config = fromBaseDirWithLibraries(resourcesBaseDir());
 
         List<File> resourceFileDirs = config.getResourcePath();
         assertEquals("there should be 5 resource locations", 5, resourceFileDirs.size());
@@ -83,7 +83,7 @@ public class RobolectricConfigTest {
 
     @Test
     public void shouldReadFlagsFromAndroidManifest() throws Exception {
-        RobolectricConfig config = newConfig("TestAndroidManifestWithFlags.xml");
+        AndroidManifest config = newConfig("TestAndroidManifestWithFlags.xml");
         assertTrue(hasFlag(config.getApplicationFlags(), FLAG_ALLOW_BACKUP));
         assertTrue(hasFlag(config.getApplicationFlags(), FLAG_ALLOW_CLEAR_USER_DATA));
         assertTrue(hasFlag(config.getApplicationFlags(), FLAG_ALLOW_TASK_REPARENTING));

@@ -21,7 +21,7 @@ import java.util.Properties;
 import static android.content.pm.ApplicationInfo.*;
 import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 
-public class RobolectricConfig {
+public class AndroidManifest {
     private final File androidManifestFile;
     private final List<File> resourcePath;
     private final File assetsDirectory;
@@ -44,11 +44,11 @@ public class RobolectricConfig {
      *
      * @param baseDir the base directory of your Android project
      */
-    public RobolectricConfig(final File baseDir) {
+    public AndroidManifest(final File baseDir) {
         this(new File(baseDir, "AndroidManifest.xml"), new File(baseDir, "res"), new File(baseDir, "assets"));
     }
 
-    public RobolectricConfig(final File androidManifestFile, final File resourceDirectory) {
+    public AndroidManifest(final File androidManifestFile, final File resourceDirectory) {
         this(androidManifestFile, resourceDirectory, new File(resourceDirectory.getParent(), "assets"));
     }
 
@@ -59,20 +59,20 @@ public class RobolectricConfig {
      * @param resourceDirectory   location of the res directory
      * @param assetsDirectory     location of the assets directory
      */
-    public RobolectricConfig(File androidManifestFile, File resourceDirectory, File assetsDirectory) {
+    public AndroidManifest(File androidManifestFile, File resourceDirectory, File assetsDirectory) {
         this(androidManifestFile, Collections.singletonList(resourceDirectory), assetsDirectory);
     }
 
-    public RobolectricConfig(File androidManifestFile, List<File> resourcePath, File assetsDirectory) {
+    public AndroidManifest(File androidManifestFile, List<File> resourcePath, File assetsDirectory) {
         this.androidManifestFile = androidManifestFile;
         this.resourcePath = Collections.unmodifiableList(resourcePath);
         this.assetsDirectory = assetsDirectory;
     }
 
-    public static RobolectricConfig fromBaseDirWithLibraries(File baseDir) {
+    public static AndroidManifest fromBaseDirWithLibraries(File baseDir) {
         List<File> resources = new ArrayList<File>();
         buildResourcePath(baseDir, resources);
-        return new RobolectricConfig(new File(baseDir, "AndroidManifest.xml"), resources, new File(baseDir, "assets"));
+        return new AndroidManifest(new File(baseDir, "AndroidManifest.xml"), resources, new File(baseDir, "assets"));
     }
 
     private static void buildResourcePath(File baseDir, List<File> resources) {
@@ -367,7 +367,7 @@ public class RobolectricConfig {
             return false;
         }
 
-        RobolectricConfig that = (RobolectricConfig) o;
+        AndroidManifest that = (AndroidManifest) o;
 
         if (androidManifestFile != null ? !androidManifestFile.equals(that.androidManifestFile) : that.androidManifestFile != null) {
             return false;

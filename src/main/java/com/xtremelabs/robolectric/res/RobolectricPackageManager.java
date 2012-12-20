@@ -8,7 +8,7 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
-import com.xtremelabs.robolectric.RobolectricConfig;
+import com.xtremelabs.robolectric.AndroidManifest;
 import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
 
 import java.util.*;
@@ -23,12 +23,12 @@ public class RobolectricPackageManager extends StubPackageManager {
     private Map<IntentFilter, ComponentName > preferredActivities = new HashMap<IntentFilter, ComponentName>();
     
     private ContextWrapper contextWrapper;
-    private RobolectricConfig config;
+    private AndroidManifest androidManifest;
     private ApplicationInfo applicationInfo;
 
-    public RobolectricPackageManager(ContextWrapper contextWrapper, RobolectricConfig config) {
+    public RobolectricPackageManager(ContextWrapper contextWrapper, AndroidManifest androidManifest) {
         this.contextWrapper = contextWrapper;
-        this.config = config;
+        this.androidManifest = androidManifest;
         initializePackageInfo();
     }
 
@@ -44,14 +44,14 @@ public class RobolectricPackageManager extends StubPackageManager {
     @Override
     public ApplicationInfo getApplicationInfo(String packageName, int flags) throws NameNotFoundException {
 
-        if (config.getPackageName().equals(packageName)) {
+        if (androidManifest.getPackageName().equals(packageName)) {
             if (applicationInfo == null) {
                 applicationInfo = new ApplicationInfo();
-                applicationInfo.flags = config.getApplicationFlags();
-                applicationInfo.targetSdkVersion = config.getSdkVersion();
-                applicationInfo.packageName = config.getPackageName();
-                applicationInfo.processName = config.getProcessName();
-                applicationInfo.name = config.getApplicationName();
+                applicationInfo.flags = androidManifest.getApplicationFlags();
+                applicationInfo.targetSdkVersion = androidManifest.getSdkVersion();
+                applicationInfo.packageName = androidManifest.getPackageName();
+                applicationInfo.processName = androidManifest.getProcessName();
+                applicationInfo.name = androidManifest.getApplicationName();
             }
             return applicationInfo;
         }

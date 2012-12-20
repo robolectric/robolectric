@@ -17,8 +17,8 @@ public class TestRunners {
                 public RobolectricContext create() {
                     return new RobolectricContext() {
                         @Override
-                        protected RobolectricConfig createRobolectricConfig() {
-                            return new RobolectricConfig(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
+                        protected AndroidManifest createAndroidManifest() {
+                            return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
                         }
 
                         @Override
@@ -68,8 +68,8 @@ public class TestRunners {
                 public RobolectricContext create() {
                     return new RobolectricContext() {
                         @Override
-                        protected RobolectricConfig createRobolectricConfig() {
-                            return new RobolectricConfig(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
+                        protected AndroidManifest createAndroidManifest() {
+                            return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
                         }
                     };
                 }
@@ -84,8 +84,8 @@ public class TestRunners {
                 public RobolectricContext create() {
                     return new RobolectricContext() {
                         @Override
-                        protected RobolectricConfig createRobolectricConfig() {
-                            return new RobolectricConfig(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
+                        protected AndroidManifest createAndroidManifest() {
+                            return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
                         }
 
                         @Override

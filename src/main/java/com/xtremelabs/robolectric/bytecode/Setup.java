@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.bytecode;
 
 import android.R;
 import android.net.Uri__FromAndroid;
-import com.xtremelabs.robolectric.RobolectricConfig;
+import com.xtremelabs.robolectric.AndroidManifest;
 import com.xtremelabs.robolectric.RobolectricContext;
 import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
 import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
@@ -29,7 +29,7 @@ public class Setup {
                 RealObject.class,
                 ShadowWrangler.class,
                 Vars.class,
-                RobolectricConfig.class,
+                AndroidManifest.class,
                 DatabaseConfig.DatabaseMap.class,
                 R.class,
 

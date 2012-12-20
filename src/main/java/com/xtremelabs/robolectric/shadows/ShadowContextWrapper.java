@@ -6,7 +6,7 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Looper;
-import com.xtremelabs.robolectric.RobolectricConfig;
+import com.xtremelabs.robolectric.AndroidManifest;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
@@ -122,7 +122,7 @@ public class ShadowContextWrapper extends ShadowContext {
 
     private PackageManager requirePackageManager() {
         if (packageManager == null) {
-            packageManager = new RobolectricPackageManager(realContextWrapper, new RobolectricConfig(new File(".")));
+            packageManager = new RobolectricPackageManager(realContextWrapper, new AndroidManifest(new File(".")));
         }
         return packageManager;
     }

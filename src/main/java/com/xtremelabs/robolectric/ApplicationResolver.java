@@ -11,15 +11,15 @@ import org.w3c.dom.Document;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 public class ApplicationResolver {
-    private final RobolectricConfig config;
+    private final AndroidManifest androidManifest;
 
-    public ApplicationResolver(RobolectricConfig config) {
-        this.config = config;
+    public ApplicationResolver(AndroidManifest androidManifest) {
+        this.androidManifest = androidManifest;
     }
 
     public Application resolveApplication() {
         Application application;
-        if (config.getApplicationName() != null) {
+        if (androidManifest.getApplicationName() != null) {
             application = newApplicationInstance();
         } else {
             application = new Application();
@@ -32,20 +32,20 @@ public class ApplicationResolver {
 
     public void injectShadow(Application application) {
         ShadowApplication shadowApplication = shadowOf(application);
-        shadowApplication.setPackageName(config.getPackageName());
-        shadowApplication.setApplicationName(config.getApplicationName());
+        shadowApplication.setPackageName(androidManifest.getPackageName());
+        shadowApplication.setApplicationName(androidManifest.getApplicationName());
 
-        shadowApplication.setPackageManager(new RobolectricPackageManager(application, config));
+        shadowApplication.setPackageManager(new RobolectricPackageManager(application, androidManifest));
         registerBroadcastReceivers(shadowApplication);
     }
 
   private void registerBroadcastReceivers(ShadowApplication shadowApplication) {
-        for (int i = 0; i < config.getReceiverCount(); i++) {
+        for (int i = 0; i < androidManifest.getReceiverCount(); i++) {
             IntentFilter filter = new IntentFilter();
-            for (String action : config.getReceiverIntentFilterActions(i)) {
+            for (String action : androidManifest.getReceiverIntentFilterActions(i)) {
                 filter.addAction(action);
             }
-            String receiverClassName = replaceLastDotWith$IfInnerStaticClass(config.getReceiverClassName(i));
+            String receiverClassName = replaceLastDotWith$IfInnerStaticClass(androidManifest.getReceiverClassName(i));
             shadowApplication.registerReceiver((BroadcastReceiver) Robolectric.newInstanceOf(receiverClassName), filter);
         }
     }
@@ -70,7 +70,7 @@ public class ApplicationResolver {
         Application application;
         try {
             Class<? extends Application> applicationClass =
-                    new ClassNameResolver<Application>(config.getPackageName(), config.getApplicationName()).resolve();
+                    new ClassNameResolver<Application>(androidManifest.getPackageName(), androidManifest.getApplicationName()).resolve();
             application = applicationClass.newInstance();
         } catch (Exception e) {
             throw new RuntimeException(e);

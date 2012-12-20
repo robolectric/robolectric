@@ -38,7 +38,7 @@ import static com.xtremelabs.robolectric.RobolectricTestRunner.isBootstrapped;
 public class RobolectricContext {
     private static final Map<Class<? extends RobolectricTestRunner>, RobolectricContext> contextsByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, RobolectricContext>();
 
-    private final RobolectricConfig robolectricConfig;
+    private final AndroidManifest androidManifest;
     private final RobolectricClassLoader robolectricClassLoader;
     private final ClassHandler classHandler;
     private static RepositorySystem repositorySystem;
@@ -72,7 +72,7 @@ public class RobolectricContext {
         ClassCache classCache = createClassCache();
         Setup setup = createSetup();
         classHandler = createClassHandler(setup);
-        robolectricConfig = createRobolectricConfig();
+        androidManifest = createAndroidManifest();
         AndroidTranslator androidTranslator = createAndroidTranslator(classHandler, setup, classCache);
         robolectricClassLoader = createRobolectricClassLoader(setup, classCache, androidTranslator);
     }
@@ -97,21 +97,21 @@ public class RobolectricContext {
         return new AndroidTranslator(classCache, setup);
     }
 
-    protected RobolectricConfig createRobolectricConfig() {
-        return new RobolectricConfig(new File("."));
+    protected AndroidManifest createAndroidManifest() {
+        return new AndroidManifest(new File("."));
     }
 
-    public RobolectricConfig getRobolectricConfig() {
-        return robolectricConfig;
+    public AndroidManifest getAndroidManifest() {
+        return androidManifest;
     }
 
     public ClassHandler getClassHandler() {
         return classHandler;
     }
 
-    public List<ResourcePath> getResourcePaths(RobolectricConfig robolectricConfig) {
-        List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>(robolectricConfig.getResourcePaths());
-        resourcePaths.add(ResourceLoader.getSystemResourcePath(robolectricConfig.getRealSdkVersion(), resourcePaths));
+    public List<ResourcePath> getResourcePaths(AndroidManifest androidManifest) {
+        List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>(androidManifest.getResourcePaths());
+        resourcePaths.add(ResourceLoader.getSystemResourcePath(androidManifest.getRealSdkVersion(), resourcePaths));
         return resourcePaths;
     }
 

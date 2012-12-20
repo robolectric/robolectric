@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.util;
 
 import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.RobolectricConfig;
+import com.xtremelabs.robolectric.AndroidManifest;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.ResourcePath;
 
@@ -97,8 +97,8 @@ public abstract class TestUtil {
         return SYSTEM_RESOURCE_PATH;
     }
 
-    public static RobolectricConfig newConfig(String androidManifestFile) {
-        return new RobolectricConfig(resourceFile(androidManifestFile), (File) null, null);
+    public static AndroidManifest newConfig(String androidManifestFile) {
+        return new AndroidManifest(resourceFile(androidManifestFile), (File) null, null);
     }
 
     public static File getSystemResourceDir(String... paths) throws Exception {

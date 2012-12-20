@@ -97,12 +97,12 @@ public class RobolectricTestRunnerTest {
     
     public static class RunnerForTesting extends TestRunners.WithDefaults {
     	public static RunnerForTesting instance;
-        private final RobolectricConfig robolectricConfig;
+        private final AndroidManifest androidManifest;
 
         public RunnerForTesting(Class<?> testClass) throws InitializationError {
             super(testClass);
         	instance = this;
-            robolectricConfig = getRobolectricContext().getRobolectricConfig();
+            androidManifest = getRobolectricContext().getAndroidManifest();
         }
 
         @Override protected Application createApplication() {
