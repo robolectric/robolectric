@@ -3,7 +3,7 @@
           package="com.xtremelabs.robolectric"
         >
     <application>
-        <receiver android:name="com.xtremelabs.robolectric.RobolectricConfigTest.ConfigTestReceiver"
+        <receiver android:name="com.xtremelabs.robolectric.AndroidManifestTest.ConfigTestReceiver"
                   android:permission="com.ignored.PERM">
             <intent-filter>
                 <action android:name="com.xtremelabs.robolectric.ACTION1"/>

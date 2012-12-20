@@ -3,10 +3,12 @@ package com.xtremelabs.robolectric;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.ResourcePath;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.io.File;
 import java.util.List;
 
 import static android.content.pm.ApplicationInfo.*;
@@ -16,17 +18,17 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class RobolectricConfigTest {
+public class AndroidManifestTest {
     @Test
     public void shouldReadBroadcastReceivers() throws Exception {
         AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
 
         assertEquals(7, config.getReceiverCount());
 
-        assertEquals("com.xtremelabs.robolectric.RobolectricConfigTest.ConfigTestReceiver", config.getReceiverClassName(0));
+        assertEquals("com.xtremelabs.robolectric.AndroidManifestTest.ConfigTestReceiver", config.getReceiverClassName(0));
         assertEquals("com.xtremelabs.robolectric.ACTION1", config.getReceiverIntentFilterActions(0).get(0));
 
-        assertEquals("com.xtremelabs.robolectric.RobolectricConfigTest.ConfigTestReceiver", config.getReceiverClassName(1));
+        assertEquals("com.xtremelabs.robolectric.AndroidManifestTest.ConfigTestReceiver", config.getReceiverClassName(1));
         assertEquals("com.xtremelabs.robolectric.ACTION2", config.getReceiverIntentFilterActions(1).get(0));
 
         assertEquals("com.xtremelabs.robolectric.test.ConfigTestReceiver", config.getReceiverClassName(2));
@@ -68,11 +70,13 @@ public class RobolectricConfigTest {
     }
     
     @Test public void shouldLoadAllResourcesForLibraries() {
+        final AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
+
         // This intentionally loads from the non standard resources/project.properties
         List<ResourcePath> resourcePaths = new RobolectricContext() {
             @Override
             protected AndroidManifest createAppManifest() {
-                return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
+                return appManifest;
             }
         }.getResourcePaths();
         assertEquals("there should be 5 resource locations", 5, resourcePaths.size());
@@ -80,7 +84,9 @@ public class RobolectricConfigTest {
         assertEquals("./src/test/resources/lib1/res", resourcePaths.get(1).resourceBase.getPath());
         assertEquals("./src/test/resources/lib1/../lib3/res", resourcePaths.get(2).resourceBase.getPath());
         assertEquals("./src/test/resources/lib2/res", resourcePaths.get(3).resourceBase.getPath());
-        assertEquals("system", resourcePaths.get(4).resourceBase.getPath());
+
+        File resourceBase = ResourceLoader.getSystemResourcePath(appManifest.getRealSdkVersion(), resourcePaths).resourceBase;
+        assertEquals(resourceBase.getPath(), resourcePaths.get(4).resourceBase.getPath());
     }
 
     @Test

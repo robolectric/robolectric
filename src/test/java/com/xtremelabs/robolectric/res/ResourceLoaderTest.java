@@ -7,6 +7,7 @@ import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.tester.android.view.TestMenu;
 import com.xtremelabs.robolectric.util.I18nException;
 import org.junit.Before;
@@ -70,10 +71,9 @@ public class ResourceLoaderTest {
     	resourceLoader.inflatePreferences(Robolectric.application, R.xml.preferences);
     }
 
-    @Test
+    @Test @Values(qualifiers = "doesnotexist-land-xlarge")
     public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-        resourceLoader.setLayoutQualifierSearchPath("does-not-exist", "land", "xlarge");
         ViewGroup viewGroup = new FrameLayout(Robolectric.application);
         ViewGroup view = (ViewGroup) resourceLoader.getRoboLayoutInflater().inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup);
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
@@ -96,7 +96,7 @@ public class ResourceLoaderTest {
         ViewGroup view = (ViewGroup) resourceLoader.getRoboLayoutInflater().inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup);
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
         assertThat(textView.getText().toString(), equalTo("default"));
-        resourceLoader.setLayoutQualifierSearchPath("land"); // testing if this pollutes the other test
+        resourceLoader.setQualifiers("land"); // testing if this pollutes the other test
     }
     
     @Test

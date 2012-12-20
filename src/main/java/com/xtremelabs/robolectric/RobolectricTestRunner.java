@@ -177,7 +177,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         boolean strictI18n = determineI18nStrictState(testMethod);
 
         ResourceLoader resourceLoader = getResourceLoader(sharedRobolectricContext.getAppManifest());
-        resourceLoader.setLayoutQualifierSearchPath();
         resourceLoader.setQualifiers(determineResourceQualifiers(testMethod));
         resourceLoader.setStrictI18n(strictI18n);
 

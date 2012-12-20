@@ -12,14 +12,14 @@ import static org.mockito.Mockito.when;
 public class AttributeTest {
     @Test public void shouldConstructFromW3cNode() throws Exception {
         Node node = mockNode("http://schemas.android.com/apk/res/com.xtremelabs.robolectric", "tagName", "contents");
-        Attribute attribute = new Attribute(node, new XmlLoader.XmlContext("package.name"));
+        Attribute attribute = new Attribute(node, new XmlLoader.XmlContext("package.name", null));
         assertEquals(new ResName("com.xtremelabs.robolectric", "attr", "tagName"), attribute.resName);
         assertEquals("contents", attribute.value);
     }
 
     @Test public void withResAutoNamespace_shouldConstructFromW3cNode() throws Exception {
         Node node = mockNode("http://schemas.android.com/apk/res-auto", "tagName", "contents");
-        Attribute attribute = new Attribute(node, new XmlLoader.XmlContext("package.name"));
+        Attribute attribute = new Attribute(node, new XmlLoader.XmlContext("package.name", null));
         assertEquals(new ResName("package.name", "attr", "tagName"), attribute.resName);
         assertEquals("contents", attribute.value);
     }

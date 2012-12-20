@@ -9,27 +9,26 @@ import com.xtremelabs.robolectric.util.I18nException;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class RoboLayoutInflater {
     public static final ResName ATTR_LAYOUT = new ResName(":attr/layout");
 
     private final ResourceExtractor resourceExtractor;
-    private final Map<String, ViewNode> viewNodesByLayoutName;
+    private final ResBundle<ViewNode> viewNodes;
 
-    private List<String> layoutQualifierSearchPath = new ArrayList<String>();
+    private String qualifiers = "";
 
-    public RoboLayoutInflater(ResourceExtractor resourceExtractor, Map<String, ViewNode> viewNodesByLayoutName) {
+    public RoboLayoutInflater(ResourceExtractor resourceExtractor, ResBundle<ViewNode> viewNodes) {
         this.resourceExtractor = resourceExtractor;
-        this.viewNodesByLayoutName = viewNodesByLayoutName;
+        this.viewNodes = viewNodes;
     }
 
     public View inflate(Context context, ViewNode viewNode, ViewGroup parent) throws Exception {
         if (viewNode.isInclude()) {
             List<Attribute> viewNodeAttributes = viewNode.getAttributes();
             Attribute layoutAttribute = Attribute.find(viewNodeAttributes, ATTR_LAYOUT);
-            String layoutName = layoutAttribute.qualifiedValue();
-            return inflateView(context, layoutName, viewNodeAttributes, parent);
+            ResName resName = new ResName(layoutAttribute.qualifiedValue());
+            return inflateView(context, resName.namespace, resName.name, viewNodeAttributes, parent);
         } else {
             View view = viewNode.create(context, parent);
 
@@ -45,15 +44,15 @@ public class RoboLayoutInflater {
     }
 
     public View inflateView(Context context, int resourceId, ViewGroup parent) {
-        String resourceName = resourceExtractor.getResourceName(resourceId);
-        View viewNode = inflateView(context, resourceName, parent);
+        ResName resName = resourceExtractor.getResName(resourceId);
+        View viewNode = inflateView(context, resName.namespace, resName.name, parent);
         if (viewNode != null) return viewNode;
 
-        throw new RuntimeException("Could not find layout " + resourceName);
+        throw new RuntimeException("Could not find layout " + resName);
     }
 
-    public View inflateView(Context context, String layoutName, List<Attribute> attributes, ViewGroup parent) {
-        ViewNode viewNode = getViewNodeByLayoutName(layoutName);
+    public View inflateView(Context context, String packageName, String layoutName, List<Attribute> attributes, ViewGroup parent) {
+        ViewNode viewNode = getViewNodeByLayoutName(packageName + ":layout/" + layoutName);
         if (viewNode == null) {
             throw new RuntimeException("Could not find layout " + layoutName);
         }
@@ -67,25 +66,15 @@ public class RoboLayoutInflater {
         }
     }
 
-    public View inflateView(Context context, String key, ViewGroup parent) {
-        return inflateView(context, key, new ArrayList<Attribute>(), parent);
+    public View inflateView(Context context, String packageName, String key, ViewGroup parent) {
+        return inflateView(context, packageName, key, new ArrayList<Attribute>(), parent);
     }
 
     private ViewNode getViewNodeByLayoutName(String layoutName) {
-        String[] parts = layoutName.split("/");
-        if (parts[0].endsWith(":layout") && !layoutQualifierSearchPath.isEmpty()) {
-            String rawLayoutName = parts[1];
-            for (String location : layoutQualifierSearchPath) {
-                ViewNode foundNode = viewNodesByLayoutName.get(parts[0] + "-" + location + "/" + rawLayoutName);
-                if (foundNode != null) {
-                    return foundNode;
-                }
-            }
-        }
-        return viewNodesByLayoutName.get(layoutName);
+        return viewNodes.get(layoutName, qualifiers);
     }
 
-    public void setLayoutQualifierSearchPath(List<String> layoutQualifierSearchPath) {
-        this.layoutQualifierSearchPath = layoutQualifierSearchPath;
+    public void setQualifiers(String qualifiers) {
+        this.qualifiers = qualifiers;
     }
 }

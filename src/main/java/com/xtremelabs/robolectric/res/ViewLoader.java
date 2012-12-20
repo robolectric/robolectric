@@ -9,34 +9,23 @@ import org.w3c.dom.NodeList;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 public class ViewLoader extends XmlLoader {
     public static final String XMLNS_URI = "http://www.w3.org/2000/xmlns/";
 
-    /**
-     * Map of "package:layout/name" to the View nodes for that layout file
-     */
-    private final Map<String, ViewNode> viewNodesByLayoutName;
+    private final ResBundle<ViewNode> resBundle;
 
-    public ViewLoader(ResourceExtractor resourceExtractor, Map<String, ViewNode> viewNodesByLayoutName) {
+    public ViewLoader(ResourceExtractor resourceExtractor, ResBundle<ViewNode> resBundle) {
         super(resourceExtractor);
-        this.viewNodesByLayoutName = viewNodesByLayoutName;
+        this.resBundle = resBundle;
     }
 
     @Override
     protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
         ViewNode topLevelNode = new ViewNode("top-level", new ArrayList<Attribute>(), xmlContext);
         processChildren(document.getChildNodes(), topLevelNode, xmlContext);
-        String parentDir = xmlFile.getParentFile().getName();
-        String layoutName = xmlContext.packageName + ":layout/" + xmlFile.getName().replace(".xml", "");
-        String specificLayoutName = xmlContext.packageName + ":" + parentDir + "/" + xmlFile.getName().replace(".xml", "");
-        // Check to see if the generic "layout/foo" is already in the map.  If not, add it.
-        if (!viewNodesByLayoutName.containsKey(layoutName)) {
-            viewNodesByLayoutName.put(layoutName, topLevelNode.getChildren().get(0));
-        }
-        // Add the specific "layout-land/foo" to the map.  If this happens to be "layout/foo", it's a no-op.
-        viewNodesByLayoutName.put(specificLayoutName, topLevelNode.getChildren().get(0));
+        String name = xmlFile.getName().replace(".xml", "");
+        resBundle.put(name, xmlContext.getQualifiers(), topLevelNode.getChildren().get(0), xmlContext);
     }
 
     private void processChildren(NodeList childNodes, ViewNode parent, XmlContext xmlContext) {

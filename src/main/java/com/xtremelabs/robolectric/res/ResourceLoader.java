@@ -5,7 +5,11 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.*;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.NinePatchDrawable;
 import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
@@ -14,9 +18,20 @@ import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileFilter;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Properties;
+import java.util.Set;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
@@ -46,7 +61,7 @@ public class ResourceLoader {
     private boolean isInitialized = false;
     private boolean strictI18n = false;
     private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
-    private Map<String, ViewNode> viewNodesByLayoutName = new HashMap<String, ViewNode>();
+    private ResBundle<ViewNode> viewNodes = new ResBundle<ViewNode>();
     private String qualifiers = "";
 
     public static ResourcePath getSystemResourcePath(int sdkVersion, List<ResourcePath> resourcePaths) {
@@ -75,12 +90,12 @@ public class ResourceLoader {
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
         drawableResourceLoader = new DrawableResourceLoader(resourceExtractor);
         boolResourceLoader = new BoolResourceLoader(resourceExtractor);
-        viewLoader = new ViewLoader(resourceExtractor, viewNodesByLayoutName);
+        viewLoader = new ViewLoader(resourceExtractor, viewNodes);
         menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
         preferenceLoader = new PreferenceLoader(resourceExtractor);
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
 
-        roboLayoutInflater = new RoboLayoutInflater(resourceExtractor, viewNodesByLayoutName);
+        roboLayoutInflater = new RoboLayoutInflater(resourceExtractor, viewNodes);
     }
 
     public ResourceLoader copy() {
@@ -159,6 +174,7 @@ public class ResourceLoader {
         if (!this.qualifiers.equals(qualifiers)) {
             System.out.println("switching from '" + this.qualifiers + "' to '" + qualifiers + "'");
             this.qualifiers = qualifiers;
+            roboLayoutInflater.setQualifiers(qualifiers);
             this.isInitialized = false;
         }
     }
@@ -184,7 +200,7 @@ public class ResourceLoader {
         }
         File result = new File(resourcePath.resourceBase, valuesDir);
         if (!result.exists()) {
-            throw new RuntimeException("Couldn't find value resource directory: " + result.getAbsolutePath());
+            System.out.println("WARN: Couldn't find value resource directory: " + result.getAbsolutePath());
         }
     }
 
@@ -507,12 +523,7 @@ public class ResourceLoader {
     }
 
     ViewNode getLayoutViewNode(String layoutName) {
-        return viewNodesByLayoutName.get(layoutName);
-    }
-
-    public void setLayoutQualifierSearchPath(String... locations) {
-        init();
-        roboLayoutInflater.setLayoutQualifierSearchPath(Arrays.asList(locations));
+        return viewNodes.get(layoutName, qualifiers);
     }
 
     public ResourceExtractor getResourceExtractor() {
