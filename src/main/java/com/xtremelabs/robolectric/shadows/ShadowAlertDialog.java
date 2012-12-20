@@ -373,6 +373,13 @@ public class ShadowAlertDialog extends ShadowDialog {
             return realBuilder;
         }
 
+        @Implementation
+        public AlertDialog.Builder setAdapter (ListAdapter adapter, DialogInterface.OnClickListener listener){
+        	this.adapter = adapter;
+        	this.clickListener = listener;
+        	return realBuilder;
+        }
+        
         @Implementation(i18nSafe=false)
         public AlertDialog.Builder setPositiveButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.positiveText = text;
