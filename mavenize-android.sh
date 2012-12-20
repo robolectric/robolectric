@@ -44,9 +44,35 @@ mvn install:install-file \
     -Dclassifier=real
 
 
-mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file -DgroupId=com.squareup.roboletric -DartifactId=android-base -Dversion=4.1.2_r1 -Dpackaging=jar -Dclassifier=real -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases -DrepositoryId=square-nexus -Dfile=/Users/square/.m2/repository/com/squareup/robolectric/android-base/4.1.2_r1/android-base-4.1.2_r1-real.jar
-mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file -DgroupId=com.squareup.roboletric -DartifactId=android-luni -Dversion=4.1.2_r1 -Dpackaging=jar -Dclassifier=real -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases -DrepositoryId=square-nexus -Dfile=/Users/square/.m2/repository/com/squareup/robolectric/android-luni/4.1.2_r1/android-luni-4.1.2_r1-real.jar
-mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file -DgroupId=com.squareup.roboletric -DartifactId=android-kxml2 -Dversion=4.1.2_r1 -Dpackaging=jar -Dclassifier=real -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases -DrepositoryId=square-nexus -Dfile=/Users/square/.m2/repository/com/squareup/robolectric/android-kxml2/4.1.2_r1/android-kxml2-4.1.2_r1-real.jar
+mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
+    -DgroupId=com.squareup.robolectric \
+    -DartifactId=android-base \
+    -Dversion=4.1.2_r1 \
+    -Dpackaging=jar \
+    -Dclassifier=real \
+    -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases \
+    -DrepositoryId=square-nexus \
+    -Dfile=/Users/square/.m2/repository/com/squareup/robolectric/android-base/4.1.2_r1/android-base-4.1.2_r1-real.jar
+
+mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
+    -DgroupId=com.squareup.robolectric \
+    -DartifactId=android-luni \
+    -Dversion=4.1.2_r1 \
+    -Dpackaging=jar \
+    -Dclassifier=real \
+    -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases \
+    -DrepositoryId=square-nexus \
+    -Dfile=/Users/square/.m2/repository/com/squareup/robolectric/android-luni/4.1.2_r1/android-luni-4.1.2_r1-real.jar
+
+mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
+    -DgroupId=com.squareup.robolectric \
+    -DartifactId=android-kxml2 \
+    -Dversion=4.1.2_r1 \
+    -Dpackaging=jar \
+    -Dclassifier=real \
+    -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases \
+    -DrepositoryId=square-nexus \
+    -Dfile=/Users/square/.m2/repository/com/squareup/robolectric/android-kxml2/4.1.2_r1/android-kxml2-4.1.2_r1-real.jar
 
 
 exit 1

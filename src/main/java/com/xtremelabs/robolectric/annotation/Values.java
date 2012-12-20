@@ -1,7 +1,7 @@
 package com.xtremelabs.robolectric.annotation;
 
 /**
- * Indicate that roboletric should look for values that is specific by those qualifiers
+ * Indicate that robolectric should look for values that is specific by those qualifiers
  * 
  */
 @java.lang.annotation.Documented

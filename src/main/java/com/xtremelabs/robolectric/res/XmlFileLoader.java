@@ -435,7 +435,7 @@ public class XmlFileLoader extends XmlLoader {
         			// This can only happen if mEventType is
         			// assigned with an unmapped integer.
         			throw new RuntimeException(
-                			"Roboletric-> Uknown XML event type: " + mEventType);
+                			"Robolectric-> Uknown XML event type: " + mEventType);
         		}
         	}
 
@@ -489,7 +489,7 @@ public class XmlFileLoader extends XmlLoader {
 				}
 				default : {
 					throw new RuntimeException(
-							"Roboletric -> Unknown node type: " + 
+							"Robolectric -> Unknown node type: " +
 							node.getNodeType() + ".");
 				}
         	}
