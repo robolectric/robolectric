@@ -1,16 +1,26 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
+import android.view.animation.LinearInterpolator;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
 @Implements(ValueAnimator.class)
 public class ShadowValueAnimator extends ShadowAnimator {
-    protected long duration;
+    private TimeInterpolator interpolator;
 
-    // Tested via ObjectAnimatorTest for now
     @Implementation
-    public long getDuration() {
-        return duration;
+    public void setInterpolator(TimeInterpolator value) {
+        if (value != null) {
+            interpolator = value;
+        } else {
+            interpolator = new LinearInterpolator();
+        }
+    }
+
+    @Implementation
+    public TimeInterpolator getInterpolator() {
+        return interpolator;
     }
 }

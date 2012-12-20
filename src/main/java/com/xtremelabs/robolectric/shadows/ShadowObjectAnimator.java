@@ -11,7 +11,6 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import java.lang.reflect.Method;
 
 
-
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ObjectAnimator.class)
 public class ShadowObjectAnimator extends ShadowValueAnimator {

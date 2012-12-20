@@ -8,27 +8,36 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import java.util.ArrayList;
 import java.util.List;
 
+import static android.animation.Animator.AnimatorListener;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Animator.class)
 public class ShadowAnimator {
     @RealObject
     private Animator realObject;
-    private List<Animator.AnimatorListener> listeners = new ArrayList<Animator.AnimatorListener>();
+    protected long duration;
+    private final List<AnimatorListener> listeners = new ArrayList<AnimatorListener>();
 
     protected void notifyStart() {
-        for (Animator.AnimatorListener listener : listeners) {
+        for (AnimatorListener listener : listeners) {
             listener.onAnimationStart(realObject);
         }
     }
 
     protected void notifyEnd() {
-        for (Animator.AnimatorListener listener : listeners) {
+        for (AnimatorListener listener : listeners) {
             listener.onAnimationEnd(realObject);
         }
     }
 
     @Implementation
-    public void addListener(Animator.AnimatorListener listener) {
+    public void addListener(AnimatorListener listener) {
         listeners.add(listener);
+    }
+
+    // Tested via ObjectAnimatorTest for now
+    @Implementation
+    public long getDuration() {
+        return duration;
     }
 }
