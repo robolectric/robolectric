@@ -31,7 +31,9 @@ public class ShadowTypeface {
     @Implementation
     public static Typeface createFromFile(String path) {
         if (fontPaths.contains(path)) {
-            return Robolectric.newInstanceOf(Typeface.class);
+            Typeface typeface = Robolectric.newInstanceOf(Typeface.class);
+            shadowOf(typeface).setAssetPath(path);
+            return typeface;
         }
         throw new RuntimeException("Font not found");
     }

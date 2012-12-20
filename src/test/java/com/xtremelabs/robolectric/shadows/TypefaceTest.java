@@ -58,10 +58,12 @@ public class TypefaceTest {
     @Test
     public void createFromFile_shouldReturnNewTypeface() throws Exception {
         //set allowed font paths:
-        ShadowTypeface.addAllowedTypefacePath("/system/fonts/Robolectric.ttf");
+        String path = "/system/fonts/Robolectric.ttf";
+        ShadowTypeface.addAllowedTypefacePath(path);
 
         // if given font path is ok, return a new Typeface
-        Typeface typeface = Typeface.createFromFile("/system/fonts/Robolectric.ttf");
+        Typeface typeface = Typeface.createFromFile(path);
         assertThat(typeface, instanceOf(Typeface.class));
+        assertThat(shadowOf(typeface).getAssetPath(), equalTo(path));
     }
 }
