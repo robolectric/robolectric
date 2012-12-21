@@ -28,10 +28,6 @@ public class MenuLoaderTest {
 	public void setUp() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
 
-        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(systemResources(), "values");
-
         menuLoader = new MenuLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
         new DocumentLoader(menuLoader).loadResourceXmlDir(testResources(), "menu");
 	}

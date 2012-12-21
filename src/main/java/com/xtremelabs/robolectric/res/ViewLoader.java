@@ -25,7 +25,7 @@ public class ViewLoader extends XmlLoader {
         ViewNode topLevelNode = new ViewNode("top-level", new ArrayList<Attribute>(), xmlContext);
         processChildren(document.getChildNodes(), topLevelNode, xmlContext);
         String name = xmlFile.getName().replace(".xml", "");
-        resBundle.put(name, xmlContext.getQualifiers(), topLevelNode.getChildren().get(0), xmlContext);
+        resBundle.put("layout", name, topLevelNode.getChildren().get(0), xmlContext);
     }
 
     private void processChildren(NodeList childNodes, ViewNode parent, XmlContext xmlContext) {

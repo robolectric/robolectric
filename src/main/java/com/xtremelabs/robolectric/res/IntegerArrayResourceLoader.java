@@ -18,7 +18,7 @@ public class IntegerArrayResourceLoader extends XpathResourceXmlLoader {
     private final IntegerResourceLoader integerResourceLoader;
 
     public IntegerArrayResourceLoader(ResourceExtractor resourceExtractor, IntegerResourceLoader integerResourceLoader) {
-        super(resourceExtractor, "/resources/integer-array");
+        super(resourceExtractor, "/resources/integer-array", "array");
         this.integerResourceLoader = integerResourceLoader;
     }
 
@@ -32,7 +32,7 @@ public class IntegerArrayResourceLoader extends XpathResourceXmlLoader {
         return results;
     }
 
-    @Override protected void processNode(Node node, String name, XmlContext xmlContext) throws XPathExpressionException {
+    @Override protected void processNode(Node node, String name, XmlContext xmlContext, String attrType) throws XPathExpressionException {
         XPathExpression itemXPath = XPathFactory.newInstance().newXPath().compile("item");
         NodeList childNodes = (NodeList) itemXPath.evaluate(node, XPathConstants.NODESET);
         List<Integer> arrayValues = new ArrayList<Integer>();

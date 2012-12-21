@@ -12,10 +12,12 @@ import java.io.File;
 
 public abstract class XpathResourceXmlLoader extends XmlLoader {
     private String expression;
+    private String attrType;
 
-    public XpathResourceXmlLoader(ResourceExtractor resourceExtractor, String expression) {
+    public XpathResourceXmlLoader(ResourceExtractor resourceExtractor, String expression, String attrType) {
         super(resourceExtractor);
         this.expression = expression;
+        this.attrType = attrType;
     }
 
     @Override protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
@@ -24,9 +26,9 @@ public abstract class XpathResourceXmlLoader extends XmlLoader {
         for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             String name = node.getAttributes().getNamedItem("name").getNodeValue();
-            processNode(node, name, xmlContext);
+            processNode(node, name, xmlContext, attrType);
         }
     }
 
-    protected abstract void processNode(Node node, String name, XmlContext xmlContext) throws XPathExpressionException;
+    protected abstract void processNode(Node node, String name, XmlContext xmlContext, String attrType) throws XPathExpressionException;
 }

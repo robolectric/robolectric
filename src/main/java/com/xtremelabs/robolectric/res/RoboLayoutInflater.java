@@ -71,7 +71,7 @@ public class RoboLayoutInflater {
     }
 
     private ViewNode getViewNodeByLayoutName(String layoutName) {
-        return viewNodes.get(layoutName, qualifiers);
+        return viewNodes.get(new ResName(layoutName), qualifiers);
     }
 
     public void setQualifiers(String qualifiers) {

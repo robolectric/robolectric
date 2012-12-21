@@ -8,32 +8,17 @@ import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-public class PluralResourceLoader extends XpathResourceXmlLoader implements ResourceValueConverter {
-    Map<String, PluralRules> plurals = new HashMap<String, PluralRules>();
-    private StringResourceLoader stringResourceLoader;
+public class PluralResourceLoader extends XpathResourceXmlLoader {
+    private ResBundle<PluralRules> pluralRulesResBundle;
 
-    public PluralResourceLoader(ResourceExtractor resourceExtractor, StringResourceLoader stringResourceLoader) {
-        super(resourceExtractor, "/resources/plurals");
-        this.stringResourceLoader = stringResourceLoader;
+    public PluralResourceLoader(ResourceExtractor resourceExtractor, ResBundle<PluralRules> pluralRulesResBundle) {
+        super(resourceExtractor, "/resources/plurals", "plurals");
+        this.pluralRulesResBundle = pluralRulesResBundle;
     }
 
-    public String getValue(int resourceId, int quantity) {
-        String name = resourceExtractor.getResourceName(resourceId);
-        PluralRules rules = plurals.get(name);
-        if (rules != null) {
-            Plural p = rules.find(quantity);
-            if (p != null) {
-                return p.string;
-            }
-        }
-        return null;
-    }
-
-    @Override protected void processNode(Node node, String name, XmlContext xmlContext) throws XPathExpressionException {
+    @Override protected void processNode(Node node, String name, XmlContext xmlContext, String attrType) throws XPathExpressionException {
         XPathExpression itemXPath = XPathFactory.newInstance().newXPath().compile("item");
         NodeList childNodes = (NodeList) itemXPath.evaluate(node, XPathConstants.NODESET);
         PluralRules rules = new PluralRules();
@@ -41,17 +26,9 @@ public class PluralResourceLoader extends XpathResourceXmlLoader implements Reso
             Node childNode = childNodes.item(j);
             String value = childNode.getTextContent();
             String quantity = childNode.getAttributes().getNamedItem("quantity").getTextContent();
-            if (value.startsWith("@")) {
-                // todo we should dereference this at request time, not load time
-                value = stringResourceLoader.getValue(value.substring(1), xmlContext.packageName);
-            }
             rules.add(new Plural(quantity, value));
         }
-        plurals.put(xmlContext.packageName + ":plurals/" + name, rules);
-    }
-
-    @Override public Object convertRawValue(String rawValue) {
-        return rawValue;
+        pluralRulesResBundle.put(attrType, name, rules, xmlContext);
     }
 
     static class PluralRules {

@@ -8,24 +8,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 class ResBundle<T> {
-    private final Map<String, Values<T>> valuesMap = new HashMap<String, Values<T>>();
+    private final Map<ResName, Values<T>> valuesMap = new HashMap<ResName, Values<T>>();
 
-    public void put(String name, String qualifiers, T value, XmlLoader.XmlContext xmlContext) {
-        name = xmlContext.packageName + ":" + name;
+    public void put(String attrType, String name, T value, XmlLoader.XmlContext xmlContext) {
+        ResName resName = new ResName(xmlContext.packageName, attrType, name);
 
-        Values<T> values = valuesMap.get(name);
-        if (values == null) valuesMap.put(name, values = new Values<T>());
-        values.add(new Value<T>(qualifiers, value));
+        Values<T> values = valuesMap.get(resName);
+        if (values == null) valuesMap.put(resName, values = new Values<T>());
+        values.add(new Value<T>(xmlContext.getQualifiers(), value, xmlContext));
         Collections.sort(values);
     }
 
-    public T get(String name, String qualifiers) {
-        ResName resName = new ResName(name);
-        Values<T> values = valuesMap.get(resName.namespace + ":" + resName.name);
-        if (values != null) {
-            return pick(values, qualifiers).value;
-        }
-        return null;
+    public T get(ResName resName, String qualifiers) {
+        Value<T> value = getValue(resName, qualifiers);
+        return value == null ? null : value.value;
+    }
+
+    public Value<T> getValue(ResName resName, String qualifiers) {
+        Values<T> values = valuesMap.get(resName);
+        return (values != null) ? pick(values, qualifiers) : null;
     }
 
     public static <T> Value<T> pick(Values<T> values, String qualifiers) {
@@ -63,8 +64,14 @@ class ResBundle<T> {
     static class Value<T> implements Comparable<Value<T>> {
         final String qualifiers;
         final T value;
+        final XmlLoader.XmlContext xmlContext;
 
-        Value(String qualifiers, T value) {
+        Value(String qualifiers, T value, XmlLoader.XmlContext xmlContext) {
+            if (value == null) {
+                throw new NullPointerException();
+            }
+
+            this.xmlContext = xmlContext;
             this.qualifiers = qualifiers == null ? "--" : "-" + qualifiers + "-";
             this.value = value;
         }

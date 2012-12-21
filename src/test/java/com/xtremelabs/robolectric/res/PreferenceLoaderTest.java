@@ -21,9 +21,6 @@ public class PreferenceLoaderTest {
     @Before
     public void setUp() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
-        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
         prefLoader = new PreferenceLoader(resourceExtractor);
         new DocumentLoader(prefLoader).loadResourceXmlDir(testResources(), "xml");
     }
@@ -44,8 +41,6 @@ public class PreferenceLoaderTest {
     public void shouldThrowI18nExceptionOnPrefsWithBareStrings() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor(testResources());
 
-        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
         prefLoader = new PreferenceLoader(resourceExtractor);
         prefLoader.setStrictI18n(true);
         new DocumentLoader(prefLoader).loadResourceXmlDir(testResources(), "xml");

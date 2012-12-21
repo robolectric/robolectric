@@ -14,6 +14,7 @@ import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
+import com.xtremelabs.robolectric.tester.android.util.ResName;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.I18nException;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
@@ -45,23 +46,25 @@ public class ResourceLoader {
     private final MenuLoader menuLoader;
     private final PreferenceLoader preferenceLoader;
     private final XmlFileLoader xmlFileLoader;
-    private final StringResourceLoader stringResourceLoader;
-    private final DimenResourceLoader dimenResourceLoader;
-    private final IntegerResourceLoader integerResourceLoader;
-    private final PluralResourceLoader pluralResourceLoader;
-    private final StringArrayResourceLoader stringArrayResourceLoader;
     protected final AttrResourceLoader attrResourceLoader;
-    private final ColorResourceLoader colorResourceLoader;
     private final DrawableResourceLoader drawableResourceLoader;
-    private final BoolResourceLoader boolResourceLoader;
     private final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
 
     private final RoboLayoutInflater roboLayoutInflater;
 
     private boolean isInitialized = false;
     private boolean strictI18n = false;
+
+    private final Resolver<Boolean> booleanResolver = new BooleanResolver();
+    private final Resolver<Integer> colorResolver = new ColorResolver();
+    private final Resolver<Float> dimenResolver = new DimenResolver();
+    private final Resolver<Integer> integerResolver = new IntegerResolver();
+    private final PluralsResolver pluralsResolver = new PluralsResolver();
+    private final Resolver<String> stringResolver = new StringResolver();
+    private final StringArrayResourceLoader stringArrayResourceLoader;
+    private final ResBundle<ViewNode> viewNodes = new ResBundle<ViewNode>();
+
     private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
-    private ResBundle<ViewNode> viewNodes = new ResBundle<ViewNode>();
     private String qualifiers = "";
 
     public static ResourcePath getSystemResourcePath(int sdkVersion, List<ResourcePath> resourcePaths) {
@@ -81,21 +84,15 @@ public class ResourceLoader {
         this.resourceExtractor = resourceExtractor;
         this.resourcePaths = Collections.unmodifiableList(resourcePaths);
 
-        stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        dimenResourceLoader = new DimenResourceLoader(resourceExtractor);
-        integerResourceLoader = new IntegerResourceLoader(resourceExtractor);
-        pluralResourceLoader = new PluralResourceLoader(resourceExtractor, stringResourceLoader);
-        stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
-        colorResourceLoader = new ColorResourceLoader(resourceExtractor);
         attrResourceLoader = new AttrResourceLoader(resourceExtractor);
         drawableResourceLoader = new DrawableResourceLoader(resourceExtractor);
-        boolResourceLoader = new BoolResourceLoader(resourceExtractor);
         viewLoader = new ViewLoader(resourceExtractor, viewNodes);
         menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
         preferenceLoader = new PreferenceLoader(resourceExtractor);
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
 
         roboLayoutInflater = new RoboLayoutInflater(resourceExtractor, viewNodes);
+        stringArrayResourceLoader = new StringArrayResourceLoader(this.resourceExtractor, stringResolver);
     }
 
     public ResourceLoader copy() {
@@ -132,9 +129,14 @@ public class ResourceLoader {
             validateQualifiers(resourcePath, qualifiers);
 
             DocumentLoader valuesDocumentLoader = new DocumentLoader(
-                    stringResourceLoader, pluralResourceLoader,
-                    stringArrayResourceLoader, colorResourceLoader, attrResourceLoader,
-                    dimenResourceLoader, integerResourceLoader, boolResourceLoader
+                    new ValueResourceLoader(resourceExtractor, "/resources/bool", booleanResolver, "bool"),
+                    new ValueResourceLoader(resourceExtractor, "/resources/color", colorResolver, "color"),
+                    new ValueResourceLoader(resourceExtractor, "/resources/dimen", dimenResolver, "dimen"),
+                    new ValueResourceLoader(resourceExtractor, "/resources/integer", integerResolver, "integer"),
+                    new PluralResourceLoader(resourceExtractor, pluralsResolver),
+                    new ValueResourceLoader(resourceExtractor, "/resources/string", stringResolver, "string"),
+                    stringArrayResourceLoader,
+                    attrResourceLoader
             );
 
             loadValueResourcesFromDirs(valuesDocumentLoader, resourcePath, qualifiers);
@@ -327,44 +329,39 @@ public class ResourceLoader {
 
     public int getColorValue(int id) {
         init();
-
-        int value = colorResourceLoader.getValue(id);
-        if (value != -1) return value;
-
-        return -1;
+        Integer value = colorResolver.resolve(resourceExtractor.getResName(id), qualifiers);
+        return value == null ? -1 : value;
     }
 
     public String getStringValue(int id) {
         init();
-
-        String value = stringResourceLoader.getValue(id);
-        if (value != null) return value;
-
-        return null;
+        return stringResolver.resolve(resourceExtractor.getResName(id), qualifiers);
     }
 
     public String getPluralStringValue(int id, int quantity) {
         init();
-        return pluralResourceLoader.getValue(id, quantity);
+        ResName resName = resourceExtractor.getResName(id);
+        PluralResourceLoader.PluralRules pluralRules = pluralsResolver.get(resName, qualifiers);
+        if (pluralRules == null) return null;
+
+        PluralResourceLoader.Plural plural = pluralRules.find(quantity);
+        if (plural == null) return null;
+        return stringResolver.resolveValue(qualifiers, plural.string, resName.namespace);
     }
 
     public float getDimenValue(int id) {
         init();
-        return dimenResourceLoader.getValue(id);
+        return dimenResolver.resolve(resourceExtractor.getResName(id), qualifiers);
     }
 
     public int getIntegerValue(int id) {
         init();
-
-        Integer value = integerResourceLoader.getValue(id);
-        if (value != null) return value;
-
-        return 0;
+        return integerResolver.resolve(resourceExtractor.getResName(id), qualifiers);
     }
 
     public boolean getBooleanValue(int id) {
         init();
-        return boolResourceLoader.getValue(id);
+        return booleanResolver.resolve(resourceExtractor.getResName(id), qualifiers);
     }
 
     public XmlResourceParser getXml(int id) {
@@ -523,7 +520,7 @@ public class ResourceLoader {
     }
 
     ViewNode getLayoutViewNode(String layoutName) {
-        return viewNodes.get(layoutName, qualifiers);
+        return viewNodes.get(new ResName(layoutName), qualifiers);
     }
 
     public ResourceExtractor getResourceExtractor() {
@@ -549,6 +546,103 @@ public class ResourceLoader {
         @Override
         public boolean accept(File file) {
             return file.getPath().contains(File.separator + folderBaseName);
+        }
+    }
+
+    abstract static class Resolver<T> extends ResBundle<String> {
+        public T resolve(ResName resName, String qualifiers) {
+            Value<String> value = getValue(resName, qualifiers);
+            if (value == null) return null;
+            return resolveValue(qualifiers, value.value, value.xmlContext.packageName);
+        }
+
+        T resolveValue(String qualifiers, String value, String packageName) {
+            if (value == null) return null;
+            if (value.startsWith("@")) {
+                ResName resName = new ResName(ResourceExtractor.qualifyResourceName(value.substring(1), packageName));
+                return resolve(resName, qualifiers);
+            } else {
+                return convert(value);
+            }
+        }
+
+        abstract T convert(String rawValue);
+    }
+
+    private static class BooleanResolver extends Resolver<Boolean> {
+        @Override
+        Boolean convert(String rawValue) {
+            if ("true".equalsIgnoreCase(rawValue)) {
+                return true;
+            } else if ("false".equalsIgnoreCase(rawValue)) {
+                return false;
+            }
+
+            int intValue = Integer.parseInt(rawValue);
+            if (intValue == 0) {
+                return false;
+            }
+            return true;
+
+        }
+    }
+
+    private static class ColorResolver extends Resolver<Integer> {
+        @Override
+        Integer convert(String rawValue) {
+            if (rawValue.startsWith("#")) {
+                long color = Long.parseLong(rawValue.substring(1), 16);
+                return (int) color;
+            }
+            return null;
+        }
+    }
+
+    private static class DimenResolver extends Resolver<Float> {
+        private static final String[] UNITS = { "dp", "dip", "pt", "px", "sp" };
+
+        @Override
+        Float convert(String rawValue) {
+            int end = rawValue.length();
+            for ( int i = 0; i < UNITS.length; i++ ) {
+                int index = rawValue.indexOf(UNITS[i]);
+                if ( index >= 0 && end > index ) {
+                    end = index;
+                }
+            }
+
+            return Float.parseFloat(rawValue.substring(0, end));
+        }
+    }
+
+    private static class IntegerResolver extends Resolver<Integer> {
+        @Override
+        Integer convert(String rawValue) {
+            try {
+                // Decode into long, because there are some large hex values in the android resource files
+                // (e.g. config_notificationsBatteryLowARGB = 0xFFFF0000 in sdk 14).
+                // Integer.decode() does not support large, i.e. negative values in hex numbers.
+                return (int) Long.decode(rawValue).longValue();
+            } catch (NumberFormatException nfe) {
+                throw new RuntimeException(rawValue + " is not an integer.", nfe);
+            }
+        }
+    }
+
+    private static class PluralsResolver extends ResBundle<PluralResourceLoader.PluralRules> {
+    }
+
+    static class StringResolver extends Resolver<String> {
+        @Override
+        String convert(String rawValue) {
+            return rawValue;
+        }
+    }
+
+    private static class StringArrayResolver extends Resolver<String[]> {
+        @Override
+        String[] convert(String rawValue) {
+            return new String[0];
         }
     }
 }

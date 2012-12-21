@@ -18,11 +18,12 @@ public class StringArrayResourceLoaderTest {
     public void setUp() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
 
-        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(systemResources(), "values");
+        ResourceLoader.StringResolver stringResolver = new ResourceLoader.StringResolver();
+        DocumentLoader documentLoader = new DocumentLoader(new ValueResourceLoader(resourceExtractor, "/resources/string", stringResolver, "string"));
+        documentLoader.loadResourceXmlDir(testResources(), "values");
+        documentLoader.loadResourceXmlDir(systemResources(), "values");
 
-        stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
+        stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResolver);
         new DocumentLoader(stringArrayResourceLoader).loadResourceXmlDir(testResources(), "values");
         new DocumentLoader(stringArrayResourceLoader).loadResourceXmlDir(systemResources(), "values");
     }
@@ -40,10 +41,10 @@ public class StringArrayResourceLoaderTest {
     @Test
     public void testLazyResolution_ReferencesWorkEvenIfLoadedOutOfOrder() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
-        StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
-        stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResourceLoader);
+        ResourceLoader.StringResolver stringResolver = new ResourceLoader.StringResolver();
+        stringArrayResourceLoader = new StringArrayResourceLoader(resourceExtractor, stringResolver);
         new DocumentLoader(stringArrayResourceLoader).loadResourceXmlDir(testResources(), "values");
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
+        new DocumentLoader(new ValueResourceLoader(resourceExtractor, "/resources/string", stringResolver, "string")).loadResourceXmlDir(testResources(), "values");
 
         assertThat(Arrays.asList(stringArrayResourceLoader.getArrayValue(R.array.greetings)), hasItems("hola", "Hello"));
     }

@@ -20,7 +20,7 @@ public class ResBundleTest {
     private ResBundle.Values<String> asValues(String... qualifierses) {
         ResBundle.Values<String> values = new ResBundle.Values<String>();
         for (String qualifiers : qualifierses) {
-            values.add(new ResBundle.Value<String>(qualifiers, qualifiers));
+            values.add(new ResBundle.Value<String>(qualifiers, qualifiers, null));
         }
         return values;
     }

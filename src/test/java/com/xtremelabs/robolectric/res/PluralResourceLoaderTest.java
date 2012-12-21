@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.res;
 
-import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.tester.android.util.ResName;
+import com.xtremelabs.robolectric.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -9,24 +10,25 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 public class PluralResourceLoaderTest {
-    private PluralResourceLoader pluralResourceLoader;
+    private ResBundle<PluralResourceLoader.PluralRules> pluralRulesResBundle;
 
     @Before
     public void setUp() throws Exception {
         ResourceExtractor extractor = new ResourceExtractor(testResources());
 
-        StringResourceLoader stringResourceLoader = new StringResourceLoader(extractor);
-        pluralResourceLoader = new PluralResourceLoader(extractor, stringResourceLoader);
+        pluralRulesResBundle = new ResBundle<PluralResourceLoader.PluralRules>();
+        PluralResourceLoader pluralResourceLoader = new PluralResourceLoader(extractor, pluralRulesResBundle);
 
-        new DocumentLoader(stringResourceLoader).loadResourceXmlDir(testResources(), "values");
-        new DocumentLoader(pluralResourceLoader).loadResourceXmlDir(testResources(), "values");
+        new DocumentLoader( pluralResourceLoader).loadResourceXmlDir(testResources(), "values");
     }
 
     @Test
     public void testPluralsAreResolved() throws Exception {
-        assertThat(pluralResourceLoader.getValue(R.plurals.beer, 0), equalTo("Howdy"));
-        assertThat(pluralResourceLoader.getValue(R.plurals.beer, 1), equalTo("One beer"));
-        assertThat(pluralResourceLoader.getValue(R.plurals.beer, 2), equalTo("Two beers"));
-        assertThat(pluralResourceLoader.getValue(R.plurals.beer, 3), equalTo("%d beers, yay!"));
+        ResName resName = new ResName(TestUtil.TEST_PACKAGE, "plurals", "beer");
+        PluralResourceLoader.PluralRules pluralRules = pluralRulesResBundle.getValue(resName, "").value;
+        assertThat(pluralRules.find(0).string, equalTo("@string/howdy"));
+        assertThat(pluralRules.find(1).string, equalTo("One beer"));
+        assertThat(pluralRules.find(2).string, equalTo("Two beers"));
+        assertThat(pluralRules.find(3).string, equalTo("%d beers, yay!"));
     }
 }
