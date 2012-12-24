@@ -1,8 +1,5 @@
 package com.xtremelabs.robolectric.res;
 
-import java.util.*;
-import java.util.Map.Entry;
-
 import android.content.ComponentName;
 import android.content.ContextWrapper;
 import android.content.Intent;
@@ -11,19 +8,22 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
-
+import android.util.Pair;
 import com.xtremelabs.robolectric.RobolectricConfig;
 import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
+
+import java.util.*;
 
 public class RobolectricPackageManager extends StubPackageManager {
 
     private Map<String, PackageInfo> packageList;
-    private Map<Intent, List<ResolveInfo>> resolveList = new HashMap<Intent, List<ResolveInfo>>();
-    private Map<ComponentName, ComponentState> componentList = new HashMap<ComponentName,ComponentState>();
+    private Map<Intent, List<ResolveInfo>> resolveInfoForIntent = new HashMap<Intent, List<ResolveInfo>>();
+    private Map<ComponentName, ComponentState> componentList = new HashMap<ComponentName, ComponentState>();
     private Map<ComponentName, Drawable> drawableList = new HashMap<ComponentName, Drawable>();
     private Map<String, Boolean> systemFeatureList = new HashMap<String, Boolean>();
-    private Map<IntentFilter, ComponentName > preferredActivities = new HashMap<IntentFilter, ComponentName>();
-    
+    private Map<IntentFilter, ComponentName> preferredActivities = new HashMap<IntentFilter, ComponentName>();
+    private Map<Pair<String, Integer>, Drawable> drawables = new HashMap<Pair<String, Integer>, Drawable>();
+
     private ContextWrapper contextWrapper;
     private RobolectricConfig config;
     private ApplicationInfo applicationInfo;
@@ -37,7 +37,7 @@ public class RobolectricPackageManager extends StubPackageManager {
     @Override
     public PackageInfo getPackageInfo(String packageName, int flags) throws NameNotFoundException {
         if (packageList.containsKey(packageName)) {
-        	return packageList.get(packageName);
+            return packageList.get(packageName);
         }
 
         throw new NameNotFoundException();
@@ -60,7 +60,7 @@ public class RobolectricPackageManager extends StubPackageManager {
 
         PackageInfo info;
         if ((info = packageList.get(packageName)) != null) {
-        	return info.applicationInfo;
+            return info.applicationInfo;
         }
 
         throw new NameNotFoundException();
@@ -72,15 +72,15 @@ public class RobolectricPackageManager extends StubPackageManager {
     }
 
     @Override
-    public List<ResolveInfo> queryIntentActivities( Intent intent, int flags ) {
-    	List<ResolveInfo> result = resolveList.get( intent );
-    	return (result == null) ? new ArrayList<ResolveInfo>() : result;
+    public List<ResolveInfo> queryIntentActivities(Intent intent, int flags) {
+        List<ResolveInfo> result = resolveInfoForIntent.get(intent);
+        return (result == null) ? new ArrayList<ResolveInfo>() : result;
     }
 
     @Override
     public ResolveInfo resolveActivity(Intent intent, int flags) {
-    	List<ResolveInfo> candidates = queryIntentActivities(intent, flags);
-    	return candidates.isEmpty() ? null : candidates.get(0);
+        List<ResolveInfo> candidates = queryIntentActivities(intent, flags);
+        return candidates.isEmpty() ? null : candidates.get(0);
     }
 
     @Override
@@ -88,108 +88,116 @@ public class RobolectricPackageManager extends StubPackageManager {
         return resolveActivity(intent, flags);
     }
 
-    public void addResolveInfoForIntent( Intent intent, List<ResolveInfo> info ) {
-        resolveList.put(intent, info);
+    public void addResolveInfoForIntent(Intent intent, List<ResolveInfo> info) {
+        resolveInfoForIntent.put(intent, info);
     }
 
     public void addResolveInfoForIntent(Intent intent, ResolveInfo info) {
-        List<ResolveInfo> l = resolveList.get(intent);
-        if (l == null) {
-            l = new ArrayList<ResolveInfo>();
-            resolveList.put(intent, l);
+        List<ResolveInfo> infoList = findOrCreateInfoList(intent);
+        infoList.add(info);
+    }
+
+    public void removeResolveInfosForIntent(Intent intent, String packageName) {
+        List<ResolveInfo> infoList = findOrCreateInfoList(intent);
+        for (Iterator<ResolveInfo> iterator = infoList.iterator(); iterator.hasNext(); ) {
+            ResolveInfo resolveInfo = iterator.next();
+            if (resolveInfo.activityInfo.packageName.equals(packageName)) {
+                iterator.remove();
+            }
         }
-        l.add(info);
     }
 
     @Override
     public Drawable getActivityIcon(Intent intent) {
-    	return drawableList.get(intent.getComponent());
+        return drawableList.get(intent.getComponent());
     }
 
     @Override
     public Drawable getActivityIcon(ComponentName componentName) {
-    	return drawableList.get(componentName);
+        return drawableList.get(componentName);
     }
 
-    public void addActivityIcon( ComponentName component, Drawable d ) {
-    	drawableList.put( component, d);
+    public void addActivityIcon(ComponentName component, Drawable d) {
+        drawableList.put(component, d);
     }
 
-    public void addActivityIcon( Intent intent, Drawable d ) {
-    	drawableList.put( intent.getComponent(), d);
+    public void addActivityIcon(Intent intent, Drawable d) {
+        drawableList.put(intent.getComponent(), d);
     }
 
-	@Override
-	public Intent getLaunchIntentForPackage(String packageName) {
-		Intent i = new Intent();
-		i.setComponent( new ComponentName(packageName, "") );
-		return i;
-	}
+    @Override
+    public Intent getLaunchIntentForPackage(String packageName) {
+        Intent i = new Intent();
+        i.setComponent(new ComponentName(packageName, ""));
+        return i;
+    }
 
-	@Override
-	public CharSequence getApplicationLabel(ApplicationInfo info) {
-		return info.name;
-	}
+    @Override
+    public CharSequence getApplicationLabel(ApplicationInfo info) {
+        return info.name;
+    }
 
-	@Override
-	public void setComponentEnabledSetting(ComponentName componentName, int newState, int flags) {
-		componentList.put(componentName, new ComponentState(newState, flags));
-	}
-	
+    @Override
+    public void setComponentEnabledSetting(ComponentName componentName, int newState, int flags) {
+        componentList.put(componentName, new ComponentState(newState, flags));
+    }
+
     public void addPreferredActivity(IntentFilter filter, int match, ComponentName[] set, ComponentName activity) {
-    	preferredActivities.put(filter, activity);
+        preferredActivities.put(filter, activity);
     }
-    
+
     @Override
     public int getPreferredActivities(List<IntentFilter> outFilters, List<ComponentName> outActivities, String packageName) {
-    	if( outFilters == null ){ return 0; }
-    	
-    	Set< IntentFilter> filters = preferredActivities.keySet();
-    	for( IntentFilter filter: outFilters ){
-    		step:
-			for ( IntentFilter testFilter : filters ) {
-				ComponentName name = preferredActivities.get( testFilter );
-				// filter out based on the given packageName;
-				if( packageName != null && !name.getPackageName().equals( packageName ) ){
-					continue step;
-				}
-				
-				// Check actions
-				Iterator< String > iterator = filter.actionsIterator();
-				while ( iterator.hasNext() ) {
-					if ( !testFilter.matchAction( iterator.next() ) ) {
-						continue step;
-					}
-				}
+        if (outFilters == null) {
+            return 0;
+        }
 
-				iterator = filter.categoriesIterator();
-				while ( iterator.hasNext() ) {
-					if ( !filter.hasCategory( iterator.next() ) ) {
-						continue step;
-					}
-				}
-				
-				if( outActivities == null ){
-					outActivities = new ArrayList<ComponentName>();
-				}
-				
-				outActivities.add( name );
-			}
-    	}
-    	
-    	return 0;
+        Set<IntentFilter> filters = preferredActivities.keySet();
+        for (IntentFilter filter : outFilters) {
+            step:
+            for (IntentFilter testFilter : filters) {
+                ComponentName name = preferredActivities.get(testFilter);
+                // filter out based on the given packageName;
+                if (packageName != null && !name.getPackageName().equals(packageName)) {
+                    continue step;
+                }
+
+                // Check actions
+                Iterator<String> iterator = filter.actionsIterator();
+                while (iterator.hasNext()) {
+                    if (!testFilter.matchAction(iterator.next())) {
+                        continue step;
+                    }
+                }
+
+                iterator = filter.categoriesIterator();
+                while (iterator.hasNext()) {
+                    if (!filter.hasCategory(iterator.next())) {
+                        continue step;
+                    }
+                }
+
+                if (outActivities == null) {
+                    outActivities = new ArrayList<ComponentName>();
+                }
+
+                outActivities.add(name);
+            }
+        }
+
+        return 0;
     }
 
-	/**
-	 * Non-Android accessor.  Use to make assertions on values passed to
-	 * setComponentEnabledSetting.
-	 *
-	 * @param componentName
-	 * @return
-	 */
-	public RobolectricPackageManager.ComponentState getComponentState(ComponentName componentName) {
-		return componentList.get(componentName);
-	}
+    /**
+     * Non-Android accessor.  Use to make assertions on values passed to
+     * setComponentEnabledSetting.
+     *
+     * @param componentName
+     * @return
+     */
+    public RobolectricPackageManager.ComponentState getComponentState(ComponentName componentName) {
+        return componentList.get(componentName);
+    }
 
     /**
      * Non-Android accessor.  Used to add a package to the list of those
@@ -197,14 +205,18 @@ public class RobolectricPackageManager extends StubPackageManager {
      *
      * @param packageInfo
      */
-    public void addPackage( PackageInfo packageInfo ) {
-    	 packageList.put(packageInfo.packageName, packageInfo);
+    public void addPackage(PackageInfo packageInfo) {
+        packageList.put(packageInfo.packageName, packageInfo);
     }
 
-    public void addPackage( String packageName ) {
-    	PackageInfo info = new PackageInfo();
-    	info.packageName = packageName;
-    	addPackage( info );
+    public void removePackage(String packageName) {
+        packageList.remove(packageName);
+    }
+
+    public void addPackage(String packageName) {
+        PackageInfo info = new PackageInfo();
+        info.packageName = packageName;
+        addPackage(info);
     }
 
     @Override
@@ -220,27 +232,47 @@ public class RobolectricPackageManager extends StubPackageManager {
      * @param supported
      */
     public void setSystemFeature(String name, boolean supported) {
-    	systemFeatureList.put(name, supported);
+        systemFeatureList.put(name, supported);
     }
 
     private void initializePackageInfo() {
-    	if (packageList != null) { return; }
+        if (packageList != null) {
+            return;
+        }
 
         PackageInfo packageInfo = new PackageInfo();
         packageInfo.packageName = contextWrapper.getPackageName();
         packageInfo.versionName = "1.0";
 
         packageList = new HashMap<String, PackageInfo>();
-        addPackage( packageInfo );
+        addPackage(packageInfo);
+    }
+
+    public void addDrawableResolution(String packageName, int resourceId, Drawable drawable) {
+        drawables.put(new Pair(packageName, resourceId), drawable);
     }
 
     public class ComponentState {
-    	public int newState;
-    	public int flags;
+        public int newState;
+        public int flags;
 
-		public ComponentState(int newState, int flags) {
-			this.newState = newState;
-			this.flags = flags;
-		}
+        public ComponentState(int newState, int flags) {
+            this.newState = newState;
+            this.flags = flags;
+        }
+    }
+
+    @Override
+    public Drawable getDrawable(String packageName, int resourceId, ApplicationInfo applicationInfo) {
+        return drawables.get(new Pair(packageName, resourceId));
+    }
+
+    private List<ResolveInfo> findOrCreateInfoList(Intent intent) {
+        List<ResolveInfo> infoList = resolveInfoForIntent.get(intent);
+        if (infoList == null) {
+            infoList = new ArrayList<ResolveInfo>();
+            resolveInfoForIntent.put(intent, infoList);
+        }
+        return infoList;
     }
 }

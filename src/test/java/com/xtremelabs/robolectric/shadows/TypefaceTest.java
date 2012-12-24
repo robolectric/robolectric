@@ -13,10 +13,11 @@ import java.io.FileWriter;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
-public class ShadowTypefaceTest {
+public class TypefaceTest {
     private File assetsBase;
     private File fontFile;
 
@@ -43,5 +44,26 @@ public class ShadowTypefaceTest {
     @Test(expected = RuntimeException.class)
     public void createFromAsset_throwsExceptionWhenFontNotFound() throws Exception {
         Typeface.createFromAsset(Robolectric.application.getAssets(), "nonexistent.ttf");
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void createFromFile_shouldRaiseErrorFromInvalidFilePath() throws Exception {
+        //set allowed font paths:
+        ShadowTypeface.addAllowedTypefacePath("/system/fonts/Robolectric.ttf");
+
+        //raise error if given font path is not a member of allowed font paths
+        Typeface.createFromFile("/system/fonts/Roboto.ttf");
+    }
+
+    @Test
+    public void createFromFile_shouldReturnNewTypeface() throws Exception {
+        //set allowed font paths:
+        String path = "/system/fonts/Robolectric.ttf";
+        ShadowTypeface.addAllowedTypefacePath(path);
+
+        // if given font path is ok, return a new Typeface
+        Typeface typeface = Typeface.createFromFile(path);
+        assertThat(typeface, instanceOf(Typeface.class));
+        assertThat(shadowOf(typeface).getAssetPath(), equalTo(path));
     }
 }

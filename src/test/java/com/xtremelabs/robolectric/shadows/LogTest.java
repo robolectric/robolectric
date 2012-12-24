@@ -2,11 +2,14 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.util.Log;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
+import com.xtremelabs.robolectric.shadows.ShadowLog.LogItem;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
+import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -132,6 +135,39 @@ public class LogTest {
         } finally {
             ShadowLog.stream = old;
         }
+    }
+    
+    @Test
+    public void shouldLogAccordingToTag() throws Exception {
+    	Log.d( "tag1", "1" );
+    	Log.i( "tag2", "2" );
+    	Log.e( "tag3", "3" );
+    	Log.w( "tag1", "4" );
+    	Log.i( "tag1", "5" );
+    	Log.d( "tag2", "6" );
+    	
+    	List<LogItem> allItems = ShadowLog.getLogs();
+    	assertThat( allItems.size(), equalTo(6) );
+    	int i = 1;
+    	for ( LogItem item : allItems ) {
+    		assertThat( item.msg, equalTo(Integer.toString(i)) );
+    		i++;
+    	}
+    	assertUniformLogsForTag( "tag1", 3 );
+    	assertUniformLogsForTag( "tag2", 2 );
+    	assertUniformLogsForTag( "tag3", 1 );   	
+    }
+    
+    private void assertUniformLogsForTag( String tag, int count ) {
+    	List<LogItem> tag1Items = ShadowLog.getLogsForTag( tag );
+    	assertThat( tag1Items.size(), equalTo( count ) );
+    	int last = -1;
+    	for (LogItem item : tag1Items) {
+    		assertThat(item.tag, equalTo(tag));
+    		int current = Integer.parseInt(item.msg);
+    		assertThat(current > last, equalTo(true));
+    		last = current;
+    	}
     }
 
     @Test

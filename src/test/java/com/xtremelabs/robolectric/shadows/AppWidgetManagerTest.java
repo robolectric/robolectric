@@ -16,6 +16,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.List;
+
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.*;
 
@@ -115,6 +117,20 @@ public class AppWidgetManagerTest {
     public void bindAppWidgetIdIfAllowed_shouldThrowIllegalArgumentExceptionWhenPrompted() throws Exception {
         shadowAppWidgetManager.setValidWidgetProviderComponentName(false);
         shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", ""));
+    }
+
+    @Test
+    public void getInstalledProviders_returnsWidgetList() throws Exception {
+        AppWidgetProviderInfo info1 = new AppWidgetProviderInfo();
+        info1.label = "abc";
+        AppWidgetProviderInfo info2 = new AppWidgetProviderInfo();
+        info2.label = "def";
+        shadowAppWidgetManager.putWidgetInfo(1324, info1);
+        shadowAppWidgetManager.putWidgetInfo(4560, info2);
+        List<AppWidgetProviderInfo> installedProviders = appWidgetManager.getInstalledProviders();
+        assertEquals(2, installedProviders.size());
+        assertEquals(info1, installedProviders.get(0));
+        assertEquals(info2, installedProviders.get(1));
     }
 
     private void assertContains(String expectedText, View view) {

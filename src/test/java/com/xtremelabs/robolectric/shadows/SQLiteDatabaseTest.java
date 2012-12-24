@@ -11,6 +11,7 @@ import org.junit.runner.RunWith;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -26,7 +27,7 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
         assertThat(DatabaseConfig.getDatabaseMap().getClass().getName(),
                 equalTo(SQLiteMap.class.getName()));
     }
-    
+
     @Test
     public void testReplace() throws Exception {
         long id = addChuck();
@@ -82,6 +83,24 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
         cursor.close();
         assertThat(shadowOf(database).hasOpenCursors(), equalTo(false));
 
+    }
+
+    @Test
+    public void shouldBeAbleToAnswerQuerySql() throws Exception {
+        try {
+            database.query("table_name_1", new String[]{"first_column"}, null, null, null, null, null);
+        } catch (Exception e) {
+            //ignore
+        }
+        try {
+            database.query("table_name_2", new String[]{"second_column"}, null, null, null, null, null);
+        } catch (Exception e) {
+            //ignore
+        }
+        List<String> queries = shadowOf(database).getQuerySql();
+        assertThat(queries.size(), equalTo(2));
+        assertThat(queries.get(0), equalTo("SELECT first_column FROM table_name_1"));
+        assertThat(queries.get(1), equalTo("SELECT second_column FROM table_name_2"));
     }
 
     private ResultSet executeQuery(String query) throws SQLException {

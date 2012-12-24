@@ -14,10 +14,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -51,7 +48,7 @@ public class ShadowAppWidgetManager {
     private Map<Integer, WidgetInfo> widgetInfos = new HashMap<Integer, WidgetInfo>();
     private int nextWidgetId = 1;
     private boolean alwaysRecreateViewsDuringUpdate = false;
-    private Map<Integer, AppWidgetProviderInfo> appWidgetProviderInfoForId = new HashMap<Integer, AppWidgetProviderInfo>();
+    private Map<Integer, AppWidgetProviderInfo> appWidgetProviderInfoForId = new TreeMap<Integer, AppWidgetProviderInfo>();
     private boolean allowedToBindWidgets;
     private boolean validWidgetProviderComponentName = true;
 
@@ -112,6 +109,15 @@ public class ShadowAppWidgetManager {
             ids[i] = idList.get(i);
         }
         return ids;
+    }
+
+    @Implementation
+    public List<AppWidgetProviderInfo> getInstalledProviders() {
+        List<AppWidgetProviderInfo> result = new ArrayList<AppWidgetProviderInfo>();
+        for (AppWidgetProviderInfo appWidgetProviderInfo : appWidgetProviderInfoForId.values()) {
+            result.add(appWidgetProviderInfo);
+        }
+        return result;
     }
 
     public void putWidgetInfo(int appWidgetId, AppWidgetProviderInfo expectedWidgetInfo) {
