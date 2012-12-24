@@ -10,17 +10,30 @@ public class RawResourceLoader {
     private ResourceExtractor resourceExtractor;
     private File resourceDir;
 
-    public RawResourceLoader(ResourceExtractor resourceExtractor, File resourceDir) {
+	public RawResourceLoader(ResourceExtractor resourceExtractor, File resourceDir) {
         this.resourceExtractor = resourceExtractor;
         this.resourceDir = resourceDir;
     }
 
     public InputStream getValue(int resourceId) {
+    	// Get resource filename
         String resourceFileName = resourceExtractor.getResourceName(resourceId);
-        String resourceName = resourceFileName.substring("/raw".length());
+		if (resourceFileName == null) {
+			throw new IllegalArgumentException(String.format(
+					"Unknown resource: 0x%08x / %d",
+					resourceId, resourceId));
+		}
 
+    	// Remove the raw/ prefix
+		if (!resourceFileName.startsWith("raw/")) {
+			throw new IllegalStateException(String.format(
+					"Resource filename expected to start with /raw/\nID: 0x%08x / %d\nFilename: %s",
+					resourceId, resourceId, resourceFileName));
+		}
+        String resourceName = resourceFileName.substring("raw/".length());
+
+        // Find file
         File rawResourceDir = new File(resourceDir, "raw");
-
         try {
             File[] files = rawResourceDir.listFiles();
             for (int i = 0; i < files.length; i++) {
@@ -38,9 +51,11 @@ public class RawResourceLoader {
                 }
             }
         } catch (FileNotFoundException e) {
-            return null;
+			throw new IllegalStateException("This error shouldn't be possible.", e);
         }
-        return null;
+		throw new IllegalStateException(String.format(
+				"Unable to locate resource.\nID: 0x%08x / %d\nFilename: %s",
+				resourceId, resourceId, resourceFileName));
     }
 
 }
