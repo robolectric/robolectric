@@ -15,6 +15,7 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.CursorWrapper;
 import android.database.MergeCursor;
+import android.database.ContentObserver;
 import android.database.sqlite.*;
 import android.graphics.*;
 import android.graphics.drawable.*;
@@ -179,6 +180,7 @@ public class Robolectric {
                 ShadowCompoundButton.class,
                 ShadowConfiguration.class,
                 ShadowConnectivityManager.class,
+                ShadowContentObserver.class,
                 ShadowContentProvider.class,
                 ShadowContentProviderOperation.class,
                 ShadowContentProviderOperationBuilder.class,
@@ -575,6 +577,10 @@ public class Robolectric {
 
     public static ShadowCookieManager shadowOf(CookieManager instance) {
         return (ShadowCookieManager) shadowOf_(instance);
+    }
+
+    public static ShadowContentObserver shadowOf(ContentObserver instance) {
+        return (ShadowContentObserver) shadowOf_(instance);
     }
 
     public static ShadowContentResolver shadowOf(ContentResolver instance) {
