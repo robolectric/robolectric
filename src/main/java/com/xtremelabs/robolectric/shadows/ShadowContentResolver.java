@@ -344,6 +344,7 @@ public class ShadowContentResolver {
     
     @Implementation
     public void registerContentObserver( Uri uri, boolean notifyForDescendents, ContentObserver observer) {
+        // TODO does not support multiple observers for a URI
     	contentObservers.put( uri, observer );
     }
     
