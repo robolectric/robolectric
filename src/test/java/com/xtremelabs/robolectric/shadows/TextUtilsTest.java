@@ -38,18 +38,27 @@ public class TextUtilsTest {
         assertThat(TextUtils.isDigitsOnly("123456"), equalTo(true));
         assertThat(TextUtils.isDigitsOnly("124a56"), equalTo(false));
     }
-    
+
+    @Test
+    public void testGetTrimmedLength() {
+        assertThat(TextUtils.getTrimmedLength("123456"), equalTo(6));
+        assertThat(TextUtils.getTrimmedLength(" \n \t 123456"), equalTo(6));
+        assertThat(TextUtils.getTrimmedLength("123456  \n \t "), equalTo(6));
+        assertThat(TextUtils.getTrimmedLength(" \n \t  123456  \n \t "), equalTo(6));
+        assertThat(TextUtils.getTrimmedLength(" \n \t  \n \t "), equalTo(0));
+    }
+
     @Test
     public void testSplit() {
     	//empty
     	assertThat(TextUtils.split("", ",").length, equalTo(0));
-    	
+
     	//one value
     	assertArrayEquals(TextUtils.split("abc", ","), new String[]{"abc"});
-    	
+
     	//two values
     	assertArrayEquals(TextUtils.split("abc,def", ","), new String[]{"abc", "def"});
-    	
+
     	//two values with space
     	assertArrayEquals(TextUtils.split("abc, def", ","), new String[]{"abc", " def"});
    }
