@@ -19,7 +19,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ViewGroup.class)
 public class ShadowViewGroup extends ShadowView {
-    private ArrayList<View> children = new ArrayList<View>();
+    private final ArrayList<View> children = new ArrayList<View>();
     private AnimationListener animListener;
     private LayoutAnimationController layoutAnim;
     private boolean disallowInterceptTouchEvent = false;
@@ -137,11 +137,28 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public void removeView(View view) {
-        boolean removed = children.remove(view);
-        if (removed) {
-            shadowOf(view).parent = null;
+        removeViewInLayout(view);
+    }
+
+    @Implementation
+    public void removeViewInLayout(View view) {
+        int index = indexOfChild(view);
+        if (index >= 0) {
+            removeViewAt(index);
         }
-        requestLayout();
+    }
+
+    @Implementation
+    public void removeViews(int start, int count) {
+        removeViewsInLayout(start, count);
+    }
+
+    @Implementation
+    public void removeViewsInLayout(int start, int count) {
+        int lastIndex = start + count - 1;
+        for (int i = lastIndex; i >= start; i--) {
+            removeViewAt(i);
+        }
     }
 
     @Override
