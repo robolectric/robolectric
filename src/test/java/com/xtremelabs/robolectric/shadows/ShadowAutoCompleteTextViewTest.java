@@ -4,15 +4,16 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.mockito.Mockito.mock;
 
+import android.content.Context;
+import android.widget.AdapterView.OnItemClickListener;
+import android.widget.ArrayAdapter;
+import android.widget.AutoCompleteTextView;
+
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ArrayAdapter;
-import android.widget.AutoCompleteTextView;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class ShadowAutoCompleteTextViewTest {
@@ -65,5 +66,29 @@ public class ShadowAutoCompleteTextViewTest {
         autoCompleteTextView.setOnItemClickListener(listener);
 
         assertSame(listener, autoCompleteTextView.getOnItemClickListener());
+    }
+
+    @Test
+    public void shouldReplaceTextAndUpdateSelection() {
+        String text = "hello world";
+        ReplaceableAutoCompleteTextView autoCompleteTextView =
+                new ReplaceableAutoCompleteTextView(Robolectric.application);
+
+        autoCompleteTextView.publicReplaceText(text);
+
+        assertEquals(text, autoCompleteTextView.getText().toString());
+        assertEquals(text.length(), autoCompleteTextView.getSelectionStart());
+        assertEquals(text.length(), autoCompleteTextView.getSelectionEnd());
+    }
+
+    private static class ReplaceableAutoCompleteTextView extends AutoCompleteTextView {
+
+        public ReplaceableAutoCompleteTextView(Context context) {
+            super(context);
+        }
+
+        public void publicReplaceText(CharSequence text) {
+            replaceText(text);
+        }
     }
 }

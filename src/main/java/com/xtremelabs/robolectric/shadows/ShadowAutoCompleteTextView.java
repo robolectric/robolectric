@@ -51,4 +51,10 @@ public class ShadowAutoCompleteTextView extends ShadowEditText {
     public void setOnItemClickListener(AdapterView.OnItemClickListener onItemClickListener) {
         this.onItemClickListener = onItemClickListener;
     }
+
+    @Implementation
+    public void replaceText(CharSequence text) {
+        setText(text);
+        setSelection(getText().length());
+    }
 }
