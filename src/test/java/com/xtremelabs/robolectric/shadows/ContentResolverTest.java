@@ -77,7 +77,7 @@ public class ContentResolverTest {
     }
 
     @Test
-    public void insert_shouldTrackUpdateStatements() throws Exception {
+    public void update_shouldTrackUpdateStatements() throws Exception {
         ContentValues contentValues = new ContentValues();
         contentValues.put("foo", "bar");
         contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] { "awesome" });
