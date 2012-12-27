@@ -157,6 +157,7 @@ public class Robolectric {
                 ShadowAssetManager.class,
                 ShadowAsyncTask.class,
                 ShadowAudioManager.class,
+                ShadowAutoCompleteTextView.class,
                 ShadowBaseAdapter.class,
                 ShadowBase64.class,
                 ShadowBinder.class,
@@ -515,6 +516,10 @@ public class Robolectric {
     public static ShadowAudioManager shadowOf(AudioManager instance) {
         return (ShadowAudioManager) shadowOf_(instance);
     }
+
+    public static ShadowAutoCompleteTextView shadowOf(AutoCompleteTextView instance) {
+      return (ShadowAutoCompleteTextView) shadowOf_(instance);
+  }
 
     public static ShadowBaseAdapter shadowOf(BaseAdapter other) {
         return (ShadowBaseAdapter) Robolectric.shadowOf_(other);
@@ -1158,6 +1163,7 @@ public class Robolectric {
      * @param contentType  the contentType of the response
      * @deprecated use {@link #addPendingHttpResponse(int, String, Header...)} instead
      */
+    @Deprecated
     public static void addPendingHttpResponseWithContentType(int statusCode, String responseBody, Header contentType) {
         getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody, contentType);
     }
