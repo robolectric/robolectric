@@ -145,12 +145,17 @@ public class ShadowContentResolver {
     }
 
     @Implementation
-    public final int bulkInsert(Uri url, ContentValues[] values) {
+    public final int bulkInsert(Uri url, ContentValues[] valueses) {
         ContentProvider provider = getProvider(url);
         if (provider != null) {
-            return provider.bulkInsert(url, values);
+            return provider.bulkInsert(url, valueses);
         } else {
-            return 0;
+            int inserted = 0;
+            for (ContentValues values : valueses) {
+                insert(url, values);
+                inserted++;
+            }
+            return inserted;
         }
     }
 
