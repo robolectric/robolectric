@@ -14,7 +14,7 @@ public class ShadowAnimator {
     @RealObject
     private Animator realObject;
     private List<Animator.AnimatorListener> listeners = new ArrayList<Animator.AnimatorListener>();
-
+    
     protected void notifyStart() {
         for (Animator.AnimatorListener listener : listeners) {
             listener.onAnimationStart(realObject);
@@ -30,5 +30,11 @@ public class ShadowAnimator {
     @Implementation
     public void addListener(Animator.AnimatorListener listener) {
         listeners.add(listener);
+    }
+    
+    @Implementation
+    public void start () {
+    	notifyStart();
+    	notifyEnd();
     }
 }

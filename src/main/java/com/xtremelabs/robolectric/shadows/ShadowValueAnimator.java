@@ -13,4 +13,9 @@ public class ShadowValueAnimator extends ShadowAnimator {
     public long getDuration() {
         return duration;
     }
+    
+    @Implementation
+    public static ValueAnimator ofInt (int... values){
+    	return new ValueAnimator();
+    }
 }
