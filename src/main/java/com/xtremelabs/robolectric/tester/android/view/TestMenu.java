@@ -13,7 +13,7 @@ import java.util.List;
 
 public class TestMenu implements Menu {
     private List<MenuItem> menuItems = new ArrayList<MenuItem>();
-    private Context context;
+    protected Context context;
 
     public TestMenu() {
         this(null);
