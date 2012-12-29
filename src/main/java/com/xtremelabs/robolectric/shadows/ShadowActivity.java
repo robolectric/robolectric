@@ -18,6 +18,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.tester.android.view.TestContextMenu;
+import com.xtremelabs.robolectric.tester.android.view.TestMenu;
 import com.xtremelabs.robolectric.tester.android.view.TestWindow;
 
 import java.lang.reflect.InvocationTargetException;
@@ -638,6 +639,10 @@ public class ShadowActivity extends ShadowContextWrapper {
 			}
 		});
 	}
+    
+    public void pressMenuKey(){
+    	realActivity.onCreateOptionsMenu(new TestMenu(realActivity.getApplicationContext()));
+    }
     
     private final class ActivityInvoker {
         private Method method;
