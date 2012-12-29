@@ -14,13 +14,17 @@ import java.util.List;
 public class TestMenu implements Menu {
     private List<MenuItem> menuItems = new ArrayList<MenuItem>();
     protected Context context;
+    
+    private static TestMenu lastMenu;
 
     public TestMenu() {
         this(null);
+        lastMenu = null;
     }
 
     public TestMenu(Context context) {
         this.context = context;
+        lastMenu = null;
     }
 
     @Override
@@ -32,9 +36,14 @@ public class TestMenu implements Menu {
     public MenuItem add(int titleRes) {
         return add(0, 0, 0, titleRes);
     }
+    
+    public static TestMenu getLastMenu(){
+    	return lastMenu;
+    }
 
     @Override
     public MenuItem add(int groupId, int itemId, int order, CharSequence title) {
+    	lastMenu = this;
         TestMenuItem menuItem = new TestMenuItem();
         menuItems.add(menuItem);
         menuItem.setItemId(itemId);
@@ -69,6 +78,7 @@ public class TestMenu implements Menu {
 
     @Override
     public SubMenu addSubMenu(int groupId, int itemId, int order, CharSequence title) {
+    	lastMenu = this;
         TestSubMenu tsm = new TestSubMenu();
         TestMenuItem menuItem = new TestMenuItem();
         menuItems.add(menuItem);
