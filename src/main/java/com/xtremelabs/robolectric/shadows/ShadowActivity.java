@@ -11,11 +11,13 @@ import android.os.Bundle;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
 import android.view.*;
+import android.view.View.OnLongClickListener;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.tester.android.view.TestContextMenu;
 import com.xtremelabs.robolectric.tester.android.view.TestWindow;
 
 import java.lang.reflect.InvocationTargetException;
@@ -623,6 +625,19 @@ public class ShadowActivity extends ShadowContextWrapper {
     public List<Cursor> getManagedCursors() {
     	return managedCusors;
     }
+    
+    @Implementation
+	public void registerForContextMenu(View view) {
+		view.setOnLongClickListener(new OnLongClickListener() {
+
+			@Override
+			public boolean onLongClick(View view) {
+				realActivity.onCreateContextMenu(
+						new TestContextMenu(view.getContext()), view, null);
+				return true;
+			}
+		});
+	}
     
     private final class ActivityInvoker {
         private Method method;
