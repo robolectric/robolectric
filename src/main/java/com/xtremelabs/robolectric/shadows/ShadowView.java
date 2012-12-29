@@ -354,6 +354,10 @@ public class ShadowView {
             onLongClickListener.onLongClick(realView);
             return true;
         } else {
+        	if (parent instanceof ShadowListView && parent.onLongClickListener != null) {
+				parent.onLongClickListener.onLongClick(realView);
+				return true;
+			}
             return false;
         }
     }
