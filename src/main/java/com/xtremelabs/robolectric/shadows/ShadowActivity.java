@@ -634,7 +634,7 @@ public class ShadowActivity extends ShadowContextWrapper {
 			@Override
 			public boolean onLongClick(View view) {
 				realActivity.onCreateContextMenu(
-						new TestContextMenu(view.getContext()), view, null);
+						new TestContextMenu(view, realActivity), view, null);
 				return true;
 			}
 		});

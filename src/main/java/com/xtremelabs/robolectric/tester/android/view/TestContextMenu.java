@@ -1,11 +1,13 @@
 package com.xtremelabs.robolectric.tester.android.view;
 
-import android.content.Context;
+import android.app.Activity;
 import android.graphics.drawable.Drawable;
 import android.view.ContextMenu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.widget.AdapterView.AdapterContextMenuInfo;
+import android.widget.ListView;
 
 public class TestContextMenu extends TestMenu implements ContextMenu {
 
@@ -15,6 +17,9 @@ public class TestContextMenu extends TestMenu implements ContextMenu {
 	private Drawable headerIcon;
 	private CharSequence headerTitle;
 	private View headerView;
+
+	private View view;
+	private Activity activity;
 	// Static --------------------------------------------------------
 	private static TestContextMenu lastContextMenu;
 
@@ -28,8 +33,10 @@ public class TestContextMenu extends TestMenu implements ContextMenu {
 		lastContextMenu = null;
 	}
 
-	public TestContextMenu(Context context) {
-		super(context);
+	public TestContextMenu(View view, Activity activity) {
+		super(view.getContext());
+		this.view = view;
+		this.activity = activity;
 		lastContextMenu = null;
 	}
 
@@ -44,7 +51,19 @@ public class TestContextMenu extends TestMenu implements ContextMenu {
 
 	@Override
 	public MenuItem add(int groupId, int itemId, int order, CharSequence title) {
-		MenuItem item = super.add(groupId, itemId, order, title);
+		TestMenuItem item = (TestMenuItem) super.add(groupId, itemId, order,
+				title);
+		// get parent of originating view
+		ListView parent = (ListView) view.getParent();
+		// get position from parent
+		int pos = parent.indexOfChild(view);
+		// create menu info with empty values and then set
+		AdapterContextMenuInfo menuInfo = new AdapterContextMenuInfo(null, 0, 0);
+		menuInfo.id = view.getId();
+		menuInfo.position = pos;
+		menuInfo.targetView = view;
+		// set menu info to menu item
+		item.setMenuInfo(menuInfo);
 		lastContextMenu = this;
 		return item;
 	}
@@ -96,6 +115,11 @@ public class TestContextMenu extends TestMenu implements ContextMenu {
 
 	public View getHeaderView() {
 		return headerView;
+	}
+
+	public void clickOn(int index) {
+		TestMenuItem item = (TestMenuItem) getItem(index);
+		activity.onContextItemSelected(item);
 	}
 
 	// Package protected ---------------------------------------------
