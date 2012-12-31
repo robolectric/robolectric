@@ -169,6 +169,7 @@ public class MenuLoader extends XmlLoader {
                         MenuItem menuItem = root.add(groupId, attributes
                                 .getAttributeResourceValue("android", "id", 0),
                                 0, attributes.getAttributeValue("android", "title"));
+						menuItem.setVisible(attributes.getAttributeBooleanValue("android", "visible", true));
                     }
                 } else if (name.equals("group")) {
                     int newGroupId = attributes.getAttributeResourceValue("android", "id", 0);
