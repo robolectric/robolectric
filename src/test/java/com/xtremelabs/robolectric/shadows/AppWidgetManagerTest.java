@@ -106,11 +106,18 @@ public class AppWidgetManagerTest {
     }
 
     @Test
-    public void bindAppWidgetIdifAllowed_shouldReturnThePresetBoolean() throws Exception {
+    public void bindAppWidgetIdIfAllowed_shouldReturnThePresetBoolean() throws Exception {
         shadowAppWidgetManager.setAllowedToBindAppWidgets(false);
         assertEquals(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), false);
         shadowAppWidgetManager.setAllowedToBindAppWidgets(true);
         assertEquals(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), true);
+    }
+
+    @Test
+    public void bindAppWidgetIdIfAllowed_shouldRecordTheBinding() throws Exception {
+        ComponentName provider = new ComponentName("A", "B");
+        appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
+        assertArrayEquals(new int[]{789}, appWidgetManager.getAppWidgetIds(provider));
     }
 
     @Test(expected = IllegalArgumentException.class)

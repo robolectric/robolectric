@@ -98,9 +98,7 @@ public class ShadowAppWidgetManager {
         List<Integer> idList = new ArrayList<Integer>();
         for (int id : widgetInfos.keySet()) {
             WidgetInfo widgetInfo = widgetInfos.get(id);
-            String widgetClass = widgetInfo.appWidgetProvider.getClass().getName();
-            String widgetPackage = widgetInfo.appWidgetProvider.getClass().getPackage().getName();
-            if (provider.getClassName().equals(widgetClass) && provider.getPackageName().equals(widgetPackage)) {
+            if (provider.equals(widgetInfo.providerComponent)) {
                 idList.add(id);
             }
         }
@@ -131,7 +129,8 @@ public class ShadowAppWidgetManager {
 
     @Implementation
     public boolean bindAppWidgetIdIfAllowed(int appWidgetId, ComponentName provider) {
-        if(validWidgetProviderComponentName) {
+        if (validWidgetProviderComponentName) {
+            widgetInfos.put(appWidgetId, new WidgetInfo(provider));
             return allowedToBindWidgets;
         } else {
             throw new IllegalArgumentException("not an appwidget provider");
@@ -249,13 +248,22 @@ public class ShadowAppWidgetManager {
     private class WidgetInfo {
         private View view;
         private int layoutId;
-        private AppWidgetProvider appWidgetProvider;
+        private final AppWidgetProvider appWidgetProvider;
         private RemoteViews lastRemoteViews;
+        private final ComponentName providerComponent;
 
         public WidgetInfo(View view, int layoutId, AppWidgetProvider appWidgetProvider) {
             this.view = view;
             this.layoutId = layoutId;
             this.appWidgetProvider = appWidgetProvider;
+            String packageName = appWidgetProvider.getClass().getPackage().getName();
+            String className = appWidgetProvider.getClass().getName();
+            providerComponent = new ComponentName(packageName, className);
+        }
+
+        public WidgetInfo(ComponentName providerComponent) {
+            this.providerComponent = providerComponent;
+            this.appWidgetProvider = null;
         }
     }
 }
