@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.view.GestureDetector;
 import android.view.MotionEvent;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,6 +54,14 @@ public class GestureDetectorTest {
         TestOnGestureListener listener = new TestOnGestureListener();
         assertSame(listener, shadowOf(new GestureDetector(listener)).getListener());
         assertSame(listener, shadowOf(new GestureDetector(null, listener)).getListener());
+    }
+
+    @Test
+    public void canAnswerLastGestureDetector() throws Exception {
+        GestureDetector newDetector = new GestureDetector(Robolectric.application, null);
+        assertNotSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
+        newDetector.onTouchEvent(null);
+        assertSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
     }
 
     private static class TestOnGestureListener implements GestureDetector.OnGestureListener {

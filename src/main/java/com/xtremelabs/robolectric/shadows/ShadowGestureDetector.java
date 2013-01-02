@@ -5,13 +5,19 @@ import android.view.GestureDetector;
 import android.view.MotionEvent;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.internal.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(GestureDetector.class)
 public class ShadowGestureDetector {
+    @RealObject
+    private GestureDetector realObject;
+
     private MotionEvent onTouchEventMotionEvent;
     private boolean onTouchEventNextReturnValue = true;
+
     private GestureDetector.OnGestureListener listener;
+    private static GestureDetector lastActiveGestureDetector;
 
     public void __constructor__(GestureDetector.OnGestureListener listener) {
         __constructor__(null, listener);
@@ -23,6 +29,7 @@ public class ShadowGestureDetector {
 
     @Implementation
     public boolean onTouchEvent(MotionEvent ev) {
+        lastActiveGestureDetector = realObject;
         onTouchEventMotionEvent = ev;
         return onTouchEventNextReturnValue;
     }
@@ -41,5 +48,9 @@ public class ShadowGestureDetector {
 
     public GestureDetector.OnGestureListener getListener() {
         return listener;
+    }
+
+    public static GestureDetector getLastActiveDetector() {
+        return lastActiveGestureDetector;
     }
 }

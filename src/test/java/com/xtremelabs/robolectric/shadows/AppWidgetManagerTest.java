@@ -99,18 +99,37 @@ public class AppWidgetManagerTest {
     @Test
     public void getAppWidgetInfo_shouldReturnSpecifiedAppWidgetInfo() throws Exception {
         AppWidgetProviderInfo expectedWidgetInfo = new AppWidgetProviderInfo(null);
-        shadowAppWidgetManager.putWidgetInfo(26, expectedWidgetInfo);
+        shadowAppWidgetManager.addBoundWidget(26, expectedWidgetInfo);
 
         assertEquals(expectedWidgetInfo, appWidgetManager.getAppWidgetInfo(26));
         assertEquals(null, appWidgetManager.getAppWidgetInfo(27));
     }
 
     @Test
-    public void bindAppWidgetIdifAllowed_shouldReturnThePresetBoolean() throws Exception {
+    public void bindAppWidgetIdIfAllowed_shouldReturnThePresetBoolean() throws Exception {
         shadowAppWidgetManager.setAllowedToBindAppWidgets(false);
         assertEquals(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), false);
         shadowAppWidgetManager.setAllowedToBindAppWidgets(true);
         assertEquals(shadowAppWidgetManager.bindAppWidgetIdIfAllowed(12345, new ComponentName("", "")), true);
+    }
+
+    @Test
+    public void bindAppWidgetIdIfAllowed_shouldRecordTheBinding() throws Exception {
+        ComponentName provider = new ComponentName("A", "B");
+        appWidgetManager.bindAppWidgetIdIfAllowed(789, provider);
+        assertArrayEquals(new int[]{789}, appWidgetManager.getAppWidgetIds(provider));
+    }
+
+    @Test
+    public void bindAppWidgetId_shouldRecordAppWidgetInfo() throws Exception {
+        ComponentName provider = new ComponentName("abc", "123");
+        AppWidgetProviderInfo providerInfo = new AppWidgetProviderInfo();
+        providerInfo.provider = provider;
+        shadowAppWidgetManager.addInstalledProvider(providerInfo);
+
+        appWidgetManager.bindAppWidgetIdIfAllowed(90210, provider);
+
+        assertSame(providerInfo, appWidgetManager.getAppWidgetInfo(90210));
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -125,8 +144,8 @@ public class AppWidgetManagerTest {
         info1.label = "abc";
         AppWidgetProviderInfo info2 = new AppWidgetProviderInfo();
         info2.label = "def";
-        shadowAppWidgetManager.putWidgetInfo(1324, info1);
-        shadowAppWidgetManager.putWidgetInfo(4560, info2);
+        shadowAppWidgetManager.addInstalledProvider(info1);
+        shadowAppWidgetManager.addInstalledProvider(info2);
         List<AppWidgetProviderInfo> installedProviders = appWidgetManager.getInstalledProviders();
         assertEquals(2, installedProviders.size());
         assertEquals(info1, installedProviders.get(0));

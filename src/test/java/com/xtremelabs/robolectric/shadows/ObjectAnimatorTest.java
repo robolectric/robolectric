@@ -7,9 +7,7 @@ import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -66,4 +64,11 @@ public class ObjectAnimatorTest {
         assertThat(endListener.endWasCalled, equalTo(true));
     }
 
+    @Test
+    public void getAnimatorsFor_shouldReturnAMapOfAnimatorsCreatedForTarget() throws Exception {
+        View target = new View(null);
+        ObjectAnimator expectedAnimator = ObjectAnimator.ofFloat(target, "translationX", 0f, 1f);
+
+        assertThat(ShadowObjectAnimator.getAnimatorsFor(target).get("translationX"), sameInstance(expectedAnimator));
+    }
 }

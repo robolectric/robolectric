@@ -9,7 +9,8 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.lang.reflect.Method;
-
+import java.util.HashMap;
+import java.util.Map;
 
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -21,6 +22,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     private String propertyName;
     private float[] floatValues;
     private Class<?> animationType;
+    private static Map<Object, Map<String, ObjectAnimator>> mapsForAnimationTargets = new HashMap<Object, Map<String, ObjectAnimator>>();
 
     @Implementation
     public static ObjectAnimator ofFloat(Object target, String propertyName, float... values) {
@@ -31,6 +33,16 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
         result.setFloatValues(values);
         RobolectricShadowOfLevel16.shadowOf(result).setAnimationType(float.class);
 
+        getAnimatorMapFor(target).put(propertyName, result);
+        return result;
+    }
+
+    private static Map<String, ObjectAnimator> getAnimatorMapFor(Object target) {
+        Map<String, ObjectAnimator> result = mapsForAnimationTargets.get(target);
+        if (result == null) {
+            result = new HashMap<String, ObjectAnimator>();
+            mapsForAnimationTargets.put(target, result);
+        }
         return result;
     }
 
@@ -95,5 +107,9 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
                 }
             }
         }, duration);
+    }
+
+    public static Map<String, ObjectAnimator> getAnimatorsFor(Object target) {
+        return getAnimatorMapFor(target);
     }
 }
