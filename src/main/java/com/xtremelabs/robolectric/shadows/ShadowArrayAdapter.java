@@ -14,6 +14,7 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Collection;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -80,6 +81,12 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     @Implementation
     public void add(T object) {
         list.add(object);
+    }
+    
+    public void addAll(Collection<? extends T> collection){
+    	for(T object: collection){
+    		list.add(object);
+    	}
     }
 
     @Implementation
