@@ -641,7 +641,7 @@ public class ShadowActivity extends ShadowContextWrapper {
 	}
     
     public void pressMenuKey(){
-    	realActivity.onCreateOptionsMenu(new TestMenu(realActivity.getApplicationContext()));
+    	realActivity.onCreateOptionsMenu(new TestMenu(realActivity));
     }
     
     private final class ActivityInvoker {

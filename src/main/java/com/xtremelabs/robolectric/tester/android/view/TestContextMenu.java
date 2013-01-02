@@ -19,7 +19,6 @@ public class TestContextMenu extends TestMenu implements ContextMenu {
 	private View headerView;
 
 	private View view;
-	private Activity activity;
 	// Static --------------------------------------------------------
 	private static TestContextMenu lastContextMenu;
 
@@ -34,9 +33,8 @@ public class TestContextMenu extends TestMenu implements ContextMenu {
 	}
 
 	public TestContextMenu(View view, Activity activity) {
-		super(view.getContext());
+		super(activity);
 		this.view = view;
-		this.activity = activity;
 		lastContextMenu = null;
 	}
 
@@ -117,14 +115,14 @@ public class TestContextMenu extends TestMenu implements ContextMenu {
 		return headerView;
 	}
 
-	public void clickOn(int index) {
-		TestMenuItem item = (TestMenuItem) getItem(index);
-		activity.onContextItemSelected(item);
-	}
-
 	// Package protected ---------------------------------------------
 
 	// Protected -----------------------------------------------------
+
+	@Override
+	protected void menuAction(TestMenuItem item) {
+		activity.onContextItemSelected(item);
+	}
 
 	// Private -------------------------------------------------------
 
