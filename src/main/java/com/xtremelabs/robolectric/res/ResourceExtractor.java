@@ -8,6 +8,8 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 public class ResourceExtractor {
+    private static final ResourceRemapper RESOURCE_REMAPPER = new ResourceRemapper();
+
     private Map<ResName, Integer> resourceNameToId = new HashMap<ResName, Integer>();
     private Map<Integer, ResName> resourceIdToFullyQualifiedName = new HashMap<Integer, ResName>();
     private Set<Class> processedRFiles = new HashSet<Class>();
@@ -28,6 +30,8 @@ public class ResourceExtractor {
     }
 
     private void addRClass(Class<?> rClass) {
+        RESOURCE_REMAPPER.remapRClass(rClass);
+
         if (!processedRFiles.add(rClass)) {
             System.out.println("WARN: already extracted resources for " + rClass.getPackage().getName() + ", skipping. You should probably fix this.");
             return;
@@ -45,9 +49,9 @@ public class ResourceExtractor {
                         throw new RuntimeException(e);
                     }
 
-                    ResName resName = new ResName(packageName, section, field.getName());
-
                     if (!section.equals("styleable")) {
+                        ResName resName = new ResName(packageName, section, field.getName());
+
                         resourceNameToId.put(resName, value);
 
                         if (resourceIdToFullyQualifiedName.containsKey(value)) {

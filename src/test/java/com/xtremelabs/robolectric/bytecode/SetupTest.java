@@ -38,4 +38,13 @@ public class SetupTest {
         assertTrue(setup.shouldInstrument(classPool.makeClass("android.content.Intent")));
         assertTrue(setup.shouldInstrument(classPool.makeClass("android.and.now.for.something.completely.different")));
     }
+
+    @Test
+    public void shouldNotAcquireRClasses() throws Exception {
+        assertTrue(setup.shouldAcquire("com.whatever.Rfoo"));
+        assertTrue(setup.shouldAcquire("com.whatever.fooR"));
+        assertFalse(setup.shouldAcquire("com.whatever.R"));
+        assertFalse(setup.shouldAcquire("com.whatever.R$anything"));
+        assertTrue(setup.shouldAcquire("com.whatever.R$anything$else"));
+    }
 }

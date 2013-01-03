@@ -91,7 +91,8 @@ public class Setup {
 
     public boolean shouldAcquire(String name) {
         return !(
-                name.startsWith("org.junit")
+                name.matches(".*\\.R(|\\$[a-z]+)$")
+                        || name.startsWith("org.junit")
                         || name.startsWith("org.hamcrest")
                         || name.startsWith("org.specs2") // allows for android projects with mixed scala\java tests to be
                         || name.startsWith("scala.")     //  run with Maven Surefire (see the RoboSpecs project on github)
