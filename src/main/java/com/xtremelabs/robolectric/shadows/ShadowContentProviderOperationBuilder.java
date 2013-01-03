@@ -1,8 +1,10 @@
 package com.xtremelabs.robolectric.shadows;
 
 import java.util.Map;
+import java.util.Map.Entry;
 
 import android.content.ContentProviderOperation;
+import android.content.ContentValues;
 import android.content.ContentProviderOperation.Builder;
 import android.net.Uri;
 
@@ -28,6 +30,15 @@ public class ShadowContentProviderOperationBuilder {
         return realBuilder;
     }
     
+	@Implementation
+	public Builder withValues(final ContentValues values) {
+		for (final Entry<String, Object> value : values.valueSet()) {
+			shadowContentProviderOperation.getValues().put(value.getKey(),
+					value.getValue());
+		}
+		return realBuilder;
+	}
+
     @Implementation
     public Builder withSelection(String selection, String[] selectionArgs) {
         shadowContentProviderOperation.getSelections().put(selection, selectionArgs);
