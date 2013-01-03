@@ -1,16 +1,18 @@
 package com.xtremelabs.robolectric.shadows;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.accounts.AccountManagerCallback;
+import android.accounts.AccountManagerFuture;
 import android.content.Context;
-
+import android.os.Handler;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 /**
  * Shadow implementation for the Android {@code AccountManager } class.
@@ -47,7 +49,14 @@ public class ShadowAccountManager {
 		
 		return accountsByType.toArray(new Account[0]);
 	}
-	
+
+    @Implementation
+    public AccountManagerFuture<Boolean> removeAccount(final Account account,
+                                                       AccountManagerCallback<Boolean> callback, Handler handler) {
+        accounts.remove(account);
+        return null;
+    }
+
 	/**
 	 * Non-android accessor.  Allows the test case to populate the
 	 * list of active accounts.
