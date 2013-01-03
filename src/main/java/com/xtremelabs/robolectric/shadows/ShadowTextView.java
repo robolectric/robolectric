@@ -3,7 +3,12 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.Context;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
-import android.text.*;
+import android.text.InputFilter;
+import android.text.Layout;
+import android.text.SpannableString;
+import android.text.SpannableStringBuilder;
+import android.text.TextPaint;
+import android.text.TextWatcher;
 import android.text.method.MovementMethod;
 import android.text.method.TransformationMethod;
 import android.text.style.URLSpan;
@@ -27,6 +32,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
 @Implements(TextView.class)
 public class ShadowTextView extends ShadowView {
     private CharSequence text = "";
+    private TextView.BufferType bufferType = TextView.BufferType.NORMAL;
     private CompoundDrawables compoundDrawablesImpl = new CompoundDrawables(0, 0, 0, 0);
     private Integer textColorHexValue;
     private Integer hintColorHexValue;
@@ -82,6 +88,12 @@ public class ShadowTextView extends ShadowView {
     }
 
     @Implementation
+    public void setText(CharSequence text, TextView.BufferType type) {
+        this.bufferType = type;
+        setText(text);
+    }
+    
+    @Implementation
     public final void append(CharSequence text) {
         boolean isSelectStartAtEnd = selectionStart == this.text.length();
         boolean isSelectEndAtEnd = selectionEnd == this.text.length();
@@ -134,7 +146,15 @@ public class ShadowTextView extends ShadowView {
 
     @Implementation
     public CharSequence getText() {
-        return text;
+        // Don't use a switch, you'll get an NPE on the bufferType shadow.
+        if (bufferType == TextView.BufferType.NORMAL) {
+            return text;
+        } else if (bufferType == TextView.BufferType.SPANNABLE) {
+            return new SpannableString(text);
+        } else {
+            throw new UnsupportedOperationException(
+                String.format("BufferType %s not yet supported!", bufferType));
+        }
     }
 
     @Implementation
