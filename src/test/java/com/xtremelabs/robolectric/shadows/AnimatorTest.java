@@ -12,6 +12,21 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class AnimatorTest {
+	
+    @Test
+    public void shouldBeAbleToStart() throws Exception {
+        Animator animator = new StubAnimator();
+        TestAnimatorListener startListener = new TestAnimatorListener();
+        TestAnimatorListener endListener = new TestAnimatorListener();
+        animator.addListener(startListener);
+        animator.addListener(endListener);
+
+        RobolectricShadowOfLevel16.shadowOf(animator).start();
+        assertThat(startListener.startWasCalled, equalTo(true));
+
+        assertThat(endListener.endWasCalled, equalTo(true));
+    }
+	
     @Test
     public void shouldBeAbleToNotifyListenersOfStartAndEnd() throws Exception {
         Animator animator = new StubAnimator();
