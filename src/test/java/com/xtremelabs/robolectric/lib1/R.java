@@ -6,6 +6,10 @@ public final class R {
         public static int lib1_button = 0x7f010002;
     }
 
+    public static final class string {
+        public static int only_in_lib1 = 0x7f010003;
+    }
+
     public static final class styleable {
         public static int one = 1;
         public static int two = 2;

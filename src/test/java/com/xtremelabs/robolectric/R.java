@@ -104,6 +104,14 @@ public final class R {
         public static final int greeting = 0x10103;
         public static final int copy = 0x10104;
         public static final int ok = 0x10105;
+        public static final int only_in_main = 0x10106;
+        public static final int only_in_lib1 = 0x10107;
+        public static final int only_in_lib2 = 0x10108;
+        public static final int only_in_lib3 = 0x10109;
+        public static final int in_all_libs = 0x1010a;
+        public static final int in_lib2_and_lib3 = 0x1010b;
+        public static final int in_lib1_and_lib3 = 0x1010c;
+        public static final int in_main_and_lib1 = 0x1010d;
     }
 
     public static final class plurals {
