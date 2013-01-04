@@ -17,7 +17,7 @@ public class ResourceRemapperTest {
 
     @Test
     public void shouldRemapNonFinalIntsInRClasses() throws Exception {
-        assertInitialState();
+        resetInitialState();
 
         resourceRemapper.remapRClass(android.R.class);
         resourceRemapper.remapRClass(com.xtremelabs.robolectric.lib1.R.class);
@@ -66,14 +66,26 @@ public class ResourceRemapperTest {
         }
     }
 
-    private void assertInitialState() {
-        assertEquals(0x7f010001, com.xtremelabs.robolectric.lib1.R.id.button);
-        assertEquals(0x7f010001, com.xtremelabs.robolectric.lib2.R.id.button);
-        assertEquals(0x7f010001, com.xtremelabs.robolectric.lib3.R.id.button);
+    private void resetInitialState() {
+        com.xtremelabs.robolectric.lib1.R.id.button = 0x7f010001;
+        com.xtremelabs.robolectric.lib2.R.id.button = 0x7f010001;
+        com.xtremelabs.robolectric.lib3.R.id.button = 0x7f010001;
 
-        assertEquals(0x7f010002, com.xtremelabs.robolectric.lib1.R.id.lib1_button);
-        assertEquals(0x7f010002, com.xtremelabs.robolectric.lib2.R.id.lib2_button);
-        assertEquals(0x7f010002, com.xtremelabs.robolectric.lib3.R.id.lib3_button);
+        com.xtremelabs.robolectric.lib1.R.id.lib1_button = 0x7f010002;
+        com.xtremelabs.robolectric.lib2.R.id.lib2_button = 0x7f010002;
+        com.xtremelabs.robolectric.lib3.R.id.lib3_button = 0x7f010002;
+
+        com.xtremelabs.robolectric.lib1.R.styleable.Image = new int[] {0x7f010070, 0x7f010071};
+        com.xtremelabs.robolectric.lib2.R.styleable.Image = new int[] {0x7f010070, 0x7f010071};
+        com.xtremelabs.robolectric.lib3.R.styleable.Image = new int[] {0x7f010070, 0x7f010071};
+
+        com.xtremelabs.robolectric.lib1.R.attr.offsetX = 0x7f010070;
+        com.xtremelabs.robolectric.lib2.R.attr.offsetX = 0x7f010070;
+        com.xtremelabs.robolectric.lib3.R.attr.offsetX = 0x7f010070;
+
+        com.xtremelabs.robolectric.lib1.R.attr.offsetY = 0x7f010071;
+        com.xtremelabs.robolectric.lib2.R.attr.offsetY = 0x7f010071;
+        com.xtremelabs.robolectric.lib3.R.attr.offsetY = 0x7f010071;
     }
 
     private List<Integer> asIntList(int[] ints) {

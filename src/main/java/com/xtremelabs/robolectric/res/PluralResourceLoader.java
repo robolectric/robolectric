@@ -14,7 +14,7 @@ public class PluralResourceLoader extends XpathResourceXmlLoader {
     private ResBundle<PluralRules> pluralRulesResBundle;
 
     public PluralResourceLoader(ResourceExtractor resourceExtractor, ResBundle<PluralRules> pluralRulesResBundle) {
-        super(resourceExtractor, "/resources/plurals", "plurals");
+        super("/resources/plurals", "plurals");
         this.pluralRulesResBundle = pluralRulesResBundle;
     }
 

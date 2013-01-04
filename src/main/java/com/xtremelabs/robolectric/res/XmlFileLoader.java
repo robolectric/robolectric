@@ -29,8 +29,9 @@ import java.util.Map;
  * @see Resources#getXml(int)
  */
 public class XmlFileLoader extends XmlLoader {
-	
-	private Map<String, Document> mXmlDocuments = new HashMap<String, Document>();
+
+    private final ResourceExtractor resourceExtractor;
+    private Map<String, Document> mXmlDocuments = new HashMap<String, Document>();
 	
 	/**
 	 * All the parser features currently supported by Android. 
@@ -64,8 +65,8 @@ public class XmlFileLoader extends XmlLoader {
     }
 
 	public XmlFileLoader(ResourceExtractor resourceExtractor) {
-		super(resourceExtractor);
-	}
+        this.resourceExtractor = resourceExtractor;
+    }
 
 	@Override
 	protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {

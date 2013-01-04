@@ -28,7 +28,7 @@ public class MenuLoaderTest {
 	public void setUp() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
 
-        menuLoader = new MenuLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
+        menuLoader = new MenuLoader(resourceExtractor, new AttrResourceLoader());
         new DocumentLoader(menuLoader).loadResourceXmlDir(testResources(), "menu");
 	}
 

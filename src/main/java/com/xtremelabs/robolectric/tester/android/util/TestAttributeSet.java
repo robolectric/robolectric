@@ -45,11 +45,11 @@ public class TestAttributeSet implements AttributeSet {
     public TestAttributeSet(ResourceExtractor resourceExtractor) {
         this.attributes = new ArrayList<Attribute>();
         this.resourceExtractor = resourceExtractor;
-        this.attrResourceLoader = new AttrResourceLoader(resourceExtractor);
+        this.attrResourceLoader = new AttrResourceLoader();
     }
 
     public TestAttributeSet(List<Attribute> attributes, ResourceExtractor resourceExtractor) {
-        this(attributes, resourceExtractor, new AttrResourceLoader(resourceExtractor), null);
+        this(attributes, resourceExtractor, new AttrResourceLoader(), null);
     }
 
     public TestAttributeSet(List<Attribute> attributes, Class<?> rFileClass) throws Exception {

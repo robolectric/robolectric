@@ -55,7 +55,6 @@ public class ResourceLoader {
     private final Resolver<Integer> integerResolver = new IntegerResolver();
     private final PluralsResolver pluralsResolver = new PluralsResolver();
     private final Resolver<String> stringResolver = new StringResolver();
-    private final StringArrayResourceLoader stringArrayResourceLoader;
     private final ResBundle<ViewNode> viewNodes = new ResBundle<ViewNode>();
 
     private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
@@ -78,15 +77,14 @@ public class ResourceLoader {
         this.resourceExtractor = resourceExtractor;
         this.resourcePaths = Collections.unmodifiableList(resourcePaths);
 
-        attrResourceLoader = new AttrResourceLoader(resourceExtractor);
+        attrResourceLoader = new AttrResourceLoader();
         drawableResourceLoader = new DrawableResourceLoader(resourceExtractor);
-        viewLoader = new ViewLoader(resourceExtractor, viewNodes);
+        viewLoader = new ViewLoader(viewNodes);
         menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
         preferenceLoader = new PreferenceLoader(resourceExtractor);
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
 
         roboLayoutInflater = new RoboLayoutInflater(resourceExtractor, viewNodes);
-        stringArrayResourceLoader = new StringArrayResourceLoader(this.resourceExtractor, stringResolver);
     }
 
     public ResourceLoader copy() {
@@ -123,13 +121,12 @@ public class ResourceLoader {
             validateQualifiers(resourcePath, qualifiers);
 
             DocumentLoader valuesDocumentLoader = new DocumentLoader(
-                    new ValueResourceLoader(resourceExtractor, "/resources/bool", booleanResolver, "bool"),
-                    new ValueResourceLoader(resourceExtractor, "/resources/color", colorResolver, "color"),
-                    new ValueResourceLoader(resourceExtractor, "/resources/dimen", dimenResolver, "dimen"),
-                    new ValueResourceLoader(resourceExtractor, "/resources/integer", integerResolver, "integer"),
+                    new ValueResourceLoader(booleanResolver, "bool", false),
+                    new ValueResourceLoader(colorResolver, "color", false),
+                    new ValueResourceLoader(dimenResolver, "dimen", false),
+                    new ValueResourceLoader(integerResolver, "integer", true),
                     new PluralResourceLoader(resourceExtractor, pluralsResolver),
-                    new ValueResourceLoader(resourceExtractor, "/resources/string", stringResolver, "string"),
-                    stringArrayResourceLoader,
+                    new ValueResourceLoader(stringResolver, "string", true),
                     attrResourceLoader
             );
 
@@ -396,10 +393,30 @@ public class ResourceLoader {
     public String[] getStringArrayValue(int id) {
         init();
 
-        String[] arrayValue = stringArrayResourceLoader.getArrayValue(id);
-        if (arrayValue != null) return arrayValue;
+        ResName resName = resourceExtractor.getResName(id);
+        if (resName == null) return null;
+        resName = new ResName(resName.namespace, "string-array", resName.name); // ugh
+        List<String> strings = stringResolver.resolveArray(resName, qualifiers);
+        return strings == null ? null : strings.toArray(new String[strings.size()]);
+    }
 
-        return null;
+    public int[] getIntegerArrayValue(int id) {
+        init();
+
+        ResName resName = resourceExtractor.getResName(id);
+        if (resName == null) return null;
+        resName = new ResName(resName.namespace, "integer-array", resName.name); // ugh
+        List<Integer> ints = integerResolver.resolveArray(resName, qualifiers);
+        return ints == null ? null : toIntArray(ints);
+    }
+
+    private int[] toIntArray(List<Integer> ints) {
+        int num = ints.size();
+        int[] array = new int[num];
+        for (int i = 0; i < num; i++) {
+            array[i] = ints.get(i);
+        }
+        return array;
     }
 
     public void inflateMenu(Context context, int resource, Menu root) {
@@ -454,6 +471,17 @@ public class ResourceLoader {
             Value<String> value = getValue(resName, qualifiers);
             if (value == null) return null;
             return resolveValue(qualifiers, value.value, value.xmlContext.packageName);
+        }
+
+        public List<T> resolveArray(ResName resName, String qualifiers) {
+            Value<List<String>> value = getListValue(resName, qualifiers);
+            if (value == null) return null;
+
+            List<T> items = new ArrayList<T>();
+            for (String v : value.value) {
+                items.add(resolveValue(qualifiers, v, value.xmlContext.packageName));
+            }
+            return items;
         }
 
         T resolveValue(String qualifiers, String value, String packageName) {

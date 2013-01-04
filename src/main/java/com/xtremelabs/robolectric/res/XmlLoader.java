@@ -7,12 +7,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public abstract class XmlLoader {
-    protected ResourceExtractor resourceExtractor;
     protected boolean strictI18n = false;
-
-    public XmlLoader(ResourceExtractor resourceExtractor) {
-        this.resourceExtractor = resourceExtractor;
-    }
 
     protected void processResourceXml(File xmlFile, Document document, String packageName) throws Exception {
         processResourceXml(xmlFile, document, new XmlContext(packageName, xmlFile));

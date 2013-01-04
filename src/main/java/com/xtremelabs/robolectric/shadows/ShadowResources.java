@@ -174,7 +174,16 @@ public class ShadowResources {
     public int getInteger(int id) throws Resources.NotFoundException {
     	return resourceLoader.getIntegerValue(id);
     }
-    
+
+    @Implementation
+    public int[] getIntArray(int id) throws Resources.NotFoundException {
+        int[] arrayValue = resourceLoader.getIntegerArrayValue(id);
+        if (arrayValue == null) {
+            throw new Resources.NotFoundException();
+        }
+        return arrayValue;
+    }
+
     @Implementation
     public boolean getBoolean(int id) throws Resources.NotFoundException {
     	return resourceLoader.getBooleanValue( id );

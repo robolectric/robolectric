@@ -36,6 +36,8 @@ public class DrawableResourceLoader extends XmlLoader {
         stateMap.put("android:state_window_focused", R.attr.state_window_focused);
     }
 
+    private final ResourceExtractor resourceExtractor;
+
     protected Map<String, DocumentAndContext> documents = new HashMap<String, DocumentAndContext>();
 
     private static class DocumentAndContext {
@@ -51,10 +53,10 @@ public class DrawableResourceLoader extends XmlLoader {
     /**
      * DrawableResourceLoader constructor.
      *
-     * @param extractor         Extractor
+     * @param resourceExtractor         Extractor
      */
-    public DrawableResourceLoader(ResourceExtractor extractor) {
-        super(extractor);
+    public DrawableResourceLoader(ResourceExtractor resourceExtractor) {
+        this.resourceExtractor = resourceExtractor;
     }
 
     /**

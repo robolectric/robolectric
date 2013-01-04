@@ -23,10 +23,11 @@ import java.util.Map;
 
 public class PreferenceLoader extends XmlLoader {
 
+    private final ResourceExtractor resourceExtractor;
     private Map<String, PreferenceNode> prefNodesByResourceName = new HashMap<String, PreferenceNode>();
 
     public PreferenceLoader(ResourceExtractor resourceExtractor) {
-        super(resourceExtractor);
+        this.resourceExtractor = resourceExtractor;
     }
 
     @Override

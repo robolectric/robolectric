@@ -14,15 +14,14 @@ public abstract class XpathResourceXmlLoader extends XmlLoader {
     private String expression;
     private String attrType;
 
-    public XpathResourceXmlLoader(ResourceExtractor resourceExtractor, String expression, String attrType) {
-        super(resourceExtractor);
+    public XpathResourceXmlLoader(String expression, String attrType) {
         this.expression = expression;
         this.attrType = attrType;
     }
 
     @Override protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
-        XPathExpression stringsXPath = XPathFactory.newInstance().newXPath().compile(expression);
-        NodeList nodes = (NodeList) stringsXPath.evaluate(document, XPathConstants.NODESET);
+        XPathExpression xPath = XPathFactory.newInstance().newXPath().compile(expression);
+        NodeList nodes = (NodeList) xPath.evaluate(document, XPathConstants.NODESET);
         for (int i = 0; i < nodes.getLength(); i++) {
             Node node = nodes.item(i);
             String name = node.getAttributes().getNamedItem("name").getNodeValue();

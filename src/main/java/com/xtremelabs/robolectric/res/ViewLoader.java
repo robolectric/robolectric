@@ -15,8 +15,7 @@ public class ViewLoader extends XmlLoader {
 
     private final ResBundle<ViewNode> resBundle;
 
-    public ViewLoader(ResourceExtractor resourceExtractor, ResBundle<ViewNode> resBundle) {
-        super(resourceExtractor);
+    public ViewLoader(ResBundle<ViewNode> resBundle) {
         this.resBundle = resBundle;
     }
 

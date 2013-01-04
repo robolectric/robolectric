@@ -264,7 +264,7 @@ public class ContextTest {
     @Test
     public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
         ResourceExtractor resourceExtractor = new ResourceExtractor(TEST_RESOURCE_PATH);
-        AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
+        AttrResourceLoader attrResourceLoader = new AttrResourceLoader();
         new DocumentLoader(attrResourceLoader)
                 .loadResourceXmlDirs(TEST_RESOURCE_PATH, new File(TEST_RESOURCE_PATH.resourceBase, "values"));
 

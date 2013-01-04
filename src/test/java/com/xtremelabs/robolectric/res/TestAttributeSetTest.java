@@ -129,14 +129,14 @@ public class TestAttributeSetTest {
     @Test
     public void getAttributeIntValue_shouldReturnValueFromAttribute() throws Exception {
         testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "100", TEST_PACKAGE)),
-                null, new AttrResourceLoader(resourceExtractor), null);
+                null, new AttrResourceLoader(), null);
         assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "sugarinessPercent", 0), equalTo(100));
     }
 
     @Test
     public void getAttributeIntValue_shouldReturnHexValueFromAttribute() throws Exception {
         testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "0x10", TEST_PACKAGE)),
-                null, new AttrResourceLoader(resourceExtractor), null);
+                null, new AttrResourceLoader(), null);
         assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "sugarinessPercent", 0), equalTo(16));
     }
 
@@ -160,7 +160,7 @@ public class TestAttributeSetTest {
 
     @Test
     public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributes() throws Exception {
-        AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
+        AttrResourceLoader attrResourceLoader = new AttrResourceLoader();
         new DocumentLoader(attrResourceLoader).loadResourceXmlDir(testResources(), "values");
         testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE)),
                 null, attrResourceLoader, CustomView.class);
@@ -239,7 +239,7 @@ public class TestAttributeSetTest {
     }
 
     private AttrResourceLoader createAttrResourceLoader() throws Exception {
-        AttrResourceLoader attrResourceLoader = new AttrResourceLoader(resourceExtractor);
+        AttrResourceLoader attrResourceLoader = new AttrResourceLoader();
         new DocumentLoader(attrResourceLoader)
                 .loadResourceXmlDirs(TEST_RESOURCE_PATH, new File(TEST_RESOURCE_PATH.resourceBase, "values"));
         new DocumentLoader(attrResourceLoader)

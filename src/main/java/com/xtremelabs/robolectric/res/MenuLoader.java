@@ -20,10 +20,11 @@ import java.util.Map;
 
 public class MenuLoader extends XmlLoader {
     private Map<String, MenuNode> menuNodesByMenuName = new HashMap<String, MenuNode>();
+    private final ResourceExtractor resourceExtractor;
     private AttrResourceLoader attrResourceLoader;
 
     public MenuLoader(ResourceExtractor resourceExtractor, AttrResourceLoader attrResourceLoader) {
-        super(resourceExtractor);
+        this.resourceExtractor = resourceExtractor;
         this.attrResourceLoader = attrResourceLoader;
     }
 

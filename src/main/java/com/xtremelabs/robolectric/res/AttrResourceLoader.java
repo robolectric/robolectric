@@ -23,10 +23,6 @@ public class AttrResourceLoader extends XmlLoader {
     Map<String, String> classEnumToValue = new HashMap<String, String>();
     Set<String> knownClassEnums = new HashSet<String>();
   
-    public AttrResourceLoader(ResourceExtractor resourceExtractor) {
-        super(resourceExtractor);
-    }
-
     static class EnumDef {
         final String name;
         final Map<String, String> values = new HashMap<String, String>();

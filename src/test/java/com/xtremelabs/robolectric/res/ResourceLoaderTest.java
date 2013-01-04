@@ -14,10 +14,13 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.Arrays;
+
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -110,4 +113,45 @@ public class ResourceLoaderTest {
         assertThat(resourceLoader.isNinePatchDrawable(0), equalTo(false));
         assertThat(resourceLoader.isNinePatchDrawable(-1), equalTo(false));
     }
+
+    @Test
+    public void testStringsAreResolved() throws Exception {
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+        assertThat(Arrays.asList(resourceLoader.getStringArrayValue(R.array.items)), hasItems("foo", "bar"));
+    }
+
+    @Test
+    public void testStringsAreWithReferences() throws Exception {
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+        assertThat(Arrays.asList(resourceLoader.getStringArrayValue(R.array.greetings)), hasItems("hola", "Hello"));
+    }
+
+    @Test
+    public void shouldAddAndroidToSystemStringArrayName() throws Exception {
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+        assertThat(Arrays.asList(resourceLoader.getStringArrayValue(android.R.array.emailAddressTypes)), hasItems("Home", "Work", "Other", "Custom"));
+        assertThat(Arrays.asList(resourceLoader.getStringArrayValue(R.array.emailAddressTypes)), hasItems("Doggy", "Catty"));
+    }
+
+    @Test
+    public void testIntegersAreResolved() throws Exception {
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+        assertThat(resourceLoader.getIntegerArrayValue(R.array.zero_to_four_int_array),
+                equalTo(new int[]{0, 1, 2, 3, 4}));
+    }
+
+    @Test
+    public void testEmptyArray() throws Exception {
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+        assertThat(resourceLoader.getIntegerArrayValue(R.array.empty_int_array).length,
+                equalTo(0));
+    }
+
+    @Test
+    public void testIntegersWithReferences() throws Exception {
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+        assertThat(resourceLoader.getIntegerArrayValue(R.array.with_references_int_array),
+                equalTo(new int[]{0, 2000, 1}));
+    }
+
 }

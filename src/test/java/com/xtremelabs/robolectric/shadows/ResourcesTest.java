@@ -40,6 +40,11 @@ public class ResourcesTest {
         resources.getStringArray(-1);
     }
 
+    @Test(expected = Resources.NotFoundException.class)
+    public void getIntegerArray_shouldThrowExceptionIfNotFound() throws Exception {
+        resources.getIntArray(-1);
+    }
+
     @Test
     public void testConfiguration() {
         Configuration configuration = resources.getConfiguration();

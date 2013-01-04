@@ -16,7 +16,7 @@ import java.util.List;
  */
 public abstract class XTagXmlResourceLoader extends XmlLoader {
 
-	private String tag;
+    private String tag;
 
 	private static List< String > xPathXmlFiles = new ArrayList< String >( 6 );
 
@@ -29,9 +29,8 @@ public abstract class XTagXmlResourceLoader extends XmlLoader {
 		xPathXmlFiles.add( "values/dimens" );
 	}
 
-	public XTagXmlResourceLoader( ResourceExtractor resourceExtractor, String tag ) {
-		super( resourceExtractor );
-		this.tag = tag;
+	public XTagXmlResourceLoader(String tag) {
+        this.tag = tag;
 	}
 
 	@Override
