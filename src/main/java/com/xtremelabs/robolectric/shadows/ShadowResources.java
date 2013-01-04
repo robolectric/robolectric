@@ -127,7 +127,9 @@ public class ShadowResources {
 
     public void setDensity(float density) {
         this.density = density;
-        displayMetrics.density = density;
+        if (displayMetrics != null) {
+            displayMetrics.density = density;
+        }
     }
 
     public void setDisplay(Display display) {
