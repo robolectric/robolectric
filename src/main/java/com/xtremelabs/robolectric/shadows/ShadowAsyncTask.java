@@ -7,12 +7,7 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 @Implements(AsyncTask.class)
 public class ShadowAsyncTask<Params, Progress, Result> {
@@ -88,6 +83,11 @@ public class ShadowAsyncTask<Params, Progress, Result> {
         return realAsyncTask;
     }
 
+    @Implementation
+    public AsyncTask<Params, Progress, Result> executeOnExecutor(Executor exec, Params... params){
+    	return execute(params);
+    }
+    
     @Implementation
     public AsyncTask.Status getStatus() {
         return status;
