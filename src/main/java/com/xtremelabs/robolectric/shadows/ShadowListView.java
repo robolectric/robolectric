@@ -117,21 +117,6 @@ public class ShadowListView extends ShadowAbsListView {
         addFooterView(footerView, null, false);
     }
 
-    @Implementation
-    public void removeAllViews() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Implementation
-    public void removeView(View view) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Implementation
-    public void removeViewAt(int index) {
-        throw new UnsupportedOperationException();
-    }
-
     private void ensureAdapterNotSet(String view) {
         if (getAdapter() != null) {
             throw new IllegalStateException("Cannot add " + view + " view to list -- setAdapter has already been called");
