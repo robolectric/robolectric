@@ -23,4 +23,9 @@ public class ShadowValueAnimator extends ShadowAnimator {
     public TimeInterpolator getInterpolator() {
         return interpolator;
     }
+    
+    @Implementation
+    public static ValueAnimator ofInt (int... values){
+    	return new ValueAnimator();
+    }
 }

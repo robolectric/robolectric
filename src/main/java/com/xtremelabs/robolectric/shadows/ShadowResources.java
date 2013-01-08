@@ -124,9 +124,12 @@ public class ShadowResources {
     public CharSequence getText(int id) throws Resources.NotFoundException {
         return getString(id);
     }
-    
+
     public void setDensity(float density) {
         this.density = density;
+        if (displayMetrics != null) {
+            displayMetrics.density = density;
+        }
     }
 
     public void setDisplay(Display display) {
@@ -167,7 +170,7 @@ public class ShadowResources {
         if (colorDrawable != null) {
             return colorDrawable;
         }
-        
+
         if (resLoader.isNinePatchDrawable(drawableResourceId)) {
         	return new NinePatchDrawable(realResources, null);
         }
@@ -184,12 +187,12 @@ public class ShadowResources {
     public int getInteger(int id) throws Resources.NotFoundException {
     	return resourceLoader.getIntegerValue( id );
     }
-    
+
     @Implementation
     public boolean getBoolean(int id) throws Resources.NotFoundException {
     	return resourceLoader.getBooleanValue( id );
     }
-    
+
     @Implementation
     public int getDimensionPixelSize(int id) throws Resources.NotFoundException {
         // The int value returned from here is probably going to be handed to TextView.setTextSize(),
@@ -208,7 +211,7 @@ public class ShadowResources {
     public AssetManager getAssets() {
         return ShadowAssetManager.bind(Robolectric.newInstanceOf(AssetManager.class), resourceLoader);
     }
-    
+
     @Implementation
     public XmlResourceParser getXml(int id)
     		throws Resources.NotFoundException {
