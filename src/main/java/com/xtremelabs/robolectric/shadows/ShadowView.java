@@ -50,6 +50,8 @@ public class ShadowView {
     int top;
     int right;
     int bottom;
+    float x;
+    float y;
     private int paddingLeft;
     private int paddingTop;
     private int paddingRight;
@@ -734,6 +736,26 @@ public class ShadowView {
     @Implementation
     public void setBottom(int bottom) {
         this.bottom = bottom;
+    }
+
+    @Implementation
+    public void setX(float newX) {
+        this.x = newX;
+    }
+
+    @Implementation
+    public void setY(float newY) {
+        this.y = newY;
+    }
+
+    @Implementation
+    public float getX() {
+        return this.x;
+    }
+
+    @Implementation
+    public float getY() {
+        return this.y;
     }
 
     /**
