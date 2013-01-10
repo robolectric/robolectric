@@ -11,6 +11,7 @@ import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.ResourcePath;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
 import com.xtremelabs.robolectric.shadows.ShadowLog;
+import com.xtremelabs.robolectric.shadows.ShadowResources;
 import com.xtremelabs.robolectric.util.DatabaseConfig;
 import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
 import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
@@ -175,6 +176,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     public void setupApplicationState(Method testMethod) {
         boolean strictI18n = determineI18nStrictState(testMethod);
+
+        ResourceLoader systemResourceLoader = new ResourceLoader(sharedRobolectricContext.getSystemResourcePath());
+        ShadowResources.setSystemResources(systemResourceLoader);
 
         ResourceLoader resourceLoader = getResourceLoader(sharedRobolectricContext.getAppManifest());
         resourceLoader.setQualifiers(determineResourceQualifiers(testMethod));

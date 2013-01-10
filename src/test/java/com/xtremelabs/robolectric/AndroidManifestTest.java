@@ -3,7 +3,7 @@ package com.xtremelabs.robolectric;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.res.AndroidResourcePathFinder;
 import com.xtremelabs.robolectric.res.ResourcePath;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -85,7 +85,7 @@ public class AndroidManifestTest {
         assertEquals("./src/test/resources/lib1/../lib3/res", resourcePaths.get(2).resourceBase.getPath());
         assertEquals("./src/test/resources/lib2/res", resourcePaths.get(3).resourceBase.getPath());
 
-        File resourceBase = ResourceLoader.getSystemResourcePath(appManifest.getRealSdkVersion(), resourcePaths).resourceBase;
+        File resourceBase = AndroidResourcePathFinder.getSystemResourcePath(appManifest.getRealSdkVersion(), resourcePaths).resourceBase;
         assertEquals(resourceBase.getPath(), resourcePaths.get(4).resourceBase.getPath());
     }
 

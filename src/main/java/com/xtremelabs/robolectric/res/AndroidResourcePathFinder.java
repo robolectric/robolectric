@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.res;
 
+import android.R;
 import com.xtremelabs.robolectric.util.PropertiesHelper;
 
 import java.io.BufferedReader;
@@ -13,6 +14,11 @@ import java.util.Properties;
 public class AndroidResourcePathFinder {
     private final int sdkVersion;
     private final ResourcePath resourcePath;
+
+    public static ResourcePath getSystemResourcePath(int sdkVersion, List<ResourcePath> resourcePaths) {
+        String pathToAndroidResources = new AndroidResourcePathFinder(sdkVersion, resourcePaths).getPathToAndroidResources();
+        return new ResourcePath(R.class, new File(pathToAndroidResources), null);
+    }
 
     public AndroidResourcePathFinder(int sdkVersion, List<ResourcePath> resourcePaths) {
         this.resourcePath = resourcePaths == null ? new ResourcePath(null, new File("."), null) : resourcePaths.get(0);

@@ -8,7 +8,7 @@ import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.Setup;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
-import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.res.AndroidResourcePathFinder;
 import com.xtremelabs.robolectric.res.ResourcePath;
 import org.apache.maven.repository.internal.MavenRepositorySystemSession;
 import org.codehaus.plexus.DefaultPlexusContainer;
@@ -166,13 +166,22 @@ public class RobolectricContext {
     }
 
     public List<ResourcePath> getResourcePaths() {
+        List<ResourcePath> resourcePaths = getResourcePathsWithoutSystem();
+        resourcePaths.add(getSystemResourcePath());
+        return resourcePaths;
+    }
+
+    private List<ResourcePath> getResourcePathsWithoutSystem() {
         List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>();
         resourcePaths.add(getAppManifest().getResourcePath());
         for (AndroidManifest libraryManifest : getLibraryManifests()) {
             resourcePaths.add(libraryManifest.getResourcePath());
         }
-        resourcePaths.add(ResourceLoader.getSystemResourcePath(getAppManifest().getRealSdkVersion(), resourcePaths));
         return resourcePaths;
+    }
+
+    public ResourcePath getSystemResourcePath() {
+        return AndroidResourcePathFinder.getSystemResourcePath(getAppManifest().getRealSdkVersion(), getResourcePathsWithoutSystem());
     }
 
     private Class<?> bootstrapTestClass(Class<?> testClass) {

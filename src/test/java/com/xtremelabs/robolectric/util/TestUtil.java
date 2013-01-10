@@ -2,7 +2,7 @@ package com.xtremelabs.robolectric.util;
 
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.AndroidManifest;
-import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.res.AndroidResourcePathFinder;
 import com.xtremelabs.robolectric.res.ResourcePath;
 
 import java.io.BufferedReader;
@@ -25,7 +25,7 @@ import static org.junit.Assert.assertTrue;
 public abstract class TestUtil {
     public static final ResourcePath TEST_RESOURCE_PATH = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
     public static final String TEST_PACKAGE = R.class.getPackage().getName();
-    public static final ResourcePath SYSTEM_RESOURCE_PATH = ResourceLoader.getSystemResourcePath(DEFAULT_SDK_VERSION, asList(testResources()));
+    public static final ResourcePath SYSTEM_RESOURCE_PATH = AndroidResourcePathFinder.getSystemResourcePath(DEFAULT_SDK_VERSION, asList(testResources()));
     public static final String SYSTEM_PACKAGE = android.R.class.getPackage().getName();
     public static File testDirLocation;
 

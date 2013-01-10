@@ -33,6 +33,10 @@ public class ShadowResources {
 
     private static Resources system = null;
 
+    public static void setSystemResources(ResourceLoader systemResourceLoader) {
+        system = ShadowResources.bind(new Resources(null, null, null), systemResourceLoader);
+    }
+
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
         ShadowResources shadowResources = shadowOf(resources);
         if (shadowResources.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
@@ -257,14 +261,6 @@ public class ShadowResources {
 
     @Implementation
     public static Resources getSystem() {
-        if (system == null) {
-            try {
-                initSystemResources();
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }
-
         return system;
     }
 
@@ -274,19 +270,5 @@ public class ShadowResources {
             ((UsesResources) shadow).injectResources(resources);
         }
         return instance;
-    }
-
-
-  /**
-     * Creates system resource loader from a copy of the application resource loader. Sets
-     * a flag to exclude local resources on initialization.
-     */
-    private static void initSystemResources() throws Exception {
-        ShadowApplication shadowApplication = getShadowApplication();
-        if (shadowApplication == null) return; // short-circuit if we're called before an application has been created
-
-        final ResourceLoader appResourceLoader = shadowApplication.getResourceLoader();
-        final ResourceLoader systemResourceLoader = appResourceLoader.copy();
-        system = ShadowResources.bind(new Resources(null, null, null), systemResourceLoader);
     }
 }

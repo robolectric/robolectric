@@ -32,7 +32,7 @@ public class ResourceLoaderTest {
     @Before
     public void setUp() throws Exception {
         resourcePath = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
-        systemResourcePath = ResourceLoader.getSystemResourcePath(Robolectric.DEFAULT_SDK_VERSION, asList(resourcePath));
+        systemResourcePath = AndroidResourcePathFinder.getSystemResourcePath(Robolectric.DEFAULT_SDK_VERSION, asList(resourcePath));
     }
 
     @Test

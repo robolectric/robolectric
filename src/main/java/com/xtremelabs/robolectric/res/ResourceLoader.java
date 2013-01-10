@@ -1,6 +1,5 @@
 package com.xtremelabs.robolectric.res;
 
-import android.R;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
@@ -60,21 +59,12 @@ public class ResourceLoader {
     private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
     private String qualifiers = "";
 
-    public static ResourcePath getSystemResourcePath(int sdkVersion, List<ResourcePath> resourcePaths) {
-        String pathToAndroidResources = new AndroidResourcePathFinder(sdkVersion, resourcePaths).getPathToAndroidResources();
-        return new ResourcePath(R.class, new File(pathToAndroidResources), null);
-    }
-
-    public ResourceLoader(List<ResourcePath> resourcePaths) {
-        this(new ResourceExtractor(resourcePaths), resourcePaths);
-    }
-
-    public ResourceLoader(ResourcePath... resourcePaths) throws Exception {
+    public ResourceLoader(ResourcePath... resourcePaths) {
         this(asList(resourcePaths));
     }
 
-    private ResourceLoader(ResourceExtractor resourceExtractor, List<ResourcePath> resourcePaths) {
-        this.resourceExtractor = resourceExtractor;
+    public ResourceLoader(List<ResourcePath> resourcePaths) {
+        this.resourceExtractor = new ResourceExtractor(resourcePaths);
         this.resourcePaths = Collections.unmodifiableList(resourcePaths);
 
         attrResourceLoader = new AttrResourceLoader();
@@ -85,10 +75,6 @@ public class ResourceLoader {
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
 
         roboLayoutInflater = new RoboLayoutInflater(resourceExtractor, viewNodes);
-    }
-
-    public ResourceLoader copy() {
-        return new ResourceLoader(resourceExtractor, resourcePaths);
     }
 
     public void setStrictI18n(boolean strict) {
