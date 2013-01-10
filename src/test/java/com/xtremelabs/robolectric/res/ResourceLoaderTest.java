@@ -154,4 +154,11 @@ public class ResourceLoaderTest {
                 equalTo(new int[]{0, 2000, 1}));
     }
 
+    @Test public void shouldLoadForAllQualifiers() throws Exception {
+        ResourceLoader resourceLoader = new ResourceLoader(resourcePath);
+        resourceLoader.setQualifiers("");
+        assertThat(resourceLoader.getStringValue(R.string.hello), equalTo("Hello"));
+        resourceLoader.setQualifiers("fr");
+        assertThat(resourceLoader.getStringValue(R.string.hello), equalTo("Bonjour"));
+    }
 }

@@ -92,7 +92,7 @@ public class ResourceLoader {
         if (isInitialized) return;
 
         try {
-            loadEverything(qualifiers);
+            loadEverything();
         } catch (I18nException e) {
             throw e;
         } catch (Exception e) {
@@ -100,13 +100,11 @@ public class ResourceLoader {
         }
     }
 
-    private void loadEverything(String qualifiers) throws Exception {
+    private void loadEverything() throws Exception {
         for (ResourcePath resourcePath : resourcePaths) {
             System.out.println("DEBUG: Loading resources for " + resourcePath.getPackageName() + " from " + resourcePath.resourceBase + "...");
 
-            validateQualifiers(resourcePath, qualifiers);
-
-            DocumentLoader valuesDocumentLoader = new DocumentLoader(
+            loadResourceXmlSubDirs(new DocumentLoader(
                     new ValueResourceLoader(booleanResolver, "bool", false),
                     new ValueResourceLoader(colorResolver, "color", false),
                     new ValueResourceLoader(dimenResolver, "dimen", false),
@@ -114,9 +112,7 @@ public class ResourceLoader {
                     new PluralResourceLoader(resourceExtractor, pluralsResolver),
                     new ValueResourceLoader(stringResolver, "string", true),
                     attrResourceLoader
-            );
-
-            loadValueResourcesFromDirs(valuesDocumentLoader, resourcePath, qualifiers);
+            ), resourcePath, "values");
 
             loadResourceXmlSubDirs(new DocumentLoader(viewLoader), resourcePath, "layout");
             loadResourceXmlSubDirs(new DocumentLoader(menuLoader), resourcePath, "menu");
@@ -134,19 +130,6 @@ public class ResourceLoader {
         isInitialized = true;
     }
 
-    /**
-     * Reload values resources, include String, Plurals, Dimen, Prefs, Menu
-     *
-     * @param qualifiers
-     */
-    public void reloadValuesResources(String qualifiers) {
-        try {
-            loadEverything(qualifiers);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
-
     public void setQualifiers(String qualifiers) {
         if (qualifiers == null) throw new NullPointerException();
 
@@ -154,7 +137,6 @@ public class ResourceLoader {
             System.out.println("switching from '" + this.qualifiers + "' to '" + qualifiers + "'");
             this.qualifiers = qualifiers;
             roboLayoutInflater.setQualifiers(qualifiers);
-            this.isInitialized = false;
         }
     }
 
@@ -163,24 +145,6 @@ public class ResourceLoader {
 
     private void loadResourceXmlSubDirs(DocumentLoader documentLoader, ResourcePath resourcePath, final String folderBaseName) throws Exception {
         documentLoader.loadResourceXmlDirs(resourcePath, resourcePath.resourceBase.listFiles(new DirectoryMatchingFileFilter(folderBaseName)));
-    }
-
-    private void loadValueResourcesFromDirs(DocumentLoader documentLoader, ResourcePath resourcePath, String qualifiers) throws Exception {
-        File qualifiedValuesDir = new File(resourcePath.resourceBase, "".equals(qualifiers) ? "values" : "values-" + qualifiers);
-        if (qualifiedValuesDir.exists()) {
-            documentLoader.loadResourceXmlDirs(resourcePath, qualifiedValuesDir);
-        }
-    }
-
-    private void validateQualifiers(ResourcePath resourcePath, String qualifiers) {
-        String valuesDir = "values";
-        if (qualifiers != null && !qualifiers.isEmpty()) {
-            valuesDir += "-" + qualifiers;
-        }
-        File result = new File(resourcePath.resourceBase, valuesDir);
-        if (!result.exists()) {
-            System.out.println("WARN: Couldn't find value resource directory: " + result.getAbsolutePath());
-        }
     }
 
     private File getPreferenceResourceDir(File xmlResourceDir) {
