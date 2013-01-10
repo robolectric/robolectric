@@ -40,7 +40,8 @@ public class ShadowLayoutInflater {
 
     @Implementation
     public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
-        return getResourceLoader().getRoboLayoutInflater().inflateView(context, resource, attachToRoot ? root : null);
+        String qualifiers = shadowOf(context.getResources().getConfiguration()).getQualifiers();
+        return getResourceLoader().getRoboLayoutInflater().inflateView(context, resource, attachToRoot ? root : null, qualifiers);
     }
 
     @Implementation

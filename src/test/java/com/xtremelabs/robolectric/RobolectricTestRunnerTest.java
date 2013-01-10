@@ -57,18 +57,18 @@ public class RobolectricTestRunnerTest {
     @Test
     @Values(locale = "fr")
     public void internalBeforeTest_setLocale() {
-        assertEquals(Robolectric.getShadowApplication().getResourceLoader().getQualifiers(), "fr");
+        assertEquals("fr", Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).getQualifiers());
     }
 
     @Test
     @Values(qualifiers = "fr")
     public void internalBeforeTest_testValuesResQualifiers() {
-        assertEquals(Robolectric.getShadowApplication().getResourceLoader().getQualifiers(), "fr");
+        assertEquals("fr", Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).getQualifiers());
     }
 
     @Test
     public void internalBeforeTest_resetsValuesResQualifiers() {
-        assertEquals(Robolectric.getShadowApplication().getResourceLoader().getQualifiers(), "");
+        assertEquals("", Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).getQualifiers());
     }
 
     @Test
@@ -96,7 +96,7 @@ public class RobolectricTestRunnerTest {
         assertTrue(Robolectric.getShadowApplication().getResourceLoader().getStrictI18n());
         assertTrue(loader.getStrictI18n());
         try {
-            loader.getRoboLayoutInflater().inflateView(Robolectric.application, R.layout.text_views, null);
+            loader.getRoboLayoutInflater().inflateView(Robolectric.application, R.layout.text_views, null, "");
             fail("ResourceLoader#inflateView should produce an i18nException");
         } catch (Exception e) {
             // classes may not be identical (different classloaders) but should have the same name

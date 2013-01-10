@@ -57,7 +57,6 @@ public class ResourceLoader {
     private final ResBundle<ViewNode> viewNodes = new ResBundle<ViewNode>();
 
     private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
-    private String qualifiers = "";
 
     public ResourceLoader(ResourcePath... resourcePaths) {
         this(asList(resourcePaths));
@@ -130,16 +129,6 @@ public class ResourceLoader {
         isInitialized = true;
     }
 
-    public void setQualifiers(String qualifiers) {
-        if (qualifiers == null) throw new NullPointerException();
-
-        if (!this.qualifiers.equals(qualifiers)) {
-            System.out.println("switching from '" + this.qualifiers + "' to '" + qualifiers + "'");
-            this.qualifiers = qualifiers;
-            roboLayoutInflater.setQualifiers(qualifiers);
-        }
-    }
-
     protected void loadOtherResources(ResourcePath resourcePath) {
     }
 
@@ -149,10 +138,6 @@ public class ResourceLoader {
 
     private File getPreferenceResourceDir(File xmlResourceDir) {
         return xmlResourceDir != null ? new File(xmlResourceDir, "xml") : null;
-    }
-
-    public String getQualifiers() {
-        return qualifiers;
     }
 
     public TestAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
@@ -174,18 +159,18 @@ public class ResourceLoader {
         return resourceExtractor.getResourceName(viewId);
     }
 
-    public int getColorValue(int id) {
+    public int getColorValue(int id, String qualifiers) {
         init();
         Integer value = colorResolver.resolve(resourceExtractor.getResName(id), qualifiers);
         return value == null ? -1 : value;
     }
 
-    public String getStringValue(int id) {
+    public String getStringValue(int id, String qualifiers) {
         init();
         return stringResolver.resolve(resourceExtractor.getResName(id), qualifiers);
     }
 
-    public String getPluralStringValue(int id, int quantity) {
+    public String getPluralStringValue(int id, int quantity, String qualifiers) {
         init();
         ResName resName = resourceExtractor.getResName(id);
         PluralResourceLoader.PluralRules pluralRules = pluralsResolver.get(resName, qualifiers);
@@ -196,17 +181,17 @@ public class ResourceLoader {
         return stringResolver.resolveValue(qualifiers, plural.string, resName.namespace);
     }
 
-    public float getDimenValue(int id) {
+    public float getDimenValue(int id, String qualifiers) {
         init();
         return dimenResolver.resolve(resourceExtractor.getResName(id), qualifiers);
     }
 
-    public int getIntegerValue(int id) {
+    public int getIntegerValue(int id, String qualifiers) {
         init();
         return integerResolver.resolve(resourceExtractor.getResName(id), qualifiers);
     }
 
-    public boolean getBooleanValue(int id) {
+    public boolean getBooleanValue(int id, String qualifiers) {
         init();
         return booleanResolver.resolve(resourceExtractor.getResName(id), qualifiers);
     }
@@ -340,7 +325,7 @@ public class ResourceLoader {
         return null;
     }
 
-    public String[] getStringArrayValue(int id) {
+    public String[] getStringArrayValue(int id, String qualifiers) {
         init();
 
         ResName resName = resourceExtractor.getResName(id);
@@ -350,7 +335,7 @@ public class ResourceLoader {
         return strings == null ? null : strings.toArray(new String[strings.size()]);
     }
 
-    public int[] getIntegerArrayValue(int id) {
+    public int[] getIntegerArrayValue(int id, String qualifiers) {
         init();
 
         ResName resName = resourceExtractor.getResName(id);
@@ -386,7 +371,7 @@ public class ResourceLoader {
         return resourcePaths.get(0).assetsDir; // todo: do something better
     }
 
-    ViewNode getLayoutViewNode(String layoutName) {
+    ViewNode getLayoutViewNode(String layoutName, String qualifiers) {
         return viewNodes.get(new ResName(layoutName), qualifiers);
     }
 

@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric;
 
 import android.app.Application;
+import android.content.res.Resources;
 import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
 import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
 import com.xtremelabs.robolectric.annotation.Values;
@@ -36,6 +37,8 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Installs a {@link RobolectricClassLoader} and {@link com.xtremelabs.robolectric.res.ResourceLoader} in order to
@@ -181,13 +184,16 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         ShadowResources.setSystemResources(systemResourceLoader);
 
         ResourceLoader resourceLoader = getResourceLoader(sharedRobolectricContext.getAppManifest());
-        resourceLoader.setQualifiers(determineResourceQualifiers(testMethod));
         resourceLoader.setStrictI18n(strictI18n);
 
         ClassHandler classHandler = sharedRobolectricContext.getClassHandler();
         classHandler.setStrictI18n(strictI18n);
 
         Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
+
+        String qualifiers = determineResourceQualifiers(testMethod);
+        shadowOf(Resources.getSystem().getConfiguration()).overrideQualifiers(qualifiers);
+        shadowOf(Robolectric.application.getResources().getConfiguration()).overrideQualifiers(qualifiers);
     }
 
     protected void configureShadows(Method testMethod) { // todo: dedupe this/bindShadowClasses

@@ -45,10 +45,10 @@ public class ApplicationTest {
     @Test
     public void shouldBeBindableToAResourceLoader() throws Exception {
         ResourceLoader resourceLoader1 = new ResourceLoader() {
-            @Override public String getStringValue(int id) { return "title from resourceLoader1"; }
+            @Override public String getStringValue(int id, String qualifiers) { return "title from resourceLoader1"; }
         };
         ResourceLoader resourceLoader2 = new ResourceLoader() {
-            @Override public String getStringValue(int id) { return "title from resourceLoader2"; }
+            @Override public String getStringValue(int id, String qualifiers) { return "title from resourceLoader2"; }
         };
 
         Application app1 = ShadowApplication.bind(new Application(), resourceLoader1);

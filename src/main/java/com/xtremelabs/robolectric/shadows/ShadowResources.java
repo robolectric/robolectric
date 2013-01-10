@@ -53,6 +53,12 @@ public class ShadowResources {
         setConfiguration(configuration);
     }
 
+    @Implementation
+    public void __constructor__(AssetManager assets, DisplayMetrics metrics, Configuration config) {
+        this.displayMetrics = metrics;
+        setConfiguration(config);
+    }
+
     /**
      * Non-Android accessor that sets the value to be returned by {@link #getConfiguration()}
      *
@@ -75,7 +81,11 @@ public class ShadowResources {
 
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
-        return resourceLoader.getColorValue(id);
+        return resourceLoader.getColorValue(id, getQualifiers());
+    }
+
+    private String getQualifiers() {
+        return shadowOf(getConfiguration()).getQualifiers();
     }
 
     @Implementation
@@ -97,7 +107,7 @@ public class ShadowResources {
 
     @Implementation
     public String getString(int id) throws Resources.NotFoundException {
-        return resourceLoader.getStringValue(id);
+        return resourceLoader.getStringValue(id, getQualifiers());
     }
 
     @Implementation
@@ -114,7 +124,7 @@ public class ShadowResources {
 
     @Implementation
     public String getQuantityString(int id, int quantity) throws Resources.NotFoundException {
-        return resourceLoader.getPluralStringValue(id, quantity);
+        return resourceLoader.getPluralStringValue(id, quantity, getQualifiers());
     }
 
     @Implementation
@@ -124,7 +134,7 @@ public class ShadowResources {
 
     @Implementation
     public String[] getStringArray(int id) throws Resources.NotFoundException {
-        String[] arrayValue = resourceLoader.getStringArrayValue(id);
+        String[] arrayValue = resourceLoader.getStringArrayValue(id, getQualifiers());
         if (arrayValue == null) {
             throw new Resources.NotFoundException();
         }
@@ -171,17 +181,17 @@ public class ShadowResources {
 
     @Implementation
     public float getDimension(int id) throws Resources.NotFoundException {
-        return resourceLoader.getDimenValue(id);
+        return resourceLoader.getDimenValue(id, getQualifiers());
     }
 
     @Implementation
     public int getInteger(int id) throws Resources.NotFoundException {
-    	return resourceLoader.getIntegerValue(id);
+    	return resourceLoader.getIntegerValue(id, getQualifiers());
     }
 
     @Implementation
     public int[] getIntArray(int id) throws Resources.NotFoundException {
-        int[] arrayValue = resourceLoader.getIntegerArrayValue(id);
+        int[] arrayValue = resourceLoader.getIntegerArrayValue(id, getQualifiers());
         if (arrayValue == null) {
             throw new Resources.NotFoundException();
         }
@@ -190,7 +200,7 @@ public class ShadowResources {
 
     @Implementation
     public boolean getBoolean(int id) throws Resources.NotFoundException {
-    	return resourceLoader.getBooleanValue( id );
+    	return resourceLoader.getBooleanValue(id, getQualifiers());
     }
     
     @Implementation

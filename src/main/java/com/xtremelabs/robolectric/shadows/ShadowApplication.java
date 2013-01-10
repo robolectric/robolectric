@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.IBinder;
 import android.os.Looper;
@@ -110,7 +111,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         ShadowApplication shadowApplication = shadowOf(application);
         if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
         shadowApplication.resourceLoader = resourceLoader;
-        shadowApplication.resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);
+        shadowApplication.resources = ShadowResources.bind(new Resources(null, null, new Configuration()), resourceLoader);
         return application;
     }
 
