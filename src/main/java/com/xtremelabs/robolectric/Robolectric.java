@@ -59,6 +59,7 @@ import com.xtremelabs.robolectric.bytecode.IgnorableClassNotFoundException;
 import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
 import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.internal.Implements;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.shadows.*;
 import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
 import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
@@ -1425,6 +1426,7 @@ public class Robolectric {
      *
      * @param view the view to dump
      */
+    @SuppressWarnings("UnusedDeclaration")
     public static void dump(View view) {
         shadowOf(view).dump();
     }
@@ -1434,8 +1436,13 @@ public class Robolectric {
      *
      * @param view the view to scan for text
      */
+    @SuppressWarnings("UnusedDeclaration")
     public static String innerText(View view) {
         return shadowOf(view).innerText();
+    }
+
+    public static ResourceLoader getResourceLoader(Context context) {
+        return shadowOf(context.getApplicationContext()).getResourceLoader();
     }
 
     /**

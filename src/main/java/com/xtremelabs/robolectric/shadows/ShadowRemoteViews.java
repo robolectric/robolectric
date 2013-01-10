@@ -7,9 +7,9 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.RemoteViews;
 import android.widget.TextView;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.res.ResourceLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -117,7 +117,7 @@ public class ShadowRemoteViews {
             View view = parent.findViewById(viewId);
             if (view == null) {
                 throw new NullPointerException("couldn't find view " + viewId
-                        + " (" + ResourceLoader.getFrom(parent.getContext()).getNameForId(viewId) + ")");
+                        + " (" + Robolectric.getResourceLoader(parent.getContext()).getNameForId(viewId) + ")");
             }
             doUpdate(view);
         }

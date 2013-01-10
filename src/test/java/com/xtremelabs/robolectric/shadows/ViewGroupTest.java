@@ -13,7 +13,7 @@ import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.res.PackageResourceLoader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -44,7 +44,7 @@ public class ViewGroupTest {
     @Before
     public void setUp() throws Exception {
         context = new Application();
-        ShadowApplication.bind(context, new ResourceLoader(testResources(), systemResources()));
+        ShadowApplication.bind(context, new PackageResourceLoader(testResources(), systemResources()));
 
         root = new FrameLayout(context);
 

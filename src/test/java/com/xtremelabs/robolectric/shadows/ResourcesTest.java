@@ -13,6 +13,7 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.annotation.Values;
+import com.xtremelabs.robolectric.res.PackageResourceLoader;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -80,7 +81,7 @@ public class ResourcesTest {
      */
     @Test
     public void testGetDrawableNullRClass() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader();
+        ResourceLoader resourceLoader = new PackageResourceLoader();
         resources = new Resources(null, null, null);
         ShadowResources.bind(resources, resourceLoader);
 

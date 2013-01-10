@@ -37,7 +37,7 @@ public class ResourceLoaderTest {
 
     @Test
     public void shouldLoadSystemResources() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(resourcePath, systemResourcePath);
+        PackageResourceLoader resourceLoader = new PackageResourceLoader(resourcePath, systemResourcePath);
         String stringValue = resourceLoader.getStringValue(android.R.string.copy, "");
         assertEquals("Copy", stringValue);
 
@@ -47,7 +47,7 @@ public class ResourceLoaderTest {
 
     @Test
     public void shouldLoadLocalResources() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(resourcePath);
+        ResourceLoader resourceLoader = new PackageResourceLoader(resourcePath);
         String stringValue = resourceLoader.getStringValue(R.string.copy, "");
         assertEquals("Local Copy", stringValue);
     }
@@ -62,7 +62,7 @@ public class ResourceLoaderTest {
 
     @Test(expected=I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflateMenu() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(resourcePath);
+        ResourceLoader resourceLoader = new PackageResourceLoader(resourcePath);
         resourceLoader.setStrictI18n(true);
     	resourceLoader.inflateMenu(Robolectric.application, R.menu.test, new TestMenu());
     }
@@ -155,7 +155,7 @@ public class ResourceLoaderTest {
     }
 
     @Test public void shouldLoadForAllQualifiers() throws Exception {
-        ResourceLoader resourceLoader = new ResourceLoader(resourcePath);
+        ResourceLoader resourceLoader = new PackageResourceLoader(resourcePath);
         assertThat(resourceLoader.getStringValue(R.string.hello, ""), equalTo("Hello"));
         assertThat(resourceLoader.getStringValue(R.string.hello, "fr"), equalTo("Bonjour"));
     }

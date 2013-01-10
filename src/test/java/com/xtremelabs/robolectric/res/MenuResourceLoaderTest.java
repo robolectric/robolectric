@@ -23,7 +23,7 @@ public class MenuResourceLoaderTest {
 
     @Before
     public void setUp() throws Exception {
-        resourceLoader = new ResourceLoader(testResources(), systemResources());
+        resourceLoader = new PackageResourceLoader(testResources(), systemResources());
     }
 
     @Test

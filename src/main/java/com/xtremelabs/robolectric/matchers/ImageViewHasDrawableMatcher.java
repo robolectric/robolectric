@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.matchers;
 
 import android.widget.ImageView;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
@@ -23,7 +24,7 @@ public class ImageViewHasDrawableMatcher<T extends ImageView> extends TypeSafeMa
             return false;
         }
 
-        ResourceLoader resourceLoader = ResourceLoader.getFrom(actualImageView.getContext());
+        ResourceLoader resourceLoader = Robolectric.getResourceLoader(actualImageView.getContext());
 
         int actualResourceId = shadowOf(actualImageView).getResourceId();
         String actualName = nameOrUnset(resourceLoader, actualResourceId);

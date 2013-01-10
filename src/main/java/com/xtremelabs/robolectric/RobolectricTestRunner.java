@@ -8,6 +8,7 @@ import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.bytecode.ClassHandler;
 import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
+import com.xtremelabs.robolectric.res.PackageResourceLoader;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.ResourcePath;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
@@ -180,7 +181,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     public void setupApplicationState(Method testMethod) {
         boolean strictI18n = determineI18nStrictState(testMethod);
 
-        ResourceLoader systemResourceLoader = new ResourceLoader(sharedRobolectricContext.getSystemResourcePath());
+        ResourceLoader systemResourceLoader = new PackageResourceLoader(sharedRobolectricContext.getSystemResourcePath());
         ShadowResources.setSystemResources(systemResourceLoader);
 
         ResourceLoader resourceLoader = getResourceLoader(sharedRobolectricContext.getAppManifest());
@@ -409,7 +410,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     // this method must live on a RobolectricClassLoader-loaded class, so it can't be on RobolectricContext
     protected ResourceLoader createResourceLoader(List<ResourcePath> resourcePaths) {
-        return new ResourceLoader(resourcePaths);
+        return new PackageResourceLoader(resourcePaths);
     }
 
     private String findResourcePackageName(final File projectManifestFile) throws ParserConfigurationException, IOException, SAXException {

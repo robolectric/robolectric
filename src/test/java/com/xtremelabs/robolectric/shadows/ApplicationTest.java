@@ -12,6 +12,7 @@ import com.xtremelabs.robolectric.ApplicationResolver;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.res.PackageResourceLoader;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.TestBroadcastReceiver;
 import org.junit.Before;
@@ -44,10 +45,10 @@ public class ApplicationTest {
 
     @Test
     public void shouldBeBindableToAResourceLoader() throws Exception {
-        ResourceLoader resourceLoader1 = new ResourceLoader() {
+        ResourceLoader resourceLoader1 = new PackageResourceLoader() {
             @Override public String getStringValue(int id, String qualifiers) { return "title from resourceLoader1"; }
         };
-        ResourceLoader resourceLoader2 = new ResourceLoader() {
+        ResourceLoader resourceLoader2 = new PackageResourceLoader() {
             @Override public String getStringValue(int id, String qualifiers) { return "title from resourceLoader2"; }
         };
 
