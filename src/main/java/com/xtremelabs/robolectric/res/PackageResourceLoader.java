@@ -10,7 +10,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.preference.PreferenceScreen;
-import android.view.Menu;
 import android.view.View;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.ResName;
@@ -27,7 +26,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
 
 public class PackageResourceLoader implements ResourceLoader {
@@ -53,6 +51,7 @@ public class PackageResourceLoader implements ResourceLoader {
     private final PluralsResolver pluralsResolver = new PluralsResolver();
     private final Resolver<String> stringResolver = new StringResolver();
     private final ResBundle<ViewNode> viewNodes = new ResBundle<ViewNode>();
+    private final ResBundle<MenuNode> menuNodes = new ResBundle<MenuNode>();
 
     private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
 
@@ -67,7 +66,7 @@ public class PackageResourceLoader implements ResourceLoader {
         attrResourceLoader = new AttrResourceLoader();
         drawableResourceLoader = new DrawableResourceLoader(resourceExtractor);
         viewLoader = new ViewLoader(viewNodes);
-        menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
+        menuLoader = new MenuLoader(menuNodes);
         preferenceLoader = new PreferenceLoader(resourceExtractor);
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
     }
@@ -367,15 +366,6 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public void inflateMenu(Context context, int resource, Menu root) {
-        init();
-
-        if (menuLoader.inflateMenu(context, resource, root)) return;
-
-        throw new RuntimeException("Could not find menu " + resourceExtractor.getResourceName(resource));
-    }
-
-    @Override
     public PreferenceScreen inflatePreferences(Context context, int resourceId) {
         init();
         return preferenceLoader.inflatePreferences(context, resourceId);
@@ -400,8 +390,26 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
+    public MenuNode getMenuNode(int id, String qualifiers) {
+        ResName resName = resourceExtractor.getResName(id);
+        if (resName == null) return null;
+        return getMenuNode(resName, qualifiers);
+    }
+
+    @Override
+    public MenuNode getMenuNode(ResName resName, String qualifiers) {
+        init();
+        return menuNodes.get(resName, qualifiers);
+    }
+
+    @Override
     public ResourceExtractor getResourceExtractor() {
         return resourceExtractor;
+    }
+
+    @Override
+    public AttrResourceLoader getAttrResourceLoader() {
+        return attrResourceLoader;
     }
 
     private static class DirectoryMatchingFileFilter implements FileFilter {

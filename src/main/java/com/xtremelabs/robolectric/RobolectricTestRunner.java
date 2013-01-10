@@ -191,6 +191,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         classHandler.setStrictI18n(strictI18n);
 
         Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
+        shadowOf(Robolectric.application).setStrictI18n(strictI18n);
 
         String qualifiers = determineResourceQualifiers(testMethod);
         shadowOf(Resources.getSystem().getConfiguration()).overrideQualifiers(qualifiers);

@@ -99,6 +99,8 @@ public class ShadowApplication extends ShadowContextWrapper {
     private IBinder serviceForBindService;
     private List<String> unbindableActions = new ArrayList<String>();
 
+    private boolean strictI18n = false;
+
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
      *
@@ -543,6 +545,14 @@ public class ShadowApplication extends ShadowContextWrapper {
     
     public void clearWakeLocks() {
     	latestWakeLock = null;
+    }
+
+    public boolean isStrictI18n() {
+        return strictI18n;
+    }
+
+    public void setStrictI18n(boolean strictI18n) {
+        this.strictI18n = strictI18n;
     }
 
     public class Wrapper {

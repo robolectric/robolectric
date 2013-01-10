@@ -45,6 +45,18 @@ public class RobolectricTestRunnerTest {
 
     @Test
     @EnableStrictI18n
+    public void internalBeforeTest_setsShadowApplicationStrictI18n() {
+        assertTrue(Robolectric.getShadowApplication().isStrictI18n());
+    }
+
+    @Test
+    @DisableStrictI18n
+    public void internalBeforeTest_clearsShadowApplicationStrictI18n() {
+        assertFalse(Robolectric.getShadowApplication().isStrictI18n());
+    }
+
+    @Test
+    @EnableStrictI18n
     public void internalBeforeTest_setsI18nStrictModeFromProperty() {
         assertTrue(Robolectric.getShadowApplication().getResourceLoader().getStrictI18n());
     }

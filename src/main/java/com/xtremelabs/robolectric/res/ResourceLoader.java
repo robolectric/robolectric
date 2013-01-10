@@ -15,12 +15,10 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
 public interface ResourceLoader {
-    void setStrictI18n(boolean strict);
+    @Deprecated void setStrictI18n(boolean strict);
 
-    boolean getStrictI18n();
+    @Deprecated boolean getStrictI18n();
 
     TestAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass);
 
@@ -62,8 +60,6 @@ public interface ResourceLoader {
 
     int[] getIntegerArrayValue(int id, String qualifiers);
 
-    void inflateMenu(Context context, int resource, Menu root);
-
     PreferenceScreen inflatePreferences(Context context, int resourceId);
 
     File getAssetsBase();
@@ -73,4 +69,10 @@ public interface ResourceLoader {
     ViewNode getLayoutViewNode(int id, String qualifiers);
 
     ViewNode getLayoutViewNode(ResName resName, String qualifiers);
+
+    MenuNode getMenuNode(int id, String qualifiers);
+
+    MenuNode getMenuNode(ResName resName, String qualifiers);
+
+    AttrResourceLoader getAttrResourceLoader();
 }

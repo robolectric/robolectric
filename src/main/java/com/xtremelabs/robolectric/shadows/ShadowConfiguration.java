@@ -16,7 +16,7 @@ public class ShadowConfiguration {
     public int screenLayout;
     public int touchscreen;
     public int orientation;
-    private String qualifiers;
+    private String qualifiers = "";
 
     public void __constructor__(Configuration other) {
         realConfiguration.setTo(other);

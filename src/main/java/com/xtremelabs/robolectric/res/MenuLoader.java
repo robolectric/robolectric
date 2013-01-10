@@ -1,12 +1,6 @@
 package com.xtremelabs.robolectric.res;
 
-import android.content.Context;
-import android.text.TextUtils;
-import android.view.Menu;
-import android.view.SubMenu;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
-import com.xtremelabs.robolectric.util.I18nException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -14,18 +8,13 @@ import org.w3c.dom.NodeList;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class MenuLoader extends XmlLoader {
-    private Map<String, MenuNode> menuNodesByMenuName = new HashMap<String, MenuNode>();
-    private final ResourceExtractor resourceExtractor;
-    private AttrResourceLoader attrResourceLoader;
+    private final ResBundle<MenuNode> menuNodes;
 
-    public MenuLoader(ResourceExtractor resourceExtractor, AttrResourceLoader attrResourceLoader) {
-        this.resourceExtractor = resourceExtractor;
-        this.attrResourceLoader = attrResourceLoader;
+    public MenuLoader(ResBundle<MenuNode> menuNodes) {
+        this.menuNodes = menuNodes;
     }
 
     @Override
@@ -39,8 +28,7 @@ public class MenuLoader extends XmlLoader {
             throw new RuntimeException("Expected a top-level item called 'menu' in menu file " + xmlFile.getName());
 
         processChildren(items.item(0).getChildNodes(), topLevelNode, xmlContext);
-        String resourceName = ResourceExtractor.qualifyResourceName("menu/" + xmlFile.getName().replace(".xml", ""), xmlContext.packageName);
-        menuNodesByMenuName.put(resourceName, topLevelNode);
+        menuNodes.put("menu", xmlFile.getName().replace(".xml", ""), topLevelNode, xmlContext);
     }
 
     private void processChildren(NodeList childNodes, MenuNode parent, XmlContext xmlContext) {
@@ -85,7 +73,7 @@ public class MenuLoader extends XmlLoader {
     }
 
     private static boolean childToIgnore(Node nodei) {
-        return TextUtils.isEmpty(nodei.getNodeName())
+        return isEmpty(nodei.getNodeName())
                 || nodei.getNodeName().startsWith("#");
     }
 
@@ -95,82 +83,7 @@ public class MenuLoader extends XmlLoader {
                 || nodei.getNodeName().equals("group");
     }
 
-    public boolean inflateMenu(Context context, String key, Menu root) {
-        return inflateMenu(context, key, null, root);
-    }
-
-    public boolean inflateMenu(Context context, int resourceId, Menu root) {
-        return inflateMenu(context, resourceExtractor.getResourceName(resourceId), root);
-    }
-
-    private boolean inflateMenu(Context context, String key, List<Attribute> attributes, Menu root) {
-        MenuNode menuNode = menuNodesByMenuName.get(key);
-        if (menuNode == null) return false;
-
-        try {
-            if (attributes != null) {
-                Attribute attribute = Attribute.find(attributes, "android:attr/menu");
-                if (attribute != null) {
-                    menuNode.attributes.put(attribute);
-                }
-            }
-            menuNode.inflate(context, root);
-            return true;
-        } catch (I18nException e) {
-            throw e;
-        } catch (Exception e) {
-            throw new RuntimeException("error inflating " + key, e);
-        }
-    }
-
-    public class MenuNode {
-        private String name;
-        private final TestAttributeSet attributes;
-
-        private List<MenuNode> children = new ArrayList<MenuNode>();
-
-        public MenuNode(String name, List<Attribute> attributes) {
-            this.name = name;
-            this.attributes = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, null);
-        }
-
-        public void addChild(MenuNode MenuNode) {
-            children.add(MenuNode);
-        }
-
-        private boolean isSubMenuItem(MenuNode child) {
-            List<MenuNode> ch = child.children;
-            return ch != null && ch.size() == 1 && "menu".equals(ch.get(0).name);
-        }
-
-        private void addChildrenInGroup(MenuNode source, int groupId, Menu root) {
-            for (MenuNode child : source.children) {
-                String name = child.name;
-                TestAttributeSet attributes = child.attributes;
-                if (strictI18n) {
-                    attributes.validateStrictI18n();
-                }
-                if (name.equals("item")) {
-                    if (isSubMenuItem(child)) {
-                        SubMenu sub = root.addSubMenu(groupId,
-                                attributes.getAttributeResourceValue("android", "id", 0),
-                                0, attributes.getAttributeValue("android", "title"));
-                        MenuNode subMenuNode = child.children.get(0);
-                        addChildrenInGroup(subMenuNode, groupId, sub);
-                    } else {
-                        root.add(groupId,
-                                attributes.getAttributeResourceValue("android", "id", 0),
-                                0, attributes.getAttributeValue("android", "title"));
-                    }
-                } else if (name.equals("group")) {
-                    int newGroupId = attributes.getAttributeResourceValue("android", "id", 0);
-                    addChildrenInGroup(child, newGroupId, root);
-                }
-            }
-        }
-
-        public void inflate(Context context, Menu root) throws Exception {
-            addChildrenInGroup(this, 0, root);
-        }
+    public static boolean isEmpty(CharSequence str) {
+        return str == null || str.length() == 0;
     }
 }

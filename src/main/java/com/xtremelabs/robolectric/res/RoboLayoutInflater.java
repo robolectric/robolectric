@@ -7,7 +7,6 @@ import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.ResName;
 import com.xtremelabs.robolectric.util.I18nException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class RoboLayoutInflater {

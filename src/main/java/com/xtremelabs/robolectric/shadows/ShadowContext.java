@@ -17,6 +17,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.UUID;
 
+import static com.xtremelabs.robolectric.Robolectric.getShadowApplication;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
@@ -153,6 +154,10 @@ abstract public class ShadowContext {
      */
     public ResourceLoader getResourceLoader() {
         return shadowOf((Application) realContext.getApplicationContext()).getResourceLoader();
+    }
+
+    public boolean isStrictI18n() {
+        return getShadowApplication().isStrictI18n();
     }
 
     public static void clearFilesAndCache() {

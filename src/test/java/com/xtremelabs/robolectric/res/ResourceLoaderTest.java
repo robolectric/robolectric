@@ -9,7 +9,6 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.tester.android.util.ResName;
-import com.xtremelabs.robolectric.tester.android.view.TestMenu;
 import com.xtremelabs.robolectric.util.I18nException;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,13 +58,6 @@ public class ResourceLoaderTest {
         resourceLoader.setStrictI18n(true);
         ViewGroup vg = new FrameLayout(Robolectric.application);
         new RoboLayoutInflater(resourceLoader).inflateView(Robolectric.application, R.layout.text_views, vg, "");
-    }
-
-    @Test(expected=I18nException.class)
-    public void shouldThrowExceptionOnI18nStrictModeInflateMenu() throws Exception {
-        ResourceLoader resourceLoader = new PackageResourceLoader(resourcePath);
-        resourceLoader.setStrictI18n(true);
-    	resourceLoader.inflateMenu(Robolectric.application, R.menu.test, new TestMenu());
     }
 
     @Test(expected=I18nException.class)
