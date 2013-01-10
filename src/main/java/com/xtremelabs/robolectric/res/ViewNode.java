@@ -55,10 +55,18 @@ public class ViewNode {
         return attributes;
     }
 
-    void invokeOnFinishInflate(View view) throws NoSuchMethodException, IllegalAccessException, InvocationTargetException {
-        Method onFinishInflate = View.class.getDeclaredMethod("onFinishInflate");
-        onFinishInflate.setAccessible(true);
-        onFinishInflate.invoke(view);
+    void invokeOnFinishInflate(View view) {
+        try {
+            Method onFinishInflate = View.class.getDeclaredMethod("onFinishInflate");
+            onFinishInflate.setAccessible(true);
+            onFinishInflate.invoke(view);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -68,7 +76,7 @@ public class ViewNode {
                 '}';
     }
 
-    View create(Context context, ViewGroup parent) throws Exception {
+    View create(Context context, ViewGroup parent) {
         if (isInclude()) {
             throw new IllegalStateException();
         } else if (name.equals("merge")) {
@@ -90,12 +98,23 @@ public class ViewNode {
         return shadowOf(context.getResources()).getResourceLoader();
     }
 
-    private FrameLayout constructFragment(Context context) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    private FrameLayout constructFragment(Context context) {
         ResourceLoader resourceLoader = getResourceLoader(context);
         TestAttributeSet attributeSet = resourceLoader.createAttributeSet(attributes, View.class);
 
         Class<? extends Fragment> clazz = loadFragmentClass(Attribute.find(attributes, "android:attr/name").value);
-        Fragment fragment = ((Constructor<? extends Fragment>) clazz.getConstructor()).newInstance();
+        Fragment fragment = null;
+        try {
+            fragment = ((Constructor<? extends Fragment>) clazz.getConstructor()).newInstance();
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
         if (!(context instanceof FragmentActivity)) {
             throw new RuntimeException("Cannot inflate a fragment unless the activity is a FragmentActivity");
         }
@@ -123,18 +142,28 @@ public class ViewNode {
         }
     }
 
-    private View constructView(Context context) throws InstantiationException, IllegalAccessException, InvocationTargetException, NoSuchMethodException {
+    private View constructView(Context context) {
         Class<? extends View> clazz = pickViewClass();
         try {
-            ResourceLoader resourceLoader = getResourceLoader(context);
-            TestAttributeSet attributeSet = resourceLoader.createAttributeSet(attributes, View.class);
-            return ((Constructor<? extends View>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
-        } catch (NoSuchMethodException e) {
             try {
-                return ((Constructor<? extends View>) clazz.getConstructor(Context.class)).newInstance(context);
-            } catch (NoSuchMethodException e1) {
-                return ((Constructor<? extends View>) clazz.getConstructor(Context.class, String.class)).newInstance(context, "");
+                ResourceLoader resourceLoader = getResourceLoader(context);
+                TestAttributeSet attributeSet = resourceLoader.createAttributeSet(attributes, View.class);
+                return ((Constructor<? extends View>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
+            } catch (NoSuchMethodException e) {
+                try {
+                    return ((Constructor<? extends View>) clazz.getConstructor(Context.class)).newInstance(context);
+                } catch (NoSuchMethodException e1) {
+                    return ((Constructor<? extends View>) clazz.getConstructor(Context.class, String.class)).newInstance(context, "");
+                }
             }
+        } catch (InstantiationException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
         }
     }
 

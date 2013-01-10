@@ -13,25 +13,23 @@ import java.util.List;
 public class RoboLayoutInflater {
     public static final ResName ATTR_LAYOUT = new ResName(":attr/layout");
 
-    private final ResourceExtractor resourceExtractor;
-    private final ResBundle<ViewNode> viewNodes;
+    private final ResourceLoader resourceLoader;
 
-    public RoboLayoutInflater(ResourceExtractor resourceExtractor, ResBundle<ViewNode> viewNodes) {
-        this.resourceExtractor = resourceExtractor;
-        this.viewNodes = viewNodes;
+    public RoboLayoutInflater(ResourceLoader resourceLoader) {
+        this.resourceLoader = resourceLoader;
     }
 
-    public View inflate(Context context, ViewNode viewNode, ViewGroup parent, String qualifiers) throws Exception {
+    private View doInflate(Context context, ViewNode viewNode, ViewGroup parent, String qualifiers) {
         if (viewNode.isInclude()) {
             List<Attribute> viewNodeAttributes = viewNode.getAttributes();
             Attribute layoutAttribute = Attribute.find(viewNodeAttributes, ATTR_LAYOUT);
             ResName resName = new ResName(layoutAttribute.qualifiedValue());
-            return inflateView(context, resName.namespace, resName.name, viewNodeAttributes, parent, qualifiers);
+            return inflateView(context, resName, viewNodeAttributes, parent, qualifiers);
         } else {
             View view = viewNode.create(context, parent);
 
             for (ViewNode child : viewNode.getChildren()) {
-                inflate(context, child, (ViewGroup) view, qualifiers);
+                doInflate(context, child, (ViewGroup) view, qualifiers);
             }
 
             if (view != null) {
@@ -42,33 +40,25 @@ public class RoboLayoutInflater {
     }
 
     public View inflateView(Context context, int resourceId, ViewGroup parent, String qualifiers) {
-        ResName resName = resourceExtractor.getResName(resourceId);
-        View viewNode = inflateView(context, resName.namespace, resName.name, parent, qualifiers);
-        if (viewNode != null) return viewNode;
+        ViewNode viewNode = resourceLoader.getLayoutViewNode(resourceId, qualifiers);
+        View view = doInflate(context, viewNode, parent, qualifiers);
+        if (view != null) return view;
 
-        throw new RuntimeException("Could not find layout " + resName);
+        throw new RuntimeException("Could not find layout " + resourceId);
     }
 
-    public View inflateView(Context context, String packageName, String layoutName, List<Attribute> attributes, ViewGroup parent, String qualifiers) {
-        ViewNode viewNode = getViewNodeByLayoutName(packageName + ":layout/" + layoutName, qualifiers);
+    public View inflateView(Context context, ResName resName, List<Attribute> attributes, ViewGroup parent, String qualifiers) {
+        ViewNode viewNode = resourceLoader.getLayoutViewNode(resName, qualifiers);
         if (viewNode == null) {
-            throw new RuntimeException("Could not find layout " + layoutName);
+            throw new RuntimeException("Could not find layout " + resName.name);
         }
 
         try {
-            return this.inflate(context, viewNode.plusAttributes(attributes), parent, qualifiers);
+            return doInflate(context, viewNode.plusAttributes(attributes), parent, qualifiers);
         } catch (I18nException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("error inflating " + layoutName, e);
+            throw new RuntimeException("error inflating " + resName.name, e);
         }
-    }
-
-    public View inflateView(Context context, String packageName, String key, ViewGroup parent, String qualifiers) {
-        return inflateView(context, packageName, key, new ArrayList<Attribute>(), parent, qualifiers);
-    }
-
-    private ViewNode getViewNodeByLayoutName(String layoutName, String qualifiers) {
-        return viewNodes.get(new ResName(layoutName), qualifiers);
     }
 }

@@ -8,6 +8,7 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.annotation.Values;
+import com.xtremelabs.robolectric.tester.android.util.ResName;
 import com.xtremelabs.robolectric.tester.android.view.TestMenu;
 import com.xtremelabs.robolectric.util.I18nException;
 import org.junit.Before;
@@ -41,7 +42,7 @@ public class ResourceLoaderTest {
         String stringValue = resourceLoader.getStringValue(android.R.string.copy, "");
         assertEquals("Copy", stringValue);
 
-        ViewNode node = resourceLoader.getLayoutViewNode("android:layout/simple_spinner_item", "");
+        ViewNode node = resourceLoader.getLayoutViewNode(new ResName("android:layout/simple_spinner_item"), "");
         assertNotNull(node);
     }
 
@@ -57,7 +58,7 @@ public class ResourceLoaderTest {
         ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
         resourceLoader.setStrictI18n(true);
         ViewGroup vg = new FrameLayout(Robolectric.application);
-    	resourceLoader.getRoboLayoutInflater().inflateView(Robolectric.application, R.layout.text_views, vg, "");
+        new RoboLayoutInflater(resourceLoader).inflateView(Robolectric.application, R.layout.text_views, vg, "");
     }
 
     @Test(expected=I18nException.class)
@@ -78,7 +79,7 @@ public class ResourceLoaderTest {
     public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
         ViewGroup viewGroup = new FrameLayout(Robolectric.application);
-        ViewGroup view = (ViewGroup) resourceLoader.getRoboLayoutInflater().inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup, "doesnotexist-land-xlarge");
+        ViewGroup view = (ViewGroup) new RoboLayoutInflater(resourceLoader).inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup, "doesnotexist-land-xlarge");
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
         assertThat(textView.getText().toString(), equalTo("land"));
     }
@@ -96,7 +97,7 @@ public class ResourceLoaderTest {
     private void checkForPollutionHelper() {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
         ViewGroup viewGroup = new FrameLayout(Robolectric.application);
-        ViewGroup view = (ViewGroup) resourceLoader.getRoboLayoutInflater().inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup, "");
+        ViewGroup view = (ViewGroup) new RoboLayoutInflater(resourceLoader).inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup, "");
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
         assertThat(textView.getText().toString(), equalTo("default"));
         Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).overrideQualifiers("land"); // testing if this pollutes the other test

@@ -25,6 +25,8 @@ import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.shadows.ShadowImageView;
 import com.xtremelabs.robolectric.shadows.ShadowTextView;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
+import com.xtremelabs.robolectric.tester.android.util.ResName;
 import com.xtremelabs.robolectric.util.CustomView;
 import com.xtremelabs.robolectric.util.CustomView2;
 import com.xtremelabs.robolectric.util.I18nException;
@@ -33,6 +35,8 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.TEST_PACKAGE;
@@ -248,7 +252,7 @@ public class ViewLoaderTest {
 
     @Test
     public void shouldInflateMergeLayoutIntoParent() throws Exception {
-        View innerMerge = resourceLoader.getRoboLayoutInflater().inflateView(context, R.layout.inner_merge, new LinearLayout(null), "");
+        View innerMerge = new RoboLayoutInflater(resourceLoader).inflateView(context, R.layout.inner_merge, new LinearLayout(null), "");
         assertNotNull(innerMerge);
     }
 
@@ -376,7 +380,7 @@ public class ViewLoaderTest {
         ViewGroup parentView = (ViewGroup) inflate("included_layout_parent");
         assertEquals(1, parentView.getChildCount());
     }
-    
+
     @Test(expected=I18nException.class)
     public void shouldThrowI18nExceptionOnLayoutWithBareStrings() throws Exception {
         resourceLoader.setStrictI18n(true);
@@ -384,8 +388,13 @@ public class ViewLoaderTest {
     }
 
     private View inflate(String packageName, String layoutName, String qualifiers) {
+        return inflate(context, packageName, layoutName, null, qualifiers);
+    }
+
+    public View inflate(Context context, String packageName, String key, ViewGroup parent, String qualifiers) {
         ResourceLoader resourceLoader = shadowOf(context.getResources()).getResourceLoader();
-        return resourceLoader.getRoboLayoutInflater().inflateView(context, packageName, layoutName, null, qualifiers);
+        return new RoboLayoutInflater(resourceLoader).inflateView(context, new ResName(packageName + ":layout/" + key),
+                new ArrayList<Attribute>(), parent, qualifiers);
     }
 
     private View inflate(String layoutName) {

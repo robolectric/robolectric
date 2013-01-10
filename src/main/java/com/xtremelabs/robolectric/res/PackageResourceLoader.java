@@ -43,8 +43,6 @@ public class PackageResourceLoader implements ResourceLoader {
     private final DrawableResourceLoader drawableResourceLoader;
     private final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
 
-    private final RoboLayoutInflater roboLayoutInflater;
-
     private boolean isInitialized = false;
     private boolean strictI18n = false;
 
@@ -72,8 +70,6 @@ public class PackageResourceLoader implements ResourceLoader {
         menuLoader = new MenuLoader(resourceExtractor, attrResourceLoader);
         preferenceLoader = new PreferenceLoader(resourceExtractor);
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
-
-        roboLayoutInflater = new RoboLayoutInflater(resourceExtractor, viewNodes);
     }
 
     @Override
@@ -390,19 +386,22 @@ public class PackageResourceLoader implements ResourceLoader {
         return resourcePaths.get(0).assetsDir; // todo: do something better
     }
 
-    ViewNode getLayoutViewNode(String layoutName, String qualifiers) {
-        return viewNodes.get(new ResName(layoutName), qualifiers);
+    @Override
+    public ViewNode getLayoutViewNode(int id, String qualifiers) {
+        ResName resName = resourceExtractor.getResName(id);
+        if (resName == null) return null;
+        return getLayoutViewNode(resName, qualifiers);
+    }
+
+    @Override
+    public ViewNode getLayoutViewNode(ResName resName, String qualifiers) {
+        init();
+        return viewNodes.get(resName, qualifiers);
     }
 
     @Override
     public ResourceExtractor getResourceExtractor() {
         return resourceExtractor;
-    }
-
-    @Override
-    public RoboLayoutInflater getRoboLayoutInflater() {
-        init();
-        return roboLayoutInflater;
     }
 
     private static class DirectoryMatchingFileFilter implements FileFilter {

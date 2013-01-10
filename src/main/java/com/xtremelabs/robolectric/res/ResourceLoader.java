@@ -8,6 +8,7 @@ import android.preference.PreferenceScreen;
 import android.view.Menu;
 import android.view.View;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
+import com.xtremelabs.robolectric.tester.android.util.ResName;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 
 import java.io.File;
@@ -69,5 +70,7 @@ public interface ResourceLoader {
 
     ResourceExtractor getResourceExtractor();
 
-    RoboLayoutInflater getRoboLayoutInflater();
+    ViewNode getLayoutViewNode(int id, String qualifiers);
+
+    ViewNode getLayoutViewNode(ResName resName, String qualifiers);
 }

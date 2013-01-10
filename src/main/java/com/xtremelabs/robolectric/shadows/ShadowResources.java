@@ -1,6 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
-import android.content.res.*;
+import android.content.res.AssetManager;
+import android.content.res.ColorStateList;
+import android.content.res.Configuration;
+import android.content.res.Resources;
+import android.content.res.TypedArray;
+import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -12,11 +17,11 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
-
 import java.io.InputStream;
 import java.util.Locale;
 
-import static com.xtremelabs.robolectric.Robolectric.*;
+import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
