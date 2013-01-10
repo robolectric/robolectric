@@ -103,8 +103,7 @@ public class MenuLoader extends XmlLoader {
         return inflateMenu(context, resourceExtractor.getResourceName(resourceId), root);
     }
 
-    private boolean inflateMenu(Context context, String key, 
-                             List<Attribute> attributes, Menu root) {
+    private boolean inflateMenu(Context context, String key, List<Attribute> attributes, Menu root) {
         MenuNode menuNode = menuNodesByMenuName.get(key);
         if (menuNode == null) return false;
 
