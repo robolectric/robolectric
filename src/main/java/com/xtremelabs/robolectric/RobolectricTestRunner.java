@@ -8,6 +8,7 @@ import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.bytecode.ClassHandler;
 import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
+import com.xtremelabs.robolectric.res.CompositeResourceLoader;
 import com.xtremelabs.robolectric.res.PackageResourceLoader;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.ResourcePath;
@@ -411,7 +412,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     // this method must live on a RobolectricClassLoader-loaded class, so it can't be on RobolectricContext
     protected ResourceLoader createResourceLoader(List<ResourcePath> resourcePaths) {
-        return new PackageResourceLoader(resourcePaths);
+        Map<String, ResourceLoader> resourceLoaders = new HashMap<String, ResourceLoader>();
+        for (ResourcePath resourcePath : resourcePaths) {
+            resourceLoaders.put(resourcePath.getPackageName(), new PackageResourceLoader(resourcePath));
+        }
+        return new CompositeResourceLoader(resourceLoaders);
     }
 
     private String findResourcePackageName(final File projectManifestFile) throws ParserConfigurationException, IOException, SAXException {

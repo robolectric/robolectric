@@ -5,16 +5,21 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
+import android.view.View;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
+import com.xtremelabs.robolectric.tester.android.util.ResName;
+import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.List;
 import java.util.UUID;
 
 import static com.xtremelabs.robolectric.Robolectric.getShadowApplication;
@@ -86,6 +91,14 @@ abstract public class ShadowContext {
             AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
         return getTheme().obtainStyledAttributes(
             set, attrs, defStyleAttr, defStyleRes);
+    }
+
+    public TestAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
+        TestAttributeSet attributeSet = new TestAttributeSet(attributes, getResourceLoader(), viewClass);
+        if (isStrictI18n()) {
+            attributeSet.validateStrictI18n();
+        }
+        return attributeSet;
     }
 
     @Implementation
@@ -194,5 +207,9 @@ abstract public class ShadowContext {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public ResName getResName(int resourceId) {
+        return getResourceLoader().getResourceExtractor().getResName(resourceId);
     }
 }

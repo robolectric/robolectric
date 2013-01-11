@@ -17,6 +17,21 @@ public class ResourceExtractor {
     public ResourceExtractor() {
     }
 
+    public ResourceExtractor(ResourceExtractor... subExtractors) {
+        for (ResourceExtractor subExtractor : subExtractors) {
+            merge(resourceNameToId, subExtractor.resourceNameToId, "resourceNameToId");
+            merge(resourceIdToFullyQualifiedName, subExtractor.resourceIdToFullyQualifiedName, "resourceIdToFullyQualifiedName");
+        }
+    }
+
+    private static <K,V> void merge(Map<K, V> map1, Map<K, V> map2, String name) {
+        int expected = map1.size() + map2.size();
+        map1.putAll(map2);
+        if (map1.size() != expected) {
+            throw new IllegalStateException("there must have been some overlap for " + name + "! expected " + expected + " but got " + map1.size());
+        }
+    }
+
     public ResourceExtractor(ResourcePath... resourcePaths) {
         for (ResourcePath resourcePath : resourcePaths) {
             addRClass(resourcePath.rClass);

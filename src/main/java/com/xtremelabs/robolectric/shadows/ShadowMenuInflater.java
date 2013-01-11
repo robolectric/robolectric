@@ -40,14 +40,14 @@ public class ShadowMenuInflater {
         } catch (I18nException e) {
             throw e;
         } catch (Exception e) {
-            throw new RuntimeException("error inflating " + resourceLoader.getResourceExtractor().getResName(resource), e);
+            throw new RuntimeException("error inflating " + shadowOf(context).getResName(resource), e);
         }
     }
 
     private void addChildrenInGroup(MenuNode source, int groupId, Menu root) {
         for (MenuNode child : source.getChildren()) {
             String name = child.getName();
-            TestAttributeSet attributes = resourceLoader.createAttributeSet(child.getAttributes(), null);
+            TestAttributeSet attributes = shadowOf(context).createAttributeSet(child.getAttributes(), null);
             if (strictI18n) {
                 attributes.validateStrictI18n();
             }

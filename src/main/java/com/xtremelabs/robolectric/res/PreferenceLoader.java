@@ -127,7 +127,7 @@ public class PreferenceLoader extends XmlLoader {
         private Preference constructPreference(Context context, PreferenceGroup parent) throws Exception {
             Class<? extends Preference> clazz = pickViewClass();
 
-            TestAttributeSet attributeSet = shadowOf(context).getResourceLoader().createAttributeSet(attributes, null);
+            TestAttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, null);
             if (strictI18n) {
                 attributeSet.validateStrictI18n();
             }

@@ -99,8 +99,7 @@ public class ViewNode {
     }
 
     private FrameLayout constructFragment(Context context) {
-        ResourceLoader resourceLoader = getResourceLoader(context);
-        TestAttributeSet attributeSet = resourceLoader.createAttributeSet(attributes, View.class);
+        TestAttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, View.class);
 
         Class<? extends Fragment> clazz = loadFragmentClass(Attribute.find(attributes, "android:attr/name").value);
         Fragment fragment = null;
@@ -146,8 +145,7 @@ public class ViewNode {
         Class<? extends View> clazz = pickViewClass();
         try {
             try {
-                ResourceLoader resourceLoader = getResourceLoader(context);
-                TestAttributeSet attributeSet = resourceLoader.createAttributeSet(attributes, View.class);
+                TestAttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, View.class);
                 return ((Constructor<? extends View>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
             } catch (NoSuchMethodException e) {
                 try {

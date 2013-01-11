@@ -138,15 +138,6 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public TestAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
-        TestAttributeSet attributeSet = new TestAttributeSet(attributes, this, viewClass);
-        if (strictI18n) {
-            attributeSet.validateStrictI18n();
-        }
-        return attributeSet;
-    }
-
-    @Override
     public String getNameForId(int viewId) {
         init();
         return resourceExtractor.getResourceName(viewId);

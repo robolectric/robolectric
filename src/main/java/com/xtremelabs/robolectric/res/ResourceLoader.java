@@ -20,8 +20,6 @@ public interface ResourceLoader {
 
     @Deprecated boolean getStrictI18n();
 
-    TestAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass);
-
     String getNameForId(int viewId);
 
     int getColorValue(int id, String qualifiers);

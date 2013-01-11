@@ -15,7 +15,7 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 public class ShadowRelativeLayout extends ShadowViewGroup {
 
     public void __constructor__(Context context) {
-        __constructor__(context, shadowOf(context).getResourceLoader().createAttributeSet(new ArrayList<Attribute>(), null), 0);
+        __constructor__(context, shadowOf(context).createAttributeSet(new ArrayList<Attribute>(), null), 0);
     }
 
     public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
