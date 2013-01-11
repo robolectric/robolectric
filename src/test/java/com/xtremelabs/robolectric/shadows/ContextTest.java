@@ -5,9 +5,8 @@ import android.content.Context;
 import android.content.res.TypedArray;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.res.AttrResourceLoader;
-import com.xtremelabs.robolectric.res.DocumentLoader;
-import com.xtremelabs.robolectric.res.ResourceExtractor;
+import com.xtremelabs.robolectric.res.PackageResourceLoader;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.CustomView;
@@ -16,7 +15,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.*;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import static com.xtremelabs.robolectric.util.TestUtil.TEST_PACKAGE;
 import static com.xtremelabs.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
@@ -263,10 +266,7 @@ public class ContextTest {
 
     @Test
     public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
-        ResourceExtractor resourceExtractor = new ResourceExtractor(TEST_RESOURCE_PATH);
-        AttrResourceLoader attrResourceLoader = new AttrResourceLoader();
-        new DocumentLoader(attrResourceLoader)
-                .loadResourceXmlDirs(TEST_RESOURCE_PATH, new File(TEST_RESOURCE_PATH.resourceBase, "values"));
+        ResourceLoader resourceLoader = new PackageResourceLoader(TEST_RESOURCE_PATH);
 
         TestAttributeSet testAttributeSet = new TestAttributeSet(asList(
                 new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE),
@@ -274,7 +274,7 @@ public class ContextTest {
                 new Attribute(TEST_PACKAGE + ":attr/keycode", "^q", TEST_PACKAGE),
                 new Attribute(TEST_PACKAGE + ":attr/aspectRatio", "1.5", TEST_PACKAGE),
                 new Attribute(TEST_PACKAGE + ":attr/aspectRatioEnabled", "true", TEST_PACKAGE)
-        ), resourceExtractor, attrResourceLoader, CustomView.class);
+        ), resourceLoader, CustomView.class);
 
         TypedArray a = context.obtainStyledAttributes(testAttributeSet, R.styleable.CustomView);
         assertThat(a.getInt(R.styleable.CustomView_itemType, -1234), equalTo(1 /* ungulate */));

@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.tester.android.view.TestWindow;
 import com.xtremelabs.robolectric.util.*;
@@ -26,6 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static com.xtremelabs.robolectric.Robolectric.*;
@@ -278,7 +280,7 @@ public class ViewTest {
 
     @Test
     public void shouldAddOnClickListenerFromAttribute() throws Exception {
-      TestAttributeSet attrs = new TestAttributeSet();
+      TestAttributeSet attrs = new TestAttributeSet(new ArrayList<Attribute>(), null, null);
       attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
       view = new View(null, attrs);
@@ -293,7 +295,7 @@ public class ViewTest {
           called.set(true);
         }
       };
-      TestAttributeSet attrs = new TestAttributeSet();
+      TestAttributeSet attrs = new TestAttributeSet(new ArrayList<Attribute>(), null, null);
       attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
       view = new View(context, attrs);
@@ -309,7 +311,7 @@ public class ViewTest {
           called.set(true);
         }
       };
-      TestAttributeSet attrs = new TestAttributeSet();
+      TestAttributeSet attrs = new TestAttributeSet(new ArrayList<Attribute>(), null, null);
       attrs.put("android:onClick", "clickYou", R.class.getPackage().getName());
 
       view = new View(context, attrs);

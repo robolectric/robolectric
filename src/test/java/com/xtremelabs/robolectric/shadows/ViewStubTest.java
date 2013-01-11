@@ -56,7 +56,7 @@ public class ViewStubTest {
                 new TestAttributeSet(asList(
                         new Attribute("android:attr/inflatedId", "@+id/include_id", TEST_PACKAGE),
                         new Attribute("android:attr/layout", "@layout/media", TEST_PACKAGE)
-                ), Robolectric.getShadowApplication().getResourceLoader().getResourceExtractor())
+                ), Robolectric.getShadowApplication().getResourceLoader(), null)
         );
 
         assertEquals(R.id.include_id, viewStub.getInflatedId());

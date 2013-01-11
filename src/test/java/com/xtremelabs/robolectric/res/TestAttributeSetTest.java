@@ -11,8 +11,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
-
 import static com.xtremelabs.robolectric.util.TestUtil.*;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
@@ -23,11 +21,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class TestAttributeSetTest {
 
     private TestAttributeSet testAttributeSet;
-    private ResourceExtractor resourceExtractor;
+    private ResourceLoader resourceLoader;
 
     @Before
     public void setUp() throws Exception {
-        resourceExtractor = new ResourceExtractor(testResources(), systemResources());
+        resourceLoader = new PackageResourceLoader(testResources(), systemResources());
     }
 
     @Test
@@ -129,14 +127,14 @@ public class TestAttributeSetTest {
     @Test
     public void getAttributeIntValue_shouldReturnValueFromAttribute() throws Exception {
         testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "100", TEST_PACKAGE)),
-                null, new AttrResourceLoader(), null);
+                resourceLoader, null);
         assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "sugarinessPercent", 0), equalTo(100));
     }
 
     @Test
     public void getAttributeIntValue_shouldReturnHexValueFromAttribute() throws Exception {
         testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/sugarinessPercent", "0x10", TEST_PACKAGE)),
-                null, new AttrResourceLoader(), null);
+                resourceLoader, null);
         assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "sugarinessPercent", 0), equalTo(16));
     }
 
@@ -145,7 +143,7 @@ public class TestAttributeSetTest {
         testAttributeSet = new TestAttributeSet(asList(
                 new Attribute(TEST_PACKAGE + ":attr/gravity", "center|fill_vertical", TEST_PACKAGE),
                 new Attribute("android:attr/orientation", "vertical", TEST_PACKAGE)
-        ), resourceExtractor, createAttrResourceLoader(), CustomView.class);
+        ), resourceLoader, CustomView.class);
         assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "gravity", 0), equalTo(0x11 | 0x70));
         assertThat(testAttributeSet.getAttributeIntValue("android", "orientation", -1), equalTo(1)); // style from LinearLayout
     }
@@ -154,16 +152,14 @@ public class TestAttributeSetTest {
     @Test
     public void getAttributeIntValue_shouldNotReturnStyledValueFromAttributeForSuperclass() throws Exception {
         testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/gravity", "center|fill_vertical", TEST_PACKAGE)),
-                resourceExtractor, createAttrResourceLoader(), View.class);
+                resourceLoader, View.class);
         assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "gravity", 0), equalTo(0)); // todo: what do we expect here?
     }
 
     @Test
     public void getAttributeIntValue_shouldReturnEnumValuesForEnumAttributes() throws Exception {
-        AttrResourceLoader attrResourceLoader = new AttrResourceLoader();
-        new DocumentLoader(attrResourceLoader).loadResourceXmlDir(testResources(), "values");
         testAttributeSet = new TestAttributeSet(asList(new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE)),
-                null, attrResourceLoader, CustomView.class);
+                resourceLoader, CustomView.class);
         assertThat(testAttributeSet.getAttributeIntValue(TEST_PACKAGE, "itemType", 0), equalTo(1));
     }
 
@@ -235,15 +231,7 @@ public class TestAttributeSetTest {
     }
 
     private void createTestAttributeSet(Attribute... attributes) {
-        testAttributeSet = new TestAttributeSet(asList(attributes), resourceExtractor, null, null);
+        testAttributeSet = new TestAttributeSet(asList(attributes), resourceLoader, null);
     }
 
-    private AttrResourceLoader createAttrResourceLoader() throws Exception {
-        AttrResourceLoader attrResourceLoader = new AttrResourceLoader();
-        new DocumentLoader(attrResourceLoader)
-                .loadResourceXmlDirs(TEST_RESOURCE_PATH, new File(TEST_RESOURCE_PATH.resourceBase, "values"));
-        new DocumentLoader(attrResourceLoader)
-                .loadResourceXmlDirs(SYSTEM_RESOURCE_PATH, new File(SYSTEM_RESOURCE_PATH.resourceBase, "values"));
-        return attrResourceLoader;
-    }
 }

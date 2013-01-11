@@ -2,18 +2,14 @@ package com.xtremelabs.robolectric.tester.android.util;
 
 import android.util.AttributeSet;
 import android.view.View;
-import com.xtremelabs.robolectric.res.AttrResourceLoader;
-import com.xtremelabs.robolectric.res.ResourceExtractor;
-import com.xtremelabs.robolectric.res.ResourcePath;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.I18nException;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class TestAttributeSet implements AttributeSet {
     private final List<Attribute> attributes;
-    private final ResourceExtractor resourceExtractor;
-    private AttrResourceLoader attrResourceLoader;
+    private final ResourceLoader resourceLoader;
     private Class<? extends View> viewClass;
 
     /**
@@ -26,34 +22,10 @@ public class TestAttributeSet implements AttributeSet {
             "android:attr/summary"
     };
 
-    public TestAttributeSet() {
-        this(new ArrayList<Attribute>());
-    }
-
-    public TestAttributeSet(List<Attribute> attributes, ResourceExtractor resourceExtractor,
-                            AttrResourceLoader attrResourceLoader, Class<? extends View> viewClass) {
+    public TestAttributeSet(List<Attribute> attributes, ResourceLoader resourceLoader, Class<? extends View> viewClass) {
         this.attributes = attributes;
-        this.resourceExtractor = resourceExtractor;
-        this.attrResourceLoader = attrResourceLoader;
+        this.resourceLoader = resourceLoader;
         this.viewClass = viewClass;
-    }
-
-    public TestAttributeSet(List<Attribute> attributes) {
-        this(attributes, new ResourceExtractor());
-    }
-
-    public TestAttributeSet(ResourceExtractor resourceExtractor) {
-        this.attributes = new ArrayList<Attribute>();
-        this.resourceExtractor = resourceExtractor;
-        this.attrResourceLoader = new AttrResourceLoader();
-    }
-
-    public TestAttributeSet(List<Attribute> attributes, ResourceExtractor resourceExtractor) {
-        this(attributes, resourceExtractor, new AttrResourceLoader(), null);
-    }
-
-    public TestAttributeSet(List<Attribute> attributes, Class<?> rFileClass) throws Exception {
-        this(attributes, new ResourceExtractor(new ResourcePath(rFileClass, null, null)));
     }
 
     public TestAttributeSet put(String fullyQualifiedName, String value, String valuePackage) {
@@ -96,13 +68,13 @@ public class TestAttributeSet implements AttributeSet {
     }
 
     public boolean isEnum(String namespace, String attribute) {
-        return attrResourceLoader.hasAttributeFor(viewClass, namespace, attribute);
+        return resourceLoader.hasAttributeFor(viewClass, namespace, attribute);
     }
 
     public int getEnumValue(String namespace, String attribute, String value) {
         int intValue = 0;
         for (String part : value.split("\\|")) {
-            intValue |= extractInt(attrResourceLoader.convertValueToEnum(viewClass, namespace, attribute, part), 0);
+            intValue |= extractInt(resourceLoader.convertValueToEnum(viewClass, namespace, attribute, part), 0);
         }
         return intValue;
     }
@@ -172,16 +144,16 @@ public class TestAttributeSet implements AttributeSet {
         Attribute attr = findByName(namespace, attribute);
         if (attr == null) return defaultValue;
 
-        Integer resourceId = resourceExtractor.getResourceId(attr.value, attr.contextPackageName);
+        Integer resourceId = resourceLoader.getResourceExtractor().getResourceId(attr.value, attr.contextPackageName);
         return resourceId == null ? defaultValue : resourceId;
     }
 
     @Override
     public int getAttributeResourceValue(int resourceId, int defaultValue) {
-        String attrName = resourceExtractor.getResourceName(resourceId);
+        String attrName = resourceLoader.getResourceExtractor().getResourceName(resourceId);
         Attribute attr = findByName(null, attrName);
         if (attr == null) return defaultValue;
-        Integer extracted = resourceExtractor.getResourceId(attr.value, attr.contextPackageName);
+        Integer extracted = resourceLoader.getResourceExtractor().getResourceId(attr.value, attr.contextPackageName);
         return (extracted == null) ? defaultValue : extracted;
     }
 
@@ -221,11 +193,8 @@ public class TestAttributeSet implements AttributeSet {
             // Per Android specifications, return 0 if there is no style.
             return 0;
         }
-        if (resourceExtractor != null) {
-            Integer i = resourceExtractor.getResourceId(styleAttribute.value, styleAttribute.contextPackageName);
-            if (i != null) return i;
-        }
-        return 0;
+        Integer i = resourceLoader.getResourceExtractor().getResourceId(styleAttribute.value, styleAttribute.contextPackageName);
+        return i != null ? i : 0;
     }
 
 

@@ -33,10 +33,10 @@ public class DialogPreferenceTest {
 
     @Before
     public void setup() {
-        List<Attribute> hash = new ArrayList<Attribute>();
-        hash.add(new Attribute("android:attr/dialogMessage", TEST_DIALOG_MESSAGE, R.class.getPackage().getName()));
+        List<Attribute> attributes = new ArrayList<Attribute>();
+        attributes.add(new Attribute("android:attr/dialogMessage", TEST_DIALOG_MESSAGE, R.class.getPackage().getName()));
         context = new Activity();
-        attrs = new TestAttributeSet(hash);
+        attrs = new TestAttributeSet(attributes, null, null);
         preference = new TestDialogPreference(context, attrs);
         shadow = Robolectric.shadowOf(preference);
     }

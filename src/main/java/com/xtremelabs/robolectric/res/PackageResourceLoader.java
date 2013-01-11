@@ -37,7 +37,7 @@ public class PackageResourceLoader implements ResourceLoader {
     private final MenuLoader menuLoader;
     private final PreferenceLoader preferenceLoader;
     private final XmlFileLoader xmlFileLoader;
-    protected final AttrResourceLoader attrResourceLoader;
+    private final AttrResourceLoader attrResourceLoader;
     private final DrawableResourceLoader drawableResourceLoader;
     private final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
 
@@ -139,7 +139,7 @@ public class PackageResourceLoader implements ResourceLoader {
 
     @Override
     public TestAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
-        TestAttributeSet attributeSet = new TestAttributeSet(attributes, resourceExtractor, attrResourceLoader, viewClass);
+        TestAttributeSet attributeSet = new TestAttributeSet(attributes, this, viewClass);
         if (strictI18n) {
             attributeSet.validateStrictI18n();
         }
@@ -408,8 +408,15 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public AttrResourceLoader getAttrResourceLoader() {
-        return attrResourceLoader;
+    public boolean hasAttributeFor(Class<? extends View> viewClass, String namespace, String attribute) {
+        init();
+        return attrResourceLoader.hasAttributeFor(viewClass, namespace, attribute);
+    }
+
+    @Override
+    public String convertValueToEnum(Class<? extends View> viewClass, String namespace, String attribute, String part) {
+        init();
+        return attrResourceLoader.convertValueToEnum(viewClass, namespace, attribute, part);
     }
 
     private static class DirectoryMatchingFileFilter implements FileFilter {

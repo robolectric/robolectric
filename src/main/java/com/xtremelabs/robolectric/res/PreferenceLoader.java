@@ -21,6 +21,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
 public class PreferenceLoader extends XmlLoader {
 
     private final ResourceExtractor resourceExtractor;
@@ -125,7 +127,7 @@ public class PreferenceLoader extends XmlLoader {
         private Preference constructPreference(Context context, PreferenceGroup parent) throws Exception {
             Class<? extends Preference> clazz = pickViewClass();
 
-            TestAttributeSet attributeSet = new TestAttributeSet(attributes);
+            TestAttributeSet attributeSet = shadowOf(context).getResourceLoader().createAttributeSet(attributes, null);
             if (strictI18n) {
                 attributeSet.validateStrictI18n();
             }

@@ -47,7 +47,7 @@ public class ShadowMenuInflater {
     private void addChildrenInGroup(MenuNode source, int groupId, Menu root) {
         for (MenuNode child : source.getChildren()) {
             String name = child.getName();
-            TestAttributeSet attributes = new TestAttributeSet(child.getAttributes(), resourceLoader.getResourceExtractor(), resourceLoader.getAttrResourceLoader(), null);
+            TestAttributeSet attributes = resourceLoader.createAttributeSet(child.getAttributes(), null);
             if (strictI18n) {
                 attributes.validateStrictI18n();
             }

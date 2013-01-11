@@ -24,200 +24,200 @@ import static org.junit.Assert.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceTest {
 
-	private TestPreference preference;
-	private ShadowPreference shadow;
+    private TestPreference preference;
+    private ShadowPreference shadow;
 
-	private Context context;
-	private TestAttributeSet attrs;
+    private Context context;
+    private TestAttributeSet attrs;
 
-	private boolean clicked = false;
+    private boolean clicked = false;
 
-	@Before
-	public void setup() {
-		context = new Activity();
-		attrs = new TestAttributeSet();
-		preference = new TestPreference(context, attrs);
-		shadow = Robolectric.shadowOf( preference );
-	}
+    @Before
+    public void setup() {
+        context = new Activity();
+        attrs = new TestAttributeSet(new ArrayList<Attribute>(), null, null);
+        preference = new TestPreference(context, attrs);
+        shadow = Robolectric.shadowOf(preference);
+    }
 
-	@Test
-	public void shouldConstruct() {
-		int defStyle = 7;
+    @Test
+    public void shouldConstruct() {
+        int defStyle = 7;
 
-		preference = new TestPreference(context, attrs, defStyle);
-		shadow = Robolectric.shadowOf(preference);
-		assertThat(shadow.getContext(), sameInstance(context));
-		assertThat(shadow.getAttrs(), sameInstance((AttributeSet)attrs));
-		assertThat(shadow.getDefStyle(), equalTo(defStyle));
+        preference = new TestPreference(context, attrs, defStyle);
+        shadow = Robolectric.shadowOf(preference);
+        assertThat(shadow.getContext(), sameInstance(context));
+        assertThat(shadow.getAttrs(), sameInstance((AttributeSet) attrs));
+        assertThat(shadow.getDefStyle(), equalTo(defStyle));
 
-		preference = new TestPreference(context, attrs);
-		shadow = Robolectric.shadowOf(preference);
-		assertThat(shadow.getContext(), sameInstance( context ));
-		assertThat(shadow.getAttrs(), sameInstance((AttributeSet)attrs));
-		assertThat(shadow.getDefStyle(), equalTo(0));
+        preference = new TestPreference(context, attrs);
+        shadow = Robolectric.shadowOf(preference);
+        assertThat(shadow.getContext(), sameInstance(context));
+        assertThat(shadow.getAttrs(), sameInstance((AttributeSet) attrs));
+        assertThat(shadow.getDefStyle(), equalTo(0));
 
-		preference = new TestPreference(context);
-		shadow = Robolectric.shadowOf(preference);
-		assertThat(shadow.getContext(), sameInstance( context ));
-		assertThat(shadow.getAttrs(), nullValue());
-		assertThat(shadow.getDefStyle(), equalTo(0));
-}
+        preference = new TestPreference(context);
+        shadow = Robolectric.shadowOf(preference);
+        assertThat(shadow.getContext(), sameInstance(context));
+        assertThat(shadow.getAttrs(), nullValue());
+        assertThat(shadow.getDefStyle(), equalTo(0));
+    }
 
-	@Test
-	public void shouldInitializeFromAttributes() {
-		String key = "key_value";
-		List<Attribute> hash = new ArrayList<Attribute>();
-		hash.add(new Attribute("android:attr/key", key, R.class.getPackage().getName()));
-		attrs = new TestAttributeSet( hash );
+    @Test
+    public void shouldInitializeFromAttributes() {
+        String key = "key_value";
+        List<Attribute> attributes = new ArrayList<Attribute>();
+        attributes.add(new Attribute("android:attr/key", key, R.class.getPackage().getName()));
+        attrs = new TestAttributeSet(attributes, null, null);
 
-		preference = new TestPreference(context, attrs);
-		assertThat( preference.getKey(), equalTo(key) );
-	}
+        preference = new TestPreference(context, attrs);
+        assertThat(preference.getKey(), equalTo(key));
+    }
 
-	@Test
-	public void shouldHaveAKey() {
-		String key = "key_value";
+    @Test
+    public void shouldHaveAKey() {
+        String key = "key_value";
 
-		assertThat(preference.getKey(), nullValue());
-		preference.setKey(key);
-		assertThat(preference.getKey(), equalTo(key));
-	}
+        assertThat(preference.getKey(), nullValue());
+        preference.setKey(key);
+        assertThat(preference.getKey(), equalTo(key));
+    }
 
-	@Test
-	public void shouldHaveATitle() {
-		CharSequence title = "Test Preference";
+    @Test
+    public void shouldHaveATitle() {
+        CharSequence title = "Test Preference";
 
-		assertThat(preference.getTitle(), nullValue());
-		preference.setTitle(title);
-		assertThat(preference.getTitle(), equalTo(title));
-	}
+        assertThat(preference.getTitle(), nullValue());
+        preference.setTitle(title);
+        assertThat(preference.getTitle(), equalTo(title));
+    }
 
-	@Test
-	public void shouldSetTitleByResourceId() {
-		CharSequence expected = "Hello";
+    @Test
+    public void shouldSetTitleByResourceId() {
+        CharSequence expected = "Hello";
 
-		assertThat(preference.getTitle(), not(equalTo(expected)));
-		preference.setTitle(R.string.hello);
-		assertThat(preference.getTitle(), equalTo(expected));
-	}
+        assertThat(preference.getTitle(), not(equalTo(expected)));
+        preference.setTitle(R.string.hello);
+        assertThat(preference.getTitle(), equalTo(expected));
+    }
 
-	@Test
-	public void shouldHaveASummary() {
-		CharSequence summary = "This is only a test.";
+    @Test
+    public void shouldHaveASummary() {
+        CharSequence summary = "This is only a test.";
 
-		assertThat(preference.getSummary(), nullValue());
-		preference.setSummary(summary);
-		assertThat(preference.getSummary(), equalTo(summary));
-	}
+        assertThat(preference.getSummary(), nullValue());
+        preference.setSummary(summary);
+        assertThat(preference.getSummary(), equalTo(summary));
+    }
 
-	@Test
-	public void shouldSetSummaryByResourceId() {
-		CharSequence expected = "Hello";
+    @Test
+    public void shouldSetSummaryByResourceId() {
+        CharSequence expected = "Hello";
 
-		assertThat(preference.getSummary(), not(equalTo(expected)));
-		preference.setSummary(R.string.hello);
-		assertThat(preference.getSummary(), equalTo(expected));
-	}
+        assertThat(preference.getSummary(), not(equalTo(expected)));
+        preference.setSummary(R.string.hello);
+        assertThat(preference.getSummary(), equalTo(expected));
+    }
 
-	@Test
-	public void shouldRememberDefaultValue() {
-		Object defaultValue = "Zoodles was here";
+    @Test
+    public void shouldRememberDefaultValue() {
+        Object defaultValue = "Zoodles was here";
 
-		assertThat(shadow.getDefaultValue(), nullValue());
-		preference.setDefaultValue(defaultValue);
-		assertThat(shadow.getDefaultValue(), sameInstance(defaultValue));
-	}
+        assertThat(shadow.getDefaultValue(), nullValue());
+        preference.setDefaultValue(defaultValue);
+        assertThat(shadow.getDefaultValue(), sameInstance(defaultValue));
+    }
 
-	@Test
-	public void shouldOrder() {
-		int[] values = { 0, 1, 2, 2011 };
+    @Test
+    public void shouldOrder() {
+        int[] values = {0, 1, 2, 2011};
 
-		for(int order : values) {
-			preference.setOrder(order);
-			assertThat(preference.getOrder(), equalTo(order));
-		}
-	}
+        for (int order : values) {
+            preference.setOrder(order);
+            assertThat(preference.getOrder(), equalTo(order));
+        }
+    }
 
-	@Test
-	public void shouldEnable() {
-		assertThat(preference.isEnabled(), equalTo(true));
+    @Test
+    public void shouldEnable() {
+        assertThat(preference.isEnabled(), equalTo(true));
 
-		preference.setEnabled(false);
-		assertThat(preference.isEnabled(), equalTo(false));
+        preference.setEnabled(false);
+        assertThat(preference.isEnabled(), equalTo(false));
 
-		preference.setEnabled(true);
-		assertThat(preference.isEnabled(), equalTo(true));
-	}
+        preference.setEnabled(true);
+        assertThat(preference.isEnabled(), equalTo(true));
+    }
 
-	@Test
-	public void testPersistent() {
-		boolean[] values = { true, false };
+    @Test
+    public void testPersistent() {
+        boolean[] values = {true, false};
 
-		for( boolean shouldPersist : values ) {
-			shadow.setPersistent(shouldPersist);
-			assertThat(preference.shouldPersist(), equalTo(shouldPersist));
-			assertThat(preference.isPersistent(), equalTo(shouldPersist));
-		}
-	}
+        for (boolean shouldPersist : values) {
+            shadow.setPersistent(shouldPersist);
+            assertThat(preference.shouldPersist(), equalTo(shouldPersist));
+            assertThat(preference.isPersistent(), equalTo(shouldPersist));
+        }
+    }
 
-	@Test
-	public void shouldPersistedIn() {
-		int defaultValue = 727;
-		int[] values = { 0, 1, 2, 2011 };
+    @Test
+    public void shouldPersistedIn() {
+        int defaultValue = 727;
+        int[] values = {0, 1, 2, 2011};
 
-		for(int persistedInt : values) {
-			shadow.persistInt(persistedInt);
+        for (int persistedInt : values) {
+            shadow.persistInt(persistedInt);
 
-			shadow.setPersistent(false);
-			assertThat(preference.getPersistedInt(defaultValue), equalTo(defaultValue));
+            shadow.setPersistent(false);
+            assertThat(preference.getPersistedInt(defaultValue), equalTo(defaultValue));
 
-			shadow.setPersistent(true);
-			assertThat(preference.getPersistedInt(defaultValue), equalTo(persistedInt));
-		}
-	}
+            shadow.setPersistent(true);
+            assertThat(preference.getPersistedInt(defaultValue), equalTo(persistedInt));
+        }
+    }
 
-	@Test
-	public void shouldRememberOnClickListener() {
-		Preference.OnPreferenceClickListener onPreferenceClickListener = new OnPreferenceClickListener() {
-			@Override
-			public boolean onPreferenceClick(Preference preference) {
-				return true;
-			}
-		};
+    @Test
+    public void shouldRememberOnClickListener() {
+        Preference.OnPreferenceClickListener onPreferenceClickListener = new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                return true;
+            }
+        };
 
-		preference.setOnPreferenceClickListener(onPreferenceClickListener);
-		assertThat(shadow.getOnPreferenceClickListener(), sameInstance(onPreferenceClickListener));
-	}
+        preference.setOnPreferenceClickListener(onPreferenceClickListener);
+        assertThat(shadow.getOnPreferenceClickListener(), sameInstance(onPreferenceClickListener));
+    }
 
-	@Test
-	public void shouldClickThroughToClickListener() {
-		Preference.OnPreferenceClickListener onPreferenceClickListener = new OnPreferenceClickListener() {
-			@Override
-			public boolean onPreferenceClick(Preference preference) {
-				clicked = true;
-				return true;
-			}
-		};
-		preference.setOnPreferenceClickListener(onPreferenceClickListener);
+    @Test
+    public void shouldClickThroughToClickListener() {
+        Preference.OnPreferenceClickListener onPreferenceClickListener = new OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference) {
+                clicked = true;
+                return true;
+            }
+        };
+        preference.setOnPreferenceClickListener(onPreferenceClickListener);
 
-		assertThat( clicked, equalTo(false));
-		assertThat( shadow.click(), equalTo(true));
-		assertThat( clicked, equalTo(true));
-	}
+        assertThat(clicked, equalTo(false));
+        assertThat(shadow.click(), equalTo(true));
+        assertThat(clicked, equalTo(true));
+    }
 
-	@Test
-	public void shouldRecordCallChangeListenerValue() {
-		Integer[] values = { 0, 1, 2, 2011 };
-		preference.setOnPreferenceChangeListener(null);
+    @Test
+    public void shouldRecordCallChangeListenerValue() {
+        Integer[] values = {0, 1, 2, 2011};
+        preference.setOnPreferenceChangeListener(null);
 
-		for(Integer newValue : values) {
-			assertThat("Case " + newValue, preference.callChangeListener(newValue), equalTo(true));
-			assertThat("Case " + newValue, shadow.getCallChangeListenerValue(), sameInstance((Object)newValue));
-		}
-	}
+        for (Integer newValue : values) {
+            assertThat("Case " + newValue, preference.callChangeListener(newValue), equalTo(true));
+            assertThat("Case " + newValue, shadow.getCallChangeListenerValue(), sameInstance((Object) newValue));
+        }
+    }
 
-	@Test
-	public void shouldInvokeCallChangeListenerIfSet() {
+    @Test
+    public void shouldInvokeCallChangeListenerIfSet() {
         preference.setOnPreferenceChangeListener(new Preference.OnPreferenceChangeListener() {
             @Override
             public boolean onPreferenceChange(Preference preference, Object o) {
@@ -226,64 +226,64 @@ public class PreferenceTest {
         });
         assertThat(preference.callChangeListener(666), is(false));
         assertThat(preference.callChangeListener(777), is(true));
-	}
+    }
 
-	@Test
-	public void shouldRememberOnChangeListener() {
-		Preference.OnPreferenceChangeListener onPreferenceChangeListener = new Preference.OnPreferenceChangeListener() {
-			@Override
-			public boolean onPreferenceChange(Preference preference, Object o) {
+    @Test
+    public void shouldRememberOnChangeListener() {
+        Preference.OnPreferenceChangeListener onPreferenceChangeListener = new Preference.OnPreferenceChangeListener() {
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object o) {
                 throw new RuntimeException("Unimplemented");
-			}
-		};
+            }
+        };
 
-		preference.setOnPreferenceChangeListener(onPreferenceChangeListener);
-		assertThat(shadow.getOnPreferenceChangeListener(), sameInstance(onPreferenceChangeListener));
-	}
+        preference.setOnPreferenceChangeListener(onPreferenceChangeListener);
+        assertThat(shadow.getOnPreferenceChangeListener(), sameInstance(onPreferenceChangeListener));
+    }
 
 
-	@Test
-	public void shouldReturnIntent() {
-		assertThat( preference.getIntent(), nullValue() );
-		preference.setIntent( new Intent() );
-		assertThat( preference.getIntent(), notNullValue() );
-	}
+    @Test
+    public void shouldReturnIntent() {
+        assertThat(preference.getIntent(), nullValue());
+        preference.setIntent(new Intent());
+        assertThat(preference.getIntent(), notNullValue());
+    }
 
-	@Test
-	public void shouldRememberDependency() {
-		assertThat( preference.getDependency(), nullValue() );
-		preference.setDependency("TEST_PREF_KEY");
-		assertThat(preference.getDependency(), notNullValue());
-		assertThat( preference.getDependency(), equalTo("TEST_PREF_KEY") );
-	}
+    @Test
+    public void shouldRememberDependency() {
+        assertThat(preference.getDependency(), nullValue());
+        preference.setDependency("TEST_PREF_KEY");
+        assertThat(preference.getDependency(), notNullValue());
+        assertThat(preference.getDependency(), equalTo("TEST_PREF_KEY"));
+    }
 
-	private static class TestPreference extends Preference {
-		public TestPreference(Context context) {
-			super(context);
-		}
+    private static class TestPreference extends Preference {
+        public TestPreference(Context context) {
+            super(context);
+        }
 
-		public TestPreference(Context context, AttributeSet attrs) {
-			super(context, attrs);
-		}
+        public TestPreference(Context context, AttributeSet attrs) {
+            super(context, attrs);
+        }
 
-		public TestPreference(Context context, AttributeSet attrs, int defStyle) {
-			super(context, attrs, defStyle);
-		}
+        public TestPreference(Context context, AttributeSet attrs, int defStyle) {
+            super(context, attrs, defStyle);
+        }
 
-		public boolean shouldPersist() {
-			return super.shouldPersist();
-		}
+        public boolean shouldPersist() {
+            return super.shouldPersist();
+        }
 
-		public int getPersistedInt(int defaultReturnValue) {
-			return super.getPersistedInt(defaultReturnValue);
-		}
+        public int getPersistedInt(int defaultReturnValue) {
+            return super.getPersistedInt(defaultReturnValue);
+        }
 
-		public boolean persistInt(int value) {
-			return super.persistInt(value);
-		}
+        public boolean persistInt(int value) {
+            return super.persistInt(value);
+        }
 
-		public boolean callChangeListener(Object newValue) {
-			return super.callChangeListener(newValue);
-		}
-	}
+        public boolean callChangeListener(Object newValue) {
+            return super.callChangeListener(newValue);
+        }
+    }
 }

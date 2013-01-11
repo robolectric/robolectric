@@ -7,10 +7,13 @@ import android.preference.PreferenceGroup;
 import android.util.AttributeSet;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
 
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
@@ -27,7 +30,7 @@ public class PreferenceGroupTest {
     @Before
     public void setUp() throws Exception {
     	context = new Activity();
-    	attrs = new TestAttributeSet();
+    	attrs = new TestAttributeSet(new ArrayList<Attribute>(), null, null);
 
     	group = new TestPreferenceGroup(context, attrs);
     	shadow = Robolectric.shadowOf(group);

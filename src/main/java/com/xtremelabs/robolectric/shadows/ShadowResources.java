@@ -16,8 +16,10 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import com.xtremelabs.robolectric.tester.android.util.Attribute;
+
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.Locale;
 
 import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
@@ -267,7 +269,7 @@ public class ShadowResources {
         @Implementation
         public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
             if (set == null) {
-                set = new TestAttributeSet();
+                set = shadowOf(resources).getResourceLoader().createAttributeSet(new ArrayList<Attribute>(), null);
             }
 
             return ShadowTypedArray.create(resources, set, attrs);

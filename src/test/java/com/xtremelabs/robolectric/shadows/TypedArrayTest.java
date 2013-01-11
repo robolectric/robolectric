@@ -61,7 +61,7 @@ public class TypedArrayTest {
         Resources resources = Robolectric.application.getResources();
         TestAttributeSet attributeSet = new TestAttributeSet(
                 asList(new Attribute(TestUtil.TEST_PACKAGE + ":attr/not_items", "@array/greetings", TestUtil.TEST_PACKAGE)
-                ), shadowOf(resources).getResourceLoader().getResourceExtractor());
+                ), shadowOf(resources).getResourceLoader(), null);
         TypedArray typedArray = ShadowTypedArray.create(resources, attributeSet, new int[]{R.attr.items});
         assertNull(typedArray.getTextArray(0));
     }
@@ -71,7 +71,7 @@ public class TypedArrayTest {
         Resources resources = Robolectric.application.getResources();
         TestAttributeSet attributeSet = new TestAttributeSet(
                 asList(new Attribute(TestUtil.TEST_PACKAGE + ":attr/items", "@array/greetings", TestUtil.TEST_PACKAGE)
-                ), shadowOf(resources).getResourceLoader().getResourceExtractor());
+                ), shadowOf(resources).getResourceLoader(), null);
         TypedArray typedArray = ShadowTypedArray.create(resources, attributeSet, new int[]{R.attr.items});
         assertThat(asList(typedArray.getTextArray(0)), hasItems((CharSequence)"hola", "Hello"));
     }
