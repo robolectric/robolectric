@@ -232,13 +232,13 @@
     <!-- used by travis-ci -->
     <target name="prepare-travis-ci" description="Prepare for travis ci build">
       <mkdir dir="tmp"/>
-      <get src="http://dl.google.com/android/android-sdk_r20.0.3-linux.tgz" dest="tmp" skipexisting="true"/>
-      <untar src="tmp/android-sdk_r20.0.3-linux.tgz" compression="gzip" dest="tmp/sdk"/>
+      <get src="http://dl.google.com/android/android-sdk_r21.0.1-linux.tgz" dest="tmp" skipexisting="true"/>
+      <untar src="tmp/android-sdk_r21.0.1-linux.tgz" compression="gzip" dest="tmp/sdk"/>
       <echo file="tmp/install-sdk">#!/bin/sh -e
           ANDROID="tmp/sdk/android-sdk-linux/tools/android"
           chmod +x $ANDROID
           SDKS=$($ANDROID list sdk --all | awk \
-                    '/SDK Platform.* API ${default.sdk.version}/ || /Google APIs, Android API ${default.sdk.version}, revision 2/ \
+                    '/SDK Platform.* API ${default.sdk.version}/ || /Google APIs, Android API ${default.sdk.version}, revision/ \
                     { s=s "," int($1) } \
                     END { print substr(s, 2, length(s)) }' \
                 )
