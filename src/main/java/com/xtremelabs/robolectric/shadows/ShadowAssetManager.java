@@ -1,9 +1,9 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.content.res.AssetManager;
+import com.xtremelabs.robolectric.AndroidManifest;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.res.ResourceLoader;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,18 +15,18 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AssetManager.class)
 public final class ShadowAssetManager {
-    static AssetManager bind(AssetManager assetManager, ResourceLoader resourceLoader) {
+    static AssetManager bind(AssetManager assetManager, AndroidManifest androidManifest) {
         ShadowAssetManager shadowAssetManager = shadowOf(assetManager);
-        if (shadowAssetManager.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
-        shadowAssetManager.resourceLoader = resourceLoader;
+        if (shadowAssetManager.appManifest != null) throw new RuntimeException("ResourceLoader already set!");
+        shadowAssetManager.appManifest = androidManifest;
         return assetManager;
     }
 
-    private ResourceLoader resourceLoader;
+    private AndroidManifest appManifest;
 
     @Implementation
     public final String[] list(String path) throws IOException {
-        File file = new File(resourceLoader.getAssetsBase(), path);
+        File file = new File(appManifest.getAssetsDirectory(), path);
         if (file.isDirectory()) {
             return file.list();
         }
@@ -35,7 +35,7 @@ public final class ShadowAssetManager {
 
     @Implementation
     public final InputStream open(String fileName) throws IOException {
-        return new FileInputStream(new File(resourceLoader.getAssetsBase(), fileName));
+        return new FileInputStream(new File(appManifest.getAssetsDirectory(), fileName));
     }
 
 }

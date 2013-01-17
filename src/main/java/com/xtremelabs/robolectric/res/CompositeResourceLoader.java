@@ -150,11 +150,6 @@ public class CompositeResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public File getAssetsBase() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public ResourceExtractor getResourceExtractor() {
         return resourceExtractor;
     }

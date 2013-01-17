@@ -34,12 +34,15 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)
 public class ShadowResources {
+    private static Resources system = null;
+
     private float density = 1.0f;
     Configuration configuration = null;
     private DisplayMetrics displayMetrics;
     private Display display;
-
-    private static Resources system = null;
+    @RealObject Resources realResources;
+    private ResourceLoader resourceLoader;
+    private AssetManager assetManager;
 
     public static void setSystemResources(ResourceLoader systemResourceLoader) {
         system = ShadowResources.bind(new Resources(null, null, null), systemResourceLoader);
@@ -52,9 +55,6 @@ public class ShadowResources {
         return resources;
     }
 
-    @RealObject Resources realResources;
-    private ResourceLoader resourceLoader;
-
     public ShadowResources() {
         Configuration configuration = new Configuration();
         configuration.setToDefaults();
@@ -63,6 +63,7 @@ public class ShadowResources {
 
     @Implementation
     public void __constructor__(AssetManager assets, DisplayMetrics metrics, Configuration config) {
+        this.assetManager = assets;
         this.displayMetrics = metrics;
         setConfiguration(config);
     }
@@ -227,7 +228,7 @@ public class ShadowResources {
 
     @Implementation
     public AssetManager getAssets() {
-        return ShadowAssetManager.bind(Robolectric.newInstanceOf(AssetManager.class), resourceLoader);
+        return assetManager;
     }
     
     @Implementation

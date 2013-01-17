@@ -44,7 +44,7 @@ public class ViewGroupTest {
     @Before
     public void setUp() throws Exception {
         context = new Application();
-        ShadowApplication.bind(context, new PackageResourceLoader(testResources(), systemResources()));
+        ShadowApplication.bind(context, null, new PackageResourceLoader(testResources(), systemResources()));
 
         root = new FrameLayout(context);
 

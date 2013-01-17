@@ -60,8 +60,6 @@ public interface ResourceLoader {
 
     PreferenceScreen inflatePreferences(Context context, int resourceId);
 
-    File getAssetsBase();
-
     ResourceExtractor getResourceExtractor();
 
     ViewNode getLayoutViewNode(int id, String qualifiers);

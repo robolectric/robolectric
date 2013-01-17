@@ -52,8 +52,8 @@ public class ApplicationTest {
             @Override public String getStringValue(int id, String qualifiers) { return "title from resourceLoader2"; }
         };
 
-        Application app1 = ShadowApplication.bind(new Application(), resourceLoader1);
-        Application app2 = ShadowApplication.bind(new Application(), resourceLoader2);
+        Application app1 = ShadowApplication.bind(new Application(), null, resourceLoader1);
+        Application app2 = ShadowApplication.bind(new Application(), null, resourceLoader2);
 
         assertEquals("title from resourceLoader1", new ContextWrapper(app1).getResources().getString(R.id.title));
         assertEquals("title from resourceLoader2", new ContextWrapper(app2).getResources().getString(R.id.title));

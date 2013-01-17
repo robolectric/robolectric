@@ -17,12 +17,11 @@ import static org.junit.Assert.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowTypefaceTest {
-    private File assetsBase;
     private File fontFile;
 
     @Before
     public void setup() throws Exception {
-        assetsBase = shadowOf(Robolectric.application).getResourceLoader().getAssetsBase();
+        File assetsBase = shadowOf(Robolectric.application).getAppManifest().getAssetsDirectory();
         fontFile = new File(assetsBase, "myFont.ttf");
         FileWriter fileWriter = new FileWriter(fontFile);
         fileWriter.write("fontdata");

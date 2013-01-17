@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.os.IBinder;
@@ -16,6 +17,7 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.view.LayoutInflater;
 import android.widget.Toast;
+import com.xtremelabs.robolectric.AndroidManifest;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -70,6 +72,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     @RealObject private Application realApplication;
 
+    private AndroidManifest appManifest;
     private ResourceLoader resourceLoader;
     private ContentResolver contentResolver;
     private Map<String, Object> systemServices = new HashMap<String, Object>();
@@ -90,6 +93,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     private ShadowDialog latestDialog;
     private Object bluetoothAdapter = Robolectric.newInstanceOf("android.bluetooth.BluetoothAdapter");
     private Resources resources;
+    private AssetManager assetManager;
 
     // these are managed by the AppSingletonizier... kinda gross, sorry [xw]
     LayoutInflater layoutInflater;
@@ -104,16 +108,19 @@ public class ShadowApplication extends ShadowContextWrapper {
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
      *
+     *
+     *
      * @param application    application
+     * @param appManifest
      * @param resourceLoader resource loader
      * @return the application
      *         todo: make this non-static?
      */
-    public static Application bind(Application application, ResourceLoader resourceLoader) {
+    public static Application bind(Application application, AndroidManifest appManifest, ResourceLoader resourceLoader) {
         ShadowApplication shadowApplication = shadowOf(application);
         if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
+        shadowApplication.appManifest = appManifest;
         shadowApplication.resourceLoader = resourceLoader;
-        shadowApplication.resources = ShadowResources.bind(new Resources(null, null, new Configuration()), resourceLoader);
         return application;
     }
 
@@ -133,9 +140,18 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     @Override
     @Implementation
+    public AssetManager getAssets() {
+        if (assetManager == null) {
+            assetManager = ShadowAssetManager.bind(Robolectric.newInstanceOf(AssetManager.class), appManifest);
+        }
+        return assetManager;
+    }
+
+    @Override
+    @Implementation
     public Resources getResources() {
         if (resources == null ) {
-        	resources = ShadowResources.bind(new Resources(null, null, null), resourceLoader);
+            resources = ShadowResources.bind(new Resources(realApplication.getAssets(), null, new Configuration()), resourceLoader);
         }
         return resources;
     }
@@ -553,6 +569,10 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     public void setStrictI18n(boolean strictI18n) {
         this.strictI18n = strictI18n;
+    }
+
+    public AndroidManifest getAppManifest() {
+        return appManifest;
     }
 
     public class Wrapper {

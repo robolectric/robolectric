@@ -28,7 +28,7 @@ public class MenuInflaterTest {
     public void setUp() throws Exception {
         ResourceLoader resourceLoader = new PackageResourceLoader(testResources(), systemResources());
         context = new Application();
-        ShadowApplication.bind(context, resourceLoader);
+        ShadowApplication.bind(context, null, resourceLoader);
     }
 
     @Test

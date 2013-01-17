@@ -363,11 +363,6 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public File getAssetsBase() {
-        return resourcePaths.get(0).assetsDir; // todo: do something better
-    }
-
-    @Override
     public ViewNode getLayoutViewNode(int id, String qualifiers) {
         ResName resName = resourceExtractor.getResName(id);
         if (resName == null) return null;

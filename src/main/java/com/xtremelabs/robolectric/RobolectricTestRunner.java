@@ -23,13 +23,7 @@ import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
 import org.junit.runners.model.Statement;
-import org.w3c.dom.Document;
-import org.xml.sax.SAXException;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -185,13 +179,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         ResourceLoader systemResourceLoader = new PackageResourceLoader(sharedRobolectricContext.getSystemResourcePath());
         ShadowResources.setSystemResources(systemResourceLoader);
 
-        ResourceLoader resourceLoader = getResourceLoader(sharedRobolectricContext.getAppManifest());
-        resourceLoader.setStrictI18n(strictI18n);
-
         ClassHandler classHandler = sharedRobolectricContext.getClassHandler();
         classHandler.setStrictI18n(strictI18n);
 
-        Robolectric.application = ShadowApplication.bind(createApplication(), resourceLoader);
+        AndroidManifest appManifest = sharedRobolectricContext.getAppManifest();
+        ResourceLoader resourceLoader = getResourceLoader(appManifest);
+        resourceLoader.setStrictI18n(strictI18n);
+
+        Robolectric.application = ShadowApplication.bind(createApplication(), appManifest, resourceLoader);
         shadowOf(Robolectric.application).setStrictI18n(strictI18n);
 
         String qualifiers = determineResourceQualifiers(testMethod);
@@ -417,16 +412,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
             resourceLoaders.put(resourcePath.getPackageName(), new PackageResourceLoader(resourcePath));
         }
         return new CompositeResourceLoader(resourceLoaders);
-    }
-
-    private String findResourcePackageName(final File projectManifestFile) throws ParserConfigurationException, IOException, SAXException {
-        DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-        DocumentBuilder db = dbf.newDocumentBuilder();
-        Document doc = db.parse(projectManifestFile);
-
-        String projectPackage = doc.getElementsByTagName("manifest").item(0).getAttributes().getNamedItem("package").getTextContent();
-
-        return projectPackage + ".R";
     }
 
     /*
