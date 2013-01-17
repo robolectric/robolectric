@@ -12,6 +12,8 @@ public class ShadowCountDownTimer {
     private boolean started;
     private long countDownInterval;
     private long millisInFuture;
+    
+    private static ShadowCountDownTimer last;
 
     @RealObject CountDownTimer countDownTimer;
 
@@ -19,6 +21,11 @@ public class ShadowCountDownTimer {
         this.countDownInterval = countDownInterval;
         this.millisInFuture = millisInFuture;
         this.started = false;
+        last = this;
+    }
+    
+    public static ShadowCountDownTimer getLast(){
+    	return last;
     }
 
     @Implementation
