@@ -115,6 +115,9 @@ public class ShadowView {
         applyTagAttribute();
         applyOnClickAttribute();
         applyContentDescriptionAttribute();
+
+        // todo test
+        applyAlphaAttribute();
     }
 
     @Implementation
@@ -894,6 +897,13 @@ public class ShadowView {
                 }
             }
         });
+    }
+
+    private void applyAlphaAttribute() {
+        Float alpha = attributeSet.getAttributeFloatValue("android", "alpha", 1f);
+        if (alpha != null) {
+            setAlpha(alpha);
+        }
     }
 
     private void applyContentDescriptionAttribute() {

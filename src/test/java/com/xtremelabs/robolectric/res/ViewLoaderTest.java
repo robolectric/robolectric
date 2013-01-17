@@ -43,7 +43,7 @@ public class ViewLoaderTest {
         StringResourceLoader stringResourceLoader = new StringResourceLoader(resourceExtractor);
         new DocumentLoader(stringResourceLoader).loadResourceXmlDir(resourceFile("res", "values"));
         new DocumentLoader(stringResourceLoader).loadSystemResourceXmlDir(getSystemResourceDir("values"));
-        
+
         viewLoader =  new ViewLoader(resourceExtractor, new AttrResourceLoader(resourceExtractor));
         new DocumentLoader(viewLoader).loadResourceXmlDir(resourceFile("res", "layout"));
         new DocumentLoader(viewLoader).loadResourceXmlDir(resourceFile("res", "layout-xlarge"));
@@ -67,7 +67,7 @@ public class ViewLoaderTest {
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
         assertThat(textView.getText().toString(), equalTo("default"));
     }
-    
+
     @Test
     public void testChoosesLayoutBasedOnSearchPath_choosesFirstFileFoundOnPath() throws Exception {
         viewLoader.setLayoutQualifierSearchPath("xlarge", "land");
@@ -274,6 +274,12 @@ public class ViewLoaderTest {
     }
 
     @Test
+    public void testAlphaIsSet() throws Exception {
+        View mediaView = viewLoader.inflateView(context, "layout/main");
+        assertThat(mediaView.findViewById(R.id.time).getAlpha(), equalTo(.3f));
+    }
+
+    @Test
     public void testViewBackgroundIdIsSet() throws Exception {
         View mediaView = viewLoader.inflateView(context, "layout/main");
         ImageView imageView = (ImageView) mediaView.findViewById(R.id.image);
@@ -281,7 +287,7 @@ public class ViewLoaderTest {
 
         assertThat(shadowImageView.getBackgroundResourceId(), equalTo(R.drawable.image_background));
     }
-
+z`
     @Test
     public void testOnClickAttribute() throws Exception {
         ClickActivity activity = new ClickActivity();
@@ -330,7 +336,7 @@ public class ViewLoaderTest {
         ViewGroup parentView = (ViewGroup) viewLoader.inflateView(context, "layout/included_layout_parent");
         assertEquals(1, parentView.getChildCount());
     }
-    
+
     @Test(expected=I18nException.class)
     public void shouldThrowI18nExceptionOnLayoutWithBareStrings() throws Exception {
     	viewLoader.setStrictI18n(true);

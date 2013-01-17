@@ -23,6 +23,7 @@
             android:textColor="#fff"
             android:enabled="false"
             android:contentDescription="@string/howdy"
+            android:alpha="0.3"
             />
 
     <TextView
