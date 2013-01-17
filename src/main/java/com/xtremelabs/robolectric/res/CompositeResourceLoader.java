@@ -37,19 +37,6 @@ public class CompositeResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public void setStrictI18n(boolean strictI18n) {
-        this.strictI18n = strictI18n;
-        for (ResourceLoader resourceLoader : resourceLoaders.values()) {
-            resourceLoader.setStrictI18n(strictI18n);
-        }
-    }
-
-    @Override
-    public boolean getStrictI18n() {
-        return strictI18n;
-    }
-
-    @Override
     public String getNameForId(int viewId) {
         return pickFor(viewId).getNameForId(viewId);
     }

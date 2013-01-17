@@ -5,21 +5,12 @@ import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceScreen;
-import android.view.Menu;
 import android.view.View;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.ResName;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 
-import java.io.File;
 import java.io.InputStream;
-import java.util.List;
 
 public interface ResourceLoader {
-    @Deprecated void setStrictI18n(boolean strict);
-
-    @Deprecated boolean getStrictI18n();
-
     String getNameForId(int viewId);
 
     int getColorValue(int id, String qualifiers);

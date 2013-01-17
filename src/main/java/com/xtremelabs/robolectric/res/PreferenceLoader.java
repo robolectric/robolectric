@@ -128,9 +128,6 @@ public class PreferenceLoader extends XmlLoader {
             Class<? extends Preference> clazz = pickViewClass();
 
             TestAttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, null);
-            if (strictI18n) {
-                attributeSet.validateStrictI18n();
-            }
 
             /**
              * This block is required because the PreferenceScreen(Context, AttributeSet) constructor is somehow hidden

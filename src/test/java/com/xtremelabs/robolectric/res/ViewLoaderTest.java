@@ -383,7 +383,7 @@ public class ViewLoaderTest {
 
     @Test(expected=I18nException.class)
     public void shouldThrowI18nExceptionOnLayoutWithBareStrings() throws Exception {
-        resourceLoader.setStrictI18n(true);
+        Robolectric.getShadowApplication().setStrictI18n(true);
         inflate("text_views");
     }
 

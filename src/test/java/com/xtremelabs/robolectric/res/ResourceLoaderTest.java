@@ -54,16 +54,16 @@ public class ResourceLoaderTest {
 
     @Test(expected=I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflateView() throws Exception {
+        shadowOf(Robolectric.application).setStrictI18n(true);
         ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
-        resourceLoader.setStrictI18n(true);
         ViewGroup vg = new FrameLayout(Robolectric.application);
         new RoboLayoutInflater(resourceLoader).inflateView(Robolectric.application, R.layout.text_views, vg, "");
     }
 
     @Test(expected=I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflatePreferences() throws Exception {
+        shadowOf(Robolectric.application).setStrictI18n(true);
         ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
-        resourceLoader.setStrictI18n(true);
     	resourceLoader.inflatePreferences(Robolectric.application, R.xml.preferences);
     }
 

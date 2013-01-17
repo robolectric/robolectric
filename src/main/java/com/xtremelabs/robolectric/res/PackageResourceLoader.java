@@ -71,19 +71,6 @@ public class PackageResourceLoader implements ResourceLoader {
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
     }
 
-    @Override
-    public void setStrictI18n(boolean strict) {
-        this.strictI18n = strict;
-        viewLoader.setStrictI18n(strict);
-        menuLoader.setStrictI18n(strict);
-        preferenceLoader.setStrictI18n(strict);
-    }
-
-    @Override
-    public boolean getStrictI18n() {
-        return strictI18n;
-    }
-
     private void init() {
         if (isInitialized) return;
 

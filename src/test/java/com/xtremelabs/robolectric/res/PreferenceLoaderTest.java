@@ -39,10 +39,10 @@ public class PreferenceLoaderTest {
 
     @Test(expected=I18nException.class)
     public void shouldThrowI18nExceptionOnPrefsWithBareStrings() throws Exception {
+        Robolectric.getShadowApplication().setStrictI18n(true);
         ResourceExtractor resourceExtractor = new ResourceExtractor(testResources());
 
         prefLoader = new PreferenceLoader(resourceExtractor);
-        prefLoader.setStrictI18n(true);
         new DocumentLoader(prefLoader).loadResourceXmlDir(testResources(), "xml");
 
         prefLoader.inflatePreferences(Robolectric.application, R.xml.preferences);

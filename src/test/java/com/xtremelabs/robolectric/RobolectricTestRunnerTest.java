@@ -6,9 +6,6 @@ import android.widget.TextView;
 import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
 import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
 import com.xtremelabs.robolectric.annotation.Values;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.res.RoboLayoutInflater;
-import com.xtremelabs.robolectric.util.I18nException;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
@@ -56,18 +53,6 @@ public class RobolectricTestRunnerTest {
     }
 
     @Test
-    @EnableStrictI18n
-    public void internalBeforeTest_setsI18nStrictModeFromProperty() {
-        assertTrue(Robolectric.getShadowApplication().getResourceLoader().getStrictI18n());
-    }
-
-    @Test
-    @DisableStrictI18n
-    public void internalBeforeTest_clearsI18nStrictModeFromProperty() {
-        assertFalse(Robolectric.getShadowApplication().getResourceLoader().getStrictI18n());
-    }
-
-    @Test
     @Values(locale = "fr")
     public void internalBeforeTest_setLocale() {
         assertEquals("fr", Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).getQualifiers());
@@ -86,7 +71,7 @@ public class RobolectricTestRunnerTest {
 
     @Test
     public void internalBeforeTest_doesNotSetI18nStrictModeFromSystemIfPropertyAbsent() {
-        assertFalse(Robolectric.getShadowApplication().getResourceLoader().getStrictI18n());
+        assertFalse(Robolectric.getShadowApplication().isStrictI18n());
     }
 
     @Test
@@ -99,21 +84,6 @@ public class RobolectricTestRunnerTest {
         } catch (Exception e) {
             // Compare exception name because it was loaded in the instrumented classloader
             assertEquals("com.xtremelabs.robolectric.util.I18nException", e.getClass().getName());
-        }
-    }
-
-    @Test
-    @EnableStrictI18n
-    public void createResourceLoader_setsI18nStrictModeForResourceLoader() {
-        ResourceLoader loader = Robolectric.shadowOf(Robolectric.application).getResourceLoader();
-        assertTrue(Robolectric.getShadowApplication().getResourceLoader().getStrictI18n());
-        assertTrue(loader.getStrictI18n());
-        try {
-            new RoboLayoutInflater(loader).inflateView(Robolectric.application, R.layout.text_views, null, "");
-            fail("ResourceLoader#inflateView should produce an i18nException");
-        } catch (Exception e) {
-            // classes may not be identical (different classloaders) but should have the same name
-            assertEquals(I18nException.class.getName(), e.getClass().getName());
         }
     }
 

@@ -184,7 +184,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
         AndroidManifest appManifest = sharedRobolectricContext.getAppManifest();
         ResourceLoader resourceLoader = getResourceLoader(appManifest);
-        resourceLoader.setStrictI18n(strictI18n);
 
         Robolectric.application = ShadowApplication.bind(createApplication(), appManifest, resourceLoader);
         shadowOf(Robolectric.application).setStrictI18n(strictI18n);
