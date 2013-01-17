@@ -50,6 +50,8 @@ public class ShadowView {
     int top;
     int right;
     int bottom;
+    float x;
+    float y;
     private int paddingLeft;
     private int paddingTop;
     private int paddingRight;
@@ -113,6 +115,9 @@ public class ShadowView {
         applyTagAttribute();
         applyOnClickAttribute();
         applyContentDescriptionAttribute();
+
+        // todo test
+        applyAlphaAttribute();
     }
 
     @Implementation
@@ -736,6 +741,26 @@ public class ShadowView {
         this.bottom = bottom;
     }
 
+    @Implementation
+    public void setX(float newX) {
+        this.x = newX;
+    }
+
+    @Implementation
+    public void setY(float newY) {
+        this.y = newY;
+    }
+
+    @Implementation
+    public float getX() {
+        return this.x;
+    }
+
+    @Implementation
+    public float getY() {
+        return this.y;
+    }
+
     /**
      * Non-Android accessor.
      */
@@ -872,6 +897,13 @@ public class ShadowView {
                 }
             }
         });
+    }
+
+    private void applyAlphaAttribute() {
+        Float alpha = attributeSet.getAttributeFloatValue("android", "alpha", 1f);
+        if (alpha != null) {
+            setAlpha(alpha);
+        }
     }
 
     private void applyContentDescriptionAttribute() {

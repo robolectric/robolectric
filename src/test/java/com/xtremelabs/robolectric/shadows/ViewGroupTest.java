@@ -343,4 +343,34 @@ public class ViewGroupTest {
 
         assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
     }
+
+    @Test
+    public void removeAllViews_shouldCallOnChildViewRemovedWithEachChild() throws Exception {
+        View view = new View(context);
+        ViewGroup viewGroup = new FrameLayout(context);
+        viewGroup.addView(view);
+
+        TestOnHierarchyChangeListener testListener = new TestOnHierarchyChangeListener();
+
+        viewGroup.setOnHierarchyChangeListener(testListener);
+        viewGroup.removeAllViews();
+        assertTrue(testListener.wasCalled());
+    }
+
+    class TestOnHierarchyChangeListener implements ViewGroup.OnHierarchyChangeListener {
+        boolean wasCalled = false;
+
+        @Override
+        public void onChildViewAdded(View parent, View child) {
+        }
+
+        @Override
+        public void onChildViewRemoved(View parent, View child) {
+            wasCalled = true;
+        }
+
+        public boolean wasCalled() {
+            return wasCalled;
+        }
+    }
 }

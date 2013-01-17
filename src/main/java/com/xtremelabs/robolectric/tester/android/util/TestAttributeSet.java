@@ -26,10 +26,6 @@ public class TestAttributeSet implements AttributeSet {
             "android:summary"
     };
 
-    public TestAttributeSet() {
-        this.attributes = new HashMap<String, String>();
-    }
-
     public TestAttributeSet(Map<String, String> attributes, ResourceExtractor resourceExtractor,
                             AttrResourceLoader attrResourceLoader, Class<? extends View> viewClass, boolean isSystem) {
         this.attributes = attributes;
@@ -37,6 +33,10 @@ public class TestAttributeSet implements AttributeSet {
         this.attrResourceLoader = attrResourceLoader;
         this.viewClass = viewClass;
         this.isSystem = isSystem;
+    }
+
+    public TestAttributeSet() {
+        this(new HashMap<String, String>());
     }
 
     public TestAttributeSet(Map<String, String> attributes) {
