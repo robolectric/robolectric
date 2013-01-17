@@ -17,6 +17,11 @@ public class ShadowDateFormat {
 	}
 
 	@Implementation
+	public final static java.text.DateFormat getLongDateFormat(Context context) {
+	    return new java.text.SimpleDateFormat("MMMM DD, yyyy", Locale.ROOT);
+	}
+
+	@Implementation
 	public final static java.text.DateFormat getTimeFormat(Context context) {
         return new java.text.SimpleDateFormat("HH:mm:ss", Locale.ROOT);
 	}
