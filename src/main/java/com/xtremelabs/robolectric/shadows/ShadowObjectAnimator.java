@@ -22,7 +22,8 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     private String propertyName;
     private float[] floatValues;
     private Class<?> animationType;
-    private static Map<Object, Map<String, ObjectAnimator>> mapsForAnimationTargets = new HashMap<Object, Map<String, ObjectAnimator>>();
+    private static final Map<Object, Map<String, ObjectAnimator>> mapsForAnimationTargets = new HashMap<Object, Map<String, ObjectAnimator>>();
+    private boolean isRunning;
 
     @Implementation
     public static ObjectAnimator ofFloat(Object target, String propertyName, float... values) {
@@ -83,6 +84,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
 
     @Implementation
     public void start() {
+        isRunning = true;
         String methodName = "set" + Character.toUpperCase(propertyName.charAt(0)) + propertyName.substring(1);
         final Method setter;
         notifyStart();
@@ -97,6 +99,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
         new Handler(Looper.getMainLooper()).postDelayed(new Runnable() {
             @Override
             public void run() {
+                isRunning = false;
                 try {
                     notifyEnd();
                     if (animationType == float.class) {
@@ -107,6 +110,11 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
                 }
             }
         }, duration);
+    }
+
+    @Implementation
+    public boolean isRunning() {
+        return isRunning;
     }
 
     public static Map<String, ObjectAnimator> getAnimatorsFor(Object target) {
