@@ -287,7 +287,7 @@ public class ViewLoaderTest {
 
         assertThat(shadowImageView.getBackgroundResourceId(), equalTo(R.drawable.image_background));
     }
-z`
+
     @Test
     public void testOnClickAttribute() throws Exception {
         ClickActivity activity = new ClickActivity();
