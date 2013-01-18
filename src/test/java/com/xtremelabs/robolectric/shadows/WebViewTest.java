@@ -181,4 +181,18 @@ public class WebViewTest {
         webView.destroy();
         assertThat(shadowWebView.wasDestroyCalled(), equalTo(true));
     }
+    
+    @Test
+    public void shouldRecordOnPause() {
+    	assertThat( shadowWebView.wasOnPauseCalled(), equalTo(false));
+    	webView.onPause();
+    	assertThat( shadowWebView.wasOnPauseCalled(), equalTo(true));
+    }
+    
+    @Test
+    public void shouldRecordOnResume() {
+    	assertThat( shadowWebView.wasOnResumeCalled(), equalTo(false));
+    	webView.onResume();
+    	assertThat( shadowWebView.wasOnResumeCalled(), equalTo(true));
+    }
 }

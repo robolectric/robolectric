@@ -28,6 +28,8 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
     private boolean clearHistoryCalled = false;
     private boolean clearViewCalled = false;
     private boolean destroyCalled = false;
+    private boolean onPauseCalled = false;
+    private boolean onResumeCalled = false;
     private WebChromeClient webChromeClient;
     private boolean canGoBack;
     private int goBackInvocations = 0;
@@ -142,6 +144,24 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
         return clearViewCalled;
     }
 
+    @Implementation
+    public void onPause(){
+    	onPauseCalled = true;
+    }
+    
+    public boolean wasOnPauseCalled() {
+    	return onPauseCalled;
+    }
+    
+    @Implementation
+    public void onResume() {
+    	onResumeCalled = true;
+    }
+    
+    public boolean wasOnResumeCalled() {
+    	return onResumeCalled;
+    }
+    
     @Implementation
     public void destroy() {
         destroyCalled = true;
