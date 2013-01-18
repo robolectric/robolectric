@@ -33,8 +33,6 @@ public class PackageResourceLoader implements ResourceLoader {
     private List<ResourcePath> resourcePaths;
     private final ResourceExtractor resourceExtractor;
 
-    private final ViewLoader viewLoader;
-    private final MenuLoader menuLoader;
     private final PreferenceLoader preferenceLoader;
     private final XmlFileLoader xmlFileLoader;
     private final AttrResourceLoader attrResourceLoader;
@@ -42,7 +40,6 @@ public class PackageResourceLoader implements ResourceLoader {
     private final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
 
     private boolean isInitialized = false;
-    private boolean strictI18n = false;
 
     private final Resolver<Boolean> booleanResolver = new BooleanResolver();
     private final Resolver<Integer> colorResolver = new ColorResolver();
@@ -65,8 +62,6 @@ public class PackageResourceLoader implements ResourceLoader {
 
         attrResourceLoader = new AttrResourceLoader();
         drawableResourceLoader = new DrawableResourceLoader(resourceExtractor);
-        viewLoader = new ViewLoader(viewNodes);
-        menuLoader = new MenuLoader(menuNodes);
         preferenceLoader = new PreferenceLoader(resourceExtractor);
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
     }
@@ -97,8 +92,8 @@ public class PackageResourceLoader implements ResourceLoader {
                     attrResourceLoader
             ), resourcePath, "values");
 
-            loadResourceXmlSubDirs(new DocumentLoader(viewLoader), resourcePath, "layout");
-            loadResourceXmlSubDirs(new DocumentLoader(menuLoader), resourcePath, "menu");
+            loadResourceXmlSubDirs(new DocumentLoader(new ViewLoader(viewNodes)), resourcePath, "layout");
+            loadResourceXmlSubDirs(new DocumentLoader(new MenuLoader(menuNodes)), resourcePath, "menu");
             loadResourceXmlSubDirs(new DocumentLoader(drawableResourceLoader), resourcePath, "drawable");
             loadResourceXmlSubDirs(new DocumentLoader(preferenceLoader), resourcePath, "xml");
             loadResourceXmlSubDirs(new DocumentLoader(xmlFileLoader), resourcePath, "xml");

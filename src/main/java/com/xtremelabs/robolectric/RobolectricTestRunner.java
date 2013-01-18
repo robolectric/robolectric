@@ -8,10 +8,11 @@ import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.bytecode.ClassHandler;
 import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
-import com.xtremelabs.robolectric.res.CompositeResourceLoader;
+import com.xtremelabs.robolectric.res.RoutingResourceLoader;
 import com.xtremelabs.robolectric.res.PackageResourceLoader;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.ResourcePath;
+import com.xtremelabs.robolectric.res.RoutingResourceLoader;
 import com.xtremelabs.robolectric.shadows.ShadowApplication;
 import com.xtremelabs.robolectric.shadows.ShadowLog;
 import com.xtremelabs.robolectric.shadows.ShadowResources;
@@ -410,7 +411,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         for (ResourcePath resourcePath : resourcePaths) {
             resourceLoaders.put(resourcePath.getPackageName(), new PackageResourceLoader(resourcePath));
         }
-        return new CompositeResourceLoader(resourceLoaders);
+        return new RoutingResourceLoader(resourceLoaders);
     }
 
     /*

@@ -21,12 +21,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.MissingResourceException;
 
-public class CompositeResourceLoader implements ResourceLoader {
+public class RoutingResourceLoader implements ResourceLoader {
     private final Map<String, ResourceLoader> resourceLoaders;
     private final ResourceExtractor resourceExtractor;
-    private boolean strictI18n = false;
 
-    public CompositeResourceLoader(Map<String, ResourceLoader> resourceLoaders) {
+    public RoutingResourceLoader(Map<String, ResourceLoader> resourceLoaders) {
         this.resourceLoaders = resourceLoaders;
 
         List<ResourceExtractor> resourceExtractors = new ArrayList<ResourceExtractor>();
