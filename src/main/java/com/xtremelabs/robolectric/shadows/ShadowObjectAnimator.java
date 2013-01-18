@@ -98,10 +98,10 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
             @Override
             public void run() {
                 try {
-                    notifyEnd();
                     if (animationType == float.class) {
                         setter.invoke(target, floatValues[floatValues.length - 1]);
                     }
+                    notifyEnd();
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
