@@ -770,6 +770,10 @@ public class Robolectric {
         return (ShadowLayoutInflater) shadowOf_(instance);
     }
 
+    public static ShadowLinearLayout shadowOf(LinearLayout instance) {
+        return (ShadowLinearLayout) shadowOf_(instance);
+    }
+
     public static ShadowLinearGradient shadowOf(LinearGradient instance) {
         return (ShadowLinearGradient) shadowOf_(instance);
     }
