@@ -19,6 +19,13 @@ public class ResourceExtractor {
 
     public ResourceExtractor(ResourceExtractor... subExtractors) {
         for (ResourceExtractor subExtractor : subExtractors) {
+            HashSet<Class> overlapClasses = new HashSet<Class>(processedRFiles);
+            overlapClasses.retainAll(subExtractor.processedRFiles);
+            if (!overlapClasses.isEmpty()) {
+                throw new RuntimeException("found overlap for " + overlapClasses);
+            }
+            processedRFiles.addAll(subExtractor.processedRFiles);
+
             merge(resourceNameToId, subExtractor.resourceNameToId, "resourceNameToId");
             merge(resourceIdToFullyQualifiedName, subExtractor.resourceIdToFullyQualifiedName, "resourceIdToFullyQualifiedName");
         }

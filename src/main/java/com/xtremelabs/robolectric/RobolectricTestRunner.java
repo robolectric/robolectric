@@ -30,7 +30,9 @@ import java.io.PrintStream;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -416,10 +418,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     protected ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
         Map<String, ResourceLoader> resourceLoaders = new HashMap<String, ResourceLoader>();
 
+        List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>();
         for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
-            resourceLoaders.put(resourcePath.getPackageName(), createResourceLoader(resourcePath));
-            resourceLoaders.put("android", systemResourceLoader);
+            resourcePaths.add(resourcePath);
         }
+        PackageResourceLoader appResourceLoader = new PackageResourceLoader(resourcePaths);
+        for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
+            resourceLoaders.put(resourcePath.getPackageName(), appResourceLoader);
+        }
+        resourceLoaders.put("android", systemResourceLoader);
         return new RoutingResourceLoader(resourceLoaders);
     }
 

@@ -5,21 +5,13 @@ import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceScreen;
-import android.view.Menu;
 import android.view.View;
-import com.xtremelabs.robolectric.res.ResourceExtractor;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.res.RoboLayoutInflater;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.ResName;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 
-import java.io.File;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map;
-import java.util.MissingResourceException;
+import java.util.Set;
 
 public class RoutingResourceLoader implements ResourceLoader {
     private final Map<String, ResourceLoader> resourceLoaders;
@@ -28,7 +20,7 @@ public class RoutingResourceLoader implements ResourceLoader {
     public RoutingResourceLoader(Map<String, ResourceLoader> resourceLoaders) {
         this.resourceLoaders = resourceLoaders;
 
-        List<ResourceExtractor> resourceExtractors = new ArrayList<ResourceExtractor>();
+        Set<ResourceExtractor> resourceExtractors = new HashSet<ResourceExtractor>();
         for (ResourceLoader resourceLoader : resourceLoaders.values()) {
             resourceExtractors.add(resourceLoader.getResourceExtractor());
         }
