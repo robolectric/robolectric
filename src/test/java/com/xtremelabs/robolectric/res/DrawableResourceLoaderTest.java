@@ -36,7 +36,7 @@ public class DrawableResourceLoaderTest {
         documentLoader.loadResourceXmlSubDirs(systemResources(), "drawable");
 
         ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
-        drawableBuilder = new DrawableBuilder(drawableNodes, resourceExtractor);
+        drawableBuilder = new DrawableBuilder(drawableNodes, resourceExtractor, null, null);
     }
 
     @Test

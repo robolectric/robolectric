@@ -3,12 +3,7 @@ package com.xtremelabs.robolectric.res;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import android.graphics.BitmapFactory;
-import android.graphics.drawable.AnimationDrawable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.NinePatchDrawable;
 import android.preference.PreferenceScreen;
 import android.view.View;
 import com.xtremelabs.robolectric.tester.android.util.ResName;
@@ -16,7 +11,6 @@ import com.xtremelabs.robolectric.util.I18nException;
 
 import java.io.File;
 import java.io.InputStream;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -169,74 +163,30 @@ public class PackageResourceLoader implements ResourceLoader {
     @Override
     public boolean isDrawableXml(int resourceId, String qualifiers) {
         init();
-        return new DrawableBuilder(drawableNodes, resourceExtractor).isXml(resourceId, qualifiers);
+        return getDrawableBuilder().isXml(resourceId, qualifiers);
+    }
+
+    private DrawableBuilder getDrawableBuilder() {
+        return new DrawableBuilder(drawableNodes, resourceExtractor, resourcePaths, ninePatchDrawableIds);
     }
 
     @Override
     public boolean isAnimatableXml(int resourceId, String qualifiers) {
         init();
-        return new DrawableBuilder(drawableNodes, resourceExtractor).isAnimationDrawable(resourceId, qualifiers);
+        return getDrawableBuilder().isAnimationDrawable(resourceId, qualifiers);
     }
 
     @Override
     public int[] getDrawableIds(int resourceId, String qualifiers) {
         init();
-        return new DrawableBuilder(drawableNodes, resourceExtractor).getDrawableIds(resourceId, qualifiers);
+        return getDrawableBuilder().getDrawableIds(resourceId, qualifiers);
     }
 
     @Override
     public Drawable getDrawable(int resourceId, Resources realResources, String qualifiers) {
 //        todo: this: String resourceName = resourceExtractor.getResourceName(resourceId);
+        return getDrawableBuilder().getDrawable(resourceId, realResources, qualifiers);
 
-
-        DrawableBuilder drawableBuilder = new DrawableBuilder(drawableNodes, resourceExtractor);
-        Drawable xmlDrawable = drawableBuilder.getXmlDrawable(resourceId, qualifiers);
-        if (xmlDrawable != null) {
-            return xmlDrawable;
-        }
-
-        Drawable animDrawable = getInnerRClassDrawable(resourceId, "$anim", AnimationDrawable.class);
-        if (animDrawable != null) {
-            return animDrawable;
-        }
-
-        Drawable colorDrawable = getInnerRClassDrawable(resourceId, "$color", ColorDrawable.class);
-        if (colorDrawable != null) {
-            return colorDrawable;
-        }
-
-        if (this.isNinePatchDrawable(resourceId)) {
-            return new NinePatchDrawable(realResources, null);
-        }
-
-        return new BitmapDrawable(BitmapFactory.decodeResource(realResources, resourceId));
-
-    }
-
-    @SuppressWarnings("rawtypes")
-    private Drawable getInnerRClassDrawable(int drawableResourceId, String suffix, Class returnClass) {
-        for (ResourcePath resourcePath : resourcePaths) {
-            // Load the Inner Class for interrogation
-            Class animClass;
-            try {
-                animClass = Class.forName(resourcePath.rClass.getCanonicalName() + suffix);
-            } catch (ClassNotFoundException e) {
-                return null;
-            }
-
-            // Try to find the passed in resource ID
-            try {
-                for (Field field : animClass.getDeclaredFields()) {
-                    if (field.getInt(animClass) == drawableResourceId) {
-                        return (Drawable) returnClass.newInstance();
-                    }
-                }
-            } catch (Exception e) {
-            }
-        }
-
-
-        return null;
     }
 
     @Override

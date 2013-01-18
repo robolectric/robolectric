@@ -1,9 +1,14 @@
 package com.xtremelabs.robolectric.res;
 
 import android.R;
+import android.content.res.Resources;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
+import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.drawable.StateListDrawable;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.shadows.ShadowStateListDrawable;
@@ -16,8 +21,11 @@ import org.w3c.dom.NodeList;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
+import java.lang.reflect.Field;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class DrawableBuilder {
     // Put all the states for a StateListDrawable in the into a Map for looking up
@@ -34,11 +42,15 @@ public class DrawableBuilder {
     }
 
     private final ResourceExtractor resourceExtractor;
-    private ResBundle<DrawableNode> drawableNodes;
+    private final ResBundle<DrawableNode> drawableNodes;
+    private final List<ResourcePath> resourcePaths;
+    private final Set<Integer> ninePatchDrawableIds;
 
-    public DrawableBuilder(ResBundle<DrawableNode> drawableNodes, ResourceExtractor resourceExtractor) {
+    public DrawableBuilder(ResBundle<DrawableNode> drawableNodes, ResourceExtractor resourceExtractor, List<ResourcePath> resourcePaths, Set<Integer> ninePatchDrawableIds) {
         this.resourceExtractor = resourceExtractor;
         this.drawableNodes = drawableNodes;
+        this.resourcePaths = resourcePaths;
+        this.ninePatchDrawableIds = ninePatchDrawableIds;
     }
 
     /**
@@ -160,4 +172,52 @@ public class DrawableBuilder {
         return R.attr.state_active;
     }
 
+    @SuppressWarnings("rawtypes")
+    Drawable getInnerRClassDrawable(int drawableResourceId, String suffix, Class returnClass) {
+        for (ResourcePath resourcePath : resourcePaths) {
+            // Load the Inner Class for interrogation
+            Class animClass;
+            try {
+                animClass = Class.forName(resourcePath.rClass.getCanonicalName() + suffix);
+            } catch (ClassNotFoundException e) {
+                return null;
+            }
+
+            // Try to find the passed in resource ID
+            try {
+                for (Field field : animClass.getDeclaredFields()) {
+                    if (field.getInt(animClass) == drawableResourceId) {
+                        return (Drawable) returnClass.newInstance();
+                    }
+                }
+            } catch (Exception e) {
+            }
+        }
+
+
+        return null;
+    }
+
+    Drawable getDrawable(int resourceId, Resources realResources, String qualifiers) {
+        Drawable xmlDrawable = getXmlDrawable(resourceId, qualifiers);
+        if (xmlDrawable != null) {
+            return xmlDrawable;
+        }
+
+        Drawable animDrawable = getInnerRClassDrawable(resourceId, "$anim", AnimationDrawable.class);
+        if (animDrawable != null) {
+            return animDrawable;
+        }
+
+        Drawable colorDrawable = getInnerRClassDrawable(resourceId, "$color", ColorDrawable.class);
+        if (colorDrawable != null) {
+            return colorDrawable;
+        }
+
+        if (ninePatchDrawableIds.contains(resourceId)) {
+            return new NinePatchDrawable(realResources, null);
+        }
+
+        return new BitmapDrawable(BitmapFactory.decodeResource(realResources, resourceId));
+    }
 }
