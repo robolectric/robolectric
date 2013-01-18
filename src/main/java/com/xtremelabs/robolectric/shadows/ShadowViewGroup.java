@@ -24,6 +24,7 @@ public class ShadowViewGroup extends ShadowView {
     private LayoutAnimationController layoutAnim;
     private boolean disallowInterceptTouchEvent = false;
     private MotionEvent interceptedTouchEvent;
+    private ViewGroup.OnHierarchyChangeListener onHierarchyChangeListener;
 
     @Implementation
     @Override
@@ -123,6 +124,9 @@ public class ShadowViewGroup extends ShadowView {
     public void removeAllViews() {
         for (View child : children) {
             shadowOf(child).parent = null;
+            if (onHierarchyChangeListener != null) {
+                onHierarchyChangeListener.onChildViewRemoved(this.realView, child);
+            }
         }
         children.clear();
         requestLayout();
@@ -166,6 +170,11 @@ public class ShadowViewGroup extends ShadowView {
                 child.clearFocus();
             }
         }
+    }
+
+    @Implementation
+    public void setOnHierarchyChangeListener(ViewGroup.OnHierarchyChangeListener onHierarchyChangeListener) {
+        this.onHierarchyChangeListener = onHierarchyChangeListener;
     }
 
     /**
