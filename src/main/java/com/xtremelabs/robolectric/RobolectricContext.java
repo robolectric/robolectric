@@ -23,19 +23,13 @@ import org.sonatype.aether.resolution.ArtifactResult;
 import org.sonatype.aether.util.artifact.DefaultArtifact;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Properties;
 
 import static com.xtremelabs.robolectric.RobolectricTestRunner.isBootstrapped;
 
@@ -43,7 +37,6 @@ public class RobolectricContext {
     private static final Map<Class<? extends RobolectricTestRunner>, RobolectricContext> contextsByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, RobolectricContext>();
 
     private final AndroidManifest appManifest;
-    private final List<AndroidManifest> libraryManifests;
     private final RobolectricClassLoader robolectricClassLoader;
     private final ClassHandler classHandler;
     private static RepositorySystem repositorySystem;
@@ -78,7 +71,6 @@ public class RobolectricContext {
         Setup setup = createSetup();
         classHandler = createClassHandler(setup);
         appManifest = createAppManifest();
-        libraryManifests = createLibraryManifests(appManifest);
         AndroidTranslator androidTranslator = createAndroidTranslator(setup, classCache);
         robolectricClassLoader = createRobolectricClassLoader(setup, classCache, androidTranslator);
     }
@@ -111,77 +103,13 @@ public class RobolectricContext {
         return appManifest;
     }
 
-    protected List<AndroidManifest> createLibraryManifests(AndroidManifest appManifest) {
-        List<AndroidManifest> manifests = new ArrayList<AndroidManifest>();
-        addLibraryManifestsFor(appManifest, manifests);
-        return manifests;
-    }
-
-    protected void addLibraryManifestsFor(AndroidManifest parentManifest, List<AndroidManifest> manifests) {
-        File appBaseDirectory = parentManifest.getResDirectory().getParentFile();
-
-        Properties properties = getProperties(new File(appBaseDirectory, "project.properties"));
-        if (properties != null) {
-            int libRef = 1;
-            String lib;
-            while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
-                File libraryBaseDir = new File(appBaseDirectory, lib);
-                AndroidManifest libraryManifest = new AndroidManifest(libraryBaseDir);
-                manifests.add(libraryManifest);
-                addLibraryManifestsFor(libraryManifest, manifests);
-                libRef++;
-            }
-        }
-    }
-
-    public List<AndroidManifest> getLibraryManifests() {
-        return libraryManifests;
-    }
-
-    private static Properties getProperties(File propertiesFile) {
-        if (!propertiesFile.exists()) return null;
-
-        Properties properties = new Properties();
-        FileInputStream stream;
-        try {
-            stream = new FileInputStream(propertiesFile);
-        } catch (FileNotFoundException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            try {
-                properties.load(stream);
-            } finally {
-                stream.close();
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        return properties;
-    }
-
     public ClassHandler getClassHandler() {
         return classHandler;
     }
 
-    public List<ResourcePath> getResourcePaths() {
-        List<ResourcePath> resourcePaths = getResourcePathsWithoutSystem();
-        resourcePaths.add(getSystemResourcePath());
-        return resourcePaths;
-    }
-
-    private List<ResourcePath> getResourcePathsWithoutSystem() {
-        List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>();
-        resourcePaths.add(getAppManifest().getResourcePath());
-        for (AndroidManifest libraryManifest : getLibraryManifests()) {
-            resourcePaths.add(libraryManifest.getResourcePath());
-        }
-        return resourcePaths;
-    }
-
     public ResourcePath getSystemResourcePath() {
-        return AndroidResourcePathFinder.getSystemResourcePath(getAppManifest().getRealSdkVersion(), getResourcePathsWithoutSystem());
+        AndroidManifest manifest = getAppManifest();
+        return AndroidResourcePathFinder.getSystemResourcePath(manifest.getRealSdkVersion(), manifest.getResourcePath());
     }
 
     private Class<?> bootstrapTestClass(Class<?> testClass) {

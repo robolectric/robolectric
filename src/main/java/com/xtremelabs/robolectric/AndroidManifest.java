@@ -10,8 +10,13 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Properties;
 
 import static android.content.pm.ApplicationInfo.*;
 import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
@@ -31,6 +36,7 @@ public class AndroidManifest {
     private boolean minSdkVersionSpecified = true;
     private int applicationFlags;
     private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
+    private List<AndroidManifest> libraryManifests;
 
     /**
      * Creates a Robolectric configuration using default Android files relative to the specified base directory.
@@ -225,6 +231,65 @@ public class AndroidManifest {
     public ResourcePath getResourcePath() {
         validate();
         return new ResourcePath(getRClass(), resDirectory, assetsDirectory);
+    }
+
+    public List<ResourcePath> getIncludedResourcePaths() {
+        List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>();
+        resourcePaths.add(getResourcePath());
+        for (AndroidManifest libraryManifest : getLibraryManifests()) {
+            resourcePaths.addAll(libraryManifest.getIncludedResourcePaths());
+        }
+        return resourcePaths;
+    }
+
+    protected void createLibraryManifests() {
+        libraryManifests = new ArrayList<AndroidManifest>();
+        File baseDir = getResDirectory().getParentFile();
+
+        Properties properties = getProperties(new File(baseDir, "project.properties"));
+        if (properties != null) {
+            int libRef = 1;
+            String lib;
+            while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
+                File libraryBaseDir = new File(baseDir, lib);
+                AndroidManifest libraryManifest = createLibraryAndroidManifest(libraryBaseDir);
+                libraryManifest.createLibraryManifests();
+                libraryManifests.add(libraryManifest);
+                libRef++;
+            }
+        }
+    }
+
+    protected AndroidManifest createLibraryAndroidManifest(File libraryBaseDir) {
+        return new AndroidManifest(libraryBaseDir);
+    }
+
+    public List<AndroidManifest> getLibraryManifests() {
+        if (libraryManifests == null) createLibraryManifests();
+        return Collections.unmodifiableList(libraryManifests);
+    }
+
+    private static Properties getProperties(File propertiesFile) {
+        if (!propertiesFile.exists()) return null;
+
+        Properties properties = new Properties();
+        FileInputStream stream;
+        try {
+            stream = new FileInputStream(propertiesFile);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            try {
+                properties.load(stream);
+            } finally {
+                stream.close();
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return properties;
     }
 
     public File getResDirectory() {

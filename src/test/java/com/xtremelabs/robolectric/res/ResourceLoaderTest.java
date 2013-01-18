@@ -18,7 +18,6 @@ import java.util.Arrays;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.*;
@@ -32,7 +31,7 @@ public class ResourceLoaderTest {
     @Before
     public void setUp() throws Exception {
         resourcePath = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
-        systemResourcePath = AndroidResourcePathFinder.getSystemResourcePath(Robolectric.DEFAULT_SDK_VERSION, asList(resourcePath));
+        systemResourcePath = AndroidResourcePathFinder.getSystemResourcePath(Robolectric.DEFAULT_SDK_VERSION, resourcePath);
     }
 
     @Test

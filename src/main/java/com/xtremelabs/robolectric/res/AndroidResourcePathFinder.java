@@ -15,13 +15,13 @@ public class AndroidResourcePathFinder {
     private final int sdkVersion;
     private final ResourcePath resourcePath;
 
-    public static ResourcePath getSystemResourcePath(int sdkVersion, List<ResourcePath> resourcePaths) {
-        String pathToAndroidResources = new AndroidResourcePathFinder(sdkVersion, resourcePaths).getPathToAndroidResources();
+    public static ResourcePath getSystemResourcePath(int sdkVersion, ResourcePath resourcePath) {
+        String pathToAndroidResources = new AndroidResourcePathFinder(sdkVersion, resourcePath).getPathToAndroidResources();
         return new ResourcePath(R.class, new File(pathToAndroidResources), null);
     }
 
-    public AndroidResourcePathFinder(int sdkVersion, List<ResourcePath> resourcePaths) {
-        this.resourcePath = resourcePaths == null ? new ResourcePath(null, new File("."), null) : resourcePaths.get(0);
+    public AndroidResourcePathFinder(int sdkVersion, ResourcePath resourcePath) {
+        this.resourcePath = resourcePath == null ? new ResourcePath(null, new File("."), null) : resourcePath;
         this.sdkVersion = sdkVersion;
     }
 

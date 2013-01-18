@@ -8,12 +8,13 @@ import com.xtremelabs.robolectric.res.ResourcePath;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.pm.ApplicationInfo.*;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -70,23 +71,24 @@ public class AndroidManifestTest {
     }
     
     @Test public void shouldLoadAllResourcesForLibraries() {
-        final AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
+        AndroidManifest appManifest = new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"));
 
         // This intentionally loads from the non standard resources/project.properties
-        List<ResourcePath> resourcePaths = new RobolectricContext() {
-            @Override
-            protected AndroidManifest createAppManifest() {
-                return appManifest;
-            }
-        }.getResourcePaths();
-        assertEquals("there should be 5 resource locations", 5, resourcePaths.size());
-        assertEquals("./src/test/resources/res", resourcePaths.get(0).resourceBase.getPath());
-        assertEquals("./src/test/resources/lib1/res", resourcePaths.get(1).resourceBase.getPath());
-        assertEquals("./src/test/resources/lib1/../lib3/res", resourcePaths.get(2).resourceBase.getPath());
-        assertEquals("./src/test/resources/lib2/res", resourcePaths.get(3).resourceBase.getPath());
+        List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
+        assertEquals(asList(
+                "./src/test/resources/res",
+                "./src/test/resources/lib1/res",
+                "./src/test/resources/lib1/../lib3/res",
+                "./src/test/resources/lib2/res"),
+                resourcePaths);
+    }
 
-        File resourceBase = AndroidResourcePathFinder.getSystemResourcePath(appManifest.getRealSdkVersion(), resourcePaths).resourceBase;
-        assertEquals(resourceBase.getPath(), resourcePaths.get(4).resourceBase.getPath());
+    private List<String> stringify(List<ResourcePath> resourcePaths) {
+        List<String> resourcePathBases = new ArrayList<String>();
+        for (ResourcePath resourcePath : resourcePaths) {
+            resourcePathBases.add(resourcePath.resourceBase.toString());
+        }
+        return resourcePathBases;
     }
 
     @Test

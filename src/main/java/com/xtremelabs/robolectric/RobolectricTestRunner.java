@@ -8,7 +8,6 @@ import com.xtremelabs.robolectric.annotation.Values;
 import com.xtremelabs.robolectric.bytecode.ClassHandler;
 import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
-import com.xtremelabs.robolectric.res.RoutingResourceLoader;
 import com.xtremelabs.robolectric.res.PackageResourceLoader;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.res.ResourcePath;
@@ -32,7 +31,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
@@ -42,7 +40,8 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
-    private static Map<AndroidManifest, ResourceLoader> resourceLoaderForRootAndDirectory = new HashMap<AndroidManifest, ResourceLoader>();
+    private static Map<AndroidManifest, ResourceLoader> resourceLoadersByAppManifest = new HashMap<AndroidManifest, ResourceLoader>();
+    private static Map<ResourcePath, ResourceLoader> systemResourceLoaders = new HashMap<ResourcePath, ResourceLoader>();
 
     // field in both the instrumented and original classes
     RobolectricContext sharedRobolectricContext;
@@ -177,14 +176,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     public void setupApplicationState(Method testMethod) {
         boolean strictI18n = determineI18nStrictState(testMethod);
 
-        ResourceLoader systemResourceLoader = new PackageResourceLoader(sharedRobolectricContext.getSystemResourcePath());
+        ResourceLoader systemResourceLoader = getSystemResourceLoader(sharedRobolectricContext.getSystemResourcePath());
         ShadowResources.setSystemResources(systemResourceLoader);
 
         ClassHandler classHandler = sharedRobolectricContext.getClassHandler();
         classHandler.setStrictI18n(strictI18n);
 
         AndroidManifest appManifest = sharedRobolectricContext.getAppManifest();
-        ResourceLoader resourceLoader = getResourceLoader(appManifest);
+        ResourceLoader resourceLoader = getAppResourceLoader(systemResourceLoader, appManifest);
 
         Robolectric.application = ShadowApplication.bind(createApplication(), appManifest, resourceLoader);
         shadowOf(Robolectric.application).setStrictI18n(strictI18n);
@@ -395,23 +394,37 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return new ApplicationResolver(sharedRobolectricContext.getAppManifest()).resolveApplication();
     }
 
-    private ResourceLoader getResourceLoader(final AndroidManifest androidManifest) {
-        ResourceLoader resourceLoader = resourceLoaderForRootAndDirectory.get(androidManifest);
-        if (resourceLoader == null ) {
-            List<ResourcePath> resourcePaths = sharedRobolectricContext.getResourcePaths();
-            resourceLoader = createResourceLoader(resourcePaths);
-            resourceLoaderForRootAndDirectory.put(androidManifest, resourceLoader);
+    private ResourceLoader getSystemResourceLoader(ResourcePath systemResourcePath) {
+        ResourceLoader systemResourceLoader = systemResourceLoaders.get(systemResourcePath);
+        if (systemResourceLoader == null) {
+            systemResourceLoader = createResourceLoader(systemResourcePath);
+            systemResourceLoaders.put(systemResourcePath, systemResourceLoader);
+        }
+        return systemResourceLoader;
+    }
+
+    private ResourceLoader getAppResourceLoader(ResourceLoader systemResourceLoader, final AndroidManifest appManifest) {
+        ResourceLoader resourceLoader = resourceLoadersByAppManifest.get(appManifest);
+        if (resourceLoader == null) {
+            resourceLoader = createAppResourceLoader(systemResourceLoader, appManifest);
+            resourceLoadersByAppManifest.put(appManifest, resourceLoader);
         }
         return resourceLoader;
     }
 
     // this method must live on a RobolectricClassLoader-loaded class, so it can't be on RobolectricContext
-    protected ResourceLoader createResourceLoader(List<ResourcePath> resourcePaths) {
+    protected ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
         Map<String, ResourceLoader> resourceLoaders = new HashMap<String, ResourceLoader>();
-        for (ResourcePath resourcePath : resourcePaths) {
-            resourceLoaders.put(resourcePath.getPackageName(), new PackageResourceLoader(resourcePath));
+
+        for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
+            resourceLoaders.put(resourcePath.getPackageName(), createResourceLoader(resourcePath));
+            resourceLoaders.put("android", systemResourceLoader);
         }
         return new RoutingResourceLoader(resourceLoaders);
+    }
+
+    protected PackageResourceLoader createResourceLoader(ResourcePath systemResourcePath) {
+        return new PackageResourceLoader(systemResourcePath);
     }
 
     /*
