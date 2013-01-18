@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.tester.android.util;
 
+import com.xtremelabs.robolectric.res.ResourceExtractor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Matcher;
@@ -31,6 +32,10 @@ public class ResName {
         name = matcher.group(NAME);
 
         if (namespace.equals("xmlns")) throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
+    }
+
+    public ResName qualify(String string) {
+        return new ResName(ResourceExtractor.qualifyResourceName(string.replace("@", ""), namespace));
     }
 
     @Override

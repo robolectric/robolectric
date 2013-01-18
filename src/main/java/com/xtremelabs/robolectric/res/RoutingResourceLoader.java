@@ -68,38 +68,23 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public boolean isDrawableXml(int resourceId) {
-        return pickFor(resourceId).isDrawableXml(resourceId);
+    public boolean isDrawableXml(int resourceId, String qualifiers) {
+        return pickFor(resourceId).isDrawableXml(resourceId, qualifiers);
     }
 
     @Override
-    public boolean isAnimatableXml(int resourceId) {
-        return pickFor(resourceId).isAnimatableXml(resourceId);
+    public boolean isAnimatableXml(int resourceId, String qualifiers) {
+        return pickFor(resourceId).isAnimatableXml(resourceId, qualifiers);
     }
 
     @Override
-    public int[] getDrawableIds(int resourceId) {
-        return pickFor(resourceId).getDrawableIds(resourceId);
+    public int[] getDrawableIds(int resourceId, String qualifiers) {
+        return pickFor(resourceId).getDrawableIds(resourceId, qualifiers);
     }
 
     @Override
-    public Drawable getDrawable(int resourceId, Resources realResources) {
-        return pickFor(resourceId).getDrawable(resourceId, realResources);
-    }
-
-    @Override
-    public Drawable getXmlDrawable(int resourceId) {
-        return pickFor(resourceId).getXmlDrawable(resourceId);
-    }
-
-    @Override
-    public Drawable getAnimDrawable(int resourceId) {
-        return pickFor(resourceId).getAnimDrawable(resourceId);
-    }
-
-    @Override
-    public Drawable getColorDrawable(int resourceId) {
-        return pickFor(resourceId).getColorDrawable(resourceId);
+    public Drawable getDrawable(int resourceId, Resources realResources, String qualifiers) {
+        return pickFor(resourceId).getDrawable(resourceId, realResources, qualifiers);
     }
 
     @Override

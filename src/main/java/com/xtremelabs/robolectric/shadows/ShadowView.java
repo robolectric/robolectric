@@ -265,7 +265,7 @@ public class ShadowView {
     protected Drawable buildDrawable(int resourceId) {
         if (isDrawableXml(resourceId)) {
             int[] resourceIds = shadowOf(Robolectric.application)
-                .getResourceLoader().getDrawableIds(resourceId);
+                .getResourceLoader().getDrawableIds(resourceId, getQualifiers());
 
             Drawable[] drawables = new Drawable[resourceIds.length];
 
@@ -279,6 +279,10 @@ public class ShadowView {
         }
     }
 
+    protected String getQualifiers() {
+        return shadowOf(context.getResources().getConfiguration()).getQualifiers();
+    }
+
     /**
      * Does the resource id point to xml resource.
      *
@@ -287,7 +291,7 @@ public class ShadowView {
      */
     protected boolean isDrawableXml(int resourceId) {
         return shadowOf(Robolectric.application).getResourceLoader()
-            .isDrawableXml(resourceId);
+            .isDrawableXml(resourceId, getQualifiers());
     }
 
     @Implementation

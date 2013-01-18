@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.res;
 
 import com.xtremelabs.robolectric.tester.android.util.ResName;
+import org.jetbrains.annotations.TestOnly;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -78,6 +79,11 @@ class ResBundle<T> {
             if ((possibles & (1 << i)) != 0) return values.get(i);
         }
         throw new IllegalStateException("couldn't handle qualifiers \"" + qualifiers + "\"");
+    }
+
+    @TestOnly
+    int size() {
+        return valuesMap.map.size() + valuesArrayMap.map.size();
     }
 
     static class Value<T> implements Comparable<Value<T>> {

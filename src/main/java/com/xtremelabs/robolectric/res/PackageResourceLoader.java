@@ -11,13 +11,10 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.preference.PreferenceScreen;
 import android.view.View;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.ResName;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.util.I18nException;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -36,7 +33,6 @@ public class PackageResourceLoader implements ResourceLoader {
     private final PreferenceLoader preferenceLoader;
     private final XmlFileLoader xmlFileLoader;
     private final AttrResourceLoader attrResourceLoader;
-    private final DrawableResourceLoader drawableResourceLoader;
     private final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
 
     private boolean isInitialized = false;
@@ -49,6 +45,7 @@ public class PackageResourceLoader implements ResourceLoader {
     private final Resolver<String> stringResolver = new StringResolver();
     private final ResBundle<ViewNode> viewNodes = new ResBundle<ViewNode>();
     private final ResBundle<MenuNode> menuNodes = new ResBundle<MenuNode>();
+    private final ResBundle<DrawableNode> drawableNodes = new ResBundle<DrawableNode>();
 
     private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
 
@@ -61,7 +58,6 @@ public class PackageResourceLoader implements ResourceLoader {
         this.resourcePaths = Collections.unmodifiableList(resourcePaths);
 
         attrResourceLoader = new AttrResourceLoader();
-        drawableResourceLoader = new DrawableResourceLoader(resourceExtractor);
         preferenceLoader = new PreferenceLoader(resourceExtractor);
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
     }
@@ -82,7 +78,7 @@ public class PackageResourceLoader implements ResourceLoader {
         for (ResourcePath resourcePath : resourcePaths) {
             System.out.println("DEBUG: Loading resources for " + resourcePath.getPackageName() + " from " + resourcePath.resourceBase + "...");
 
-            loadResourceXmlSubDirs(new DocumentLoader(
+            new DocumentLoader(
                     new ValueResourceLoader(booleanResolver, "bool", false),
                     new ValueResourceLoader(colorResolver, "color", false),
                     new ValueResourceLoader(dimenResolver, "dimen", false),
@@ -90,13 +86,13 @@ public class PackageResourceLoader implements ResourceLoader {
                     new PluralResourceLoader(resourceExtractor, pluralsResolver),
                     new ValueResourceLoader(stringResolver, "string", true),
                     attrResourceLoader
-            ), resourcePath, "values");
+            ).loadResourceXmlSubDirs(resourcePath, "values");
 
-            loadResourceXmlSubDirs(new DocumentLoader(new ViewLoader(viewNodes)), resourcePath, "layout");
-            loadResourceXmlSubDirs(new DocumentLoader(new MenuLoader(menuNodes)), resourcePath, "menu");
-            loadResourceXmlSubDirs(new DocumentLoader(drawableResourceLoader), resourcePath, "drawable");
-            loadResourceXmlSubDirs(new DocumentLoader(preferenceLoader), resourcePath, "xml");
-            loadResourceXmlSubDirs(new DocumentLoader(xmlFileLoader), resourcePath, "xml");
+            new DocumentLoader(new ViewLoader(viewNodes)).loadResourceXmlSubDirs(resourcePath, "layout");
+            new DocumentLoader(new MenuLoader(menuNodes)).loadResourceXmlSubDirs(resourcePath, "menu");
+            new DocumentLoader(new DrawableResourceLoader(drawableNodes)).loadResourceXmlSubDirs(resourcePath, "drawable");
+            new DocumentLoader(preferenceLoader).loadResourceXmlSubDirs(resourcePath, "xml");
+            new DocumentLoader(xmlFileLoader).loadResourceXmlSubDirs(resourcePath, "xml");
 
             loadOtherResources(resourcePath);
 
@@ -109,10 +105,6 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     protected void loadOtherResources(ResourcePath resourcePath) {
-    }
-
-    private void loadResourceXmlSubDirs(DocumentLoader documentLoader, ResourcePath resourcePath, final String folderBaseName) throws Exception {
-        documentLoader.loadResourceXmlDirs(resourcePath, resourcePath.resourceBase.listFiles(new DirectoryMatchingFileFilter(folderBaseName)));
     }
 
     private File getPreferenceResourceDir(File xmlResourceDir) {
@@ -175,39 +167,40 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public boolean isDrawableXml(int resourceId) {
+    public boolean isDrawableXml(int resourceId, String qualifiers) {
         init();
-        return drawableResourceLoader.isXml(resourceId);
+        return new DrawableBuilder(drawableNodes, resourceExtractor).isXml(resourceId, qualifiers);
     }
 
     @Override
-    public boolean isAnimatableXml(int resourceId) {
+    public boolean isAnimatableXml(int resourceId, String qualifiers) {
         init();
-        return drawableResourceLoader.isAnimationDrawable(resourceId);
+        return new DrawableBuilder(drawableNodes, resourceExtractor).isAnimationDrawable(resourceId, qualifiers);
     }
 
     @Override
-    public int[] getDrawableIds(int resourceId) {
+    public int[] getDrawableIds(int resourceId, String qualifiers) {
         init();
-        return drawableResourceLoader.getDrawableIds(resourceId);
+        return new DrawableBuilder(drawableNodes, resourceExtractor).getDrawableIds(resourceId, qualifiers);
     }
 
     @Override
-    public Drawable getDrawable(int resourceId, Resources realResources) {
+    public Drawable getDrawable(int resourceId, Resources realResources, String qualifiers) {
 //        todo: this: String resourceName = resourceExtractor.getResourceName(resourceId);
 
 
-        Drawable xmlDrawable = getXmlDrawable(resourceId);
+        DrawableBuilder drawableBuilder = new DrawableBuilder(drawableNodes, resourceExtractor);
+        Drawable xmlDrawable = drawableBuilder.getXmlDrawable(resourceId, qualifiers);
         if (xmlDrawable != null) {
             return xmlDrawable;
         }
 
-        Drawable animDrawable = getAnimDrawable(resourceId);
+        Drawable animDrawable = getInnerRClassDrawable(resourceId, "$anim", AnimationDrawable.class);
         if (animDrawable != null) {
             return animDrawable;
         }
 
-        Drawable colorDrawable = getColorDrawable(resourceId);
+        Drawable colorDrawable = getInnerRClassDrawable(resourceId, "$color", ColorDrawable.class);
         if (colorDrawable != null) {
             return colorDrawable;
         }
@@ -218,21 +211,6 @@ public class PackageResourceLoader implements ResourceLoader {
 
         return new BitmapDrawable(BitmapFactory.decodeResource(realResources, resourceId));
 
-    }
-
-    @Override
-    public Drawable getXmlDrawable(int resourceId) {
-        return drawableResourceLoader.getXmlDrawable(resourceId);
-    }
-
-    @Override
-    public Drawable getAnimDrawable(int resourceId) {
-        return getInnerRClassDrawable(resourceId, "$anim", AnimationDrawable.class);
-    }
-
-    @Override
-    public Drawable getColorDrawable(int resourceId) {
-        return getInnerRClassDrawable(resourceId, "$color", ColorDrawable.class);
     }
 
     @SuppressWarnings("rawtypes")
@@ -385,19 +363,6 @@ public class PackageResourceLoader implements ResourceLoader {
     public String convertValueToEnum(Class<? extends View> viewClass, String namespace, String attribute, String part) {
         init();
         return attrResourceLoader.convertValueToEnum(viewClass, namespace, attribute, part);
-    }
-
-    private static class DirectoryMatchingFileFilter implements FileFilter {
-        private final String folderBaseName;
-
-        public DirectoryMatchingFileFilter(String folderBaseName) {
-            this.folderBaseName = folderBaseName;
-        }
-
-        @Override
-        public boolean accept(File file) {
-            return file.getPath().contains(File.separator + folderBaseName);
-        }
     }
 
     abstract static class Resolver<T> extends ResBundle<String> {

@@ -62,13 +62,13 @@ public class ShadowImageView extends ShadowView {
     protected Drawable buildDrawable(int resourceId) {
         if (isDrawableXml(resourceId)) {
             ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
-            int[] resourceIds = resourceLoader.getDrawableIds(resourceId);
+            int[] resourceIds = resourceLoader.getDrawableIds(resourceId, getQualifiers());
             Drawable[] drawables = new Drawable[resourceIds.length];
 
             for (int i = 0; i < resourceIds.length; i++) {
                 drawables[i] = buildDrawable(resourceIds[i]);
             }
-            if (resourceLoader.isAnimatableXml(resourceId)) {
+            if (resourceLoader.isAnimatableXml(resourceId, getQualifiers())) {
                 AnimationDrawable animationDrawable = new AnimationDrawable();
                 for (Drawable drawable : drawables) {
                     animationDrawable.addFrame(drawable, -1);
@@ -92,8 +92,7 @@ public class ShadowImageView extends ShadowView {
      * @return Boolean
      */
     protected boolean isDrawableXml(int resourceId) {
-        return shadowOf(Robolectric.application).getResourceLoader()
-                .isDrawableXml(resourceId);
+        return shadowOf(Robolectric.application).getResourceLoader().isDrawableXml(resourceId, getQualifiers());
     }
 
     @Implementation

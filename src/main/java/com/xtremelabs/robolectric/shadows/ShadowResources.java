@@ -185,7 +185,7 @@ public class ShadowResources {
 
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
-        return resourceLoader.getDrawable(drawableResourceId, realResources);
+        return resourceLoader.getDrawable(drawableResourceId, realResources, getQualifiers());
     }
 
     @Implementation

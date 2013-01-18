@@ -26,8 +26,8 @@ public class DocumentLoader {
         documentBuilderFactory.setIgnoringElementContentWhitespace(true);
     }
 
-    public void loadResourceXmlDirs(ResourcePath resourcePath, File... dirs) throws Exception {
-        for (File dir : dirs) {
+    public void loadResourceXmlSubDirs(ResourcePath resourcePath, final String folderBaseName) throws Exception {
+        for (File dir : resourcePath.resourceBase.listFiles(new DirectoryMatchingFileFilter(folderBaseName))) {
             loadResourceXmlDir(resourcePath, dir);
         }
     }

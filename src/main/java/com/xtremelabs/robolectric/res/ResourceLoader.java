@@ -11,6 +11,8 @@ import com.xtremelabs.robolectric.tester.android.util.ResName;
 import java.io.InputStream;
 
 public interface ResourceLoader {
+    String ANDROID_NS = "http://schemas.android.com/apk/res/android";
+
     String getNameForId(int viewId);
 
     int getColorValue(int id, String qualifiers);
@@ -27,19 +29,13 @@ public interface ResourceLoader {
 
     XmlResourceParser getXml(int id);
 
-    boolean isDrawableXml(int resourceId);
+    boolean isDrawableXml(int resourceId, String qualifiers);
 
-    boolean isAnimatableXml(int resourceId);
+    boolean isAnimatableXml(int resourceId, String qualifiers);
 
-    int[] getDrawableIds(int resourceId);
+    int[] getDrawableIds(int resourceId, String qualifiers);
 
-    Drawable getDrawable(int resourceId, Resources realResources);
-
-    Drawable getXmlDrawable(int resourceId);
-
-    Drawable getAnimDrawable(int resourceId);
-
-    Drawable getColorDrawable(int resourceId);
+    Drawable getDrawable(int resourceId, Resources realResources, String qualifiers);
 
     boolean isNinePatchDrawable(int drawableResourceId);
 
