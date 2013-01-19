@@ -7,6 +7,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.lang.reflect.Constructor;
+import java.util.HashMap;
 
 /**
  * Shadow for {@code MotionEvent} that uses reflection to create {@code MotionEvent} objects, which cannot otherwise
@@ -20,6 +21,7 @@ public class ShadowMotionEvent {
     private int action;
     private float[] x = new float[2];
     private float[] y = new float[2];
+    private HashMap<Integer, Float> extendedAxisValues;
     private int pointerCount = 1;
     private long downTime;
     private long eventTime;
@@ -80,6 +82,13 @@ public class ShadowMotionEvent {
         return getY();
     }
 
+    public void setAxisValue(int axis, float val) {
+        if (extendedAxisValues == null) {
+            extendedAxisValues = new HashMap<Integer, Float>();
+        }
+        extendedAxisValues.put(axis, val);
+    }
+
     @Implementation
     public final float getAxisValue(int axis) {
         switch(axis) {
@@ -87,6 +96,12 @@ public class ShadowMotionEvent {
                 return getX();
             case MotionEvent.AXIS_Y:
                 return getY();
+            default:
+                if (extendedAxisValues != null) {
+                    if (extendedAxisValues.containsKey(axis)) {
+                        return extendedAxisValues.get(axis);
+                    }
+                }
         }
         return 0.0f;
     }
