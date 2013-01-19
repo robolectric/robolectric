@@ -9,13 +9,18 @@ import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ObjectAnimator.class)
 public class ShadowObjectAnimator extends ShadowValueAnimator {
+    private static boolean pausingEndNotifications;
+    private static List<ShadowObjectAnimator> pausedEndNotifications = new ArrayList<ShadowObjectAnimator>();
+
     @RealObject
     private ObjectAnimator realObject;
     private Object target;
@@ -104,7 +109,11 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
                     if (animationType == float.class) {
                         setter.invoke(target, floatValues[floatValues.length - 1]);
                     }
-                    notifyEnd();
+                    if (pausingEndNotifications) {
+                        pausedEndNotifications.add(ShadowObjectAnimator.this);
+                    } else {
+                        notifyEnd();
+                    }
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -119,5 +128,16 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
 
     public static Map<String, ObjectAnimator> getAnimatorsFor(Object target) {
         return getAnimatorMapFor(target);
+    }
+
+    public static void pauseEndNotifications() {
+        pausingEndNotifications = true;
+    }
+
+    public static void unpauseEndNotifications() {
+        while (pausedEndNotifications.size() > 0) {
+            pausedEndNotifications.remove(0).notifyEnd();
+        }
+        pausingEndNotifications = false;
     }
 }
