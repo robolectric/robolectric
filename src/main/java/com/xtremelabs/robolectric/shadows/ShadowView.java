@@ -3,21 +3,26 @@ package com.xtremelabs.robolectric.shadows;
 import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
 import android.graphics.Point;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.LayerDrawable;
 import android.util.AttributeSet;
-import android.view.*;
+import android.view.KeyEvent;
+import android.view.MotionEvent;
+import android.view.TouchDelegate;
+import android.view.View;
 import android.view.View.MeasureSpec;
+import android.view.ViewGroup;
+import android.view.ViewParent;
+import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.ReflectionUtil;
+
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -263,35 +268,12 @@ public class ShadowView {
      * @return Drawable
      */
     protected Drawable buildDrawable(int resourceId) {
-        if (isDrawableXml(resourceId)) {
-            int[] resourceIds = shadowOf(Robolectric.application)
-                .getResourceLoader().getDrawableIds(resourceId, getQualifiers());
-
-            Drawable[] drawables = new Drawable[resourceIds.length];
-
-            for (int i = 0; i < resourceIds.length; i++) {
-                drawables[i] = buildDrawable(resourceIds[i]);
-            }
-
-            return new LayerDrawable(drawables);
-        } else {
-            return new BitmapDrawable(BitmapFactory.decodeResource(getResources(), resourceId));
-        }
+        ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
+        return resourceLoader.getDrawable(resourceLoader.getResourceExtractor().getResName(resourceId), getResources(), getQualifiers());
     }
 
     protected String getQualifiers() {
         return shadowOf(context.getResources().getConfiguration()).getQualifiers();
-    }
-
-    /**
-     * Does the resource id point to xml resource.
-     *
-     * @param resourceId Resource id
-     * @return Boolean
-     */
-    protected boolean isDrawableXml(int resourceId) {
-        return shadowOf(Robolectric.application).getResourceLoader()
-            .isDrawableXml(resourceId, getQualifiers());
     }
 
     @Implementation

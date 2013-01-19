@@ -33,7 +33,7 @@ public class ShadowMenuInflater {
     @Implementation
     public void inflate(int resource, Menu root) {
         String qualifiers = shadowOf(context.getResources().getConfiguration()).getQualifiers();
-        MenuNode menuNode = resourceLoader.getMenuNode(resource, qualifiers);
+        MenuNode menuNode = resourceLoader.getMenuNode(resourceLoader.getResourceExtractor().getResName(resource), qualifiers);
 
         try {
             addChildrenInGroup(menuNode, 0, root);

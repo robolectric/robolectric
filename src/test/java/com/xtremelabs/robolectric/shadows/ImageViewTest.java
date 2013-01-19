@@ -94,6 +94,8 @@ public class ImageViewTest {
         imageView.setImageResource(R.drawable.animation_list);
         AnimationDrawable animation = (AnimationDrawable) imageView.getDrawable();
         assertEquals(3, animation.getNumberOfFrames());
+        assertEquals(400, animation.getDuration(0));
+        assertEquals(300, animation.getDuration(2));
     }
     
     @Test

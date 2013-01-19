@@ -73,13 +73,7 @@ public class ResourcesTest {
         assertSame(diffConfig, resources.getConfiguration());
     }
 
-    /**
-     * a resource id that's missing from R.class will result in an BitmapDrawable getting returned
-     * by default
-     * <p/>
-     * todo: probably wrong?
-     */
-    @Test
+    @Test(expected = Resources.NotFoundException.class)
     public void testGetDrawableNullRClass() throws Exception {
         ResourceLoader resourceLoader = new PackageResourceLoader();
         resources = new Resources(null, null, null);
@@ -143,10 +137,7 @@ public class ResourcesTest {
         assertThat(Robolectric.getShadowApplication().getResources().getDrawable(R.drawable.nine_patch_drawable), instanceOf(NinePatchDrawable.class));
     }
 
-    /**
-     * given a value that doesn't in one of R's inner classes, will return a BitmapDrawable
-     */
-    @Test
+    @Test(expected = Resources.NotFoundException.class)
     public void testGetBitmapDrawableForUnknownId() {
         assertThat(resources.getDrawable(Integer.MAX_VALUE), instanceOf(BitmapDrawable.class));
     }

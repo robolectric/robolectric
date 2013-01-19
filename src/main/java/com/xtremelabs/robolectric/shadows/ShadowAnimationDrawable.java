@@ -12,16 +12,23 @@ import java.util.List;
 public class ShadowAnimationDrawable extends ShadowDrawable {
 
     private List<Drawable> frames = new ArrayList<Drawable>();
+    private List<Integer> durations = new ArrayList<Integer>();
     private boolean isStarted;
 
     @Implementation
     public void addFrame(Drawable frame, int duration) {
         frames.add(frame);
+        durations.add(duration);
     }
 
     @Implementation
     public int getNumberOfFrames() {
         return frames.size();
+    }
+
+    @Implementation
+    public int getDuration(int i) {
+        return durations.get(i);
     }
 
     @Implementation

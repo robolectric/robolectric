@@ -211,7 +211,7 @@ public class ViewTest {
 
     @Test
     public void shouldRecordBackgroundColor() {
-        int[] colors = {0, 1, 727};
+        int[] colors = {R.color.black, R.color.clear, R.color.white};
 
         for (int color : colors) {
             view.setBackgroundColor(color);

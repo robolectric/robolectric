@@ -39,7 +39,7 @@ public class RoboLayoutInflater {
     }
 
     public View inflateView(Context context, int resourceId, ViewGroup parent, String qualifiers) {
-        ViewNode viewNode = resourceLoader.getLayoutViewNode(resourceId, qualifiers);
+        ViewNode viewNode = resourceLoader.getLayoutViewNode(resourceLoader.getResourceExtractor().getResName(resourceId), qualifiers);
         if (viewNode == null) {
             String name = resourceLoader.getNameForId(resourceId);
             throw new RuntimeException("Could not find layout " + (name == null ? resourceId : name));

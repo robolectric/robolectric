@@ -30,7 +30,11 @@ public class RobolectricTestRunnerTest {
                 Resources.getSystem().getString(android.R.string.copy));
 
         assertNotNull(Robolectric.application.getResources().getString(R.string.howdy));
-        assertNull(Resources.getSystem().getString(R.string.howdy));
+        try {
+            Resources.getSystem().getString(R.string.howdy);
+            fail("should have thrown");
+        } catch (Resources.NotFoundException e) {
+        }
     }
 
     @Test

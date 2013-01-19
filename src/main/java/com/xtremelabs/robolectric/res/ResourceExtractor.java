@@ -13,6 +13,7 @@ public class ResourceExtractor {
     private Map<ResName, Integer> resourceNameToId = new HashMap<ResName, Integer>();
     private Map<Integer, ResName> resourceIdToFullyQualifiedName = new HashMap<Integer, ResName>();
     private Set<Class> processedRFiles = new HashSet<Class>();
+    private Integer maxUsedInt = null;
 
     public ResourceExtractor() {
     }
@@ -99,13 +100,23 @@ public class ResourceExtractor {
         String fullyQualifiedResourceName = qualifyResourceName(possiblyQualifiedResourceName, contextPackageName);
 
         fullyQualifiedResourceName = fullyQualifiedResourceName.replaceAll("[@+]", "");
-        Integer resourceId = resourceNameToId.get(new ResName(fullyQualifiedResourceName));
+        Integer resourceId = getResourceId(new ResName(fullyQualifiedResourceName));
         // todo warn if resourceId is null
         return resourceId;
     }
 
     public Integer getResourceId(ResName resName) {
-      return resourceNameToId.get(resName);
+        Integer id = resourceNameToId.get(resName);
+        if (id == null && "android".equals(resName.namespace)) {
+            if (maxUsedInt == null) {
+                maxUsedInt = new TreeSet<Integer>(resourceIdToFullyQualifiedName.keySet()).last();
+            }
+            id = maxUsedInt++;
+            resourceNameToId.put(resName, id);
+            resourceIdToFullyQualifiedName.put(id, resName);
+            System.out.println("INFO: no id mapping found for " + resName.getFullyQualifiedName() + "; assigning " + id);
+        }
+        return id;
     }
 
     public static @NotNull String qualifyResourceName(String possiblyQualifiedResourceName, String contextPackageName) {

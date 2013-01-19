@@ -37,7 +37,7 @@ public class ResourceLoaderTest {
     @Test
     public void shouldLoadSystemResources() throws Exception {
         PackageResourceLoader resourceLoader = new PackageResourceLoader(resourcePath, systemResourcePath);
-        String stringValue = resourceLoader.getStringValue(android.R.string.copy, "");
+        String stringValue = resourceLoader.getStringValue(resourceLoader.getResourceExtractor().getResName(android.R.string.copy), "");
         assertEquals("Copy", stringValue);
 
         ViewNode node = resourceLoader.getLayoutViewNode(new ResName("android:layout/simple_spinner_item"), "");
@@ -47,7 +47,7 @@ public class ResourceLoaderTest {
     @Test
     public void shouldLoadLocalResources() throws Exception {
         ResourceLoader resourceLoader = new PackageResourceLoader(resourcePath);
-        String stringValue = resourceLoader.getStringValue(R.string.copy, "");
+        String stringValue = resourceLoader.getStringValue(resourceLoader.getResourceExtractor().getResName(R.string.copy), "");
         assertEquals("Local Copy", stringValue);
     }
 
@@ -95,60 +95,48 @@ public class ResourceLoaderTest {
     }
     
     @Test
-    public void shouldIdentifyNinePatchDrawables() {
-        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-
-        assertThat(resourceLoader.isNinePatchDrawable(R.drawable.nine_patch_drawable), equalTo(true));
-        assertThat(resourceLoader.isNinePatchDrawable(R.drawable.l2_yellow), equalTo(false));
-        assertThat(resourceLoader.isNinePatchDrawable(R.drawable.state_drawable), equalTo(false));
-        assertThat(resourceLoader.isNinePatchDrawable(R.drawable.animation_list), equalTo(false));
-        assertThat(resourceLoader.isNinePatchDrawable(0), equalTo(false));
-        assertThat(resourceLoader.isNinePatchDrawable(-1), equalTo(false));
-    }
-
-    @Test
     public void testStringsAreResolved() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-        assertThat(Arrays.asList(resourceLoader.getStringArrayValue(R.array.items, "")), hasItems("foo", "bar"));
+        assertThat(Arrays.asList(resourceLoader.getStringArrayValue(resourceLoader.getResourceExtractor().getResName(R.array.items), "")), hasItems("foo", "bar"));
     }
 
     @Test
     public void testStringsAreWithReferences() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-        assertThat(Arrays.asList(resourceLoader.getStringArrayValue(R.array.greetings, "")), hasItems("hola", "Hello"));
+        assertThat(Arrays.asList(resourceLoader.getStringArrayValue(resourceLoader.getResourceExtractor().getResName(R.array.greetings), "")), hasItems("hola", "Hello"));
     }
 
     @Test
     public void shouldAddAndroidToSystemStringArrayName() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-        assertThat(Arrays.asList(resourceLoader.getStringArrayValue(android.R.array.emailAddressTypes, "")), hasItems("Home", "Work", "Other", "Custom"));
-        assertThat(Arrays.asList(resourceLoader.getStringArrayValue(R.array.emailAddressTypes, "")), hasItems("Doggy", "Catty"));
+        assertThat(Arrays.asList(resourceLoader.getStringArrayValue(resourceLoader.getResourceExtractor().getResName(android.R.array.emailAddressTypes), "")), hasItems("Home", "Work", "Other", "Custom"));
+        assertThat(Arrays.asList(resourceLoader.getStringArrayValue(resourceLoader.getResourceExtractor().getResName(R.array.emailAddressTypes), "")), hasItems("Doggy", "Catty"));
     }
 
     @Test
     public void testIntegersAreResolved() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-        assertThat(resourceLoader.getIntegerArrayValue(R.array.zero_to_four_int_array, ""),
+        assertThat(resourceLoader.getIntegerArrayValue(resourceLoader.getResourceExtractor().getResName(R.array.zero_to_four_int_array), ""),
                 equalTo(new int[]{0, 1, 2, 3, 4}));
     }
 
     @Test
     public void testEmptyArray() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-        assertThat(resourceLoader.getIntegerArrayValue(R.array.empty_int_array, "").length,
+        assertThat(resourceLoader.getIntegerArrayValue(resourceLoader.getResourceExtractor().getResName(R.array.empty_int_array), "").length,
                 equalTo(0));
     }
 
     @Test
     public void testIntegersWithReferences() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-        assertThat(resourceLoader.getIntegerArrayValue(R.array.with_references_int_array, ""),
+        assertThat(resourceLoader.getIntegerArrayValue(resourceLoader.getResourceExtractor().getResName(R.array.with_references_int_array), ""),
                 equalTo(new int[]{0, 2000, 1}));
     }
 
     @Test public void shouldLoadForAllQualifiers() throws Exception {
         ResourceLoader resourceLoader = new PackageResourceLoader(resourcePath);
-        assertThat(resourceLoader.getStringValue(R.string.hello, ""), equalTo("Hello"));
-        assertThat(resourceLoader.getStringValue(R.string.hello, "fr"), equalTo("Bonjour"));
+        assertThat(resourceLoader.getStringValue(resourceLoader.getResourceExtractor().getResName(R.string.hello), ""), equalTo("Hello"));
+        assertThat(resourceLoader.getStringValue(resourceLoader.getResourceExtractor().getResName(R.string.hello), "fr"), equalTo("Bonjour"));
     }
 }

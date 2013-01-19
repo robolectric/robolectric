@@ -17,6 +17,7 @@ import com.xtremelabs.robolectric.internal.RealObject;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
+import com.xtremelabs.robolectric.tester.android.util.ResName;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 
 import java.io.InputStream;
@@ -90,7 +91,13 @@ public class ShadowResources {
 
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
-        return resourceLoader.getColorValue(id, getQualifiers());
+        return resourceLoader.getColorValue(getResName(id), getQualifiers());
+    }
+
+    private ResName getResName(int id) {
+        ResName resName = resourceLoader.getResourceExtractor().getResName(id);
+        if (resName == null) throw new Resources.NotFoundException("couldn't find a name for resource id " + id);
+        return resName;
     }
 
     private String getQualifiers() {
@@ -116,7 +123,7 @@ public class ShadowResources {
 
     @Implementation
     public String getString(int id) throws Resources.NotFoundException {
-        return resourceLoader.getStringValue(id, getQualifiers());
+        return resourceLoader.getStringValue(getResName(id), getQualifiers());
     }
 
     @Implementation
@@ -133,7 +140,7 @@ public class ShadowResources {
 
     @Implementation
     public String getQuantityString(int id, int quantity) throws Resources.NotFoundException {
-        return resourceLoader.getPluralStringValue(id, quantity, getQualifiers());
+        return resourceLoader.getPluralStringValue(getResName(id), quantity, getQualifiers());
     }
 
     @Implementation
@@ -143,7 +150,7 @@ public class ShadowResources {
 
     @Implementation
     public String[] getStringArray(int id) throws Resources.NotFoundException {
-        String[] arrayValue = resourceLoader.getStringArrayValue(id, getQualifiers());
+        String[] arrayValue = resourceLoader.getStringArrayValue(getResName(id), getQualifiers());
         if (arrayValue == null) {
             throw new Resources.NotFoundException();
         }
@@ -185,22 +192,22 @@ public class ShadowResources {
 
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
-        return resourceLoader.getDrawable(drawableResourceId, realResources, getQualifiers());
+        return resourceLoader.getDrawable(getResName(drawableResourceId), realResources, getQualifiers());
     }
 
     @Implementation
     public float getDimension(int id) throws Resources.NotFoundException {
-        return resourceLoader.getDimenValue(id, getQualifiers());
+        return resourceLoader.getDimenValue(getResName(id), getQualifiers());
     }
 
     @Implementation
     public int getInteger(int id) throws Resources.NotFoundException {
-    	return resourceLoader.getIntegerValue(id, getQualifiers());
+    	return resourceLoader.getIntegerValue(getResName(id), getQualifiers());
     }
 
     @Implementation
     public int[] getIntArray(int id) throws Resources.NotFoundException {
-        int[] arrayValue = resourceLoader.getIntegerArrayValue(id, getQualifiers());
+        int[] arrayValue = resourceLoader.getIntegerArrayValue(getResName(id), getQualifiers());
         if (arrayValue == null) {
             throw new Resources.NotFoundException();
         }
@@ -209,7 +216,7 @@ public class ShadowResources {
 
     @Implementation
     public boolean getBoolean(int id) throws Resources.NotFoundException {
-    	return resourceLoader.getBooleanValue(id, getQualifiers());
+    	return resourceLoader.getBooleanValue(getResName(id), getQualifiers());
     }
     
     @Implementation

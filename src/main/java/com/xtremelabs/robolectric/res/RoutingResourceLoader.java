@@ -28,38 +28,38 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public String getNameForId(int viewId) {
-        return pickFor(viewId).getNameForId(viewId);
+    public String getNameForId(int id) {
+        return pickFor(id).getNameForId(id);
     }
 
     @Override
-    public int getColorValue(int id, String qualifiers) {
-        return pickFor(id).getColorValue(id, qualifiers);
+    public int getColorValue(ResName resName, String qualifiers) {
+        return pickFor(resName).getColorValue(resName, qualifiers);
     }
 
     @Override
-    public String getStringValue(int id, String qualifiers) {
-        return pickFor(id).getStringValue(id, qualifiers);
+    public String getStringValue(ResName resName, String qualifiers) {
+        return pickFor(resName).getStringValue(resName, qualifiers);
     }
 
     @Override
-    public String getPluralStringValue(int id, int quantity, String qualifiers) {
-        return pickFor(id).getPluralStringValue(id, quantity, qualifiers);
+    public String getPluralStringValue(ResName resName, int quantity, String qualifiers) {
+        return pickFor(resName).getPluralStringValue(resName, quantity, qualifiers);
     }
 
     @Override
-    public float getDimenValue(int id, String qualifiers) {
-        return pickFor(id).getDimenValue(id, qualifiers);
+    public float getDimenValue(ResName resName, String qualifiers) {
+        return pickFor(resName).getDimenValue(resName, qualifiers);
     }
 
     @Override
-    public int getIntegerValue(int id, String qualifiers) {
-        return pickFor(id).getIntegerValue(id, qualifiers);
+    public int getIntegerValue(ResName resName, String qualifiers) {
+        return pickFor(resName).getIntegerValue(resName, qualifiers);
     }
 
     @Override
-    public boolean getBooleanValue(int id, String qualifiers) {
-        return pickFor(id).getBooleanValue(id, qualifiers);
+    public boolean getBooleanValue(ResName resName, String qualifiers) {
+        return pickFor(resName).getBooleanValue(resName, qualifiers);
     }
 
     @Override
@@ -68,28 +68,18 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public boolean isDrawableXml(int resourceId, String qualifiers) {
-        return pickFor(resourceId).isDrawableXml(resourceId, qualifiers);
+    public boolean isAnimatableXml(ResName resName, String qualifiers) {
+        return pickFor(resName).isAnimatableXml(resName, qualifiers);
     }
 
     @Override
-    public boolean isAnimatableXml(int resourceId, String qualifiers) {
-        return pickFor(resourceId).isAnimatableXml(resourceId, qualifiers);
+    public int[] getDrawableIds(ResName resName, String qualifiers) {
+        return pickFor(resName).getDrawableIds(resName, qualifiers);
     }
 
     @Override
-    public int[] getDrawableIds(int resourceId, String qualifiers) {
-        return pickFor(resourceId).getDrawableIds(resourceId, qualifiers);
-    }
-
-    @Override
-    public Drawable getDrawable(int resourceId, Resources realResources, String qualifiers) {
-        return pickFor(resourceId).getDrawable(resourceId, realResources, qualifiers);
-    }
-
-    @Override
-    public boolean isNinePatchDrawable(int drawableResourceId) {
-        return pickFor(drawableResourceId).isNinePatchDrawable(drawableResourceId);
+    public Drawable getDrawable(ResName resName, Resources realResources, String qualifiers) {
+        return pickFor(resName).getDrawable(resName, realResources, qualifiers);
     }
 
     @Override
@@ -98,13 +88,13 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public String[] getStringArrayValue(int id, String qualifiers) {
-        return pickFor(id).getStringArrayValue(id, qualifiers);
+    public String[] getStringArrayValue(ResName resName, String qualifiers) {
+        return pickFor(resName).getStringArrayValue(resName, qualifiers);
     }
 
     @Override
-    public int[] getIntegerArrayValue(int id, String qualifiers) {
-        return pickFor(id).getIntegerArrayValue(id, qualifiers);
+    public int[] getIntegerArrayValue(ResName resName, String qualifiers) {
+        return pickFor(resName).getIntegerArrayValue(resName, qualifiers);
     }
 
     @Override
@@ -118,18 +108,8 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public ViewNode getLayoutViewNode(int id, String qualifiers) {
-        return pickFor(id).getLayoutViewNode(id, qualifiers);
-    }
-
-    @Override
     public ViewNode getLayoutViewNode(ResName resName, String qualifiers) {
         return pickFor(resName).getLayoutViewNode(resName, qualifiers);
-    }
-
-    @Override
-    public MenuNode getMenuNode(int id, String qualifiers) {
-        return pickFor(id).getMenuNode(id, qualifiers);
     }
 
     @Override
@@ -149,11 +129,11 @@ public class RoutingResourceLoader implements ResourceLoader {
 
     private ResourceLoader pickFor(int id) {
         ResName resName = resourceExtractor.getResName(id);
-        if (resName == null) return new PackageResourceLoader();
         return pickFor(resName);
     }
 
     private ResourceLoader pickFor(ResName resName) {
+        if (resName == null) return new PackageResourceLoader();
         return pickFor(resName.namespace);
     }
 

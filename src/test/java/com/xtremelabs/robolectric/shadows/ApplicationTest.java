@@ -13,7 +13,9 @@ import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.res.PackageResourceLoader;
+import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
+import com.xtremelabs.robolectric.tester.android.util.ResName;
 import com.xtremelabs.robolectric.util.TestBroadcastReceiver;
 import org.junit.Before;
 import org.junit.Test;
@@ -46,17 +48,19 @@ public class ApplicationTest {
     @Test
     public void shouldBeBindableToAResourceLoader() throws Exception {
         ResourceLoader resourceLoader1 = new PackageResourceLoader() {
-            @Override public String getStringValue(int id, String qualifiers) { return "title from resourceLoader1"; }
+            @Override public String getStringValue(ResName resName, String qualifiers) { return "title from resourceLoader1"; }
+            @Override public ResourceExtractor getResourceExtractor() { return new ImperviousResourceExtractor(); }
         };
         ResourceLoader resourceLoader2 = new PackageResourceLoader() {
-            @Override public String getStringValue(int id, String qualifiers) { return "title from resourceLoader2"; }
+            @Override public String getStringValue(ResName resName, String qualifiers) { return "title from resourceLoader2"; }
+            @Override public ResourceExtractor getResourceExtractor() { return new ImperviousResourceExtractor(); }
         };
 
         Application app1 = ShadowApplication.bind(new Application(), null, resourceLoader1);
         Application app2 = ShadowApplication.bind(new Application(), null, resourceLoader2);
 
-        assertEquals("title from resourceLoader1", new ContextWrapper(app1).getResources().getString(R.id.title));
-        assertEquals("title from resourceLoader2", new ContextWrapper(app2).getResources().getString(R.id.title));
+        assertEquals("title from resourceLoader1", new ContextWrapper(app1).getResources().getString(R.string.howdy));
+        assertEquals("title from resourceLoader2", new ContextWrapper(app2).getResources().getString(R.string.howdy));
     }
 
     @Test
@@ -313,5 +317,12 @@ public class ApplicationTest {
         Resources res = application.getResources();
         shadowOf(application).resetResources();
         assertFalse(res == application.getResources());
+    }
+
+    private static class ImperviousResourceExtractor extends ResourceExtractor {
+        @Override
+        public ResName getResName(int resourceId) {
+            return new ResName("", "", "");
+        }
     }
 }

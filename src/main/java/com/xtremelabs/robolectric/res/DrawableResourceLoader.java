@@ -1,8 +1,10 @@
 package com.xtremelabs.robolectric.res;
 
+import com.xtremelabs.robolectric.tester.android.util.ResName;
 import org.w3c.dom.Document;
 
 import java.io.File;
+import java.util.Set;
 
 /**
  * DrawableResourceLoader
@@ -39,5 +41,34 @@ public class DrawableResourceLoader extends XmlLoader {
      */
     private String toResourceName(File xmlFile) {
         return xmlFile.getName().replaceAll("\\..+$", "");
+    }
+
+    /**
+     * Returns a collection of resource IDs for all nine-patch drawables
+     * in the project.
+     *
+     * @param resourceIds
+     * @param resourcePath
+     */
+    public void listNinePatchResources(Set<ResName> resourceIds, ResourcePath resourcePath) {
+        listNinePatchResources(resourceIds, resourcePath, resourcePath.resourceBase);
+    }
+
+    private void listNinePatchResources(Set<ResName> resourceIds, ResourcePath resourcePath, File dir) {
+        DirectoryMatchingFileFilter drawableFilter = new DirectoryMatchingFileFilter("drawable");
+        File[] files = dir.listFiles();
+        if (files != null) {
+            for (File f : files) {
+                if (f.isDirectory() && drawableFilter.accept(f)) {
+                    listNinePatchResources(resourceIds, resourcePath, f);
+                } else {
+                    String name = f.getName();
+                    if (name.endsWith(".9.png")) {
+                        String[] tokens = name.split("\\.9\\.png$");
+                        resourceIds.add(new ResName(resourcePath.getPackageName(), "drawable", tokens[0]));
+                    }
+                }
+            }
+        }
     }
 }

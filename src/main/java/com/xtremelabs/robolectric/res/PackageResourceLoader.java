@@ -41,7 +41,7 @@ public class PackageResourceLoader implements ResourceLoader {
     private final ResBundle<MenuNode> menuNodes = new ResBundle<MenuNode>();
     private final ResBundle<DrawableNode> drawableNodes = new ResBundle<DrawableNode>();
 
-    private final Set<Integer> ninePatchDrawableIds = new HashSet<Integer>();
+    private final Set<ResName> ninePatchDrawables = new HashSet<ResName>();
 
     public PackageResourceLoader(ResourcePath... resourcePaths) {
         this(asList(resourcePaths));
@@ -84,13 +84,13 @@ public class PackageResourceLoader implements ResourceLoader {
 
             new DocumentLoader(new ViewLoader(viewNodes)).loadResourceXmlSubDirs(resourcePath, "layout");
             new DocumentLoader(new MenuLoader(menuNodes)).loadResourceXmlSubDirs(resourcePath, "menu");
-            new DocumentLoader(new DrawableResourceLoader(drawableNodes)).loadResourceXmlSubDirs(resourcePath, "drawable");
+            DrawableResourceLoader drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
+            drawableResourceLoader.listNinePatchResources(ninePatchDrawables, resourcePath);
+            new DocumentLoader(drawableResourceLoader).loadResourceXmlSubDirs(resourcePath, "drawable");
             new DocumentLoader(preferenceLoader).loadResourceXmlSubDirs(resourcePath, "xml");
             new DocumentLoader(xmlFileLoader).loadResourceXmlSubDirs(resourcePath, "xml");
 
             loadOtherResources(resourcePath);
-
-            listNinePatchResources(ninePatchDrawableIds, resourcePath);
 
             rawResourceLoaders.add(new RawResourceLoader(resourceExtractor, resourcePath.resourceBase));
         }
@@ -106,28 +106,27 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public String getNameForId(int viewId) {
+    public String getNameForId(int id) {
         init();
-        return resourceExtractor.getResourceName(viewId);
+        return resourceExtractor.getResourceName(id);
     }
 
     @Override
-    public int getColorValue(int id, String qualifiers) {
+    public int getColorValue(ResName resName, String qualifiers) {
         init();
-        Integer value = colorResolver.resolve(resourceExtractor.getResName(id), qualifiers);
+        Integer value = colorResolver.resolve(resName, qualifiers);
         return value == null ? -1 : value;
     }
 
     @Override
-    public String getStringValue(int id, String qualifiers) {
+    public String getStringValue(ResName resName, String qualifiers) {
         init();
-        return stringResolver.resolve(resourceExtractor.getResName(id), qualifiers);
+        return stringResolver.resolve(resName, qualifiers);
     }
 
     @Override
-    public String getPluralStringValue(int id, int quantity, String qualifiers) {
+    public String getPluralStringValue(ResName resName, int quantity, String qualifiers) {
         init();
-        ResName resName = resourceExtractor.getResName(id);
         PluralResourceLoader.PluralRules pluralRules = pluralsResolver.get(resName, qualifiers);
         if (pluralRules == null) return null;
 
@@ -137,21 +136,21 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public float getDimenValue(int id, String qualifiers) {
+    public float getDimenValue(ResName resName, String qualifiers) {
         init();
-        return dimenResolver.resolve(resourceExtractor.getResName(id), qualifiers);
+        return dimenResolver.resolve(resName, qualifiers);
     }
 
     @Override
-    public int getIntegerValue(int id, String qualifiers) {
+    public int getIntegerValue(ResName resName, String qualifiers) {
         init();
-        return integerResolver.resolve(resourceExtractor.getResName(id), qualifiers);
+        return integerResolver.resolve(resName, qualifiers);
     }
 
     @Override
-    public boolean getBooleanValue(int id, String qualifiers) {
+    public boolean getBooleanValue(ResName resName, String qualifiers) {
         init();
-        return booleanResolver.resolve(resourceExtractor.getResName(id), qualifiers);
+        return booleanResolver.resolve(resName, qualifiers);
     }
 
     @Override
@@ -160,67 +159,27 @@ public class PackageResourceLoader implements ResourceLoader {
         return xmlFileLoader.getXml(id);
     }
 
-    @Override
-    public boolean isDrawableXml(int resourceId, String qualifiers) {
-        init();
-        return getDrawableBuilder().isXml(resourceId, qualifiers);
-    }
-
     private DrawableBuilder getDrawableBuilder() {
-        return new DrawableBuilder(drawableNodes, resourceExtractor, resourcePaths, ninePatchDrawableIds);
+        return new DrawableBuilder(drawableNodes, resourceExtractor, ninePatchDrawables);
     }
 
     @Override
-    public boolean isAnimatableXml(int resourceId, String qualifiers) {
+    public boolean isAnimatableXml(ResName resName, String qualifiers) {
         init();
-        return getDrawableBuilder().isAnimationDrawable(resourceId, qualifiers);
+        return getDrawableBuilder().isAnimationDrawable(resName, qualifiers);
     }
 
     @Override
-    public int[] getDrawableIds(int resourceId, String qualifiers) {
+    public int[] getDrawableIds(ResName resName, String qualifiers) {
         init();
-        return getDrawableBuilder().getDrawableIds(resourceId, qualifiers);
+        return getDrawableBuilder().getDrawableIds(resName, qualifiers);
     }
 
     @Override
-    public Drawable getDrawable(int resourceId, Resources realResources, String qualifiers) {
+    public Drawable getDrawable(ResName resName, Resources realResources, String qualifiers) {
 //        todo: this: String resourceName = resourceExtractor.getResourceName(resourceId);
-        return getDrawableBuilder().getDrawable(resourceId, realResources, qualifiers);
+        return getDrawableBuilder().getDrawable(resName, realResources, qualifiers);
 
-    }
-
-    @Override
-    public boolean isNinePatchDrawable(int drawableResourceId) {
-        return ninePatchDrawableIds.contains(drawableResourceId);
-    }
-
-    /**
-     * Returns a collection of resource IDs for all nine-patch drawables
-     * in the project.
-     *
-     * @param resourceIds
-     * @param resourcePath
-     */
-    private void listNinePatchResources(Set<Integer> resourceIds, ResourcePath resourcePath) {
-        listNinePatchResources(resourceIds, resourcePath, resourcePath.resourceBase);
-    }
-
-    private void listNinePatchResources(Set<Integer> resourceIds, ResourcePath resourcePath, File dir) {
-        DirectoryMatchingFileFilter drawableFilter = new DirectoryMatchingFileFilter("drawable");
-        File[] files = dir.listFiles();
-        if (files != null) {
-            for (File f : files) {
-                if (f.isDirectory() && drawableFilter.accept(f)) {
-                    listNinePatchResources(resourceIds, resourcePath, f);
-                } else {
-                    String name = f.getName();
-                    if (name.endsWith(".9.png")) {
-                        String[] tokens = name.split("\\.9\\.png$");
-                        resourceIds.add(resourceExtractor.getResourceId(resourcePath.getPackageName() + ":drawable/" + tokens[0], ""));
-                    }
-                }
-            }
-        }
     }
 
     @Override
@@ -236,10 +195,9 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public String[] getStringArrayValue(int id, String qualifiers) {
+    public String[] getStringArrayValue(ResName resName, String qualifiers) {
         init();
 
-        ResName resName = resourceExtractor.getResName(id);
         if (resName == null) return null;
         resName = new ResName(resName.namespace, "string-array", resName.name); // ugh
         List<String> strings = stringResolver.resolveArray(resName, qualifiers);
@@ -247,10 +205,9 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public int[] getIntegerArrayValue(int id, String qualifiers) {
+    public int[] getIntegerArrayValue(ResName resName, String qualifiers) {
         init();
 
-        ResName resName = resourceExtractor.getResName(id);
         if (resName == null) return null;
         resName = new ResName(resName.namespace, "integer-array", resName.name); // ugh
         List<Integer> ints = integerResolver.resolveArray(resName, qualifiers);
@@ -273,28 +230,16 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public ViewNode getLayoutViewNode(int id, String qualifiers) {
-        ResName resName = resourceExtractor.getResName(id);
-        if (resName == null) return null;
-        return getLayoutViewNode(resName, qualifiers);
-    }
-
-    @Override
     public ViewNode getLayoutViewNode(ResName resName, String qualifiers) {
         init();
-        return viewNodes.get(resName, qualifiers);
-    }
-
-    @Override
-    public MenuNode getMenuNode(int id, String qualifiers) {
-        ResName resName = resourceExtractor.getResName(id);
         if (resName == null) return null;
-        return getMenuNode(resName, qualifiers);
+        return viewNodes.get(resName, qualifiers);
     }
 
     @Override
     public MenuNode getMenuNode(ResName resName, String qualifiers) {
         init();
+        if (resName == null) return null;
         return menuNodes.get(resName, qualifiers);
     }
 
