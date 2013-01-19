@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.shadows;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.ColorFilter;
@@ -25,7 +26,15 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     private TileMode tileModeY;
 
     public void __constructor__(Bitmap bitmap) {
+        __constructor__(null, bitmap);
+    }
+
+    public void __constructor__(Resources resources, Bitmap bitmap) {
         this.bitmap = bitmap;
+        if (bitmap != null) {
+            setIntrinsicWidth(bitmap.getWidth());
+            setIntrinsicHeight(bitmap.getHeight());
+        }
     }
 
     /**
@@ -99,7 +108,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     public TileMode getTileModeY() {
         return tileModeY;
     }
-    
+
     @Implementation
     public void setTileModeXY(TileMode modeX, TileMode modeY) {
         setTileModeX(modeX);
