@@ -34,7 +34,12 @@ public class ShadowSparseIntArray {
 	public int size() {
 		return sparseArray.size();
 	}
-	
+
+    @Implementation
+    public int indexOfKey(int key) {
+        return sparseArray.indexOfKey( key );
+    }
+
 	@Implementation
 	public int indexOfValue( int value ) {
 		return sparseArray.indexOfValue( value );
