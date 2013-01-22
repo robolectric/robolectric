@@ -48,12 +48,23 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     public PackageResourceLoader(List<ResourcePath> resourcePaths) {
+        this(resourcePaths, null);
+    }
+
+    public PackageResourceLoader(List<ResourcePath> resourcePaths, String overrideNamespace) {
         this.resourceExtractor = new ResourceExtractor(resourcePaths);
         this.resourcePaths = Collections.unmodifiableList(resourcePaths);
 
         attrResourceLoader = new AttrResourceLoader();
         preferenceLoader = new PreferenceLoader(resourceExtractor);
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
+
+        if (overrideNamespace != null) {
+            for (ResBundle resBundle : asList(booleanResolver, colorResolver, dimenResolver, integerResolver,
+                    pluralsResolver, stringResolver, viewNodes, menuNodes, drawableNodes)) {
+                resBundle.overrideNamespace(overrideNamespace);
+            }
+        }
     }
 
     private void init() {

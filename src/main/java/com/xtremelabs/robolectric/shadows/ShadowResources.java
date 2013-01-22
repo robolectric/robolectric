@@ -96,7 +96,9 @@ public class ShadowResources {
 
     private ResName getResName(int id) {
         ResName resName = resourceLoader.getResourceExtractor().getResName(id);
-        if (resName == null) throw new Resources.NotFoundException("couldn't find a name for resource id " + id);
+        if (resName == null) {
+          throw new Resources.NotFoundException("couldn't find a name for resource id " + id);
+        }
         return resName;
     }
 

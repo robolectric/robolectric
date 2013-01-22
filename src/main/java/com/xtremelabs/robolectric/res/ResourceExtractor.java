@@ -9,6 +9,7 @@ import java.util.*;
 
 public class ResourceExtractor {
     private static final ResourceRemapper RESOURCE_REMAPPER = new ResourceRemapper();
+    private static final boolean REMAP_RESOURCES = false;
 
     private Map<ResName, Integer> resourceNameToId = new HashMap<ResName, Integer>();
     private Map<Integer, ResName> resourceIdToFullyQualifiedName = new HashMap<Integer, ResName>();
@@ -53,7 +54,7 @@ public class ResourceExtractor {
     }
 
     private void addRClass(Class<?> rClass) {
-        RESOURCE_REMAPPER.remapRClass(rClass);
+        if (REMAP_RESOURCES) RESOURCE_REMAPPER.remapRClass(rClass);
 
         if (!processedRFiles.add(rClass)) {
             System.out.println("WARN: already extracted resources for " + rClass.getPackage().getName() + ", skipping. You should probably fix this.");
@@ -77,7 +78,7 @@ public class ResourceExtractor {
 
                         resourceNameToId.put(resName, value);
 
-                        if (resourceIdToFullyQualifiedName.containsKey(value)) {
+                        if (resourceIdToFullyQualifiedName.containsKey(value) && REMAP_RESOURCES) {
                             throw new RuntimeException(value + " is already defined with name: " + resourceIdToFullyQualifiedName.get(value) + " can't also call it: " + resName);
                         }
 

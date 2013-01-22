@@ -1,7 +1,6 @@
 package com.xtremelabs.robolectric.res;
 
 import com.xtremelabs.robolectric.tester.android.util.ResName;
-import org.jetbrains.annotations.TestOnly;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -12,16 +11,17 @@ import java.util.Map;
 class ResBundle<T> {
     private final ResMap<T> valuesMap = new ResMap<T>();
     private final ResMap<List<T>> valuesArrayMap = new ResMap<List<T>>();
+    private String overrideNamespace;
 
     public void put(String attrType, String name, T value, XmlLoader.XmlContext xmlContext) {
-        ResName resName = new ResName(xmlContext.packageName, attrType, name);
+        ResName resName = new ResName(maybeOverride(xmlContext.packageName), attrType, name);
         Values<T> values = valuesMap.find(resName);
         values.add(new Value<T>(xmlContext.getQualifiers(), value, xmlContext));
         Collections.sort(values);
     }
 
     public void putArray(String attrType, String name, List<T> value, XmlLoader.XmlContext xmlContext) {
-        ResName resName = new ResName(xmlContext.packageName, attrType, name);
+        ResName resName = new ResName(maybeOverride(xmlContext.packageName), attrType, name);
         Values<List<T>> values = valuesArrayMap.find(resName);
         values.add(new Value<List<T>>(xmlContext.getQualifiers(), value, xmlContext));
         Collections.sort(values);
@@ -33,7 +33,7 @@ class ResBundle<T> {
     }
 
     public Value<T> getValue(ResName resName, String qualifiers) {
-        Values<T> values = valuesMap.find(resName);
+        Values<T> values = valuesMap.find(maybeOverride(resName));
         return (values != null) ? pick(values, qualifiers) : null;
     }
 
@@ -43,7 +43,7 @@ class ResBundle<T> {
     }
 
     public Value<List<T>> getListValue(ResName resName, String qualifiers) {
-        Values<List<T>> values = valuesArrayMap.find(resName);
+        Values<List<T>> values = valuesArrayMap.find(maybeOverride(resName));
         return (values != null) ? pick(values, qualifiers) : null;
     }
 
@@ -81,9 +81,21 @@ class ResBundle<T> {
         throw new IllegalStateException("couldn't handle qualifiers \"" + qualifiers + "\"");
     }
 
-    @TestOnly
     int size() {
         return valuesMap.map.size() + valuesArrayMap.map.size();
+    }
+
+    public void overrideNamespace(String overrideNamespace) {
+        this.overrideNamespace = overrideNamespace;
+        if (size() > 0) throw new RuntimeException();
+    }
+
+    String maybeOverride(String namespace) {
+        return overrideNamespace == null ? namespace : overrideNamespace;
+    }
+
+    ResName maybeOverride(ResName resName) {
+        return overrideNamespace == null ? resName : new ResName(overrideNamespace, resName.type, resName.name);
     }
 
     static class Value<T> implements Comparable<Value<T>> {

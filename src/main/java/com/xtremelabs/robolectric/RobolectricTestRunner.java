@@ -422,7 +422,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
             resourcePaths.add(resourcePath);
         }
-        PackageResourceLoader appResourceLoader = new PackageResourceLoader(resourcePaths);
+        PackageResourceLoader appResourceLoader = new PackageResourceLoader(resourcePaths, appManifest.getPackageName());
         for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
             resourceLoaders.put(resourcePath.getPackageName(), appResourceLoader);
         }

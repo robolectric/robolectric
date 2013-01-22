@@ -244,7 +244,18 @@ public class AndroidManifest {
 
     protected void createLibraryManifests() {
         libraryManifests = new ArrayList<AndroidManifest>();
-        File baseDir = getResDirectory().getParentFile();
+        List<File> libraryBaseDirs = findLibraries();
+
+        for (File libraryBaseDir : libraryBaseDirs) {
+            AndroidManifest libraryManifest = createLibraryAndroidManifest(libraryBaseDir);
+            libraryManifest.createLibraryManifests();
+            libraryManifests.add(libraryManifest);
+        }
+    }
+
+    protected List<File> findLibraries() {
+        File baseDir = getBaseDir();
+        List<File> libraryBaseDirs = new ArrayList<File>();
 
         Properties properties = getProperties(new File(baseDir, "project.properties"));
         if (properties != null) {
@@ -252,12 +263,15 @@ public class AndroidManifest {
             String lib;
             while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
                 File libraryBaseDir = new File(baseDir, lib);
-                AndroidManifest libraryManifest = createLibraryAndroidManifest(libraryBaseDir);
-                libraryManifest.createLibraryManifests();
-                libraryManifests.add(libraryManifest);
+                libraryBaseDirs.add(libraryBaseDir);
                 libRef++;
             }
         }
+        return libraryBaseDirs;
+    }
+
+    protected File getBaseDir() {
+        return getResDirectory().getParentFile();
     }
 
     protected AndroidManifest createLibraryAndroidManifest(File libraryBaseDir) {

@@ -10,10 +10,10 @@ import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 @Implements(ColorDrawable.class)
 public class ShadowColorDrawable extends ShadowDrawable {
 
-    int colorResourceId;
+    int color;
 
     public void __constructor__(int color) {
-      colorResourceId = color;
+      this.color = color;
     }
 
     @Override @Implementation
@@ -25,7 +25,7 @@ public class ShadowColorDrawable extends ShadowDrawable {
 
       ShadowColorDrawable that = shadowOf((ColorDrawable)o);
 
-      if (colorResourceId != that.colorResourceId) return false;
+      if (color != that.color) return false;
 
       return true;
     }
@@ -33,7 +33,12 @@ public class ShadowColorDrawable extends ShadowDrawable {
     @Override @Implementation
     public int hashCode() {
       int result = super.hashCode();
-      result = 31 * result + colorResourceId;
+      result = 31 * result + color;
       return result;
+    }
+
+    @Override @Implementation
+    public String toString() {
+        return "ColorDrawable{color=" + color + '}';
     }
 }
