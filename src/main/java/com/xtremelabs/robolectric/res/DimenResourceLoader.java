@@ -4,7 +4,7 @@ import org.w3c.dom.Node;
 
 public class DimenResourceLoader extends XpathResourceXmlLoader implements ResourceValueConverter {
 
-    private static final String[] UNITS = { "dp", "dip", "pt", "px", "sp", "mm" };
+    private static final String[] UNITS = { "dp", "dip", "pt", "px", "sp", "mm", "in" };
 
     private ResourceReferenceResolver<Float> dimenResolver = new ResourceReferenceResolver<Float>("dimen");
 
