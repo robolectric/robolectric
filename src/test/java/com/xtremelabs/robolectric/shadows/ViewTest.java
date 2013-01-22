@@ -22,7 +22,11 @@ import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.tester.android.view.TestWindow;
-import com.xtremelabs.robolectric.util.*;
+import com.xtremelabs.robolectric.util.TestAnimationListener;
+import com.xtremelabs.robolectric.util.TestOnClickListener;
+import com.xtremelabs.robolectric.util.TestOnLongClickListener;
+import com.xtremelabs.robolectric.util.TestRunnable;
+import com.xtremelabs.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -101,10 +105,10 @@ public class ViewTest {
         final Transcript transcript = new Transcript();
 
         view.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View v, boolean hasFocus) {
-                transcript.add(hasFocus ? "Gained focus" : "Lost focus");
-            }
+          @Override
+          public void onFocusChange(View v, boolean hasFocus) {
+            transcript.add(hasFocus ? "Gained focus" : "Lost focus");
+          }
         });
 
         assertFalse(view.isFocused());
@@ -197,16 +201,24 @@ public class ViewTest {
 
     @Test
     public void shouldSetBackgroundColor() {
-        view.setBackgroundColor(R.color.android_red);
-        int intColor = view.getResources().getColor(R.color.android_red);
-
-        assertThat((ColorDrawable) view.getBackground(), equalTo(new ColorDrawable(intColor)));
+        int red = 0xffff0000;
+        view.setBackgroundColor(red);
+        assertThat((ColorDrawable) view.getBackground(), equalTo(new ColorDrawable(red)));
     }
 
     @Test
     public void shouldSetBackgroundResource() throws Exception {
         view.setBackgroundResource(R.drawable.an_image);
         assertThat(view.getBackground(), equalTo(view.getResources().getDrawable(R.drawable.an_image)));
+        assertThat(shadowOf(view).getBackgroundResourceId(), equalTo(R.drawable.an_image));
+    }
+
+    @Test
+    public void shouldClearBackgroundResource() throws Exception {
+        view.setBackgroundResource(R.drawable.an_image);
+        view.setBackgroundResource(0);
+        assertThat(view.getBackground(), equalTo(null));
+        assertThat(shadowOf(view).getBackgroundResourceId(), equalTo(0));
     }
 
     @Test

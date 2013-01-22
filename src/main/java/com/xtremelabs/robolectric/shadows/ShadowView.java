@@ -279,7 +279,7 @@ public class ShadowView {
     @Implementation
     public void setBackgroundResource(int backgroundResourceId) {
         this.backgroundResourceId = backgroundResourceId;
-        setBackgroundDrawable(getResources().getDrawable(backgroundResourceId));
+        setBackgroundDrawable(backgroundResourceId == 0 ? null : getResources().getDrawable(backgroundResourceId));
     }
 
     /**
@@ -294,7 +294,7 @@ public class ShadowView {
     @Implementation
     public void setBackgroundColor(int color) {
         backgroundColor = color;
-        setBackgroundDrawable(new ColorDrawable(getResources().getColor(color)));
+        setBackgroundDrawable(new ColorDrawable(color));
     }
 
     /**
