@@ -1,10 +1,11 @@
 package com.xtremelabs.robolectric.res;
 
 import org.w3c.dom.Node;
+
 public class DimenResourceLoader extends XpathResourceXmlLoader implements ResourceValueConverter {
 
-    private static final String[] UNITS = { "dp", "dip", "pt", "px", "sp" };
-	
+    private static final String[] UNITS = { "dp", "dip", "pt", "px", "sp", "mm" };
+
     private ResourceReferenceResolver<Float> dimenResolver = new ResourceReferenceResolver<Float>("dimen");
 
     public DimenResourceLoader(ResourceExtractor resourceExtractor) {
@@ -26,14 +27,13 @@ public class DimenResourceLoader extends XpathResourceXmlLoader implements Resou
 
     @Override
     public Object convertRawValue(String rawValue) {
-    	int end = rawValue.length();
-    	for ( int i = 0; i < UNITS.length; i++ ) {
-    		int index = rawValue.indexOf(UNITS[i]);
-    		if ( index >= 0 && end > index ) {
-    			end = index;
-    		}
-    	}
-    	
+        int end = rawValue.length();
+        for (String UNIT : UNITS) {
+            int index = rawValue.indexOf(UNIT);
+            if (index >= 0 && end > index) {
+                end = index;
+            }
+        }
         return Float.parseFloat(rawValue.substring(0, end));
     }
 }
