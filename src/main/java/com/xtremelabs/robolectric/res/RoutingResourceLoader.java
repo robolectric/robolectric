@@ -68,16 +68,6 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public boolean isAnimatableXml(ResName resName, String qualifiers) {
-        return pickFor(resName).isAnimatableXml(resName, qualifiers);
-    }
-
-    @Override
-    public int[] getDrawableIds(ResName resName, String qualifiers) {
-        return pickFor(resName).getDrawableIds(resName, qualifiers);
-    }
-
-    @Override
     public Drawable getDrawable(ResName resName, Resources realResources, String qualifiers) {
         return pickFor(resName).getDrawable(resName, realResources, qualifiers);
     }

@@ -14,7 +14,7 @@ public abstract class XmlLoader {
     protected abstract void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception;
 
     public static class XmlContext {
-        public static final Pattern LAYOUT_DIR_PATTERN = Pattern.compile("^[^-]+(?:-(.*))?$");
+        public static final Pattern DIR_QUALIFIER_PATTERN = Pattern.compile("^[^-]+(?:-(.*))?$");
 
         public final String packageName;
         private final File xmlFile;
@@ -26,7 +26,7 @@ public abstract class XmlLoader {
 
         public String getQualifiers() {
             String parentDir = xmlFile.getParentFile().getName();
-            Matcher matcher = LAYOUT_DIR_PATTERN.matcher(parentDir);
+            Matcher matcher = DIR_QUALIFIER_PATTERN.matcher(parentDir);
             if (!matcher.find()) throw new IllegalStateException(parentDir);
             return matcher.group(1);
         }

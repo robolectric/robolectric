@@ -29,10 +29,6 @@ public interface ResourceLoader {
 
     XmlResourceParser getXml(int id);
 
-    boolean isAnimatableXml(ResName resName, String qualifiers);
-
-    int[] getDrawableIds(ResName resName, String qualifiers);
-
     Drawable getDrawable(ResName resName, Resources realResources, String qualifiers);
 
     InputStream getRawValue(int id);

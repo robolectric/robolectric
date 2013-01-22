@@ -134,7 +134,8 @@ public class ResourcesTest {
      */
     @Test
     public void testGetNinePatchDrawable() {
-        assertThat(Robolectric.getShadowApplication().getResources().getDrawable(R.drawable.nine_patch_drawable), instanceOf(NinePatchDrawable.class));
+        assertThat(Robolectric.getShadowApplication().getResources().getDrawable(R.drawable.nine_patch_drawable),
+                instanceOf(NinePatchDrawable.class));
     }
 
     @Test(expected = Resources.NotFoundException.class)

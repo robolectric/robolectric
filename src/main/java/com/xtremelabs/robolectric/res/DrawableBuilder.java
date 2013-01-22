@@ -24,7 +24,6 @@ import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Set;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
@@ -44,12 +43,10 @@ public class DrawableBuilder {
 
     private final ResourceExtractor resourceExtractor;
     private final ResBundle<DrawableNode> drawableNodes;
-    private final Set<ResName> ninePatchDrawables;
 
-    public DrawableBuilder(ResBundle<DrawableNode> drawableNodes, ResourceExtractor resourceExtractor, Set<ResName> ninePatchDrawables) {
+    public DrawableBuilder(ResBundle<DrawableNode> drawableNodes, ResourceExtractor resourceExtractor) {
         this.resourceExtractor = resourceExtractor;
         this.drawableNodes = drawableNodes;
-        this.ninePatchDrawables = ninePatchDrawables;
     }
 
     /**
@@ -63,10 +60,7 @@ public class DrawableBuilder {
         return drawableNodes.get(resourceExtractor.getResName(resourceId), qualifiers) != null;
     }
 
-    Drawable getXmlDrawable(ResName resName, Resources resources, String qualifiers) {
-        DrawableNode drawableNode = drawableNodes.get(resName, qualifiers);
-        if (drawableNode == null) return null;
-
+    Drawable getXmlDrawable(Resources resources, DrawableNode.Xml drawableNode, ResName resName, String qualifiers) {
         Document xmlDoc = drawableNode.document;
         NodeList nodes = xmlDoc.getElementsByTagName("selector");
         if (nodes != null && nodes.getLength() > 0) {
@@ -113,44 +107,7 @@ public class DrawableBuilder {
         }
     }
 
-    /**
-     * Get drawables by resource id.
-     *
-     *
-     * @param resName
-     * @param qualifiers
-     * @return Drawables
-     */
-    protected int[] getDrawableIds(ResName resName, String qualifiers) {
-        DrawableNode drawableNode = drawableNodes.get(resName, qualifiers);
-        Document document = drawableNode.document;
-
-        NodeList items = document.getElementsByTagName("item");
-        int[] drawableIds = new int[items.getLength()];
-
-        for (int i = 0; i < items.getLength(); i++) {
-            if (resName.namespace.equals("android:")) {
-                drawableIds[i] = -1;
-            } else {
-                Node item = items.item(i);
-                Node drawableName = item.getAttributes().getNamedItemNS(ResourceLoader.ANDROID_NS, "drawable");
-                if (drawableName != null) {
-                    Integer drawableId = resourceExtractor.getResourceId(drawableName.getNodeValue(), drawableNode.xmlContext.packageName);
-                    drawableIds[i] = drawableId == null ? -1 : drawableId;
-                }
-            }
-        }
-
-        return drawableIds;
-    }
-
-    public boolean isAnimationDrawable(ResName resName, String qualifiers) {
-        DrawableNode drawableNode = drawableNodes.get(resName, qualifiers);
-        Document document = drawableNode.document;
-        return "animation-list".equals(document.getDocumentElement().getLocalName());
-    }
-
-    private StateListDrawable buildStateListDrawable(DrawableNode drawableNode) {
+    private StateListDrawable buildStateListDrawable(DrawableNode.Xml drawableNode) {
         StateListDrawable drawable = new StateListDrawable();
         ShadowStateListDrawable shDrawable = Robolectric.shadowOf(drawable);
         NodeList items = drawableNode.document.getElementsByTagName("item");
@@ -180,10 +137,14 @@ public class DrawableBuilder {
     }
 
     public Drawable getDrawable(@NotNull ResName resName, Resources resources, String qualifiers) {
-        Drawable xmlDrawable = getXmlDrawable(resName, resources, qualifiers);
-        if (xmlDrawable != null) {
-            return xmlDrawable;
+        DrawableNode drawableNode = drawableNodes.get(resName, qualifiers);
+        if (drawableNode instanceof DrawableNode.Xml) {
+            Drawable xmlDrawable = getXmlDrawable(resources, (DrawableNode.Xml) drawableNode, resName, qualifiers);
+            if (xmlDrawable != null) {
+                return xmlDrawable;
+            }
         }
+
 
         if ("anim".equals(resName.type)) {
             return new AnimationDrawable();
@@ -193,14 +154,15 @@ public class DrawableBuilder {
             return new ColorDrawable();
         }
 
-        if (ninePatchDrawables.contains(resName)) {
+        if (isNinePatchDrawable(resName, qualifiers)) {
             return new NinePatchDrawable(resources, null);
         }
 
         return new BitmapDrawable(BitmapFactory.decodeResource(resources, resourceExtractor.getResourceId(resName)));
     }
 
-    public boolean isNinePatchDrawable(ResName resName) {
-        return ninePatchDrawables.contains(resName);
+    public boolean isNinePatchDrawable(ResName resName, String qualifiers) {
+        DrawableNode drawableNode = drawableNodes.get(resName, qualifiers);
+        return drawableNode instanceof DrawableNode.ImageFile && ((DrawableNode.ImageFile) drawableNode).isNinePatch;
     }
 }

@@ -13,9 +13,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static java.util.Arrays.asList;
 
@@ -40,8 +38,6 @@ public class PackageResourceLoader implements ResourceLoader {
     private final ResBundle<ViewNode> viewNodes = new ResBundle<ViewNode>();
     private final ResBundle<MenuNode> menuNodes = new ResBundle<MenuNode>();
     private final ResBundle<DrawableNode> drawableNodes = new ResBundle<DrawableNode>();
-
-    private final Set<ResName> ninePatchDrawables = new HashSet<ResName>();
 
     public PackageResourceLoader(ResourcePath... resourcePaths) {
         this(asList(resourcePaths));
@@ -96,7 +92,7 @@ public class PackageResourceLoader implements ResourceLoader {
             new DocumentLoader(new ViewLoader(viewNodes)).loadResourceXmlSubDirs(resourcePath, "layout");
             new DocumentLoader(new MenuLoader(menuNodes)).loadResourceXmlSubDirs(resourcePath, "menu");
             DrawableResourceLoader drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
-            drawableResourceLoader.listNinePatchResources(ninePatchDrawables, resourcePath);
+            drawableResourceLoader.findNinePatchResources(resourcePath);
             new DocumentLoader(drawableResourceLoader).loadResourceXmlSubDirs(resourcePath, "drawable");
             new DocumentLoader(preferenceLoader).loadResourceXmlSubDirs(resourcePath, "xml");
             new DocumentLoader(xmlFileLoader).loadResourceXmlSubDirs(resourcePath, "xml");
@@ -171,19 +167,7 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     private DrawableBuilder getDrawableBuilder() {
-        return new DrawableBuilder(drawableNodes, resourceExtractor, ninePatchDrawables);
-    }
-
-    @Override
-    public boolean isAnimatableXml(ResName resName, String qualifiers) {
-        init();
-        return getDrawableBuilder().isAnimationDrawable(resName, qualifiers);
-    }
-
-    @Override
-    public int[] getDrawableIds(ResName resName, String qualifiers) {
-        init();
-        return getDrawableBuilder().getDrawableIds(resName, qualifiers);
+        return new DrawableBuilder(drawableNodes, resourceExtractor);
     }
 
     @Override

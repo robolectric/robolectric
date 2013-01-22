@@ -20,7 +20,6 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.ReflectionUtil;
 
 import java.io.PrintStream;
@@ -268,8 +267,7 @@ public class ShadowView {
      * @return Drawable
      */
     protected Drawable buildDrawable(int resourceId) {
-        ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
-        return resourceLoader.getDrawable(resourceLoader.getResourceExtractor().getResName(resourceId), getResources(), getQualifiers());
+        return getResources().getDrawable(resourceId);
     }
 
     protected String getQualifiers() {
