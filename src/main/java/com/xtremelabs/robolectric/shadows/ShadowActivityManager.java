@@ -1,6 +1,7 @@
 package com.xtremelabs.robolectric.shadows;
 
 import android.app.ActivityManager;
+import android.content.pm.ConfigurationInfo;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 
@@ -89,5 +90,10 @@ public class ShadowActivityManager {
         public void setLowMemory(boolean lowMemory) {
             this.lowMemory = lowMemory;
         }
+    }
+
+    @Implementation
+    public android.content.pm.ConfigurationInfo getDeviceConfigurationInfo() {
+        return new ConfigurationInfo();
     }
 }
