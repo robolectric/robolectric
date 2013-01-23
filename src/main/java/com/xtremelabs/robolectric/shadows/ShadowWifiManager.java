@@ -26,6 +26,7 @@ public class ShadowWifiManager {
     private List<ScanResult> scanResults;
     private Map<Integer, WifiConfiguration> networkIdToConfiguredNetworks = new LinkedHashMap<Integer, WifiConfiguration>();
     public boolean wasSaved;
+    public boolean scanStarted;
     private Pair<Integer, Boolean> lastEnabledNetwork;
 
     @Implementation
@@ -109,7 +110,17 @@ public class ShadowWifiManager {
     public WifiManager.WifiLock createWifiLock(java.lang.String tag) {
         return createWifiLock(WifiManager.WIFI_MODE_FULL, tag);
     }
-    
+
+    @Implementation
+    public boolean startScan() {
+        scanStarted = true;
+        return true;
+    }
+
+    public void resetScanStart() {
+        scanStarted = false;
+    }
+
     @Implementation
     public static int calculateSignalLevel (int rssi, int numLevels)
     {
