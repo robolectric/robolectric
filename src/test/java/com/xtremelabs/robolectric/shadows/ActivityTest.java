@@ -425,13 +425,21 @@ public class ActivityTest {
     }
 
     @Test
-    public void shouldFindContentViewContainer() throws Exception {
+    public void shouldFindContentViewContainerWithChild() throws Exception {
         Activity activity = new Activity();
         View contentView = new View(activity);
         activity.setContentView(contentView);
 
         FrameLayout contentViewContainer = (FrameLayout) activity.findViewById(android.R.id.content);
         assertThat(contentViewContainer.getChildAt(0), is(contentView));
+    }
+
+    @Test
+    public void shouldFindContentViewContainerWithoutChild() throws Exception {
+        Activity activity = new Activity();
+
+        FrameLayout contentViewContainer = (FrameLayout) activity.findViewById(android.R.id.content);
+        assertThat(contentViewContainer.getId(), equalTo(android.R.id.content));
     }
 
     @Test

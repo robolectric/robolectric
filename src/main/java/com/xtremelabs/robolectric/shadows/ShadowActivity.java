@@ -11,7 +11,12 @@ import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Selection;
 import android.text.SpannableStringBuilder;
-import android.view.*;
+import android.view.KeyEvent;
+import android.view.LayoutInflater;
+import android.view.MenuInflater;
+import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -26,10 +31,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-//import javassist.bytecode.Mnemonic;
-
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-
 
 @Implements(Activity.class)
 public class ShadowActivity extends ShadowContextWrapper {
@@ -260,23 +262,16 @@ public class ShadowActivity extends ShadowContextWrapper {
      */
     @Implementation
     public View findViewById(int id) {
-        if (id == android.R.id.content) {
-            return getContentViewContainer();
-        }
-        if (contentView != null) {
-            return contentView.findViewById(id);
-        } else {
-            System.out.println("WARNING: you probably should have called setContentView() first");
-            Thread.dumpStack();
-            return null;
-        }
+        return getContentViewContainer().findViewById(id);
     }
 
     private View getContentViewContainer() {
         if (contentViewContainer == null) {
             contentViewContainer = new FrameLayout(realActivity);
+            contentViewContainer.setId(android.R.id.content);
+
+            if (contentView != null) contentViewContainer.addView(contentView, 0);
         }
-        contentViewContainer.addView(contentView, 0);
         return contentViewContainer;
     }
 
