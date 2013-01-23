@@ -668,7 +668,7 @@ public class Robolectric {
     }
 
     public static ShadowEditTextPreference shadowOf(EditTextPreference instance) {
-    	return (ShadowEditTextPreference) shadowOf_(instance);
+        return (ShadowEditTextPreference) shadowOf_(instance);
     }
 
     public static ShadowDrawable shadowOf(Drawable instance) {
@@ -988,8 +988,8 @@ public class Robolectric {
         return (ShadowSparseBooleanArray) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowSparseIntArray shadowOf(SparseIntArray other){
-    	return (ShadowSparseIntArray) Robolectric.shadowOf_( other );
+    public static ShadowSparseIntArray shadowOf(SparseIntArray other) {
+        return (ShadowSparseIntArray) Robolectric.shadowOf_(other);
     }
 
     public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
@@ -1048,8 +1048,8 @@ public class Robolectric {
         return (ShadowToast) shadowOf_(instance);
     }
 
-    public static ShadowTouchDelegate shadowOf( TouchDelegate instance ){
-    	return (ShadowTouchDelegate) shadowOf_(instance);
+    public static ShadowTouchDelegate shadowOf(TouchDelegate instance) {
+        return (ShadowTouchDelegate) shadowOf_(instance);
     }
 
     public static ShadowTranslateAnimation shadowOf(TranslateAnimation instance) {
@@ -1118,6 +1118,10 @@ public class Robolectric {
 
     public static ShadowWifiManager shadowOf(WifiManager instance) {
         return (ShadowWifiManager) shadowOf_(instance);
+    }
+
+    public static ShadowWindow shadowOf(Window instance) {
+        return (ShadowWindow) shadowOf_(instance);
     }
 
     public static ShadowZoomButtonsController shadowOf(ZoomButtonsController instance) {
@@ -1430,17 +1434,17 @@ public class Robolectric {
         }
 
         public static Object setFinalStaticField(Field field, Object newValue) {
-        	Object oldValue = null;
+            Object oldValue = null;
 
             try {
-            	field.setAccessible(true);
+                field.setAccessible(true);
 
                 Field modifiersField = Field.class.getDeclaredField("modifiers");
                 modifiersField.setAccessible(true);
                 modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
 
-               oldValue = field.get(null);
-               field.set(null, newValue);
+                oldValue = field.get(null);
+                field.set(null, newValue);
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException(e);
             } catch (IllegalAccessException e) {
