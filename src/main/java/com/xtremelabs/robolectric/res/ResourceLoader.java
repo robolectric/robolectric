@@ -29,7 +29,7 @@ public interface ResourceLoader {
 
     XmlResourceParser getXml(int id);
 
-    Drawable getDrawable(ResName resName, Resources realResources, String qualifiers);
+    DrawableNode getDrawableNode(ResName resName, String qualifiers);
 
     InputStream getRawValue(int id);
 

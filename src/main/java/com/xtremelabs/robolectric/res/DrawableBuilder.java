@@ -42,25 +42,12 @@ public class DrawableBuilder {
     }
 
     private final ResourceExtractor resourceExtractor;
-    private final ResBundle<DrawableNode> drawableNodes;
 
-    public DrawableBuilder(ResBundle<DrawableNode> drawableNodes, ResourceExtractor resourceExtractor) {
+    public DrawableBuilder(ResourceExtractor resourceExtractor) {
         this.resourceExtractor = resourceExtractor;
-        this.drawableNodes = drawableNodes;
     }
 
-    /**
-     * Check if resource is xml.
-     *
-     * @param resourceId Resource id
-     * @param qualifiers
-     * @return Boolean
-     */
-    public boolean isXml(int resourceId, String qualifiers) {
-        return drawableNodes.get(resourceExtractor.getResName(resourceId), qualifiers) != null;
-    }
-
-    Drawable getXmlDrawable(Resources resources, DrawableNode.Xml drawableNode, ResName resName, String qualifiers) {
+    private Drawable getXmlDrawable(Resources resources, DrawableNode.Xml drawableNode, ResName resName) {
         Document xmlDoc = drawableNode.document;
         NodeList nodes = xmlDoc.getElementsByTagName("selector");
         if (nodes != null && nodes.getLength() > 0) {
@@ -73,8 +60,7 @@ public class DrawableBuilder {
             Drawable[] layers = new Drawable[itemNodes.getLength()];
             for (int i = 0; i < itemNodes.getLength(); i++) {
                 Node node = itemNodes.item(i);
-                String drawableName = node.getAttributes().getNamedItemNS(ResourceLoader.ANDROID_NS, "drawable").getNodeValue();
-                layers[i] = getDrawable(resName.qualify(drawableName), resources, qualifiers);
+                layers[i] = getDrawableForNode(node, resName, resources);
             }
             LayerDrawable layerDrawable = new LayerDrawable(layers);
             shadowOf(layerDrawable).setLoadedFromResourceId(resourceExtractor.getResourceId(resName));
@@ -88,8 +74,7 @@ public class DrawableBuilder {
             NodeList itemNodes = findNodes("/animation-list/item", xmlDoc);
             for (int i = 0; i < itemNodes.getLength(); i++) {
                 Node node = itemNodes.item(i);
-                String drawableName = node.getAttributes().getNamedItemNS(ResourceLoader.ANDROID_NS, "drawable").getNodeValue();
-                Drawable frameDrawable = getDrawable(resName.qualify(drawableName), resources, qualifiers);
+                Drawable frameDrawable = getDrawableForNode(node, resName, resources);
                 String duration = node.getAttributes().getNamedItemNS(ResourceLoader.ANDROID_NS, "duration").getNodeValue();
                 animationDrawable.addFrame(frameDrawable, Integer.parseInt(duration));
             }
@@ -97,6 +82,12 @@ public class DrawableBuilder {
         }
 
         return null;
+    }
+
+    private Drawable getDrawableForNode(Node node, ResName resName, Resources resources) {
+        String drawableName = node.getAttributes().getNamedItemNS(ResourceLoader.ANDROID_NS, "drawable").getNodeValue();
+        ResName otherDrawableResName = resName.qualify(drawableName);
+        return resources.getDrawable(resourceExtractor.getResourceId(otherDrawableResName));
     }
 
     private NodeList findNodes(String xpathExpression, Document xmlDoc) {
@@ -136,10 +127,9 @@ public class DrawableBuilder {
         return R.attr.state_active;
     }
 
-    public Drawable getDrawable(@NotNull ResName resName, Resources resources, String qualifiers) {
-        DrawableNode drawableNode = drawableNodes.get(resName, qualifiers);
+    public Drawable getDrawable(@NotNull ResName resName, Resources resources, DrawableNode drawableNode) {
         if (drawableNode instanceof DrawableNode.Xml) {
-            Drawable xmlDrawable = getXmlDrawable(resources, (DrawableNode.Xml) drawableNode, resName, qualifiers);
+            Drawable xmlDrawable = getXmlDrawable(resources, (DrawableNode.Xml) drawableNode, resName);
             if (xmlDrawable != null) {
                 return xmlDrawable;
             }
@@ -154,15 +144,14 @@ public class DrawableBuilder {
             return new ColorDrawable();
         }
 
-        if (isNinePatchDrawable(resName, qualifiers)) {
+        if (isNinePatchDrawable(drawableNode)) {
             return new NinePatchDrawable(resources, null);
         }
 
         return new BitmapDrawable(BitmapFactory.decodeResource(resources, resourceExtractor.getResourceId(resName)));
     }
 
-    public boolean isNinePatchDrawable(ResName resName, String qualifiers) {
-        DrawableNode drawableNode = drawableNodes.get(resName, qualifiers);
+    public boolean isNinePatchDrawable(DrawableNode drawableNode) {
         return drawableNode instanceof DrawableNode.ImageFile && ((DrawableNode.ImageFile) drawableNode).isNinePatch;
     }
 }

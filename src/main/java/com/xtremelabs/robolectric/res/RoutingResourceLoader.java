@@ -1,9 +1,7 @@
 package com.xtremelabs.robolectric.res;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import android.graphics.drawable.Drawable;
 import android.preference.PreferenceScreen;
 import android.view.View;
 import com.xtremelabs.robolectric.tester.android.util.ResName;
@@ -68,8 +66,8 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public Drawable getDrawable(ResName resName, Resources realResources, String qualifiers) {
-        return pickFor(resName).getDrawable(resName, realResources, qualifiers);
+    public DrawableNode getDrawableNode(ResName resName, String qualifiers) {
+        return pickFor(resName).getDrawableNode(resName, qualifiers);
     }
 
     @Override

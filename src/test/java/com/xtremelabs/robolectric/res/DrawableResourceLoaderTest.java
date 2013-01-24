@@ -1,5 +1,6 @@
 package com.xtremelabs.robolectric.res;
 
+import android.content.res.Resources;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
@@ -20,6 +21,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.*;
+import static org.mockito.Mockito.mock;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DrawableResourceLoaderTest {
@@ -38,7 +40,7 @@ public class DrawableResourceLoaderTest {
         documentLoader.loadResourceXmlSubDirs(systemResources(), "drawable");
 
         resourceExtractor = new ResourceExtractor(testResources(), systemResources());
-        drawableBuilder = new DrawableBuilder(drawableNodes, resourceExtractor);
+        drawableBuilder = new DrawableBuilder(resourceExtractor);
         drawableResourceLoader.findNinePatchResources(testResources());
         drawableResourceLoader.findNinePatchResources(systemResources());
     }
@@ -57,19 +59,21 @@ public class DrawableResourceLoaderTest {
     }
 
     @Test
-    public void testIsXml_rainbow() throws Exception {
-        assertTrue(drawableBuilder.isXml(R.drawable.rainbow, ""));
+    public void testGetDrawable_rainbow() throws Exception {
+        ResName resName = getResName(R.drawable.rainbow);
+        assertNotNull(drawableBuilder.getDrawable(resName, mock(Resources.class), drawableNodes.get(resName, "")));
     }
 
     @Test
-    public void testIsXml_shouldWorkWithSystem() throws Exception {
-        assertTrue(drawableBuilder.isXml(android.R.drawable.ic_popup_sync, ""));
+    public void testGetDrawable_shouldWorkWithSystem() throws Exception {
+        ResName resName = getResName(android.R.drawable.ic_popup_sync);
+        assertNotNull(drawableBuilder.getDrawable(resName, mock(Resources.class), drawableNodes.get(resName, "")));
     }
 
     @Test
-    public void testIsXml_red() throws Exception {
-        boolean result = drawableBuilder.isXml(R.drawable.l0_red, "");
-        assertFalse("result", result);
+    public void testGetDrawable_red() throws Exception {
+        ResName resName = getResName(R.drawable.l0_red);
+        assertNotNull(drawableBuilder.getDrawable(resName, mock(Resources.class), drawableNodes.get(resName, "")));
     }
 
     @Test
@@ -80,23 +84,26 @@ public class DrawableResourceLoaderTest {
                 R.drawable.l6_violet};
 
         for (int i = 0; i < drawables.length; i++) {
-            Drawable drawable = drawableBuilder.getDrawable(resourceExtractor.getResName(drawables[i]), null, "");
+            ResName resName = getResName(drawables[i]);
+            Drawable drawable = drawableBuilder.getDrawable(resName, null, drawableNodes.get(resName, ""));
             assertThat(drawable, instanceOf(BitmapDrawable.class));
         }
     }
 
     @Test
     public void testLayerDrawable() {
-        Drawable drawable = drawableBuilder.getDrawable(resourceExtractor.getResName(R.drawable.rainbow), null, "");
+        ResName resName = getResName(R.drawable.rainbow);
+        Drawable drawable = drawableBuilder.getDrawable(resName, mock(Resources.class), drawableNodes.get(resName, ""));
         assertThat(drawable, instanceOf(LayerDrawable.class));
         assertEquals(8, ((LayerDrawable) drawable).getNumberOfLayers());
 
-        assertEquals(6, ((LayerDrawable) drawableBuilder.getDrawable(resourceExtractor.getResName(R.drawable.rainbow), null, "xlarge")).getNumberOfLayers());
+        assertEquals(6, ((LayerDrawable) drawableBuilder.getDrawable(resName, mock(Resources.class), drawableNodes.get(resName, "xlarge"))).getNumberOfLayers());
     }
 
     @Test
     public void testStateListDrawable() {
-        Drawable drawable = drawableBuilder.getDrawable(resourceExtractor.getResName(R.drawable.state_drawable), null, "");
+        ResName resName = getResName(R.drawable.state_drawable);
+        Drawable drawable = drawableBuilder.getDrawable(resName, null, drawableNodes.get(resName, ""));
         assertThat(drawable, instanceOf(StateListDrawable.class));
         ShadowStateListDrawable shDrawable = Robolectric.shadowOf((StateListDrawable) drawable);
         assertThat(shDrawable.getResourceIdForState(android.R.attr.state_selected), equalTo(R.drawable.l0_red));
@@ -110,16 +117,22 @@ public class DrawableResourceLoaderTest {
     }
 
     @Test public void shouldCreateAnimsAndColors() throws Exception {
-        assertInstanceOf(AnimationDrawable.class, drawableBuilder.getDrawable(resourceExtractor.getResName(R.anim.test_anim_1), null, ""));
-        assertInstanceOf(ColorDrawable.class, drawableBuilder.getDrawable(resourceExtractor.getResName(R.color.grey42), null, ""));
+        ResName resName1 = getResName(R.anim.test_anim_1);
+        assertInstanceOf(AnimationDrawable.class, drawableBuilder.getDrawable(resName1, null, drawableNodes.get(resName1, "")));
+        ResName resName2 = getResName(R.color.grey42);
+        assertInstanceOf(ColorDrawable.class, drawableBuilder.getDrawable(resName2, null, drawableNodes.get(resName2, "")));
     }
 
     @Test
     public void shouldIdentifyNinePatchDrawables() {
-        assertThat(drawableBuilder.isNinePatchDrawable(resourceExtractor.getResName(R.drawable.nine_patch_drawable), ""), equalTo(true));
-        assertThat(drawableBuilder.isNinePatchDrawable(resourceExtractor.getResName(R.drawable.l2_yellow), ""), equalTo(false));
-        assertThat(drawableBuilder.isNinePatchDrawable(resourceExtractor.getResName(R.drawable.state_drawable), ""), equalTo(false));
-        assertThat(drawableBuilder.isNinePatchDrawable(resourceExtractor.getResName(R.drawable.animation_list), ""), equalTo(false));
-        assertThat(drawableBuilder.isNinePatchDrawable(null, ""), equalTo(false));
+        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(getResName(R.drawable.nine_patch_drawable), "")), equalTo(true));
+        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(getResName(R.drawable.l2_yellow), "")), equalTo(false));
+        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(getResName(R.drawable.state_drawable), "")), equalTo(false));
+        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(getResName(R.drawable.animation_list), "")), equalTo(false));
+        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(null, "")), equalTo(false));
+    }
+
+    private ResName getResName(int resourceId) {
+        return resourceExtractor.getResName(resourceId);
     }
 }

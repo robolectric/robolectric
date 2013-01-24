@@ -14,6 +14,8 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
+import com.xtremelabs.robolectric.res.DrawableBuilder;
+import com.xtremelabs.robolectric.res.DrawableNode;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
@@ -194,7 +196,11 @@ public class ShadowResources {
 
     @Implementation
     public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
-        return resourceLoader.getDrawable(getResName(drawableResourceId), realResources, getQualifiers());
+        ResName resName = getResName(drawableResourceId);
+        String qualifiers = getQualifiers();
+        DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, qualifiers);
+        final DrawableBuilder drawableBuilder = new DrawableBuilder(getResourceLoader().getResourceExtractor());
+        return drawableBuilder.getDrawable(resName, realResources, drawableNode);
     }
 
     @Implementation
