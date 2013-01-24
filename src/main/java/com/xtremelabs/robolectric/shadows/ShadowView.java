@@ -682,7 +682,7 @@ public class ShadowView {
     }
 
     protected void dumpAttribute(PrintStream out, String name, String value) {
-        out.print(" " + name + "=\"" + ShadowTextUtils.htmlEncode(value) + "\"");
+        out.print(" " + name + "=\"" + (value == null ? null : ShadowTextUtils.htmlEncode(value)) + "\"");
     }
 
     protected void dumpIndent(PrintStream out, int indent) {

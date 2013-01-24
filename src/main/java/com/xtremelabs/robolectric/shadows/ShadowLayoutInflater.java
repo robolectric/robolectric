@@ -34,6 +34,10 @@ public class ShadowLayoutInflater {
         return bind(instances.getInstance(context), context);
     }
 
+    public void __constructor__(Context context) {
+        this.context = context;
+    }
+
     @Implementation
     public Context getContext() {
         return context;

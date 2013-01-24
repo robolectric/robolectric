@@ -227,7 +227,13 @@ public class ShadowActivity extends ShadowContextWrapper {
 
     @Implementation
     public void setContentView(View view) {
+        if (contentViewContainer != null && contentView != null) {
+            contentViewContainer.removeView(contentView);
+        }
         contentView = view;
+        if (contentViewContainer != null) {
+            contentViewContainer.addView(contentView);
+        }
         realActivity.onContentChanged();
         getWindow().setContentView(contentView);
     }

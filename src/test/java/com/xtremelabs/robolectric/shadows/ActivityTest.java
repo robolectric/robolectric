@@ -25,6 +25,7 @@ import org.junit.runner.RunWith;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import static com.xtremelabs.robolectric.Robolectric.application;
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
 import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
@@ -391,6 +392,21 @@ public class ActivityTest {
         View contentView = shadowOf(activity).getContentView();
         assertInstanceOf(FrameLayout.class, contentView);
         assertThat(((FrameLayout) contentView).getChildCount(), equalTo(2));
+    }
+
+    @Test public void setContentView_shouldReplaceOldContentView() throws Exception {
+        View view1 = new View(application);
+        view1.setId(R.id.burritos);
+        View view2 = new View(application);
+        view2.setId(R.id.button);
+
+        Activity activity = new Activity();
+        activity.setContentView(view1);
+        assertSame(view1, activity.findViewById(R.id.burritos));
+
+        activity.setContentView(view2);
+        assertNull(activity.findViewById(R.id.burritos));
+        assertSame(view2, activity.findViewById(R.id.button));
     }
 
     @Test
