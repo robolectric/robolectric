@@ -44,7 +44,7 @@ public class ShadowSQLiteDatabase  {
     private final ReentrantLock mLock = new ReentrantLock(true);
     private boolean mLockingEnabled = true;
     private WeakHashMap<SQLiteClosable, Object> mPrograms;
-    private boolean transactionSuccess = false;
+    private Transaction transaction;
     
     @Implementation
     public void setLockingEnabled(boolean lockingEnabled) {
@@ -269,31 +269,41 @@ public class ShadowSQLiteDatabase  {
 		} catch (SQLException e) {
 			throw new RuntimeException("SQL exception in beginTransaction", e);
 		}
+    if (transaction == null) {
+      transaction = new Transaction();
+    } else {
+      transaction = new Transaction(transaction);
+    }
 	}
 
 	@Implementation
 	public void setTransactionSuccessful() {
 		if (!isOpen()) {
 			throw new IllegalStateException("connection is not opened");
-		} else if (transactionSuccess) {
+		} else if (transaction.success) {
 			throw new IllegalStateException("transaction already successfully");
 		}
-		transactionSuccess = true;
+		transaction.success = true;
 	}
 
 	@Implementation
 	public void endTransaction() {
-		try {
-			if (transactionSuccess) {
-				transactionSuccess = false;
-				connection.commit();
-			} else {
-				connection.rollback();
-			}
-			connection.setAutoCommit(true);
-		} catch (SQLException e) {
-			throw new RuntimeException("SQL exception in beginTransaction", e);
-		}
+      if (transaction.parent != null) {
+          transaction.parent.descendantsSuccess &= transaction.success;
+          transaction = transaction.parent;
+      } else {
+          try {
+              if (transaction.success && transaction.descendantsSuccess) {
+                  connection.commit();
+              } else {
+                  connection.rollback();
+              }
+			        connection.setAutoCommit(true);
+          } catch (SQLException e) {
+              throw new RuntimeException("SQL exception in beginTransaction", e);
+          }
+          transaction = null;
+      }
 	}
 	
 	/**
@@ -301,7 +311,7 @@ public class ShadowSQLiteDatabase  {
 	 * @return
 	 */
 	public boolean isTransactionSuccess() { 
-		return transactionSuccess; 
+		return transaction != null && transaction.success && transaction.descendantsSuccess;
 	}
 
     /**
@@ -348,6 +358,20 @@ public class ShadowSQLiteDatabase  {
         } finally {
             unlock();
         }
-    }  
+    }
+
+    private static class Transaction {
+        final Transaction parent;
+        boolean success;
+        boolean descendantsSuccess = true;
+
+        Transaction(Transaction parent) {
+            this.parent = parent;
+        }
+
+        Transaction() {
+          this.parent = null;
+        }
+    }
     
 }
