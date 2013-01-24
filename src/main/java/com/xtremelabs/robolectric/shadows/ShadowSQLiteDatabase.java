@@ -34,13 +34,12 @@ import static com.xtremelabs.robolectric.util.SQLite.buildWhereClause;
  */
 @Implements(SQLiteDatabase.class)
 public class ShadowSQLiteDatabase  {
-	@RealObject	SQLiteDatabase realSQLiteDatabase;
+    @RealObject	SQLiteDatabase realSQLiteDatabase;
     private static Connection connection;
     private final ReentrantLock mLock = new ReentrantLock(true);
     private boolean mLockingEnabled = true;
     private WeakHashMap<SQLiteClosable, Object> mPrograms;
-    private boolean inTransaction = false;
-    private boolean transactionSuccess = false;
+    private Transaction transaction;
     private boolean throwOnInsert;
 
     @Implementation
@@ -64,7 +63,7 @@ public class ShadowSQLiteDatabase  {
 
     @Implementation
     public static SQLiteDatabase openDatabase(String path, SQLiteDatabase.CursorFactory factory, int flags) {
-     	connection = DatabaseConfig.getMemoryConnection();
+        connection = DatabaseConfig.getMemoryConnection();
         return newInstanceOf(SQLiteDatabase.class);
     }
     
@@ -199,7 +198,7 @@ public class ShadowSQLiteDatabase  {
         }
 
         try {
-        	String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
+            String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
             connection.createStatement().execute(scrubbedSql);
         } catch (java.sql.SQLException e) {
             android.database.SQLException ase = new android.database.SQLException();
@@ -217,8 +216,8 @@ public class ShadowSQLiteDatabase  {
         
         
         SQLiteStatement statement = null;
-        	try {
-        		statement =compileStatement(scrubbedSql);
+            try {
+                statement =compileStatement(scrubbedSql);
             if (bindArgs != null) {
                 int numArgs = bindArgs.length;
                 for (int i = 0; i < numArgs; i++) {
@@ -238,31 +237,31 @@ public class ShadowSQLiteDatabase  {
 
     @Implementation
     public Cursor rawQuery (String sql, String[] selectionArgs) {
-    	return rawQueryWithFactory( new SQLiteDatabase.CursorFactory() {
-			@Override
-			public Cursor newCursor(SQLiteDatabase db,
-					SQLiteCursorDriver masterQuery, String editTable, SQLiteQuery query) {
-				return new SQLiteCursor(db, masterQuery, editTable, query);
-			}
-    		
-    	}, sql, selectionArgs, null );
+        return rawQueryWithFactory( new SQLiteDatabase.CursorFactory() {
+            @Override
+            public Cursor newCursor(SQLiteDatabase db,
+                    SQLiteCursorDriver masterQuery, String editTable, SQLiteQuery query) {
+                return new SQLiteCursor(db, masterQuery, editTable, query);
+            }
+            
+        }, sql, selectionArgs, null );
     }
     
     @Implementation
     public Cursor rawQueryWithFactory (SQLiteDatabase.CursorFactory cursorFactory, String sql, String[] selectionArgs, String editTable) {
-       	String sqlBody = sql;
+        String sqlBody = sql;
         if (sql != null) {
-        	sqlBody = buildWhereClause(sql, selectionArgs);
+            sqlBody = buildWhereClause(sql, selectionArgs);
         }
-    	
+        
         ResultSet resultSet;
         try {
-          	SQLiteStatement stmt = compileStatement(sql);
-          	
-          	 int numArgs = selectionArgs == null ? 0
+            SQLiteStatement stmt = compileStatement(sql);
+            
+             int numArgs = selectionArgs == null ? 0
                      : selectionArgs.length;
              for (int i = 0; i < numArgs; i++) {
-            		stmt.bindString(i + 1, selectionArgs[i]);
+                    stmt.bindString(i + 1, selectionArgs[i]);
              }
           
               resultSet = Robolectric.shadowOf(stmt).getStatement().executeQuery();
@@ -294,56 +293,63 @@ public class ShadowSQLiteDatabase  {
         }
     }
 
-	@Implementation
-	public void beginTransaction() {
-		try {
-			connection.setAutoCommit(false);
-		} catch (SQLException e) {
-			throw new RuntimeException("SQL exception in beginTransaction", e);
-		} finally {
-			inTransaction = true;
-		}
-	}
+    @Implementation
+    public void beginTransaction() {
+        try {
+            connection.setAutoCommit(false);
+        } catch (SQLException e) {
+            throw new RuntimeException("SQL exception in beginTransaction", e);
+        }
+        
+        if (transaction == null) {
+          transaction = new Transaction();
+        } else {
+          transaction = new Transaction(transaction);
+        }
+    }
 
-	@Implementation
-	public void setTransactionSuccessful() {
-		if (!isOpen()) {
-			throw new IllegalStateException("connection is not opened");
-		} else if (transactionSuccess) {
-			throw new IllegalStateException("transaction already successfully");
-		}
-		transactionSuccess = true;
-	}
+    @Implementation
+    public void setTransactionSuccessful() {
+        if (!isOpen()) {
+            throw new IllegalStateException("connection is not opened");
+        } else if (transaction.success) {
+            throw new IllegalStateException("transaction already successfully");
+        }
+        transaction.success = true;
+    }
 
-	@Implementation
-	public void endTransaction() {
-		try {
-			if (transactionSuccess) {
-				transactionSuccess = false;
-				connection.commit();
-			} else {
-				connection.rollback();
-			}
-			connection.setAutoCommit(true);
-		} catch (SQLException e) {
-			throw new RuntimeException("SQL exception in beginTransaction", e);
-		} finally {
-			inTransaction = false;
-		}
-	}
-	
-	@Implementation
-	public boolean inTransaction() {
-		return inTransaction;
-	}
-	
-	/**
-	 * Allows tests cases to query the transaction state
-	 * @return
-	 */
-	public boolean isTransactionSuccess() { 
-		return transactionSuccess; 
-	}
+    @Implementation
+    public void endTransaction() {
+      if (transaction.parent != null) {
+          transaction.parent.descendantsSuccess &= transaction.success;
+          transaction = transaction.parent;
+      } else {
+          try {
+              if (transaction.success && transaction.descendantsSuccess) {
+                  connection.commit();
+              } else {
+                  connection.rollback();
+              }
+                    connection.setAutoCommit(true);
+          } catch (SQLException e) {
+              throw new RuntimeException("SQL exception in beginTransaction", e);
+          }
+          transaction = null;
+      }
+    }
+
+    @Implementation
+    public boolean inTransaction() {
+        return transaction != null;
+    }
+
+    /**
+     * Allows tests cases to query the transaction state
+     * @return
+     */
+    public boolean isTransactionSuccess() { 
+        return transaction != null && transaction.success && transaction.descendantsSuccess;
+    }
 
     /**
      * Allows test cases access to the underlying JDBC connection, for use in
@@ -360,17 +366,17 @@ public class ShadowSQLiteDatabase  {
         lock();
         String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
         try {
-        	SQLiteStatement stmt = Robolectric.newInstanceOf(SQLiteStatement.class);
-        	Robolectric.shadowOf(stmt).init(realSQLiteDatabase, scrubbedSql);
+            SQLiteStatement stmt = Robolectric.newInstanceOf(SQLiteStatement.class);
+            Robolectric.shadowOf(stmt).init(realSQLiteDatabase, scrubbedSql);
             return stmt;
         } catch (Exception e){
-        	throw new RuntimeException(e);
+            throw new RuntimeException(e);
         } finally {
             unlock();
         }
     }
     
-	   /**
+       /**
      * @param closable
      */
     void addSQLiteClosable(SQLiteClosable closable) {
@@ -389,6 +395,20 @@ public class ShadowSQLiteDatabase  {
         } finally {
             unlock();
         }
-    }  
+    }
+
+    private static class Transaction {
+        final Transaction parent;
+        boolean success;
+        boolean descendantsSuccess = true;
+
+        Transaction(Transaction parent) {
+            this.parent = parent;
+        }
+
+        Transaction() {
+          this.parent = null;
+        }
+    }
     
 }

@@ -9,15 +9,12 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.sql.Statement;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 
 public abstract class DatabaseTestBase {
@@ -498,7 +495,7 @@ public abstract class DatabaseTestBase {
     }
 
     @Test
-    public void testSuccessTransaction() throws SQLException {
+    public void testSuccessTransaction() throws Exception {
         assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
         database.beginTransaction();
         assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
@@ -543,6 +540,50 @@ public abstract class DatabaseTestBase {
     }
 
     @Test
+    public void testSuccessNestedTransaction() throws Exception {
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        database.beginTransaction();
+        database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        database.beginTransaction();
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        database.execSQL("INSERT INTO table_name (id, name) VALUES(12345, 'Julie');");
+        database.setTransactionSuccessful();
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(true));
+        database.endTransaction();
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        database.setTransactionSuccessful();
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(true));
+        database.endTransaction();
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        Statement statement = shadowOf(database).getConnection().createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
+        assertThat(resultSet.next(), equalTo(true));
+        assertThat(resultSet.getInt(1), equalTo(2));
+    }
+
+    @Test
+    public void testFailureNestedTransaction() throws Exception {
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        database.beginTransaction();
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
+        database.beginTransaction();
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        database.execSQL("INSERT INTO table_name (id, name) VALUES(12345, 'Julie');");
+        database.endTransaction();
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        database.setTransactionSuccessful();
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        database.endTransaction();
+        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        Statement statement = shadowOf(database).getConnection().createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
+        assertThat(resultSet.next(), equalTo(true));
+        assertThat(resultSet.getInt(1), equalTo(0));
+    }
+
+    @Test
     public void testTransactionAlreadySuccessful() {
         database.beginTransaction();
         database.setTransactionSuccessful();
@@ -556,7 +597,7 @@ public abstract class DatabaseTestBase {
     
     @Test
     public void testInTransaction() throws Exception {
-    	assertThat( database.inTransaction(), equalTo(false) );
+    	assertThat(database.inTransaction(), equalTo(false));
     	database.beginTransaction();
     	assertThat( database.inTransaction(), equalTo(true) );
     	database.endTransaction();
