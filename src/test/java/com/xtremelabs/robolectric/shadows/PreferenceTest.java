@@ -9,6 +9,7 @@ import android.util.AttributeSet;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.res.PackageResourceLoader;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Before;
@@ -35,7 +36,7 @@ public class PreferenceTest {
     @Before
     public void setup() {
         context = new Activity();
-        attrs = new TestAttributeSet(new ArrayList<Attribute>(), null, null);
+        attrs = new TestAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
         preference = new TestPreference(context, attrs);
         shadow = Robolectric.shadowOf(preference);
     }
@@ -68,7 +69,7 @@ public class PreferenceTest {
         String key = "key_value";
         List<Attribute> attributes = new ArrayList<Attribute>();
         attributes.add(new Attribute("android:attr/key", key, R.class.getPackage().getName()));
-        attrs = new TestAttributeSet(attributes, null, null);
+        attrs = new TestAttributeSet(attributes, new PackageResourceLoader(), null);
 
         preference = new TestPreference(context, attrs);
         assertThat(preference.getKey(), equalTo(key));

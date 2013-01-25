@@ -79,6 +79,16 @@ public class Attribute {
         return null;
     }
 
+    public static Attribute find(List<Attribute> attributes, int attrId, ResourceExtractor resourceExtractor) {
+        for (Attribute attribute : attributes) {
+          Integer resourceId = resourceExtractor.getResourceId(attribute.resName);
+          if (resourceId != null && resourceId == attrId) {
+                return attribute;
+            }
+        }
+        return null;
+    }
+
     public static String findValue(List<Attribute> attributes, String fullyQualifiedName) {
         return findValue(attributes, fullyQualifiedName, null);
     }

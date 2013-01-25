@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.res;
 
 import android.view.View;
 import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
@@ -11,7 +12,8 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.util.TestUtil.*;
+import static com.xtremelabs.robolectric.util.TestUtil.SYSTEM_PACKAGE;
+import static com.xtremelabs.robolectric.util.TestUtil.TEST_PACKAGE;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -25,7 +27,7 @@ public class TestAttributeSetTest {
 
     @Before
     public void setUp() throws Exception {
-        resourceLoader = new PackageResourceLoader(testResources(), systemResources());
+        resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
     }
 
     @Test
@@ -228,6 +230,12 @@ public class TestAttributeSetTest {
     public void getStyleAttribute_doesNotThrowException_whenStyleIsBogus() throws Exception {
         createTestAttributeSet(new Attribute(":attr/style", "@style/bogus_style", TEST_PACKAGE));
         assertThat(testAttributeSet.getStyleAttribute(), equalTo(0));
+    }
+
+    @Test public void shouldConsiderSameNamedAttrsFromLibrariesEquivalent() throws Exception {
+        createTestAttributeSet(new Attribute("com.xtremelabs.robolectric.lib1:attr/offsetX", "1", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeValue("com.xtremelabs.robolectric.lib1", "offsetX"), equalTo("1"));
+        assertThat(testAttributeSet.getAttributeValue("com.xtremelabs.robolectric.lib2", "offsetX"), equalTo("1"));
     }
 
     private void createTestAttributeSet(Attribute... attributes) {

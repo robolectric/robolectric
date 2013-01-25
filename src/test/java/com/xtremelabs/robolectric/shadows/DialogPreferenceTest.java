@@ -7,6 +7,7 @@ import android.util.AttributeSet;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.res.PackageResourceLoader;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Before;
@@ -36,7 +37,7 @@ public class DialogPreferenceTest {
         List<Attribute> attributes = new ArrayList<Attribute>();
         attributes.add(new Attribute("android:attr/dialogMessage", TEST_DIALOG_MESSAGE, R.class.getPackage().getName()));
         context = new Activity();
-        attrs = new TestAttributeSet(attributes, null, null);
+        attrs = new TestAttributeSet(attributes, new PackageResourceLoader(), null);
         preference = new TestDialogPreference(context, attrs);
         shadow = Robolectric.shadowOf(preference);
     }

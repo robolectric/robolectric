@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.tester.android.util;
 
 import android.util.AttributeSet;
 import android.view.View;
+import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.util.I18nException;
 
@@ -15,11 +16,11 @@ public class TestAttributeSet implements AttributeSet {
     /**
      * Names of attributes to be validated for i18n-safe values.
      */
-    private static final String strictI18nAttrs[] = {
-            "android:attr/text",
-            "android:attr/title",
-            "android:attr/titleCondensed",
-            "android:attr/summary"
+    private static final ResName strictI18nAttrs[] = {
+            new ResName("android:attr/text"),
+            new ResName("android:attr/title"),
+            new ResName("android:attr/titleCondensed"),
+            new ResName("android:attr/summary")
     };
 
     public TestAttributeSet(List<Attribute> attributes, ResourceLoader resourceLoader, Class<? extends View> viewClass) {
@@ -188,7 +189,7 @@ public class TestAttributeSet implements AttributeSet {
     }
 
     @Override public int getStyleAttribute() {
-        Attribute styleAttribute = findByName(":attr/style");
+        Attribute styleAttribute = Attribute.find(attributes, new ResName("", "attr", "style"));
         if (styleAttribute == null) {
             // Per Android specifications, return 0 if there is no style.
             return 0;
@@ -199,7 +200,7 @@ public class TestAttributeSet implements AttributeSet {
 
 
     public void validateStrictI18n() {
-        for (String key : strictI18nAttrs) {
+        for (ResName key : strictI18nAttrs) {
             Attribute attribute = findByName(key);
             if (attribute != null) {
                 if (!attribute.value.startsWith("@string/")) {
@@ -211,10 +212,18 @@ public class TestAttributeSet implements AttributeSet {
     }
 
     private Attribute findByName(String packageName, String attrName) {
-        return findByName(packageName + ":attr/" + attrName);
+        return findByName(new ResName(packageName, "attr", attrName));
     }
 
-    private Attribute findByName(String fullyQualifiedName) {
-        return Attribute.find(attributes, fullyQualifiedName);
+    private Attribute findByName(ResName resName) {
+        ResourceExtractor resourceExtractor = resourceLoader.getResourceExtractor();
+        Integer resourceId = resourceExtractor.getResourceId(resName);
+        // canonicalize the attr name if we can, otherwise don't...
+        // todo: this is awful; fix it.
+        if (resourceId == null) {
+            return Attribute.find(attributes, resName);
+        } else {
+            return Attribute.find(attributes, resourceId, resourceExtractor);
+        }
     }
 }

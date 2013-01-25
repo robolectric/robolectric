@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
+import com.xtremelabs.robolectric.res.PackageResourceLoader;
 import com.xtremelabs.robolectric.tester.android.util.Attribute;
 import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
 import com.xtremelabs.robolectric.tester.android.view.TestWindow;
@@ -105,10 +106,10 @@ public class ViewTest {
         final Transcript transcript = new Transcript();
 
         view.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-          @Override
-          public void onFocusChange(View v, boolean hasFocus) {
-            transcript.add(hasFocus ? "Gained focus" : "Lost focus");
-          }
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                transcript.add(hasFocus ? "Gained focus" : "Lost focus");
+            }
         });
 
         assertFalse(view.isFocused());
@@ -292,7 +293,7 @@ public class ViewTest {
 
     @Test
     public void shouldAddOnClickListenerFromAttribute() throws Exception {
-      TestAttributeSet attrs = new TestAttributeSet(new ArrayList<Attribute>(), null, null);
+      TestAttributeSet attrs = new TestAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
       attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
       view = new View(null, attrs);
@@ -303,11 +304,12 @@ public class ViewTest {
     public void shouldCallOnClickWithAttribute() throws Exception {
       final AtomicBoolean called = new AtomicBoolean(false);
       Activity context = new Activity() {
+        @SuppressWarnings("UnusedDeclaration")
         public void clickMe(View view) {
           called.set(true);
         }
       };
-      TestAttributeSet attrs = new TestAttributeSet(new ArrayList<Attribute>(), null, null);
+      TestAttributeSet attrs = new TestAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
       attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
       view = new View(context, attrs);

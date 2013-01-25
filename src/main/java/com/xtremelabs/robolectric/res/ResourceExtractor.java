@@ -12,7 +12,7 @@ public class ResourceExtractor {
     private static final boolean REMAP_RESOURCES = false;
 
     private Map<ResName, Integer> resourceNameToId = new HashMap<ResName, Integer>();
-    private Map<Integer, ResName> resourceIdToFullyQualifiedName = new HashMap<Integer, ResName>();
+    private Map<Integer, ResName> resourceIdToResName = new HashMap<Integer, ResName>();
     private Set<Class> processedRFiles = new HashSet<Class>();
     private Integer maxUsedInt = null;
 
@@ -29,7 +29,7 @@ public class ResourceExtractor {
             processedRFiles.addAll(subExtractor.processedRFiles);
 
             merge(resourceNameToId, subExtractor.resourceNameToId, "resourceNameToId");
-            merge(resourceIdToFullyQualifiedName, subExtractor.resourceIdToFullyQualifiedName, "resourceIdToFullyQualifiedName");
+            merge(resourceIdToResName, subExtractor.resourceIdToResName, "resourceIdToResName");
         }
     }
 
@@ -65,25 +65,26 @@ public class ResourceExtractor {
         for (Class innerClass : rClass.getClasses()) {
             for (Field field : innerClass.getDeclaredFields()) {
                 if (field.getType().equals(Integer.TYPE) && Modifier.isStatic(field.getModifiers())) {
-                    String section = innerClass.getSimpleName();
-                    int value;
-                    try {
-                        value = field.getInt(null);
-                    } catch (IllegalAccessException e) {
-                        throw new RuntimeException(e);
+                  String section = innerClass.getSimpleName();
+                  int value;
+                  try {
+                    value = field.getInt(null);
+                  } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                  }
+
+                  if (!section.equals("styleable")) {
+                    ResName resName = new ResName(packageName, section, field.getName());
+
+                    resourceNameToId.put(resName, value);
+
+                    if (resourceIdToResName.containsKey(value) && REMAP_RESOURCES) {
+                      throw new RuntimeException(
+                          value + " is already defined with name: " + resourceIdToResName.get(value) + " can't also call it: " + resName);
                     }
 
-                    if (!section.equals("styleable")) {
-                        ResName resName = new ResName(packageName, section, field.getName());
-
-                        resourceNameToId.put(resName, value);
-
-                        if (resourceIdToFullyQualifiedName.containsKey(value) && REMAP_RESOURCES) {
-                            throw new RuntimeException(value + " is already defined with name: " + resourceIdToFullyQualifiedName.get(value) + " can't also call it: " + resName);
-                        }
-
-                        resourceIdToFullyQualifiedName.put(value, resName);
-                    }
+                    resourceIdToResName.put(value, resName);
+                  }
                 }
             }
         }
@@ -110,11 +111,11 @@ public class ResourceExtractor {
         Integer id = resourceNameToId.get(resName);
         if (id == null && "android".equals(resName.namespace)) {
             if (maxUsedInt == null) {
-                maxUsedInt = new TreeSet<Integer>(resourceIdToFullyQualifiedName.keySet()).last();
+                maxUsedInt = resourceIdToResName.isEmpty() ? 0 : Collections.max(resourceIdToResName.keySet());
             }
-            id = maxUsedInt++;
+            id = ++maxUsedInt;
             resourceNameToId.put(resName, id);
-            resourceIdToFullyQualifiedName.put(id, resName);
+            resourceIdToResName.put(id, resName);
             System.out.println("INFO: no id mapping found for " + resName.getFullyQualifiedName() + "; assigning " + id);
         }
         return id;
@@ -134,6 +135,6 @@ public class ResourceExtractor {
     }
 
     public ResName getResName(int resourceId) {
-        return resourceIdToFullyQualifiedName.get(resourceId);
+        return resourceIdToResName.get(resourceId);
     }
 }
