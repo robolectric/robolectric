@@ -4,9 +4,8 @@ import android.app.Application;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import com.xtremelabs.robolectric.R;
+import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.res.PackageResourceLoader;
-import com.xtremelabs.robolectric.res.ResourceLoader;
 import com.xtremelabs.robolectric.tester.android.view.TestMenu;
 import com.xtremelabs.robolectric.tester.android.view.TestMenuItem;
 import com.xtremelabs.robolectric.util.I18nException;
@@ -15,8 +14,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.TestUtil.systemResources;
-import static com.xtremelabs.robolectric.util.TestUtil.testResources;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
@@ -26,9 +23,7 @@ public class MenuInflaterTest {
 
     @Before
     public void setUp() throws Exception {
-        ResourceLoader resourceLoader = new PackageResourceLoader(testResources(), systemResources());
-        context = new Application();
-        ShadowApplication.bind(context, null, resourceLoader);
+        context = Robolectric.application;
     }
 
     @Test

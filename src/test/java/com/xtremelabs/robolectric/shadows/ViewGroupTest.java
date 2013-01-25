@@ -13,7 +13,6 @@ import android.widget.TextView;
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.res.PackageResourceLoader;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -23,8 +22,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
 import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.TestUtil.systemResources;
-import static com.xtremelabs.robolectric.util.TestUtil.testResources;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -43,8 +40,7 @@ public class ViewGroupTest {
 
     @Before
     public void setUp() throws Exception {
-        context = new Application();
-        ShadowApplication.bind(context, null, new PackageResourceLoader(testResources(), systemResources()));
+        context = Robolectric.application;
 
         root = new FrameLayout(context);
 
