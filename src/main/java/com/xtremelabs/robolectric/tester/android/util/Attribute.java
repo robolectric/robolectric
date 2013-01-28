@@ -3,17 +3,17 @@ package com.xtremelabs.robolectric.tester.android.util;
 import com.xtremelabs.robolectric.res.ResourceExtractor;
 import com.xtremelabs.robolectric.res.XmlLoader;
 import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Node;
 
 import java.net.URLEncoder;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Attribute {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Attribute.class);
+    private static final Logger LOGGER = Logger.getLogger(Attribute.class.getName());
     private static final Pattern NS_URI_PATTERN = Pattern.compile("^http://schemas.android.com/apk/res/(.*)$");
     private static final String RES_AUTO_NS_URI = "http://schemas.android.com/apk/res-auto";
 
@@ -41,7 +41,7 @@ public class Attribute {
 
     private static String extractPackageName(String namespaceUri, XmlLoader.XmlContext xmlContext) {
         if (namespaceUri == null) {
-            LOGGER.warn("unexpected ns uri null");
+            LOGGER.log(Level.WARNING, "unexpected ns uri null");
             return "";
         }
 
@@ -51,7 +51,7 @@ public class Attribute {
 
         Matcher matcher = NS_URI_PATTERN.matcher(namespaceUri);
         if (!matcher.find()) {
-            LOGGER.warn("unexpected ns uri \"" + namespaceUri + "\"");
+            LOGGER.log(Level.WARNING, "unexpected ns uri \"" + namespaceUri + "\"");
             return URLEncoder.encode(namespaceUri);
         }
         return matcher.group(1);
