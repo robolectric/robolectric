@@ -41,7 +41,6 @@ public class Attribute {
 
     private static String extractPackageName(String namespaceUri, XmlLoader.XmlContext xmlContext) {
         if (namespaceUri == null) {
-            LOGGER.log(Level.WARNING, "unexpected ns uri null");
             return "";
         }
 
@@ -51,7 +50,9 @@ public class Attribute {
 
         Matcher matcher = NS_URI_PATTERN.matcher(namespaceUri);
         if (!matcher.find()) {
-            LOGGER.log(Level.WARNING, "unexpected ns uri \"" + namespaceUri + "\"");
+            if (!namespaceUri.equals("http://schemas.android.com/apk/prv/res/android")) {
+                LOGGER.log(Level.WARNING, "unexpected ns uri \"" + namespaceUri + "\"");
+            }
             return URLEncoder.encode(namespaceUri);
         }
         return matcher.group(1);
