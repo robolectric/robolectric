@@ -36,7 +36,7 @@ public class ResourceLoaderTest {
 
     @Test
     public void shouldLoadSystemResources() throws Exception {
-        PackageResourceLoader resourceLoader = new PackageResourceLoader(resourcePath, systemResourcePath);
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
         String stringValue = resourceLoader.getStringValue(resourceLoader.getResourceExtractor().getResName(android.R.string.copy), "");
         assertEquals("Copy", stringValue);
 
