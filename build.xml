@@ -236,13 +236,13 @@
         <get src="https://s3.amazonaws.com/robolectric/android-kxml2-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
         <get src="https://s3.amazonaws.com/robolectric/android-luni-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
         <exec executable="mvn">
-            <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-base -Dversion=4.1.2_r1_rc -Dpackaging=jar -Dfile=tmp/android-base-4.1.2_r1_rc-real.jar"/>
+            <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-base -Dversion=4.1.2_r1_rc -Dclassifier=real -Dpackaging=jar -Dfile=tmp/android-base-4.1.2_r1_rc-real.jar"/>
         </exec>
         <exec executable="mvn">
-            <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-kxml2 -Dversion=4.1.2_r1_rc -Dpackaging=jar -Dfile=tmp/android-kxml2-4.1.2_r1_rc-real.jar"/>
+            <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-kxml2 -Dversion=4.1.2_r1_rc -Dclassifier=real -Dpackaging=jar -Dfile=tmp/android-kxml2-4.1.2_r1_rc-real.jar"/>
         </exec>
         <exec executable="mvn">
-            <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-luni -Dversion=4.1.2_r1_rc -Dpackaging=jar -Dfile=tmp/android-luni-4.1.2_r1_rc-real.jar"/>
+            <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-luni -Dversion=4.1.2_r1_rc -Dclassifier=real -Dpackaging=jar -Dfile=tmp/android-luni-4.1.2_r1_rc-real.jar"/>
         </exec>
     </target>
 
