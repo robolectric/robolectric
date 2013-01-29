@@ -10,17 +10,9 @@ import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
 import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
 import com.xtremelabs.robolectric.res.AndroidResourcePathFinder;
 import com.xtremelabs.robolectric.res.ResourcePath;
-import org.apache.maven.repository.internal.MavenRepositorySystemSession;
-import org.codehaus.plexus.DefaultPlexusContainer;
-import org.sonatype.aether.RepositorySystem;
-import org.sonatype.aether.RepositorySystemSession;
-import org.sonatype.aether.artifact.Artifact;
-import org.sonatype.aether.repository.LocalRepository;
-import org.sonatype.aether.repository.RemoteRepository;
-import org.sonatype.aether.resolution.ArtifactRequest;
-import org.sonatype.aether.resolution.ArtifactResolutionException;
-import org.sonatype.aether.resolution.ArtifactResult;
-import org.sonatype.aether.util.artifact.DefaultArtifact;
+import org.apache.maven.artifact.ant.DependenciesTask;
+import org.apache.maven.model.Dependency;
+import org.apache.tools.ant.Project;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -29,6 +21,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.HashMap;
+import java.util.Hashtable;
 import java.util.Map;
 
 import static com.xtremelabs.robolectric.RobolectricTestRunner.isBootstrapped;
@@ -39,7 +32,6 @@ public class RobolectricContext {
     private final AndroidManifest appManifest;
     private final RobolectricClassLoader robolectricClassLoader;
     private final ClassHandler classHandler;
-    private static RepositorySystem repositorySystem;
     public static RobolectricContext mostRecentRobolectricContext; // ick, race condition
 
     public interface Factory {
@@ -149,14 +141,12 @@ public class RobolectricContext {
     }
 
     protected RobolectricClassLoader createRobolectricClassLoader(Setup setup, ClassCache classCache, AndroidTranslator androidTranslator) {
-//            shadowWrangler.delegateBackToInstrumented = true;
         final ClassLoader parentClassLoader = this.getClass().getClassLoader();
-        ClassLoader realAndroidJarsClassLoader = new URLClassLoader(new URL[]{
-//                        parseUrl(getAndroidSdkHome() + "/add-ons/addon_google_apis_google_inc_8/libs/maps.jar"),
-                getRealAndroidArtifact("android-base"),
-                getRealAndroidArtifact("android-kxml2"),
-                getRealAndroidArtifact("android-luni")
-        }, null) {
+        ClassLoader realAndroidJarsClassLoader = new URLClassLoader(
+                artifactUrls(realAndroidDependency("android-base"),
+                        realAndroidDependency("android-kxml2"),
+                        realAndroidDependency("android-luni"))
+        , null) {
             @Override
             protected Class<?> findClass(String s) throws ClassNotFoundException {
                 try {
@@ -193,58 +183,44 @@ public class RobolectricContext {
         return new Setup();
     }
 
-    public RepositorySystem createRepositorySystem() {
-        try {
-            return new DefaultPlexusContainer().lookup(RepositorySystem.class);
-        } catch (Exception e) {
-            throw new IllegalStateException("dependency injection failed", e);
+    private URL[] artifactUrls(Dependency... dependencies) {
+        DependenciesTask dependenciesTask = new DependenciesTask();
+        configureMaven(dependenciesTask);
+        Project project = new Project();
+        dependenciesTask.setProject(project);
+        for (Dependency dependency : dependencies) {
+            dependenciesTask.addDependency(dependency);
         }
-    }
+        dependenciesTask.execute();
 
-    public RepositorySystem getRepositorySystem() {
-        return repositorySystem == null ? repositorySystem = createRepositorySystem() : repositorySystem;
-    }
-
-    private static RepositorySystemSession newSession(RepositorySystem system) {
-        MavenRepositorySystemSession session = new MavenRepositorySystemSession();
-        LocalRepository localRepo = new LocalRepository(new File(System.getProperty("user.home"), ".m2/repository"));
-        session.setLocalRepositoryManager(system.newLocalRepositoryManager(localRepo));
-
-        return session;
-    }
-
-    public RemoteRepository getCentralRepository() {
-        return new RemoteRepository("central", "default", "http://repo1.maven.org/maven2/");
-    }
-
-    private URL getRealAndroidArtifact(String artifactId) {
-        return getArtifact(new DefaultArtifact("com.squareup.robolectric", artifactId, "real", "jar", "4.1.2_r1"));
-    }
-
-    private URL getArtifact(String coords) {
-        return getArtifact(new DefaultArtifact(coords));
-    }
-
-    private URL getArtifact(Artifact artifact) {
-        RepositorySystem repositorySystem = getRepositorySystem();
-        RepositorySystemSession session = newSession(repositorySystem);
-        ArtifactRequest artifactRequest = new ArtifactRequest().setArtifact(artifact);
-        artifactRequest.addRepository(getCentralRepository());
-
-        try {
-            ArtifactResult artifactResult = repositorySystem.resolveArtifact(session, artifactRequest);
-            return parseUrl("file:" + artifactResult.getArtifact().getFile().getAbsolutePath());
-        } catch (ArtifactResolutionException e) {
-            throw new RuntimeException(e);
+        @SuppressWarnings("unchecked")
+        Hashtable<String, String> artifacts = project.getProperties();
+        URL[] urls = new URL[artifacts.size()];
+        int i = 0;
+        for (String path : artifacts.values()) {
+            try {
+                urls[i++] = new URL("file://" + path);
+            } catch (MalformedURLException e) {
+                throw new RuntimeException(e);
+            }
         }
+
+        return urls;
     }
 
-    private static URL parseUrl(String url) {
-        try {
-            return new URL(url);
-        } catch (MalformedURLException e) {
-            throw new RuntimeException(e);
-        }
+    @SuppressWarnings("UnusedParameters")
+    protected void configureMaven(DependenciesTask dependenciesTask) {
+        // maybe you want to override this method and some settings?
+    }
+
+    private Dependency realAndroidDependency(String artifactId) {
+        Dependency dependency = new Dependency();
+        dependency.setGroupId("com.squareup.robolectric");
+        dependency.setArtifactId(artifactId);
+        dependency.setVersion("4.1.2_r1");
+        dependency.setType("jar");
+        dependency.setClassifier("real");
+        return dependency;
     }
 
     /** @deprecated use {@link com.xtremelabs.robolectric.Robolectric.Reflection#setFinalStaticField(Class, String, Object)} */

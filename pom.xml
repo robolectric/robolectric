@@ -16,12 +16,6 @@
     <description>An alternative Android testing framework.</description>
     <url>http://robolectric.org/</url>
 
-    <properties>
-        <aetherVersion>1.13.1</aetherVersion>
-        <mavenVersion>3.0.4</mavenVersion>
-        <wagonVersion>2.2</wagonVersion>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>org.hamcrest</groupId>
@@ -115,44 +109,9 @@
         </dependency>
 
         <dependency>
-            <groupId>org.sonatype.aether</groupId>
-            <artifactId>aether-api</artifactId>
-            <version>${aetherVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sonatype.aether</groupId>
-            <artifactId>aether-util</artifactId>
-            <version>${aetherVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sonatype.aether</groupId>
-            <artifactId>aether-impl</artifactId>
-            <version>${aetherVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sonatype.aether</groupId>
-            <artifactId>aether-connector-file</artifactId>
-            <version>${aetherVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sonatype.aether</groupId>
-            <artifactId>aether-connector-asynchttpclient</artifactId>
-            <version>${aetherVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.sonatype.aether</groupId>
-            <artifactId>aether-connector-wagon</artifactId>
-            <version>${aetherVersion}</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.maven</groupId>
-            <artifactId>maven-aether-provider</artifactId>
-            <version>${mavenVersion}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.apache.maven.wagon</groupId>
-            <artifactId>wagon-ssh</artifactId>
-            <version>${wagonVersion}</version>
+            <artifactId>maven-ant-tasks</artifactId>
+            <version>2.1.3</version>
         </dependency>
     </dependencies>
 
