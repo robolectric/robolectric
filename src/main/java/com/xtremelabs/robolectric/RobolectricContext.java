@@ -215,9 +215,9 @@ public class RobolectricContext {
 
     private Dependency realAndroidDependency(String artifactId) {
         Dependency dependency = new Dependency();
-        dependency.setGroupId("com.squareup.robolectric");
+        dependency.setGroupId("org.robolectric");
         dependency.setArtifactId(artifactId);
-        dependency.setVersion("4.1.2_r1");
+        dependency.setVersion("4.1.2_r1_rc");
         dependency.setType("jar");
         dependency.setClassifier("real");
         return dependency;

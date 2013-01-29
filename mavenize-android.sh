@@ -1,6 +1,6 @@
 #!/bin/sh
 
-ANDROID_SOURCES_BASE=/Volumes/AndroidSource
+ANDROID_SOURCES_BASE=/Volumes/android
 ANDROID_VERSION=4.1.2_r1
 OUT=/tmp/android-1234
 
@@ -39,7 +39,7 @@ mvn install:install-file \
 mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
     -DgroupId=org.robolectric \
     -DartifactId=android-base \
-    -Dversion=$ANDROID_VERSION \
+    -Dversion=${ANDROID_VERSION}_rc \
     -Dpackaging=jar \
     -Dclassifier=real \
     -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases \
@@ -66,7 +66,7 @@ mvn install:install-file \
 mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
     -DgroupId=org.robolectric \
     -DartifactId=android-luni \
-    -Dversion=$ANDROID_VERSION \
+    -Dversion=${ANDROID_VERSION}_rc \
     -Dpackaging=jar \
     -Dclassifier=real \
     -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases \
@@ -86,7 +86,7 @@ mvn install:install-file \
 mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
     -DgroupId=org.robolectric \
     -DartifactId=android-kxml2 \
-    -Dversion=$ANDROID_VERSION \
+    -Dversion=${ANDROID_VERSION}_rc \
     -Dpackaging=jar \
     -Dclassifier=real \
     -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases \
