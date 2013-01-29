@@ -3,6 +3,7 @@ package com.xtremelabs.robolectric;
 import android.accounts.AccountManager;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
+import android.animation.ObjectAnimator;
 import android.app.*;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
@@ -510,8 +511,8 @@ public class Robolectric {
     }
 
     @SuppressWarnings("rawtypes")
-    public static ShadowAsyncTask shadowOf(AsyncTask instance) {
-        return (ShadowAsyncTask) Robolectric.shadowOf_(instance);
+	public static ShadowAsyncTask shadowOf(AsyncTask instance){
+    	return (ShadowAsyncTask) Robolectric.shadowOf_(instance);
     }
 
     public static ShadowAudioManager shadowOf(AudioManager instance) {
@@ -840,6 +841,10 @@ public class Robolectric {
 
     public static ShadowNotificationManager shadowOf(NotificationManager other) {
         return (ShadowNotificationManager) Robolectric.shadowOf_(other);
+    }
+
+    public static ShadowObjectAnimator shadowOf(ObjectAnimator instance) {
+        return (ShadowObjectAnimator) shadowOf_(instance);
     }
 
     public static ShadowPagerAdapter shadowOf(PagerAdapter instance) {

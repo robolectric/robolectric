@@ -479,6 +479,27 @@ public class ViewTest {
         assertThat(shadowOf(view).onLayoutWasCalled(), equalTo(true));
     }
 
+    @Test
+    public void setScrolls_canBeAskedFor() throws Exception {
+        view.setScrollX(234);
+        view.setScrollY(544);
+        assertThat(view.getScrollX(), equalTo(234));
+        assertThat(view.getScrollY(), equalTo(544));
+    }
+
+    @Test
+    public void setScrolls_firesOnScrollChanged() throws Exception {
+        TestView testView = new TestView(new Activity());
+        testView.setScrollX(122);
+        testView.setScrollY(150);
+        testView.setScrollX(453);
+        assertThat(testView.oldl, equalTo(122));
+        testView.setScrollY(54);
+        assertThat(testView.l, equalTo(453));
+        assertThat(testView.t, equalTo(54));
+        assertThat(testView.oldt, equalTo(150));
+    }
+
     private static class TestAnimation extends Animation {
     }
 
@@ -496,8 +517,12 @@ public class ViewTest {
         }
     }
 
-    private static class TestView extends View {
+    public static class TestView extends View {
         boolean onAnimationEndWasCalled;
+        private int l;
+        private int t;
+        private int oldl;
+        private int oldt;
 
         public TestView(Context context) {
             super(context);
@@ -507,6 +532,14 @@ public class ViewTest {
         protected void onAnimationEnd() {
             super.onAnimationEnd();
             onAnimationEndWasCalled = true;
+        }
+
+        @Override
+        public void onScrollChanged(int l, int t, int oldl, int oldt) {
+            this.l = l;
+            this.t = t;
+            this.oldl = oldl;
+            this.oldt = oldt;
         }
     }
 

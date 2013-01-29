@@ -29,6 +29,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     private Class<?> animationType;
     private static final Map<Object, Map<String, ObjectAnimator>> mapsForAnimationTargets = new HashMap<Object, Map<String, ObjectAnimator>>();
     private boolean isRunning;
+    private boolean cancelWasCalled;
 
     @Implementation
     public static ObjectAnimator ofFloat(Object target, String propertyName, float... values) {
@@ -124,6 +125,19 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     @Implementation
     public boolean isRunning() {
         return isRunning;
+    }
+
+    @Implementation
+    public void cancel() {
+        cancelWasCalled = true;
+    }
+
+    public boolean cancelWasCalled() {
+        return cancelWasCalled;
+    }
+
+    public void resetCancelWasCalled() {
+        cancelWasCalled = false;
     }
 
     public static Map<String, ObjectAnimator> getAnimatorsFor(Object target) {

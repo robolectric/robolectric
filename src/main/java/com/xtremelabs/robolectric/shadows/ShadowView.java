@@ -71,7 +71,7 @@ public class ShadowView {
     private View.OnTouchListener onTouchListener;
     protected AttributeSet attributeSet;
     private boolean drawingCacheEnabled;
-    public Point scrollToCoordinates;
+    public Point scrollToCoordinates = new Point();
     private boolean didRequestLayout;
     private Drawable background;
     private Animation animation;
@@ -1013,12 +1013,34 @@ public class ShadowView {
 
     @Implementation
     public void scrollTo(int x, int y) {
-        this.scrollToCoordinates = new Point(x, y);
+        try {
+            Method method = View.class.getDeclaredMethod("onScrollChanged", new Class[]{int.class, int.class, int.class, int.class});
+            method.setAccessible(true);
+            method.invoke(realView, x, y, scrollToCoordinates.x, scrollToCoordinates.y);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        scrollToCoordinates = new Point(x, y);
     }
 
     @Implementation
     public int getScrollX() {
         return scrollToCoordinates != null ? scrollToCoordinates.x : 0;
+    }
+
+    @Implementation
+    public int getScrollY() {
+        return scrollToCoordinates != null ? scrollToCoordinates.y : 0;
+    }
+
+    @Implementation
+    public void setScrollX(int scrollX){
+        scrollTo(scrollX, scrollToCoordinates.y);
+    }
+
+    @Implementation
+    public void setScrollY(int scrollY){
+        scrollTo(scrollToCoordinates.x, scrollY);
     }
 
     @Implementation
@@ -1039,11 +1061,6 @@ public class ShadowView {
     @Implementation
     public float getScaleY() {
         return scaleY;
-    }
-
-    @Implementation
-    public int getScrollY() {
-        return scrollToCoordinates != null ? scrollToCoordinates.y : 0;
     }
 
     @Implementation
