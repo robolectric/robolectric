@@ -252,7 +252,7 @@
         <entry key="sdk.dir" value="${basedir}/tmp/sdk/android-sdk-linux/"/>
       </propertyfile>
       <exec executable="mvn">
-          <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=10_r2 -Dpackaging=jar -Dfile=tmp/sdk/android-sdk-linux/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar"/>
+          <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=16_r2 -Dpackaging=jar -Dfile=tmp/sdk/android-sdk-linux/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar"/>
       </exec>
     </target>
 </project>
