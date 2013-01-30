@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.tester.android.view;
+package org.robolectric.tester.android.view;
 
 import android.content.ComponentName;
 import android.content.Context;

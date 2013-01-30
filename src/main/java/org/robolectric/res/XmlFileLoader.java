@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import android.content.res.Resources;
 import android.content.res.XmlResourceParser;

@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -6,14 +6,14 @@ import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.util.Transcript;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
+import static org.robolectric.util.TestUtil.assertInstanceOf;
 import static junit.framework.Assert.*;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;

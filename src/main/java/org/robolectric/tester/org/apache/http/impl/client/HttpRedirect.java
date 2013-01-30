@@ -26,7 +26,7 @@
  * <http://www.apache.org/>.
  *
  */
-package com.xtremelabs.robolectric.tester.org.apache.http.impl.client;
+package org.robolectric.tester.org.apache.http.impl.client;
 
 import java.net.URI;
 

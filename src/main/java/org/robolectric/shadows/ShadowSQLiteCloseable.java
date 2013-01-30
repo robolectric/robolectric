@@ -1,9 +1,9 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.database.sqlite.SQLiteClosable;
 
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 /**
  * Shadow for  {@code SQLiteCloseable}.  Though {@code SQLiteCloseable} is an abstract

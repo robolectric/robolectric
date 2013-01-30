@@ -1,11 +1,11 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.Context;
 import android.net.Uri;
 import android.support.v4.content.CursorLoader;
 
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 @Implements(CursorLoader.class)
 public class ShadowCursorLoader {

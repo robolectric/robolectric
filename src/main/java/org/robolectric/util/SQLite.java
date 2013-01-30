@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteException;

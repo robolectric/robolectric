@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.tester.android.util;
+package org.robolectric.tester.android.util;
 
-import com.xtremelabs.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourceExtractor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Matcher;

@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.StateListDrawable;
 import android.util.StateSet;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 import java.util.ArrayList;
 import java.util.HashMap;

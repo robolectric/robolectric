@@ -1,15 +1,15 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.res.ResourceExtractor;
-import com.xtremelabs.robolectric.tester.android.util.ResName;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.res.ResourceExtractor;
+import org.robolectric.tester.android.util.ResName;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TypedArray.class)

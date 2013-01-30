@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

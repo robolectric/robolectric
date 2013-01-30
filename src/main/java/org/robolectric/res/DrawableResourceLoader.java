@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import org.w3c.dom.Document;
 

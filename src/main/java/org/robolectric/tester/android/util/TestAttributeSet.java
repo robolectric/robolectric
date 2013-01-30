@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric.tester.android.util;
+package org.robolectric.tester.android.util;
 
 import android.util.AttributeSet;
 import android.view.View;
-import com.xtremelabs.robolectric.res.ResourceExtractor;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.util.I18nException;
+import org.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.util.I18nException;
 
 import java.util.List;
 

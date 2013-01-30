@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.Map;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,7 +15,7 @@ import org.junit.runner.RunWith;
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderOperation.Builder;
 
-import com.xtremelabs.robolectric.Robolectric;
+import org.robolectric.Robolectric;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ContentProviderOperationBuilderTest {

@@ -1,12 +1,12 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.ContentResolver;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.provider.MediaStore;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(MediaStore.class)

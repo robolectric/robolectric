@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +16,7 @@ import android.accounts.AccountManager;
 import android.app.Activity;
 import android.app.Application;
 
-import com.xtremelabs.robolectric.Robolectric;
+import org.robolectric.Robolectric;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AccountManagerTest {

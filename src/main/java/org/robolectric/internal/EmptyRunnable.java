@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.internal;
+package org.robolectric.internal;
 
 public class EmptyRunnable implements Runnable {
     @Override

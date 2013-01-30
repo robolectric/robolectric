@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.tester.android.content;
+package org.robolectric.tester.android.content;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

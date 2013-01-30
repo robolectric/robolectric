@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNotNull;
@@ -10,8 +10,8 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertThat;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

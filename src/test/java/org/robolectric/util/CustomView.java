@@ -1,9 +1,9 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.LinearLayout;
-import com.xtremelabs.robolectric.R;
+import org.robolectric.R;
 
 public class CustomView extends LinearLayout {
     public int attributeResourceValue;

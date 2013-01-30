@@ -1,8 +1,9 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
-import com.xtremelabs.robolectric.tester.android.util.ResName;
+import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.tester.android.util.ResName;
 import org.junit.Test;
+import org.robolectric.util.TestUtil;
 import org.w3c.dom.Node;
 
 import static org.junit.Assert.assertEquals;
@@ -11,9 +12,9 @@ import static org.mockito.Mockito.when;
 
 public class AttributeTest {
     @Test public void shouldConstructFromW3cNode() throws Exception {
-        Node node = mockNode("http://schemas.android.com/apk/res/com.xtremelabs.robolectric", "tagName", "contents");
+        Node node = mockNode("http://schemas.android.com/apk/res/org.robolectric", "tagName", "contents");
         Attribute attribute = new Attribute(node, new XmlLoader.XmlContext("package.name", null));
-        assertEquals(new ResName("com.xtremelabs.robolectric", "attr", "tagName"), attribute.resName);
+        assertEquals(new ResName(TestUtil.TEST_PACKAGE, "attr", "tagName"), attribute.resName);
         assertEquals("contents", attribute.value);
     }
 

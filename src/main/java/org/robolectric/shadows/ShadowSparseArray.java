@@ -15,18 +15,18 @@
  * limitations under the License.
  */
 
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 import java.util.Arrays;
 
 import android.util.SparseArray;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
 /**
  * Shadow implementation of SparseArray. Basically copied & pasted the

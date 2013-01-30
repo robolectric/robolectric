@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.Context;
 import android.view.MotionEvent;
 import android.view.ScaleGestureDetector;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ScaleGestureDetector.class)

@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.internal;
+package org.robolectric.internal;
 
 /**
  * Indicates that a class should not be stripped/instrumented under any circumstances.

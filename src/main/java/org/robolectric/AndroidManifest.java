@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
 import android.app.Application;
-import com.xtremelabs.robolectric.internal.ClassNameResolver;
-import com.xtremelabs.robolectric.res.ResourcePath;
+import org.robolectric.internal.ClassNameResolver;
+import org.robolectric.res.ResourcePath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Properties;
 
 import static android.content.pm.ApplicationInfo.*;
-import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
+import static org.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 
 public class AndroidManifest {
     private final File androidManifestFile;

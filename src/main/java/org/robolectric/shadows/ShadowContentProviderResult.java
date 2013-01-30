@@ -1,12 +1,12 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import java.lang.reflect.Field;
 
 import android.content.ContentProviderResult;
 import android.net.Uri;
 
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
 @Implements(ContentProviderResult.class)
 public class ShadowContentProviderResult {

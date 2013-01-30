@@ -1,14 +1,14 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.content.Context.WIFI_SERVICE;
-import static com.xtremelabs.robolectric.Robolectric.application;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.application;
+import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
 

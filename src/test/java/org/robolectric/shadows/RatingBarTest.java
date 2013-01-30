@@ -1,11 +1,11 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -14,8 +14,8 @@ import android.app.Activity;
 import android.content.Context;
 import android.widget.RatingBar;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.util.Transcript;
+import org.robolectric.Robolectric;
+import org.robolectric.util.Transcript;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RatingBarTest {

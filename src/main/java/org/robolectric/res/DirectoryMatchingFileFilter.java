@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import java.io.File;
 import java.io.FileFilter;

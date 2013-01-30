@@ -1,15 +1,15 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
 import android.preference.DialogPreference;
 import android.util.AttributeSet;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.res.PackageResourceLoader;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.res.PackageResourceLoader;
+import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,9 +1,9 @@
-package com.xtremelabs.robolectric.shadows.testing;
+package org.robolectric.shadows.testing;
 
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
-import com.xtremelabs.robolectric.util.Transcript;
+import org.robolectric.util.Transcript;
 
 public class OnMethodTestActivity extends Activity {
     private final Transcript transcript;

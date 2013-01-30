@@ -1,7 +1,7 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import android.R;
-import com.xtremelabs.robolectric.util.PropertiesHelper;
+import org.robolectric.util.PropertiesHelper;
 
 import java.io.BufferedReader;
 import java.io.File;

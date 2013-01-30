@@ -5,12 +5,12 @@
  * should not be modified by hand.
  */
 
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
 public final class R {
     /* To regenerate ids, run this ruby script:
 
-        path_to_r = "/path/to/src/test/java/com/xtremelabs/robolectric/R.java"
+        path_to_r = "/path/to/src/test/java/org/robolectric/R.java"
 
         if path_to_r =~ /^\/path\/to/
           raise "please change the path to this file!"

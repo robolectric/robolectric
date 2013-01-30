@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -9,7 +9,7 @@ import static org.junit.Assert.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -25,7 +25,7 @@ import android.content.pm.ResolveInfo;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
-import com.xtremelabs.robolectric.Robolectric;
+import org.robolectric.Robolectric;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RobolectricPackageManagerTest {

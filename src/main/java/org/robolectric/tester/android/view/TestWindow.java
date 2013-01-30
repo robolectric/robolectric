@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.tester.android.view;
+package org.robolectric.tester.android.view;
 
 import android.R;
 import android.content.Context;
@@ -8,9 +8,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.*;
 import android.widget.FrameLayout;
-import com.xtremelabs.robolectric.Robolectric;
+import org.robolectric.Robolectric;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 public class TestWindow extends Window {
     public int flags;

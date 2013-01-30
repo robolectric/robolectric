@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
 import java.util.ArrayList;
 import java.util.Arrays;

@@ -1,7 +1,7 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.hasItem;
 import static org.hamcrest.CoreMatchers.is;
@@ -18,7 +18,7 @@ import java.util.List;
 import android.accounts.Account;
 import android.content.*;
 import android.os.Bundle;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -29,11 +29,11 @@ import android.database.Cursor;
 import android.net.Uri;
 import android.os.RemoteException;
 
-import com.xtremelabs.robolectric.tester.android.database.TestCursor;
+import org.robolectric.tester.android.database.TestCursor;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ContentResolverTest {
-    static final String AUTHORITY = "com.xtremelabs.robolectric";
+    static final String AUTHORITY = "org.robolectric";
 
     private ContentResolver contentResolver;
     private ShadowContentResolver shadowContentResolver;
@@ -211,7 +211,7 @@ public class ContentResolverTest {
                 new ContentProviderResult(1),
         };
         shadowContentResolver.setContentProviderResult(contentProviderResults);
-        Uri uri = Uri.parse("content://com.xtremelabs.robolectric");
+        Uri uri = Uri.parse("content://org.robolectric");
         ArrayList<ContentProviderOperation> operations = new ArrayList<ContentProviderOperation>();
         operations.add(ContentProviderOperation.newInsert(uri)
                 .withValue("column1", "foo")

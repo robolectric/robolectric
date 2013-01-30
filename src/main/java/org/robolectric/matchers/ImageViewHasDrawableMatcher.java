@@ -1,14 +1,14 @@
-package com.xtremelabs.robolectric.matchers;
+package org.robolectric.matchers;
 
 import android.widget.ImageView;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.res.ResourceLoader;
+import org.robolectric.Robolectric;
+import org.robolectric.res.ResourceLoader;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.junit.internal.matchers.TypeSafeMatcher;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 public class ImageViewHasDrawableMatcher<T extends ImageView> extends TypeSafeMatcher<T> {
     private int expectedResourceId;

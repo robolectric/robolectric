@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.Context;
 import android.database.Cursor;
@@ -27,9 +27,9 @@ import android.widget.SimpleCursorAdapter.CursorToStringConverter;
 import android.widget.SimpleCursorAdapter.ViewBinder;
 import android.widget.TextView;
 
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
 /**
  * An easy adapter to map columns from a cursor to TextViews or ImageViews
@@ -38,7 +38,7 @@ import com.xtremelabs.robolectric.internal.RealObject;
  * the appearance of these views.
  *
  * Binding occurs in two phases. First, if a
- * {@link com.xtremelabs.robolectric.shadows.ShadowSimpleCursorAdapter.ViewBinder} is available,
+ * {@link org.robolectric.shadows.ShadowSimpleCursorAdapter.ViewBinder} is available,
  * {@link ViewBinder#setViewValue(android.view.View, android.database.Cursor, int)}
  * is invoked. If the returned value is true, binding has occured. If the
  * returned value is false and the view to bind is a TextView,
@@ -49,7 +49,7 @@ import com.xtremelabs.robolectric.internal.RealObject;
  *
  * If this adapter is used with filtering, for instance in an
  * {@link android.widget.AutoCompleteTextView}, you can use the
- * {@link com.xtremelabs.robolectric.shadows.ShadowSimpleCursorAdapter.CursorToStringConverter} and the
+ * {@link org.robolectric.shadows.ShadowSimpleCursorAdapter.CursorToStringConverter} and the
  * {@link android.widget.FilterQueryProvider} interfaces
  * to get control over the filtering process. You can refer to
  * {@link #convertToString(android.database.Cursor)} and
@@ -106,7 +106,7 @@ public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
      * "from" parameter.
      *
      * Binding occurs in two phases. First, if a
-     * {@link com.xtremelabs.robolectric.shadows.ShadowSimpleCursorAdapter.ViewBinder} is available,
+     * {@link org.robolectric.shadows.ShadowSimpleCursorAdapter.ViewBinder} is available,
      * {@link ViewBinder#setViewValue(android.view.View, android.database.Cursor, int)}
      * is invoked. If the returned value is true, binding has occured. If the
      * returned value is false and the view to bind is a TextView,
@@ -120,7 +120,7 @@ public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
      * @see android.widget.CursorAdapter#bindView(android.view.View,
      *      android.content.Context, android.database.Cursor)
      * @see #getViewBinder()
-     * @see #setViewBinder(com.xtremelabs.robolectric.shadows.ShadowSimpleCursorAdapter.ViewBinder)
+     * @see #setViewBinder(org.robolectric.shadows.ShadowSimpleCursorAdapter.ViewBinder)
      * @see #setViewImage(ImageView, String)
      * @see #setViewText(TextView, String)
      */
@@ -164,7 +164,7 @@ public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
      * @return a ViewBinder or null if the binder does not exist
      *
      * @see #bindView(android.view.View, android.content.Context, android.database.Cursor)
-     * @see #setViewBinder(com.xtremelabs.robolectric.shadows.ShadowSimpleCursorAdapter.ViewBinder)
+     * @see #setViewBinder(org.robolectric.shadows.ShadowSimpleCursorAdapter.ViewBinder)
      */
     @Implementation
     public ViewBinder getViewBinder() {
@@ -233,7 +233,7 @@ public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
      *
      * @see android.widget.CursorAdapter#convertToString(android.database.Cursor)
      * @see #setStringConversionColumn(int)
-     * @see #setCursorToStringConverter(com.xtremelabs.robolectric.shadows.ShadowSimpleCursorAdapter.CursorToStringConverter)
+     * @see #setCursorToStringConverter(org.robolectric.shadows.ShadowSimpleCursorAdapter.CursorToStringConverter)
      * @see #getCursorToStringConverter()
      */
     @Implementation
@@ -252,7 +252,7 @@ public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
      *
      * @see android.widget.CursorAdapter#convertToString(android.database.Cursor)
      * @see #getStringConversionColumn()
-     * @see #setCursorToStringConverter(com.xtremelabs.robolectric.shadows.ShadowSimpleCursorAdapter.CursorToStringConverter)
+     * @see #setCursorToStringConverter(org.robolectric.shadows.ShadowSimpleCursorAdapter.CursorToStringConverter)
      * @see #getCursorToStringConverter()
      */
     @Implementation
@@ -265,9 +265,9 @@ public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
      * into a String.
      *
      * @return null if the converter does not exist or an instance of
-     *         {@link com.xtremelabs.robolectric.shadows.ShadowSimpleCursorAdapter.CursorToStringConverter}
+     *         {@link org.robolectric.shadows.ShadowSimpleCursorAdapter.CursorToStringConverter}
      *
-     * @see #setCursorToStringConverter(com.xtremelabs.robolectric.shadows.ShadowSimpleCursorAdapter.CursorToStringConverter)
+     * @see #setCursorToStringConverter(org.robolectric.shadows.ShadowSimpleCursorAdapter.CursorToStringConverter)
      * @see #getStringConversionColumn()
      * @see #setStringConversionColumn(int)
      * @see android.widget.CursorAdapter#convertToString(android.database.Cursor)
@@ -284,7 +284,7 @@ public class ShadowSimpleCursorAdapter extends ShadowResourceCursorAdapter {
      * @param cursorToStringConverter the Cursor to String converter, or
      *        null to remove the converter
      *
-     * @see #setCursorToStringConverter(com.xtremelabs.robolectric.shadows.ShadowSimpleCursorAdapter.CursorToStringConverter)
+     * @see #setCursorToStringConverter(org.robolectric.shadows.ShadowSimpleCursorAdapter.CursorToStringConverter)
      * @see #getStringConversionColumn()
      * @see #setStringConversionColumn(int)
      * @see android.widget.CursorAdapter#convertToString(android.database.Cursor)

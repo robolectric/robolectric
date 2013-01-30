@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -8,16 +8,16 @@ import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.widget.ImageView;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.application;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.Robolectric.visualize;
+import static org.robolectric.Robolectric.application;
+import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.visualize;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -41,13 +41,13 @@ public class ImageViewTest {
     @Test
     public void shouldDrawWithImageMatrix() throws Exception {
         imageView.setImageMatrix(new Matrix());
-        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image",
+        assertEquals("Bitmap for resource:org.robolectric:drawable/an_image",
                 visualize(imageView));
 
         Matrix matrix = new Matrix();
         matrix.setTranslate(15, 20);
         imageView.setImageMatrix(matrix);
-        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image at (15,20)",
+        assertEquals("Bitmap for resource:org.robolectric:drawable/an_image at (15,20)",
                 visualize(imageView));
     }
 
@@ -56,15 +56,15 @@ public class ImageViewTest {
         Matrix matrix = new Matrix();
         matrix.setTranslate(15, 20);
         imageView.setImageMatrix(matrix);
-        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image at (15,20)",
+        assertEquals("Bitmap for resource:org.robolectric:drawable/an_image at (15,20)",
                 visualize(imageView));
 
         matrix.setTranslate(30, 40);
-        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image at (15,20)",
+        assertEquals("Bitmap for resource:org.robolectric:drawable/an_image at (15,20)",
                 visualize(imageView));
 
         imageView.setImageMatrix(matrix);
-        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image at (30,40)",
+        assertEquals("Bitmap for resource:org.robolectric:drawable/an_image at (30,40)",
                 visualize(imageView));
     }
 

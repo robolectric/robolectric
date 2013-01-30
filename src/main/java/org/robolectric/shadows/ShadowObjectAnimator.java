@@ -1,12 +1,12 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.animation.ObjectAnimator;
 import android.os.Handler;
 import android.os.Looper;
-import com.xtremelabs.robolectric.RobolectricShadowOfLevel16;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import org.robolectric.RobolectricShadowOfLevel16;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
 import java.lang.reflect.Method;
 

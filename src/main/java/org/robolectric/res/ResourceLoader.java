@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import android.content.Context;
 import android.content.res.Resources;
@@ -6,7 +6,7 @@ import android.content.res.XmlResourceParser;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceScreen;
 import android.view.View;
-import com.xtremelabs.robolectric.tester.android.util.ResName;
+import org.robolectric.tester.android.util.ResName;
 
 import java.io.InputStream;
 

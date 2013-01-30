@@ -1,13 +1,13 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.util.SQLite.*;
+import static org.robolectric.util.SQLite.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 

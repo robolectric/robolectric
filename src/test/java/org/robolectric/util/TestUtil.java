@@ -1,9 +1,9 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
-import com.xtremelabs.robolectric.AndroidManifest;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.res.AndroidResourcePathFinder;
-import com.xtremelabs.robolectric.res.ResourcePath;
+import org.robolectric.AndroidManifest;
+import org.robolectric.R;
+import org.robolectric.res.AndroidResourcePathFinder;
+import org.robolectric.res.ResourcePath;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -18,7 +18,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
-import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
+import static org.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 import static org.junit.Assert.assertTrue;
 
 public abstract class TestUtil {

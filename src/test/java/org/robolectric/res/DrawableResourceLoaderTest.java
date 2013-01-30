@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import android.content.res.Resources;
 import android.graphics.drawable.AnimationDrawable;
@@ -7,16 +7,16 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.StateListDrawable;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.shadows.ShadowStateListDrawable;
-import com.xtremelabs.robolectric.tester.android.util.ResName;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.shadows.ShadowStateListDrawable;
+import org.robolectric.tester.android.util.ResName;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.util.TestUtil.*;
+import static org.robolectric.util.TestUtil.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.junit.Assert.assertEquals;

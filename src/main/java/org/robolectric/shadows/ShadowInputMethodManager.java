@@ -1,12 +1,12 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.os.IBinder;
 import android.os.ResultReceiver;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 @Implements(InputMethodManager.class)
 public class ShadowInputMethodManager {

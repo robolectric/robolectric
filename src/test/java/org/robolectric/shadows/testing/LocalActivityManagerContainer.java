@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows.testing;
+package org.robolectric.shadows.testing;
 
 import android.app.Activity;
 import android.app.LocalActivityManager;
@@ -8,7 +8,7 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.Window;
 import android.widget.LinearLayout;
-import com.xtremelabs.robolectric.R;
+import org.robolectric.R;
 
 @SuppressWarnings("UnusedDeclaration")
 // Used in lam_outer.xml

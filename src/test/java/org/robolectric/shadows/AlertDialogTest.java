@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static org.hamcrest.CoreMatchers.*;
@@ -9,7 +9,7 @@ import static org.junit.Assert.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -22,8 +22,8 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AlertDialogTest {

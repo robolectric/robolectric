@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
@@ -8,15 +8,15 @@ import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
-import com.xtremelabs.robolectric.ApplicationResolver;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.res.PackageResourceLoader;
-import com.xtremelabs.robolectric.res.ResourceExtractor;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.tester.android.util.ResName;
-import com.xtremelabs.robolectric.util.TestBroadcastReceiver;
+import org.robolectric.ApplicationResolver;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.res.PackageResourceLoader;
+import org.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.tester.android.util.ResName;
+import org.robolectric.util.TestBroadcastReceiver;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,8 +24,8 @@ import org.junit.runner.RunWith;
 import java.io.FileDescriptor;
 import java.util.List;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
+import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.util.TestUtil.newConfig;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.sameInstance;
@@ -100,8 +100,8 @@ public class ApplicationTest {
     @Test
     public void packageManager_shouldKnowApplicationName() throws Exception {
         Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithAppName.xml")).resolveApplication();
-        assertEquals("com.xtremelabs.robolectric.TestApplication",
-                application.getPackageManager().getApplicationInfo("com.xtremelabs.robolectric", 0).name);
+        assertEquals("org.robolectric.TestApplication",
+                application.getPackageManager().getApplicationInfo("org.robolectric", 0).name);
     }
 
     @Test

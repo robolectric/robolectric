@@ -1,9 +1,9 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.accounts.Account;
 import android.content.PeriodicSync;
 import android.os.Bundle;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

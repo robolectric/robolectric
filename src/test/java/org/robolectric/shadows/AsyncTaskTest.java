@@ -1,17 +1,17 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import java.util.concurrent.TimeUnit;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.os.AsyncTask;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.util.Join;
-import com.xtremelabs.robolectric.util.Transcript;
+import org.robolectric.Robolectric;
+import org.robolectric.util.Join;
+import org.robolectric.util.Transcript;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;

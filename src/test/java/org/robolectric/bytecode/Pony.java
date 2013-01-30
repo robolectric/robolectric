@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.Instrument;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.Instrument;
 
 @Instrument
 public class Pony {

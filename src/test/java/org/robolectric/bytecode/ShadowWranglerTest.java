@@ -1,12 +1,12 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.Instrument;
-import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.util.I18nException;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.Instrument;
+import org.robolectric.internal.RealObject;
+import org.robolectric.util.I18nException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,8 +15,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import static com.xtremelabs.robolectric.Robolectric.bindShadowClass;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
+import static org.robolectric.Robolectric.bindShadowClass;
+import static org.robolectric.Robolectric.shadowOf_;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.core.StringContains.containsString;

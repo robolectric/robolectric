@@ -14,11 +14,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.util.SparseArray;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

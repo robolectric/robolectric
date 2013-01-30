@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.hardware.Camera;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
 /**
  * Shadow for the Android {@code Camera.Size} value object.

@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.test;
+package org.robolectric.test;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

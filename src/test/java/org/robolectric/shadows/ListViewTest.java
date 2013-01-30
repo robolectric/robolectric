@@ -1,11 +1,11 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.util.SparseBooleanArray;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.*;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.util.Transcript;
+import org.robolectric.TestRunners;
+import org.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -15,8 +15,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
-import static com.xtremelabs.robolectric.Robolectric.application;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.application;
+import static org.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;

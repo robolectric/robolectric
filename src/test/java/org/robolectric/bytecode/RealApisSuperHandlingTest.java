@@ -1,17 +1,17 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.Instrument;
-import com.xtremelabs.robolectric.internal.RealObject;
+import org.robolectric.TestRunners;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.Instrument;
+import org.robolectric.internal.RealObject;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 
-import static com.xtremelabs.robolectric.Robolectric.bindShadowClasses;
-import static com.xtremelabs.robolectric.Robolectric.directlyOn;
+import static org.robolectric.Robolectric.bindShadowClasses;
+import static org.robolectric.Robolectric.directlyOn;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.RealApisWithoutDefaults.class)

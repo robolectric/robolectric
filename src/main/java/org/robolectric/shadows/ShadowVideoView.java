@@ -1,12 +1,12 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import static org.junit.Assert.assertThat;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.widget.VideoView;
 
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 @Implements(VideoView.class)
 @SuppressWarnings({"UnusedDeclaration"})

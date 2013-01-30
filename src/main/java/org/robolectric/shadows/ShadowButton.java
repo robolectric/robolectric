@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.widget.Button;
 import android.widget.TextView;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implements;
 
 @Implements(Button.class)
 public class ShadowButton extends ShadowTextView {

@@ -1,9 +1,9 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.animation.Animator;
 import android.animation.TimeInterpolator;
-import com.xtremelabs.robolectric.RobolectricShadowOfLevel16;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.RobolectricShadowOfLevel16;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

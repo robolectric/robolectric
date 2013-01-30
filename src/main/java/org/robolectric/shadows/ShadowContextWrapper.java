@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.*;
 import android.content.pm.ApplicationInfo;
@@ -6,12 +6,12 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Looper;
-import com.xtremelabs.robolectric.AndroidManifest;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.res.RobolectricPackageManager;
-import com.xtremelabs.robolectric.tester.android.content.TestSharedPreferences;
+import org.robolectric.AndroidManifest;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
+import org.robolectric.res.RobolectricPackageManager;
+import org.robolectric.tester.android.content.TestSharedPreferences;
 
 import java.io.File;
 import java.util.HashSet;
@@ -20,7 +20,7 @@ import java.util.Set;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(ContextWrapper.class)

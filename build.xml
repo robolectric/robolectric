@@ -81,7 +81,7 @@
     <property name="downloads.dir" value="${pages.dir}/downloads"/>
     <property name="javadoc.out.dir" value="${pages.dir}/javadoc"/>
 
-    <property name="base.package" value="com.xtremelabs.robolectric"/>
+    <property name="base.package" value="org.robolectric"/>
 
     <property environment="env"/>
     <condition property="build.number" value="${env.BUILD_NUMBER}" else="unknown">

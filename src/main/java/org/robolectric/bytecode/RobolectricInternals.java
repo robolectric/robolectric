@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;

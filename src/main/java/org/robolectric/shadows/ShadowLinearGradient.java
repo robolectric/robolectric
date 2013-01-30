@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.graphics.LinearGradient;
 import android.graphics.Shader;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(LinearGradient.class)

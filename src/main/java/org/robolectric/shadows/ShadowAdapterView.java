@@ -1,18 +1,18 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.database.DataSetObserver;
 import android.os.Handler;
 import android.view.View;
 import android.widget.Adapter;
 import android.widget.AdapterView;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AdapterView.class)
@@ -142,7 +142,7 @@ public class ShadowAdapterView extends ShadowViewGroup {
      * on the class, so be sure to call it again and set it back to 0 at the end of your test.
      *
      * @param countOfRows The number of rows to ignore at the end of the list.
-     * @see com.xtremelabs.robolectric.shadows.ShadowAdapterView#checkValidity()
+     * @see org.robolectric.shadows.ShadowAdapterView#checkValidity()
      */
     public static void ignoreRowsAtEndOfListDuringValidation(int countOfRows) {
         ignoreRowsAtEndOfList = countOfRows;

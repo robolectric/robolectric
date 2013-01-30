@@ -1,14 +1,14 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.util.DisplayMetrics;
 import android.view.Display;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.newInstanceOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)

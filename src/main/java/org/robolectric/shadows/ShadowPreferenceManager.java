@@ -1,17 +1,17 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import com.xtremelabs.robolectric.tester.android.content.TestSharedPreferences;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.tester.android.content.TestSharedPreferences;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 /**
- * Shadow for {@code PreferenceManager} that returns instances of the {@link com.xtremelabs.robolectric.tester.android.content.TestSharedPreferences} utility class
+ * Shadow for {@code PreferenceManager} that returns instances of the {@link org.robolectric.tester.android.content.TestSharedPreferences} utility class
  */
 @Implements(PreferenceManager.class)
 public class ShadowPreferenceManager {

@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.UriMatcher;
 import android.net.Uri;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.shadows.ShadowUriMatcher.MatchNode;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.shadows.ShadowUriMatcher.MatchNode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

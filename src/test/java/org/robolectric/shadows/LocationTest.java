@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.location.Location;
 import android.location.LocationManager;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

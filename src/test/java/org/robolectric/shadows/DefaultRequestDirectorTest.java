@@ -1,11 +1,11 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
-import com.xtremelabs.robolectric.tester.org.apache.http.RequestMatcher;
-import com.xtremelabs.robolectric.tester.org.apache.http.TestHttpResponse;
-import com.xtremelabs.robolectric.util.Strings;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.tester.org.apache.http.FakeHttpLayer;
+import org.robolectric.tester.org.apache.http.RequestMatcher;
+import org.robolectric.tester.org.apache.http.TestHttpResponse;
+import org.robolectric.util.Strings;
 import junit.framework.Assert;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -30,7 +30,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.*;
 

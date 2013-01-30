@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import android.content.ComponentName;
 import android.content.ContextWrapper;
@@ -8,8 +8,8 @@ import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageInfo;
 import android.content.pm.ResolveInfo;
 import android.graphics.drawable.Drawable;
-import com.xtremelabs.robolectric.AndroidManifest;
-import com.xtremelabs.robolectric.tester.android.content.pm.StubPackageManager;
+import org.robolectric.AndroidManifest;
+import org.robolectric.tester.android.content.pm.StubPackageManager;
 
 import java.util.*;
 

@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -8,9 +8,9 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -18,7 +18,7 @@ import org.junit.runner.RunWith;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
@@ -46,7 +46,7 @@ public class BitmapDrawableTest {
     @Test
     public void getBitmap_shouldReturnBitmapUsedToDraw() throws Exception {
         BitmapDrawable drawable = (BitmapDrawable) resources.getDrawable(R.drawable.an_image);
-        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image", shadowOf(drawable.getBitmap()).getDescription());
+        assertEquals("Bitmap for resource:org.robolectric:drawable/an_image", shadowOf(drawable.getBitmap()).getDescription());
     }
 
     @Test
@@ -64,7 +64,7 @@ public class BitmapDrawableTest {
         Canvas canvas = new Canvas();
         drawable.draw(canvas);
 
-        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image", shadowOf(canvas).getDescription());
+        assertEquals("Bitmap for resource:org.robolectric:drawable/an_image", shadowOf(canvas).getDescription());
     }
 
     @Test
@@ -81,7 +81,7 @@ public class BitmapDrawableTest {
         Canvas canvas = new Canvas();
         drawable.draw(canvas);
 
-        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>",
+        assertEquals("Bitmap for resource:org.robolectric:drawable/an_image with ColorMatrixColorFilter<1,0,0,0,0,0,1,0,0,0,0,0,1,0,0,0,0,0,1,0>",
                 shadowOf(canvas).getDescription());
     }
 

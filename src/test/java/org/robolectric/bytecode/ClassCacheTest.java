@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
 import org.junit.Assert;
 import org.junit.Test;

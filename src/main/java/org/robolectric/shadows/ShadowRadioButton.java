@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.view.ViewParent;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 /**
  * Shadows the {@code android.widget.RadioButton} class.

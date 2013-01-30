@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.text.TextPaint;
 import android.text.TextUtils;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 
 import java.util.Arrays;
 

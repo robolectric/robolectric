@@ -1,9 +1,9 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 @Implements(LinearLayout.class)
 public class ShadowLinearLayout extends ShadowViewGroup {

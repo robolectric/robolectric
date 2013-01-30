@@ -1,16 +1,16 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.util.TestUtil;
+import org.robolectric.R;
+import org.robolectric.TestRunners;
+import org.robolectric.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.io.InputStream;
 
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
-import static com.xtremelabs.robolectric.util.TestUtil.testResources;
+import static org.robolectric.util.TestUtil.resourceFile;
+import static org.robolectric.util.TestUtil.testResources;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)

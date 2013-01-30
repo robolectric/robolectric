@@ -1,14 +1,14 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import android.content.Context;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.util.AttributeSet;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
-import com.xtremelabs.robolectric.util.I18nException;
+import org.robolectric.Robolectric;
+import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.util.I18nException;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
@@ -21,7 +21,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 public class PreferenceLoader extends XmlLoader {
 

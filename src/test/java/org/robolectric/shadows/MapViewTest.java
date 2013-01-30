@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.graphics.Point;
@@ -6,13 +6,13 @@ import android.view.MotionEvent;
 import android.view.View;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.bytecode.AndroidTranslatorTest;
+import org.robolectric.TestRunners;
+import org.robolectric.bytecode.AndroidTranslatorTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.shadows.ShadowMapView.toE6;
+import static org.robolectric.shadows.ShadowMapView.toE6;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;

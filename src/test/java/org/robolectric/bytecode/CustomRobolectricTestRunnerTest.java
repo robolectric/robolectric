@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
 import android.app.Application;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;

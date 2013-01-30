@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;

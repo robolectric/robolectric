@@ -1,11 +1,11 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
-import com.xtremelabs.robolectric.tester.android.util.ResName;
-import com.xtremelabs.robolectric.util.TestUtil;
+import org.robolectric.tester.android.util.ResName;
+import org.robolectric.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.xtremelabs.robolectric.util.TestUtil.testResources;
+import static org.robolectric.util.TestUtil.testResources;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 

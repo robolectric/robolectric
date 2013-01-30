@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.TabActivity;
@@ -7,12 +7,12 @@ import android.widget.TabHost;
 import android.widget.TabHost.TabContentFactory;
 import android.widget.TabWidget;
 import android.widget.TextView;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.R;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
@@ -124,10 +124,10 @@ public class TabHostTest {
     @Test
     public void shouldRetrieveTheCurrentViewFromViewId() {
     	Activity a = new Activity();
-    	a.setContentView(com.xtremelabs.robolectric.R.layout.main);
+    	a.setContentView(org.robolectric.R.layout.main);
     	TabHost tabHost = new TabHost(a);
     	TabHost.TabSpec foo = tabHost.newTabSpec("Foo")
-    	.setContent(com.xtremelabs.robolectric.R.id.title);
+    	.setContent(org.robolectric.R.id.title);
 
     	 tabHost.addTab(foo);
          tabHost.setCurrentTabByTag("Foo");

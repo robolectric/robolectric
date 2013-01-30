@@ -1,12 +1,12 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
-import com.xtremelabs.robolectric.R;
+import org.robolectric.R;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.xtremelabs.robolectric.util.TestUtil.systemResources;
-import static com.xtremelabs.robolectric.util.TestUtil.testResources;
+import static org.robolectric.util.TestUtil.systemResources;
+import static org.robolectric.util.TestUtil.testResources;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
@@ -44,6 +44,6 @@ public class ResourceExtractorTest {
 
     @Test public void shouldRetainPackageNameForFullyQualifiedQueries() throws Exception {
         assertThat(resourceExtractor.getResName(android.R.id.text1).getFullyQualifiedName(), equalTo("android:id/text1"));
-        assertThat(resourceExtractor.getResName(R.id.burritos).getFullyQualifiedName(), equalTo("com.xtremelabs.robolectric:id/burritos"));
+        assertThat(resourceExtractor.getResName(R.id.burritos).getFullyQualifiedName(), equalTo("org.robolectric:id/burritos"));
     }
 }

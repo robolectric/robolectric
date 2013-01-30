@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
-import com.xtremelabs.robolectric.util.Transcript;
+import org.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;

@@ -1,7 +1,7 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.widget.ImageButton;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implements;
 
 @Implements(ImageButton.class)
 public class ShadowImageButton extends ShadowImageView {

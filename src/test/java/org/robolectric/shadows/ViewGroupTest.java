@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.app.Application;
 import android.view.View;
@@ -10,9 +10,9 @@ import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,7 +21,7 @@ import org.junit.runner.RunWith;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
@@ -230,7 +230,7 @@ public class ViewGroupTest {
         assertEquals("<FrameLayout>\n" +
                 "  <View/>\n" +
                 "  <View/>\n" +
-                "  <FrameLayout id=\"com.xtremelabs.robolectric:id/snippet_text\">\n" +
+                "  <FrameLayout id=\"org.robolectric:id/snippet_text\">\n" +
                 "    <View/>\n" +
                 "    <View visibility=\"GONE\"/>\n" +
                 "    <TextView visibility=\"INVISIBLE\" text=\"Here&apos;s some text!\"/>\n" +

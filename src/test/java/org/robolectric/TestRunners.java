@@ -1,13 +1,13 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
-import com.xtremelabs.robolectric.bytecode.AndroidTranslatorClassInstrumentedTest;
-import com.xtremelabs.robolectric.bytecode.Setup;
+import org.robolectric.bytecode.AndroidTranslatorClassInstrumentedTest;
+import org.robolectric.bytecode.Setup;
 import javassist.CtClass;
 import org.junit.runners.model.InitializationError;
 
 import java.lang.reflect.Method;
 
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static org.robolectric.util.TestUtil.resourceFile;
 
 public class TestRunners {
     public static class WithCustomClassList extends RobolectricTestRunner {

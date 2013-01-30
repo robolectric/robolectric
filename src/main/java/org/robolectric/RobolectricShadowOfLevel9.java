@@ -1,11 +1,11 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.nfc.NfcAdapter;
-import com.xtremelabs.robolectric.shadows.ShadowNdefMessage;
-import com.xtremelabs.robolectric.shadows.ShadowNdefRecord;
-import com.xtremelabs.robolectric.shadows.ShadowNfcAdapter;
+import org.robolectric.shadows.ShadowNdefMessage;
+import org.robolectric.shadows.ShadowNdefRecord;
+import org.robolectric.shadows.ShadowNfcAdapter;
 
 public class RobolectricShadowOfLevel9 {
     private RobolectricShadowOfLevel9() { }

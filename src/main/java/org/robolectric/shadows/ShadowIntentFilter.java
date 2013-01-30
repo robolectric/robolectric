@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
+import static org.robolectric.Robolectric.shadowOf_;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -9,8 +9,8 @@ import java.util.Set;
 
 import android.content.IntentFilter;
 
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 /**
  * Shadow of {@code IntentFilter} implemented with a {@link java.util.List}

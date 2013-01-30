@@ -1,22 +1,21 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import com.xtremelabs.robolectric.res.AndroidResourcePathFinder;
-import com.xtremelabs.robolectric.res.ResourcePath;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.res.ResourcePath;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.pm.ApplicationInfo.*;
-import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.util.TestUtil.newConfig;
+import static org.robolectric.util.TestUtil.resourceFile;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AndroidManifestTest {
@@ -26,26 +25,26 @@ public class AndroidManifestTest {
 
         assertEquals(7, config.getReceiverCount());
 
-        assertEquals("com.xtremelabs.robolectric.AndroidManifestTest.ConfigTestReceiver", config.getReceiverClassName(0));
-        assertEquals("com.xtremelabs.robolectric.ACTION1", config.getReceiverIntentFilterActions(0).get(0));
+        assertEquals("org.robolectric.AndroidManifestTest.ConfigTestReceiver", config.getReceiverClassName(0));
+        assertEquals("org.robolectric.ACTION1", config.getReceiverIntentFilterActions(0).get(0));
 
-        assertEquals("com.xtremelabs.robolectric.AndroidManifestTest.ConfigTestReceiver", config.getReceiverClassName(1));
-        assertEquals("com.xtremelabs.robolectric.ACTION2", config.getReceiverIntentFilterActions(1).get(0));
+        assertEquals("org.robolectric.AndroidManifestTest.ConfigTestReceiver", config.getReceiverClassName(1));
+        assertEquals("org.robolectric.ACTION2", config.getReceiverIntentFilterActions(1).get(0));
 
-        assertEquals("com.xtremelabs.robolectric.test.ConfigTestReceiver", config.getReceiverClassName(2));
-        assertEquals("com.xtremelabs.robolectric.ACTION_SUPERSET_PACKAGE", config.getReceiverIntentFilterActions(2).get(0));
+        assertEquals("org.robolectric.test.ConfigTestReceiver", config.getReceiverClassName(2));
+        assertEquals("org.robolectric.ACTION_SUPERSET_PACKAGE", config.getReceiverIntentFilterActions(2).get(0));
 
-        assertEquals("com.xtremelabs.ConfigTestReceiver", config.getReceiverClassName(3));
-        assertEquals("com.xtremelabs.robolectric.ACTION_SUBSET_PACKAGE", config.getReceiverIntentFilterActions(3).get(0));
+        assertEquals("org.robolectric.ConfigTestReceiver", config.getReceiverClassName(3));
+        assertEquals("org.robolectric.ACTION_SUBSET_PACKAGE", config.getReceiverIntentFilterActions(3).get(0));
 
-        assertEquals("com.xtremelabs.robolectric.DotConfigTestReceiver", config.getReceiverClassName(4));
-        assertEquals("com.xtremelabs.robolectric.ACTION_DOT_PACKAGE", config.getReceiverIntentFilterActions(4).get(0));
+        assertEquals("org.robolectric.DotConfigTestReceiver", config.getReceiverClassName(4));
+        assertEquals("org.robolectric.ACTION_DOT_PACKAGE", config.getReceiverIntentFilterActions(4).get(0));
 
-        assertEquals("com.xtremelabs.robolectric.test.ConfigTestReceiver", config.getReceiverClassName(5));
-        assertEquals("com.xtremelabs.robolectric.ACTION_DOT_SUBPACKAGE", config.getReceiverIntentFilterActions(5).get(0));
+        assertEquals("org.robolectric.test.ConfigTestReceiver", config.getReceiverClassName(5));
+        assertEquals("org.robolectric.ACTION_DOT_SUBPACKAGE", config.getReceiverIntentFilterActions(5).get(0));
 
         assertEquals("com.foo.Receiver", config.getReceiverClassName(6));
-        assertEquals("com.xtremelabs.robolectric.ACTION_DIFFERENT_PACKAGE", config.getReceiverIntentFilterActions(6).get(0));
+        assertEquals("org.robolectric.ACTION_DIFFERENT_PACKAGE", config.getReceiverIntentFilterActions(6).get(0));
     }
 
     @Test
@@ -67,7 +66,7 @@ public class AndroidManifestTest {
 
     @Test
     public void shouldReturnPackageNameWhenNoProcessIsSpecifiedInTheManifest() {
-    	assertEquals("com.xtremelabs.robolectric", newConfig("TestAndroidManifestWithNoProcess.xml").getProcessName());
+    	assertEquals("org.robolectric", newConfig("TestAndroidManifestWithNoProcess.xml").getProcessName());
     }
     
     @Test public void shouldLoadAllResourcesForLibraries() {

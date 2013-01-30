@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 
 import android.database.sqlite.SQLiteCursor;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.util.DatabaseConfig;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.util.DatabaseConfig;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;

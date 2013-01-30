@@ -1,13 +1,13 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ImageView;
-import com.xtremelabs.robolectric.util.CustomView;
+import org.robolectric.util.CustomView;
 import org.junit.Before;
 import org.junit.Test;
 
-import static com.xtremelabs.robolectric.util.TestUtil.*;
+import static org.robolectric.util.TestUtil.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 

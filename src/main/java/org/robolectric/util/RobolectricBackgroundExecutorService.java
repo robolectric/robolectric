@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
-import com.xtremelabs.robolectric.Robolectric;
+import org.robolectric.Robolectric;
 
 import java.util.Collection;
 import java.util.List;

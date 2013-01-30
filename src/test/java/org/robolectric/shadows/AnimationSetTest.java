@@ -1,15 +1,15 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import java.util.List;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import android.view.animation.*;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertThat;
 

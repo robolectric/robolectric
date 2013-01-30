@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import junit.framework.Assert;
 
 import org.junit.After;
@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 
 import android.telephony.SmsManager;
 
-import com.xtremelabs.robolectric.Robolectric;
+import org.robolectric.Robolectric;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SmsManagerTest {

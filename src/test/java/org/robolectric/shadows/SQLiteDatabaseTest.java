@@ -1,9 +1,9 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.ContentValues;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.util.DatabaseConfig;
-import com.xtremelabs.robolectric.util.SQLiteMap;
+import org.robolectric.TestRunners;
+import org.robolectric.util.DatabaseConfig;
+import org.robolectric.util.SQLiteMap;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -11,7 +11,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertThat;

@@ -1,11 +1,11 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.location.Location;
 import android.os.Bundle;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
+import static org.robolectric.Robolectric.shadowOf_;
 
 /**
  * Shadow of {@code Location} that treats it primarily as a data-holder

@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.shadows.testing;
+package org.robolectric.shadows.testing;
 
 import android.app.Activity;
 import android.os.Bundle;
-import com.xtremelabs.robolectric.R;
+import org.robolectric.R;
 
 /**
  *

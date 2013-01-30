@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric.annotation;
+package org.robolectric.annotation;
 
 import static org.junit.Assert.*;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

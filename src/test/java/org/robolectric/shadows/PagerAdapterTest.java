@@ -1,13 +1,13 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.database.DataSetObserver;
 import android.support.v4.view.PagerAdapter;
 import android.view.View;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)

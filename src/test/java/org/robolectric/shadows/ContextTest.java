@@ -1,15 +1,15 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.res.PackageResourceLoader;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
-import com.xtremelabs.robolectric.util.CustomView;
+import org.robolectric.R;
+import org.robolectric.TestRunners;
+import org.robolectric.res.PackageResourceLoader;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.util.CustomView;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -21,8 +21,8 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
-import static com.xtremelabs.robolectric.util.TestUtil.TEST_PACKAGE;
-import static com.xtremelabs.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
+import static org.robolectric.util.TestUtil.TEST_PACKAGE;
+import static org.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;

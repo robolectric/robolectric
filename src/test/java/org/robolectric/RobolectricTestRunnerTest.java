@@ -1,16 +1,16 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
 import android.app.Application;
 import android.content.res.Resources;
 import android.widget.TextView;
-import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
-import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
-import com.xtremelabs.robolectric.annotation.Values;
+import org.robolectric.annotation.DisableStrictI18n;
+import org.robolectric.annotation.EnableStrictI18n;
+import org.robolectric.annotation.Values;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.*;
 
 @RunWith(RobolectricTestRunnerTest.RunnerForTesting.class)
@@ -87,7 +87,7 @@ public class RobolectricTestRunnerTest {
             fail("TextView#setText(String) should produce an i18nException");
         } catch (Exception e) {
             // Compare exception name because it was loaded in the instrumented classloader
-            assertEquals("com.xtremelabs.robolectric.util.I18nException", e.getClass().getName());
+            assertEquals("org.robolectric.util.I18nException", e.getClass().getName());
         }
     }
 

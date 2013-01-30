@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
@@ -17,14 +17,14 @@ import android.os.Looper;
 import android.os.PowerManager;
 import android.view.LayoutInflater;
 import android.widget.Toast;
-import com.xtremelabs.robolectric.AndroidManifest;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.tester.org.apache.http.FakeHttpLayer;
-import com.xtremelabs.robolectric.util.Scheduler;
+import org.robolectric.AndroidManifest;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.tester.org.apache.http.FakeHttpLayer;
+import org.robolectric.util.Scheduler;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -32,8 +32,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.newInstanceOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadows the {@code android.app.Application} class.
@@ -46,7 +46,7 @@ public class ShadowApplication extends ShadowContextWrapper {
     static {
         // note that these are different!
     	// They specify concrete classes within Robolectric for interfaces or abstract classes defined by Android
-        SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "com.xtremelabs.robolectric.tester.android.view.TestWindowManager");
+        SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "org.robolectric.tester.android.view.TestWindowManager");
         SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.content.ClipboardManager");
         SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.TestSensorManager");
         SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.TestVibrator");

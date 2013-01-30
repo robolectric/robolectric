@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
+import org.robolectric.tester.android.util.Attribute;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
 import java.io.IOException;
 import java.io.InputStream;

@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
-import com.xtremelabs.robolectric.util.DatabaseConfig.NullDatabaseMapException;
+import org.robolectric.TestRunners;
+import org.robolectric.util.DatabaseConfig.DatabaseMap;
+import org.robolectric.util.DatabaseConfig.NullDatabaseMapException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

@@ -1,24 +1,24 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
 import android.app.Application;
 import android.content.res.Resources;
-import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
-import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
-import com.xtremelabs.robolectric.annotation.Values;
-import com.xtremelabs.robolectric.bytecode.ClassHandler;
-import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
-import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
-import com.xtremelabs.robolectric.res.PackageResourceLoader;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.res.ResourcePath;
-import com.xtremelabs.robolectric.res.RoutingResourceLoader;
-import com.xtremelabs.robolectric.shadows.ShadowApplication;
-import com.xtremelabs.robolectric.shadows.ShadowLog;
-import com.xtremelabs.robolectric.shadows.ShadowResources;
-import com.xtremelabs.robolectric.util.DatabaseConfig;
-import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
-import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
-import com.xtremelabs.robolectric.util.SQLiteMap;
+import org.robolectric.annotation.DisableStrictI18n;
+import org.robolectric.annotation.EnableStrictI18n;
+import org.robolectric.annotation.Values;
+import org.robolectric.bytecode.ClassHandler;
+import org.robolectric.bytecode.RobolectricClassLoader;
+import org.robolectric.internal.RobolectricTestRunnerInterface;
+import org.robolectric.res.PackageResourceLoader;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.ResourcePath;
+import org.robolectric.res.RoutingResourceLoader;
+import org.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowLog;
+import org.robolectric.shadows.ShadowResources;
+import org.robolectric.util.DatabaseConfig;
+import org.robolectric.util.DatabaseConfig.DatabaseMap;
+import org.robolectric.util.DatabaseConfig.UsingDatabaseMap;
+import org.robolectric.util.SQLiteMap;
 import org.junit.runners.BlockJUnit4ClassRunner;
 import org.junit.runners.model.FrameworkMethod;
 import org.junit.runners.model.InitializationError;
@@ -35,10 +35,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 /**
- * Installs a {@link RobolectricClassLoader} and {@link com.xtremelabs.robolectric.res.ResourceLoader} in order to
+ * Installs a {@link RobolectricClassLoader} and {@link org.robolectric.res.ResourceLoader} in order to
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
@@ -241,8 +241,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * will throw exceptions if layout resources use bare string literals instead of string resource IDs.
      * <p/>
      * To enable or disable i18n-strict mode for specific test cases, annotate them with
-     * {@link com.xtremelabs.robolectric.annotation.EnableStrictI18n} or
-     * {@link com.xtremelabs.robolectric.annotation.DisableStrictI18n}.
+     * {@link org.robolectric.annotation.EnableStrictI18n} or
+     * {@link org.robolectric.annotation.DisableStrictI18n}.
      * <p/>
      *
      * By default, I18n-strict mode is disabled.
@@ -323,10 +323,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         	String name = anno.annotationType().getName();
         	Object newValue = null;
     	
-	    	if (name.equals( "com.xtremelabs.robolectric.annotation.WithConstantString" )) {
+	    	if (name.equals( "org.robolectric.annotation.WithConstantString" )) {
 	    		newValue = (String) anno.annotationType().getMethod("newValue").invoke(anno);
 	    	} 
-	    	else if (name.equals( "com.xtremelabs.robolectric.annotation.WithConstantInt" )) {
+	    	else if (name.equals( "org.robolectric.annotation.WithConstantInt" )) {
 	    		newValue = (Integer) anno.annotationType().getMethod("newValue").invoke(anno);
 	    	}
 	    	else {

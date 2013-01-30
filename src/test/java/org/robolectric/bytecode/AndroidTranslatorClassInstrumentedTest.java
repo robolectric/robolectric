@@ -1,11 +1,11 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
 import android.graphics.Bitmap;
 import android.graphics.Paint;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

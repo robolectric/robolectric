@@ -1,17 +1,17 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.Context;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.SubMenu;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.res.MenuNode;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
-import com.xtremelabs.robolectric.util.I18nException;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.res.MenuNode;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.util.I18nException;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow of {@code MenuInflater} that actually inflates menus into {@code View}s that are functional enough to

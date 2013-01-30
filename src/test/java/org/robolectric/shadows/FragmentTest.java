@@ -1,9 +1,9 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.R;
+import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +25,7 @@ public class FragmentTest {
 
     @Test
     public void retrieveIdOfResource() {
-        int id = fragment.getResources().getIdentifier("hello", "string", "com.xtremelabs.robolectric");
+        int id = fragment.getResources().getIdentifier("hello", "string", "org.robolectric");
         assertTrue(id > 0);
 
         String hello = fragment.getString(id);

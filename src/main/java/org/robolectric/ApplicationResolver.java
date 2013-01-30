@@ -1,14 +1,14 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
 import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
-import com.xtremelabs.robolectric.internal.ClassNameResolver;
-import com.xtremelabs.robolectric.res.RobolectricPackageManager;
-import com.xtremelabs.robolectric.shadows.ShadowApplication;
+import org.robolectric.internal.ClassNameResolver;
+import org.robolectric.res.RobolectricPackageManager;
+import org.robolectric.shadows.ShadowApplication;
 import org.w3c.dom.Document;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 public class ApplicationResolver {
     private final AndroidManifest androidManifest;

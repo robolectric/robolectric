@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.tester.android.view;
+package org.robolectric.tester.android.view;
 
 import android.view.Display;
 import android.view.View;
@@ -7,7 +7,7 @@ import android.view.WindowManager;
 import java.util.ArrayList;
 import java.util.List;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
+import static org.robolectric.Robolectric.newInstanceOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class TestWindowManager implements WindowManager {

@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
 import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;

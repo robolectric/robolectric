@@ -1,11 +1,11 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
 import android.animation.ValueAnimator;
-import com.xtremelabs.robolectric.shadows.ShadowAnimator;
-import com.xtremelabs.robolectric.shadows.ShadowObjectAnimator;
-import com.xtremelabs.robolectric.shadows.ShadowValueAnimator;
+import org.robolectric.shadows.ShadowAnimator;
+import org.robolectric.shadows.ShadowObjectAnimator;
+import org.robolectric.shadows.ShadowValueAnimator;
 
 public class RobolectricShadowOfLevel16 {
 

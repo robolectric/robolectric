@@ -1,23 +1,23 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.annotation.Values;
-import com.xtremelabs.robolectric.tester.android.util.ResName;
-import com.xtremelabs.robolectric.util.I18nException;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.annotation.Values;
+import org.robolectric.tester.android.util.ResName;
+import org.robolectric.util.I18nException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.Arrays;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
+import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.core.IsCollectionContaining.hasItems;
 import static org.junit.Assert.*;

@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.tester.android.content.pm;
+package org.robolectric.tester.android.content.pm;
 
 import android.content.ComponentName;
 import android.content.Intent;

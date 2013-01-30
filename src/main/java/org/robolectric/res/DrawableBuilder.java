@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import android.R;
 import android.content.res.Resources;
@@ -10,9 +10,9 @@ import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.drawable.StateListDrawable;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.shadows.ShadowStateListDrawable;
-import com.xtremelabs.robolectric.tester.android.util.ResName;
+import org.robolectric.Robolectric;
+import org.robolectric.shadows.ShadowStateListDrawable;
+import org.robolectric.tester.android.util.ResName;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
@@ -25,7 +25,7 @@ import javax.xml.xpath.XPathFactory;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 public class DrawableBuilder {
     // Put all the states for a StateListDrawable in the into a Map for looking up

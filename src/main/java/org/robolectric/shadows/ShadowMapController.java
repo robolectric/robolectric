@@ -1,9 +1,9 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapController;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 /**
  * A Shadow of {@code MapController} that tracks its own state and keeps the state of the {@code MapView} it controlls
@@ -78,7 +78,7 @@ public class ShadowMapController {
      * Non-Android accessor that allows the {@code MapView} being controlled to be set explicitly.
      *
      * @param shadowMapView the {@link ShadowMapView} to be controlled (either created explicitly or obtained via a call
-     *                      to {@link com.xtremelabs.robolectric.RobolectricForMaps.shadowOf(com.google.android.maps.MapView)})
+     *                      to {@link org.robolectric.RobolectricForMaps.shadowOf(com.google.android.maps.MapView)})
      */
     void setShadowMapView(ShadowMapView shadowMapView) {
         this.shadowMapView = shadowMapView;

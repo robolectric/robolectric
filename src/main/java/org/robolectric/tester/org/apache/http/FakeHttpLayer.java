@@ -1,7 +1,7 @@
-package com.xtremelabs.robolectric.tester.org.apache.http;
+package org.robolectric.tester.org.apache.http;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.shadows.HttpResponseGenerator;
+import org.robolectric.Robolectric;
+import org.robolectric.shadows.HttpResponseGenerator;
 import org.apache.http.*;
 import org.apache.http.client.RequestDirector;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;

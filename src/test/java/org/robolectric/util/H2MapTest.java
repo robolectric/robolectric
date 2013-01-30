@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

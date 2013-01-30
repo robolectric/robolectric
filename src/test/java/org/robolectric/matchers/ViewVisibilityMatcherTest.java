@@ -1,14 +1,14 @@
-package com.xtremelabs.robolectric.matchers;
+package org.robolectric.matchers;
 
 import android.view.View;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.matchers.ViewVisibilityMatcher.*;
+import static org.robolectric.matchers.ViewVisibilityMatcher.*;
 import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;

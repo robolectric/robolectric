@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.annotation;
+package org.robolectric.annotation;
 
 /**
  * Indicate that robolectric should look for values that is specific by those qualifiers

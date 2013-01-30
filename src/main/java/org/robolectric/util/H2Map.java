@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
 import java.sql.Driver;
 import java.sql.DriverManager;

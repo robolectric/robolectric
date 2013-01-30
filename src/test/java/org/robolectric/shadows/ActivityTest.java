@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -15,20 +15,20 @@ import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
-import com.xtremelabs.robolectric.*;
-import com.xtremelabs.robolectric.shadows.testing.OnMethodTestActivity;
-import com.xtremelabs.robolectric.util.TestRunnable;
-import com.xtremelabs.robolectric.util.Transcript;
+import org.robolectric.*;
+import org.robolectric.shadows.testing.OnMethodTestActivity;
+import org.robolectric.util.TestRunnable;
+import org.robolectric.util.Transcript;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static com.xtremelabs.robolectric.Robolectric.application;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
-import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
+import static org.robolectric.Robolectric.application;
+import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.util.TestUtil.assertInstanceOf;
+import static org.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
@@ -349,7 +349,7 @@ public class ActivityTest {
         String string = activity.getString(id1);
         assertEquals("Hello", string);
 
-        int id = activity.getResources().getIdentifier("hello", "string", "com.xtremelabs.robolectric");
+        int id = activity.getResources().getIdentifier("hello", "string", "org.robolectric");
         assertTrue(id > 0);
 
         String hello = activity.getResources().getString(id);
@@ -360,7 +360,7 @@ public class ActivityTest {
     public void retrieveIdOfNonExistingResource() {
         Activity activity = new Activity();
 
-        int id = activity.getResources().getIdentifier("just_alot_of_crap", "string", "com.xtremelabs.robolectric");
+        int id = activity.getResources().getIdentifier("just_alot_of_crap", "string", "org.robolectric");
         assertTrue(id == 0);
     }
 

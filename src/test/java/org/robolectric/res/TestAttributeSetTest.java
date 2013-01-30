@@ -1,19 +1,19 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import android.view.View;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
-import com.xtremelabs.robolectric.util.CustomView;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.util.CustomView;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.util.TestUtil.SYSTEM_PACKAGE;
-import static com.xtremelabs.robolectric.util.TestUtil.TEST_PACKAGE;
+import static org.robolectric.util.TestUtil.SYSTEM_PACKAGE;
+import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
@@ -233,9 +233,9 @@ public class TestAttributeSetTest {
     }
 
     @Test public void shouldConsiderSameNamedAttrsFromLibrariesEquivalent() throws Exception {
-        createTestAttributeSet(new Attribute("com.xtremelabs.robolectric.lib1:attr/offsetX", "1", TEST_PACKAGE));
-        assertThat(testAttributeSet.getAttributeValue("com.xtremelabs.robolectric.lib1", "offsetX"), equalTo("1"));
-        assertThat(testAttributeSet.getAttributeValue("com.xtremelabs.robolectric.lib2", "offsetX"), equalTo("1"));
+        createTestAttributeSet(new Attribute("org.robolectric.lib1:attr/offsetX", "1", TEST_PACKAGE));
+        assertThat(testAttributeSet.getAttributeValue("org.robolectric.lib1", "offsetX"), equalTo("1"));
+        assertThat(testAttributeSet.getAttributeValue("org.robolectric.lib2", "offsetX"), equalTo("1"));
     }
 
     private void createTestAttributeSet(Attribute... attributes) {

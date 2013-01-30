@@ -1,15 +1,15 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
-import com.xtremelabs.robolectric.bytecode.AndroidTranslator;
-import com.xtremelabs.robolectric.bytecode.ClassCache;
-import com.xtremelabs.robolectric.bytecode.ClassHandler;
-import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
-import com.xtremelabs.robolectric.bytecode.RobolectricInternals;
-import com.xtremelabs.robolectric.bytecode.Setup;
-import com.xtremelabs.robolectric.bytecode.ShadowWrangler;
-import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
-import com.xtremelabs.robolectric.res.AndroidResourcePathFinder;
-import com.xtremelabs.robolectric.res.ResourcePath;
+import org.robolectric.bytecode.AndroidTranslator;
+import org.robolectric.bytecode.ClassCache;
+import org.robolectric.bytecode.ClassHandler;
+import org.robolectric.bytecode.RobolectricClassLoader;
+import org.robolectric.bytecode.RobolectricInternals;
+import org.robolectric.bytecode.Setup;
+import org.robolectric.bytecode.ShadowWrangler;
+import org.robolectric.internal.RobolectricTestRunnerInterface;
+import org.robolectric.res.AndroidResourcePathFinder;
+import org.robolectric.res.ResourcePath;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.model.Dependency;
 import org.apache.tools.ant.Project;
@@ -24,7 +24,7 @@ import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.RobolectricTestRunner.isBootstrapped;
+import static org.robolectric.RobolectricTestRunner.isBootstrapped;
 
 public class RobolectricContext {
     private static final Map<Class<? extends RobolectricTestRunner>, RobolectricContext> contextsByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, RobolectricContext>();
@@ -223,7 +223,7 @@ public class RobolectricContext {
         return dependency;
     }
 
-    /** @deprecated use {@link com.xtremelabs.robolectric.Robolectric.Reflection#setFinalStaticField(Class, String, Object)} */
+    /** @deprecated use {@link org.robolectric.Robolectric.Reflection#setFinalStaticField(Class, String, Object)} */
     public static void setStaticValue(Class<?> clazz, String fieldName, Object value) {
         Robolectric.Reflection.setFinalStaticField(clazz, fieldName, value);
     }

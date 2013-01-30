@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 import android.app.Activity;
 import android.content.Context;
@@ -19,18 +19,18 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.google.android.maps.MapView;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.annotation.Values;
-import com.xtremelabs.robolectric.shadows.ShadowImageView;
-import com.xtremelabs.robolectric.shadows.ShadowTextView;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
-import com.xtremelabs.robolectric.tester.android.util.ResName;
-import com.xtremelabs.robolectric.util.CustomView;
-import com.xtremelabs.robolectric.util.CustomView2;
-import com.xtremelabs.robolectric.util.I18nException;
-import com.xtremelabs.robolectric.util.TestUtil;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.annotation.Values;
+import org.robolectric.shadows.ShadowImageView;
+import org.robolectric.shadows.ShadowTextView;
+import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.tester.android.util.ResName;
+import org.robolectric.util.CustomView;
+import org.robolectric.util.CustomView2;
+import org.robolectric.util.I18nException;
+import org.robolectric.util.TestUtil;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -38,9 +38,9 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.TestUtil.TEST_PACKAGE;
-import static com.xtremelabs.robolectric.util.TestUtil.assertInstanceOf;
+import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.util.TestUtil.TEST_PACKAGE;
+import static org.robolectric.util.TestUtil.assertInstanceOf;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;
 

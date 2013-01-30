@@ -12,7 +12,7 @@
     <fragment
             android:id="@+id/fragment"
             android:tag="fragment_tag"
-            android:name="com.xtremelabs.robolectric.shadows.TestFragment"
+            android:name="org.robolectric.shadows.TestFragment"
             />
 
     <LinearLayout

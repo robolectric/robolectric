@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.tester.android.util;
+package org.robolectric.tester.android.util;
 
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentTransaction;

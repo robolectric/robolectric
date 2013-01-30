@@ -1,12 +1,12 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.Instrument;
+import org.robolectric.TestRunners;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.Instrument;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.Robolectric.bindShadowClass;
+import static org.robolectric.Robolectric.bindShadowClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

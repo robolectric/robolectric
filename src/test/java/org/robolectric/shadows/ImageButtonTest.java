@@ -1,11 +1,11 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.widget.ImageButton;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.res.PackageResourceLoader;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.res.PackageResourceLoader;
+import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

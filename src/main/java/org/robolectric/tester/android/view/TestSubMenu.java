@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.tester.android.view;
+package org.robolectric.tester.android.view;
 
 import android.graphics.drawable.Drawable;
 import android.view.MenuItem;

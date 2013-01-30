@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.annotation;
+package org.robolectric.annotation;
 
 /**
  * Annotation to run test with setFinalStaticField() defined in a synchronized 

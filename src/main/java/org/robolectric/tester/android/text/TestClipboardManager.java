@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.tester.android.text;
+package org.robolectric.tester.android.text;
 
 import android.text.ClipboardManager;
 

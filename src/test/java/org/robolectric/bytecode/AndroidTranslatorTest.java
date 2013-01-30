@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
 import android.accounts.AccountManager;
 import android.content.Context;
@@ -11,11 +11,11 @@ import android.view.View;
 import android.widget.TextView;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.Instrument;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.Instrument;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,8 +23,8 @@ import org.junit.runner.RunWith;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
-import static com.xtremelabs.robolectric.Robolectric.bindShadowClass;
-import static com.xtremelabs.robolectric.Robolectric.directlyOn;
+import static org.robolectric.Robolectric.bindShadowClass;
+import static org.robolectric.Robolectric.directlyOn;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.core.StringStartsWith.startsWith;

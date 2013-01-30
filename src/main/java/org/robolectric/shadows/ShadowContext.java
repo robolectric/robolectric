@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.app.Application;
 import android.content.Context;
@@ -6,13 +6,13 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
 import android.view.View;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
-import com.xtremelabs.robolectric.tester.android.util.ResName;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.tester.android.util.ResName;
+import org.robolectric.tester.android.util.TestAttributeSet;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,8 +22,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import static com.xtremelabs.robolectric.Robolectric.getShadowApplication;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.getShadowApplication;
+import static org.robolectric.Robolectric.shadowOf;
 
 /**
  * Calls through to the {@code resourceLoader} to actually load resources.

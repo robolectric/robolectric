@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.util.DatabaseConfig;
-import com.xtremelabs.robolectric.util.H2Map;
+import org.robolectric.TestRunners;
+import org.robolectric.util.DatabaseConfig;
+import org.robolectric.util.H2Map;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

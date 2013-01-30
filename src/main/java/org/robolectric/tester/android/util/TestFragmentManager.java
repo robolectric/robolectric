@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.tester.android.util;
+package org.robolectric.tester.android.util;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -6,10 +6,10 @@ import android.os.Looper;
 import android.support.v4.app.*;
 import android.view.View;
 import android.view.ViewGroup;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.shadows.SerializedFragmentState;
-import com.xtremelabs.robolectric.shadows.ShadowFragment;
-import com.xtremelabs.robolectric.shadows.ShadowFragmentActivity;
+import org.robolectric.Robolectric;
+import org.robolectric.shadows.SerializedFragmentState;
+import org.robolectric.shadows.ShadowFragment;
+import org.robolectric.shadows.ShadowFragmentActivity;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -18,7 +18,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 public class TestFragmentManager extends FragmentManager {
     private Map<Integer, Fragment> fragmentsById = new HashMap<Integer, Fragment>();

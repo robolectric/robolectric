@@ -1,12 +1,12 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.tester.android.content.TestSharedPreferences;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.tester.android.content.TestSharedPreferences;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

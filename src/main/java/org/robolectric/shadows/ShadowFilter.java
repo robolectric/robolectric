@@ -1,7 +1,7 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.widget.Filter;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Filter.class)

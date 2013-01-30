@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.os.Bundle;
 import android.os.Parcelable;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import junit.framework.AssertionFailedError;
 import org.junit.Assert;
 import org.junit.Before;

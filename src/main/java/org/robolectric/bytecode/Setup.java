@@ -1,19 +1,19 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
 import android.R;
 import android.net.Uri__FromAndroid;
-import com.xtremelabs.robolectric.AndroidManifest;
-import com.xtremelabs.robolectric.RobolectricContext;
-import com.xtremelabs.robolectric.annotation.DisableStrictI18n;
-import com.xtremelabs.robolectric.annotation.EnableStrictI18n;
-import com.xtremelabs.robolectric.annotation.Values;
-import com.xtremelabs.robolectric.internal.DoNotInstrument;
-import com.xtremelabs.robolectric.internal.Instrument;
-import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.internal.RobolectricTestRunnerInterface;
-import com.xtremelabs.robolectric.res.ResourcePath;
-import com.xtremelabs.robolectric.util.DatabaseConfig;
-import com.xtremelabs.robolectric.util.I18nException;
+import org.robolectric.AndroidManifest;
+import org.robolectric.RobolectricContext;
+import org.robolectric.annotation.DisableStrictI18n;
+import org.robolectric.annotation.EnableStrictI18n;
+import org.robolectric.annotation.Values;
+import org.robolectric.internal.DoNotInstrument;
+import org.robolectric.internal.Instrument;
+import org.robolectric.internal.RealObject;
+import org.robolectric.internal.RobolectricTestRunnerInterface;
+import org.robolectric.res.ResourcePath;
+import org.robolectric.util.DatabaseConfig;
+import org.robolectric.util.I18nException;
 import javassist.CtClass;
 
 import java.util.*;

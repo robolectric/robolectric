@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -21,7 +21,7 @@ public class ContentProviderResultTest {
     
     @Test
     public void uri() {
-        Uri uri = Uri.parse("content://com.xtremelabs.robolectric");
+        Uri uri = Uri.parse("content://org.robolectric");
         ContentProviderResult result = new ContentProviderResult(uri);
         assertThat(result.uri, equalTo(uri));
     }

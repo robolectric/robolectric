@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.util.DatabaseConfig.CannotLoadDatabaseMapDriverException;
-import com.xtremelabs.robolectric.util.DatabaseConfig.UsingDatabaseMap;
+import org.robolectric.TestRunners;
+import org.robolectric.util.DatabaseConfig.CannotLoadDatabaseMapDriverException;
+import org.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -25,7 +25,7 @@ public class NullDatabaseMapTest {
 		Assert.assertTrue(DatabaseConfig.getDatabaseMap().getConnectionString() == null);
 		Assert.assertTrue(DatabaseConfig.getDatabaseMap()
 				.getSelectLastInsertIdentity() == null);
-		Assert.assertTrue(DatabaseConfig.getDatabaseMap().getDriverClassName() == "com.xtremelabs.robolectric.util.NullDatabaseMap");
+		Assert.assertTrue(DatabaseConfig.getDatabaseMap().getDriverClassName() == "org.robolectric.util.NullDatabaseMap");
 	}
 
 	@Test

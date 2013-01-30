@@ -1,7 +1,7 @@
 package android.webkit;
 
-import com.xtremelabs.robolectric.internal.DoNotInstrument;
-import com.xtremelabs.robolectric.internal.Implementation;
+import org.robolectric.internal.DoNotInstrument;
+import org.robolectric.internal.Implementation;
 
 /**
  * Concrete implementation of the abstract WebSettings class.

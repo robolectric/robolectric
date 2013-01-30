@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
-import com.xtremelabs.robolectric.util.DatabaseConfig.DatabaseMap;
+import org.robolectric.util.DatabaseConfig.DatabaseMap;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -9,7 +9,7 @@ public class NullDatabaseMap implements DatabaseMap {
 		
 	@Override
 	public String getDriverClassName() {
-		return "com.xtremelabs.robolectric.util.NullDatabaseMap";
+		return "org.robolectric.util.NullDatabaseMap";
 	}
 
 	@Override

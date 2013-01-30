@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.tester.android.database;
+package org.robolectric.tester.android.database;
 
 import android.content.ContentResolver;
 import android.database.CharArrayBuffer;

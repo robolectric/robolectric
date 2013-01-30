@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
 public class TestRunnable implements Runnable {
     public boolean wasRun = false;

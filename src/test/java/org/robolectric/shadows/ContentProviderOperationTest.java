@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -12,14 +12,14 @@ import android.content.ContentProviderOperation;
 import android.content.ContentProviderOperation.Builder;
 import android.net.Uri;
 
-import com.xtremelabs.robolectric.Robolectric;
+import org.robolectric.Robolectric;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ContentProviderOperationTest {
 
     @Test
     public void newInsert() {
-        final Uri URI = Uri.parse("content://com.xtremelabs.robolectric");
+        final Uri URI = Uri.parse("content://org.robolectric");
         Builder builder = ContentProviderOperation.newInsert(URI);
         builder.withValue("stringValue", "bar");
         builder.withValue("intValue", 5);
@@ -36,7 +36,7 @@ public class ContentProviderOperationTest {
     
     @Test
     public void newInsertWithValueBackReference() {
-        final Uri URI = Uri.parse("content://com.xtremelabs.robolectric");
+        final Uri URI = Uri.parse("content://org.robolectric");
         Builder builder = ContentProviderOperation.newInsert(URI);
         builder.withValueBackReference("my_id", 0);
         ContentProviderOperation operation = builder.build();
@@ -48,7 +48,7 @@ public class ContentProviderOperationTest {
 
     @Test
     public void newUpdate() {
-        final Uri URI = Uri.parse("content://com.xtremelabs.robolectric");
+        final Uri URI = Uri.parse("content://org.robolectric");
         Builder builder = ContentProviderOperation.newUpdate(URI);
         builder.withSelection("id_column", new String[] { "5" });
         ContentProviderOperation operation = builder.build();
@@ -62,7 +62,7 @@ public class ContentProviderOperationTest {
 
     @Test
     public void newDelete() {
-        final Uri URI = Uri.parse("content://com.xtremelabs.robolectric");
+        final Uri URI = Uri.parse("content://org.robolectric");
         Builder builder = ContentProviderOperation.newDelete(URI);
         builder.withSelection("id_column", new String[] { "5" });
         ContentProviderOperation operation = builder.build();

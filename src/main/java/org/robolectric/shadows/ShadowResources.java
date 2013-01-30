@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.res.AssetManager;
 import android.content.res.ColorStateList;
@@ -10,29 +10,29 @@ import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
 import android.view.Display;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.res.DrawableBuilder;
-import com.xtremelabs.robolectric.res.DrawableNode;
-import com.xtremelabs.robolectric.res.ResourceExtractor;
-import com.xtremelabs.robolectric.res.ResourceLoader;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
-import com.xtremelabs.robolectric.tester.android.util.ResName;
-import com.xtremelabs.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
+import org.robolectric.res.DrawableBuilder;
+import org.robolectric.res.DrawableNode;
+import org.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourceLoader;
+import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.tester.android.util.ResName;
+import org.robolectric.tester.android.util.TestAttributeSet;
 
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Locale;
 
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.newInstanceOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow of {@code Resources} that simulates the loading of resources
  *
- * @see com.xtremelabs.robolectric.RobolectricTestRunner#RobolectricTestRunner(Class)
+ * @see org.robolectric.RobolectricTestRunner#RobolectricTestRunner(Class)
  */
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)

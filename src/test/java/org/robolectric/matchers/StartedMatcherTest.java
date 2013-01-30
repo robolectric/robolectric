@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.matchers;
+package org.robolectric.matchers;
 
 import android.app.Activity;
 import android.app.ActivityGroup;
@@ -6,7 +6,7 @@ import android.app.AliasActivity;
 import android.app.ListActivity;
 import android.content.Context;
 import android.content.Intent;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
@@ -15,7 +15,7 @@ import org.junit.Test;
 import org.junit.internal.matchers.TypeSafeMatcher;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.matchers.StartedMatcher.createIntent;
+import static org.robolectric.matchers.StartedMatcher.createIntent;
 import static org.junit.Assert.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)

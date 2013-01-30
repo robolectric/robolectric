@@ -1,15 +1,15 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.tester.android.util.Attribute;
+import org.robolectric.internal.Implements;
+import org.robolectric.tester.android.util.Attribute;
 
 import java.util.ArrayList;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 @Implements(RelativeLayout.class)
 public class ShadowRelativeLayout extends ShadowViewGroup {

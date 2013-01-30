@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
 public class Vars {
     public static final ThreadLocal<Vars> ALL_VARS = new ThreadLocal<Vars>() {

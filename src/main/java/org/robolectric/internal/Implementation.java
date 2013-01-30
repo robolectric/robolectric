@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.internal;
+package org.robolectric.internal;
 
 /**
  * Indicates that a method declaration is intended to Shadow a method with the same signature on the associated

@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.webkit.JsPromptResult;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implements;
 
 @Implements(JsPromptResult.class)
 public class ShadowJsPromptResult extends ShadowJsResult{

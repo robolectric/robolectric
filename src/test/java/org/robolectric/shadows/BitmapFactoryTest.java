@@ -1,12 +1,12 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.provider.MediaStore;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -15,7 +15,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
@@ -26,7 +26,7 @@ public class BitmapFactoryTest {
     @Test
     public void decodeResource_shouldSetDescription() throws Exception {
         Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image);
-        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image", shadowOf(bitmap).getDescription());
+        assertEquals("Bitmap for resource:org.robolectric:drawable/an_image", shadowOf(bitmap).getDescription());
         assertEquals(100, bitmap.getWidth());
         assertEquals(100, bitmap.getHeight());
     }
@@ -84,7 +84,7 @@ public class BitmapFactoryTest {
         ShadowBitmapFactory.provideWidthAndHeightHints(R.drawable.an_image, 123, 456);
 
         Bitmap bitmap = BitmapFactory.decodeResource(Robolectric.application.getResources(), R.drawable.an_image);
-        assertEquals("Bitmap for resource:com.xtremelabs.robolectric:drawable/an_image", shadowOf(bitmap).getDescription());
+        assertEquals("Bitmap for resource:org.robolectric:drawable/an_image", shadowOf(bitmap).getDescription());
         assertEquals(123, bitmap.getWidth());
         assertEquals(456, bitmap.getHeight());
     }

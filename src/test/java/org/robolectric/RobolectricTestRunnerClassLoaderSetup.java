@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.xtremelabs.robolectric.bytecode.RobolectricClassLoader;
+import org.robolectric.bytecode.RobolectricClassLoader;
 
 
 @RunWith(TestRunners.WithDefaults.class)

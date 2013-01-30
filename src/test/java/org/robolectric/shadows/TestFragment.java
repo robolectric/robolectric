@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -6,8 +6,8 @@ import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.util.Transcript;
+import org.robolectric.Robolectric;
+import org.robolectric.util.Transcript;
 
 public class TestFragment extends Fragment {
     public static final int FRAGMENT_VIEW_ID = 2323;

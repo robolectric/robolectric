@@ -1,9 +1,9 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.view.View;
 import android.widget.ExpandableListView;
-import com.xtremelabs.robolectric.TestRunners;
-import com.xtremelabs.robolectric.util.Transcript;
+import org.robolectric.TestRunners;
+import org.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;

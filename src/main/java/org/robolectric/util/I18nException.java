@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.util;
+package org.robolectric.util;
 
 @SuppressWarnings("serial")
 public class I18nException extends RuntimeException {

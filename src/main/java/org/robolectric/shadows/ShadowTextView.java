@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.Context;
 import android.graphics.Typeface;
@@ -17,16 +17,16 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import static android.view.View.VISIBLE;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf_;
+import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf_;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(TextView.class)

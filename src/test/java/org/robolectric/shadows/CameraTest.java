@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 
 import android.graphics.Canvas;
@@ -7,8 +7,8 @@ import android.graphics.Rect;
 import android.hardware.Camera;
 import android.view.Surface;
 import android.view.SurfaceHolder;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import org.junit.After;
 import org.junit.Before;

@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
-import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.util.I18nException;
-import com.xtremelabs.robolectric.util.Join;
+import org.robolectric.internal.RealObject;
+import org.robolectric.util.I18nException;
+import org.robolectric.util.Join;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
@@ -350,7 +350,7 @@ public class ShadowWrangler implements ClassHandler {
         	Annotation[] annos = method.getAnnotations();
         	for (int i = 0; i < annos.length; i++) {
         		String name = annos[i].annotationType().getName();
-        		if (name.equals("com.xtremelabs.robolectric.internal.Implementation")) {
+        		if (name.equals("org.robolectric.internal.Implementation")) {
 					try {
 						Method m = (annos[i]).getClass().getMethod("i18nSafe");
 	        			return (Boolean) m.invoke(annos[i]);
@@ -460,10 +460,10 @@ public class ShadowWrangler implements ClassHandler {
 
         private boolean isOnShadowClass(Method method) {
             Class<?> declaringClass = method.getDeclaringClass();
-            // why doesn't getAnnotation(com.xtremelabs.robolectric.internal.Implements) work here? It always returns null. pg 20101115
+            // why doesn't getAnnotation(org.robolectric.internal.Implements) work here? It always returns null. pg 20101115
             // It doesn't work because the method and declaringClass were loaded by the delegate class loader. Different classloaders so types don't match. mp 20110823
             for (Annotation annotation : declaringClass.getAnnotations()) { // todo fix
-                if (annotation.annotationType().toString().equals("interface com.xtremelabs.robolectric.internal.Implements")) {
+                if (annotation.annotationType().toString().equals("interface org.robolectric.internal.Implements")) {
                     return true;
                 }
             }

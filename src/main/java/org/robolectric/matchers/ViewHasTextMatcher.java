@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.matchers;
+package org.robolectric.matchers;
 
 import android.view.View;
 import org.hamcrest.Description;
@@ -6,7 +6,7 @@ import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.junit.internal.matchers.TypeSafeMatcher;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 public class ViewHasTextMatcher<T extends View> extends TypeSafeMatcher<T> {
     private String expected;

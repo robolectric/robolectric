@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
 import android.app.Application;
 

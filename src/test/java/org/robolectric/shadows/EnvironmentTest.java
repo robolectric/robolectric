@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import static org.junit.Assert.*;
 
 import java.io.File;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;

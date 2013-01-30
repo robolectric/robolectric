@@ -1,13 +1,13 @@
-package com.xtremelabs.robolectric.matchers;
+package org.robolectric.matchers;
 
 import android.widget.TextView;
-import com.xtremelabs.robolectric.shadows.ShadowTextView;
+import org.robolectric.shadows.ShadowTextView;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.junit.internal.matchers.TypeSafeMatcher;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 public class HasCompoundDrawablesMatcher extends TypeSafeMatcher<TextView> {
     private String message;

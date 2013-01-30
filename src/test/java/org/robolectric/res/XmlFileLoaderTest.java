@@ -1,13 +1,13 @@
 /**
  * 
  */
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 
 import android.content.res.XmlResourceParser;
-import com.xtremelabs.robolectric.R;
-import com.xtremelabs.robolectric.res.XmlFileLoader.XmlResourceParserImpl;
-import com.xtremelabs.robolectric.util.TestUtil;
+import org.robolectric.R;
+import org.robolectric.res.XmlFileLoader.XmlResourceParserImpl;
+import org.robolectric.util.TestUtil;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -24,8 +24,8 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.util.*;
 
-import static com.xtremelabs.robolectric.util.TestUtil.systemResources;
-import static com.xtremelabs.robolectric.util.TestUtil.testResources;
+import static org.robolectric.util.TestUtil.systemResources;
+import static org.robolectric.util.TestUtil.testResources;
 import static java.util.Arrays.asList;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.*;

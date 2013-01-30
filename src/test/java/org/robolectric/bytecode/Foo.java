@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
-import com.xtremelabs.robolectric.internal.Instrument;
+import org.robolectric.internal.Instrument;
 
 @Instrument
 public class Foo {

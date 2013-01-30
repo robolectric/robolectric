@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.bytecode;
+package org.robolectric.bytecode;
 
 import android.net.Uri;
 import javassist.*;

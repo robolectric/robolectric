@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<com.xtremelabs.robolectric.util.CustomView
+<org.robolectric.util.CustomView
         xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:robolectric="http://schemas.android.com/apk/res/com.xtremelabs.robolectric"
+        xmlns:robolectric="http://schemas.android.com/apk/res/org.robolectric"
         android:gravity="center"
         robolectric:message="@string/hello"
         robolectric:itemType="string"

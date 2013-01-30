@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
-import com.xtremelabs.robolectric.tester.org.apache.http.HttpRequestInfo;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
+import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.ConnectionReuseStrategy;
@@ -46,7 +46,7 @@ public class ShadowDefaultRequestDirector {
     protected UserTokenHandler userTokenHandler;
     protected HttpParams httpParams;
 
-    com.xtremelabs.robolectric.tester.org.apache.http.impl.client.DefaultRequestDirector redirector;
+    org.robolectric.tester.org.apache.http.impl.client.DefaultRequestDirector redirector;
 
     public void __constructor__(
             Log log,
@@ -77,7 +77,7 @@ public class ShadowDefaultRequestDirector {
         this.httpParams = params;
 
         try {
-            redirector = new com.xtremelabs.robolectric.tester.org.apache.http.impl.client.DefaultRequestDirector(
+            redirector = new org.robolectric.tester.org.apache.http.impl.client.DefaultRequestDirector(
                   log,
                   requestExec,
                   conman,

@@ -1,8 +1,8 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.preference.PreferenceCategory;
 
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implements;
 
 @Implements(PreferenceCategory.class)
 public class ShadowPreferenceCategory extends ShadowPreferenceGroup {

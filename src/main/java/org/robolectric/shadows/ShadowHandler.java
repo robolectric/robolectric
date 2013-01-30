@@ -1,19 +1,19 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
 
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow for Handler that puts posted {@link Runnable}s into a queue instead of sending them to be handled on a
@@ -201,7 +201,7 @@ public class ShadowHandler {
     }
 
     /**
-     * @see com.xtremelabs.robolectric.shadows.ShadowLooper#idle()
+     * @see org.robolectric.shadows.ShadowLooper#idle()
      */
     public static void idleMainLooper() {
         shadowOf(Looper.myLooper()).idle();

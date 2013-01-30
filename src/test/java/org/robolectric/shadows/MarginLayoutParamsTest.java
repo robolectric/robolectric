@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 
 import android.view.ViewGroup;
 

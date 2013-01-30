@@ -1,9 +1,9 @@
-package com.xtremelabs.robolectric.annotation;
+package org.robolectric.annotation;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 

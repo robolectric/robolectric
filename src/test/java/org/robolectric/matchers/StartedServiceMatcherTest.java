@@ -1,10 +1,10 @@
-package com.xtremelabs.robolectric.matchers;
+package org.robolectric.matchers;
 
 import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.service.wallpaper.WallpaperService;
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.junit.internal.matchers.TypeSafeMatcher;
 import org.junit.runner.RunWith;
 
-import static com.xtremelabs.robolectric.matchers.StartedServiceMatcher.createIntent;
+import static org.robolectric.matchers.StartedServiceMatcher.createIntent;
 import static org.junit.Assert.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)

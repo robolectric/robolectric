@@ -1,14 +1,14 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
 import android.view.Display;
 import android.view.View;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.shadows.ShadowDisplay;
-import com.xtremelabs.robolectric.util.TestOnClickListener;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.shadows.ShadowDisplay;
+import org.robolectric.util.TestOnClickListener;
 import org.apache.http.HttpException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -24,7 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;

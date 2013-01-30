@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.tester.org.apache.http;
+package org.robolectric.tester.org.apache.http;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;

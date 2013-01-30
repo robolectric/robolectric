@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.tester.org.apache.http;
+package org.robolectric.tester.org.apache.http;
 
-import com.xtremelabs.robolectric.TestRunners;
+import org.robolectric.TestRunners;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.junit.Test;

@@ -1,14 +1,14 @@
-package com.xtremelabs.robolectric;
+package org.robolectric;
 
 import android.app.Application;
-import com.xtremelabs.robolectric.shadows.ShadowApplication;
+import org.robolectric.shadows.ShadowApplication;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.List;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
-import static com.xtremelabs.robolectric.util.TestUtil.newConfig;
+import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.util.TestUtil.newConfig;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -41,7 +41,7 @@ public class ApplicationResolverTest {
     @Test
     public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
         Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithAppName.xml")).resolveApplication();
-        assertEquals("com.xtremelabs.robolectric.TestApplication", application.getApplicationInfo().name);
+        assertEquals("org.robolectric.TestApplication", application.getApplicationInfo().name);
     }
 
     @Test
@@ -49,6 +49,6 @@ public class ApplicationResolverTest {
         Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithReceivers.xml")).resolveApplication();
         List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
         assertEquals(7, receivers.size());
-        assertTrue(receivers.get(0).intentFilter.matchAction("com.xtremelabs.robolectric.ACTION1"));
+        assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
     }
 }

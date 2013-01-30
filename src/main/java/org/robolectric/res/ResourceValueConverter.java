@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.res;
+package org.robolectric.res;
 
 public interface ResourceValueConverter {
     Object convertRawValue(String rawValue);

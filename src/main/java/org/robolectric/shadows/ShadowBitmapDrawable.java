@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -7,13 +7,13 @@ import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
 import static android.graphics.Shader.TileMode;
-import static com.xtremelabs.robolectric.Robolectric.newInstanceOf;
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.newInstanceOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(BitmapDrawable.class)
@@ -72,7 +72,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
      * your tests assert that the bitmap is correct without having to actually load the bitmap.
      *
      * @return resource id from which this {@code BitmapDrawable} was loaded
-     * @deprecated use com.xtremelabs.robolectric.shadows.ShadowBitmap#getLoadedFromResourceId() instead.
+     * @deprecated use org.robolectric.shadows.ShadowBitmap#getLoadedFromResourceId() instead.
      */
     @Override
     public int getLoadedFromResourceId() {

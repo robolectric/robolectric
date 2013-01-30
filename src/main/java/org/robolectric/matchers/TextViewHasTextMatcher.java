@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.matchers;
+package org.robolectric.matchers;
 
 import android.widget.TextView;
 import org.hamcrest.Description;

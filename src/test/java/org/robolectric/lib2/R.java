@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.lib2;
+package org.robolectric.lib2;
 
 public final class R {
     public static final class id {

@@ -1,6 +1,6 @@
-package com.xtremelabs.robolectric.tester.org.apache.http;
+package org.robolectric.tester.org.apache.http;
 
-import com.xtremelabs.robolectric.shadows.StatusLineStub;
+import org.robolectric.shadows.StatusLineStub;
 import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpEntity;
