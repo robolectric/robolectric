@@ -92,3 +92,39 @@ mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
     -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases \
     -DrepositoryId=square-nexus \
     -Dfile=$ANDROID_SOURCES_BASE/prebuilt/common/kxml2/kxml2-2.3.0.jar
+
+
+
+edit poms
+
+version=4.1.2_r1_rc
+for artifactId in "android-base" "android-luni" "android-kxml2"; do
+  echo cd ~/.m2/org/robolectric/$artifactId/$version
+  cd ~/.m2/repository/org/robolectric/$artifactId/$version
+
+  for ext in ".jar" "-javadoc.jar" "-sources.jar"; do
+    echo cp /tmp/empty.jar $artifactId-$version$ext
+    cp /tmp/empty.jar $artifactId-$version$ext
+  done
+
+  ls
+
+  for ext in "-real.jar" ".jar" "-javadoc.jar" "-sources.jar" ".pom"; do
+    echo gpg -ab $artifactId-$version$ext
+    gpg -ab $artifactId-$version$ext
+  done
+
+  ls -l
+done
+
+mvn repository:bundle-pack -DgroupId=org.robolectric -DartifactId=android-base -Dversion=4.1.2_r1_rc
+mvn repository:bundle-pack -DgroupId=org.robolectric -DartifactId=android-luni -Dversion=4.1.2_r1_rc
+mvn repository:bundle-pack -DgroupId=org.robolectric -DartifactId=android-kxml2 -Dversion=4.1.2_r1_rc
+
+cd ~/.m2/org/robolectric/android-base/4.1.2_r1_rc
+gpg -ab android-base-4.1.2_r1_rc-real.jar
+gpg -ab android-base-4.1.2_r1_rc.pom
+cp /tmp/empty.jar android-base-4.1.2_r1_rc-javadoc.jar
+cp /tmp/empty.jar android-base-4.1.2_r1_rc-sources.jar
+gpg -ab android-base-4.1.2_r1_rc-sources.jar
+
