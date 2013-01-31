@@ -24,14 +24,11 @@ import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ResourceLoaderTest {
-
     private ResourcePath resourcePath;
-    private ResourcePath systemResourcePath;
 
     @Before
     public void setUp() throws Exception {
         resourcePath = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
-        systemResourcePath = AndroidResourcePathFinder.getSystemResourcePath(Robolectric.DEFAULT_SDK_VERSION, resourcePath);
     }
 
     @Test
