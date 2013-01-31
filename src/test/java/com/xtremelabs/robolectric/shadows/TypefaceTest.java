@@ -66,4 +66,9 @@ public class TypefaceTest {
         assertThat(typeface, instanceOf(Typeface.class));
         assertThat(shadowOf(typeface).getAssetPath(), equalTo(path));
     }
+
+    @Test
+    public void canGetDefaultTypeface() throws Exception {
+        assertThat(shadowOf(Typeface.DEFAULT).getAssetPath(), equalTo("/default/font"));
+    }
 }

@@ -49,4 +49,10 @@ public class ShadowTypeface {
     public static void addAllowedTypefacePath(String pathname) {
         fontPaths.add(pathname);
     }
+
+    public static void reset() {
+        Typeface typeface = Robolectric.newInstanceOf(Typeface.class);
+        shadowOf(typeface).setAssetPath("/default/font");
+        Robolectric.Reflection.setFinalStaticField(Typeface.class, "DEFAULT", typeface);
+    }
 }

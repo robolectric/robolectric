@@ -400,6 +400,7 @@ public class Robolectric {
         ShadowMimeTypeMap.reset();
         ShadowPowerManager.reset();
         ShadowStatFs.reset();
+        ShadowTypeface.reset();
     }
 
     public static <T> T directlyOn(T shadowedObject) {
