@@ -223,6 +223,7 @@ public class Robolectric {
                 ShadowInputMethodManager.class,
                 ShadowInputDevice.class,
                 ShadowInputEvent.class,
+                ShadowInputMethodService.class,
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowIntentFilterAuthorityEntry.class,
