@@ -29,7 +29,7 @@ public class ShadowWrangler implements ClassHandler {
 
     public boolean debug = false;
     private boolean strictI18n = false;
-    
+
     private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
     private Map<String, String> shadowClassMap = new HashMap<String, String>();
     private Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
@@ -45,7 +45,7 @@ public class ShadowWrangler implements ClassHandler {
 
     private ShadowWrangler() {
     }
-    
+
     @Override
     public void configure(RobolectricConfig robolectricConfig) {
     	strictI18n = robolectricConfig.getStrictI18n();
@@ -90,7 +90,7 @@ public class ShadowWrangler implements ClassHandler {
             reportNoShadowMethodFound(clazz, methodName, paramTypes);
             return null;
         }
-        
+
         if (strictI18n && !invocationPlan.isI18nSafe()) {
         	throw new I18nException("Method " + methodName + " on class " + clazz.getName() + " is not i18n-safe.");
         }
@@ -304,7 +304,7 @@ public class ShadowWrangler implements ClassHandler {
         public Object getShadow() {
             return shadow;
         }
-        
+
         public boolean isI18nSafe() {
         	// method is loaded by another class loader. So do everything reflectively.
         	Annotation[] annos = method.getAnnotations();
@@ -319,8 +319,8 @@ public class ShadowWrangler implements ClassHandler {
 					}
         		}
         	}
-        	
-        	return true;	
+
+        	return true;
         }
 
         public boolean prepare() {
