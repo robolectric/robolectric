@@ -136,6 +136,33 @@ public class InstrumentingClassLoaderTest {
     }
 
     @Test
+    public void callingStaticMethodShouldInvokeClassHandler() throws Exception {
+        Class<?> exampleClass = loadClass(ClassWithStaticMethod.class);
+        Method normalMethod = exampleClass.getMethod("staticMethod", String.class);
+
+        assertEquals("response from methodInvoked: ClassWithStaticMethod.staticMethod(java.lang.String value1)",
+                normalMethod.invoke(null, "value1"));
+        transcript.assertEventsSoFar("methodInvoked: ClassWithStaticMethod.staticMethod(java.lang.String value1)");
+    }
+
+    @Test
+    public void callingStaticDirectAccessMethodShouldWork() throws Exception {
+        Class<?> exampleClass = loadClass(ClassWithStaticMethod.class);
+        String methodName = RobolectricInternals.directMethodName(ClassWithStaticMethod.class.getName(), "staticMethod");
+        Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class);
+
+        assertEquals("staticMethod(value1)", directMethod.invoke(null, "value1"));
+    }
+
+    @SuppressWarnings("UnusedDeclaration")
+    @Instrument
+    public static class ClassWithStaticMethod {
+        public static String staticMethod(String stringArg) {
+            return "staticMethod(" + stringArg + ")";
+        }
+    }
+
+    @Test
     public void callingNormalMethodReturningIntegerShouldInvokeClassHandler() throws Exception {
         Class<?> exampleClass = loadClass(ClassWithMethodReturningInteger.class);
         classHandler.valueToReturn = 456;
@@ -349,6 +376,11 @@ public class InstrumentingClassLoaderTest {
         public ClassWithFunnyConstructors(UninstrumentedParent uninstrumentedParent, String fooString) {
             this.uninstrumentedParent = uninstrumentedParent;
         }
+    }
+
+    @Test public void directMethodName_shouldGetSimpleName() throws Exception {
+        assertEquals("$$robo$$SomeName_5c63_method", RobolectricInternals.directMethodName("a.b.c.SomeName", "method"));
+        assertEquals("$$robo$$SomeName_3b43_method", RobolectricInternals.directMethodName("a.b.c.SomeClass$SomeName", "method"));
     }
 
     /////////////////////////////

@@ -181,6 +181,8 @@ public class RobolectricInternals {
         String simpleName = className;
         int lastDotIndex = simpleName.lastIndexOf(".");
         if (lastDotIndex != -1) simpleName = simpleName.substring(lastDotIndex + 1);
+        int lastDollarIndex = simpleName.lastIndexOf("$");
+        if (lastDollarIndex != -1) simpleName = simpleName.substring(lastDollarIndex + 1);
         return String.format("$$robo$$%s_%04x_%s", simpleName, className.hashCode() & 0xffff, methodName);
     }
 }

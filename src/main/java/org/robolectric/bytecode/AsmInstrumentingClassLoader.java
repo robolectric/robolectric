@@ -1,6 +1,5 @@
 package org.robolectric.bytecode;
 
-
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Label;
@@ -171,6 +170,17 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             } else if (type.equals(Type.DOUBLE_TYPE)) {
                 push(0d);
             } else throw new IllegalStateException("huh?");
+        }
+
+        private void invokeMethod(String internalClassName, MethodNode method) {
+            if (isStatic()) {
+                loadArgs();                                             // this, [args]
+                visitMethodInsn(INVOKESTATIC, internalClassName, method.name, method.desc);
+            } else {
+                loadThisOrNull();                                       // this
+                loadArgs();                                             // this, [args]
+                visitMethodInsn(INVOKESPECIAL, internalClassName, method.name, method.desc);
+            }
         }
     }
 
@@ -353,9 +363,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             m.mark(callDirect);
 
             // call direct method and return
-            m.loadThisOrNull();                                       // this
-            m.loadArgs();                                             // this, [args]
-            m.visitMethodInsn(INVOKESPECIAL, internalClassName, method.name, method.desc);
+            m.invokeMethod(internalClassName, method);
             m.returnValue();
 
             // callClassHandler...
@@ -370,11 +378,10 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
         private MethodNode redirectorMethod(MethodNode method, String newName) {
             MethodNode redirector = new MethodNode(ASM4, newName, method.desc, method.signature, exceptionArray(method));
+            redirector.access = method.access & ~(ACC_NATIVE | ACC_ABSTRACT);
             MyGenerator m = new MyGenerator(redirector);
 
-            m.loadThisOrNull();                                       // this
-            m.loadArgs();                                             // this, [args]
-            m.visitMethodInsn(INVOKESPECIAL, internalClassName, method.name, method.desc);
+            m.invokeMethod(internalClassName, method);
             m.returnValue();
             return redirector;
         }
