@@ -49,6 +49,7 @@ import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
+import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.text.format.DateFormat;
 import android.text.method.PasswordTransformationMethod;
@@ -978,6 +979,10 @@ public class Robolectric {
 
     public static ShadowSmsManager shadowOf(SmsManager instance) {
         return (ShadowSmsManager) shadowOf_(instance);
+    }
+
+    public static ShadowSpannableStringBuilder shadowOf(SpannableStringBuilder instance) {
+        return (ShadowSpannableStringBuilder) shadowOf_(instance);
     }
 
     public static <E> ShadowSparseArray<E> shadowOf(SparseArray<E> other) {
