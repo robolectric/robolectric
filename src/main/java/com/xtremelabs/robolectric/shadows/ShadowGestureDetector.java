@@ -7,6 +7,8 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
+import static android.view.GestureDetector.OnDoubleTapListener;
+
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(GestureDetector.class)
 public class ShadowGestureDetector {
@@ -18,6 +20,7 @@ public class ShadowGestureDetector {
 
     private GestureDetector.OnGestureListener listener;
     private static GestureDetector lastActiveGestureDetector;
+    private OnDoubleTapListener onDoubleTapListener;
 
     public void __constructor__(GestureDetector.OnGestureListener listener) {
         __constructor__(null, listener);
@@ -25,6 +28,9 @@ public class ShadowGestureDetector {
 
     public void __constructor__(Context context, GestureDetector.OnGestureListener listener) {
         this.listener = listener;
+        if (listener instanceof OnDoubleTapListener) {
+            setOnDoubleTapListener((OnDoubleTapListener) listener);
+        }
     }
 
     @Implementation
@@ -32,6 +38,11 @@ public class ShadowGestureDetector {
         lastActiveGestureDetector = realObject;
         onTouchEventMotionEvent = ev;
         return onTouchEventNextReturnValue;
+    }
+
+    @Implementation
+    public void setOnDoubleTapListener(OnDoubleTapListener onDoubleTapListener) {
+        this.onDoubleTapListener = onDoubleTapListener;
     }
 
     public MotionEvent getOnTouchEventMotionEvent() {
@@ -52,5 +63,9 @@ public class ShadowGestureDetector {
 
     public static GestureDetector getLastActiveDetector() {
         return lastActiveGestureDetector;
+    }
+
+    public OnDoubleTapListener getOnDoubleTapListener() {
+        return onDoubleTapListener;
     }
 }

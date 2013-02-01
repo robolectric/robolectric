@@ -64,6 +64,40 @@ public class GestureDetectorTest {
         assertSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
     }
 
+    @Test
+    public void getOnDoubleTapListener_shouldReturnSetDoubleTapListener() throws Exception {
+        GestureDetector subject = new GestureDetector(Robolectric.application, null);
+        GestureDetector.OnDoubleTapListener onDoubleTapListener = new GestureDetector.OnDoubleTapListener() {
+            @Override
+            public boolean onSingleTapConfirmed(MotionEvent e) {
+                return false;
+            }
+
+            @Override
+            public boolean onDoubleTap(MotionEvent e) {
+                return false;
+            }
+
+            @Override
+            public boolean onDoubleTapEvent(MotionEvent e) {
+                return false;
+            }
+        };
+
+        subject.setOnDoubleTapListener(onDoubleTapListener);
+        assertEquals(shadowOf(subject).getOnDoubleTapListener(), onDoubleTapListener);
+
+        subject.setOnDoubleTapListener(null);
+        assertEquals(shadowOf(subject).getOnDoubleTapListener(), null);
+    }
+
+    @Test
+    public void getOnDoubleTapListener_shouldReturnOnGestureListenerFromConstructor() throws Exception {
+        GestureDetector.OnGestureListener onGestureListener = new GestureDetector.SimpleOnGestureListener();
+        GestureDetector subject = new GestureDetector(Robolectric.application, onGestureListener);
+        assertEquals(shadowOf(subject).getOnDoubleTapListener(), onGestureListener);
+    }
+
     private static class TestOnGestureListener implements GestureDetector.OnGestureListener {
         @Override
         public boolean onDown(MotionEvent e) {
