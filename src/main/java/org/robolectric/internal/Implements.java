@@ -11,7 +11,12 @@ package org.robolectric.internal;
 @java.lang.annotation.Target({java.lang.annotation.ElementType.TYPE})
 public @interface Implements {
     /**
-     * the Android class to be shadowed
+     * The Android class to be shadowed.
      */
-    Class value();
+    Class<?> value();
+
+    /**
+     * If true, Robolectric will invoke the actual Android code for any method that isn't shadowed.
+     */
+    boolean callThroughByDefault() default false;
 }

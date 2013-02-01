@@ -55,8 +55,12 @@ public class RobolectricContext {
         synchronized (contextsByTestRunner) {
             robolectricContext = contextsByTestRunner.get(robolectricTestRunnerClass);
             if (robolectricContext == null) {
+              try {
                 robolectricContext = factory.create();
-                contextsByTestRunner.put(robolectricTestRunnerClass, robolectricContext);
+              } catch (Exception e) {
+                throw new RuntimeException(e);
+              }
+              contextsByTestRunner.put(robolectricTestRunnerClass, robolectricContext);
             }
         }
 

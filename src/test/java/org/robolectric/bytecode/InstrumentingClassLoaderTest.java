@@ -18,7 +18,7 @@ import java.lang.reflect.Modifier;
 
 import static org.junit.Assert.*;
 
-public class InstrumentingClassLoaderTest {
+abstract public class InstrumentingClassLoaderTest {
 
     private ClassLoader classLoader;
     private MyClassHandler classHandler;
@@ -27,7 +27,7 @@ public class InstrumentingClassLoaderTest {
     @Before
     public void setUp() throws Exception {
 //        transformWithJavassist();
-        classLoader = transformWithAsm();
+        classLoader = createClassLoader(new Setup());
         classHandler = new MyClassHandler(transcript);
         injectClassHandler(classLoader, classHandler);
     }
@@ -42,9 +42,7 @@ public class InstrumentingClassLoaderTest {
 
     }
 
-    private ClassLoader transformWithAsm() throws ClassNotFoundException {
-        return new AsmInstrumentingClassLoader(new Setup(), getClass().getClassLoader());
-    }
+    abstract protected ClassLoader createClassLoader(Setup setup) throws ClassNotFoundException;
 
     @Test public void shouldAddDefaultConstructorIfMissing() throws Exception {
         Constructor<?> defaultCtor = loadClass(ClassWithNoDefaultConstructor.class).getConstructor();
@@ -77,15 +75,15 @@ public class InstrumentingClassLoaderTest {
     }
 
     @Test public void shouldDelegateClassLoadForUnacquiredClasses() throws Exception {
-        ClassLoader classTransformer = new AsmInstrumentingClassLoader(new MySetup(false, false), getClass().getClassLoader());
-        Class<?> exampleClass = classTransformer.loadClass(ExampleClass.class.getName());
+        ClassLoader classLoader = createClassLoader(new MySetup(false, false));
+        Class<?> exampleClass = classLoader.loadClass(ExampleClass.class.getName());
         assertSame(getClass().getClassLoader(), exampleClass.getClassLoader());
     }
 
     @Test public void shouldPerformClassLoadForAcquiredClasses() throws Exception {
-        ClassLoader classTransformer = new AsmInstrumentingClassLoader(new MySetup(true, false), getClass().getClassLoader());
-        Class<?> exampleClass = classTransformer.loadClass(ExampleClass.class.getName());
-        assertSame(classTransformer, exampleClass.getClassLoader());
+        ClassLoader classLoader = createClassLoader(new MySetup(true, false));
+        Class<?> exampleClass = classLoader.loadClass(NotInstrumentedClass.class.getName());
+        assertSame(classLoader, exampleClass.getClassLoader());
         try {
             exampleClass.getField(AsmInstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME);
             fail("class shouldn't be instrumented!");
@@ -94,10 +92,13 @@ public class InstrumentingClassLoaderTest {
         }
     }
 
+    public static class NotInstrumentedClass {
+    }
+
     @Test public void shouldPerformClassLoadAndInstrumentLoadForInstrumentedClasses() throws Exception {
-        ClassLoader classTransformer = new AsmInstrumentingClassLoader(new MySetup(true, true), getClass().getClassLoader());
-        Class<?> exampleClass = classTransformer.loadClass(ExampleClass.class.getName());
-        assertSame(classTransformer, exampleClass.getClassLoader());
+        ClassLoader classLoader = createClassLoader(new MySetup(true, true));
+        Class<?> exampleClass = classLoader.loadClass(ExampleClass.class.getName());
+        assertSame(classLoader, exampleClass.getClassLoader());
         assertNotNull(exampleClass.getField(AsmInstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME));
     }
 
@@ -148,7 +149,8 @@ public class InstrumentingClassLoaderTest {
     @Test
     public void callingStaticDirectAccessMethodShouldWork() throws Exception {
         Class<?> exampleClass = loadClass(ClassWithStaticMethod.class);
-        String methodName = RobolectricInternals.directMethodName(ClassWithStaticMethod.class.getName(), "staticMethod");
+        String methodName = RobolectricInternals.directMethodName(
+            ClassWithStaticMethod.class.getName(), "staticMethod");
         Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class);
 
         assertEquals("staticMethod(value1)", directMethod.invoke(null, "value1"));
@@ -344,8 +346,7 @@ public class InstrumentingClassLoaderTest {
         // each directly-accessible constructor body will need to be called explicitly, with the correct args...
 
         Class<?> uninstrumentedParentClass = loadClass(UninstrumentedParent.class);
-        Method directMethod = aClass.getDeclaredMethod(RobolectricInternals.directMethodName(ClassWithFunnyConstructors.class.getName(), "__constructor__"), uninstrumentedParentClass, String.class);
-        directMethod.setAccessible(true);
+        Method directMethod = findDirectMethod(aClass, "__constructor__", uninstrumentedParentClass, String.class);
         Object uninstrumentedParentIn = uninstrumentedParentClass.getDeclaredConstructor(String.class).newInstance("hortense");
         assertEquals(null, directMethod.invoke(instance, uninstrumentedParentIn, "foo"));
         transcript.assertNoEventsSoFar();
@@ -354,12 +355,18 @@ public class InstrumentingClassLoaderTest {
         Object uninstrumentedParentOut = getDeclaredFieldValue(aClass, instance, "uninstrumentedParent");
         assertEquals("hortense", getDeclaredFieldValue(uninstrumentedParentClass, uninstrumentedParentOut, "parentName"));
 
-        Method directMethod2 = aClass.getDeclaredMethod(RobolectricInternals.directMethodName(ClassWithFunnyConstructors.class.getName(), "__constructor__"), String.class);
-        directMethod.setAccessible(true);
+        Method directMethod2 = findDirectMethod(aClass, "__constructor__", String.class);
         assertEquals(null, directMethod2.invoke(instance, "hortense"));
         transcript.assertNoEventsSoFar();
 
         assertEquals("hortense", getDeclaredFieldValue(aClass, instance, "name"));
+    }
+
+    private Method findDirectMethod(Class<?> declaringClass, String methodName, Class<?>... argClasses) throws NoSuchMethodException {
+        String directMethodName = RobolectricInternals.directMethodName(declaringClass.getName(), methodName);
+        Method directMethod = declaringClass.getDeclaredMethod(directMethodName, argClasses);
+        directMethod.setAccessible(true);
+        return directMethod;
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -378,9 +385,101 @@ public class InstrumentingClassLoaderTest {
         }
     }
 
+    @Test public void shouldInstrumentEqualsAndHashCodeAndToStringEvenWhenUndeclared() throws Exception {
+        Class<?> theClass = loadClass(ClassWithoutEqualsHashCodeToString.class);
+        Object instance = theClass.newInstance();
+        transcript.assertEventsSoFar("methodInvoked: ClassWithoutEqualsHashCodeToString.__constructor__()");
+
+        instance.toString();
+        transcript.assertEventsSoFar("methodInvoked: ClassWithoutEqualsHashCodeToString.toString()");
+
+        classHandler.valueToReturn = true;
+        //noinspection ResultOfMethodCallIgnored,ObjectEqualsNull
+        instance.equals(null);
+        transcript.assertEventsSoFar("methodInvoked: ClassWithoutEqualsHashCodeToString.equals(java.lang.Object null)");
+
+        classHandler.valueToReturn = 42;
+        //noinspection ResultOfMethodCallIgnored
+        instance.hashCode();
+        transcript.assertEventsSoFar("methodInvoked: ClassWithoutEqualsHashCodeToString.hashCode()");
+    }
+
+    @Instrument
+    public static class ClassWithoutEqualsHashCodeToString {
+    }
+
+    @Test public void shouldAlsoInstrumentEqualsAndHashCodeAndToStringWhenDeclared() throws Exception {
+        Class<?> theClass = loadClass(ClassWithEqualsHashCodeToString.class);
+        Object instance = theClass.newInstance();
+        transcript.assertEventsSoFar("methodInvoked: ClassWithEqualsHashCodeToString.__constructor__()");
+
+        instance.toString();
+        transcript.assertEventsSoFar("methodInvoked: ClassWithEqualsHashCodeToString.toString()");
+
+        classHandler.valueToReturn = true;
+        //noinspection ResultOfMethodCallIgnored,ObjectEqualsNull
+        instance.equals(null);
+        transcript.assertEventsSoFar("methodInvoked: ClassWithEqualsHashCodeToString.equals(java.lang.Object null)");
+
+        classHandler.valueToReturn = 42;
+        //noinspection ResultOfMethodCallIgnored
+        instance.hashCode();
+        transcript.assertEventsSoFar("methodInvoked: ClassWithEqualsHashCodeToString.hashCode()");
+    }
+
+    @Instrument
+    public static class ClassWithEqualsHashCodeToString {
+        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
+        @Override
+        public boolean equals(Object obj) {
+            return true;
+        }
+
+        @Override
+        public int hashCode() {
+            return 42;
+        }
+
+        @Override
+        public String toString() {
+            return "baaaaaah";
+        }
+    }
+
+    @Test public void shouldProperlyCallSuperWhenForcingDeclarationOfEqualsHashCodeToString() throws Exception {
+        Class<?> theClass = loadClass(InstrumentedClassWithoutToStringWithSuperToString.class);
+        Object instance = theClass.newInstance();
+        transcript.assertEventsSoFar("methodInvoked: InstrumentedClassWithoutToStringWithSuperToString.__constructor__()");
+
+        instance.toString();
+        transcript.assertEventsSoFar("methodInvoked: InstrumentedClassWithoutToStringWithSuperToString.toString()");
+
+        assertEquals("baaaaaah", findDirectMethod(theClass, "toString").invoke(instance));
+    }
+
+    public static class UninstrumentedClassWithToString {
+        @Override
+        public String toString() {
+            return "baaaaaah";
+        }
+    }
+
+    @Instrument
+    public static class InstrumentedClassWithoutToStringWithSuperToString extends UninstrumentedClassWithToString {
+    }
+
     @Test public void directMethodName_shouldGetSimpleName() throws Exception {
         assertEquals("$$robo$$SomeName_5c63_method", RobolectricInternals.directMethodName("a.b.c.SomeName", "method"));
         assertEquals("$$robo$$SomeName_3b43_method", RobolectricInternals.directMethodName("a.b.c.SomeClass$SomeName", "method"));
+    }
+
+    @Test public void shouldWorkWithEnums() throws Exception {
+        loadClass(SomeEnum.class);
+    }
+
+    @Instrument
+    public static enum SomeEnum {
+        ONE, TWO, MANY
     }
 
     /////////////////////////////
@@ -415,7 +514,7 @@ public class InstrumentingClassLoaderTest {
             for (int i = 0; i < paramTypes.length; i++) {
                 if (i > 0) buf.append(", ");
                 Object param = params[i];
-                Object display = param.getClass().isArray() ? "{}" : param;
+                Object display = param == null ? "null" : param.getClass().isArray() ? "{}" : param;
                 buf.append(paramTypes[i]).append(" ").append(display);
             }
             buf.append(")");
@@ -446,12 +545,12 @@ public class InstrumentingClassLoaderTest {
 
         @Override
         public boolean shouldAcquire(String name) {
-            return shouldAcquire && name.equals(ExampleClass.class.getName());
+            return shouldAcquire && !name.startsWith("java.");
         }
 
         @Override
-        public boolean shouldInstrument(Class clazz) {
-            return shouldInstrument && clazz.equals(ExampleClass.class);
+        public boolean shouldInstrument(ClassInfo classInfo) {
+            return shouldInstrument;
         }
     }
 

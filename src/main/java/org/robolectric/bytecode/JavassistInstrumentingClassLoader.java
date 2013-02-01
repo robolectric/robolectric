@@ -5,10 +5,6 @@ import javassist.ClassPool;
 import javassist.LoaderClassPath;
 import javassist.NotFoundException;
 import org.jetbrains.annotations.Nullable;
-import org.robolectric.bytecode.AndroidTranslator;
-import org.robolectric.bytecode.ClassCache;
-import org.robolectric.bytecode.InstrumentingClassLoader;
-import org.robolectric.bytecode.Setup;
 
 import java.io.IOException;
 import java.io.InputStream;

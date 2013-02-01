@@ -148,7 +148,7 @@ public class FragmentManagerTest {
         manager.addFragment(CONTAINER_VIEW_ID, "fragment tag", fragment, true);
 
         Bundle outState = new Bundle();
-        shadowOf(activity).onSaveInstanceState(outState);
+        shadowOf(activity).callOnSaveInstanceState(outState);
 
         Fragment retrievedFragment = manager.getFragment(outState, "fragment tag");
         assertEquals(TestFragment.class, retrievedFragment.getClass());

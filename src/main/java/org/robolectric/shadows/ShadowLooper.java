@@ -45,18 +45,7 @@ public class ShadowLooper {
 
     @Implementation
     public static void loop() {
-        Looper looper = myLooper();
-        final ShadowLooper shadowLooper = shadowOf(looper);
-        if (shadowLooper != shadowOf(getMainLooper())) {
-            while (!shadowLooper.quit) {
-                try {
-                    synchronized (looper) {
-                        looper.wait();
-                    }
-                } catch (InterruptedException ignore) {
-                }
-            }
-        }
+        shadowOf(myLooper()).doLoop();
     }
 
     @Implementation
@@ -67,13 +56,28 @@ public class ShadowLooper {
     public void __constructor__() {
     }
 
+    private void doLoop() {
+        if (this != shadowOf(getMainLooper())) {
+            synchronized (realObject) {
+                while (!quit) {
+                    System.out.println(this + " quit = " + quit);
+                    try {
+                        realObject.wait();
+                    } catch (InterruptedException ignore) {
+                    }
+                }
+            }
+        }
+    }
+
     @Implementation
     public void quit() {
         if (this == shadowOf(getMainLooper())) throw new RuntimeException("Main thread not allowed to quit");
         synchronized (realObject) {
+            System.out.println(this + " quit -> true");
             quit = true;
             scheduler.reset();
-            realObject.notify();
+            realObject.notifyAll();
         }
     }
 

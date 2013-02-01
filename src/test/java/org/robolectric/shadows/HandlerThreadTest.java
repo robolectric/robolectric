@@ -42,6 +42,8 @@ public class HandlerThreadTest {
     @Test
     public void shouldQuitLooperAndThread() throws Exception {
         handlerThread = new HandlerThread("test");
+        Thread.setDefaultUncaughtExceptionHandler(new MyUncaughtExceptionHandler());
+        handlerThread.setUncaughtExceptionHandler(new MyUncaughtExceptionHandler());
         handlerThread.start();
         assertTrue(handlerThread.isAlive());
         assertTrue(handlerThread.quit());
@@ -75,5 +77,12 @@ public class HandlerThreadTest {
         handlerThread.start();
         assertNotNull(handlerThread.getLooper());
         assertTrue(wasCalled[0]);
+    }
+
+    private static class MyUncaughtExceptionHandler implements Thread.UncaughtExceptionHandler {
+        @Override
+        public void uncaughtException(Thread t, Throwable e) {
+            e.printStackTrace();
+        }
     }
 }

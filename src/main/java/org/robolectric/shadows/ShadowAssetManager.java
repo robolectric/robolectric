@@ -24,6 +24,9 @@ public final class ShadowAssetManager {
 
     private AndroidManifest appManifest;
 
+    public final void __constructor__() {
+    }
+
     @Implementation
     public final String[] list(String path) throws IOException {
         File file = new File(appManifest.getAssetsDirectory(), path);

@@ -8,24 +8,30 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.AbstractInsnNode;
+import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.util.TraceClassVisitor;
+import org.robolectric.util.Util;
 
-import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
+import java.util.Set;
 
 import static org.objectweb.asm.Type.*;
 
@@ -45,6 +51,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         super(classLoader);
         this.setup = setup;
         System.err.println("NEW AsmInstrumentingClassLoader!!!!!!!!!!!!!!!!!!!!!!!");
+        new File("./output.txt").delete();
     }
 
     @Override
@@ -58,7 +65,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         if (shouldComeFromThisClassLoader) {
             theClass = findClass(name);
         } else {
-            theClass = super.loadClass(name);
+            theClass = getParent().loadClass(name);
         }
 
         classes.put(name, theClass);
@@ -69,36 +76,37 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     protected Class<?> findClass(final String className) throws ClassNotFoundException {
         if (setup.shouldAcquire(className)) {
             InputStream classBytesStream = getResourceAsStream(className.replace('.', '/') + ".class");
+          if (classBytesStream == null) throw new ClassNotFoundException(className);
 
-            if (classBytesStream == null) throw new ClassNotFoundException(className);
+            byte[] origClassBytes;
+            try {
+                origClassBytes = Util.readBytes(classBytesStream);
+            } catch (IOException e) {
+                throw new ClassNotFoundException("couldn't load " + className, e);
+            }
 
-            Class<?> originalClass = super.loadClass(className);
+            final ClassReader classReader = new ClassReader(origClassBytes);
+            ClassNode classNode = new ClassNode();
+            classReader.accept(classNode, 0);
+
             try {
                 byte[] bytes;
-                if (setup.shouldInstrument(originalClass)) {
-                    bytes = getInstrumentedBytes(className, classBytesStream);
+                if (setup.shouldInstrument(new AsmClassInfo(className, classNode))) {
+                    bytes = getInstrumentedBytes(className, classNode);
                 } else {
-                    bytes = readBytes(classBytesStream);
+                    bytes = origClassBytes;
                 }
                 return defineClass(className, bytes, 0, bytes.length);
             } catch (Exception e) {
                 throw new ClassNotFoundException("couldn't load " + className, e);
             }
         } else {
-            throw new IllegalStateException();
+            throw new IllegalStateException("how did we get here? " + className);
 //            return super.findClass(className);
         }
     }
 
-    private byte[] getInstrumentedBytes(String className, InputStream classBytesStream) throws ClassNotFoundException {
-        final ClassReader classReader;
-        try {
-            classReader = new ClassReader(classBytesStream);
-        } catch (IOException e) {
-            throw new ClassNotFoundException("couldn't load " + className, e);
-        }
-        ClassNode classNode = new ClassNode();
-        classReader.accept(classNode, 0);
+    private byte[] getInstrumentedBytes(String className, ClassNode classNode) throws ClassNotFoundException {
         new ClassInstrumentor(classNode).instrument();
 
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS);
@@ -110,22 +118,16 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
         if (debug || className.contains("GeoPoint") || className.contains("ClassWithFunnyConstructors")) {
             try {
-                new ClassReader(classBytes).accept(new TraceClassVisitor(new PrintWriter(new FileWriter("./output.txt"))), 0);
+                FileOutputStream fileOutputStream = new FileOutputStream("tmp/" + className + ".class");
+                fileOutputStream.write(classBytes);
+                fileOutputStream.close();
+                new ClassReader(classBytes).accept(new TraceClassVisitor(new PrintWriter(new FileWriter("./output.txt", true))), 0);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
         return classBytes;
-    }
-
-    private static byte[] readBytes(InputStream classBytesStream) throws IOException {
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        int c;
-        while ((c = classBytesStream.read()) != -1) {
-            baos.write(c);
-        }
-        return baos.toByteArray();
     }
 
     private static class MyGenerator extends GeneratorAdapter {
@@ -198,10 +200,11 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         }
 
         public void instrument() {
-            boolean foundDefaultConstructor = false;
+            Set<String> foundMethods = new HashSet<String>();
+
             List<MethodNode> methods = new ArrayList<MethodNode>(classNode.methods);
             for (MethodNode method : methods) {
-                if (method.name.equals("<init>") && method.desc.equals("()V")) foundDefaultConstructor = true;
+                foundMethods.add(method.name + method.desc);
 
                 if (method.name.equals("<clinit>")) {
                     method.name = STATIC_INITIALIZER_METHOD_NAME;
@@ -215,7 +218,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
             classNode.fields.add(new FieldNode(ACC_PUBLIC, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
 
-            if (!foundDefaultConstructor) {
+            if (!foundMethods.contains("<init>()V")) {
                 MethodNode defaultConstructor = new MethodNode(ACC_PUBLIC, "<init>", "()V", "()V", null);
                 MyGenerator m = new MyGenerator(defaultConstructor);
                 m.loadThis();
@@ -245,9 +248,29 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                 classNode.methods.add(directCallConstructor);
             }
 
+            if (!isEnum()) {
+                instrumentSpecial(foundMethods, "equals", "(Ljava/lang/Object;)Z");
+                instrumentSpecial(foundMethods, "hashCode", "()I");
+            }
+            instrumentSpecial(foundMethods, "toString", "()Ljava/lang/String;");
+
 //            for (MethodNode method : (List<MethodNode>)classNode.methods) {
 //                System.out.println("method = " + method.name + method.desc);
 //            }
+        }
+
+        private void instrumentSpecial(Set<String> foundMethods, final String methodName, String methodDesc) {
+            if (!foundMethods.contains(methodName + methodDesc)) {
+                MethodNode methodNode = new MethodNode(ACC_PUBLIC, methodName, methodDesc, null, null);
+                MyGenerator m = new MyGenerator(methodNode);
+                m.loadThis();
+                m.loadArgs();
+                m.invokeMethod("java/lang/Object", methodNode);
+                m.returnValue();
+                m.endMethod();
+                classNode.methods.add(methodNode);
+                instrumentNormalMethod(methodNode);
+            }
         }
 
         private void instrumentConstructor(MethodNode method) {
@@ -334,13 +357,14 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
         private void instrumentNormalMethod(MethodNode method) {
             fixAccess(method);
+            method.access = method.access & ~ACC_FINAL;
 
             String originalName = method.name;
             method.name = RobolectricInternals.directMethodName(originalName);
             classNode.methods.add(redirectorMethod(method, RobolectricInternals.directMethodName(className, originalName)));
 
             MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
-            delegatorMethodNode.access &= ~(ACC_NATIVE | ACC_ABSTRACT);
+            delegatorMethodNode.access &= ~(ACC_NATIVE | ACC_ABSTRACT | ACC_FINAL);
 
             MyGenerator m = new MyGenerator(delegatorMethodNode);
 
@@ -378,7 +402,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
         private MethodNode redirectorMethod(MethodNode method, String newName) {
             MethodNode redirector = new MethodNode(ASM4, newName, method.desc, method.signature, exceptionArray(method));
-            redirector.access = method.access & ~(ACC_NATIVE | ACC_ABSTRACT);
+            redirector.access = method.access & ~(ACC_NATIVE | ACC_ABSTRACT | ACC_FINAL);
             MyGenerator m = new MyGenerator(redirector);
 
             m.invokeMethod(internalClassName, method);
@@ -448,6 +472,46 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                     m.unbox(returnType);
                     m.visitLabel(finished);
                 }
+        }
+
+        private boolean isEnum() {
+            return (classNode.access & ACC_ENUM) != 0;
+        }
+    }
+
+    public static class AsmClassInfo implements ClassInfo {
+      private final String className;
+      private ClassNode classNode;
+
+        public AsmClassInfo(String className, ClassNode classNode) {
+          this.className = className;
+          this.classNode = classNode;
+        }
+
+        @Override
+        public boolean isInterface() {
+            return (classNode.access & ACC_INTERFACE) != 0;
+        }
+
+        @Override
+        public boolean isAnnotation() {
+            return (classNode.access & ACC_ANNOTATION) != 0;
+        }
+
+        @Override
+        public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
+            String internalName = "L" + annotationClass.getName().replace('.', '/') + ";";
+            if (classNode.visibleAnnotations == null) return false;
+            for (Object visibleAnnotation : classNode.visibleAnnotations) {
+                AnnotationNode annotationNode = (AnnotationNode) visibleAnnotation;
+                if (annotationNode.desc.equals(internalName)) return true;
+            }
+            return false;
+        }
+
+        @Override
+        public String getName() {
+            return className;
         }
     }
 }

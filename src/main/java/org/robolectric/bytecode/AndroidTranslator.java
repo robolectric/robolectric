@@ -49,7 +49,7 @@ public class AndroidTranslator implements Translator {
     }
 
     @Override
-    public void onLoad(ClassPool classPool, String className) throws NotFoundException, CannotCompileException {
+    public void onLoad(final ClassPool classPool, String className) throws NotFoundException, CannotCompileException {
         if (classCache.isWriting()) {
             throw new IllegalStateException("shouldn't be modifying bytecode after we've started writing cache! class=" + className);
         }
@@ -59,7 +59,7 @@ public class AndroidTranslator implements Translator {
             return;
         }
 
-        CtClass ctClass;
+        final CtClass ctClass;
         try {
             String translatedClassName = setup.translateClassName(className);
             ctClass = classPool.get(translatedClassName);

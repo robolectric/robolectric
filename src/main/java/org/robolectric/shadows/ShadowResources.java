@@ -48,7 +48,10 @@ public class ShadowResources {
     private AssetManager assetManager;
 
     public static void setSystemResources(ResourceLoader systemResourceLoader) {
-        system = ShadowResources.bind(new Resources(null, null, null), systemResourceLoader);
+        AssetManager assetManager = Robolectric.newInstanceOf(AssetManager.class);
+        DisplayMetrics metrics = new DisplayMetrics();
+        Configuration config = new Configuration();
+        system = ShadowResources.bind(new Resources(assetManager, metrics, config), systemResourceLoader);
     }
 
     static Resources bind(Resources resources, ResourceLoader resourceLoader) {
@@ -69,6 +72,17 @@ public class ShadowResources {
         this.assetManager = assets;
         this.displayMetrics = metrics;
         setConfiguration(config);
+//        String ctorName = RobolectricInternals.directMethodName(Resources.class.getName(), InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME);
+//        try {
+//            Method directCtor = Resources.class.getDeclaredMethod(ctorName, AssetManager.class, DisplayMetrics.class, Configuration.class);
+//            directCtor.invoke(assets, metrics, config);
+//        } catch (NoSuchMethodException e) {
+//            throw new RuntimeException(e);
+//        } catch (InvocationTargetException e) {
+//            throw new RuntimeException(e);
+//        } catch (IllegalAccessException e) {
+//            throw new RuntimeException(e);
+//        }
     }
 
     /**
