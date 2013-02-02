@@ -288,6 +288,11 @@ public class ShadowView {
     }
 
     @Implementation
+    public void setBackground(Drawable d) {
+        setBackgroundDrawable(d);
+    }
+
+    @Implementation
     public void setBackgroundDrawable(Drawable d) {
         this.background = d;
     }
