@@ -5,7 +5,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.Attribute;
-import org.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -18,7 +17,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 public class ImageButtonTest {
     @Test
     public void testBackground() throws Exception {
-        TestAttributeSet attrs = new TestAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
+        RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
         ImageButton button = new ImageButton(Robolectric.application, attrs);
         assertThat(button.getBackground(), notNullValue());
     }

@@ -14,13 +14,12 @@ import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-import org.robolectric.res.builder.DrawableBuilder;
+import org.robolectric.res.Attribute;
 import org.robolectric.res.DrawableNode;
+import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.Attribute;
-import org.robolectric.res.ResName;
-import org.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.res.builder.DrawableBuilder;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -282,7 +281,7 @@ public class ShadowResources {
         @Implementation
         public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
             if (set == null) {
-                set = new TestAttributeSet(new ArrayList<Attribute>(), shadowOf(resources).getResourceLoader(), null);
+                set = new RoboAttributeSet(new ArrayList<Attribute>(), shadowOf(resources).getResourceLoader(), null);
             }
 
             return ShadowTypedArray.create(resources, set, attrs);

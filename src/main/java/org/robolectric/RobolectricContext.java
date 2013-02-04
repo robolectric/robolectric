@@ -1,5 +1,10 @@
 package org.robolectric;
 
+import android.content.res.XmlResourceParser;
+import android.util.AttributeSet;
+import org.apache.maven.artifact.ant.DependenciesTask;
+import org.apache.maven.model.Dependency;
+import org.apache.tools.ant.Project;
 import org.robolectric.bytecode.AndroidTranslator;
 import org.robolectric.bytecode.ClassCache;
 import org.robolectric.bytecode.ClassHandler;
@@ -10,9 +15,6 @@ import org.robolectric.bytecode.ShadowWrangler;
 import org.robolectric.internal.RobolectricTestRunnerInterface;
 import org.robolectric.res.AndroidResourcePathFinder;
 import org.robolectric.res.ResourcePath;
-import org.apache.maven.artifact.ant.DependenciesTask;
-import org.apache.maven.model.Dependency;
-import org.apache.tools.ant.Project;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
@@ -149,6 +151,11 @@ public class RobolectricContext {
         , null) {
             @Override
             protected Class<?> findClass(String s) throws ClassNotFoundException {
+                // load interfaces from the base classpath, not the real libs...
+                if (s.equals(AttributeSet.class.getName()) || s.equals(XmlResourceParser.class.getName())) {
+                    return parentClassLoader.loadClass(s);
+                }
+
                 try {
                     return super.findClass(s);
                 } catch (ClassNotFoundException e) {

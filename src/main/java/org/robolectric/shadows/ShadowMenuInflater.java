@@ -8,7 +8,6 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.res.MenuNode;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.tester.android.util.TestAttributeSet;
 import org.robolectric.util.I18nException;
 
 import static org.robolectric.Robolectric.shadowOf;
@@ -47,7 +46,7 @@ public class ShadowMenuInflater {
     private void addChildrenInGroup(MenuNode source, int groupId, Menu root) {
         for (MenuNode child : source.getChildren()) {
             String name = child.getName();
-            TestAttributeSet attributes = shadowOf(context).createAttributeSet(child.getAttributes(), null);
+            RoboAttributeSet attributes = shadowOf(context).createAttributeSet(child.getAttributes(), null);
             if (strictI18n) {
                 attributes.validateStrictI18n();
             }

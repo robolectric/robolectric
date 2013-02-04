@@ -8,7 +8,6 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
-import org.robolectric.tester.android.util.TestAttributeSet;
 import org.robolectric.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
@@ -59,7 +58,7 @@ public class TypedArrayTest {
     @Test
     public void getTextArray_whenNoSuchAttribute_shouldReturnNull() throws Exception {
         Resources resources = Robolectric.application.getResources();
-        TestAttributeSet attributeSet = new TestAttributeSet(
+        RoboAttributeSet attributeSet = new RoboAttributeSet(
                 asList(new Attribute(TestUtil.TEST_PACKAGE + ":attr/not_items", "@array/greetings", TestUtil.TEST_PACKAGE)
                 ), shadowOf(resources).getResourceLoader(), null);
         TypedArray typedArray = ShadowTypedArray.create(resources, attributeSet, new int[]{R.attr.items});
@@ -69,7 +68,7 @@ public class TypedArrayTest {
     @Test
     public void getTextArray_shouldReturnValues() throws Exception {
         Resources resources = Robolectric.application.getResources();
-        TestAttributeSet attributeSet = new TestAttributeSet(
+        RoboAttributeSet attributeSet = new RoboAttributeSet(
                 asList(new Attribute(TestUtil.TEST_PACKAGE + ":attr/items", "@array/greetings", TestUtil.TEST_PACKAGE)
                 ), shadowOf(resources).getResourceLoader(), null);
         TypedArray typedArray = ShadowTypedArray.create(resources, attributeSet, new int[]{R.attr.items});

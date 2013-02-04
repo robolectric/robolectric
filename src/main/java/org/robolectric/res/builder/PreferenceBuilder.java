@@ -8,7 +8,7 @@ import android.util.AttributeSet;
 import org.robolectric.Robolectric;
 import org.robolectric.res.PreferenceNode;
 import org.robolectric.res.Attribute;
-import org.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.shadows.RoboAttributeSet;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -49,7 +49,7 @@ public class PreferenceBuilder {
         Class<? extends Preference> clazz = pickViewClass(preferenceNode);
 
         List<Attribute> attributes = preferenceNode.getAttributes();
-        TestAttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, null);
+        RoboAttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, null);
 
         /**
          * This block is required because the PreferenceScreen(Context, AttributeSet) constructor is somehow hidden

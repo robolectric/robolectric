@@ -1,4 +1,4 @@
-package org.robolectric.tester.android.util;
+package org.robolectric.shadows;
 
 import android.util.AttributeSet;
 import android.view.View;
@@ -10,7 +10,7 @@ import org.robolectric.util.I18nException;
 
 import java.util.List;
 
-public class TestAttributeSet implements AttributeSet {
+public class RoboAttributeSet implements AttributeSet {
     private final List<Attribute> attributes;
     private final ResourceLoader resourceLoader;
     private Class<? extends View> viewClass;
@@ -25,17 +25,17 @@ public class TestAttributeSet implements AttributeSet {
             new ResName("android:attr/summary")
     };
 
-    public TestAttributeSet(List<Attribute> attributes, ResourceLoader resourceLoader, Class<? extends View> viewClass) {
+    public RoboAttributeSet(List<Attribute> attributes, ResourceLoader resourceLoader, Class<? extends View> viewClass) {
         this.attributes = attributes;
         this.resourceLoader = resourceLoader;
         this.viewClass = viewClass;
     }
 
-    public TestAttributeSet put(String fullyQualifiedName, String value, String valuePackage) {
+    public RoboAttributeSet put(String fullyQualifiedName, String value, String valuePackage) {
         return put(new Attribute(fullyQualifiedName, value, valuePackage));
     }
 
-    public TestAttributeSet put(Attribute attribute) {
+    public RoboAttributeSet put(Attribute attribute) {
         attributes.add(attribute);
         return this;
     }

@@ -8,7 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
-import org.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.shadows.RoboAttributeSet;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -97,7 +97,7 @@ public class ViewNode {
     }
 
     private FrameLayout constructFragment(Context context) {
-        TestAttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, View.class);
+        RoboAttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, View.class);
 
         Class<? extends Fragment> clazz = loadFragmentClass(Attribute.find(attributes, "android:attr/name").value);
         Fragment fragment = null;
@@ -143,7 +143,7 @@ public class ViewNode {
         Class<? extends View> clazz = pickViewClass();
         try {
             try {
-                TestAttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, View.class);
+                RoboAttributeSet attributeSet = shadowOf(context).createAttributeSet(attributes, View.class);
                 return ((Constructor<? extends View>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
             } catch (NoSuchMethodException e) {
                 try {

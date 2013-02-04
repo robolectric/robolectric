@@ -12,7 +12,6 @@ import org.robolectric.internal.RealObject;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
-import org.robolectric.tester.android.util.TestAttributeSet;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -93,8 +92,8 @@ abstract public class ShadowContext {
             set, attrs, defStyleAttr, defStyleRes);
     }
 
-    public TestAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
-        TestAttributeSet attributeSet = new TestAttributeSet(attributes, getResourceLoader(), viewClass);
+    public RoboAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
+        RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, getResourceLoader(), viewClass);
         if (isStrictI18n()) {
             attributeSet.validateStrictI18n();
         }

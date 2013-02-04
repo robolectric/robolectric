@@ -8,7 +8,6 @@ import org.robolectric.TestRunners;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.Attribute;
-import org.robolectric.tester.android.util.TestAttributeSet;
 import org.robolectric.util.CustomView;
 import org.junit.After;
 import org.junit.Before;
@@ -268,7 +267,7 @@ public class ContextTest {
     public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
         ResourceLoader resourceLoader = new PackageResourceLoader(TEST_RESOURCE_PATH);
 
-        TestAttributeSet testAttributeSet = new TestAttributeSet(asList(
+        RoboAttributeSet roboAttributeSet = new RoboAttributeSet(asList(
                 new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE),
                 new Attribute(TEST_PACKAGE + ":attr/scrollBars", "horizontal|vertical", TEST_PACKAGE),
                 new Attribute(TEST_PACKAGE + ":attr/keycode", "^q", TEST_PACKAGE),
@@ -276,7 +275,7 @@ public class ContextTest {
                 new Attribute(TEST_PACKAGE + ":attr/aspectRatioEnabled", "true", TEST_PACKAGE)
         ), resourceLoader, CustomView.class);
 
-        TypedArray a = context.obtainStyledAttributes(testAttributeSet, R.styleable.CustomView);
+        TypedArray a = context.obtainStyledAttributes(roboAttributeSet, R.styleable.CustomView);
         assertThat(a.getInt(R.styleable.CustomView_itemType, -1234), equalTo(1 /* ungulate */));
         assertThat(a.getInt(R.styleable.CustomView_scrollBars, -1234), equalTo(0x300));
         assertThat(a.getString(R.styleable.CustomView_keycode), equalTo("^q"));
@@ -284,7 +283,7 @@ public class ContextTest {
         assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 1f), equalTo(1.5f));
         assertThat(a.getBoolean(R.styleable.CustomView_aspectRatioEnabled, false), equalTo(true));
 
-        TypedArray typedArray = context.obtainStyledAttributes(testAttributeSet, new int[]{R.id.keycode, R.id.itemType});
+        TypedArray typedArray = context.obtainStyledAttributes(roboAttributeSet, new int[]{R.id.keycode, R.id.itemType});
         assertThat(typedArray.getString(0), equalTo("^q"));
         assertThat(typedArray.getInt(1, -1234), equalTo(1 /* ungulate */));
     }
