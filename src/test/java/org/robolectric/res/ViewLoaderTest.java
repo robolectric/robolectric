@@ -23,6 +23,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Values;
+import org.robolectric.res.builder.LayoutBuilder;
 import org.robolectric.shadows.ShadowImageView;
 import org.robolectric.shadows.ShadowTextView;
 import org.robolectric.util.CustomView;
@@ -250,7 +251,7 @@ public class ViewLoaderTest {
 
     @Test
     public void shouldInflateMergeLayoutIntoParent() throws Exception {
-        View innerMerge = new RoboLayoutInflater(resourceLoader).inflateView(context, R.layout.inner_merge, new LinearLayout(null), "");
+        View innerMerge = new LayoutBuilder(resourceLoader).inflateView(context, R.layout.inner_merge, new LinearLayout(null), "");
         assertNotNull(innerMerge);
     }
 
@@ -391,7 +392,7 @@ public class ViewLoaderTest {
 
     public View inflate(Context context, String packageName, String key, ViewGroup parent, String qualifiers) {
         ResourceLoader resourceLoader = shadowOf(context.getResources()).getResourceLoader();
-        return new RoboLayoutInflater(resourceLoader).inflateView(context, new ResName(packageName + ":layout/" + key),
+        return new LayoutBuilder(resourceLoader).inflateView(context, new ResName(packageName + ":layout/" + key),
                 new ArrayList<Attribute>(), parent, qualifiers);
     }
 

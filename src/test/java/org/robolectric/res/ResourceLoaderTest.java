@@ -9,6 +9,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Values;
+import org.robolectric.res.builder.LayoutBuilder;
 import org.robolectric.util.I18nException;
 import org.junit.Before;
 import org.junit.Test;
@@ -53,7 +54,7 @@ public class ResourceLoaderTest {
         shadowOf(Robolectric.application).setStrictI18n(true);
         ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
         ViewGroup vg = new FrameLayout(Robolectric.application);
-        new RoboLayoutInflater(resourceLoader).inflateView(Robolectric.application, R.layout.text_views, vg, "");
+        new LayoutBuilder(resourceLoader).inflateView(Robolectric.application, R.layout.text_views, vg, "");
     }
 
     @Test(expected=I18nException.class)
@@ -68,7 +69,7 @@ public class ResourceLoaderTest {
     public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
         ViewGroup viewGroup = new FrameLayout(Robolectric.application);
-        ViewGroup view = (ViewGroup) new RoboLayoutInflater(resourceLoader).inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup, "doesnotexist-land-xlarge");
+        ViewGroup view = (ViewGroup) new LayoutBuilder(resourceLoader).inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup, "doesnotexist-land-xlarge");
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
         assertThat(textView.getText().toString(), equalTo("land"));
     }
@@ -86,7 +87,7 @@ public class ResourceLoaderTest {
     private void checkForPollutionHelper() {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
         ViewGroup viewGroup = new FrameLayout(Robolectric.application);
-        ViewGroup view = (ViewGroup) new RoboLayoutInflater(resourceLoader).inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup, "");
+        ViewGroup view = (ViewGroup) new LayoutBuilder(resourceLoader).inflateView(Robolectric.application, R.layout.different_screen_sizes, viewGroup, "");
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
         assertThat(textView.getText().toString(), equalTo("default"));
         Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).overrideQualifiers("land"); // testing if this pollutes the other test
