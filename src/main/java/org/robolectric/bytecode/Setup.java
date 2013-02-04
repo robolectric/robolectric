@@ -14,9 +14,11 @@ import org.robolectric.internal.RobolectricTestRunnerInterface;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.util.DatabaseConfig;
 import org.robolectric.util.I18nException;
-import javassist.CtClass;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static java.util.Arrays.asList;
 
@@ -53,12 +55,12 @@ public class Setup {
         return !isFromAndroidSdk(clazz);
     }
 
-    public boolean shouldInstrument(CtClass ctClass) {
-        if (ctClass.isInterface() || ctClass.isAnnotation() || ctClass.hasAnnotation(DoNotInstrument.class)) {
+    public boolean shouldInstrument(ClassInfo classInfo) {
+        if (classInfo.isInterface() || classInfo.isAnnotation() || classInfo.hasAnnotation(DoNotInstrument.class)) {
             return false;
         }
 
-        if (isFromAndroidSdk(ctClass)) {
+        if (isFromAndroidSdk(classInfo)) {
             return true;
         }
 
@@ -66,10 +68,9 @@ public class Setup {
 
     }
 
-    public boolean isFromAndroidSdk(CtClass ctClass) {
+    public boolean isFromAndroidSdk(ClassInfo classInfo) {
         // allow explicit control with @Instrument, mostly for tests
-        return ctClass.hasAnnotation(Instrument.class) || isFromAndroidSdk(ctClass.getName());
-
+        return classInfo.hasAnnotation(Instrument.class) || isFromAndroidSdk(classInfo.getName());
     }
 
     public boolean isFromAndroidSdk(Class clazz) {

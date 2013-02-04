@@ -1,9 +1,9 @@
 package org.robolectric;
 
-import org.robolectric.bytecode.AndroidTranslatorClassInstrumentedTest;
-import org.robolectric.bytecode.Setup;
-import javassist.CtClass;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.bytecode.AndroidTranslatorClassInstrumentedTest;
+import org.robolectric.bytecode.ClassInfo;
+import org.robolectric.bytecode.Setup;
 
 import java.lang.reflect.Method;
 
@@ -25,13 +25,13 @@ public class TestRunners {
                         public Setup createSetup() {
                             return new Setup() {
                                 @Override
-                                public boolean shouldInstrument(CtClass ctClass) {
-                                    String name = ctClass.getName();
+                                public boolean shouldInstrument(ClassInfo classInfo) {
+                                    String name = classInfo.getName();
                                     if (name.equals(AndroidTranslatorClassInstrumentedTest.CustomPaint.class.getName())
                                             || name.equals(AndroidTranslatorClassInstrumentedTest.ClassWithPrivateConstructor.class.getName())) {
                                         return true;
                                     }
-                                    return super.shouldInstrument(ctClass);
+                                    return super.shouldInstrument(classInfo);
                                 }
                             };
                         }

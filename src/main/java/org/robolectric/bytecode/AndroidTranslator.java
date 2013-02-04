@@ -5,6 +5,7 @@ import javassist.*;
 import javassist.Modifier;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.lang.reflect.*;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -71,7 +72,7 @@ public class AndroidTranslator implements Translator {
             throw new IgnorableClassNotFoundException(e);
         }
 
-        boolean shouldInstrument = setup.shouldInstrument(ctClass);
+        boolean shouldInstrument = setup.shouldInstrument(new JavassistClassInfo(ctClass));
         if (debug)
             System.out.println("Considering " + ctClass.getName() + ": " + (shouldInstrument ? "INSTRUMENTING" : "not instrumenting"));
 
@@ -133,6 +134,34 @@ public class AndroidTranslator implements Translator {
             }
         };
         ctClass.replaceClassName(map);
+    }
+
+    static class JavassistClassInfo implements ClassInfo {
+        private final CtClass ctClass;
+
+        public JavassistClassInfo(CtClass ctClass) {
+            this.ctClass = ctClass;
+        }
+
+        @Override
+        public String getName() {
+            return ctClass.getName();
+        }
+
+        @Override
+        public boolean isInterface() {
+            return ctClass.isInterface();
+        }
+
+        @Override
+        public boolean isAnnotation() {
+            return ctClass.isAnnotation();
+        }
+
+        @Override
+        public boolean hasAnnotation(Class<? extends Annotation> annotationClass) {
+            return ctClass.hasAnnotation(annotationClass);
+        }
     }
 
     class FromAndroidClassNameParts {
