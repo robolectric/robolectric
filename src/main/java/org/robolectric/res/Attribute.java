@@ -1,7 +1,5 @@
-package org.robolectric.tester.android.util;
+package org.robolectric.res;
 
-import org.robolectric.res.ResourceExtractor;
-import org.robolectric.res.XmlLoader;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Node;
 

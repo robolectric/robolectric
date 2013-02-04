@@ -8,8 +8,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.widget.FrameLayout;
-import org.robolectric.tester.android.util.Attribute;
-import org.robolectric.tester.android.util.ResName;
 import org.robolectric.tester.android.util.TestAttributeSet;
 
 import java.lang.reflect.Constructor;

@@ -1,10 +1,7 @@
 package org.robolectric.res;
 
-import android.content.Context;
 import android.content.res.XmlResourceParser;
-import android.preference.PreferenceScreen;
 import android.view.View;
-import org.robolectric.tester.android.util.ResName;
 
 import java.io.InputStream;
 

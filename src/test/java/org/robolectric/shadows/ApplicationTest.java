@@ -15,7 +15,7 @@ import org.robolectric.TestRunners;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.tester.android.util.ResName;
+import org.robolectric.res.ResName;
 import org.robolectric.util.TestBroadcastReceiver;
 import org.junit.Before;
 import org.junit.Test;

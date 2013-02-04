@@ -2,6 +2,8 @@ package org.robolectric.tester.android.util;
 
 import android.util.AttributeSet;
 import android.view.View;
+import org.robolectric.res.Attribute;
+import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.I18nException;

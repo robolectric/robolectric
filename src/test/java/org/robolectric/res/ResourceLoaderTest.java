@@ -9,7 +9,6 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Values;
-import org.robolectric.tester.android.util.ResName;
 import org.robolectric.util.I18nException;
 import org.junit.Before;
 import org.junit.Test;

@@ -1,7 +1,5 @@
 package org.robolectric.res;
 
-import org.robolectric.tester.android.util.Attribute;
-import org.robolectric.tester.android.util.ResName;
 import org.junit.Test;
 import org.robolectric.util.TestUtil;
 import org.w3c.dom.Node;

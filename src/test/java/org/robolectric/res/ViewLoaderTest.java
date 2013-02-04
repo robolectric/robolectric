@@ -25,8 +25,6 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Values;
 import org.robolectric.shadows.ShadowImageView;
 import org.robolectric.shadows.ShadowTextView;
-import org.robolectric.tester.android.util.Attribute;
-import org.robolectric.tester.android.util.ResName;
 import org.robolectric.util.CustomView;
 import org.robolectric.util.CustomView2;
 import org.robolectric.util.I18nException;

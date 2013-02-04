@@ -3,8 +3,6 @@ package org.robolectric.res;
 import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
-import org.robolectric.tester.android.util.Attribute;
-import org.robolectric.tester.android.util.ResName;
 import org.robolectric.util.I18nException;
 
 import java.util.List;

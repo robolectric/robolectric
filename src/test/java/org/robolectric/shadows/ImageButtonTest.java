@@ -4,7 +4,7 @@ import android.widget.ImageButton;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.PackageResourceLoader;
-import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.res.Attribute;
 import org.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Test;
 import org.junit.runner.RunWith;

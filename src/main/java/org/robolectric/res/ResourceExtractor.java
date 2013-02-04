@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import org.robolectric.tester.android.util.ResName;
 import org.jetbrains.annotations.NotNull;
 
 import java.lang.reflect.Field;

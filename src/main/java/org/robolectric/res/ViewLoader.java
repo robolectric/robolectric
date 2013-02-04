@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import org.robolectric.tester.android.util.Attribute;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;

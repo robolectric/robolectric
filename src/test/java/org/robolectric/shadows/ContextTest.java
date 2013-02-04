@@ -7,7 +7,7 @@ import org.robolectric.R;
 import org.robolectric.TestRunners;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.res.Attribute;
 import org.robolectric.tester.android.util.TestAttributeSet;
 import org.robolectric.util.CustomView;
 import org.junit.After;

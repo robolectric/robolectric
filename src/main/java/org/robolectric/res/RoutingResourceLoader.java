@@ -2,7 +2,6 @@ package org.robolectric.res;
 
 import android.content.res.XmlResourceParser;
 import android.view.View;
-import org.robolectric.tester.android.util.ResName;
 
 import java.io.InputStream;
 import java.util.HashSet;

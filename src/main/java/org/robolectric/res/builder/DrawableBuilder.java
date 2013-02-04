@@ -15,7 +15,7 @@ import org.robolectric.res.DrawableNode;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowStateListDrawable;
-import org.robolectric.tester.android.util.ResName;
+import org.robolectric.res.ResName;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;

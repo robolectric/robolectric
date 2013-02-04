@@ -7,7 +7,7 @@ import android.preference.PreferenceScreen;
 import android.util.AttributeSet;
 import org.robolectric.Robolectric;
 import org.robolectric.res.PreferenceNode;
-import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.res.Attribute;
 import org.robolectric.tester.android.util.TestAttributeSet;
 
 import java.lang.reflect.Constructor;

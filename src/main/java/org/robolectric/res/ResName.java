@@ -1,6 +1,5 @@
-package org.robolectric.tester.android.util;
+package org.robolectric.res;
 
-import org.robolectric.res.ResourceExtractor;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.regex.Matcher;

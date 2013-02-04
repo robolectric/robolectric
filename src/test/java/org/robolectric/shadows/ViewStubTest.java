@@ -7,7 +7,7 @@ import android.widget.LinearLayout;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.res.Attribute;
 import org.robolectric.tester.android.util.TestAttributeSet;
 import org.junit.Before;
 import org.junit.Test;

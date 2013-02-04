@@ -18,8 +18,8 @@ import org.robolectric.res.builder.DrawableBuilder;
 import org.robolectric.res.DrawableNode;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.tester.android.util.Attribute;
-import org.robolectric.tester.android.util.ResName;
+import org.robolectric.res.Attribute;
+import org.robolectric.res.ResName;
 import org.robolectric.tester.android.util.TestAttributeSet;
 
 import java.io.InputStream;
