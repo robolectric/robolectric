@@ -20,7 +20,6 @@ public class PackageResourceLoader implements ResourceLoader {
     private List<ResourcePath> resourcePaths;
     private final ResourceExtractor resourceExtractor;
 
-    private final PreferenceLoader preferenceLoader;
     private final XmlFileLoader xmlFileLoader;
     private final AttrResourceLoader attrResourceLoader;
     private final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
@@ -36,6 +35,7 @@ public class PackageResourceLoader implements ResourceLoader {
     private final ResBundle<ViewNode> viewNodes = new ResBundle<ViewNode>();
     private final ResBundle<MenuNode> menuNodes = new ResBundle<MenuNode>();
     private final ResBundle<DrawableNode> drawableNodes = new ResBundle<DrawableNode>();
+    private final ResBundle<PreferenceNode> preferenceNodes = new ResBundle<PreferenceNode>();
 
     public PackageResourceLoader(ResourcePath... resourcePaths) {
         this(asList(resourcePaths));
@@ -50,7 +50,6 @@ public class PackageResourceLoader implements ResourceLoader {
         this.resourcePaths = Collections.unmodifiableList(resourcePaths);
 
         attrResourceLoader = new AttrResourceLoader();
-        preferenceLoader = new PreferenceLoader(resourceExtractor);
         xmlFileLoader = new XmlFileLoader(resourceExtractor);
 
         if (overrideNamespace != null) {
@@ -92,7 +91,7 @@ public class PackageResourceLoader implements ResourceLoader {
             DrawableResourceLoader drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
             drawableResourceLoader.findNinePatchResources(resourcePath);
             new DocumentLoader(drawableResourceLoader).loadResourceXmlSubDirs(resourcePath, "drawable");
-            new DocumentLoader(preferenceLoader).loadResourceXmlSubDirs(resourcePath, "xml");
+            new DocumentLoader(new PreferenceLoader(preferenceNodes)).loadResourceXmlSubDirs(resourcePath, "xml");
             new DocumentLoader(xmlFileLoader).loadResourceXmlSubDirs(resourcePath, "xml");
 
             loadOtherResources(resourcePath);
@@ -211,9 +210,8 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public PreferenceScreen inflatePreferences(Context context, int resourceId) {
-        init();
-        return preferenceLoader.inflatePreferences(context, resourceId);
+    public PreferenceNode getPreferenceNode(ResName resName, String qualifiers) {
+        return preferenceNodes.get(resName, qualifiers);
     }
 
     @Override

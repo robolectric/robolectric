@@ -10,6 +10,7 @@ import android.graphics.drawable.StateListDrawable;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.res.builder.DrawableBuilder;
 import org.robolectric.shadows.ShadowStateListDrawable;
 import org.robolectric.tester.android.util.ResName;
 import org.junit.Before;

@@ -1,8 +1,6 @@
 package org.robolectric.res;
 
-import android.content.Context;
 import android.content.res.XmlResourceParser;
-import android.preference.PreferenceScreen;
 import android.view.View;
 import org.robolectric.tester.android.util.ResName;
 
@@ -86,8 +84,8 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public PreferenceScreen inflatePreferences(Context context, int resourceId) {
-        return pickFor(resourceId).inflatePreferences(context, resourceId);
+    public PreferenceNode getPreferenceNode(ResName resName, String qualifiers) {
+        return pickFor(resName).getPreferenceNode(resName, qualifiers);
     }
 
     @Override

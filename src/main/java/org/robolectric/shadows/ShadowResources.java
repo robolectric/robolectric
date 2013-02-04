@@ -14,7 +14,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-import org.robolectric.res.DrawableBuilder;
+import org.robolectric.res.builder.DrawableBuilder;
 import org.robolectric.res.DrawableNode;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceLoader;

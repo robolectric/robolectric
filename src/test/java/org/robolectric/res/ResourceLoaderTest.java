@@ -1,6 +1,7 @@
 package org.robolectric.res;
 
 
+import android.preference.PreferenceActivity;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
@@ -59,8 +60,9 @@ public class ResourceLoaderTest {
     @Test(expected=I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflatePreferences() throws Exception {
         shadowOf(Robolectric.application).setStrictI18n(true);
-        ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
-    	resourceLoader.inflatePreferences(Robolectric.application, R.xml.preferences);
+        PreferenceActivity preferenceActivity = new PreferenceActivity() {
+        };
+        preferenceActivity.addPreferencesFromResource(R.xml.preferences);
     }
 
     @Test @Values(qualifiers = "doesnotexist-land-xlarge")

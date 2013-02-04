@@ -1,9 +1,7 @@
 package org.robolectric.res;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
-import android.graphics.drawable.Drawable;
 import android.preference.PreferenceScreen;
 import android.view.View;
 import org.robolectric.tester.android.util.ResName;
@@ -37,7 +35,7 @@ public interface ResourceLoader {
 
     int[] getIntegerArrayValue(ResName resName, String qualifiers);
 
-    PreferenceScreen inflatePreferences(Context context, int resourceId);
+    PreferenceNode getPreferenceNode(ResName resName, String qualifiers);
 
     ResourceExtractor getResourceExtractor();
 
