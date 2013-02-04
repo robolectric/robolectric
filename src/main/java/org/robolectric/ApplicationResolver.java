@@ -4,7 +4,7 @@ import android.app.Application;
 import android.content.BroadcastReceiver;
 import android.content.IntentFilter;
 import org.robolectric.internal.ClassNameResolver;
-import org.robolectric.res.RobolectricPackageManager;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.w3c.dom.Document;
 

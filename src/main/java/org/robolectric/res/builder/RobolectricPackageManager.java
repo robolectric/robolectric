@@ -1,4 +1,4 @@
-package org.robolectric.res;
+package org.robolectric.res.builder;
 
 import android.content.ComponentName;
 import android.content.ContextWrapper;
