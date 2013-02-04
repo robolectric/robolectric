@@ -20,6 +20,8 @@ import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DrawableBuilder;
+import org.robolectric.res.builder.XmlFileBuilder;
+import org.w3c.dom.Document;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -242,13 +244,14 @@ public class ShadowResources {
     }
     
     @Implementation
-    public XmlResourceParser getXml(int id)
-    		throws Resources.NotFoundException {
-    	XmlResourceParser parser = resourceLoader.getXml(id);
-    	if (parser == null) {
-    		throw new Resources.NotFoundException();
-    	}
-    	return parser;
+    public XmlResourceParser getXml(int id) throws Resources.NotFoundException {
+        Document document = resourceLoader.getXml(getResName(id), getQualifiers());
+        if (document == null) {
+            throw new Resources.NotFoundException();
+        }
+        XmlFileBuilder xmlFileBuilder = new XmlFileBuilder();
+        XmlResourceParser parser = xmlFileBuilder.getXml(document);
+        return parser;
     }
 
     @Implementation

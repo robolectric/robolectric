@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
-import android.content.res.XmlResourceParser;
 import android.view.View;
+import org.w3c.dom.Document;
 
 import java.io.InputStream;
 import java.util.HashSet;
@@ -58,8 +58,8 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public XmlResourceParser getXml(int id) {
-        return pickFor(id).getXml(id);
+    public Document getXml(ResName resName, String qualifiers) {
+        return pickFor(resName).getXml(resName, "");
     }
 
     @Override

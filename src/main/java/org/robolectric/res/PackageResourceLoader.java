@@ -1,10 +1,9 @@
 package org.robolectric.res;
 
-import android.content.res.XmlResourceParser;
 import android.view.View;
 import org.robolectric.util.I18nException;
+import org.w3c.dom.Document;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -17,7 +16,6 @@ public class PackageResourceLoader implements ResourceLoader {
     private List<ResourcePath> resourcePaths;
     private final ResourceExtractor resourceExtractor;
 
-    private final XmlFileLoader xmlFileLoader;
     private final AttrResourceLoader attrResourceLoader;
     private final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
 
@@ -33,6 +31,7 @@ public class PackageResourceLoader implements ResourceLoader {
     private final ResBundle<MenuNode> menuNodes = new ResBundle<MenuNode>();
     private final ResBundle<DrawableNode> drawableNodes = new ResBundle<DrawableNode>();
     private final ResBundle<PreferenceNode> preferenceNodes = new ResBundle<PreferenceNode>();
+    private final ResBundle<Document> xmlDocuments = new ResBundle<Document>();
 
     public PackageResourceLoader(ResourcePath... resourcePaths) {
         this(asList(resourcePaths));
@@ -47,7 +46,6 @@ public class PackageResourceLoader implements ResourceLoader {
         this.resourcePaths = Collections.unmodifiableList(resourcePaths);
 
         attrResourceLoader = new AttrResourceLoader();
-        xmlFileLoader = new XmlFileLoader(resourceExtractor);
 
         if (overrideNamespace != null) {
             for (ResBundle resBundle : asList(booleanResolver, colorResolver, dimenResolver, integerResolver,
@@ -89,7 +87,7 @@ public class PackageResourceLoader implements ResourceLoader {
             drawableResourceLoader.findNinePatchResources(resourcePath);
             new DocumentLoader(drawableResourceLoader).loadResourceXmlSubDirs(resourcePath, "drawable");
             new DocumentLoader(new PreferenceLoader(preferenceNodes)).loadResourceXmlSubDirs(resourcePath, "xml");
-            new DocumentLoader(xmlFileLoader).loadResourceXmlSubDirs(resourcePath, "xml");
+            new DocumentLoader(new XmlFileLoader(xmlDocuments)).loadResourceXmlSubDirs(resourcePath, "xml");
 
             loadOtherResources(resourcePath);
 
@@ -100,10 +98,6 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     protected void loadOtherResources(ResourcePath resourcePath) {
-    }
-
-    private File getPreferenceResourceDir(File xmlResourceDir) {
-        return xmlResourceDir != null ? new File(xmlResourceDir, "xml") : null;
     }
 
     @Override
@@ -155,9 +149,9 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public XmlResourceParser getXml(int id) {
+    public Document getXml(ResName resName, String qualifiers) {
         init();
-        return xmlFileLoader.getXml(id);
+        return xmlDocuments.get(resName, qualifiers);
     }
 
     @Override

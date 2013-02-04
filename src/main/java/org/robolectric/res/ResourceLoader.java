@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
-import android.content.res.XmlResourceParser;
 import android.view.View;
+import org.w3c.dom.Document;
 
 import java.io.InputStream;
 
@@ -22,7 +22,7 @@ public interface ResourceLoader {
 
     boolean getBooleanValue(ResName resName, String qualifiers);
 
-    XmlResourceParser getXml(int id);
+    Document getXml(ResName resName, String qualifiers);
 
     DrawableNode getDrawableNode(ResName resName, String qualifiers);
 
