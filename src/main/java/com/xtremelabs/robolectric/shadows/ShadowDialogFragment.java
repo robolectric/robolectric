@@ -80,7 +80,9 @@ public class ShadowDialogFragment extends ShadowFragment {
         return dialog;
     }
     
-    @Implementation
+    // The following API is not supported by Android Support Library V4 r6(r7). Need to add anotation back
+    // when Maven supports newer revision of support library. 
+//    @Implementation
     public void dismissAllowingStateLoss() {
     	dismiss();
     }
