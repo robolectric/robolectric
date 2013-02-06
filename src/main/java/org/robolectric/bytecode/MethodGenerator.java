@@ -225,11 +225,7 @@ public class MethodGenerator {
     }
 
     private String directMethodName(String methodName) {
-        return directMethodName(ctClass, methodName);
-    }
-
-    public static String directMethodName(CtClass ctClass, String methodName) {
-        return String.format("$$robo$$%s_%04x_%s", ctClass.getSimpleName(), ctClass.getName().hashCode() & 0xffff, methodName);
+        return RobolectricInternals.directMethodName(ctClass.getName(), methodName);
     }
 
     public void fixCallsToSameMethodOnSuper(final CtMethod ctMethod) throws CannotCompileException {

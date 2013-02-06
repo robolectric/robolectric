@@ -5,9 +5,9 @@ import org.apache.maven.model.Dependency;
 import org.apache.tools.ant.Project;
 import org.jetbrains.annotations.Nullable;
 import org.robolectric.bytecode.AndroidTranslator;
-import org.robolectric.bytecode.AsmInstrumentingClassLoader;
 import org.robolectric.bytecode.ClassCache;
 import org.robolectric.bytecode.ClassHandler;
+import org.robolectric.bytecode.JavassistInstrumentingClassLoader;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.bytecode.Setup;
 import org.robolectric.bytecode.ShadowWrangler;
@@ -198,8 +198,8 @@ public class RobolectricContext {
                 return parentClassLoader.getResources(s);
             }
         };
-//        InstrumentingClassLoader robolectricClassLoader = new InstrumentingClassLoader(realAndroidJarsClassLoader, classCache, androidTranslator, setup);
-        ClassLoader robolectricClassLoader = new AsmInstrumentingClassLoader(setup, realAndroidJarsClassLoader);
+        ClassLoader robolectricClassLoader = new JavassistInstrumentingClassLoader(realAndroidJarsClassLoader, classCache, androidTranslator, setup);
+//        ClassLoader robolectricClassLoader = new AsmInstrumentingClassLoader(setup, realAndroidJarsClassLoader);
         injectClassHandler(robolectricClassLoader);
         return robolectricClassLoader;
     }

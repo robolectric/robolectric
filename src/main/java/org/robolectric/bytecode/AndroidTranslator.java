@@ -74,7 +74,7 @@ public class AndroidTranslator implements Translator {
         if (ctClass.hasAnnotation(Implements.class)) {
             for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
                 if (ctMethod.hasAnnotation(Implementation.class)) {
-                    CtMethod copy = CtNewMethod.copy(ctMethod, MethodGenerator.directMethodName(ctClass, ctMethod.getName()), ctClass, MethodGenerator.IDENTITY_CLASS_MAP);
+                    CtMethod copy = CtNewMethod.copy(ctMethod, RobolectricInternals.directMethodName(ctClass.getName(), ctMethod.getName()), ctClass, MethodGenerator.IDENTITY_CLASS_MAP);
                     System.out.println("direct access for shadow " + copy.getLongName());
                     ctClass.addMethod(copy);
                 }
