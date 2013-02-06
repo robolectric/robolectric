@@ -52,7 +52,26 @@ mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
 echo "building jar for libcore luni..."
 
 cd $ANDROID_SOURCES_BASE/libcore/luni/src/main/java && javac -cp /tmp -d /tmp/out \
-    libcore/icu/CollationElementIteratorICU.java libcore/icu/CollationKeyICU.java libcore/icu/ErrorCode.java libcore/icu/ICU.java libcore/icu/LocaleData.java libcore/icu/NativeBreakIterator.java libcore/icu/NativeCollation.java libcore/icu/NativeConverter.java libcore/icu/NativeDecimalFormat.java libcore/icu/NativeIDN.java libcore/icu/NativeNormalizer.java libcore/icu/NativePluralRules.java libcore/icu/RuleBasedCollatorICU.java libcore/util/BasicLruCache.java java/util/LinkedHashMap.java java/util/HashMap.java libcore/util/Objects.java /Volumes/AndroidSource/libcore/luni/src/main/java (android-4.1.2_r1) ls -l /tmp/out
+    libcore/icu/CollationElementIteratorICU.java \
+    libcore/icu/CollationKeyICU.java \
+    libcore/icu/ErrorCode.java \
+    libcore/icu/ICU.java \
+    libcore/icu/LocaleData.java \
+    libcore/icu/NativeBreakIterator.java \
+    libcore/icu/NativeCollation.java \
+    libcore/icu/NativeConverter.java \
+    libcore/icu/NativeDecimalFormat.java \
+    libcore/icu/NativeIDN.java \
+    libcore/icu/NativeNormalizer.java \
+    libcore/icu/NativePluralRules.java \
+    libcore/icu/RuleBasedCollatorICU.java \
+    libcore/util/BasicLruCache.java \
+    libcore/util/Objects.java \
+    java/util/LinkedHashMap.java \
+    java/util/HashMap.java
+
+cd /tmp/out
+jar cf /tmp/android-luni-$ANDROID_VERSION.jar .
 
 # install android-luni
 mvn install:install-file \
