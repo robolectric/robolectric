@@ -1,9 +1,14 @@
 package org.robolectric.bytecode;
 
 import android.net.Uri;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import javassist.*;
+import javassist.CannotCompileException;
+import javassist.ClassMap;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtField;
+import javassist.Modifier;
+import javassist.NotFoundException;
+import javassist.Translator;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
@@ -16,8 +21,8 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 23;
-//    public static final int CACHE_VERSION = -1;
+//    public static final int CACHE_VERSION = 23;
+    public static final int CACHE_VERSION = -1;
 
     private final ClassCache classCache;
     private final Setup setup;
@@ -71,19 +76,7 @@ public class AndroidTranslator implements Translator {
             throw new IgnorableClassNotFoundException(e);
         }
 
-        if (ctClass.hasAnnotation(Implements.class)) {
-            for (CtMethod ctMethod : ctClass.getDeclaredMethods()) {
-                if (ctMethod.hasAnnotation(Implementation.class)) {
-                    CtMethod copy = CtNewMethod.copy(ctMethod, RobolectricInternals.directMethodName(ctClass.getName(), ctMethod.getName()), ctClass, MethodGenerator.IDENTITY_CLASS_MAP);
-                    System.out.println("direct access for shadow " + copy.getLongName());
-                    ctClass.addMethod(copy);
-                }
-            }
-            return;
-        }
-
         boolean shouldInstrument = setup.shouldInstrument(new JavassistClassInfo(ctClass));
-
         if (debug)
             System.out.println("Considering " + ctClass.getName() + ": " + (shouldInstrument ? "INSTRUMENTING" : "not instrumenting"));
 
@@ -110,8 +103,7 @@ public class AndroidTranslator implements Translator {
             }
 
             MethodGenerator methodGenerator = new MethodGenerator(ctClass, setup);
-//            methodGenerator.fixConstructors();
-            methodGenerator.createSpecialConstructor();
+            methodGenerator.fixConstructors();
             methodGenerator.fixMethods();
             methodGenerator.deferClassInitialization();
 

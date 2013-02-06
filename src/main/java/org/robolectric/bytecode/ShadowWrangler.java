@@ -16,7 +16,7 @@ public class ShadowWrangler implements ClassHandler {
 
     private final Setup setup;
 
-    public boolean debug = true;
+    public boolean debug = false;
     private boolean strictI18n = false;
 
     private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();

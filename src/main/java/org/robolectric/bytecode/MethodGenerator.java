@@ -159,7 +159,7 @@ public class MethodGenerator {
             int originalModifiers = ctMethod.getModifiers();
 
             if (isDeclaredOnClass) {
-//                fixCallsToSameMethodOnSuper(ctMethod);
+                fixCallsToSameMethodOnSuper(ctMethod);
             }
 
             boolean wasNative = Modifier.isNative(originalModifiers);
@@ -191,41 +191,34 @@ public class MethodGenerator {
             boolean isStatic = Modifier.isStatic(originalModifiers);
             String methodBody = generateMethodBody(ctMethod, wasNative, wasAbstract, returnCtClass, returnType, isStatic, !isDeclaredOnClass);
 
-            String directMethodName = directMethodName(methodName);
+            String directMethodName = RobolectricInternals.directMethodName(ctClass.getName(), methodName);
             if (!CONSTRUCTOR_METHOD_NAME.equals(methodName)) {
                 if (!wasNative && !wasAbstract) {
                     CtMethod copy = CtNewMethod.copy(ctMethod, directMethodName, ctClass, IDENTITY_CLASS_MAP);
-                    System.out.println("copy " + ctMethod.getLongName() + " to " + copy.getLongName());
                     ctClass.addMethod(copy);
                 } else {
-                    System.out.println("no-op for " + methodName + " as " + directMethodName);
                     ctClass.addMethod(CtNewMethod.make(returnCtClass, directMethodName,
                             paramTypes, new CtClass[0], null, ctClass));
                 }
             }
 
             if (!isDeclaredOnClass) {
+                CtMethod newMethod = makeNewMethod(ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + generateCallToSuper(ctMethod) + "\n}");
+                newMethod.setModifiers(newModifiers);
                 if (wasDeclaredInClass) {
                     ctMethod.insertBefore("{\n" + methodBody + "}\n");
                 } else {
-                    CtMethod newMethod = makeNewMethod(ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + generateCallToSuper(ctMethod) + "\n}");
-                    newMethod.setModifiers(newModifiers);
                     ctClass.addMethod(newMethod);
                 }
             } else if (wasAbstract || wasNative) {
                 CtMethod newMethod = makeNewMethod(ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + "\n}");
                 ctMethod.setBody(newMethod, null);
             } else {
-                System.out.println(methodBody);
                 ctMethod.insertBefore("{\n" + methodBody + "}\n");
             }
         } catch (Exception e) {
             throw new RuntimeException("problem instrumenting " + describeBefore, e);
         }
-    }
-
-    private String directMethodName(String methodName) {
-        return RobolectricInternals.directMethodName(ctClass.getName(), methodName);
     }
 
     public void fixCallsToSameMethodOnSuper(final CtMethod ctMethod) throws CannotCompileException {
@@ -267,14 +260,9 @@ public class MethodGenerator {
     }
 
     public String generateCallToSuper(CtMethod ctMethod) throws NotFoundException {
-        boolean superMethodIsInstrumented = !isDirectSubclassOfObject();
-        superMethodIsInstrumented = false;
+        boolean superMethodIsInstrumented = !ctClass.getSuperclass().equals(objectCtClass);
         return (superMethodIsInstrumented ? RobolectricInternals.class.getName() + ".directlyOn($0);\n" : "") +
                 "return super." + ctMethod.getName() + "(" + makeParameterList(ctMethod.getParameterTypes().length) + ");";
-    }
-
-    private boolean isDirectSubclassOfObject() throws NotFoundException {
-        return ctClass.getSuperclass().equals(objectCtClass);
     }
 
     private void makeParameterList(StringBuilder buf, int length) {
@@ -314,7 +302,7 @@ public class MethodGenerator {
         /*
             METHOD BODY TEMPLATE:
 
-            if (!__robo_data__ instanceof <className>.class && !RobolectricInternals.shouldCallDirectly(isStatic ? class : this)) {
+            if (!RobolectricInternals.shouldCallDirectly(isStatic ? class : this)) {
                 Object x = RobolectricInternals.methodInvoked(
                     <className>.class, "<methodName>", isStatic ? null : this,
                     <paramTypes>,
@@ -330,53 +318,33 @@ public class MethodGenerator {
 
         String methodBody;
         StringBuilder buf = new StringBuilder();
-        System.out.println(ctMethod.getName());
+        buf.append("if (!");
+        generateCallToShouldCallDirectory(isStatic, className, buf);
+        buf.append(") {\n");
 
-        if (!ctMethod.getName().equals(CONSTRUCTOR_METHOD_NAME)) {
-            buf.append("if (!");
-
-            if (!isStatic) {
-                buf.append(ctClass.getName()).append(".class.isInstance(");
-                buf.append(org.robolectric.bytecode.InstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME);
-                buf.append(") && !");
-            }
-
-            generateCallToShouldCallDirectory(isStatic, className, buf);
-            buf.append(") {\n");
-
-            if (!returnsVoid) {
-                buf.append("Object x = ");
-            }
-            generateCallToMethodInvoked(ctMethod, isStatic, className, buf);
-
-            if (!returnsVoid) {
-                buf.append("if (x != null) return ((");
-                buf.append(returnType.nonPrimitiveClassName(returnCtClass));
-                buf.append(") x)");
-                buf.append(returnType.unboxString());
-                buf.append(";\n");
-                if (shouldGenerateCallToSuper) {
-                    buf.append(generateCallToSuper(ctMethod));
-                } else {
-                    buf.append("return ");
-                    buf.append(returnType.defaultReturnString());
-                    buf.append(";\n");
-                }
-            } else {
-                buf.append("return;\n");
-            }
-
-            if (!isStatic) {
-                buf.append("} else {\n  return ((")
-                        .append(ctClass.getName())
-                        .append(")" + org.robolectric.bytecode.InstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME + ").")
-                        .append(directMethodName(ctMethod.getName()))
-                        .append("($$);");
-            }
-
-
-            buf.append("}");
+        if (!returnsVoid) {
+            buf.append("Object x = ");
         }
+        generateCallToMethodInvoked(ctMethod, isStatic, className, buf);
+
+        if (!returnsVoid) {
+            buf.append("if (x != null) return ((");
+            buf.append(returnType.nonPrimitiveClassName(returnCtClass));
+            buf.append(") x)");
+            buf.append(returnType.unboxString());
+            buf.append(";\n");
+            if (shouldGenerateCallToSuper) {
+                buf.append(generateCallToSuper(ctMethod));
+            } else {
+                buf.append("return ");
+                buf.append(returnType.defaultReturnString());
+                buf.append(";\n");
+            }
+        } else {
+            buf.append("return;\n");
+        }
+
+        buf.append("}\n");
 
         methodBody = buf.toString();
         return methodBody;
@@ -449,9 +417,9 @@ public class MethodGenerator {
         CtConstructor classInitializer = ctClass.getClassInitializer();
         CtMethod staticInitializerMethod;
         if (classInitializer == null) {
-            staticInitializerMethod = CtNewMethod.make(CtClass.voidType, org.robolectric.bytecode.InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME, new CtClass[0], new CtClass[0], "{}", ctClass);
+            staticInitializerMethod = CtNewMethod.make(CtClass.voidType, InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME, new CtClass[0], new CtClass[0], "{}", ctClass);
         } else {
-            staticInitializerMethod = classInitializer.toMethod(org.robolectric.bytecode.InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME, ctClass);
+            staticInitializerMethod = classInitializer.toMethod(InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME, ctClass);
         }
         staticInitializerMethod.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
 
@@ -487,24 +455,4 @@ public class MethodGenerator {
                 RobolectricInternals.class.getName() + ".classInitializing(" + ctClass.getName() + ".class);" +
                 "}");
     }
-
-    public void createSpecialConstructor() throws NotFoundException, CannotCompileException {
-        CtClass directObjectMarkerClass = ctClass.getClassPool().get(org.robolectric.bytecode.DirectObjectMarker.class.getName());
-        if (!hasDataField(ctClass.getSuperclass())) {
-            ctClass.addConstructor(CtNewConstructor.make(new CtClass[]{directObjectMarkerClass, ctClass}, new CtClass[0],
-                    "{ super(); " + org.robolectric.bytecode.InstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME + " = $2; }", ctClass));
-        } else {
-            ctClass.addConstructor(CtNewConstructor.make(new CtClass[]{directObjectMarkerClass, ctClass}, new CtClass[0],
-                    "{ super($$); " + org.robolectric.bytecode.InstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME + " = $2; }", ctClass));
-        }
-    }
-
-  private boolean hasDataField(CtClass ctClass) {
-    try {
-      ctClass.getField(org.robolectric.bytecode.InstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME);
-      return true;
-    } catch (NotFoundException e) {
-      return false;
-    }
-  }
 }
