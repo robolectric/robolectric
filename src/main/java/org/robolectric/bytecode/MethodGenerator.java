@@ -169,7 +169,7 @@ public class MethodGenerator {
             }
 
             CtClass returnCtClass = ctMethod.getReturnType();
-            Type returnType = Type.find(returnCtClass);
+            RoboType returnType = RoboType.find(returnCtClass);
 
             String methodName = ctMethod.getName();
             CtClass[] paramTypes = ctMethod.getParameterTypes();
@@ -270,7 +270,7 @@ public class MethodGenerator {
         return buf.toString();
     }
 
-    public String generateMethodBody(CtMethod ctMethod, boolean wasNative, boolean wasAbstract, CtClass returnCtClass, Type returnType, boolean aStatic, boolean shouldGenerateCallToSuper) throws NotFoundException {
+    public String generateMethodBody(CtMethod ctMethod, boolean wasNative, boolean wasAbstract, CtClass returnCtClass, RoboType returnType, boolean aStatic, boolean shouldGenerateCallToSuper) throws NotFoundException {
         String methodBody;
         if (wasAbstract) {
             methodBody = returnType.isVoid() ? "" : "return " + returnType.defaultReturnString() + ";";
@@ -284,7 +284,7 @@ public class MethodGenerator {
         return methodBody;
     }
 
-    public String generateMethodBody(CtMethod ctMethod, CtClass returnCtClass, Type returnType, boolean isStatic, boolean shouldGenerateCallToSuper) throws NotFoundException {
+    public String generateMethodBody(CtMethod ctMethod, CtClass returnCtClass, RoboType returnType, boolean isStatic, boolean shouldGenerateCallToSuper) throws NotFoundException {
         boolean returnsVoid = returnType.isVoid();
         String className = ctClass.getName();
 

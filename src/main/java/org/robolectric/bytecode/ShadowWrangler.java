@@ -161,7 +161,7 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     public static Class<?> loadClass(String paramType, ClassLoader classLoader) {
-        Class primitiveClass = Type.findPrimitiveClass(paramType);
+        Class primitiveClass = RoboType.findPrimitiveClass(paramType);
         if (primitiveClass != null) return primitiveClass;
 
         int arrayLevel = 0;
@@ -170,7 +170,7 @@ public class ShadowWrangler implements ClassHandler {
             paramType = paramType.substring(0, paramType.length() - 2);
         }
 
-        Class<?> clazz = Type.findPrimitiveClass(paramType);
+        Class<?> clazz = RoboType.findPrimitiveClass(paramType);
         if (clazz == null) {
             try {
                 clazz = classLoader.loadClass(paramType);

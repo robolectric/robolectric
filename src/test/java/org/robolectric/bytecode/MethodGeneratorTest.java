@@ -24,7 +24,7 @@ public class MethodGeneratorTest {
         CtClass ctClass = classPool.get("java.lang.String");
         String methodBody = new MethodGenerator(ctClass, setup).generateMethodBody(
                 ctClass.getDeclaredMethod("substring", new CtClass[]{CtClass.intType}),
-                ctClass, Type.OBJECT, false, false);
+                ctClass, RoboType.OBJECT, false, false);
         assertEquals("if (!org.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
                 "Object x = org.robolectric.bytecode.RobolectricInternals.methodInvoked(\n" +
                 "  java.lang.String.class, \"substring\", this, new String[] {\"int\"}, new Object[] {org.robolectric.bytecode.RobolectricInternals.autobox($1)});\n" +
@@ -38,7 +38,7 @@ public class MethodGeneratorTest {
         CtClass ctClass = classPool.get("java.lang.String");
         String methodBody = new MethodGenerator(ctClass, setup).generateMethodBody(
                 ctClass.getDeclaredMethod("length"),
-                ctClass, Type.OBJECT, false, false);
+                ctClass, RoboType.OBJECT, false, false);
         assertEquals("if (!org.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
                 "Object x = org.robolectric.bytecode.RobolectricInternals.methodInvoked(\n" +
                 "  java.lang.String.class, \"length\", this, new String[0], new Object[0]);\n" +
@@ -52,7 +52,7 @@ public class MethodGeneratorTest {
         CtClass ctClass = classPool.get("java.lang.Object");
         String methodBody = new MethodGenerator(ctClass, setup).generateMethodBody(
                 ctClass.getDeclaredMethod("wait"),
-                ctClass, Type.VOID, false, false);
+                ctClass, RoboType.VOID, false, false);
         assertEquals("if (!org.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
                 "org.robolectric.bytecode.RobolectricInternals.methodInvoked(\n" +
                 "  java.lang.Object.class, \"wait\", this, new String[] {\"long\"}, new Object[] {org.robolectric.bytecode.RobolectricInternals.autobox($1)});\n" +
@@ -65,7 +65,7 @@ public class MethodGeneratorTest {
         CtClass ctClass = classPool.get("java.lang.String");
         String methodBody = new MethodGenerator(ctClass, setup).generateMethodBody(
                 ctClass.getDeclaredMethod("valueOf", new CtClass[]{CtClass.intType}),
-                ctClass, Type.OBJECT, true, false);
+                ctClass, RoboType.OBJECT, true, false);
         assertEquals("if (!org.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(java.lang.String.class)) {\n" +
                 "Object x = org.robolectric.bytecode.RobolectricInternals.methodInvoked(\n" +
                 "  java.lang.String.class, \"valueOf\", null, new String[] {\"int\"}, new Object[] {org.robolectric.bytecode.RobolectricInternals.autobox($1)});\n" +
@@ -88,7 +88,7 @@ public class MethodGeneratorTest {
         CtClass objectCtClass = classPool.get(Object.class.getName());
         String methodBody = new MethodGenerator(subCtClass, setup).generateMethodBody(
                 objectCtClass.getDeclaredMethod("equals", new CtClass[]{objectCtClass}),
-                subCtClass, Type.BOOLEAN, false, true);
+                subCtClass, RoboType.BOOLEAN, false, true);
         assertEquals("if (!org.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
                 "Object x = org.robolectric.bytecode.RobolectricInternals.methodInvoked(\n" +
                 "  android.widget.TextView.class, \"equals\", this, new String[] {\"java.lang.Object\"}, new Object[] {org.robolectric.bytecode.RobolectricInternals.autobox($1)});\n" +
@@ -103,7 +103,7 @@ public class MethodGeneratorTest {
         CtClass objectCtClass = classPool.get(Object.class.getName());
         String methodBody = new MethodGenerator(subCtClass, setup).generateMethodBody(
                 objectCtClass.getDeclaredMethod("equals", new CtClass[]{objectCtClass}),
-                subCtClass, Type.BOOLEAN, false, true);
+                subCtClass, RoboType.BOOLEAN, false, true);
         assertEquals("if (!org.robolectric.bytecode.RobolectricInternals.shouldCallDirectly(this)) {\n" +
                 "Object x = org.robolectric.bytecode.RobolectricInternals.methodInvoked(\n" +
                 "  android.view.View.class, \"equals\", this, new String[] {\"java.lang.Object\"}, new Object[] {org.robolectric.bytecode.RobolectricInternals.autobox($1)});\n" +
