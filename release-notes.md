@@ -6,6 +6,38 @@ title: Release Notes
 # Release Notes
 
 -----
+## [Release 2.0-alpha-1](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.0-alpha-1/) - January 29, 2013
+-----
+
+#### Features
+- Support for library projects.
+- More realistic resource loading, including system resources.
+- Much better support for resource qualifiers (e.g. locale, resolution, etc.).
+- Groundwork to remove many shadows and use actual android sdk code.
+- Moved to org.robolectric package and maven groupId.
+
+-----
+## [Release 1.1](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.0) - April 2, 2012
+-----
+
+_Note:_
+We had a little lapse in record-keeping here, sorry.
+
+-----
+## [Release 1.0](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.0) - October 13, 2011
+-----
+
+_Note:_
+We had a little lapse in record-keeping here, sorry.
+
+-----
+## [Release 1.0-RC4](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.0-RC4/) - August 11, 2011
+-----
+
+_Note:_
+We had a little lapse in record-keeping here, sorry.
+
+-----
 ## [Release 1.0-RC1](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.0-RC1/) - February 13, 2011
 -----
 
