@@ -21,6 +21,7 @@ public class ShadowDialogFragment extends ShadowFragment {
     private static DialogFragment latestDialogFragment;
 
     private Dialog dialog;
+    private TestFragmentManager testFragmentManager;
 
     @RealObject
     private DialogFragment realDialogFragment;
@@ -33,7 +34,7 @@ public class ShadowDialogFragment extends ShadowFragment {
 
     @Implementation
     public void show(FragmentManager manager, String tag) {
-        TestFragmentManager testFragmentManager = (TestFragmentManager) manager;
+        testFragmentManager = (TestFragmentManager) manager;
         FragmentActivity activityFromManager = testFragmentManager.getActivity();
 
         shadowOf(realDialogFragment).setActivity(activityFromManager);
@@ -67,11 +68,23 @@ public class ShadowDialogFragment extends ShadowFragment {
         if (dialog != null) {
             dialog.dismiss();
         }
-    }
+        
+        if (testFragmentManager == null) {
+        	testFragmentManager = (TestFragmentManager)getFragmentManager();
+        }
+        testFragmentManager.removeDialogFragment(realDialogFragment);
+     }
 
     @Implementation
     public Dialog getDialog() {
         return dialog;
+    }
+    
+    // The following API is not supported by Android Support Library V4 r6(r7). Need to add anotation back
+    // when Maven supports newer revision of support library. 
+//    @Implementation
+    public void dismissAllowingStateLoss() {
+    	dismiss();
     }
 
     public static DialogFragment getLatestDialogFragment() {
