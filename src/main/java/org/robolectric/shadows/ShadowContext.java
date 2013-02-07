@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import static org.robolectric.Robolectric.getShadowApplication;
 import static org.robolectric.Robolectric.shadowOf;
 
 /**
@@ -37,6 +36,7 @@ abstract public class ShadowContext {
     public static final File DATABASE_DIR = createTempDir("android-database");
 
     @RealObject private Context realContext;
+    private ShadowApplication shadowApplication;
 
     @Implementation
     public File getDir(String name, int mode) {
@@ -210,5 +210,9 @@ abstract public class ShadowContext {
 
     public ResName getResName(int resourceId) {
         return getResourceLoader().getResourceExtractor().getResName(resourceId);
+    }
+
+    public ShadowApplication getShadowApplication() {
+        return shadowApplication;
     }
 }

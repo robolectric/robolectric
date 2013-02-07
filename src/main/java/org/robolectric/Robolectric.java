@@ -91,10 +91,6 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
@@ -250,7 +246,6 @@ import org.robolectric.shadows.ShadowDatabaseUtils;
 import org.robolectric.shadows.ShadowDateFormat;
 import org.robolectric.shadows.ShadowDefaultRequestDirector;
 import org.robolectric.shadows.ShadowDialog;
-import org.robolectric.shadows.ShadowDialogFragment;
 import org.robolectric.shadows.ShadowDialogPreference;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowDownloadManager;
@@ -261,9 +256,6 @@ import org.robolectric.shadows.ShadowEnvironment;
 import org.robolectric.shadows.ShadowExpandableListView;
 import org.robolectric.shadows.ShadowFilter;
 import org.robolectric.shadows.ShadowFloatMath;
-import org.robolectric.shadows.ShadowFragment;
-import org.robolectric.shadows.ShadowFragmentActivity;
-import org.robolectric.shadows.ShadowFragmentPagerAdapter;
 import org.robolectric.shadows.ShadowFrameLayout;
 import org.robolectric.shadows.ShadowGallery;
 import org.robolectric.shadows.ShadowGeoPoint;
@@ -620,7 +612,6 @@ public class Robolectric {
                 ShadowDisplay.class,
                 ShadowDrawable.class,
                 ShadowDialog.class,
-                ShadowDialogFragment.class,
                 ShadowDialogPreference.class,
                 ShadowDownloadManager.class,
                 ShadowDownloadManager.ShadowRequest.class,
@@ -631,9 +622,6 @@ public class Robolectric {
                 ShadowExpandableListView.class,
                 ShadowFilter.class,
                 ShadowFloatMath.class,
-                ShadowFragment.class,
-                ShadowFragmentActivity.class,
-                ShadowFragmentPagerAdapter.class,
                 ShadowFrameLayout.class,
                 ShadowGallery.class,
                 ShadowGeocoder.class,
@@ -820,7 +808,7 @@ public class Robolectric {
         ShadowLooper.resetThreadLoopers();
         ShadowDialog.reset();
         ShadowContentResolver.reset();
-        ShadowLocalBroadcastManager.reset();
+//        ShadowLocalBroadcastManager.reset();
         ShadowMimeTypeMap.reset();
         ShadowPowerManager.reset();
         ShadowStatFs.reset();
@@ -1059,10 +1047,6 @@ public class Robolectric {
         return (ShadowDialog) shadowOf_(instance);
     }
 
-    public static ShadowDialogFragment shadowOf(DialogFragment instance) {
-        return (ShadowDialogFragment) shadowOf_(instance);
-    }
-
     public static ShadowDialogPreference shadowOf(DialogPreference instance) {
         return (ShadowDialogPreference) shadowOf_(instance);
     }
@@ -1089,18 +1073,6 @@ public class Robolectric {
 
     public static ShadowFilter shadowOf(Filter instance) {
         return (ShadowFilter) shadowOf_(instance);
-    }
-
-    public static ShadowFragment shadowOf(Fragment instance) {
-        return (ShadowFragment) shadowOf_(instance);
-    }
-
-    public static ShadowFragmentActivity shadowOf(FragmentActivity instance) {
-        return (ShadowFragmentActivity) shadowOf_(instance);
-    }
-
-    public static ShadowFragmentPagerAdapter shadowOf(FragmentPagerAdapter instance) {
-        return (ShadowFragmentPagerAdapter) shadowOf_(instance);
     }
 
     public static ShadowFrameLayout shadowOf(FrameLayout instance) {

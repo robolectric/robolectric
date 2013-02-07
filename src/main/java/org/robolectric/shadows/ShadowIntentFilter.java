@@ -17,6 +17,14 @@ import static org.robolectric.Robolectric.shadowOf_;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = IntentFilter.class)
 public class ShadowIntentFilter {
+    @Implementation
+    public static IntentFilter create(String action, String dataType) {
+        try {
+            return new IntentFilter(action, dataType);
+        } catch (IntentFilter.MalformedMimeTypeException e) {
+            throw new RuntimeException("Bad MIME type", e);
+        }
+    }
 
 	List<String> actions = new ArrayList<String>();
     List<String> schemes = new ArrayList<String>();
@@ -24,6 +32,10 @@ public class ShadowIntentFilter {
     List<String> categories = new ArrayList<String>();
     
     public void __constructor__(String action) {
+        actions.add(action);
+    }
+
+    public void __constructor__(String action, String dataType) {
         actions.add(action);
     }
 
