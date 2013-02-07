@@ -28,7 +28,9 @@ public class ShadowDialogFragment extends ShadowFragment {
 
     @Implementation
     public int show(FragmentTransaction transaction, String tag) {
-        show(((TestFragmentTransaction)transaction).getManager(), tag);
+    	TestFragmentTransaction ft = (TestFragmentTransaction)transaction;
+        show(ft.getManager(), tag);
+        ft.commit();
         return 0;
     }
 
