@@ -56,6 +56,8 @@ public class ShadowViewConfiguration {
     private static float SCROLL_FRICTION = 0.015f;
     private static final int OVERSCROLL_DISTANCE = 0;
     private static final int OVERFLING_DISTANCE = 4;
+    private static final int KEY_REPEAT_TIMEOUT = 200;
+    private static final int KEY_REPEAT_DELAY = 100;
 
     private int edgeSlop;
     private int fadingEdgeLength;
@@ -227,4 +229,13 @@ public class ShadowViewConfiguration {
         return SCROLL_FRICTION;
     }
 
+    @Implementation
+    public static int getKeyRepeatTimeout() {
+        return KEY_REPEAT_TIMEOUT;
+    }
+
+    @Implementation
+    public static int getKeyRepeatDelay() {
+        return KEY_REPEAT_DELAY;
+    }
 }

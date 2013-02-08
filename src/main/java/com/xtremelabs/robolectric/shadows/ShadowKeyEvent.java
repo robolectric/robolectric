@@ -9,6 +9,7 @@ import com.xtremelabs.robolectric.internal.Implements;
 public class ShadowKeyEvent extends ShadowInputEvent {
     private int action;
     private int code;
+    private int source;
 
     public void __constructor__(int action, int code) {
         this.action = action;
@@ -24,4 +25,15 @@ public class ShadowKeyEvent extends ShadowInputEvent {
     public final int getKeyCode() {
         return code;
     }
+
+    @Implementation
+    public void setSource(int source) {
+        this.source = source;
+    }
+
+    @Implementation
+    public int getSource() {
+        return source;
+    }
+
 }
