@@ -26,13 +26,19 @@ public class InstrumentDetectorTest {
 
     // ==================== CLASSLOADER ====================
 
-    /** Custom class loader. It must be singleton. */
+    /**
+     * Custom class loader. It must be singleton.
+     */
     public static class ClassLoaderForTesting extends RobolectricClassLoader {
 
-        /** Instance. */
+        /**
+         * Instance.
+         */
         private static ClassLoaderForTesting instance;
 
-        /** Usage flag. */
+        /**
+         * Usage flag.
+         */
         static boolean usageFlag = false;
 
         public static ClassLoaderForTesting getInstance() {
@@ -59,21 +65,26 @@ public class InstrumentDetectorTest {
 
     // ==================== RUNNERS ====================
 
-    /** Custom runner that uses custom class loader but does not modify instrument detection.  */
+    /**
+     * Custom runner that uses custom class loader but does not modify instrument detection.
+     */
     public static class RunnerForTesting extends RobolectricTestRunner {
 
         public RunnerForTesting(final Class<?> testClass) throws InitializationError {
+            // TODO this test fails in IntelliJ
             super(
                     testClass,
                     isInstrumented() ? null : ShadowWrangler.getInstance(),
                     isInstrumented() ? null : ClassLoaderForTesting.getInstance(),
                     new RobolectricConfig(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"))
-                  );
+            );
         }
 
     }
 
-    /** Custom runner that uses custom class loader.  */
+    /**
+     * Custom runner that uses custom class loader.
+     */
     public static class RunnerForTestingThatWillPass extends RobolectricTestRunner {
 
         static {
@@ -86,12 +97,14 @@ public class InstrumentDetectorTest {
                     isInstrumented() ? null : ShadowWrangler.getInstance(),
                     isInstrumented() ? null : ClassLoaderForTesting.getInstance(),
                     new RobolectricConfig(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"))
-                  );
+            );
         }
 
     }
 
-    /** Custom instrument detector. */
+    /**
+     * Custom instrument detector.
+     */
     private static final InstrumentDetector CUSTOM_DETECTOR = new InstrumentDetector() {
         @Override
         public boolean isInstrumented() {
@@ -140,7 +153,7 @@ public class InstrumentDetectorTest {
      */
     @Test
     public void withDefaultDetectorAndDefaultRunner_shouldPass() {
-        final Result result =  JUnitCore.runClasses(DefaultBehaviorTest.class);
+        final Result result = JUnitCore.runClasses(DefaultBehaviorTest.class);
         assertThat(result.getRunCount(), equalTo(1));
         assertThat(result.getFailureCount(), equalTo(0));
     }
@@ -149,8 +162,9 @@ public class InstrumentDetectorTest {
      * This test simulates wrong instrument detection when custom class loader is used.
      */
     @Test
+    // TODO this test fails in IntelliJ
     public void wrongInstrumentDetection_shouldRaiseLinkageError() {
-        final Result result =  JUnitCore.runClasses(TestWithCustomRunner.class);
+        final Result result = JUnitCore.runClasses(TestWithCustomRunner.class);
         assertThat(result.getRunCount(), equalTo(1));
         assertThat(result.getFailureCount(), equalTo(1));
 
@@ -162,11 +176,11 @@ public class InstrumentDetectorTest {
     }
 
     /**
-     * Propper behavior test.
+     * Proper behavior test.
      */
     @Test
     public void customizeInstumentDetection_shouldPass() {
-        final Result result =  JUnitCore.runClasses(TestWithCustomRunnerThatWillPass.class);
+        final Result result = JUnitCore.runClasses(TestWithCustomRunnerThatWillPass.class);
         assertThat(result.getRunCount(), equalTo(1));
         assertThat(result.getFailureCount(), equalTo(0));
     }

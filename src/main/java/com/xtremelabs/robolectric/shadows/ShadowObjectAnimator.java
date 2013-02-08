@@ -26,6 +26,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     private Object target;
     private String propertyName;
     private float[] floatValues;
+    private int[] intValues;
     private Class<?> animationType;
     private static final Map<Object, Map<String, ObjectAnimator>> mapsForAnimationTargets = new HashMap<Object, Map<String, ObjectAnimator>>();
     private boolean isRunning;
@@ -39,6 +40,19 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
         result.setPropertyName(propertyName);
         result.setFloatValues(values);
         RobolectricShadowOfLevel16.shadowOf(result).setAnimationType(float.class);
+
+        getAnimatorMapFor(target).put(propertyName, result);
+        return result;
+    }
+
+    @Implementation
+    public static ObjectAnimator ofInt(Object target, String propertyName, int... values) {
+        ObjectAnimator result = new ObjectAnimator();
+
+        result.setTarget(target);
+        result.setPropertyName(propertyName);
+        result.setIntValues(values);
+        RobolectricShadowOfLevel16.shadowOf(result).setAnimationType(int.class);
 
         getAnimatorMapFor(target).put(propertyName, result);
         return result;
@@ -83,6 +97,11 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
     }
 
     @Implementation
+    public void setIntValues(int... values) {
+        this.intValues = values;
+    }
+
+    @Implementation
     public ObjectAnimator setDuration(long duration) {
         this.duration = duration;
         return realObject;
@@ -98,6 +117,8 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
             setter = target.getClass().getMethod(methodName, animationType);
             if (animationType == float.class) {
                 setter.invoke(target, floatValues[0]);
+            } else if (animationType == int.class) {
+                setter.invoke(target, intValues[0]);
             }
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -109,6 +130,8 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
                 try {
                     if (animationType == float.class) {
                         setter.invoke(target, floatValues[floatValues.length - 1]);
+                    } else if (animationType == int.class) {
+                        setter.invoke(target, intValues[intValues.length - 1]);
                     }
                     if (pausingEndNotifications) {
                         pausedEndNotifications.add(ShadowObjectAnimator.this);

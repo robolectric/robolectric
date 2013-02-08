@@ -6,6 +6,9 @@ import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Shadow of {@code SpannableStringBuilder} implemented using a regular {@code StringBuilder}
  */
@@ -13,6 +16,7 @@ import com.xtremelabs.robolectric.internal.RealObject;
 @Implements(SpannableStringBuilder.class)
 public class ShadowSpannableStringBuilder implements CharSequence {
     @RealObject private SpannableStringBuilder realSpannableStringBuilder;
+    private List<Object> spans = new ArrayList<Object>();
 
     private StringBuilder builder = new StringBuilder();
 
@@ -68,5 +72,20 @@ public class ShadowSpannableStringBuilder implements CharSequence {
     public SpannableStringBuilder delete( int start, int end ) {
     	builder.delete( start, end );
         return realSpannableStringBuilder;
+    }
+
+    @Implementation
+    public void setSpan(Object what, int start, int end, int flags) {
+        for (int i = start; i <= end; i++) {
+            spans.add(i, what);
+        }
+    }
+
+    public Object getSpanAt(int position) {
+        try {
+            return spans.get(position);
+        } catch (IndexOutOfBoundsException e) {
+            return null;
+        }
     }
 }

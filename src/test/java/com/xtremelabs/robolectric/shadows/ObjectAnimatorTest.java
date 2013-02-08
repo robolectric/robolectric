@@ -33,7 +33,7 @@ public class ObjectAnimatorTest {
     }
 
     @Test
-    public void shouldAnimate() throws Exception {
+    public void floatAnimator_shouldSetTheStartingAndEndingValues() throws Exception {
         View target = new View(null);
         ObjectAnimator animator = ObjectAnimator.ofFloat(target, "translationX", 0.5f, 0.4f);
         animator.setDuration(1000);
@@ -45,6 +45,18 @@ public class ObjectAnimatorTest {
         assertThat(target.getTranslationX(), not(0.4f));
         Robolectric.idleMainLooper(1);
         assertThat(target.getTranslationX(), equalTo(0.4f));
+    }
+
+    @Test
+    public void intAnimator_shouldSetTheStartingAndEndingValues() throws Exception {
+        View target = new View(null);
+        ObjectAnimator animator = ObjectAnimator.ofInt(target, "bottom", 1, 4);
+        animator.setDuration(1000);
+
+        animator.start();
+        assertThat(target.getBottom(), equalTo(1));
+        Robolectric.idleMainLooper(1000);
+        assertThat(target.getBottom(), equalTo(4));
     }
 
     @Test
