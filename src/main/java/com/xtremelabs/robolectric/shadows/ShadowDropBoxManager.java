@@ -5,7 +5,6 @@ import android.util.Log;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-import tv.ouya.util.Encodings;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -62,12 +61,12 @@ public class ShadowDropBoxManager implements Closeable {
 
         @Implementation
         public String getText(int maxBytes) throws UnsupportedEncodingException {
-            return new String(data, 0, Math.min(maxBytes, data.length), Encodings.UTF_8);
+            return new String(data, 0, Math.min(maxBytes, data.length), "UTF-8");
         }
 
         public ShadowEntry setText(String text) {
             try {
-                this.data = text.getBytes(Encodings.UTF_8);
+                this.data = text.getBytes("UTF-8");
             }
             catch (UnsupportedEncodingException e) {
                 Log.e(TAG, "Caught exception: " + e.getClass().getSimpleName(), e);
