@@ -14,6 +14,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResName;
 import org.robolectric.util.TestBroadcastReceiver;
@@ -49,11 +50,11 @@ public class ApplicationTest {
     public void shouldBeBindableToAResourceLoader() throws Exception {
         ResourceLoader resourceLoader1 = new PackageResourceLoader() {
             @Override public String getStringValue(ResName resName, String qualifiers) { return "title from resourceLoader1"; }
-            @Override public ResourceExtractor getResourceExtractor() { return new ImperviousResourceExtractor(); }
+            @Override public ResourceIndex getResourceExtractor() { return new ImperviousResourceExtractor(); }
         };
         ResourceLoader resourceLoader2 = new PackageResourceLoader() {
             @Override public String getStringValue(ResName resName, String qualifiers) { return "title from resourceLoader2"; }
-            @Override public ResourceExtractor getResourceExtractor() { return new ImperviousResourceExtractor(); }
+            @Override public ResourceIndex getResourceExtractor() { return new ImperviousResourceExtractor(); }
         };
 
         Application app1 = ShadowApplication.bind(new Application(), null, resourceLoader1);

@@ -34,7 +34,7 @@ public interface ResourceLoader {
 
     PreferenceNode getPreferenceNode(ResName resName, String qualifiers);
 
-    ResourceExtractor getResourceExtractor();
+    ResourceIndex getResourceExtractor();
 
     ViewNode getLayoutViewNode(ResName resName, String qualifiers);
 

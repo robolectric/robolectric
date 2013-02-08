@@ -6,8 +6,8 @@ import android.util.AttributeSet;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
-import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceIndex;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -17,7 +17,7 @@ public class ShadowTypedArray implements UsesResources {
     private Resources resources;
     private AttributeSet values;
     private int[] attrs;
-    private ResourceExtractor resourceExtractor;
+    private ResourceIndex resourceIndex;
 
     public static TypedArray create(Resources resources, AttributeSet set, int[] attrs) {
         TypedArray result = ShadowResources.inject(resources, Robolectric.newInstanceOf(TypedArray.class));
@@ -27,7 +27,7 @@ public class ShadowTypedArray implements UsesResources {
 
     public void injectResources(Resources resources) {
         this.resources = resources;
-        resourceExtractor = shadowOf(resources).getResourceLoader().getResourceExtractor();
+        resourceIndex = shadowOf(resources).getResourceLoader().getResourceExtractor();
     }
 
     @Implementation
@@ -90,8 +90,25 @@ public class ShadowTypedArray implements UsesResources {
         return resourceId == -1 ? null : resources.getTextArray(resourceId);
     }
 
-    private ResName getResName(int index) {
-        return resourceExtractor.getResName(attrs[index]);
+    @Implementation
+    public boolean getValue(int index, android.util.TypedValue outValue) {
+        return false;
+    }
+
+    @Implementation
+    public boolean hasValue(int index) {
+        // todo ResName resName = getResName(index);
+        //String attributeValue = values.getAttributeValue(getResName(index).namespace, getResName(index).name);
+        return true;
+    }
+
+    @Implementation
+    public android.util.TypedValue peekValue(int index) {
+        return null;
+    }
+
+  private ResName getResName(int index) {
+        return resourceIndex.getResName(attrs[index]);
     }
 
     public void populate(AttributeSet set, int[] attrs) {

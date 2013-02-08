@@ -5,6 +5,7 @@ import android.view.View;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.I18nException;
 
@@ -147,7 +148,7 @@ public class RoboAttributeSet implements AttributeSet {
         Attribute attr = findByName(namespace, attribute);
         if (attr == null) return defaultValue;
 
-        Integer resourceId = resourceLoader.getResourceExtractor().getResourceId(attr.value, attr.contextPackageName);
+        Integer resourceId = ResName.getResourceId(resourceLoader.getResourceExtractor(), attr.value, attr.contextPackageName);
         return resourceId == null ? defaultValue : resourceId;
     }
 
@@ -156,7 +157,7 @@ public class RoboAttributeSet implements AttributeSet {
         String attrName = resourceLoader.getResourceExtractor().getResourceName(resourceId);
         Attribute attr = findByName(null, attrName);
         if (attr == null) return defaultValue;
-        Integer extracted = resourceLoader.getResourceExtractor().getResourceId(attr.value, attr.contextPackageName);
+        Integer extracted = ResName.getResourceId(resourceLoader.getResourceExtractor(), attr.value, attr.contextPackageName);
         return (extracted == null) ? defaultValue : extracted;
     }
 
@@ -196,7 +197,7 @@ public class RoboAttributeSet implements AttributeSet {
             // Per Android specifications, return 0 if there is no style.
             return 0;
         }
-        Integer i = resourceLoader.getResourceExtractor().getResourceId(styleAttribute.value, styleAttribute.contextPackageName);
+        Integer i = ResName.getResourceId(resourceLoader.getResourceExtractor(), styleAttribute.value, styleAttribute.contextPackageName);
         return i != null ? i : 0;
     }
 
@@ -218,14 +219,14 @@ public class RoboAttributeSet implements AttributeSet {
     }
 
     private Attribute findByName(ResName resName) {
-        ResourceExtractor resourceExtractor = resourceLoader.getResourceExtractor();
-        Integer resourceId = resourceExtractor.getResourceId(resName);
+        ResourceIndex resourceIndex = resourceLoader.getResourceExtractor();
+        Integer resourceId = resourceIndex.getResourceId(resName);
         // canonicalize the attr name if we can, otherwise don't...
         // todo: this is awful; fix it.
         if (resourceId == null) {
             return Attribute.find(attributes, resName);
         } else {
-            return Attribute.find(attributes, resourceId, resourceExtractor);
+            return Attribute.find(attributes, resourceId, resourceIndex);
         }
     }
 }

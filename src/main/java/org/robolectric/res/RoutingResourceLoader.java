@@ -10,16 +10,16 @@ import java.util.Set;
 
 public class RoutingResourceLoader implements ResourceLoader {
     private final Map<String, ResourceLoader> resourceLoaders;
-    private final ResourceExtractor resourceExtractor;
+    private final ResourceIndex resourceIndex;
 
     public RoutingResourceLoader(Map<String, ResourceLoader> resourceLoaders) {
         this.resourceLoaders = resourceLoaders;
 
-        Set<ResourceExtractor> resourceExtractors = new HashSet<ResourceExtractor>();
+        Set<ResourceIndex> resourceIndexes = new HashSet<ResourceIndex>();
         for (ResourceLoader resourceLoader : resourceLoaders.values()) {
-            resourceExtractors.add(resourceLoader.getResourceExtractor());
+            resourceIndexes.add(resourceLoader.getResourceExtractor());
         }
-        resourceExtractor = new ResourceExtractor(resourceExtractors.toArray(new ResourceExtractor[resourceExtractors.size()]));
+        resourceIndex = new ResourceExtractor(resourceIndexes.toArray(new ResourceIndex[resourceIndexes.size()]));
     }
 
     @Override
@@ -88,8 +88,8 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public ResourceExtractor getResourceExtractor() {
-        return resourceExtractor;
+    public ResourceIndex getResourceExtractor() {
+        return resourceIndex;
     }
 
     @Override
@@ -113,7 +113,7 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     private ResourceLoader pickFor(int id) {
-        ResName resName = resourceExtractor.getResName(id);
+        ResName resName = resourceIndex.getResName(id);
         return pickFor(resName);
     }
 

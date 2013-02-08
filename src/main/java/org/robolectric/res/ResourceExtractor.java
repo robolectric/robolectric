@@ -1,12 +1,15 @@
 package org.robolectric.res;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-public class ResourceExtractor {
+public class ResourceExtractor extends ResourceIndex {
     private static final ResourceRemapper RESOURCE_REMAPPER = new ResourceRemapper();
     private static final boolean REMAP_RESOURCES = false;
 
@@ -73,13 +76,24 @@ public class ResourceExtractor {
                   }
 
                   if (!section.equals("styleable")) {
-                    ResName resName = new ResName(packageName, section, field.getName());
+                    String fieldName = field.getName();
+                    ResName resName = new ResName(packageName, section, fieldName);
+
+                    if (section.equals("id") && fieldName.equals("abs__content") || fieldName.equals("gone")) {
+                      System.out.println(resName + " -> " + Integer.toHexString(value));
+                    }
 
                     resourceNameToId.put(resName, value);
 
-                    if (resourceIdToResName.containsKey(value) && REMAP_RESOURCES) {
-                      throw new RuntimeException(
-                          value + " is already defined with name: " + resourceIdToResName.get(value) + " can't also call it: " + resName);
+                    if (resourceIdToResName.containsKey(value)) {
+                      String message =
+                          value + " is already defined with name: " + resourceIdToResName.get(
+                              value) + " can't also call it: " + resName;
+                      if (REMAP_RESOURCES) {
+                        throw new RuntimeException(message);
+                      } else {
+                        System.err.println(message);
+                      }
                     }
 
                     resourceIdToResName.put(value, resName);
@@ -89,23 +103,7 @@ public class ResourceExtractor {
         }
     }
 
-    public Integer getResourceId(String possiblyQualifiedResourceName, String contextPackageName) {
-        if (possiblyQualifiedResourceName == null ) {
-            return null;
-        }
-
-        if (possiblyQualifiedResourceName.equals("@null")) {
-            return 0;
-        }
-
-        String fullyQualifiedResourceName = qualifyResourceName(possiblyQualifiedResourceName, contextPackageName);
-
-        fullyQualifiedResourceName = fullyQualifiedResourceName.replaceAll("[@+]", "");
-        Integer resourceId = getResourceId(new ResName(fullyQualifiedResourceName));
-        // todo warn if resourceId is null
-        return resourceId;
-    }
-
+    @Override
     public Integer getResourceId(ResName resName) {
         Integer id = resourceNameToId.get(resName);
         if (id == null && "android".equals(resName.namespace)) {
@@ -120,19 +118,7 @@ public class ResourceExtractor {
         return id;
     }
 
-    public static @NotNull String qualifyResourceName(String possiblyQualifiedResourceName, String contextPackageName) {
-        if (possiblyQualifiedResourceName.contains(":")) {
-            return possiblyQualifiedResourceName;
-        } else {
-            return contextPackageName + ":" + possiblyQualifiedResourceName;
-        }
-    }
-
-    public String getResourceName(int resourceId) {
-        ResName resName = getResName(resourceId);
-        return (resName != null) ? resName.getFullyQualifiedName() : null;
-    }
-
+    @Override
     public ResName getResName(int resourceId) {
         return resourceIdToResName.get(resourceId);
     }

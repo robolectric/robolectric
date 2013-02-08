@@ -18,6 +18,7 @@ import org.robolectric.res.Attribute;
 import org.robolectric.res.DrawableNode;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DrawableBuilder;
 import org.robolectric.res.builder.XmlFileBuilder;
@@ -86,9 +87,9 @@ public class ShadowResources {
 
     @Implementation
     public int getIdentifier(String name, String defType, String defPackage) {
-        ResourceExtractor resourceExtractor = resourceLoader.getResourceExtractor();
+        ResourceIndex resourceIndex = resourceLoader.getResourceExtractor();
 
-        Integer index = resourceExtractor.getResourceId(defType + "/" + name, defPackage);
+        Integer index = ResName.getResourceId(resourceIndex, defType + "/" + name, defPackage);
         if (index == null) {
             return 0;
         }

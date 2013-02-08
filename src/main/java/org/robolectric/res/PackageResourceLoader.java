@@ -14,7 +14,7 @@ import static java.util.Arrays.asList;
 public class PackageResourceLoader implements ResourceLoader {
 
     private List<ResourcePath> resourcePaths;
-    private final ResourceExtractor resourceExtractor;
+    private final ResourceIndex resourceIndex;
 
     private final AttrResourceLoader attrResourceLoader;
     private final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
@@ -42,7 +42,7 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     public PackageResourceLoader(List<ResourcePath> resourcePaths, String overrideNamespace) {
-        this.resourceExtractor = new ResourceExtractor(resourcePaths);
+        this.resourceIndex = new ResourceExtractor(resourcePaths);
         this.resourcePaths = Collections.unmodifiableList(resourcePaths);
 
         attrResourceLoader = new AttrResourceLoader();
@@ -76,7 +76,7 @@ public class PackageResourceLoader implements ResourceLoader {
                     new ValueResourceLoader(colorResolver, "color", false),
                     new ValueResourceLoader(dimenResolver, "dimen", false),
                     new ValueResourceLoader(integerResolver, "integer", true),
-                    new PluralResourceLoader(resourceExtractor, pluralsResolver),
+                    new PluralResourceLoader(resourceIndex, pluralsResolver),
                     new ValueResourceLoader(stringResolver, "string", true),
                     attrResourceLoader
             ).loadResourceXmlSubDirs(resourcePath, "values");
@@ -91,7 +91,7 @@ public class PackageResourceLoader implements ResourceLoader {
 
             loadOtherResources(resourcePath);
 
-            rawResourceLoaders.add(new RawResourceLoader(resourceExtractor, resourcePath.resourceBase));
+            rawResourceLoaders.add(new RawResourceLoader(resourceIndex, resourcePath.resourceBase));
         }
 
         isInitialized = true;
@@ -103,7 +103,7 @@ public class PackageResourceLoader implements ResourceLoader {
     @Override
     public String getNameForId(int id) {
         init();
-        return resourceExtractor.getResourceName(id);
+        return resourceIndex.getResourceName(id);
     }
 
     @Override
@@ -220,8 +220,8 @@ public class PackageResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public ResourceExtractor getResourceExtractor() {
-        return resourceExtractor;
+    public ResourceIndex getResourceExtractor() {
+        return resourceIndex;
     }
 
     @Override
@@ -257,7 +257,7 @@ public class PackageResourceLoader implements ResourceLoader {
         T resolveValue(String qualifiers, String value, String packageName) {
             if (value == null) return null;
             if (value.startsWith("@")) {
-                ResName resName = new ResName(ResourceExtractor.qualifyResourceName(value.substring(1), packageName));
+                ResName resName = new ResName(ResName.qualifyResourceName(value.substring(1), packageName));
                 return resolve(resName, qualifiers);
             } else {
                 return convert(value);

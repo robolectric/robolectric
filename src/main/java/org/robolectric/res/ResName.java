@@ -1,6 +1,7 @@
 package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
+import org.robolectric.res.ResourceIndex;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -33,8 +34,33 @@ public class ResName {
         if (namespace.equals("xmlns")) throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
     }
 
+    public static @NotNull String qualifyResourceName(String possiblyQualifiedResourceName, String contextPackageName) {
+        if (possiblyQualifiedResourceName.contains(":")) {
+            return possiblyQualifiedResourceName;
+        } else {
+            return contextPackageName + ":" + possiblyQualifiedResourceName;
+        }
+    }
+
+    public static Integer getResourceId(ResourceIndex resourceIndex, String possiblyQualifiedResourceName, String contextPackageName) {
+        if (possiblyQualifiedResourceName == null ) {
+            return null;
+        }
+
+        if (possiblyQualifiedResourceName.equals("@null")) {
+            return 0;
+        }
+
+        String fullyQualifiedResourceName = qualifyResourceName(possiblyQualifiedResourceName, contextPackageName);
+
+        fullyQualifiedResourceName = fullyQualifiedResourceName.replaceAll("[@+]", "");
+        Integer resourceId = resourceIndex.getResourceId(new ResName(fullyQualifiedResourceName));
+        // todo warn if resourceId is null
+        return resourceId;
+    }
+
     public ResName qualify(String string) {
-        return new ResName(ResourceExtractor.qualifyResourceName(string.replace("@", ""), namespace));
+        return new ResName(qualifyResourceName(string.replace("@", ""), namespace));
     }
 
     @Override

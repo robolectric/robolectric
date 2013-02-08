@@ -28,7 +28,7 @@ public class DrawableResourceLoaderTest {
     protected DrawableResourceLoader drawableResourceLoader;
     private DrawableBuilder drawableBuilder;
     private ResBundle<DrawableNode> drawableNodes;
-    private ResourceExtractor resourceExtractor;
+    private ResourceIndex resourceIndex;
 
     @Before
     public void setup() throws Exception {
@@ -39,8 +39,8 @@ public class DrawableResourceLoaderTest {
         documentLoader.loadResourceXmlSubDirs(testResources(), "drawable");
         documentLoader.loadResourceXmlSubDirs(systemResources(), "drawable");
 
-        resourceExtractor = new ResourceExtractor(testResources(), systemResources());
-        drawableBuilder = new DrawableBuilder(resourceExtractor);
+        resourceIndex = new ResourceExtractor(testResources(), systemResources());
+        drawableBuilder = new DrawableBuilder(resourceIndex);
         drawableResourceLoader.findNinePatchResources(testResources());
         drawableResourceLoader.findNinePatchResources(systemResources());
     }
@@ -133,6 +133,6 @@ public class DrawableResourceLoaderTest {
     }
 
     private ResName getResName(int resourceId) {
-        return resourceExtractor.getResName(resourceId);
+        return resourceIndex.getResName(resourceId);
     }
 }
