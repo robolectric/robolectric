@@ -20,6 +20,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 
 import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
@@ -369,6 +370,17 @@ public class AlertDialogTest {
 
         dialog.setContentView(R.layout.main);
         assertNotNull(dialog.findViewById(R.id.title));
+    }
+    
+    @Test
+    public void shouldReturnACustomFrameLayout() {
+        AlertDialog dialog = new AlertDialog.Builder(Robolectric.application).create();
+
+        assertThat( dialog.findViewById( android.R.id.custom ), notNullValue() );
+        assertThat( dialog.findViewById( android.R.id.custom ), instanceOf(FrameLayout.class) );
+        assertThat( dialog.findViewById( android.R.id.custom ), 
+        		sameInstance(dialog.findViewById( android.R.id.custom )) );
+    
     }
 
 

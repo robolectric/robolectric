@@ -136,6 +136,10 @@ public class TestFragmentManager extends FragmentManager {
     public void addDialogFragment(String tag, DialogFragment fragment) {
         fragmentsByTag.put(tag, fragment);
     }
+    
+    public void removeDialogFragment(DialogFragment fragment) {
+    	fragmentsByTag.values().remove(fragment);
+    }
 
     public void addFragment(int containerViewId, String tag, Fragment fragment, boolean replace) {
         fragmentsById.put(containerViewId, fragment);
