@@ -72,6 +72,8 @@ import java.lang.reflect.Modifier;
 import java.util.Arrays;
 import java.util.List;
 
+import static com.xtremelabs.robolectric.shadows.ShadowDropBoxManager.ShadowEntry;
+
 public class Robolectric {
     public static Application application;
     public static final int DEFAULT_SDK_VERSION = 16;
@@ -201,6 +203,8 @@ public class Robolectric {
                 ShadowDialog.class,
                 ShadowDialogFragment.class,
                 ShadowDialogPreference.class,
+                ShadowDropBoxManager.class,
+                ShadowEntry.class,
                 ShadowEditText.class,
                 ShadowEditTextPreference.class,
                 ShadowEnvironment.class,
@@ -635,6 +639,14 @@ public class Robolectric {
 
     public static ShadowDialogPreference shadowOf(DialogPreference instance) {
         return (ShadowDialogPreference) shadowOf_(instance);
+    }
+
+    public static ShadowDropBoxManager shadowOf(DropBoxManager instance) {
+        return (ShadowDropBoxManager) shadowOf_(instance);
+    }
+
+    public static ShadowEntry shadowOf(DropBoxManager.Entry instance) {
+        return (ShadowEntry) shadowOf_(instance);
     }
 
     public static ShadowEditTextPreference shadowOf(EditTextPreference instance) {
