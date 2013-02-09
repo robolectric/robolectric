@@ -93,4 +93,8 @@ public class ResName {
     public String getFullyQualifiedName() {
         return namespace + ":" + type + "/" + name;
     }
+
+    public ResName withPackageName(String packageName) {
+        return new ResName(packageName, type, name);
+    }
 }

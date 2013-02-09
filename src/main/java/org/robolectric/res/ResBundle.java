@@ -96,6 +96,11 @@ public class ResBundle<T> {
         return overrideNamespace == null ? resName : new ResName(overrideNamespace, resName.type, resName.name);
     }
 
+    public void mergeLibraryStyle(ResBundle<T> fromResBundle, String packageName) {
+        valuesMap.merge(packageName, fromResBundle.valuesMap);
+        valuesArrayMap.merge(packageName, fromResBundle.valuesArrayMap);
+    }
+
     static class Value<T> implements Comparable<Value<T>> {
         final String qualifiers;
         final T value;
@@ -127,6 +132,13 @@ public class ResBundle<T> {
             Values<T> values = map.get(resName);
             if (values == null) map.put(resName, values = new Values<T>());
             return values;
+        }
+
+        private void merge(String packageName, ResMap<T> sourceMap) {
+            for (Map.Entry<ResName, Values<T>> entry : sourceMap.map.entrySet()) {
+                ResName resName = entry.getKey().withPackageName(packageName);
+                find(resName).addAll(entry.getValue());
+            }
         }
     }
 }

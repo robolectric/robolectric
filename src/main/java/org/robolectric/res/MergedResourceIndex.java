@@ -1,23 +1,69 @@
 package org.robolectric.res;
 
+import org.robolectric.tester.android.util.ResName;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
-public class ResourceExtractor extends ResourceIndex {
+public class MergedResourceIndex extends ResourceIndex {
     private static final ResourceRemapper RESOURCE_REMAPPER = new ResourceRemapper();
     private static final boolean REMAP_RESOURCES = false;
 
+    private Map<ResName, Integer> resourceNameToId = new HashMap<ResName, Integer>();
+    private Map<Integer, ResName> resourceIdToResName = new HashMap<Integer, ResName>();
     private Set<Class> processedRFiles = new HashSet<Class>();
     private Integer maxUsedInt = null;
 
-    public ResourceExtractor() {
+    public MergedResourceIndex() {
     }
 
-    public ResourceExtractor(ResourcePath resourcePath) {
-        addRClass(resourcePath.rClass);
+    public MergedResourceIndex(ResourceIndex... subExtractors) {
+        for (ResourceIndex subExtractor : subExtractors) {
+            HashSet<Class> overlapClasses = new HashSet<Class>(processedRFiles);
+//            overlapClasses.retainAll(subExtractor.processedRFiles);
+//            if (!overlapClasses.isEmpty()) {
+//                throw new RuntimeException("found overlap for " + overlapClasses);
+//            }
+//            processedRFiles.addAll(subExtractor.processedRFiles);
+//
+//            merge(resourceNameToId, subExtractor.resourceNameToId, "resourceNameToId");
+//            merge(resourceIdToResName, subExtractor.resourceIdToResName, "resourceIdToResName");
+        }
+    }
+
+    private static <K,V> void merge(Map<K, V> map1, Map<K, V> map2, String name) {
+        int expected = map1.size() + map2.size();
+        map1.putAll(map2);
+        if (map1.size() != expected) {
+            throw new IllegalStateException("there must have been some overlap for " + name + "! expected " + expected + " but got " + map1.size());
+        }
+    }
+
+    public MergedResourceIndex(ResourcePath... resourcePaths) {
+        this(extract(resourcePaths));
+        for (ResourcePath resourcePath : resourcePaths) {
+            addRClass(resourcePath.rClass);
+        }
+    }
+
+    private static ResourceExtractor[] extract(ResourcePath[] resourcePaths) {
+        ResourceExtractor[] resourceExtractors = new ResourceExtractor[resourcePaths.length];
+        for (int i = 0; i < resourcePaths.length; i++) {
+            resourceExtractors[i] = new ResourceExtractor(resourcePaths[i]);
+        }
+        return resourceExtractors;
+    }
+
+    public MergedResourceIndex(List<ResourcePath> resourcePaths) {
+        for (ResourcePath resourcePath : resourcePaths) {
+            addRClass(resourcePath.rClass);
+        }
     }
 
     private void addRClass(Class<?> rClass) {

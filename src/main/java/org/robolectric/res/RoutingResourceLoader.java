@@ -19,7 +19,7 @@ public class RoutingResourceLoader implements ResourceLoader {
         for (ResourceLoader resourceLoader : resourceLoaders.values()) {
             resourceIndexes.add(resourceLoader.getResourceExtractor());
         }
-        resourceIndex = new ResourceExtractor(resourceIndexes.toArray(new ResourceIndex[resourceIndexes.size()]));
+        resourceIndex = new MergedResourceIndex(resourceIndexes.toArray(new ResourceIndex[resourceIndexes.size()]));
     }
 
     @Override
