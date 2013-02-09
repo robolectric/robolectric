@@ -6,14 +6,14 @@ import android.content.Intent;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.util.AttributeSet;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.res.PackageResourceLoader;
-import org.robolectric.res.Attribute;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.res.Attribute;
+import org.robolectric.res.EmptyResourceLoader;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,7 +35,7 @@ public class PreferenceTest {
     @Before
     public void setup() {
         context = new Activity();
-        attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
+        attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new EmptyResourceLoader(), null);
         preference = new TestPreference(context, attrs);
         shadow = Robolectric.shadowOf(preference);
     }
@@ -68,7 +68,7 @@ public class PreferenceTest {
         String key = "key_value";
         List<Attribute> attributes = new ArrayList<Attribute>();
         attributes.add(new Attribute("android:attr/key", key, R.class.getPackage().getName()));
-        attrs = new RoboAttributeSet(attributes, new PackageResourceLoader(), null);
+        attrs = new RoboAttributeSet(attributes, new EmptyResourceLoader(), null);
 
         preference = new TestPreference(context, attrs);
         assertThat(preference.getKey(), equalTo(key));

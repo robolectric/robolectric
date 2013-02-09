@@ -420,10 +420,9 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     // this method must live on a InstrumentingClassLoader-loaded class, so it can't be on RobolectricContext
     protected ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
-        List<ResourceLoader> appAndLibraryResourceLoaders = new ArrayList<ResourceLoader>();
-
+        List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<PackageResourceLoader>();
         for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
-            appAndLibraryResourceLoaders.add(resourcePath.getPackageName(), new PackageResourceLoader(resourcePath));
+            appAndLibraryResourceLoaders.add(new PackageResourceLoader(resourcePath));
         }
         OverlayResourceLoader overlayResourceLoader = new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders);
 

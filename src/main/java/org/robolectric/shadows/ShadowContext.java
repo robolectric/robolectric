@@ -209,7 +209,7 @@ abstract public class ShadowContext {
     }
 
     public ResName getResName(int resourceId) {
-        return getResourceLoader().getResourceExtractor().getResName(resourceId);
+        return getResourceLoader().getResourceIndex().getResName(resourceId);
     }
 
     public ShadowApplication getShadowApplication() {

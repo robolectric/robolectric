@@ -1,23 +1,20 @@
 package org.robolectric.res;
 
 import android.view.View;
+import org.w3c.dom.Document;
 
-import java.io.File;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 
-import static java.util.Arrays.asList;
-
 abstract class XResourceLoader implements ResourceLoader {
-    final ResourceIndex resourceIndex;
+    private final ResourceIndex resourceIndex;
 
     final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
 
     boolean isInitialized = false;
 
+    final AttrResourceLoader attrResourceLoader = new AttrResourceLoader();
     final Resolver<Boolean> booleanResolver = new BooleanResolver();
     final Resolver<Integer> colorResolver = new ColorResolver();
     final Resolver<Float> dimenResolver = new DimenResolver();
@@ -27,67 +24,56 @@ abstract class XResourceLoader implements ResourceLoader {
     final ResBundle<ViewNode> viewNodes = new ResBundle<ViewNode>();
     final ResBundle<MenuNode> menuNodes = new ResBundle<MenuNode>();
     final ResBundle<DrawableNode> drawableNodes = new ResBundle<DrawableNode>();
+    final ResBundle<PreferenceNode> preferenceNodes = new ResBundle<PreferenceNode>();
+    final ResBundle<Document> xmlDocuments = new ResBundle<Document>();
 
-    public XResourceLoader(ResourcePath... resourcePaths) {
-        this(asList(resourcePaths));
+    protected XResourceLoader(ResourceIndex resourceIndex) {
+        this.resourceIndex = resourceIndex;
     }
 
-    public XResourceLoader(List<ResourcePath> resourcePaths) {
-        this(resourcePaths, null);
+    abstract void doInitialize();
+
+    void initialize() {
+        if (isInitialized) return;
+        doInitialize();
+        isInitialized = true;
+
+        makeImmutable();
     }
 
-    public XResourceLoader(List<ResourcePath> resourcePaths, String overrideNamespace) {
-        this.resourceIndex = new ResourceExtractor(resourcePaths);
-        this.resourcePaths = Collections.unmodifiableList(resourcePaths);
-
-
-        if (overrideNamespace != null) {
-            for (ResBundle resBundle : getResBundles()) {
-                resBundle.overrideNamespace(overrideNamespace);
-            }
-        }
-    }
-
-    List<ResBundle<?>> getResBundles() {
-        //noinspection unchecked
-        return Arrays.asList(booleanResolver, colorResolver, dimenResolver, integerResolver,
-                pluralsResolver, stringResolver, viewNodes, menuNodes, drawableNodes);
-    }
-
-    private File getPreferenceResourceDir(File xmlResourceDir) {
-        return xmlResourceDir != null ? new File(xmlResourceDir, "xml") : null;
+    protected void makeImmutable() {
+        booleanResolver.makeImmutable();
+        colorResolver.makeImmutable();
+        dimenResolver.makeImmutable();
+        integerResolver.makeImmutable();
+        pluralsResolver.makeImmutable();
+        stringResolver.makeImmutable();
+        viewNodes.makeImmutable();
+        menuNodes.makeImmutable();
+        drawableNodes.makeImmutable();
     }
 
     @Override
     public String getNameForId(int id) {
-        init();
-        return resourceIndex.getResourceName(id);
-    }
-
-    abstract void init();
-
-    @Override
-    public String getNameForId(int id) {
-        init();
         return resourceIndex.getResourceName(id);
     }
 
     @Override
     public int getColorValue(ResName resName, String qualifiers) {
-        init();
+        initialize();
         Integer value = colorResolver.resolve(resName, qualifiers);
         return value == null ? -1 : value;
     }
 
     @Override
     public String getStringValue(ResName resName, String qualifiers) {
-        init();
+        initialize();
         return stringResolver.resolve(resName, qualifiers);
     }
 
     @Override
     public String getPluralStringValue(ResName resName, int quantity, String qualifiers) {
-        init();
+        initialize();
         PluralResourceLoader.PluralRules pluralRules = pluralsResolver.get(resName, qualifiers);
         if (pluralRules == null) return null;
 
@@ -98,25 +84,25 @@ abstract class XResourceLoader implements ResourceLoader {
 
     @Override
     public float getDimenValue(ResName resName, String qualifiers) {
-        init();
+        initialize();
         return dimenResolver.resolve(resName, qualifiers);
     }
 
     @Override
     public int getIntegerValue(ResName resName, String qualifiers) {
-        init();
+        initialize();
         return integerResolver.resolve(resName, qualifiers);
     }
 
     @Override
     public boolean getBooleanValue(ResName resName, String qualifiers) {
-        init();
+        initialize();
         return booleanResolver.resolve(resName, qualifiers);
     }
 
     @Override
     public Document getXml(ResName resName, String qualifiers) {
-        init();
+        initialize();
         return xmlDocuments.get(resName, qualifiers);
     }
 
@@ -127,7 +113,7 @@ abstract class XResourceLoader implements ResourceLoader {
 
     @Override
     public InputStream getRawValue(int id) {
-        init();
+        initialize();
 
         for (RawResourceLoader rawResourceLoader : rawResourceLoaders) {
             InputStream stream = rawResourceLoader.getValue(id);
@@ -139,7 +125,7 @@ abstract class XResourceLoader implements ResourceLoader {
 
     @Override
     public String[] getStringArrayValue(ResName resName, String qualifiers) {
-        init();
+        initialize();
 
         if (resName == null) return null;
         resName = new ResName(resName.namespace, "string-array", resName.name); // ugh
@@ -149,7 +135,7 @@ abstract class XResourceLoader implements ResourceLoader {
 
     @Override
     public int[] getIntegerArrayValue(ResName resName, String qualifiers) {
-        init();
+        initialize();
 
         if (resName == null) return null;
         resName = new ResName(resName.namespace, "integer-array", resName.name); // ugh
@@ -173,32 +159,32 @@ abstract class XResourceLoader implements ResourceLoader {
 
     @Override
     public ViewNode getLayoutViewNode(ResName resName, String qualifiers) {
-        init();
+        initialize();
         if (resName == null) return null;
         return viewNodes.get(resName, qualifiers);
     }
 
     @Override
     public MenuNode getMenuNode(ResName resName, String qualifiers) {
-        init();
+        initialize();
         if (resName == null) return null;
         return menuNodes.get(resName, qualifiers);
     }
 
     @Override
-    public ResourceIndex getResourceExtractor() {
+    public ResourceIndex getResourceIndex() {
         return resourceIndex;
     }
 
     @Override
     public boolean hasAttributeFor(Class<? extends View> viewClass, String namespace, String attribute) {
-        init();
+        initialize();
         return attrResourceLoader.hasAttributeFor(viewClass, namespace, attribute);
     }
 
     @Override
     public String convertValueToEnum(Class<? extends View> viewClass, String namespace, String attribute, String part) {
-        init();
+        initialize();
         return attrResourceLoader.convertValueToEnum(viewClass, namespace, attribute, part);
     }
 
@@ -293,7 +279,7 @@ abstract class XResourceLoader implements ResourceLoader {
         }
     }
 
-    private static class PluralsResolver extends ResBundle<PluralResourceLoader.PluralRules> {
+    static class PluralsResolver extends ResBundle<PluralResourceLoader.PluralRules> {
     }
 
     static class StringResolver extends Resolver<String> {

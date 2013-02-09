@@ -1,7 +1,6 @@
 package org.robolectric.res;
 
 import org.jetbrains.annotations.NotNull;
-import org.robolectric.res.ResourceIndex;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -95,6 +94,7 @@ public class ResName {
     }
 
     public ResName withPackageName(String packageName) {
+        if (packageName.equals(namespace)) return this;
         return new ResName(packageName, type, name);
     }
 }

@@ -80,7 +80,12 @@ public class ResBundle<T> {
     }
 
     public int size() {
-        return valuesMap.map.size() + valuesArrayMap.map.size();
+        return valuesMap.size() + valuesArrayMap.size();
+    }
+
+    public void makeImmutable() {
+        valuesMap.makeImmutable();
+        valuesArrayMap.makeImmutable();
     }
 
     public void overrideNamespace(String overrideNamespace) {
@@ -127,6 +132,7 @@ public class ResBundle<T> {
 
     private static class ResMap<T> {
         private final Map<ResName, Values<T>> map = new HashMap<ResName, Values<T>>();
+        private boolean immutable;
 
         public Values<T> find(ResName resName) {
             Values<T> values = map.get(resName);
@@ -135,10 +141,22 @@ public class ResBundle<T> {
         }
 
         private void merge(String packageName, ResMap<T> sourceMap) {
+            if (immutable) {
+                throw new IllegalStateException("immutable!");
+            }
+
             for (Map.Entry<ResName, Values<T>> entry : sourceMap.map.entrySet()) {
                 ResName resName = entry.getKey().withPackageName(packageName);
                 find(resName).addAll(entry.getValue());
             }
+        }
+
+        public int size() {
+            return map.size();
+        }
+
+        public void makeImmutable() {
+            immutable = true;
         }
     }
 }

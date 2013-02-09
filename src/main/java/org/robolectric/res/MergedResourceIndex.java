@@ -1,13 +1,10 @@
 package org.robolectric.res;
 
-import org.robolectric.tester.android.util.ResName;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -20,20 +17,17 @@ public class MergedResourceIndex extends ResourceIndex {
     private Set<Class> processedRFiles = new HashSet<Class>();
     private Integer maxUsedInt = null;
 
-    public MergedResourceIndex() {
-    }
-
     public MergedResourceIndex(ResourceIndex... subExtractors) {
         for (ResourceIndex subExtractor : subExtractors) {
-            HashSet<Class> overlapClasses = new HashSet<Class>(processedRFiles);
-//            overlapClasses.retainAll(subExtractor.processedRFiles);
-//            if (!overlapClasses.isEmpty()) {
-//                throw new RuntimeException("found overlap for " + overlapClasses);
-//            }
-//            processedRFiles.addAll(subExtractor.processedRFiles);
-//
-//            merge(resourceNameToId, subExtractor.resourceNameToId, "resourceNameToId");
-//            merge(resourceIdToResName, subExtractor.resourceIdToResName, "resourceIdToResName");
+            //HashSet<Class> overlapClasses = new HashSet<Class>(processedRFiles);
+            //overlapClasses.retainAll(subExtractor.processedRFiles);
+            //if (!overlapClasses.isEmpty()) {
+            //    throw new RuntimeException("found overlap for " + overlapClasses);
+            //}
+            //processedRFiles.addAll(subExtractor.processedRFiles);
+
+            merge(resourceNameToId, subExtractor.resourceNameToId, "resourceNameToId");
+            merge(resourceIdToResName, subExtractor.resourceIdToResName, "resourceIdToResName");
         }
     }
 
@@ -58,12 +52,6 @@ public class MergedResourceIndex extends ResourceIndex {
             resourceExtractors[i] = new ResourceExtractor(resourcePaths[i]);
         }
         return resourceExtractors;
-    }
-
-    public MergedResourceIndex(List<ResourcePath> resourcePaths) {
-        for (ResourcePath resourcePath : resourcePaths) {
-            addRClass(resourcePath.rClass);
-        }
     }
 
     private void addRClass(Class<?> rClass) {

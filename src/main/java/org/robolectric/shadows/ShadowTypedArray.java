@@ -27,7 +27,7 @@ public class ShadowTypedArray implements UsesResources {
 
     public void injectResources(Resources resources) {
         this.resources = resources;
-        resourceIndex = shadowOf(resources).getResourceLoader().getResourceExtractor();
+        resourceIndex = shadowOf(resources).getResourceLoader().getResourceIndex();
     }
 
     @Implementation

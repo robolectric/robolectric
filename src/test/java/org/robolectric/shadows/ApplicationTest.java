@@ -2,36 +2,41 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.app.Application;
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.ApplicationResolver;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.res.PackageResourceLoader;
+import org.robolectric.res.EmptyResourceLoader;
+import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.ResName;
 import org.robolectric.util.TestBroadcastReceiver;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.io.FileDescriptor;
 import java.util.List;
 
-import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.util.TestUtil.newConfig;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsInstanceOf.instanceOf;
 import static org.junit.Assert.*;
+import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.util.TestUtil.newConfig;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ApplicationTest {
@@ -48,13 +53,13 @@ public class ApplicationTest {
 
     @Test
     public void shouldBeBindableToAResourceLoader() throws Exception {
-        ResourceLoader resourceLoader1 = new PackageResourceLoader() {
+        ResourceLoader resourceLoader1 = new EmptyResourceLoader() {
             @Override public String getStringValue(ResName resName, String qualifiers) { return "title from resourceLoader1"; }
-            @Override public ResourceIndex getResourceExtractor() { return new ImperviousResourceExtractor(); }
+            @Override public ResourceIndex getResourceIndex() { return new ImperviousResourceExtractor(); }
         };
-        ResourceLoader resourceLoader2 = new PackageResourceLoader() {
+        ResourceLoader resourceLoader2 = new EmptyResourceLoader() {
             @Override public String getStringValue(ResName resName, String qualifiers) { return "title from resourceLoader2"; }
-            @Override public ResourceIndex getResourceExtractor() { return new ImperviousResourceExtractor(); }
+            @Override public ResourceIndex getResourceIndex() { return new ImperviousResourceExtractor(); }
         };
 
         Application app1 = ShadowApplication.bind(new Application(), null, resourceLoader1);

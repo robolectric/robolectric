@@ -17,7 +17,7 @@ public class RoutingResourceLoader implements ResourceLoader {
 
         Set<ResourceIndex> resourceIndexes = new HashSet<ResourceIndex>();
         for (ResourceLoader resourceLoader : resourceLoaders.values()) {
-            resourceIndexes.add(resourceLoader.getResourceExtractor());
+            resourceIndexes.add(resourceLoader.getResourceIndex());
         }
         resourceIndex = new MergedResourceIndex(resourceIndexes.toArray(new ResourceIndex[resourceIndexes.size()]));
     }
@@ -88,7 +88,7 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public ResourceIndex getResourceExtractor() {
+    public ResourceIndex getResourceIndex() {
         return resourceIndex;
     }
 
@@ -118,7 +118,11 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     private ResourceLoader pickFor(ResName resName) {
-        if (resName == null) return new PackageResourceLoader();
+        if (resName == null) return new XResourceLoader(null) {
+            @Override
+            void doInitialize() {
+            }
+        };
         return pickFor(resName.namespace);
     }
 

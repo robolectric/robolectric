@@ -4,7 +4,6 @@ import org.robolectric.R;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.tester.android.util.ResName;
 
 import static org.robolectric.util.TestUtil.systemResources;
 import static org.robolectric.util.TestUtil.testResources;
@@ -16,7 +15,7 @@ public class ResourceExtractorTest {
 
     @Before
     public void setUp() throws Exception {
-        resourceIndex = new ResourceExtractor(testResources(), systemResources());
+        resourceIndex = new MergedResourceIndex(testResources(), systemResources());
     }
 
     @Test

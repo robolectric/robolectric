@@ -4,7 +4,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.I18nException;
@@ -148,16 +147,16 @@ public class RoboAttributeSet implements AttributeSet {
         Attribute attr = findByName(namespace, attribute);
         if (attr == null) return defaultValue;
 
-        Integer resourceId = ResName.getResourceId(resourceLoader.getResourceExtractor(), attr.value, attr.contextPackageName);
+        Integer resourceId = ResName.getResourceId(resourceLoader.getResourceIndex(), attr.value, attr.contextPackageName);
         return resourceId == null ? defaultValue : resourceId;
     }
 
     @Override
     public int getAttributeResourceValue(int resourceId, int defaultValue) {
-        String attrName = resourceLoader.getResourceExtractor().getResourceName(resourceId);
+        String attrName = resourceLoader.getResourceIndex().getResourceName(resourceId);
         Attribute attr = findByName(null, attrName);
         if (attr == null) return defaultValue;
-        Integer extracted = ResName.getResourceId(resourceLoader.getResourceExtractor(), attr.value, attr.contextPackageName);
+        Integer extracted = ResName.getResourceId(resourceLoader.getResourceIndex(), attr.value, attr.contextPackageName);
         return (extracted == null) ? defaultValue : extracted;
     }
 
@@ -197,7 +196,7 @@ public class RoboAttributeSet implements AttributeSet {
             // Per Android specifications, return 0 if there is no style.
             return 0;
         }
-        Integer i = ResName.getResourceId(resourceLoader.getResourceExtractor(), styleAttribute.value, styleAttribute.contextPackageName);
+        Integer i = ResName.getResourceId(resourceLoader.getResourceIndex(), styleAttribute.value, styleAttribute.contextPackageName);
         return i != null ? i : 0;
     }
 
@@ -219,7 +218,7 @@ public class RoboAttributeSet implements AttributeSet {
     }
 
     private Attribute findByName(ResName resName) {
-        ResourceIndex resourceIndex = resourceLoader.getResourceExtractor();
+        ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
         Integer resourceId = resourceIndex.getResourceId(resName);
         // canonicalize the attr name if we can, otherwise don't...
         // todo: this is awful; fix it.

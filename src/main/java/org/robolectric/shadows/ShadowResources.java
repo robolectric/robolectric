@@ -17,7 +17,6 @@ import org.robolectric.internal.RealObject;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.DrawableNode;
 import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.DrawableBuilder;
@@ -47,6 +46,7 @@ public class ShadowResources {
     private Display display;
     @RealObject Resources realResources;
     private ResourceLoader resourceLoader;
+    private ResourceIndex resourceIndex;
     private AssetManager assetManager;
 
     public static void setSystemResources(ResourceLoader systemResourceLoader) {
@@ -87,7 +87,7 @@ public class ShadowResources {
 
     @Implementation
     public int getIdentifier(String name, String defType, String defPackage) {
-        ResourceIndex resourceIndex = resourceLoader.getResourceExtractor();
+        ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
 
         Integer index = ResName.getResourceId(resourceIndex, defType + "/" + name, defPackage);
         if (index == null) {
@@ -102,7 +102,7 @@ public class ShadowResources {
     }
 
     private ResName getResName(int id) {
-        ResName resName = resourceLoader.getResourceExtractor().getResName(id);
+        ResName resName = resourceLoader.getResourceIndex().getResName(id);
         if (resName == null) {
             throw new Resources.NotFoundException("couldn't find a name for resource id " + id);
         }
@@ -204,7 +204,7 @@ public class ShadowResources {
         ResName resName = getResName(drawableResourceId);
         String qualifiers = getQualifiers();
         DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, qualifiers);
-        final DrawableBuilder drawableBuilder = new DrawableBuilder(getResourceLoader().getResourceExtractor());
+        final DrawableBuilder drawableBuilder = new DrawableBuilder(getResourceLoader().getResourceIndex());
         return drawableBuilder.getDrawable(resName, realResources, drawableNode);
     }
 

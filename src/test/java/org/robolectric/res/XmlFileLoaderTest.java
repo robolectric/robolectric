@@ -49,8 +49,6 @@ public class XmlFileLoaderTest {
 
     @Before
     public void setUp() throws Exception {
-        ResourceExtractor resourceExtractor = new ResourceExtractor(testResources(), systemResources());
-
         resBundle = new ResBundle<Document>();
         xmlFileLoader = new XmlFileLoader(resBundle);
         new DocumentLoader(xmlFileLoader).loadResourceXmlDir(testResources(), "xml");

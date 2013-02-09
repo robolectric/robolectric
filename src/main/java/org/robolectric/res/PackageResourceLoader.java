@@ -1,18 +1,17 @@
 package org.robolectric.res;
 
 import org.robolectric.util.I18nException;
-import org.w3c.dom.Document;
 
 public class PackageResourceLoader extends XResourceLoader {
     ResourcePath resourcePath;
+    ResourceIndex resourceIndex;
 
     public PackageResourceLoader(ResourcePath resourcePath) {
+        super(new ResourceExtractor(resourcePath));
         this.resourcePath = resourcePath;
     }
 
-    void init() {
-        if (isInitialized) return;
-
+    void doInitialize() {
         try {
             loadEverything();
         } catch (I18nException e) {
@@ -32,7 +31,7 @@ public class PackageResourceLoader extends XResourceLoader {
                 new ValueResourceLoader(integerResolver, "integer", true),
                 new PluralResourceLoader(resourceIndex, pluralsResolver),
                 new ValueResourceLoader(stringResolver, "string", true),
-                new AttrResourceLoader()
+                attrResourceLoader
         ).loadResourceXmlSubDirs(resourcePath, "values");
 
         new DocumentLoader(new ViewLoader(viewNodes)).loadResourceXmlSubDirs(resourcePath, "layout");
@@ -40,14 +39,12 @@ public class PackageResourceLoader extends XResourceLoader {
         DrawableResourceLoader drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
         drawableResourceLoader.findNinePatchResources(resourcePath);
         new DocumentLoader(drawableResourceLoader).loadResourceXmlSubDirs(resourcePath, "drawable");
-        new DocumentLoader(new PreferenceLoader(resourceIndex)).loadResourceXmlSubDirs(resourcePath, "xml");
-        new DocumentLoader(new XmlFileLoader(resourceIndex)).loadResourceXmlSubDirs(resourcePath, "xml");
+        new DocumentLoader(new PreferenceLoader(preferenceNodes)).loadResourceXmlSubDirs(resourcePath, "xml");
+        new DocumentLoader(new XmlFileLoader(xmlDocuments)).loadResourceXmlSubDirs(resourcePath, "xml");
 
         loadOtherResources(resourcePath);
 
         rawResourceLoaders.add(new RawResourceLoader(resourceIndex, resourcePath.resourceBase));
-
-        isInitialized = true;
     }
 
     protected void loadOtherResources(ResourcePath resourcePath) {

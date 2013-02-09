@@ -46,16 +46,13 @@ public class ShadowLayoutInflater {
     @Implementation
     public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
         String qualifiers = shadowOf(context.getResources().getConfiguration()).getQualifiers();
-        return new LayoutBuilder(getResourceLoader()).inflateView(context, resource, attachToRoot ? root : null, qualifiers);
+        ResourceLoader resourceLoader = shadowOf(context.getResources()).getResourceLoader();
+        return new LayoutBuilder(resourceLoader).inflateView(context, resource, attachToRoot ? root : null, qualifiers);
     }
 
     @Implementation
     public View inflate(int resource, ViewGroup root) {
         return inflate(resource, root, root != null);
-    }
-
-    private ResourceLoader getResourceLoader() {
-        return shadowOf(context.getApplicationContext()).getResourceLoader();
     }
 
     private static class LayoutInflaterAppSingletonizer extends AppSingletonizer<LayoutInflater> {
