@@ -1,4 +1,4 @@
-package org.robolectric.res;
+package org.robolectric.res.builder;
 
 import android.R;
 import android.content.res.Resources;
@@ -11,8 +11,11 @@ import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.NinePatchDrawable;
 import android.graphics.drawable.StateListDrawable;
 import org.robolectric.Robolectric;
+import org.robolectric.res.DrawableNode;
+import org.robolectric.res.ResourceExtractor;
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowStateListDrawable;
-import org.robolectric.tester.android.util.ResName;
+import org.robolectric.res.ResName;
 import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;

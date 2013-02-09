@@ -7,8 +7,7 @@ import android.widget.LinearLayout;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.tester.android.util.Attribute;
-import org.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.res.Attribute;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -53,7 +52,7 @@ public class ViewStubTest {
     @Test
     public void shouldApplyAttributes() throws Exception {
         ViewStub viewStub = new ViewStub(ctxt,
-                new TestAttributeSet(asList(
+                new RoboAttributeSet(asList(
                         new Attribute("android:attr/inflatedId", "@+id/include_id", TEST_PACKAGE),
                         new Attribute("android:attr/layout", "@layout/media", TEST_PACKAGE)
                 ), Robolectric.getShadowApplication().getResourceLoader(), null)

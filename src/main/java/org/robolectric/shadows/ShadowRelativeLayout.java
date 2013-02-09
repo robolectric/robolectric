@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 import android.view.ViewGroup;
 import android.widget.RelativeLayout;
 import org.robolectric.internal.Implements;
-import org.robolectric.tester.android.util.Attribute;
+import org.robolectric.res.Attribute;
 
 import java.util.ArrayList;
 

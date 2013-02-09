@@ -10,8 +10,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.PackageResourceLoader;
-import org.robolectric.tester.android.util.Attribute;
-import org.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.res.Attribute;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -29,14 +28,14 @@ public class PreferenceTest {
     private ShadowPreference shadow;
 
     private Context context;
-    private TestAttributeSet attrs;
+    private RoboAttributeSet attrs;
 
     private boolean clicked = false;
 
     @Before
     public void setup() {
         context = new Activity();
-        attrs = new TestAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
+        attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
         preference = new TestPreference(context, attrs);
         shadow = Robolectric.shadowOf(preference);
     }
@@ -69,7 +68,7 @@ public class PreferenceTest {
         String key = "key_value";
         List<Attribute> attributes = new ArrayList<Attribute>();
         attributes.add(new Attribute("android:attr/key", key, R.class.getPackage().getName()));
-        attrs = new TestAttributeSet(attributes, new PackageResourceLoader(), null);
+        attrs = new RoboAttributeSet(attributes, new PackageResourceLoader(), null);
 
         preference = new TestPreference(context, attrs);
         assertThat(preference.getKey(), equalTo(key));

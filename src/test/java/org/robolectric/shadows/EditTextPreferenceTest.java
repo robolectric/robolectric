@@ -13,8 +13,6 @@ import android.app.Activity;
 import android.content.Context;
 import android.preference.EditTextPreference;
 
-import org.robolectric.tester.android.util.TestAttributeSet;
-
 @RunWith(TestRunners.WithDefaults.class)
 public class EditTextPreferenceTest {
 
@@ -22,7 +20,7 @@ public class EditTextPreferenceTest {
 	private EditTextPreference preference;
 
 	private Context context;
-	private TestAttributeSet attrs;
+	private RoboAttributeSet attrs;
 
 	@Before
 	public void setup() {

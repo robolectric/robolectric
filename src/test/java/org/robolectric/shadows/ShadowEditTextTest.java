@@ -4,8 +4,7 @@ import android.widget.EditText;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.tester.android.util.Attribute;
-import org.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.res.Attribute;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -24,7 +23,7 @@ public class ShadowEditTextTest {
     public void setup() {
         List<Attribute> attributes = new ArrayList<Attribute>();
         attributes.add(new Attribute("android:attr/maxLength", "5", R.class.getPackage().getName()));
-        TestAttributeSet attributeSet = new TestAttributeSet(attributes, Robolectric.getShadowApplication().getResourceLoader(), null);
+        RoboAttributeSet attributeSet = new RoboAttributeSet(attributes, Robolectric.getShadowApplication().getResourceLoader(), null);
         editText = new EditText(Robolectric.application, attributeSet);
     }
 

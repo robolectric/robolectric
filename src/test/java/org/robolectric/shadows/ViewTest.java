@@ -20,8 +20,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.PackageResourceLoader;
-import org.robolectric.tester.android.util.Attribute;
-import org.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.res.Attribute;
 import org.robolectric.tester.android.view.TestWindow;
 import org.robolectric.util.TestAnimationListener;
 import org.robolectric.util.TestOnClickListener;
@@ -293,7 +292,7 @@ public class ViewTest {
 
     @Test
     public void shouldAddOnClickListenerFromAttribute() throws Exception {
-      TestAttributeSet attrs = new TestAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
+      RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
       attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
       view = new View(null, attrs);
@@ -309,7 +308,7 @@ public class ViewTest {
           called.set(true);
         }
       };
-      TestAttributeSet attrs = new TestAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
+      RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
       attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
       view = new View(context, attrs);
@@ -325,7 +324,7 @@ public class ViewTest {
           called.set(true);
         }
       };
-      TestAttributeSet attrs = new TestAttributeSet(new ArrayList<Attribute>(), null, null);
+      RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), null, null);
       attrs.put("android:onClick", "clickYou", R.class.getPackage().getName());
 
       view = new View(context, attrs);

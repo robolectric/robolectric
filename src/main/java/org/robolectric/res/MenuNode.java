@@ -1,7 +1,5 @@
 package org.robolectric.res;
 
-import org.robolectric.tester.android.util.Attribute;
-
 import java.util.ArrayList;
 import java.util.List;
 

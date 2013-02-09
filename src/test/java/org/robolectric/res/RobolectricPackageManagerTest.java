@@ -26,6 +26,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 
 import org.robolectric.Robolectric;
+import org.robolectric.res.builder.RobolectricPackageManager;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RobolectricPackageManagerTest {

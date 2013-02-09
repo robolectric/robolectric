@@ -91,6 +91,13 @@ public class Setup {
     }
 
     public boolean shouldAcquire(String name) {
+        // the org.robolectric.res package lives in the base classloader, but not its tests; yuck.
+        int lastDot = name.lastIndexOf('.');
+        String pkgName = name.substring(0, lastDot == -1 ? 0 : lastDot);
+        if (pkgName.equals("org.robolectric.res")) {
+            return name.contains("Test");
+        }
+
         return !(
                 name.matches(".*\\.R(|\\$[a-z]+)$")
                         || name.startsWith("org.junit")

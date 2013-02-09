@@ -10,7 +10,7 @@ import org.robolectric.AndroidManifest;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-import org.robolectric.res.RobolectricPackageManager;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.tester.android.content.TestSharedPreferences;
 
 import java.io.File;

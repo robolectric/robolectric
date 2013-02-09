@@ -1,10 +1,7 @@
 package org.robolectric.res;
 
-import android.content.Context;
-import android.content.res.XmlResourceParser;
-import android.preference.PreferenceScreen;
 import android.view.View;
-import org.robolectric.tester.android.util.ResName;
+import org.w3c.dom.Document;
 
 import java.io.InputStream;
 import java.util.HashSet;
@@ -61,8 +58,8 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public XmlResourceParser getXml(int id) {
-        return pickFor(id).getXml(id);
+    public Document getXml(ResName resName, String qualifiers) {
+        return pickFor(resName).getXml(resName, "");
     }
 
     @Override
@@ -86,8 +83,8 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public PreferenceScreen inflatePreferences(Context context, int resourceId) {
-        return pickFor(resourceId).inflatePreferences(context, resourceId);
+    public PreferenceNode getPreferenceNode(ResName resName, String qualifiers) {
+        return pickFor(resName).getPreferenceNode(resName, qualifiers);
     }
 
     @Override

@@ -10,7 +10,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.RoboLayoutInflater;
+import org.robolectric.res.builder.LayoutBuilder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -125,7 +125,7 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
 
         if (convertView == null) {
             String qualifiers = shadowOf(context.getResources().getConfiguration()).getQualifiers();
-            view = new RoboLayoutInflater(getResourceLoader()).inflateView(context, resource, null, qualifiers);
+            view = new LayoutBuilder(getResourceLoader()).inflateView(context, resource, null, qualifiers);
         } else {
             view = convertView;
         }

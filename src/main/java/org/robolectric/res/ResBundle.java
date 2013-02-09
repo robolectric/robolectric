@@ -1,14 +1,12 @@
 package org.robolectric.res;
 
-import org.robolectric.tester.android.util.ResName;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-class ResBundle<T> {
+public class ResBundle<T> {
     private final ResMap<T> valuesMap = new ResMap<T>();
     private final ResMap<List<T>> valuesArrayMap = new ResMap<List<T>>();
     private String overrideNamespace;
@@ -81,7 +79,7 @@ class ResBundle<T> {
         throw new IllegalStateException("couldn't handle qualifiers \"" + qualifiers + "\"");
     }
 
-    int size() {
+    public int size() {
         return valuesMap.map.size() + valuesArrayMap.map.size();
     }
 

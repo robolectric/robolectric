@@ -1,12 +1,7 @@
 package org.robolectric.res;
 
-import android.content.Context;
-import android.content.res.Resources;
-import android.content.res.XmlResourceParser;
-import android.graphics.drawable.Drawable;
-import android.preference.PreferenceScreen;
 import android.view.View;
-import org.robolectric.tester.android.util.ResName;
+import org.w3c.dom.Document;
 
 import java.io.InputStream;
 
@@ -27,7 +22,7 @@ public interface ResourceLoader {
 
     boolean getBooleanValue(ResName resName, String qualifiers);
 
-    XmlResourceParser getXml(int id);
+    Document getXml(ResName resName, String qualifiers);
 
     DrawableNode getDrawableNode(ResName resName, String qualifiers);
 
@@ -37,7 +32,7 @@ public interface ResourceLoader {
 
     int[] getIntegerArrayValue(ResName resName, String qualifiers);
 
-    PreferenceScreen inflatePreferences(Context context, int resourceId);
+    PreferenceNode getPreferenceNode(ResName resName, String qualifiers);
 
     ResourceExtractor getResourceExtractor();
 

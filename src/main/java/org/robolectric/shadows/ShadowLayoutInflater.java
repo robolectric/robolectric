@@ -9,7 +9,7 @@ import org.robolectric.internal.AppSingletonizer;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.RoboLayoutInflater;
+import org.robolectric.res.builder.LayoutBuilder;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -46,7 +46,7 @@ public class ShadowLayoutInflater {
     @Implementation
     public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
         String qualifiers = shadowOf(context.getResources().getConfiguration()).getQualifiers();
-        return new RoboLayoutInflater(getResourceLoader()).inflateView(context, resource, attachToRoot ? root : null, qualifiers);
+        return new LayoutBuilder(getResourceLoader()).inflateView(context, resource, attachToRoot ? root : null, qualifiers);
     }
 
     @Implementation

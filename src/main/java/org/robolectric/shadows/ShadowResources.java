@@ -14,13 +14,14 @@ import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-import org.robolectric.res.DrawableBuilder;
+import org.robolectric.res.Attribute;
 import org.robolectric.res.DrawableNode;
+import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.tester.android.util.Attribute;
-import org.robolectric.tester.android.util.ResName;
-import org.robolectric.tester.android.util.TestAttributeSet;
+import org.robolectric.res.builder.DrawableBuilder;
+import org.robolectric.res.builder.XmlFileBuilder;
+import org.w3c.dom.Document;
 
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -243,13 +244,14 @@ public class ShadowResources {
     }
     
     @Implementation
-    public XmlResourceParser getXml(int id)
-    		throws Resources.NotFoundException {
-    	XmlResourceParser parser = resourceLoader.getXml(id);
-    	if (parser == null) {
-    		throw new Resources.NotFoundException();
-    	}
-    	return parser;
+    public XmlResourceParser getXml(int id) throws Resources.NotFoundException {
+        Document document = resourceLoader.getXml(getResName(id), getQualifiers());
+        if (document == null) {
+            throw new Resources.NotFoundException();
+        }
+        XmlFileBuilder xmlFileBuilder = new XmlFileBuilder();
+        XmlResourceParser parser = xmlFileBuilder.getXml(document);
+        return parser;
     }
 
     @Implementation
@@ -282,7 +284,7 @@ public class ShadowResources {
         @Implementation
         public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
             if (set == null) {
-                set = new TestAttributeSet(new ArrayList<Attribute>(), shadowOf(resources).getResourceLoader(), null);
+                set = new RoboAttributeSet(new ArrayList<Attribute>(), shadowOf(resources).getResourceLoader(), null);
             }
 
             return ShadowTypedArray.create(resources, set, attrs);
