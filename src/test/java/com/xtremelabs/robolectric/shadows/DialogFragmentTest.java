@@ -104,6 +104,8 @@ public class DialogFragmentTest {
         Dialog dialog = ShadowDialog.getLatestDialog();
         assertFalse(dialog.isShowing());
         assertTrue(shadowOf(dialog).hasBeenDismissed());
+        
+        assertNull(fragmentManager.findFragmentByTag("tag"));
     }
 
     @Test

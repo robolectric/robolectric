@@ -5,12 +5,7 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.view.View;
-import android.widget.Adapter;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.ListAdapter;
-import android.widget.ListView;
+import android.widget.*;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
@@ -42,6 +37,7 @@ public class ShadowAlertDialog extends ShadowDialog {
     private View customTitleView;
     private ListAdapter adapter;
     private ListView listView;
+    private FrameLayout custom;
 
     /**
      * Non-Android accessor.
@@ -56,11 +52,22 @@ public class ShadowAlertDialog extends ShadowDialog {
     @Override
     @Implementation
     public View findViewById(int viewId) {
-        if(view == null) {
-            return super.findViewById(viewId);
+        if ( viewId == android.R.id.custom ) {
+        	return getCustomView();
         }
 
+        if (view == null) {
+            return super.findViewById(viewId);
+        }
+        
         return view.findViewById(viewId);
+    }
+    
+    public FrameLayout getCustomView() {
+       	if ( custom == null ) {
+    		custom = new FrameLayout(context);
+    	}
+    	return custom;
     }
 
     @Implementation
