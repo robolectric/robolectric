@@ -34,15 +34,23 @@
 
     <condition property="isWindows"> <os family="windows" /> </condition>
 
+	<target name="findMavenWindows" if="isWindows">
+		<property name="maven" value="mvn.bat"/>
+    </target>
+    <target name="findMavenUnix" unless="isWindows">
+		<property name="maven" value="mvn"/>
+    </target>
+	
     <target name="findAndroidWindows" if="isWindows">
         <echo message="Finding the Android version in windows"/>
-        <exec executable="./find-android.bat"/>
+        <!--<exec executable="./find-android.bat"/>-->
+		<property name="sdk.dir" value="${env.ANDROID_HOME}"/>
     </target>
     <target name="findAndroidUnix" unless="isWindows">
         <echo message="Finding the Android version in *nix"/>
         <exec executable="./find-android.sh"/>
+		<property file="local.properties"/>
     </target>
-    <property file="local.properties"/>
 
     <!-- Custom Android task to deal with the project target, and import the proper rules.
          This requires ant 1.6.0 or above. -->
@@ -218,36 +226,41 @@
         </javadoc>
     </target>
 
-    <target name="maven-install-jars" description="Install the jar files that Maven can't find for itself">
-        <exec executable="mvn">
+    <target name="maven-install-jars"
+			depends="findMavenUnix, findMavenWindows"
+			description="Install the jar files that Maven can't find for itself">
+        <exec executable="${maven}">
             <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon_google_apis_google_inc_${default.sdk.version}/libs/maps.jar" />
         </exec>
-        <exec executable="mvn">
+        <exec executable="${maven}">
             <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google_inc_-${default.sdk.version}/libs/maps.jar" />
         </exec>
-        <exec executable="mvn">
+        <exec executable="${maven}">
             <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar" />
         </exec>
     </target>
 
-    <target name="install-real-android-jars">
+    <target name="install-real-android-jars"
+			depends="findMavenUnix, findMavenWindows">
         <mkdir dir="tmp"/>
         <get src="https://s3.amazonaws.com/robolectric/android-base-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
         <get src="https://s3.amazonaws.com/robolectric/android-kxml2-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
         <get src="https://s3.amazonaws.com/robolectric/android-luni-4.1.2_r1_rc-real.jar" dest="tmp" skipexisting="true"/>
-        <exec executable="mvn">
+        <exec executable="${maven}">
             <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-base -Dversion=4.1.2_r1_rc -Dclassifier=real -Dpackaging=jar -Dfile=tmp/android-base-4.1.2_r1_rc-real.jar"/>
         </exec>
-        <exec executable="mvn">
+        <exec executable="${maven}">
             <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-kxml2 -Dversion=4.1.2_r1_rc -Dclassifier=real -Dpackaging=jar -Dfile=tmp/android-kxml2-4.1.2_r1_rc-real.jar"/>
         </exec>
-        <exec executable="mvn">
+        <exec executable="${maven}">
             <arg line="install:install-file -DgroupId=org.robolectric -DartifactId=android-luni -Dversion=4.1.2_r1_rc -Dclassifier=real -Dpackaging=jar -Dfile=tmp/android-luni-4.1.2_r1_rc-real.jar"/>
         </exec>
     </target>
 
     <!-- used by travis-ci -->
-    <target name="prepare-travis-ci" description="Prepare for travis ci build">
+    <target name="prepare-travis-ci"
+			depends="findMavenUnix, findMavenWindows"
+			description="Prepare for travis ci build">
         <mkdir dir="tmp"/>
         <get src="http://dl.google.com/android/android-sdk_r21.0.1-linux.tgz" dest="tmp" skipexisting="true"/>
         <untar src="tmp/android-sdk_r21.0.1-linux.tgz" compression="gzip" dest="tmp/sdk"/>
@@ -268,7 +281,7 @@
         <propertyfile file="local.properties">
             <entry key="sdk.dir" value="${basedir}/tmp/sdk/android-sdk-linux/"/>
         </propertyfile>
-        <exec executable="mvn">
+        <exec executable="${maven}">
             <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=tmp/sdk/android-sdk-linux/add-ons/addon-google_apis-google-${default.sdk.version}/libs/maps.jar"/>
         </exec>
 
