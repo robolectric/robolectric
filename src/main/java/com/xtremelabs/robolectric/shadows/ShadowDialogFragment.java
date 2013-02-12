@@ -28,7 +28,7 @@ public class ShadowDialogFragment extends ShadowFragment {
 
     @Implementation
     public int show(FragmentTransaction transaction, String tag) {
-    	TestFragmentTransaction ft = (TestFragmentTransaction)transaction;
+        TestFragmentTransaction ft = (TestFragmentTransaction) transaction;
         show(ft.getManager(), tag);
         ft.commit();
         return 0;
@@ -70,23 +70,24 @@ public class ShadowDialogFragment extends ShadowFragment {
         if (dialog != null) {
             dialog.dismiss();
         }
-        
+
         if (testFragmentManager == null) {
-        	testFragmentManager = (TestFragmentManager)getFragmentManager();
+            testFragmentManager = (TestFragmentManager) getFragmentManager();
         }
         testFragmentManager.removeDialogFragment(realDialogFragment);
-     }
+    }
 
     @Implementation
     public Dialog getDialog() {
         return dialog;
     }
-    
-    // The following API is not supported by Android Support Library V4 r6(r7). Need to add anotation back
-    // when Maven supports newer revision of support library. 
+
+    // The following API is not supported by Android Support Library V4 r6(r7). Need to add annotation back
+    // when Maven supports newer revision of support library.
+    // Also fix the case in RobolectricWiringTest#verifyMethod(Class, Method)
 //    @Implementation
     public void dismissAllowingStateLoss() {
-    	dismiss();
+        dismiss();
     }
 
     public static DialogFragment getLatestDialogFragment() {
