@@ -2,6 +2,7 @@ package com.xtremelabs.robolectric.shadows;
 
 import android.accounts.*;
 import android.content.Context;
+import android.os.Bundle;
 import android.os.Handler;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
@@ -65,6 +66,17 @@ public class ShadowAccountManager {
         if (authTokenType == null) throw new IllegalArgumentException("authTokenType is null");
 
         return authTokenMap.get(authTokenType);
+    }
+
+    private AccountManagerFuture<Bundle> accountManagerFuture;
+
+    @Implementation
+    public AccountManagerFuture<Bundle> getAuthToken(Account account,  String authTokenType, Bundle options, boolean flag, AccountManagerCallback<Bundle> callback, Handler handler) {
+        return accountManagerFuture;
+    }
+
+    public void setAccountManagerFuture(AccountManagerFuture<Bundle> accountManagerFuture) {
+        this.accountManagerFuture = accountManagerFuture;
     }
 
     @Implementation
