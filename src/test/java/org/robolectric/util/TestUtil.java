@@ -130,4 +130,13 @@ public abstract class TestUtil {
         }
         return writer.toString();
     }
+
+    public static String joinPath(String... parts) {
+        File file = new File(parts[0]);
+        for (int i = 1; i < parts.length; i++) {
+            String part = parts[i];
+            file = new File(file, part);
+        }
+        return file.getPath();
+    }
 }

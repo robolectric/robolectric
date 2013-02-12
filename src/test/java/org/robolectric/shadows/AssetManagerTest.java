@@ -2,12 +2,12 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.util.Strings;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.util.Strings;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -15,11 +15,11 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.*;
+import static org.robolectric.util.TestUtil.joinPath;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AssetManagerTest {
     AssetManager assetManager;
-    String sp = System.getProperty("file.separator");
 
     @Before
     public void setUp() throws Exception {
@@ -51,11 +51,11 @@ public class AssetManagerTest {
         files = Arrays.asList(assetManager.list(testPath));
         assertTrue(files.contains("extra"));
 
-        testPath = "docs" + sp + "extra";
+        testPath = joinPath("docs", "extra");
         files = Arrays.asList(assetManager.list(testPath));
         assertTrue(files.contains("testing"));
 
-        testPath = "docs" + sp + "extra" + sp + "testing";
+        testPath = joinPath("docs", "extra", "testing");
         files = Arrays.asList(assetManager.list(testPath));
         assertTrue(files.contains("hello.txt"));
 
@@ -79,7 +79,7 @@ public class AssetManagerTest {
         fileContents = Strings.fromStream(inputStream);
         assertEquals("assetsHome!", fileContents);
 
-        testPath = "docs" + sp + "extra" + sp + "testing" + sp + "hello.txt";
+        testPath = joinPath("docs", "extra", "testing", "hello.txt");
         inputStream = assetManager.open(testPath);
         fileContents = Strings.fromStream(inputStream);
         assertEquals("hello!", fileContents);
