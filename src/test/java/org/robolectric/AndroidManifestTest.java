@@ -74,11 +74,12 @@ public class AndroidManifestTest {
 
         // This intentionally loads from the non standard resources/project.properties
         List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
+		String separator = System.getProperty("file.separator");
         assertEquals(asList(
-                "./src/test/resources/res",
-                "./src/test/resources/lib1/res",
-                "./src/test/resources/lib1/../lib3/res",
-                "./src/test/resources/lib2/res"),
+                "."+separator+"src"+separator+"test"+separator+"resources"+separator+"res",
+                "."+separator+"src"+separator+"test"+separator+"resources"+separator+"lib1"+separator+"res",
+                "."+separator+"src"+separator+"test"+separator+"resources"+separator+"lib1"+separator+".."+separator+"lib3"+separator+"res",
+                "."+separator+"src"+separator+"test"+separator+"resources"+separator+"lib2"+separator+"res"),
                 resourcePaths);
     }
 
