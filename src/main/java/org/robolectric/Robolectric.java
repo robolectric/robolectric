@@ -421,6 +421,7 @@ import org.robolectric.shadows.ShadowViewMeasureSpec;
 import org.robolectric.shadows.ShadowViewPager;
 import org.robolectric.shadows.ShadowViewStub;
 import org.robolectric.shadows.ShadowViewTreeObserver;
+import org.robolectric.shadows.ShadowWebSyncManager;
 import org.robolectric.shadows.ShadowWebView;
 import org.robolectric.shadows.ShadowWifiConfiguration;
 import org.robolectric.shadows.ShadowWifiInfo;
@@ -789,6 +790,7 @@ public class Robolectric {
                 ShadowViewStub.class,
                 ShadowViewTreeObserver.class,
                 ShadowWebView.class,
+                ShadowWebSyncManager.class,
                 ShadowWifiConfiguration.class,
                 ShadowWifiInfo.class,
                 ShadowWifiManager.class,

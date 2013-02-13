@@ -17,7 +17,10 @@ import org.robolectric.R;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -134,11 +137,13 @@ public class DialogFragmentTest {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             transcript.add("onCreate");
+            super.onCreate(savedInstanceState);
         }
 
         @Override
         public Dialog onCreateDialog(Bundle savedInstanceState) {
             transcript.add("onCreateDialog");
+            super.onCreateDialog(savedInstanceState);
             return returnThisDialogFromOnCreateDialog;
         }
 

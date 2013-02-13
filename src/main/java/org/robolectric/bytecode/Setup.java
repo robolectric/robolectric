@@ -66,7 +66,6 @@ public class Setup {
 
 
     public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz, String methodName, Class<?>[] paramClasses) {
-        if (clazz.getName().startsWith("android.support.v4")) return true;
         if (methodName.equals("equals") && paramClasses.length == 1 && paramClasses[0] == Object.class) return true;
         if (methodName.equals("hashCode") && paramClasses.length == 0) return true;
         if (methodName.equals("toString") && paramClasses.length == 0) return true;
