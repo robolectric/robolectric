@@ -7,7 +7,7 @@ import org.robolectric.internal.Implements;
 import java.util.HashMap;
 import java.util.Map;
 
-@Implements(Robolectric.Anything.class)
+@Implements(value = Robolectric.Anything.class, className = "android.os.SystemProperties")
 public class ShadowSystemProperties {
     private static final Map<String, Object> VALUES = new HashMap<String, Object>();
 

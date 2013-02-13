@@ -33,6 +33,7 @@ public class RobolectricWiringTest {
     private void verifyClass(final Class<?> shadowClass) {
         Implements annotation = shadowClass.getAnnotation(Implements.class);
         Class implementedClass = annotation.value();
+        if (implementedClass.getName().equals(Robolectric.Anything.class.getName())) return;
 
         try {
             shadowClass.getConstructor(implementedClass);

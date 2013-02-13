@@ -512,7 +512,6 @@ public class Robolectric {
 
     public static void bindDefaultShadowClasses() {
         bindShadowClasses(getDefaultShadowClasses());
-        getShadowWrangler().bindShadowClass("android.os.SystemProperties", ShadowSystemProperties.class, false);
     }
 
     public static void bindShadowClasses(List<Class<?>> shadowClasses) {
@@ -760,6 +759,7 @@ public class Robolectric {
                 ShadowStateListDrawable.class,
                 ShadowStatFs.class,
                 ShadowSurfaceView.class,
+                ShadowSystemProperties.class,
                 ShadowTabActivity.class,
                 ShadowTabHost.class,
                 ShadowTabSpec.class,
