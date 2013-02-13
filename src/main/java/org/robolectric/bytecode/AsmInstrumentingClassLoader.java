@@ -245,6 +245,9 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         }
 
         public void instrument() {
+            fixAccess(classNode);
+            classNode.access = classNode.access & ~ACC_FINAL;
+
             Set<String> foundMethods = new HashSet<String>();
 
             List<MethodNode> methods = new ArrayList<MethodNode>(classNode.methods);
@@ -516,6 +519,10 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                         break;
                 }
             }
+        }
+
+        private void fixAccess(ClassNode clazz) {
+            clazz.access = (clazz.access | ACC_PUBLIC) & ~(ACC_PROTECTED | ACC_PRIVATE);
         }
 
         private void fixAccess(MethodNode method) {

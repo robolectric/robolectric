@@ -1,22 +1,23 @@
 package org.robolectric.bytecode;
 
+import org.junit.Before;
+import org.junit.Test;
 import org.robolectric.internal.DoNotInstrument;
 import org.robolectric.internal.Instrument;
 import org.robolectric.util.Transcript;
-import javassist.CannotCompileException;
-import javassist.ClassClassPath;
-import javassist.ClassPool;
-import javassist.Loader;
-import javassist.NotFoundException;
-import org.junit.Before;
-import org.junit.Test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 abstract public class InstrumentingClassLoaderTest {
 
@@ -26,23 +27,18 @@ abstract public class InstrumentingClassLoaderTest {
 
     @Before
     public void setUp() throws Exception {
-//        transformWithJavassist();
         classLoader = createClassLoader(new Setup());
         classHandler = new MyClassHandler(transcript);
         injectClassHandler(classLoader, classHandler);
     }
 
-    private ClassLoader transformWithJavassist() throws NotFoundException, CannotCompileException, ClassNotFoundException {
-        ClassPool cp = new ClassPool();
-        cp.appendClassPath(new ClassClassPath(getClass()));
-        Loader loader = new Loader();
-        loader.delegateLoadingOf(ClassHandler.class.getName());
-        loader.addTranslator(cp, new AndroidTranslator(new ZipClassCache("tmp/zzz.jar", -1), new Setup()));
-        return loader;
-
-    }
-
     abstract protected ClassLoader createClassLoader(Setup setup) throws ClassNotFoundException;
+
+    @Test
+    public void shouldMakeClassesNonFinal() throws Exception {
+        Class<?> clazz = loadClass(FinalClass.class);
+        assertEquals(0, clazz.getModifiers() & Modifier.FINAL);
+    }
 
     @Test public void shouldAddDefaultConstructorIfMissing() throws Exception {
         Constructor<?> defaultCtor = loadClass(ClassWithNoDefaultConstructor.class).getConstructor();
