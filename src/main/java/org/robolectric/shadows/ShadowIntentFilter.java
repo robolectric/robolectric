@@ -1,16 +1,15 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Robolectric.shadowOf_;
+import android.content.IntentFilter;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import android.content.IntentFilter;
-
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
+import static org.robolectric.Robolectric.shadowOf_;
 
 /**
  * Shadow of {@code IntentFilter} implemented with a {@link java.util.List}

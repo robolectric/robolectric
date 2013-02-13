@@ -3,6 +3,10 @@ package org.robolectric.shadows;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
+import org.junit.After;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.TestRunners;
 import org.robolectric.res.PackageResourceLoader;
@@ -10,10 +14,6 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.tester.android.util.Attribute;
 import org.robolectric.tester.android.util.TestAttributeSet;
 import org.robolectric.util.CustomView;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,11 +21,21 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 
+import static java.util.Arrays.asList;
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.endsWith;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.startsWith;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
-import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ContextTest {

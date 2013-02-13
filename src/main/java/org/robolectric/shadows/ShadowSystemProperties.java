@@ -12,7 +12,9 @@ public class ShadowSystemProperties {
     private static final Map<String, Object> VALUES = new HashMap<String, Object>();
 
     static {
-        VALUES.put("ro.build.version.sdk", 14);
+        VALUES.put("ro.build.version.sdk", 12);
+        VALUES.put("ro.debuggable", 0);
+        VALUES.put("log.closeguard.Animation", false);
     }
 
     @Implementation

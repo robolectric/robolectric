@@ -150,8 +150,8 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     @Override
-    public Object intercept(Class clazz, String methodName, Object instance, Object[] paramTypes, Object[] params) throws Throwable {
-        if (debug) System.out.println("DEBUG: intercepted call to " + clazz.getName() + "." + methodName + "(" + Join.join(", ", params) + ")");
+    public Object intercept(String className, String methodName, Object instance, Object[] paramTypes, Object[] params) throws Throwable {
+        if (debug) System.out.println("DEBUG: intercepted call to " + className + "." + methodName + "(" + Join.join(", ", params) + ")");
         return null;
     }
 

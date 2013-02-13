@@ -27,7 +27,7 @@ public class AndroidTranslator implements Translator {
     private final ClassCache classCache;
     private final Setup setup;
 
-    private static boolean debug = false;
+    private static boolean debug = true;
 
     public static void performStaticInitialization(Class<?> clazz) {
         if (debug) System.out.println("static initializing " + clazz);

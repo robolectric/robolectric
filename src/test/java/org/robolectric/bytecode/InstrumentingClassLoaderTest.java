@@ -525,7 +525,7 @@ abstract public class InstrumentingClassLoaderTest {
         }
 
         @Override
-        public Object intercept(Class clazz, String methodName, Object instance, Object[] paramTypes, Object[] params) throws Throwable {
+        public Object intercept(String clazzName, String methodName, Object instance, Object[] paramTypes, Object[] params) throws Throwable {
             return null;
         }
 

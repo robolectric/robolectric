@@ -14,6 +14,7 @@ import static android.content.pm.ApplicationInfo.*;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.util.TestUtil.joinPath;
 import static org.robolectric.util.TestUtil.newConfig;
 import static org.robolectric.util.TestUtil.resourceFile;
 
@@ -75,10 +76,10 @@ public class AndroidManifestTest {
         // This intentionally loads from the non standard resources/project.properties
         List<String> resourcePaths = stringify(appManifest.getIncludedResourcePaths());
         assertEquals(asList(
-                "./src/test/resources/res",
-                "./src/test/resources/lib1/res",
-                "./src/test/resources/lib1/../lib3/res",
-                "./src/test/resources/lib2/res"),
+                joinPath(".", "src", "test", "resources", "res"),
+                joinPath(".", "src", "test", "resources", "lib1", "res"),
+                joinPath(".", "src", "test", "resources", "lib1", "..", "lib3", "res"),
+                joinPath(".", "src", "test", "resources", "lib2", "res")),
                 resourcePaths);
     }
 

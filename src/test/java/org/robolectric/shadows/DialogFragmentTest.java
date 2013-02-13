@@ -5,33 +5,33 @@ import android.app.Dialog;
 import android.os.Bundle;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import org.robolectric.R;
-import org.robolectric.TestRunners;
-import org.robolectric.tester.android.util.TestFragmentManager;
-import org.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.TestRunners;
+import org.robolectric.util.Transcript;
 
-import static org.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.*;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DialogFragmentTest {
 
     private FragmentActivity activity;
     private TestDialogFragment dialogFragment;
-    private TestFragmentManager fragmentManager;
+    private FragmentManager fragmentManager;
 
     @Before
     public void setUp() throws Exception {
         activity = new FragmentActivity();
         dialogFragment = new TestDialogFragment();
-        fragmentManager = new TestFragmentManager(activity);
+        fragmentManager = activity.getSupportFragmentManager();
     }
 
     @Test

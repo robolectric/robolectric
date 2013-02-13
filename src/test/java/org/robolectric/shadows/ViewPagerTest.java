@@ -33,12 +33,14 @@ public class ViewPagerTest {
 
     @Test
     public void test_getAndSetCurrentItem() throws Exception {
+        pager.setAdapter(adapter);
         pager.setCurrentItem(2);
         assertEquals(2, pager.getCurrentItem());
     }
 
     @Test
     public void setCurrentItem_shouldInvokeListener() throws Exception {
+        pager.setAdapter(adapter);
         TestOnPageChangeListener listener = new TestOnPageChangeListener();
         pager.setOnPageChangeListener(listener);
         assertFalse(listener.onPageSelectedCalled);
@@ -49,7 +51,7 @@ public class ViewPagerTest {
     private static class TestPagerAdapter extends PagerAdapter {
         @Override
         public int getCount() {
-            return 0;
+            return 3;
         }
 
         @Override

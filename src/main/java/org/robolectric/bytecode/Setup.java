@@ -80,11 +80,11 @@ public class Setup {
             return false;
         }
 
-        if (classInfo.getName().startsWith("android.support")) {
-            return false;
-        }
-
-
+//        if (classInfo.getName().startsWith("android.support")) {
+//            return false;
+//        }
+//
+//
         if (isFromAndroidSdk(classInfo)) {
             return true;
         }
@@ -104,9 +104,9 @@ public class Setup {
     }
 
     public boolean isFromAndroidSdk(String className) {
-        return className.startsWith("android")
+        return className.startsWith("android.")
                 || className.startsWith("libcore.")
-                || className.startsWith("com.google.android.maps")
+                || className.startsWith("com.google.android.maps.")
                 || className.startsWith("org.apache.http.impl.client.DefaultRequestDirector");
     }
 
@@ -115,6 +115,8 @@ public class Setup {
     }
 
     public boolean shouldAcquire(String name) {
+        if (name.matches("com\\.android\\.internal\\.R(\\$.*)?")) return true;
+
         return !(
                 name.matches(".*\\.R(|\\$[a-z]+)$")
                         || CLASSES_TO_ALWAYS_DELEGATE.contains(name)
@@ -134,8 +136,14 @@ public class Setup {
 
     public Set<MethodRef> methodsToIntercept() {
         return Collections.unmodifiableSet(new HashSet<MethodRef>(asList(
-                new MethodRef(System.class, "loadLibrary")
+                new MethodRef(System.class, "loadLibrary"),
+                new MethodRef("android.os.StrictMode", "trackActivity"),
+                new MethodRef("dalvik.system.CloseGuard", "get")
         )));
+    }
+
+    public boolean containsStubs(ClassInfo classInfo) {
+        return classInfo.getName().startsWith("com.google.android.maps.");
     }
 
     public static class FakeSubclass {}
@@ -150,14 +158,16 @@ public class Setup {
             return Exception.class.getName();
         } else if (className.equals("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber")) {
             return FakeSubclass.class.getName();
+        } else if (className.equals("dalvik/system/CloseGuard")) {
+            return Object.class.getName().replace('.', '/');
         } else {
             return className;
         }
     }
 
     public static class MethodRef {
-        private final String className;
-        private final String methodName;
+        public final String className;
+        public final String methodName;
 
         public MethodRef(Class<?> clazz, String methodName) {
             this(clazz.getName(), methodName);
@@ -186,6 +196,14 @@ public class Setup {
             int result = className.hashCode();
             result = 31 * result + methodName.hashCode();
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return "MethodRef{" +
+                    "className='" + className + '\'' +
+                    ", methodName='" + methodName + '\'' +
+                    '}';
         }
     }
 }

@@ -32,7 +32,7 @@ public class DocumentLoader {
         }
     }
 
-    void loadResourceXmlDir(ResourcePath resourcePath, String dirName) throws Exception {
+    public void loadResourceXmlDir(ResourcePath resourcePath, String dirName) throws Exception {
         loadResourceXmlDir(resourcePath, new File(resourcePath.resourceBase, dirName));
     }
 

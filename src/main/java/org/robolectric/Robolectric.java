@@ -261,9 +261,11 @@ import org.robolectric.shadows.ShadowExpandableListView;
 import org.robolectric.shadows.ShadowFilter;
 import org.robolectric.shadows.ShadowFloatMath;
 import org.robolectric.shadows.ShadowFragment;
+import org.robolectric.shadows.ShadowFragmentActivity;
 import org.robolectric.shadows.ShadowFragmentPagerAdapter;
 import org.robolectric.shadows.ShadowFrameLayout;
 import org.robolectric.shadows.ShadowGallery;
+import org.robolectric.shadows.ShadowGeoPoint;
 import org.robolectric.shadows.ShadowGeocoder;
 import org.robolectric.shadows.ShadowGestureDetector;
 import org.robolectric.shadows.ShadowGridView;
@@ -278,6 +280,7 @@ import org.robolectric.shadows.ShadowInputMethodManager;
 import org.robolectric.shadows.ShadowIntent;
 import org.robolectric.shadows.ShadowIntentFilter;
 import org.robolectric.shadows.ShadowIntentFilterAuthorityEntry;
+import org.robolectric.shadows.ShadowItemizedOverlay;
 import org.robolectric.shadows.ShadowJsPromptResult;
 import org.robolectric.shadows.ShadowJsResult;
 import org.robolectric.shadows.ShadowKeyEvent;
@@ -299,6 +302,9 @@ import org.robolectric.shadows.ShadowLocation;
 import org.robolectric.shadows.ShadowLocationManager;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowMapActivity;
+import org.robolectric.shadows.ShadowMapController;
+import org.robolectric.shadows.ShadowMapView;
 import org.robolectric.shadows.ShadowMarginLayoutParams;
 import org.robolectric.shadows.ShadowMatrix;
 import org.robolectric.shadows.ShadowMatrixCursor;
@@ -374,6 +380,7 @@ import org.robolectric.shadows.ShadowSimpleCursorAdapter;
 import org.robolectric.shadows.ShadowSmsManager;
 import org.robolectric.shadows.ShadowSpannableString;
 import org.robolectric.shadows.ShadowSpannableStringBuilder;
+import org.robolectric.shadows.ShadowSpannableStringInternal;
 import org.robolectric.shadows.ShadowSpannedString;
 import org.robolectric.shadows.ShadowSparseArray;
 import org.robolectric.shadows.ShadowSparseBooleanArray;
@@ -457,13 +464,17 @@ public class Robolectric {
     }
 
     public static void bindShadowClass(Class<?> shadowClass) {
-        Implements realClass = shadowClass.getAnnotation(Implements.class);
-        if (realClass == null) {
+        Implements implementsAnnotation = shadowClass.getAnnotation(Implements.class);
+        if (implementsAnnotation == null) {
             throw new IllegalArgumentException(shadowClass + " is not annotated with @Implements");
         }
 
         try {
-            getShadowWrangler().bindShadowClass(realClass.value(), shadowClass, realClass.callThroughByDefault());
+            String className = implementsAnnotation.value().getName();
+            if (!implementsAnnotation.className().isEmpty()) {
+                className = implementsAnnotation.className();
+            }
+            getShadowWrangler().bindShadowClass(className, shadowClass, implementsAnnotation.callThroughByDefault());
         } catch (TypeNotPresentException typeLoadingException) {
             String unloadableClassName = shadowClass.getSimpleName();
             if (isIgnorableClassLoadingException(typeLoadingException)) {
@@ -612,12 +623,12 @@ public class Robolectric {
                 ShadowFilter.class,
                 ShadowFloatMath.class,
                 ShadowFragment.class,
-                //ShadowFragmentActivity.class,
+                ShadowFragmentActivity.class,
                 ShadowFragmentPagerAdapter.class,
                 ShadowFrameLayout.class,
                 ShadowGallery.class,
                 ShadowGeocoder.class,
-                //ShadowGeoPoint.class,
+                ShadowGeoPoint.class,
                 ShadowGestureDetector.class,
                 ShadowGridView.class,
                 ShadowHandler.class,
@@ -631,7 +642,7 @@ public class Robolectric {
                 ShadowIntent.class,
                 ShadowIntentFilter.class,
                 ShadowIntentFilterAuthorityEntry.class,
-                //ShadowItemizedOverlay.class,
+                ShadowItemizedOverlay.class,
                 ShadowLayoutAnimationController.class,
                 ShadowJsPromptResult.class,
                 ShadowJsResult.class,
@@ -653,9 +664,9 @@ public class Robolectric {
                 ShadowLocationManager.class,
                 ShadowLog.class,
                 ShadowLooper.class,
-                //ShadowMapController.class,
-                //ShadowMapActivity.class,
-                //ShadowMapView.class,
+                ShadowMapController.class,
+                ShadowMapActivity.class,
+                ShadowMapView.class,
                 ShadowMarginLayoutParams.class,
                 ShadowMatrix.class,
                 ShadowMatrixCursor.class,
@@ -729,6 +740,7 @@ public class Robolectric {
                 ShadowSmsManager.class,
                 ShadowSpannableString.class,
                 ShadowSpannableStringBuilder.class,
+                ShadowSpannableStringInternal.class,
                 ShadowSpannedString.class,
                 ShadowSparseArray.class,
                 ShadowSparseBooleanArray.class,
@@ -1362,7 +1374,7 @@ public class Robolectric {
     }
     
     public static ShadowSparseIntArray shadowOf(SparseIntArray other){
-    	return (ShadowSparseIntArray) Robolectric.shadowOf_( other );
+    	return (ShadowSparseIntArray) Robolectric.shadowOf_(other);
     }
 
     public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
@@ -1828,7 +1840,7 @@ public class Robolectric {
         }
 
         public static Object setFinalStaticField(Field field, Object newValue) {
-        	Object oldValue = null;
+        	Object oldValue;
         	
             try {
             	field.setAccessible(true);

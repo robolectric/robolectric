@@ -6,6 +6,8 @@ import org.robolectric.internal.Implements;
 
 @Implements(WifiInfo.class)
 public class ShadowWifiInfo {
+    public static void __staticInitializer__() {
+    }
 
     private String macAddress;
 

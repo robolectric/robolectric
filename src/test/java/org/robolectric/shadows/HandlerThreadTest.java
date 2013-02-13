@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.os.HandlerThread;
 import android.os.Looper;
+import org.junit.Ignore;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.junit.After;
@@ -11,6 +12,7 @@ import org.junit.runner.RunWith;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.*;
 
+@Ignore
 @RunWith(TestRunners.WithDefaults.class)
 public class HandlerThreadTest {
 	

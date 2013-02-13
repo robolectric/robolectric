@@ -15,6 +15,8 @@ public @interface Implements {
      */
     Class<?> value();
 
+    String className() default "";
+
     /**
      * If true, Robolectric will invoke the actual Android code for any method that isn't shadowed.
      */

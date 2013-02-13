@@ -1,11 +1,11 @@
 package org.robolectric.annotation;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
-
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
+
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.junit.Assert.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class WithConstantIntTest {
@@ -20,7 +20,7 @@ public class WithConstantIntTest {
 
 	@Test
 	public void testWithoutConstantInt() {
-		assertThat(android.os.Build.VERSION.SDK_INT, equalTo(0));
+		assertThat(android.os.Build.VERSION.SDK_INT, equalTo(12)); // todo pull this from some other config spot? see shadow system properties
 	}
 
 }

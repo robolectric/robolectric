@@ -3,11 +3,10 @@ package org.robolectric;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.model.Dependency;
 import org.apache.tools.ant.Project;
-import org.jetbrains.annotations.Nullable;
 import org.robolectric.bytecode.AndroidTranslator;
+import org.robolectric.bytecode.AsmInstrumentingClassLoader;
 import org.robolectric.bytecode.ClassCache;
 import org.robolectric.bytecode.ClassHandler;
-import org.robolectric.bytecode.JavassistInstrumentingClassLoader;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.bytecode.Setup;
 import org.robolectric.bytecode.ShadowWrangler;
@@ -17,18 +16,12 @@ import org.robolectric.res.AndroidResourcePathFinder;
 import org.robolectric.res.ResourcePath;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Hashtable;
-import java.util.List;
 import java.util.Map;
 
 import static org.robolectric.RobolectricTestRunner.isBootstrapped;
@@ -155,51 +148,11 @@ public class RobolectricContext {
     }
 
     protected ClassLoader createRobolectricClassLoader(Setup setup, ClassCache classCache, AndroidTranslator androidTranslator) {
-//            shadowWrangler.delegateBackToInstrumented = true;
-        final ClassLoader parentClassLoader = this.getClass().getClassLoader();
-        ClassLoader realAndroidJarsClassLoader = new URLClassLoader(
+//        ClassLoader robolectricClassLoader = new JavassistInstrumentingClassLoader(realAndroidJarsClassLoader, classCache, androidTranslator, setup);
+        ClassLoader robolectricClassLoader = new AsmInstrumentingClassLoader(setup,
                 artifactUrls(realAndroidDependency("android-base"),
                         realAndroidDependency("android-kxml2"),
-                        realAndroidDependency("android-luni"))
-        , null) {
-            @Override
-            public Class<?> loadClass(String s) throws ClassNotFoundException {
-                return super.loadClass(s);
-            }
-
-            @Override
-            protected Class<?> findClass(String s) throws ClassNotFoundException {
-                try {
-                    return super.findClass(s);
-                } catch (ClassNotFoundException e) {
-                    return parentClassLoader.loadClass(s);
-                }
-            }
-
-            @Nullable
-            @Override
-            public URL getResource(String s) {
-                URL resource = super.getResource(s);
-                if (resource != null) return resource;
-                return parentClassLoader.getResource(s);
-            }
-
-            @Override
-            public InputStream getResourceAsStream(String s) {
-                InputStream resourceAsStream = super.getResourceAsStream(s);
-                if (resourceAsStream != null) return resourceAsStream;
-                return parentClassLoader.getResourceAsStream(s);
-            }
-
-            @Override
-            public Enumeration<URL> getResources(String s) throws IOException {
-                List<URL> resources = Collections.list(super.getResources(s));
-                if (!resources.isEmpty()) return Collections.enumeration(resources);
-                return parentClassLoader.getResources(s);
-            }
-        };
-        ClassLoader robolectricClassLoader = new JavassistInstrumentingClassLoader(realAndroidJarsClassLoader, classCache, androidTranslator, setup);
-//        ClassLoader robolectricClassLoader = new AsmInstrumentingClassLoader(setup, realAndroidJarsClassLoader);
+                        realAndroidDependency("android-luni")));
         injectClassHandler(robolectricClassLoader);
         return robolectricClassLoader;
     }

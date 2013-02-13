@@ -87,7 +87,7 @@ public class MethodGenerator {
     }
 
     public void fixConstructor(CtConstructor ctConstructor) throws NotFoundException, CannotCompileException {
-        ctConstructor.instrument(new ExprEditor() {
+        ctConstructor.instrument(new NastyMethodInterceptor() {
             @Override public void edit(ConstructorCall c) throws CannotCompileException {
                 try {
                     CtConstructor constructor = c.getConstructor();
@@ -422,37 +422,39 @@ public class MethodGenerator {
             staticInitializerMethod = classInitializer.toMethod(InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME, ctClass);
         }
         staticInitializerMethod.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-
         if (!methodsToIntercept.isEmpty()) {
-            staticInitializerMethod.instrument(new ExprEditor() {
-                @Override
-                public void edit(MethodCall m) throws CannotCompileException {
-                    String methodName = m.getMethodName();
-                    Setup.MethodRef methodRef = new Setup.MethodRef(m.getClassName(), methodName);
-                    if (methodsToIntercept.contains(methodRef)) {
-                        try {
-                            CtMethod method = m.getMethod();
-                            StringBuilder buf = new StringBuilder();
-                            buf.append("$_ = ");
-                            buf.append(RobolectricInternals.class.getName());
-                            buf.append(".intercept($class, \"");
-                            buf.append(methodName);
-                            buf.append("\", (Object) $0, $args, ");
-                            appendParamArray(buf, method);
-                            buf.append(");");
-                            m.replace(buf.toString(), this);
-                        } catch (NotFoundException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-            });
+            staticInitializerMethod.instrument(new NastyMethodInterceptor());
         }
-
         ctClass.addMethod(staticInitializerMethod);
 
         ctClass.makeClassInitializer().setBody("{\n" +
                 RobolectricInternals.class.getName() + ".classInitializing(" + ctClass.getName() + ".class);" +
                 "}");
+    }
+
+    private class NastyMethodInterceptor extends ExprEditor {
+        @Override
+        public void edit(MethodCall m) throws CannotCompileException {
+            String methodName = m.getMethodName();
+            Setup.MethodRef methodRef = new Setup.MethodRef(m.getClassName(), methodName);
+            if (methodsToIntercept.contains(methodRef)) {
+                try {
+                    CtMethod targetMethod = m.getMethod();
+                    StringBuilder buf = new StringBuilder();
+                    buf.append("$_ = ");
+                    buf.append(RobolectricInternals.class.getName());
+                    buf.append(".intercept(\"");
+                    buf.append(m.getClassName());
+                    buf.append("\", \"");
+                    buf.append(methodName);
+                    buf.append("\", (Object) $0, $args, ");
+                    appendParamArray(buf, targetMethod);
+                    buf.append(");");
+                    m.replace(buf.toString(), this);
+                } catch (NotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 }

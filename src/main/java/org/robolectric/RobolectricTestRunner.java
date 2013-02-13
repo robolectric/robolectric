@@ -9,6 +9,8 @@ import org.junit.runners.model.Statement;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
 import org.robolectric.annotation.Values;
+import org.robolectric.annotation.WithConstantInt;
+import org.robolectric.annotation.WithConstantString;
 import org.robolectric.bytecode.ClassHandler;
 import org.robolectric.bytecode.InstrumentingClassLoader;
 import org.robolectric.internal.RobolectricTestRunnerInterface;
@@ -99,7 +101,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
       final Statement statement = super.methodBlock(method);
         return new Statement() {
             @Override public void evaluate() throws Throwable {
-            	HashMap<Field,Object> withConstantAnnos = getWithConstantAnnotations(method.getMethod());
+                Map<Field, Object> withConstantAnnos = getWithConstantAnnotations(method.getMethod());
 
             	// todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
                 try {
@@ -292,24 +294,24 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 	 * Find all the class and method annotations and pass them to
 	 * addConstantFromAnnotation() for evaluation.
 	 *
-	 * TODO: Add compound annotations to suport defining more than one int and string at a time
+	 * TODO: Add compound annotations to support defining more than one int and string at a time
 	 * TODO: See http://stackoverflow.com/questions/1554112/multiple-annotations-of-the-same-type-on-one-element
 	 *
 	 * @param method
 	 * @return
 	 */
-    private HashMap<Field,Object> getWithConstantAnnotations(Method method) {
-    	HashMap<Field,Object> constants = new HashMap<Field,Object>();
+    private Map<Field, Object> getWithConstantAnnotations(Method method) {
+        Map<Field, Object> constants = new HashMap<Field, Object>();
 
-    	for(Annotation anno:method.getDeclaringClass().getAnnotations()) {
-    		addConstantFromAnnotation(constants, anno);
-    	}
+        for (Annotation anno : method.getDeclaringClass().getAnnotations()) {
+            addConstantFromAnnotation(constants, anno);
+        }
 
-    	for(Annotation anno:method.getAnnotations()) {
-    		addConstantFromAnnotation(constants, anno);
-    	}
+        for (Annotation anno : method.getAnnotations()) {
+            addConstantFromAnnotation(constants, anno);
+        }
 
-    	return constants;
+        return constants;
     }
 
 
@@ -319,15 +321,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param constants
      * @param anno
      */
-    private void addConstantFromAnnotation(HashMap<Field,Object> constants, Annotation anno) {
+    private void addConstantFromAnnotation(Map<Field,Object> constants, Annotation anno) {
         try {
         	String name = anno.annotationType().getName();
         	Object newValue = null;
     	
-	    	if (name.equals( "org.robolectric.annotation.WithConstantString" )) {
+	    	if (name.equals(WithConstantString.class.getName())) {
 	    		newValue = (String) anno.annotationType().getMethod("newValue").invoke(anno);
 	    	} 
-	    	else if (name.equals( "org.robolectric.annotation.WithConstantInt" )) {
+	    	else if (name.equals(WithConstantInt.class.getName())) {
 	    		newValue = (Integer) anno.annotationType().getMethod("newValue").invoke(anno);
 	    	}
 	    	else {
@@ -352,12 +354,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      *
      * @param constants
      */
-    private void setupConstants(HashMap<Field,Object> constants) {
-    	for(Field field:constants.keySet()) {
-    		Object newValue = constants.get(field);
-    		Object oldValue = Robolectric.Reflection.setFinalStaticField(field, newValue);
-    		constants.put(field,oldValue);
-    	}
+    private void setupConstants(Map<Field,Object> constants) {
+        for (Field field : constants.keySet()) {
+            Object newValue = constants.get(field);
+            Object oldValue = Robolectric.Reflection.setFinalStaticField(field, newValue);
+            constants.put(field, oldValue);
+        }
     }
 
     private void setupLogging() {
