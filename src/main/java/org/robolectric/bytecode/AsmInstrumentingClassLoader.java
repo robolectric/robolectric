@@ -88,11 +88,9 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     protected Class<?> findClass(final String className) throws ClassNotFoundException {
         if (setup.shouldAcquire(className)) {
             String classFilename = className.replace('.', '/') + ".class";
-            boolean hasRealAndroidCode = true;
             InputStream classBytesStream = urls.getResourceAsStream(classFilename);
             if (classBytesStream == null) {
                 classBytesStream = getResourceAsStream(classFilename);
-                hasRealAndroidCode = false;
             }
             if (classBytesStream == null) throw new ClassNotFoundException(className);
 
@@ -440,7 +438,11 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                 m.visitJumpInsn(IFNE, callDirect); // jump if yes (is instance)
             }
 
-            m.loadThisOrNull();                                       // this
+            if (m.isStatic) {
+                m.push(classType);                                    // my class
+            } else {
+                m.loadThis();                                         // this
+            }
             m.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, new Method("shouldCallDirectly", "(Ljava/lang/Object;)Z"));
             // args, should call directly?
             m.visitJumpInsn(IFEQ, callClassHandler); // jump if no (should not call directly)

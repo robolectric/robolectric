@@ -11,28 +11,36 @@ import android.view.View;
 import android.widget.TextView;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 import static org.robolectric.Robolectric.bindShadowClass;
 import static org.robolectric.Robolectric.directlyOn;
-import static org.hamcrest.CoreMatchers.*;
-import static org.hamcrest.core.StringContains.containsString;
-import static org.hamcrest.core.StringStartsWith.startsWith;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class AndroidTranslatorTest {
+public class ShadowingTest {
 
     @Test
     public void testStaticMethodsAreDelegated() throws Exception {
@@ -159,6 +167,7 @@ public class AndroidTranslatorTest {
         bindShadowClass(Pony.ShadowPony.class);
 
         assertEquals("I'm shadily prancing to market!", Pony.prance("market"));
+
         directlyOn(Pony.class);
         assertEquals("I'm prancing to market!", Pony.prance("market"));
 
@@ -185,8 +194,8 @@ public class AndroidTranslatorTest {
             e = e1;
         }
         assertNotNull(e);
-        assertThat(e.getMessage(), startsWith("expected to perform direct call on instance of android.view.View"));
-        assertThat(e.getMessage(), containsString(" but got instance of android.view.View"));
+        String message = e.getMessage().replaceAll("0x[0-9a-z]+", "0xXXXXXXXX");
+        assertThat(message, equalTo("expected to perform direct call on instance 0xXXXXXXXX of android.view.View but got instance 0xXXXXXXXX of android.view.View"));
     }
 
     @Test
@@ -229,13 +238,10 @@ public class AndroidTranslatorTest {
 
     @Test
     public void shouldGenerateSeparatedConstructorBodies() throws Exception {
-//        Robolectric.getShadowWranger().delegateBackToInstrumented = true;
-//        Robolectric.bindShadowClass(ShadowOfClassWithSomeConstructors.class);
         ClassWithSomeConstructors o = new ClassWithSomeConstructors("my name");
         assertNull(o.name);
 
-        Robolectric.directlyOn(o);
-        Method realConstructor = o.getClass().getMethod("__constructor__", String.class);
+        Method realConstructor = o.getClass().getMethod(InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME, String.class);
         realConstructor.invoke(o, "my name");
         assertEquals("my name", o.name);
     }

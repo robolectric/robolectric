@@ -87,7 +87,10 @@ public class RobolectricInternals {
     }
 
     private static String desc(Object o) {
-        return (o instanceof Class) ? "class " + ((Class) o).getName() : "instance " + System.identityHashCode(o) + " of " + o.getClass().getName();
+        return o == null ? "null" : (
+                (o instanceof Class)
+                        ? "class " + ((Class) o).getName()
+                        : "instance 0x" + Integer.toHexString(System.identityHashCode(o)) + " of " + o.getClass().getName());
     }
 
     public static Field getShadowField(Object instance) {
