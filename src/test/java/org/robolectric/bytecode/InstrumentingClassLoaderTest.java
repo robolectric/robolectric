@@ -2,8 +2,6 @@ package org.robolectric.bytecode;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.internal.DoNotInstrument;
-import org.robolectric.internal.Instrument;
 import org.robolectric.util.Transcript;
 
 import java.lang.reflect.Constructor;
@@ -36,34 +34,25 @@ abstract public class InstrumentingClassLoaderTest {
 
     @Test
     public void shouldMakeClassesNonFinal() throws Exception {
-        Class<?> clazz = loadClass(FinalClass.class);
+        Class<?> clazz = loadClass(AFinalClass.class);
         assertEquals(0, clazz.getModifiers() & Modifier.FINAL);
     }
 
     @Test public void shouldAddDefaultConstructorIfMissing() throws Exception {
-        Constructor<?> defaultCtor = loadClass(ClassWithNoDefaultConstructor.class).getConstructor();
+        Constructor<?> defaultCtor = loadClass(AClassWithNoDefaultConstructor.class).getConstructor();
         assertTrue(Modifier.isPublic(defaultCtor.getModifiers()));
         defaultCtor.setAccessible(true);
         defaultCtor.newInstance();
         transcript.assertNoEventsSoFar();
     }
 
-    @SuppressWarnings("UnusedDeclaration")
-    @Instrument static class ClassWithNoDefaultConstructor {
-        private String name;
-
-        ClassWithNoDefaultConstructor(String name) {
-            this.name = name;
-        }
-    }
-
     @Test public void shouldDelegateToHandlerForConstructors() throws Exception {
-        Class<?> clazz = loadClass(ClassWithNoDefaultConstructor.class);
+        Class<?> clazz = loadClass(AClassWithNoDefaultConstructor.class);
         Constructor<?> ctor = clazz.getDeclaredConstructor(String.class);
         assertTrue(Modifier.isPublic(ctor.getModifiers()));
         ctor.setAccessible(true);
         Object instance = ctor.newInstance("new one");
-        transcript.assertEventsSoFar("methodInvoked: ClassWithNoDefaultConstructor.__constructor__(java.lang.String new one)");
+        transcript.assertEventsSoFar("methodInvoked: AClassWithNoDefaultConstructor.__constructor__(java.lang.String new one)");
 
         Field nameField = clazz.getDeclaredField("name");
         nameField.setAccessible(true);
@@ -72,13 +61,13 @@ abstract public class InstrumentingClassLoaderTest {
 
     @Test public void shouldDelegateClassLoadForUnacquiredClasses() throws Exception {
         ClassLoader classLoader = createClassLoader(new MySetup(false, false));
-        Class<?> exampleClass = classLoader.loadClass(ExampleClass.class.getName());
+        Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
         assertSame(getClass().getClassLoader(), exampleClass.getClassLoader());
     }
 
     @Test public void shouldPerformClassLoadForAcquiredClasses() throws Exception {
         ClassLoader classLoader = createClassLoader(new MySetup(true, false));
-        Class<?> exampleClass = classLoader.loadClass(NotInstrumentedClass.class.getName());
+        Class<?> exampleClass = classLoader.loadClass(AnUninstrumentedClass.class.getName());
         assertSame(classLoader, exampleClass.getClassLoader());
         try {
             exampleClass.getField(AsmInstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME);
@@ -88,244 +77,147 @@ abstract public class InstrumentingClassLoaderTest {
         }
     }
 
-    public static class NotInstrumentedClass {
-    }
-
     @Test public void shouldPerformClassLoadAndInstrumentLoadForInstrumentedClasses() throws Exception {
         ClassLoader classLoader = createClassLoader(new MySetup(true, true));
-        Class<?> exampleClass = classLoader.loadClass(ExampleClass.class.getName());
+        Class<?> exampleClass = classLoader.loadClass(AnExampleClass.class.getName());
         assertSame(classLoader, exampleClass.getClassLoader());
         assertNotNull(exampleClass.getField(AsmInstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME));
     }
 
     @Test
     public void callingNormalMethodShouldInvokeClassHandler() throws Exception {
-        Class<?> exampleClass = loadClass(ExampleClass.class);
+        Class<?> exampleClass = loadClass(AnExampleClass.class);
         Method normalMethod = exampleClass.getMethod("normalMethod", String.class, int.class);
 
         Object exampleInstance = exampleClass.newInstance();
-        assertEquals("response from methodInvoked: ExampleClass.normalMethod(java.lang.String value1, int 123)",
+        assertEquals("response from methodInvoked: AnExampleClass.normalMethod(java.lang.String value1, int 123)",
                 normalMethod.invoke(exampleInstance, "value1", 123));
-        transcript.assertEventsSoFar("methodInvoked: ExampleClass.__constructor__()",
-                "methodInvoked: ExampleClass.normalMethod(java.lang.String value1, int 123)");
+        transcript.assertEventsSoFar("methodInvoked: AnExampleClass.__constructor__()",
+                "methodInvoked: AnExampleClass.normalMethod(java.lang.String value1, int 123)");
     }
 
     @Test public void shouldGenerateClassSpecificDirectAccessMethod() throws Exception {
-        Class<?> exampleClass = loadClass(ExampleClass.class);
-        String methodName = RobolectricInternals.directMethodName(ExampleClass.class.getName(), "normalMethod");
+        Class<?> exampleClass = loadClass(AnExampleClass.class);
+        String methodName = RobolectricInternals.directMethodName(AnExampleClass.class.getName(), "normalMethod");
         Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class, int.class);
         directMethod.setAccessible(true);
         Object exampleInstance = exampleClass.newInstance();
         assertEquals("normalMethod(value1, 123)", directMethod.invoke(exampleInstance, "value1", 123));
-        transcript.assertEventsSoFar("methodInvoked: ExampleClass.__constructor__()");
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    @Instrument
-    public static class ExampleClass {
-        static int foo = 123;
-
-        public String normalMethod(String stringArg, int intArg) {
-            return "normalMethod(" + stringArg + ", " + intArg + ")";
-        }
-
-        //        abstract void abstractMethod(); todo
+        transcript.assertEventsSoFar("methodInvoked: AnExampleClass.__constructor__()");
     }
 
     @Test
     public void callingStaticMethodShouldInvokeClassHandler() throws Exception {
-        Class<?> exampleClass = loadClass(ClassWithStaticMethod.class);
+        Class<?> exampleClass = loadClass(AClassWithStaticMethod.class);
         Method normalMethod = exampleClass.getMethod("staticMethod", String.class);
 
-        assertEquals("response from methodInvoked: ClassWithStaticMethod.staticMethod(java.lang.String value1)",
+        assertEquals("response from methodInvoked: AClassWithStaticMethod.staticMethod(java.lang.String value1)",
                 normalMethod.invoke(null, "value1"));
-        transcript.assertEventsSoFar("methodInvoked: ClassWithStaticMethod.staticMethod(java.lang.String value1)");
+        transcript.assertEventsSoFar("methodInvoked: AClassWithStaticMethod.staticMethod(java.lang.String value1)");
     }
 
     @Test
     public void callingStaticDirectAccessMethodShouldWork() throws Exception {
-        Class<?> exampleClass = loadClass(ClassWithStaticMethod.class);
+        Class<?> exampleClass = loadClass(AClassWithStaticMethod.class);
         String methodName = RobolectricInternals.directMethodName(
-            ClassWithStaticMethod.class.getName(), "staticMethod");
+            AClassWithStaticMethod.class.getName(), "staticMethod");
         Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class);
 
         assertEquals("staticMethod(value1)", directMethod.invoke(null, "value1"));
     }
 
-    @SuppressWarnings("UnusedDeclaration")
-    @Instrument
-    public static class ClassWithStaticMethod {
-        public static String staticMethod(String stringArg) {
-            return "staticMethod(" + stringArg + ")";
-        }
-    }
-
     @Test
     public void callingNormalMethodReturningIntegerShouldInvokeClassHandler() throws Exception {
-        Class<?> exampleClass = loadClass(ClassWithMethodReturningInteger.class);
+        Class<?> exampleClass = loadClass(AClassWithMethodReturningInteger.class);
         classHandler.valueToReturn = 456;
 
         Method normalMethod = exampleClass.getMethod("normalMethodReturningInteger", int.class);
         Object exampleInstance = exampleClass.newInstance();
         assertEquals(456, normalMethod.invoke(exampleInstance, 123));
-        transcript.assertEventsSoFar("methodInvoked: ClassWithMethodReturningInteger.__constructor__()",
-                "methodInvoked: ClassWithMethodReturningInteger.normalMethodReturningInteger(int 123)");
+        transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningInteger.__constructor__()",
+                "methodInvoked: AClassWithMethodReturningInteger.normalMethodReturningInteger(int 123)");
     }
     
     @Test
     public void whenClassHandlerReturnsNull_callingNormalMethodReturningIntegerShouldWork() throws Exception {
-        Class<?> exampleClass = loadClass(ClassWithMethodReturningInteger.class);
+        Class<?> exampleClass = loadClass(AClassWithMethodReturningInteger.class);
         classHandler.valueToReturn = null;
 
         Method normalMethod = exampleClass.getMethod("normalMethodReturningInteger", int.class);
         Object exampleInstance = exampleClass.newInstance();
         assertEquals(0, normalMethod.invoke(exampleInstance, 123));
-        transcript.assertEventsSoFar("methodInvoked: ClassWithMethodReturningInteger.__constructor__()",
-                "methodInvoked: ClassWithMethodReturningInteger.normalMethodReturningInteger(int 123)");
+        transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningInteger.__constructor__()",
+                "methodInvoked: AClassWithMethodReturningInteger.normalMethodReturningInteger(int 123)");
     }
 
-    @SuppressWarnings("UnusedDeclaration")
-    @Instrument
-    public static class ClassWithMethodReturningInteger {
-        public int normalMethodReturningInteger(int intArg) {
-            return intArg + 1;
-        }
-    }
-    
     @Test
     public void callingMethodReturningDoubleShouldInvokeClassHandler() throws Exception {
-        Class<?> exampleClass = loadClass(ClassWithMethodReturningDouble.class);
+        Class<?> exampleClass = loadClass(AClassWithMethodReturningDouble.class);
         classHandler.valueToReturn = 456;
 
         Method normalMethod = exampleClass.getMethod("normalMethodReturningDouble", double.class);
         Object exampleInstance = exampleClass.newInstance();
         assertEquals(456.0, normalMethod.invoke(exampleInstance, 123d));
-        transcript.assertEventsSoFar("methodInvoked: ClassWithMethodReturningDouble.__constructor__()",
-                "methodInvoked: ClassWithMethodReturningDouble.normalMethodReturningDouble(double 123.0)");
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    @Instrument
-    public static class ClassWithMethodReturningDouble {
-        public double normalMethodReturningDouble(double doubleArg) {
-            return doubleArg + 1;
-        }
+        transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningDouble.__constructor__()",
+                "methodInvoked: AClassWithMethodReturningDouble.normalMethodReturningDouble(double 123.0)");
     }
 
     @Test
     public void callingNativeMethodShouldInvokeClassHandler() throws Exception {
-        Class<?> exampleClass = loadClass(ClassWithNativeMethod.class);
+        Class<?> exampleClass = loadClass(AClassWithNativeMethod.class);
         Method normalMethod = exampleClass.getDeclaredMethod("nativeMethod", String.class, int.class);
         Object exampleInstance = exampleClass.newInstance();
-        assertEquals("response from methodInvoked: ClassWithNativeMethod.nativeMethod(java.lang.String value1, int 123)",
+        assertEquals("response from methodInvoked: AClassWithNativeMethod.nativeMethod(java.lang.String value1, int 123)",
                 normalMethod.invoke(exampleInstance, "value1", 123));
-        transcript.assertEventsSoFar("methodInvoked: ClassWithNativeMethod.__constructor__()",
-                "methodInvoked: ClassWithNativeMethod.nativeMethod(java.lang.String value1, int 123)");
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    @Instrument
-    public static class ClassWithNativeMethod {
-        public native String nativeMethod(String stringArg, int intArg);
+        transcript.assertEventsSoFar("methodInvoked: AClassWithNativeMethod.__constructor__()",
+                "methodInvoked: AClassWithNativeMethod.nativeMethod(java.lang.String value1, int 123)");
     }
 
     @Test public void shouldHandleMethodsReturningBoolean() throws Exception {
-        Class<?> exampleClass = loadClass(ClassWithMethodReturningBoolean.class);
+        Class<?> exampleClass = loadClass(AClassWithMethodReturningBoolean.class);
         classHandler.valueToReturn = true;
 
         Method directMethod = exampleClass.getMethod("normalMethodReturningBoolean", boolean.class, boolean[].class);
         directMethod.setAccessible(true);
         Object exampleInstance = exampleClass.newInstance();
         assertEquals(true, directMethod.invoke(exampleInstance, true, new boolean[0]));
-        transcript.assertEventsSoFar("methodInvoked: ClassWithMethodReturningBoolean.__constructor__()",
-                "methodInvoked: ClassWithMethodReturningBoolean.normalMethodReturningBoolean(boolean true, boolean[] {})");
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    @Instrument
-    public static class ClassWithMethodReturningBoolean {
-        public boolean normalMethodReturningBoolean(boolean boolArg, boolean[] boolArrayArg) {
-            return true;
-        }
+        transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningBoolean.__constructor__()",
+                "methodInvoked: AClassWithMethodReturningBoolean.normalMethodReturningBoolean(boolean true, boolean[] {})");
     }
 
     @Test public void shouldHandleMethodsReturningArray() throws Exception {
-        Class<?> exampleClass = loadClass(ClassWithMethodReturningArray.class);
+        Class<?> exampleClass = loadClass(AClassWithMethodReturningArray.class);
         classHandler.valueToReturn = new String[] { "miao, mieuw" };
 
         Method directMethod = exampleClass.getMethod("normalMethodReturningArray");
         directMethod.setAccessible(true);
         Object exampleInstance = exampleClass.newInstance();
-        transcript.assertEventsSoFar("methodInvoked: ClassWithMethodReturningArray.__constructor__()");
+        transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningArray.__constructor__()");
         assertArrayEquals(new String[]{"miao, mieuw"}, (String[]) directMethod.invoke(exampleInstance));
-        transcript.assertEventsSoFar("methodInvoked: ClassWithMethodReturningArray.normalMethodReturningArray()");
-    }
-
-    @SuppressWarnings("UnusedDeclaration")
-    @Instrument
-    public static class ClassWithMethodReturningArray {
-        public String[] normalMethodReturningArray() {
-            return new String[] { "hello, working!" };
-        }
+        transcript.assertEventsSoFar("methodInvoked: AClassWithMethodReturningArray.normalMethodReturningArray()");
     }
 
     @Test public void shouldInvokeShadowForEachConstructorInInheritanceTree() throws Exception {
-        loadClass(Child.class).newInstance();
+        loadClass(AChild.class).newInstance();
         transcript.assertEventsSoFar(
-                "methodInvoked: Grandparent.__constructor__()",
-                "methodInvoked: Parent.__constructor__()",
-                "methodInvoked: Child.__constructor__()");
-    }
-
-    @Instrument
-    public static class Child extends Parent {
-    }
-
-    @Instrument
-    public static class Parent extends Grandparent {
-    }
-
-    @Instrument
-    public static class Grandparent {
+                "methodInvoked: AGrandparent.__constructor__()",
+                "methodInvoked: AParent.__constructor__()",
+                "methodInvoked: AChild.__constructor__()");
     }
 
     @Test public void shouldRetainSuperCallInConstructor() throws Exception {
-        Class<?> aClass = loadClass(InstrumentedChild.class);
+        Class<?> aClass = loadClass(AnInstrumentedChild.class);
         Object o = aClass.getDeclaredConstructor(String.class).newInstance("hortense");
         assertEquals("HORTENSE's child", aClass.getSuperclass().getDeclaredField("parentName").get(o));
         assertNull(aClass.getDeclaredField("childName").get(o));
     }
 
-    @Instrument
-    public static class InstrumentedChild extends UninstrumentedParent {
-        public final String childName;
-
-        public InstrumentedChild(String name) {
-            super(name.toUpperCase() + "'s child");
-            this.childName = name;
-        }
-    }
-
-    @DoNotInstrument
-    public static class UninstrumentedParent {
-        public final String parentName;
-
-        public UninstrumentedParent(String name) {
-            this.parentName = name;
-        }
-
-        @Override
-        public String toString() {
-            return "UninstrumentedParent{parentName='" + parentName + '\'' + '}';
-        }
-    }
-
     @Test public void shouldCorrectlySplitStaticPrepFromConstructorChaining() throws Exception {
-        Class<?> aClass = loadClass(ClassWithFunnyConstructors.class);
+        Class<?> aClass = loadClass(AClassWithFunnyConstructors.class);
         Object o = aClass.getDeclaredConstructor(String.class).newInstance("hortense");
         transcript.assertEventsSoFar(
-                "methodInvoked: ClassWithFunnyConstructors.__constructor__(org.robolectric.bytecode.InstrumentingClassLoaderTest$UninstrumentedParent UninstrumentedParent{parentName='hortense'}, java.lang.String foo)",
-                "methodInvoked: ClassWithFunnyConstructors.__constructor__(java.lang.String hortense)");
+                "methodInvoked: AClassWithFunnyConstructors.__constructor__(org.robolectric.bytecode.AnUninstrumentedParent UninstrumentedParent{parentName='hortense'}, java.lang.String foo)",
+                "methodInvoked: AClassWithFunnyConstructors.__constructor__(java.lang.String hortense)");
 
         // should not run constructor bodies...
         assertEquals(null, getDeclaredFieldValue(aClass, o, "name"));
@@ -333,15 +225,15 @@ abstract public class InstrumentingClassLoaderTest {
     }
 
     @Test public void shouldGenerateClassSpecificDirectAccessMethodForConstructorWhichDoesNotCallSuper() throws Exception {
-        Class<?> aClass = loadClass(ClassWithFunnyConstructors.class);
+        Class<?> aClass = loadClass(AClassWithFunnyConstructors.class);
         Object instance = aClass.getConstructor(String.class).newInstance("horace");
         transcript.assertEventsSoFar(
-                "methodInvoked: ClassWithFunnyConstructors.__constructor__(org.robolectric.bytecode.InstrumentingClassLoaderTest$UninstrumentedParent UninstrumentedParent{parentName='horace'}, java.lang.String foo)",
-                "methodInvoked: ClassWithFunnyConstructors.__constructor__(java.lang.String horace)");
+                "methodInvoked: AClassWithFunnyConstructors.__constructor__(org.robolectric.bytecode.AnUninstrumentedParent UninstrumentedParent{parentName='horace'}, java.lang.String foo)",
+                "methodInvoked: AClassWithFunnyConstructors.__constructor__(java.lang.String horace)");
 
         // each directly-accessible constructor body will need to be called explicitly, with the correct args...
 
-        Class<?> uninstrumentedParentClass = loadClass(UninstrumentedParent.class);
+        Class<?> uninstrumentedParentClass = loadClass(AnUninstrumentedParent.class);
         Method directMethod = findDirectMethod(aClass, "__constructor__", uninstrumentedParentClass, String.class);
         Object uninstrumentedParentIn = uninstrumentedParentClass.getDeclaredConstructor(String.class).newInstance("hortense");
         assertEquals(null, directMethod.invoke(instance, uninstrumentedParentIn, "foo"));
@@ -365,103 +257,53 @@ abstract public class InstrumentingClassLoaderTest {
         return directMethod;
     }
 
-    @SuppressWarnings("UnusedDeclaration")
-    @Instrument
-    public static class ClassWithFunnyConstructors {
-        private final UninstrumentedParent uninstrumentedParent;
-        private String name;
-
-        public ClassWithFunnyConstructors(String name) {
-            this(new UninstrumentedParent(name), "foo");
-            this.name = name;
-        }
-
-        public ClassWithFunnyConstructors(UninstrumentedParent uninstrumentedParent, String fooString) {
-            this.uninstrumentedParent = uninstrumentedParent;
-        }
-    }
-
     @Test public void shouldInstrumentEqualsAndHashCodeAndToStringEvenWhenUndeclared() throws Exception {
-        Class<?> theClass = loadClass(ClassWithoutEqualsHashCodeToString.class);
+        Class<?> theClass = loadClass(AClassWithoutEqualsHashCodeToString.class);
         Object instance = theClass.newInstance();
-        transcript.assertEventsSoFar("methodInvoked: ClassWithoutEqualsHashCodeToString.__constructor__()");
+        transcript.assertEventsSoFar("methodInvoked: AClassWithoutEqualsHashCodeToString.__constructor__()");
 
         instance.toString();
-        transcript.assertEventsSoFar("methodInvoked: ClassWithoutEqualsHashCodeToString.toString()");
+        transcript.assertEventsSoFar("methodInvoked: AClassWithoutEqualsHashCodeToString.toString()");
 
         classHandler.valueToReturn = true;
         //noinspection ResultOfMethodCallIgnored,ObjectEqualsNull
         instance.equals(null);
-        transcript.assertEventsSoFar("methodInvoked: ClassWithoutEqualsHashCodeToString.equals(java.lang.Object null)");
+        transcript.assertEventsSoFar("methodInvoked: AClassWithoutEqualsHashCodeToString.equals(java.lang.Object null)");
 
         classHandler.valueToReturn = 42;
         //noinspection ResultOfMethodCallIgnored
         instance.hashCode();
-        transcript.assertEventsSoFar("methodInvoked: ClassWithoutEqualsHashCodeToString.hashCode()");
-    }
-
-    @Instrument
-    public static class ClassWithoutEqualsHashCodeToString {
+        transcript.assertEventsSoFar("methodInvoked: AClassWithoutEqualsHashCodeToString.hashCode()");
     }
 
     @Test public void shouldAlsoInstrumentEqualsAndHashCodeAndToStringWhenDeclared() throws Exception {
-        Class<?> theClass = loadClass(ClassWithEqualsHashCodeToString.class);
+        Class<?> theClass = loadClass(AClassWithEqualsHashCodeToString.class);
         Object instance = theClass.newInstance();
-        transcript.assertEventsSoFar("methodInvoked: ClassWithEqualsHashCodeToString.__constructor__()");
+        transcript.assertEventsSoFar("methodInvoked: AClassWithEqualsHashCodeToString.__constructor__()");
 
         instance.toString();
-        transcript.assertEventsSoFar("methodInvoked: ClassWithEqualsHashCodeToString.toString()");
+        transcript.assertEventsSoFar("methodInvoked: AClassWithEqualsHashCodeToString.toString()");
 
         classHandler.valueToReturn = true;
         //noinspection ResultOfMethodCallIgnored,ObjectEqualsNull
         instance.equals(null);
-        transcript.assertEventsSoFar("methodInvoked: ClassWithEqualsHashCodeToString.equals(java.lang.Object null)");
+        transcript.assertEventsSoFar("methodInvoked: AClassWithEqualsHashCodeToString.equals(java.lang.Object null)");
 
         classHandler.valueToReturn = 42;
         //noinspection ResultOfMethodCallIgnored
         instance.hashCode();
-        transcript.assertEventsSoFar("methodInvoked: ClassWithEqualsHashCodeToString.hashCode()");
-    }
-
-    @Instrument
-    public static class ClassWithEqualsHashCodeToString {
-        @SuppressWarnings("EqualsWhichDoesntCheckParameterClass")
-        @Override
-        public boolean equals(Object obj) {
-            return true;
-        }
-
-        @Override
-        public int hashCode() {
-            return 42;
-        }
-
-        @Override
-        public String toString() {
-            return "baaaaaah";
-        }
+        transcript.assertEventsSoFar("methodInvoked: AClassWithEqualsHashCodeToString.hashCode()");
     }
 
     @Test public void shouldProperlyCallSuperWhenForcingDeclarationOfEqualsHashCodeToString() throws Exception {
-        Class<?> theClass = loadClass(InstrumentedClassWithoutToStringWithSuperToString.class);
+        Class<?> theClass = loadClass(AnInstrumentedClassWithoutToStringWithSuperToString.class);
         Object instance = theClass.newInstance();
-        transcript.assertEventsSoFar("methodInvoked: InstrumentedClassWithoutToStringWithSuperToString.__constructor__()");
+        transcript.assertEventsSoFar("methodInvoked: AnInstrumentedClassWithoutToStringWithSuperToString.__constructor__()");
 
         instance.toString();
-        transcript.assertEventsSoFar("methodInvoked: InstrumentedClassWithoutToStringWithSuperToString.toString()");
+        transcript.assertEventsSoFar("methodInvoked: AnInstrumentedClassWithoutToStringWithSuperToString.toString()");
 
         assertEquals("baaaaaah", findDirectMethod(theClass, "toString").invoke(instance));
-    }
-
-    public static class UninstrumentedClassWithToString {
-        @Override
-        public String toString() {
-            return "baaaaaah";
-        }
-    }
-
-    @Instrument
-    public static class InstrumentedClassWithoutToStringWithSuperToString extends UninstrumentedClassWithToString {
     }
 
     @Test public void directMethodName_shouldGetSimpleName() throws Exception {
@@ -470,12 +312,7 @@ abstract public class InstrumentingClassLoaderTest {
     }
 
     @Test public void shouldWorkWithEnums() throws Exception {
-        loadClass(SomeEnum.class);
-    }
-
-    @Instrument
-    public static enum SomeEnum {
-        ONE, TWO, MANY
+        loadClass(AnEnum.class);
     }
 
     /////////////////////////////
