@@ -258,7 +258,25 @@ public class ShadowContentResolver {
         return masterSyncAutomatically;
     }
 
+    @Implementation
+	public final String getType(final Uri url) {
+		final ContentProvider provider = getProvider(url);
+		String type = null;
 
+		if (provider != null) {
+			try {
+				type = provider.getType(url);
+			}
+			catch (final java.lang.Exception e) {
+				// Log.w(TAG, "Failed to get type for: " + url + " (" + e.getMessage() + ")");
+			}
+			finally {
+				// releaseProvider(provider);
+			}
+		}
+		return type;
+	}
+    
     public static ContentProvider getProvider(Uri uri) {
         if (uri == null) {
             return null;
