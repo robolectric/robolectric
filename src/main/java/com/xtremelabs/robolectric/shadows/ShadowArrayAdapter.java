@@ -37,15 +37,16 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     private int resource;
     private int textViewResourceId;
     private Filter filter;
+    private boolean notifyOnChange = true;
 
     public int getTextViewResourceId() {
         return textViewResourceId;
     }
-    
+
     public int getResourceId() {
         return resource;
     }
-    
+
     public void __constructor__(Context context, int textViewResourceId) {
         init(context, textViewResourceId, 0, new ArrayList<T>());
     }
@@ -80,21 +81,29 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     @Implementation
     public void add(T object) {
         list.add(object);
+        if (notifyOnChange)
+            notifyDataSetChanged();
     }
 
     @Implementation
     public void clear() {
         list.clear();
+        if (notifyOnChange)
+            notifyDataSetChanged();
     }
 
     @Implementation
     public void remove(T object) {
         list.remove(object);
+        if (notifyOnChange)
+            notifyDataSetChanged();
     }
 
     @Implementation
     public void insert(T object, int index) {
         list.add(index, object);
+        if (notifyOnChange)
+            notifyDataSetChanged();
     }
 
     @Implementation
@@ -147,6 +156,18 @@ public class ShadowArrayAdapter<T> extends ShadowBaseAdapter {
     @Implementation
     public Filter getFilter() {
         return STUB_FILTER;
+    }
+
+    @Override
+    @Implementation
+    public void notifyDataSetChanged() {
+        super.notifyDataSetChanged();
+        notifyOnChange = true;
+    }
+
+    @Implementation
+    public void setNotifyOnChange(boolean notifyOnChange) {
+        this.notifyOnChange = notifyOnChange;
     }
 
     private ResourceLoader getResourceLoader() {
