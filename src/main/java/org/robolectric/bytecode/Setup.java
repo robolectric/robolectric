@@ -152,12 +152,16 @@ public class Setup {
     public Map<String, String> classNameTranslations() {
         Map<String, String> map = new HashMap<String, String>();
         map.put("com.android.i18n.phonenumbers.NumberParseException", Exception.class.getName());
-        map.put("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", FakeSubclass.class.getName());
+        map.put("com.android.i18n.phonenumbers.PhoneNumberUtil", FakeClass.class.getName());
+        map.put("com.android.i18n.phonenumbers.PhoneNumberUtil$PhoneNumberFormat", FakeClass.FakeInnerClass.class.getName());
+        map.put("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", FakeClass.class.getName());
         map.put("dalvik.system.CloseGuard", Object.class.getName());
         return map;
     }
 
-    public static class FakeSubclass {}
+    public static class FakeClass {
+        public static class FakeInnerClass {}
+    }
 
     public boolean containsStubs(ClassInfo classInfo) {
         return classInfo.getName().startsWith("com.google.android.maps.");

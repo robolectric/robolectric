@@ -2,6 +2,7 @@ package org.robolectric.bytecode;
 
 import org.junit.Test;
 import org.robolectric.util.Transcript;
+import org.robolectric.util.Util;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
@@ -373,6 +374,13 @@ abstract public class InstrumentingClassLoaderTest {
         assertNull(theClass.getMethod("longArrayMethod").invoke(directlyOn(instance)));
     }
 
+    @Test
+    public void shouldRemapClassesWhileInterceptingMethods() throws Exception {
+        setClassLoader(createClassLoader(new MethodInterceptingClassRemappingSetup(new Setup.MethodRef(AClassThatCallsAMethodReturningAForgettableClass.class, "getAForgettableClass"))));
+        Class<?> theClass = loadClass(AClassThatCallsAMethodReturningAForgettableClass.class);
+        theClass.getMethod("callSomeMethod").invoke(directlyOn(theClass.newInstance()));
+    }
+
     @Test public void directMethodName_shouldGetSimpleName() throws Exception {
         assertEquals("$$robo$$SomeName_5c63_method", RobolectricInternals.directMethodName("a.b.c.SomeName", "method"));
         assertEquals("$$robo$$SomeName_3b43_method", RobolectricInternals.directMethodName("a.b.c.SomeClass$SomeName", "method"));
@@ -380,6 +388,14 @@ abstract public class InstrumentingClassLoaderTest {
 
     @Test public void shouldWorkWithEnums() throws Exception {
         loadClass(AnEnum.class);
+    }
+
+    @Test
+    public void shouldReverseAnArray() throws Exception {
+        assertArrayEquals(new Integer[]{5, 4, 3, 2, 1}, Util.reverse(new Integer[]{1, 2, 3, 4, 5}));
+        assertArrayEquals(new Integer[]{4, 3, 2, 1}, Util.reverse(new Integer[]{1, 2, 3, 4}));
+        assertArrayEquals(new Integer[]{1}, Util.reverse(new Integer[]{1}));
+        assertArrayEquals(new Integer[]{}, Util.reverse(new Integer[]{}));
     }
 
     /////////////////////////////
@@ -481,16 +497,10 @@ abstract public class InstrumentingClassLoaderTest {
     }
 
     private static class MethodInterceptingSetup extends Setup {
-        private final HashSet<MethodRef> methodRefs;
+        private final HashSet<MethodRef> methodRefs = new HashSet<MethodRef>();
 
         private MethodInterceptingSetup(MethodRef... methodRefsToIntercept) {
-            methodRefs = new HashSet<MethodRef>();
             Collections.addAll(methodRefs, methodRefsToIntercept);
-        }
-
-        @Override
-        public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz, String methodName, Class<?>[] paramClasses) {
-            return true;
         }
 
         @Override
@@ -509,8 +519,22 @@ abstract public class InstrumentingClassLoaderTest {
 
         @Override
         public boolean shouldAcquire(String name) {
+            System.out.println("name = " + name);
             if (name.equals(AClassToForget.class.getName())) throw new RuntimeException(name + " not found (for pretend)!");
             return super.shouldAcquire(name);
+        }
+    }
+
+    private static class MethodInterceptingClassRemappingSetup extends ClassRemappingSetup {
+        private final HashSet<MethodRef> methodRefs = new HashSet<MethodRef>();
+
+        private MethodInterceptingClassRemappingSetup(MethodRef... methodRefsToIntercept) {
+            Collections.addAll(methodRefs, methodRefsToIntercept);
+        }
+
+        @Override
+        public Set<MethodRef> methodsToIntercept() {
+            return methodRefs;
         }
     }
 }

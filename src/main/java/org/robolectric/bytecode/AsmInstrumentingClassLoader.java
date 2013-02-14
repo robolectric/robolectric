@@ -12,6 +12,7 @@ import org.objectweb.asm.commons.Method;
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
+import org.objectweb.asm.tree.FieldInsnNode;
 import org.objectweb.asm.tree.FieldNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.InsnNode;
@@ -20,7 +21,6 @@ import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.util.TraceClassVisitor;
-import org.robolectric.util.Util;
 
 import java.io.FileOutputStream;
 import java.io.FileWriter;
@@ -43,6 +43,8 @@ import static org.objectweb.asm.Type.ARRAY;
 import static org.objectweb.asm.Type.OBJECT;
 import static org.objectweb.asm.Type.VOID;
 import static org.objectweb.asm.Type.getType;
+import static org.robolectric.util.Util.readBytes;
+import static org.robolectric.util.Util.reverse;
 
 public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes, InstrumentingClassLoader {
     private static final String OBJECT_DESC = Type.getDescriptor(Object.class);
@@ -98,7 +100,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
             byte[] origClassBytes;
             try {
-                origClassBytes = Util.readBytes(classBytesStream);
+                origClassBytes = readBytes(classBytesStream);
             } catch (IOException e) {
                 throw new ClassNotFoundException("couldn't load " + className, e);
             }
@@ -108,7 +110,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                 @Override
                 public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
                     desc = remapParamType(desc);
-
                     return super.visitField(access, name, desc, signature, value);
                 }
 
@@ -572,6 +573,14 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                         newInsnNode.desc = remapType(newInsnNode.desc);
                         break;
 
+                    case GETFIELD:
+                    case PUTFIELD:
+                    case GETSTATIC:
+                    case PUTSTATIC:
+                        FieldInsnNode fieldInsnNode = (FieldInsnNode) node;
+                        fieldInsnNode.desc = remapType(fieldInsnNode.desc);//todo test
+                        break;
+
                     case INVOKESTATIC:
                     case INVOKEDYNAMIC:
                     case INVOKEINTERFACE:
@@ -593,6 +602,12 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             boolean isStatic = targetMethod.getOpcode() == INVOKESTATIC;
 
             instructions.remove();
+
+            // first, throw away arguments (ugh)
+            for (Type type : reverse(Type.getArgumentTypes(targetMethod.desc))) {
+                instructions.add(type.getSize() == 2 ? new InsnNode(POP2) : new InsnNode(POP));
+            }
+
             instructions.add(new LdcInsnNode(targetMethod.owner)); // class name
             if (!isStatic) instructions.add(new InsnNode(SWAP));
 
@@ -614,7 +629,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             // todo: make this honor the return value if somebody cares about what intercept returns
             switch (returnType.getSort()) {
                 case OBJECT:
-                    instructions.add(new TypeInsnNode(CHECKCAST, returnType.getInternalName()));
+                    instructions.add(new TypeInsnNode(CHECKCAST, remapType(returnType.getInternalName())));
                     break;
                 case ARRAY:
                     instructions.add(new InsnNode(POP));
