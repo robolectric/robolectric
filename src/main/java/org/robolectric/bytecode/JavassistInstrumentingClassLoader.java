@@ -9,6 +9,7 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLClassLoader;
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.HashMap;
@@ -116,5 +117,45 @@ public class JavassistInstrumentingClassLoader extends javassist.Loader implemen
         List<URL> resources = Collections.list(super.getResources(s));
         if (!resources.isEmpty()) return Collections.enumeration(resources);
         return JavassistInstrumentingClassLoader.class.getClassLoader().getResources(s);
+    }
+
+    public static ClassLoader makeClassloader(final ClassLoader parentClassLoader, URL[] urls) {
+        return new URLClassLoader(urls, null) {
+            @Override
+            public Class<?> loadClass(String s) throws ClassNotFoundException {
+                return super.loadClass(s);
+            }
+
+            @Override
+            protected Class<?> findClass(String s) throws ClassNotFoundException {
+                try {
+                    return super.findClass(s);
+                } catch (ClassNotFoundException e) {
+                    return parentClassLoader.loadClass(s);
+                }
+            }
+
+            @Nullable
+            @Override
+            public URL getResource(String s) {
+                URL resource = super.getResource(s);
+                if (resource != null) return resource;
+                return parentClassLoader.getResource(s);
+            }
+
+            @Override
+            public InputStream getResourceAsStream(String s) {
+                InputStream resourceAsStream = super.getResourceAsStream(s);
+                if (resourceAsStream != null) return resourceAsStream;
+                return parentClassLoader.getResourceAsStream(s);
+            }
+
+            @Override
+            public Enumeration<URL> getResources(String s) throws IOException {
+                List<URL> resources = Collections.list(super.getResources(s));
+                if (!resources.isEmpty()) return Collections.enumeration(resources);
+                return parentClassLoader.getResources(s);
+            }
+        };
     }
 }

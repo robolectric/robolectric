@@ -22,8 +22,8 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-//    public static final int CACHE_VERSION = 23;
-    public static final int CACHE_VERSION = -1;
+    public static final int CACHE_VERSION = 24;
+//    public static final int CACHE_VERSION = -1;
 
     private final ClassCache classCache;
     private final Setup setup;
@@ -79,6 +79,12 @@ public class AndroidTranslator implements Translator {
         } catch (NotFoundException e) {
             throw new IgnorableClassNotFoundException(e);
         }
+
+        ClassMap map = new ClassMap();
+        for (Map.Entry<String, String> entry : setup.classNameTranslations().entrySet()) {
+            map.put(entry.getKey(), entry.getValue());
+        }
+        ctClass.replaceClassName(map);
 
         boolean shouldInstrument = setup.shouldInstrument(new JavassistClassInfo(ctClass));
         if (debug)

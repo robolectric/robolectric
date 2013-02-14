@@ -504,8 +504,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             method.access = method.access & ~ACC_FINAL;
 
             String originalName = method.name;
-            method.name = RobolectricInternals.directMethodName(originalName);
-            classNode.methods.add(redirectorMethod(method, RobolectricInternals.directMethodName(className, originalName)));
+            method.name = RobolectricInternals.directMethodName(className, originalName);
+            classNode.methods.add(redirectorMethod(method, RobolectricInternals.directMethodName(originalName)));
 
             MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
             delegatorMethodNode.access &= ~(ACC_NATIVE | ACC_ABSTRACT | ACC_FINAL);
@@ -531,11 +531,23 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             // args, should call directly?
             m.visitJumpInsn(IFEQ, callClassHandler); // jump if no (should not call directly)
 
+            m.invokeMethod(internalClassName, method);
+            m.returnValue();
+
             // callDirect...
             m.mark(callDirect);
 
             // call direct method and return
-            m.invokeMethod(internalClassName, method);
+            if (m.isStatic()) {
+                m.loadArgs();                                             // this, [args]
+                m.visitMethodInsn(INVOKESTATIC, internalClassName, method.name, method.desc);
+            } else {
+                m.loadThis();
+                m.getField(classType, "__robo_data__", OBJECT_TYPE);      // __robo_data__ instance
+                m.checkCast(classType);
+                m.loadArgs();                                             // __robo_data__ instance, [args]
+                m.visitMethodInsn(INVOKESPECIAL, internalClassName, method.name, method.desc);
+            }
             m.returnValue();
 
             // callClassHandler...

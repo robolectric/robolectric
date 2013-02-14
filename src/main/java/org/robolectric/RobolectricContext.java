@@ -7,6 +7,7 @@ import org.robolectric.bytecode.AndroidTranslator;
 import org.robolectric.bytecode.AsmInstrumentingClassLoader;
 import org.robolectric.bytecode.ClassCache;
 import org.robolectric.bytecode.ClassHandler;
+import org.robolectric.bytecode.JavassistInstrumentingClassLoader;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.bytecode.Setup;
 import org.robolectric.bytecode.ShadowWrangler;
@@ -48,12 +49,12 @@ public class RobolectricContext {
         synchronized (contextsByTestRunner) {
             robolectricContext = contextsByTestRunner.get(robolectricTestRunnerClass);
             if (robolectricContext == null) {
-              try {
-                robolectricContext = factory.create();
-              } catch (Exception e) {
-                throw new RuntimeException(e);
-              }
-              contextsByTestRunner.put(robolectricTestRunnerClass, robolectricContext);
+                try {
+                    robolectricContext = factory.create();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+                contextsByTestRunner.put(robolectricTestRunnerClass, robolectricContext);
             }
         }
 
@@ -148,13 +149,22 @@ public class RobolectricContext {
     }
 
     protected ClassLoader createRobolectricClassLoader(Setup setup, ClassCache classCache, AndroidTranslator androidTranslator) {
-//        ClassLoader robolectricClassLoader = new JavassistInstrumentingClassLoader(realAndroidJarsClassLoader, classCache, androidTranslator, setup);
-        ClassLoader robolectricClassLoader = new AsmInstrumentingClassLoader(setup,
-                artifactUrls(realAndroidDependency("android-base"),
-                        realAndroidDependency("android-kxml2"),
-                        realAndroidDependency("android-luni")));
+        URL[] urls = artifactUrls(realAndroidDependency("android-base"),
+                realAndroidDependency("android-kxml2"),
+                realAndroidDependency("android-luni"));
+        ClassLoader robolectricClassLoader;
+        if (useAsm()) {
+            robolectricClassLoader = new AsmInstrumentingClassLoader(setup, urls);
+        } else {
+            ClassLoader realSdkClassLoader = JavassistInstrumentingClassLoader.makeClassloader(this.getClass().getClassLoader(), urls);
+            robolectricClassLoader = new JavassistInstrumentingClassLoader(realSdkClassLoader, classCache, androidTranslator, setup);
+        }
         injectClassHandler(robolectricClassLoader);
         return robolectricClassLoader;
+    }
+
+    public boolean useAsm() {
+        return true;
     }
 
     private void injectClassHandler(ClassLoader robolectricClassLoader) {
@@ -221,7 +231,9 @@ public class RobolectricContext {
         return dependency;
     }
 
-    /** @deprecated use {@link org.robolectric.Robolectric.Reflection#setFinalStaticField(Class, String, Object)} */
+    /**
+     * @deprecated use {@link org.robolectric.Robolectric.Reflection#setFinalStaticField(Class, String, Object)}
+     */
     public static void setStaticValue(Class<?> clazz, String fieldName, Object value) {
         Robolectric.Reflection.setFinalStaticField(clazz, fieldName, value);
     }

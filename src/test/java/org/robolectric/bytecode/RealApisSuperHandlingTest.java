@@ -17,6 +17,7 @@ import static org.robolectric.Robolectric.directlyOn;
 
 @RunWith(TestRunners.RealApisWithoutDefaults.class)
 public class RealApisSuperHandlingTest {
+    @Ignore("requires that superclass shadow methods can be called directly from shadowed class")
     @Test
     public void subclassesNotExplicitlyMarkedInstrumentedShouldBeAbleToCallSuperWithoutLooping() throws Exception {
         bindShadowClasses(Arrays.<Class<?>>asList(ChildShadow.class, ParentShadow.class, GrandparentShadow.class));
@@ -27,6 +28,7 @@ public class RealApisSuperHandlingTest {
          */
     }
 
+    @Ignore("requires that superclass shadow methods can be called directly from shadowed class")
     @Test public void shadowInvocationWhenAllAreShadowed() throws Exception {
         bindShadowClasses(Arrays.<Class<?>>asList(ChildShadow.class, ParentShadow.class, GrandparentShadow.class));
 
@@ -35,6 +37,7 @@ public class RealApisSuperHandlingTest {
         assertEquals("1s-1-boof", new Grandparent().method("boof"));
     }
 
+    @Ignore("requires that superclass shadow methods can be called directly from shadowed class")
     @Test public void shadowInvocationWhenChildIsInstrumentedButUnshadowed() throws Exception {
         bindShadowClasses(Arrays.<Class<?>>asList(ParentShadow.class, GrandparentShadow.class));
 
@@ -43,6 +46,7 @@ public class RealApisSuperHandlingTest {
         assertEquals("1s-1-boof", new Grandparent().method("boof"));
     }
 
+    @Ignore("requires that superclass shadow methods can be called directly from shadowed class")
     @Test public void whenIntermediateIsShadowed() throws Exception {
         bindShadowClasses(Arrays.<Class<?>>asList(ParentShadow.class));
 
