@@ -139,6 +139,7 @@ public class Setup {
         return Collections.unmodifiableSet(new HashSet<MethodRef>(asList(
                 new MethodRef(System.class, "loadLibrary"),
                 new MethodRef("android.os.StrictMode", "trackActivity"),
+                new MethodRef("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", "*"),
                 new MethodRef("dalvik.system.CloseGuard", "get")
         )));
     }

@@ -1,10 +1,10 @@
 package org.robolectric.bytecode;
 
-import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.robolectric.util.Transcript;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -27,15 +27,8 @@ import static org.robolectric.Robolectric.directlyOn;
 abstract public class InstrumentingClassLoaderTest {
 
     private ClassLoader classLoader;
-    private MyClassHandler classHandler;
     private Transcript transcript = new Transcript();
-
-    @Before
-    public void setUp() throws Exception {
-        classLoader = createClassLoader(new Setup());
-        classHandler = new MyClassHandler(transcript);
-        injectClassHandler(classLoader, classHandler);
-    }
+    private MyClassHandler classHandler = new MyClassHandler(transcript);
 
     abstract protected ClassLoader createClassLoader(Setup setup) throws ClassNotFoundException;
 
@@ -315,45 +308,30 @@ abstract public class InstrumentingClassLoaderTest {
 
     @Test
     public void shouldRemapClasses() throws Exception {
-        classLoader = createClassLoader(new Setup() {
-            @Override
-            public Map<String, String> classNameTranslations() {
-                Map<String, String> map = new HashMap<String, String>();
-                map.put("org.robolectric.bytecode.AClassToForget", "org.robolectric.bytecode.AClassToRemember");
-                return map;
-            }
-        });
-        injectClassHandler(classLoader, classHandler);
+        setClassLoader(createClassLoader(new ClassRemappingSetup()));
         Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
         assertEquals(loadClass(AClassToRemember.class), theClass.getField("someField").getType());
+        assertEquals(Array.newInstance(loadClass(AClassToRemember.class), 0).getClass(), theClass.getField("someFields").getType());
     }
 
     @Test
     public void shouldFixTypesInFieldAccess() throws Exception {
-        classLoader = createClassLoader(new Setup() {
-            @Override
-            public Map<String, String> classNameTranslations() {
-                Map<String, String> map = new HashMap<String, String>();
-                map.put("org.robolectric.bytecode.AClassToForget", "org.robolectric.bytecode.AClassToRemember");
-                return map;
-            }
-
-            @Override
-            public boolean shouldAcquire(String name) {
-                if (name.equals(AClassToForget.class.getName())) throw new RuntimeException("fakey fake not found!");
-                return super.shouldAcquire(name);
-            }
-        });
-        injectClassHandler(classLoader, classHandler);
+        setClassLoader(createClassLoader(new ClassRemappingSetup()));
         Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInItsConstructor.class);
         Object instance = theClass.newInstance();
         theClass.getMethod(RobolectricInternals.directMethodName(theClass.getName(), InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME)).invoke(instance);
     }
 
     @Test
+    public void shouldFixTypesInMethodArgsAndReturn() throws Exception {
+        setClassLoader(createClassLoader(new ClassRemappingSetup()));
+        Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCalls.class);
+        assertNotNull(theClass.getMethod("aMethod", int.class, loadClass(AClassToRemember.class), String.class));
+    }
+
+    @Test
     public void shouldInterceptFilteredMethodInvocations() throws Exception {
-        classLoader = createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "forgettableMethod")));
-        injectClassHandler(classLoader, classHandler);
+        setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "forgettableMethod"))));
         Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
         Object instance = theClass.newInstance();
         Object output = theClass.getMethod("interactWithForgettableClass").invoke(directlyOn(instance));
@@ -362,8 +340,7 @@ abstract public class InstrumentingClassLoaderTest {
 
     @Test
     public void shouldInterceptFilteredStaticMethodInvocations() throws Exception {
-        classLoader = createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "forgettableStaticMethod")));
-        injectClassHandler(classLoader, classHandler);
+        setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "forgettableStaticMethod"))));
         Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
         Object instance = theClass.newInstance();
         Object output = theClass.getMethod("interactWithForgettableStaticMethod").invoke(directlyOn(instance));
@@ -457,7 +434,15 @@ abstract public class InstrumentingClassLoaderTest {
         }
     }
 
+    private void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
+    }
+
     private Class<?> loadClass(Class<?> clazz) throws ClassNotFoundException {
+        if (classLoader == null) {
+            classLoader = createClassLoader(new Setup());
+        }
+        injectClassHandler(classLoader, classHandler);
         return classLoader.loadClass(clazz.getName());
     }
 
@@ -491,6 +476,21 @@ abstract public class InstrumentingClassLoaderTest {
         @Override
         public Set<MethodRef> methodsToIntercept() {
             return methodRefs;
+        }
+    }
+
+    private static class ClassRemappingSetup extends Setup {
+        @Override
+        public Map<String, String> classNameTranslations() {
+            Map<String, String> map = new HashMap<String, String>();
+            map.put("org.robolectric.bytecode.AClassToForget", "org.robolectric.bytecode.AClassToRemember");
+            return map;
+        }
+
+        @Override
+        public boolean shouldAcquire(String name) {
+            if (name.equals(AClassToForget.class.getName())) throw new RuntimeException(name + " not found (for pretend)!");
+            return super.shouldAcquire(name);
         }
     }
 }

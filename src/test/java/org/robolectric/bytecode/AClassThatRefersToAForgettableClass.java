@@ -6,6 +6,7 @@ import org.robolectric.internal.Instrument;
 @Instrument
 public class AClassThatRefersToAForgettableClass {
     public AClassToForget someField;
+    public AClassToForget[] someFields;
 
     public String interactWithForgettableClass() {
         AClassToForget aClassToForget = new AClassToForget();

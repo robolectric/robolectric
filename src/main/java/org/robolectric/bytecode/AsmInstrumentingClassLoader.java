@@ -4,6 +4,7 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
+import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
@@ -106,9 +107,14 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             ClassNode classNode = new ClassNode() {
                 @Override
                 public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
-                    desc = remapTypeDesc(desc);
+                    desc = remapParamType(desc);
 
                     return super.visitField(access, name, desc, signature, value);
+                }
+
+                @Override
+                public MethodVisitor visitMethod(int access, String name, String desc, String signature, String[] exceptions) {
+                    return super.visitMethod(access, name, remapParams(desc), signature, exceptions);
                 }
             };
             classReader.accept(classNode, 0);
@@ -131,17 +137,50 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         }
     }
 
-    // remap Landroid/Foo; to Landroid/Bar;
-    private String remapTypeDesc(String desc) {
-        Type type = Type.getType(desc);
-
-        if (type.getSort() == OBJECT) {
-            String remappedName = classesToRemap.get(type.getInternalName());
-            if (remappedName != null) {
-                desc = Type.getObjectType(remappedName).getDescriptor();
-            }
+    private String remapParams(String desc) {
+        StringBuilder buf = new StringBuilder();
+        buf.append("(");
+        for (Type type : Type.getArgumentTypes(desc)) {
+            buf.append(remapParamType(type));
         }
-        return desc;
+        buf.append(")");
+        buf.append(remapParamType(Type.getReturnType(desc)));
+        return buf.toString();
+    }
+
+    // remap Landroid/Foo; to Landroid/Bar;
+    private String remapParamType(String desc) {
+        return remapParamType(Type.getType(desc));
+    }
+
+    private String remapParamType(Type type) {
+        String remappedName;
+        String internalName;
+
+        switch (type.getSort()) {
+            case ARRAY:
+                internalName = type.getInternalName();
+                int count = 0;
+                while (internalName.charAt(count) == '[') count++;
+
+                remappedName = remapParamType(internalName.substring(count));
+                if (remappedName != null) {
+                    return Type.getObjectType(internalName.substring(0, count) + remappedName).getDescriptor();
+                }
+                break;
+
+            case OBJECT:
+                internalName = type.getInternalName();
+                remappedName = classesToRemap.get(internalName);
+                if (remappedName != null) {
+                    return Type.getObjectType(remappedName).getDescriptor();
+                }
+                break;
+
+            default:
+                break;
+        }
+        return type.getDescriptor();
     }
 
     // remap android/Foo to android/Bar
@@ -159,13 +198,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS) {
             @Override
             public int newNameType(String name, String desc) {
-                desc = remapTypeDesc(desc);
-                return super.newNameType(name, desc);
-            }
-
-            @Override
-            public int newConst(Object cst) {
-                return super.newConst(cst);
+                return super.newNameType(name, desc.charAt(0) == ')' ? remapParams(desc) : remapParamType(desc));
             }
 
             @Override
@@ -545,7 +578,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                     case INVOKESPECIAL:
                     case INVOKEVIRTUAL:
                         MethodInsnNode targetMethod = (MethodInsnNode) node;
-                        if (methodsToIntercept.contains(new Setup.MethodRef(targetMethod.owner, targetMethod.name))) {
+                        if (shouldIntercept(targetMethod)) {
                             interceptNastyMethod(instructions, callingMethod, targetMethod);
                         }
                         break;
@@ -651,6 +684,11 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         private boolean isEnum() {
             return (classNode.access & ACC_ENUM) != 0;
         }
+    }
+
+    private boolean shouldIntercept(MethodInsnNode targetMethod) {
+        return methodsToIntercept.contains(new Setup.MethodRef(targetMethod.owner, targetMethod.name))
+                || methodsToIntercept.contains(new Setup.MethodRef(targetMethod.owner, "*"));
     }
 
     public static class AsmClassInfo implements ClassInfo {
