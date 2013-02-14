@@ -610,11 +610,36 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             instructions.add(new MethodInsnNode(INVOKESTATIC,
                     Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
                     "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;"));
-            instructions.add(new TypeInsnNode(CHECKCAST, "java/lang/String"));
-
-            System.out.println("Found method call from " + className + "." + callingMethod.name + " to " + targetMethod.owner + "." + targetMethod.name + ", intercepting.");
-
-            // todo: if targetMethodNode returns null, pop stack
+            Type returnType = Type.getReturnType(targetMethod.desc);
+            // todo: make this honor the return value if somebody cares about what intercept returns
+            switch (returnType.getSort()) {
+                case OBJECT:
+                    instructions.add(new TypeInsnNode(CHECKCAST, returnType.getInternalName()));
+                    break;
+                case ARRAY:
+                    instructions.add(new InsnNode(POP));
+                    instructions.add(new InsnNode(ACONST_NULL));
+                    break;
+                case VOID:
+                    instructions.add(new InsnNode(POP));
+                    break;
+                case Type.LONG:
+                    instructions.add(new InsnNode(POP));
+                    instructions.add(new InsnNode(LCONST_0));
+                    break;
+                case Type.FLOAT:
+                    instructions.add(new InsnNode(POP));
+                    instructions.add(new InsnNode(FCONST_0));
+                    break;
+                case Type.DOUBLE:
+                    instructions.add(new InsnNode(POP));
+                    instructions.add(new InsnNode(DCONST_0));
+                    break;
+                default:
+                    instructions.add(new InsnNode(POP));
+                    instructions.add(new InsnNode(ICONST_0));
+                break;
+            }
         }
 
         private void fixAccess(ClassNode clazz) {

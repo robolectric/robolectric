@@ -140,6 +140,7 @@ public class Setup {
                 new MethodRef(System.class, "loadLibrary"),
                 new MethodRef("android.os.StrictMode", "trackActivity"),
                 new MethodRef("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", "*"),
+                new MethodRef("com.android.i18n.phonenumbers.PhoneNumberUtil", "*"),
                 new MethodRef("dalvik.system.CloseGuard", "get")
         )));
     }

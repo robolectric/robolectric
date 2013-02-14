@@ -1,6 +1,5 @@
 package org.robolectric.bytecode;
 
-import org.junit.Ignore;
 import org.junit.Test;
 import org.robolectric.util.Transcript;
 
@@ -348,9 +347,30 @@ abstract public class InstrumentingClassLoaderTest {
     }
 
     @Test
-    @Ignore
-    public void shouldInterceptFilteredMethodInvocationsReturningPrimatives() throws Exception {
-        fail();
+    public void shouldInterceptFilteredMethodInvocationsReturningNarrowestPrimitives() throws Exception {
+        setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
+        Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
+        Object instance = theClass.newInstance();
+        assertEquals((byte) 0, theClass.getMethod("byteMethod").invoke(directlyOn(instance)));
+        assertNull(theClass.getMethod("byteArrayMethod").invoke(directlyOn(instance)));
+    }
+
+    @Test
+    public void shouldInterceptFilteredMethodInvocationsReturningNarrowPrimitives() throws Exception {
+        setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
+        Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
+        Object instance = theClass.newInstance();
+        assertEquals(0, theClass.getMethod("intMethod").invoke(directlyOn(instance)));
+        assertNull(theClass.getMethod("intArrayMethod").invoke(directlyOn(instance)));
+    }
+
+    @Test
+    public void shouldInterceptFilteredMethodInvocationsReturningWidePrimitives() throws Exception {
+        setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
+        Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
+        Object instance = theClass.newInstance();
+        assertEquals(0L, theClass.getMethod("longMethod").invoke(directlyOn(instance)));
+        assertNull(theClass.getMethod("longArrayMethod").invoke(directlyOn(instance)));
     }
 
     @Test public void directMethodName_shouldGetSimpleName() throws Exception {
