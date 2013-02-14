@@ -17,8 +17,10 @@ import org.robolectric.util.I18nException;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
@@ -141,27 +143,22 @@ public class Setup {
         )));
     }
 
-    public boolean containsStubs(ClassInfo classInfo) {
-        return classInfo.getName().startsWith("com.google.android.maps.");
+    /**
+     * Map from a requested class to an alternate stand-in, or not.
+     * @return
+     */
+    public Map<String, String> classNameTranslations() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("com.android.i18n.phonenumbers.NumberParseException", Exception.class.getName());
+        map.put("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", FakeSubclass.class.getName());
+        map.put("dalvik.system.CloseGuard", Object.class.getName());
+        return map;
     }
 
     public static class FakeSubclass {}
 
-    /**
-     * Map from a requested class to an alternate stand-in, or not.
-     * @param className
-     * @return
-     */
-    public String translateClassName(String className) {
-        if (className.equals("com.android.i18n.phonenumbers.NumberParseException")) {
-            return Exception.class.getName();
-        } else if (className.equals("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber")) {
-            return FakeSubclass.class.getName();
-        } else if (className.equals("dalvik/system/CloseGuard")) {
-            return Object.class.getName().replace('.', '/');
-        } else {
-            return className;
-        }
+    public boolean containsStubs(ClassInfo classInfo) {
+        return classInfo.getName().startsWith("com.google.android.maps.");
     }
 
     public static class MethodRef {

@@ -1,6 +1,7 @@
 package org.robolectric.bytecode;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.robolectric.util.Transcript;
 
@@ -8,6 +9,11 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
@@ -16,6 +22,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.robolectric.Robolectric.directlyOn;
 
 abstract public class InstrumentingClassLoaderTest {
 
@@ -306,6 +313,69 @@ abstract public class InstrumentingClassLoaderTest {
         assertEquals("baaaaaah", findDirectMethod(theClass, "toString").invoke(instance));
     }
 
+    @Test
+    public void shouldRemapClasses() throws Exception {
+        classLoader = createClassLoader(new Setup() {
+            @Override
+            public Map<String, String> classNameTranslations() {
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("org.robolectric.bytecode.AClassToForget", "org.robolectric.bytecode.AClassToRemember");
+                return map;
+            }
+        });
+        injectClassHandler(classLoader, classHandler);
+        Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
+        assertEquals(loadClass(AClassToRemember.class), theClass.getField("someField").getType());
+    }
+
+    @Test
+    public void shouldFixTypesInFieldAccess() throws Exception {
+        classLoader = createClassLoader(new Setup() {
+            @Override
+            public Map<String, String> classNameTranslations() {
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("org.robolectric.bytecode.AClassToForget", "org.robolectric.bytecode.AClassToRemember");
+                return map;
+            }
+
+            @Override
+            public boolean shouldAcquire(String name) {
+                if (name.equals(AClassToForget.class.getName())) throw new RuntimeException("fakey fake not found!");
+                return super.shouldAcquire(name);
+            }
+        });
+        injectClassHandler(classLoader, classHandler);
+        Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInItsConstructor.class);
+        Object instance = theClass.newInstance();
+        theClass.getMethod(RobolectricInternals.directMethodName(theClass.getName(), InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME)).invoke(instance);
+    }
+
+    @Test
+    public void shouldInterceptFilteredMethodInvocations() throws Exception {
+        classLoader = createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "forgettableMethod")));
+        injectClassHandler(classLoader, classHandler);
+        Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
+        Object instance = theClass.newInstance();
+        Object output = theClass.getMethod("interactWithForgettableClass").invoke(directlyOn(instance));
+        assertEquals("null, get this!", output);
+    }
+
+    @Test
+    public void shouldInterceptFilteredStaticMethodInvocations() throws Exception {
+        classLoader = createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "forgettableStaticMethod")));
+        injectClassHandler(classLoader, classHandler);
+        Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
+        Object instance = theClass.newInstance();
+        Object output = theClass.getMethod("interactWithForgettableStaticMethod").invoke(directlyOn(instance));
+        assertEquals("yess? forget this: null", output);
+    }
+
+    @Test
+    @Ignore
+    public void shouldInterceptFilteredMethodInvocationsReturningPrimatives() throws Exception {
+        fail();
+    }
+
     @Test public void directMethodName_shouldGetSimpleName() throws Exception {
         assertEquals("$$robo$$SomeName_5c63_method", RobolectricInternals.directMethodName("a.b.c.SomeName", "method"));
         assertEquals("$$robo$$SomeName_3b43_method", RobolectricInternals.directMethodName("a.b.c.SomeClass$SomeName", "method"));
@@ -402,6 +472,25 @@ abstract public class InstrumentingClassLoaderTest {
             throw new RuntimeException(e);
         } catch (ClassNotFoundException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    private static class MethodInterceptingSetup extends Setup {
+        private final HashSet<MethodRef> methodRefs;
+
+        private MethodInterceptingSetup(MethodRef... methodRefsToIntercept) {
+            methodRefs = new HashSet<MethodRef>();
+            Collections.addAll(methodRefs, methodRefsToIntercept);
+        }
+
+        @Override
+        public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz, String methodName, Class<?>[] paramClasses) {
+            return true;
+        }
+
+        @Override
+        public Set<MethodRef> methodsToIntercept() {
+            return methodRefs;
         }
     }
 }

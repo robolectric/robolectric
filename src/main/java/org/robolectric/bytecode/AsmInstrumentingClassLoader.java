@@ -2,6 +2,7 @@ package org.robolectric.bytecode;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
+import org.objectweb.asm.FieldVisitor;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
@@ -54,6 +55,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     private final URLClassLoader urls;
     private final Map<String, Class> classes = new HashMap<String, Class>();
     private Set<Setup.MethodRef> methodsToIntercept;
+    private final Map<String, String> classesToRemap;
 
     public static final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
 
@@ -61,9 +63,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         super(AsmInstrumentingClassLoader.class.getClassLoader());
         this.setup = setup;
         this.urls = new URLClassLoader(urls, null);
+        classesToRemap = convertToSlashes(setup.classNameTranslations());
         methodsToIntercept = convertToSlashes(setup.methodsToIntercept());
-
-        System.err.println("NEW AsmInstrumentingClassLoader!!!!!!!!!!!!!!!!!!!!!!!");
     }
 
     @Override
@@ -102,7 +103,14 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             }
 
             final ClassReader classReader = new ClassReader(origClassBytes);
-            ClassNode classNode = new ClassNode();
+            ClassNode classNode = new ClassNode() {
+                @Override
+                public FieldVisitor visitField(int access, String name, String desc, String signature, Object value) {
+                    desc = remapTypeDesc(desc);
+
+                    return super.visitField(access, name, desc, signature, value);
+                }
+            };
             classReader.accept(classNode, 0);
 
             try {
@@ -123,21 +131,47 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         }
     }
 
+    // remap Landroid/Foo; to Landroid/Bar;
+    private String remapTypeDesc(String desc) {
+        Type type = Type.getType(desc);
+
+        if (type.getSort() == OBJECT) {
+            String remappedName = classesToRemap.get(type.getInternalName());
+            if (remappedName != null) {
+                desc = Type.getObjectType(remappedName).getDescriptor();
+            }
+        }
+        return desc;
+    }
+
+    // remap android/Foo to android/Bar
+    private String remapType(String value) {
+        String remappedValue = classesToRemap.get(value);
+        if (remappedValue != null) {
+            value = remappedValue;
+        }
+        return value;
+    }
+
     private byte[] getInstrumentedBytes(String className, ClassNode classNode, boolean containsStubs) throws ClassNotFoundException {
         new ClassInstrumentor(classNode, containsStubs).instrument();
 
         ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS) {
             @Override
             public int newNameType(String name, String desc) {
-                if (desc.equals("Ldalvik/system/CloseGuard;")) {
-                    desc = "Ljava/lang/Object;";
-                }
-                return super.newNameType(name, setup.translateClassName(desc));
+                desc = remapTypeDesc(desc);
+                return super.newNameType(name, desc);
+            }
+
+            @Override
+            public int newConst(Object cst) {
+                return super.newConst(cst);
             }
 
             @Override
             public int newClass(String value) {
-                return super.newClass(setup.translateClassName(value));
+                value = remapType(value);
+                return super.newClass(value);
             }
         };
         classNode.accept(classWriter);
@@ -220,12 +254,24 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         }
     }
 
+    private Map<String, String> convertToSlashes(Map<String, String> map) {
+        HashMap<String, String> newMap = new HashMap<String, String>();
+        for (Map.Entry<String, String> entry : map.entrySet()) {
+            newMap.put(internalize(entry.getKey()), internalize(entry.getValue()));
+        }
+        return newMap;
+    }
+
     private Set<Setup.MethodRef> convertToSlashes(Set<Setup.MethodRef> methodRefs) {
         HashSet<Setup.MethodRef> transformed = new HashSet<Setup.MethodRef>();
         for (Setup.MethodRef methodRef : methodRefs) {
-            transformed.add(new Setup.MethodRef(methodRef.className.replace('.', '/'), methodRef.methodName));
+            transformed.add(new Setup.MethodRef(internalize(methodRef.className), methodRef.methodName));
         }
         return transformed;
+    }
+
+    private String internalize(String className) {
+        return className.replace('.', '/');
     }
 
     private class ClassInstrumentor {
@@ -253,6 +299,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             List<MethodNode> methods = new ArrayList<MethodNode>(classNode.methods);
             for (MethodNode method : methods) {
                 foundMethods.add(method.name + method.desc);
+
+                filterNasties(method);
 
                 if (method.name.equals("<clinit>")) {
                     method.name = STATIC_INITIALIZER_METHOD_NAME;
@@ -327,7 +375,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
         private void instrumentConstructor(MethodNode method) {
             fixAccess(method);
-            filterNasties(method);
 
             if (containsStubs) {
                 method.instructions.clear();
@@ -481,44 +528,60 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             return ((List<String>) method.exceptions).toArray(new String[method.exceptions.size()]);
         }
 
-        private void filterNasties(MethodNode methodNode) {
-            ListIterator<AbstractInsnNode> li = methodNode.instructions.iterator();
-            while (li.hasNext()) {
-                AbstractInsnNode node = li.next();
+        private void filterNasties(MethodNode callingMethod) {
+            ListIterator<AbstractInsnNode> instructions = callingMethod.instructions.iterator();
+            while (instructions.hasNext()) {
+                AbstractInsnNode node = instructions.next();
 
-                int opcode = node.getOpcode();
-                boolean isStatic = false;
+                switch (node.getOpcode()) {
+                    case NEW:
+                        TypeInsnNode newInsnNode = (TypeInsnNode) node;
+                        newInsnNode.desc = remapType(newInsnNode.desc);
+                        break;
 
-                switch (opcode) {
                     case INVOKESTATIC:
-                        isStatic = true;
-
                     case INVOKEDYNAMIC:
                     case INVOKEINTERFACE:
                     case INVOKESPECIAL:
                     case INVOKEVIRTUAL:
-                        MethodInsnNode mnode = (MethodInsnNode) node;
-                        if (methodsToIntercept.contains(new Setup.MethodRef(mnode.owner, mnode.name))) {
-                            li.remove();
-                            li.add(new LdcInsnNode(mnode.owner)); // class name
-                            li.add(new LdcInsnNode(mnode.name));  // method name
-                            li.add(new InsnNode(ACONST_NULL));    // target object or null for static
-                            li.add(new LdcInsnNode(0));
-                            li.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
-                            li.add(new LdcInsnNode(0));
-                            li.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
-                            li.add(new MethodInsnNode(INVOKESTATIC,
-                                    Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
-                                    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;"));
-                            System.out.println("Found method call from " + className + "." + methodNode.name + " to " + mnode.owner + "." + mnode.name + ", intercepting.");
-
-                            // todo: if mnode returns null, pop stack
-
+                        MethodInsnNode targetMethod = (MethodInsnNode) node;
+                        if (methodsToIntercept.contains(new Setup.MethodRef(targetMethod.owner, targetMethod.name))) {
+                            interceptNastyMethod(instructions, callingMethod, targetMethod);
                         }
+                        break;
+
                     default:
                         break;
                 }
             }
+        }
+
+        private void interceptNastyMethod(ListIterator<AbstractInsnNode> instructions, MethodNode callingMethod, MethodInsnNode targetMethod) {
+            boolean isStatic = targetMethod.getOpcode() == INVOKESTATIC;
+
+            instructions.remove();
+            instructions.add(new LdcInsnNode(targetMethod.owner)); // class name
+            if (!isStatic) instructions.add(new InsnNode(SWAP));
+
+            instructions.add(new LdcInsnNode(targetMethod.name));  // method name
+            if (isStatic) {
+                instructions.add(new InsnNode(ACONST_NULL));    // target object or null for static
+            } else {
+                instructions.add(new InsnNode(SWAP));
+            }
+
+            instructions.add(new LdcInsnNode(0));
+            instructions.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
+            instructions.add(new LdcInsnNode(0));
+            instructions.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
+            instructions.add(new MethodInsnNode(INVOKESTATIC,
+                    Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
+                    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;"));
+            instructions.add(new TypeInsnNode(CHECKCAST, "java/lang/String"));
+
+            System.out.println("Found method call from " + className + "." + callingMethod.name + " to " + targetMethod.owner + "." + targetMethod.name + ", intercepting.");
+
+            // todo: if targetMethodNode returns null, pop stack
         }
 
         private void fixAccess(ClassNode clazz) {
@@ -591,12 +654,12 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     }
 
     public static class AsmClassInfo implements ClassInfo {
-      private final String className;
-      private ClassNode classNode;
+        private final String className;
+        private ClassNode classNode;
 
         public AsmClassInfo(String className, ClassNode classNode) {
-          this.className = className;
-          this.classNode = classNode;
+            this.className = className;
+            this.classNode = classNode;
         }
 
         @Override

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class AndroidTranslator implements Translator {
@@ -66,7 +67,10 @@ public class AndroidTranslator implements Translator {
 
         final CtClass ctClass;
         try {
-            String translatedClassName = setup.translateClassName(className);
+            Map<String,String> classNameTranslationMap = setup.classNameTranslations();
+            String translatedClassName = classNameTranslationMap.get(className);
+            if (translatedClassName == null) translatedClassName = className;
+
             ctClass = classPool.get(translatedClassName);
 
             if (!translatedClassName.equals(className)) {

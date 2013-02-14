@@ -36,7 +36,7 @@ public class CustomRobolectricTestRunnerTest {
     @Test
     public void shouldInvokePrepareTestWithAnInstanceOfTheTest() throws Exception {
         assertEquals(this, preparedTest);
-        assertEquals(JavassistInstrumentingClassLoader.class.getName(), preparedTest.getClass().getClassLoader().getClass().getName());
+        assertEquals(AsmInstrumentingClassLoader.class.getName(), preparedTest.getClass().getClassLoader().getClass().getName());
     }
 
     @Test
