@@ -15,7 +15,7 @@ import static org.robolectric.Robolectric.shadowOf_;
  * Shadow of {@code IntentFilter} implemented with a {@link java.util.List}
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(IntentFilter.class)
+@Implements(value = IntentFilter.class)
 public class ShadowIntentFilter {
 
 	List<String> actions = new ArrayList<String>();

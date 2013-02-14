@@ -9,14 +9,21 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.util.Transcript;
+import org.robolectric.util.TestBroadcastReceiver;
 
-import static junit.framework.Assert.*;
+import java.util.List;
+
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNotSame;
+import static junit.framework.Assert.assertSame;
+import static junit.framework.Assert.assertTrue;
+import static org.robolectric.Robolectric.shadowOf_;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class LocalBroadcastManagerTest {
     private static LocalBroadcastManager lastInstance;
-    private Transcript transcript = new Transcript();
 
     @Test
     public void shouldGetInstance() throws Exception {
@@ -74,18 +81,57 @@ public class LocalBroadcastManagerTest {
 
     @Test
     public void testGetBroadcastIntents() throws Exception {
-        LocalBroadcastManager broadcastManager = LocalBroadcastManager.getInstance(Robolectric.application);
-        broadcastManager.registerReceiver(new BroadcastReceiver() {
-            @Override public void onReceive(Context context, Intent intent) {
-                transcript.add("got intent " + intent.getAction());
-            }
-        }, IntentFilter.create("foo", "blatz"));
-
+        LocalBroadcastManager instance = LocalBroadcastManager.getInstance(Robolectric.application);
+        ShadowLocalBroadcastManager shadow = shadowOf_(instance);
+        shadow.clearBroadcastIntents();
         Intent intent1 = new Intent("foo");
-        broadcastManager.sendBroadcast(intent1);
+        instance.sendBroadcast(intent1);
         Intent intent2 = new Intent("bar");
-        broadcastManager.sendBroadcast(intent2);
+        instance.sendBroadcast(intent2);
 
-        transcript.assertEventsSoFar("got intent foo");
+        List<Intent> broadcastIntents = shadow.getBroadcastIntents();
+        assertEquals(intent1, broadcastIntents.get(0));
+        assertEquals(intent2, broadcastIntents.get(1));
+    }
+
+    @Test
+    public void testGetLatestBroadcastIntent() throws Exception {
+        LocalBroadcastManager instance = LocalBroadcastManager.getInstance(Robolectric.application);
+        ShadowLocalBroadcastManager shadow = shadowOf_(instance);
+        Intent intent1 = new Intent("foo");
+        instance.sendBroadcast(intent1);
+        Intent intent2 = new Intent("bar");
+        instance.sendBroadcast(intent2);
+
+        Intent latestBroadcastIntent = shadow.getLatestBroadcastIntent();
+        assertEquals(intent2, latestBroadcastIntent);
+    }
+
+    @Test
+    public void testHasBroadcastReceiver() throws Exception {
+        LocalBroadcastManager instance = LocalBroadcastManager.getInstance(Robolectric.application);
+        instance.registerReceiver(new TestBroadcastReceiver(), new IntentFilter());
+        ShadowLocalBroadcastManager shadow = shadowOf_(instance);
+
+      boolean hasBroadcastReceiver = shadow.hasBroadcastReceiver(TestBroadcastReceiver.class);
+      assertTrue(hasBroadcastReceiver);
+    }
+
+    @Test
+    public void testClearBroadcastIntents() throws Exception {
+        LocalBroadcastManager instance = LocalBroadcastManager.getInstance(Robolectric.application);
+        ShadowLocalBroadcastManager shadow = shadowOf_(instance);
+        Intent intent1 = new Intent("foo");
+        instance.sendBroadcast(intent1);
+        Intent intent2 = new Intent("bar");
+        instance.sendBroadcast(intent2);
+
+        shadow.clearBroadcastIntents();
+        Intent intent3 = new Intent("baz");
+        instance.sendBroadcast(intent3);
+
+        List<Intent> broadcastIntents = shadow.getBroadcastIntents();
+        assertEquals(1, broadcastIntents.size());
+        assertEquals(intent3, broadcastIntents.get(0));
     }
 }
