@@ -1,5 +1,21 @@
 package org.robolectric.bytecode;
 
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -20,24 +36,8 @@ import org.objectweb.asm.tree.LdcInsnNode;
 import org.objectweb.asm.tree.MethodInsnNode;
 import org.objectweb.asm.tree.MethodNode;
 import org.objectweb.asm.tree.TypeInsnNode;
+import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.TraceClassVisitor;
-
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
 
 import static org.objectweb.asm.Type.ARRAY;
 import static org.objectweb.asm.Type.OBJECT;
@@ -212,13 +212,12 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
         byte[] classBytes = classWriter.toByteArray();
 
-//        CheckClassAdapter.verify(new ClassReader(classBytes), false, new PrintWriter(System.out));
-
         if (debug || className.contains("GeoPoint") || className.contains("ClassWithFunnyConstructors")) {
             try {
                 FileOutputStream fileOutputStream = new FileOutputStream("tmp/" + className + ".class");
                 fileOutputStream.write(classBytes);
                 fileOutputStream.close();
+                CheckClassAdapter.verify(new ClassReader(classBytes), false, new PrintWriter(new FileWriter("tmp/" + className + ".analysis", true)));
                 new ClassReader(classBytes).accept(new TraceClassVisitor(new PrintWriter(new FileWriter("tmp/" + className + ".java", true))), 0);
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -501,7 +500,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
         private void instrumentNormalMethod(MethodNode method) {
             fixAccess(method);
-            method.access = method.access & ~ACC_FINAL;
+            if ((method.access & ACC_ABSTRACT) == 0) method.access = method.access | ACC_FINAL;
 
             String originalName = method.name;
             method.name = RobolectricInternals.directMethodName(className, originalName);

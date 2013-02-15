@@ -106,6 +106,13 @@ abstract public class InstrumentingClassLoaderTest {
         transcript.assertEventsSoFar("methodInvoked: AnExampleClass.__constructor__()");
     }
 
+    @Test public void soMockitoDoesntExplodeDueToTooManyMethods_shouldGenerateClassSpecificDirectAccessMethodWhichIsFinal() throws Exception {
+        Class<?> exampleClass = loadClass(AnExampleClass.class);
+        String methodName = RobolectricInternals.directMethodName(AnExampleClass.class.getName(), "normalMethod");
+        Method directMethod = exampleClass.getDeclaredMethod(methodName, String.class, int.class);
+        assertTrue((directMethod.getModifiers() & Modifier.FINAL) != 0);
+    }
+
     @Test
     public void callingStaticMethodShouldInvokeClassHandler() throws Exception {
         Class<?> exampleClass = loadClass(AClassWithStaticMethod.class);
