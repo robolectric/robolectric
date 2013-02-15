@@ -478,6 +478,10 @@ public class Robolectric {
             getShadowWrangler().bindShadowClass(className, shadowClass, implementsAnnotation.callThroughByDefault());
         } catch (TypeNotPresentException typeLoadingException) {
             String unloadableClassName = shadowClass.getSimpleName();
+            if (typeLoadingException.typeName().startsWith("com.google.android.maps")) {
+                System.out.println("Warning: an error occurred while binding shadow class: " + unloadableClassName);
+                return;
+            }
             if (isIgnorableClassLoadingException(typeLoadingException)) {
                 //this allows users of the robolectric.jar file to use the non-Google APIs version of the api
                 if (unloadableClassNames.add(unloadableClassName)) {
