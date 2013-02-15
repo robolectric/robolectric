@@ -5,6 +5,8 @@ title: Release Notes
 
 # Release Notes
 
+## 2.x Branch
+
 -----
 ## [Release 2.0-alpha-1](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.0-alpha-1/) - January 29, 2013
 -----
@@ -16,29 +18,41 @@ title: Release Notes
 - Groundwork to remove many shadows and use actual android sdk code.
 - Moved to org.robolectric package and maven groupId.
 
+## 1.x Branch
+
 -----
-## [Release 1.1](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.0) - April 2, 2012
+### [Release 1.2](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.2) - February 15, 2013
+-----
+
+This release contains all updates since April 2nd, including numerous contributions from the Robolectric community
+(thanks!). There's partial support for Fragments, and tons of other shadow updates and bug fixes.
+
+_Note:_
+This marks the last major release of the 1.x branch; the Robolectric core team is now focusing on the 2.x branch.
+
+-----
+### [Release 1.1](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.1) - April 2, 2012
 -----
 
 _Note:_
 We had a little lapse in record-keeping here, sorry.
 
 -----
-## [Release 1.0](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.0) - October 13, 2011
+### [Release 1.0](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.0) - October 13, 2011
 -----
 
 _Note:_
 We had a little lapse in record-keeping here, sorry.
 
 -----
-## [Release 1.0-RC4](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.0-RC4/) - August 11, 2011
+### [Release 1.0-RC4](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.0-RC4/) - August 11, 2011
 -----
 
 _Note:_
 We had a little lapse in record-keeping here, sorry.
 
 -----
-## [Release 1.0-RC1](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.0-RC1/) - February 13, 2011
+### [Release 1.0-RC1](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/1.0-RC1/) - February 13, 2011
 -----
 
 #### Features
@@ -61,7 +75,7 @@ We had a little lapse in record-keeping here, sorry.
 ant maven-install-jars will update Maven with the correct version of maps.jar
 
 -----
-## [Release 0.9.8](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.8/) - January 21, 2011
+### [Release 0.9.8](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.8/) - January 21, 2011
 -----
 
 #### One step back...
@@ -69,7 +83,7 @@ ant maven-install-jars will update Maven with the correct version of maps.jar
 
 
 -----
-## [Release 0.9.7](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.7/) - January 19, 2011
+### [Release 0.9.7](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.7/) - January 19, 2011
 -----
 
 #### Features
@@ -80,7 +94,7 @@ ant maven-install-jars will update Maven with the correct version of maps.jar
 
 
 -----
-## [Release 0.9.6](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.6/) - January 13, 2011
+### [Release 0.9.6](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.6/) - January 13, 2011
 -----
 
 #### Features
@@ -95,7 +109,7 @@ ant maven-install-jars will update Maven with the correct version of maps.jar
 
 
 -----
-## [Release 0.9.5](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.5/) - December 23, 2010
+### [Release 0.9.5](http://repo1.maven.org/maven2/com/pivotallabs/robolectric/0.9.5/) - December 23, 2010
 -----
 
 #### Note
@@ -121,7 +135,7 @@ both IntelliJ and Eclipse.
 
 
 -----
-## Release 0.9.4 - December 14, 2010
+### Release 0.9.4 - December 14, 2010
 -----
 
 #### Features
@@ -136,7 +150,7 @@ both IntelliJ and Eclipse.
 
 
 -----
-## Release 0.9.3 - December 3, 2010
+### Release 0.9.3 - December 3, 2010
 -----
 
 #### Features
@@ -163,7 +177,7 @@ both IntelliJ and Eclipse.
 
 
 -----
-## Release 0.9.2 - November 24, 2010
+### Release 0.9.2 - November 24, 2010
 -----
 
 #### Features
@@ -176,7 +190,7 @@ both IntelliJ and Eclipse.
 - Ignore non xml files in layouts directory (Subversion .svn directories were causing cryptic errors, Thanks rlgomes!)
 
 -----
-## Release 0.9.1 - November 19, 2010
+### Release 0.9.1 - November 19, 2010
 -----
 
 #### Features
@@ -187,7 +201,7 @@ both IntelliJ and Eclipse.
 
 
 -----
-## Release 0.9 - November 17, 2010
+### Release 0.9 - November 17, 2010
 -----
 
 #### Features
@@ -207,7 +221,7 @@ almost impossible to write a useful Shadow class for it.
 
 
 -----
-## Release 0.8 - November 5, 2010
+### Release 0.8 - November 5, 2010
 -----
 
 #### Features
