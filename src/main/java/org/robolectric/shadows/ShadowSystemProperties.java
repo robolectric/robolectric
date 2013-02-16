@@ -19,36 +19,40 @@ public class ShadowSystemProperties {
 
     @Implementation
     public static String get(String key) {
-        new RuntimeException("SystemProperties.get(" + key + ")").printStackTrace();
-        return VALUES.get(key).toString();
+      complain("SystemProperties.get(" + key + ")");
+      return VALUES.get(key).toString();
     }
 
     @Implementation
     public static String get(String key, String def) {
-        new RuntimeException("SystemProperties.get(" + key + ", " + def + ")").printStackTrace();
-        Object value = VALUES.get(key);
+      complain("SystemProperties.get(" + key + ", " + def + ")");
+      Object value = VALUES.get(key);
         return value == null ? def : value.toString();
     }
 
     @Implementation
     public static int getInt(String key, int def) {
-        new RuntimeException("SystemProperties.getInt(" + key + ", " + def + ")").printStackTrace();
-        Object value = VALUES.get(key);
+      complain("SystemProperties.getInt(" + key + ", " + def + ")");
+      Object value = VALUES.get(key);
         return value == null ? def : (Integer) value;
     }
 
     @Implementation
     public static long getLong(String key, long def) {
-        new RuntimeException("SystemProperties.getLong(" + key + ", " + def + ")").printStackTrace();
-        Object value = VALUES.get(key);
+      complain("SystemProperties.getLong(" + key + ", " + def + ")");
+      Object value = VALUES.get(key);
         return value == null ? def : (Long) value;
     }
 
     @Implementation
     public static boolean getBoolean(String key, boolean def) {
-        new RuntimeException("SystemProperties.getBoolean(" + key + ", " + def + ")").printStackTrace();
+        complain("SystemProperties.getBoolean(" + key + ", " + def + ")");
         Object value = VALUES.get(key);
         return value == null ? def : (Boolean) value;
+    }
+
+    private static void complain(String s) {
+//        new RuntimeException(s).printStackTrace();
     }
 
 }
