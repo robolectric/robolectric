@@ -81,7 +81,7 @@ public class ContentResolverTest {
     }
 
     @Test
-    public void insert_shouldTrackUpdateStatements() throws Exception {
+    public void update_shouldTrackUpdateStatements() throws Exception {
         ContentValues contentValues = new ContentValues();
         contentValues.put("foo", "bar");
         contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] { "awesome" });
@@ -173,6 +173,41 @@ public class ContentResolverTest {
         assertThat(testCursor.selection, equalTo(selection));
         assertThat(testCursor.selectionArgs, equalTo(selectionArgs));
         assertThat(testCursor.sortOrder, equalTo(sortOrder));
+    }
+
+    @Test
+    public void bulkInsert_shouldReturnNumberOfInsertedStatements() {
+        ContentValues[] contentValueses = new ContentValues[2];
+        ContentValues contentValues1 = new ContentValues();
+        contentValues1.put("foo", "bar");
+        contentValueses[0] = contentValues1;
+
+        ContentValues contentValues2 = new ContentValues();
+        contentValues2.put("foo", "bar");
+        contentValueses[1] = contentValues2;
+
+        shadowContentResolver.bulkInsert(EXTERNAL_CONTENT_URI, contentValueses);
+        assertThat(shadowContentResolver.getInsertStatements().size(), is(2));
+    }
+
+    @Test
+    public void bulkInsert_shouldTrackInsertStatements() throws Exception {
+        ContentValues[] contentValueses = new ContentValues[2];
+
+        ContentValues contentValues1 = new ContentValues();
+        contentValues1.put("foo", "bar");
+        contentValueses[0] = contentValues1;
+
+        ContentValues contentValues2 = new ContentValues();
+        contentValues2.put("hello", "world");
+        contentValueses[1] = contentValues2;
+
+        contentResolver.bulkInsert(EXTERNAL_CONTENT_URI, contentValueses);
+
+        assertThat(shadowContentResolver.getInsertStatements().size(), is(2));
+        assertThat(shadowContentResolver.getInsertStatements().get(0).getUri(), equalTo(EXTERNAL_CONTENT_URI));
+        assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues().getAsString("foo"), equalTo("bar"));
+        assertThat(shadowContentResolver.getInsertStatements().get(1).getContentValues().getAsString("hello"), equalTo("world"));
     }
 
     @Test
