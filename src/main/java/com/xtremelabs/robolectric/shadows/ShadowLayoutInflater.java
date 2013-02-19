@@ -40,7 +40,8 @@ public class ShadowLayoutInflater {
 
     @Implementation
     public View inflate(int resource, ViewGroup root, boolean attachToRoot) {
-        return getResourceLoader().inflateView(context, resource, attachToRoot ? root : null);
+        View inflated = getResourceLoader().inflateView(context, resource, attachToRoot ? root : null);
+        return attachToRoot ? root : inflated;
     }
 
     @Implementation
