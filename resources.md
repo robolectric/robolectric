@@ -39,6 +39,8 @@ Robolectric cannot find your Android SDK. Try the following:
 
          $ android update project -p .
 
+Setting up a `local.properties` file is the only solution that will work for most IDEs since they will not pass the path from the shell to the tests.
+
 * Set `ANDROID_HOME` environment variable. You can put this in `.bash_profile` for example.
 
          export ANDROID_HOME=/path/to/android/sdk
