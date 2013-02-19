@@ -3,12 +3,7 @@ package org.robolectric.res;
 import android.R;
 import org.robolectric.util.PropertiesHelper;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.util.List;
+import java.io.*;
 import java.util.Properties;
 
 public class AndroidResourcePathFinder {
@@ -37,7 +32,7 @@ public class AndroidResourcePathFinder {
             return resourcePath;
         }
 
-        throw new RuntimeException("Unable to find path to Android SDK");
+        throw new RuntimeException("Unable to find path to Android SDK, (you probably need a local.properties file, see: http://pivotal.github.com/robolectric/resources.html");
     }
 
     private String getAndroidResourcePathFromLocalProperties() {
