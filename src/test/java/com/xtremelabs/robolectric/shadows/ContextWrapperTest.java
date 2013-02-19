@@ -7,6 +7,9 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Handler;
+import android.os.HandlerThread;
+import android.os.Looper;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.util.Transcript;
@@ -23,6 +26,8 @@ import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.hamcrest.CoreMatchers.is;
+import static junit.framework.Assert.assertNotSame;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -68,6 +73,47 @@ public class ContextWrapperTest {
 
         contextWrapper.sendBroadcast(new Intent("baz"));
         transcript.assertEventsSoFar("Larry notified of baz");
+    }
+
+    @Test
+    public void sendBroadcast_shouldOnlySendIntentWithMatchingReceiverPermission() {
+        BroadcastReceiver receiver = broadcastReceiver("Larry");
+        contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"), "validPermission", null);
+
+        contextWrapper.sendBroadcast(new Intent("foo"));
+        transcript.assertNoEventsSoFar();
+
+        contextWrapper.sendBroadcast(new Intent("foo"), null);
+        transcript.assertNoEventsSoFar();
+
+        contextWrapper.sendBroadcast(new Intent("foo"), "wrongPermission");
+        transcript.assertNoEventsSoFar();
+
+        contextWrapper.sendBroadcast(new Intent("foo"), "validPermission");
+        transcript.assertEventsSoFar("Larry notified of foo");
+
+        contextWrapper.sendBroadcast(new Intent("baz"), "validPermission");
+        transcript.assertEventsSoFar("Larry notified of baz");
+    }
+
+    @Test
+    public void sendBroadcast_shouldSendIntentUsingHandlerIfOneIsProvided() {
+        HandlerThread handlerThread = new HandlerThread("test");
+        handlerThread.start();
+
+        Handler handler = new Handler(handlerThread.getLooper());
+        assertNotSame(handler.getLooper(), Looper.getMainLooper());
+
+        BroadcastReceiver receiver = broadcastReceiver("Larry");
+        contextWrapper.registerReceiver(receiver, intentFilter("foo", "baz"), null, handler);
+
+        assertThat(shadowOf(handler.getLooper()).getScheduler().size(), is(0));
+        contextWrapper.sendBroadcast(new Intent("foo"));
+        assertThat(shadowOf(handler.getLooper()).getScheduler().size(), is(1));
+        shadowOf(handlerThread.getLooper()).idle();
+        assertThat(shadowOf(handler.getLooper()).getScheduler().size(), is(0));
+
+        transcript.assertEventsSoFar("Larry notified of foo");
     }
 
     @Test
