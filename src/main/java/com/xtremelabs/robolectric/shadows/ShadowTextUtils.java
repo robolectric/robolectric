@@ -28,7 +28,24 @@ public class ShadowTextUtils {
 
     @Implementation
     public static boolean isEmpty(CharSequence s) {
-      return (s == null || s.length() == 0);
+        return (s == null || s.length() == 0);
+    }
+
+    @Implementation
+    public static int getTrimmedLength(CharSequence s) {
+        int len = s.length();
+
+        int start = 0;
+        while (start < len && s.charAt(start) <= ' ') {
+            start++;
+        }
+
+        int end = len;
+        while (end > start && s.charAt(end - 1) <= ' ') {
+            end--;
+        }
+
+        return end - start;
     }
 
     @Implementation
@@ -51,13 +68,13 @@ public class ShadowTextUtils {
         }
         return true;
     }
-    
+
     @Implementation
     public static String[] split(String text, String expression) {
     	if(text.length() == 0) {
     		return new String[]{};
     	}
-    	
+
     	return text.split(expression);
     }
 
