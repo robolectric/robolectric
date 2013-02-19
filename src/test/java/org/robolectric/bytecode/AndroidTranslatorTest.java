@@ -11,25 +11,35 @@ import android.view.View;
 import android.widget.TextView;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
-import static org.robolectric.Robolectric.bindShadowClass;
-import static org.robolectric.Robolectric.directlyOn;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.StringContains.containsString;
 import static org.hamcrest.core.StringStartsWith.startsWith;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
+import static org.robolectric.Robolectric.bindShadowClass;
+import static org.robolectric.Robolectric.directlyOn;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AndroidTranslatorTest {
@@ -270,13 +280,13 @@ public class AndroidTranslatorTest {
     }
 
     @Test public void withNonApiSubclassesWhichExtendApi_shouldStillBeInvoked() throws Exception {
-        bindShadowClass(ShadowActivity.class);
-        assertEquals("did foo", new MyActivity().doSomething("foo"));
+        bindShadowClass(ShadowApiImplementedClass.class);
+        assertEquals("did foo", new NonApiSubclass().doSomething("foo"));
     }
 
-    public static class MyActivity extends Activity { public String doSomething(String value) { return "did " + value; } }
-    @Instrument public static class Activity { }
-    @Implements(Activity.class) public static class ShadowActivity {}
+    public static class NonApiSubclass extends ApiImplementedClass { public String doSomething(String value) { return "did " + value; } }
+    @Instrument public static class ApiImplementedClass { }
+    @Implements(ApiImplementedClass.class) public static class ShadowApiImplementedClass {}
 
 
     @Implements(ItemizedOverlay.class)
