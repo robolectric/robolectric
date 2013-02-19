@@ -16,4 +16,13 @@ public class BluetoothAdapterTest {
         shadowOf(adapter).setAddress("expected");
         assertEquals("expected", adapter.getAddress());
     }
+
+    @Test
+    public void canGetAndSetBluetoothState() {
+        BluetoothAdapter adapter = BluetoothAdapter.getDefaultAdapter();
+        shadowOf(adapter).setState(BluetoothAdapter.STATE_ON);
+        assertEquals(BluetoothAdapter.STATE_ON, adapter.getState());
+        shadowOf(adapter).setState(BluetoothAdapter.STATE_OFF);
+        assertEquals(BluetoothAdapter.STATE_OFF, adapter.getState());
+    }
 }
