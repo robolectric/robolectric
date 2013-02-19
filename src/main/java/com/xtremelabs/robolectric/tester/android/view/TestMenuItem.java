@@ -12,6 +12,7 @@ public class TestMenuItem implements MenuItem {
     private int itemId;
     private CharSequence title;
     private boolean enabled = true;
+    private boolean visible = true;
     private OnMenuItemClickListener menuItemClickListener;
     public int iconRes;
     private Intent intent;
@@ -145,12 +146,13 @@ public class TestMenuItem implements MenuItem {
 
     @Override
     public MenuItem setVisible(boolean visible) {
-        return null;
+        this.visible = visible;
+        return this;
     }
 
     @Override
     public boolean isVisible() {
-        return false;
+        return visible;
     }
 
     @Override

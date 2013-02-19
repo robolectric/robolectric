@@ -13,6 +13,7 @@ import static com.xtremelabs.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 import static com.xtremelabs.robolectric.util.TestUtil.resourceFile;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -34,5 +35,17 @@ public class MenuResourceLoaderTest {
     	assertTrue(mi.hasSubMenu());
     	assertThat(mi.getSubMenu().size(), equalTo(2) );
     	assertThat(mi.getSubMenu().getItem(1).getTitle() + "", equalTo("Test menu item 3") );
+    }
+
+    @Test
+    public void shouldInflateComplexMenuWithVisibilityAttributes() throws Exception {
+        ResourceLoader resourceLoader = new ResourceLoader(DEFAULT_SDK_VERSION, R.class, resourceFile("res"), resourceFile("menu"));
+        TestMenu testMenu = new TestMenu();
+        resourceLoader.inflateMenu(Robolectric.application, R.menu.test_withvisibility_attributes, testMenu);
+        assertThat(testMenu.size(), equalTo(3));
+
+        assertTrue(testMenu.getItem(0).isVisible());
+        assertTrue(testMenu.getItem(1).isVisible());
+        assertFalse(testMenu.getItem(2).isVisible());
     }
 }
