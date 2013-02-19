@@ -13,6 +13,7 @@ import org.junit.runner.RunWith;
 
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderOperation.Builder;
+import android.content.ContentValues;
 
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
@@ -42,6 +43,23 @@ public class ContentProviderOperationBuilderTest {
         assertThat(Long.parseLong(values.get("longTest").toString()), equalTo(10L));
     }
     
+	@Test
+	public void withValues() {
+		final ContentValues contentValues = new ContentValues();
+		contentValues.put("stringTest", "bar");
+		contentValues.put("intTest", 5);
+		contentValues.put("longTest", 10L);
+		builder.withValues(contentValues);
+
+		final Map<String, Object> values = shadowBuilder.getValues();
+		assertThat(values.size(), is(3));
+		assertThat(values.get("stringTest").toString(), equalTo("bar"));
+		assertThat(Integer.parseInt(values.get("intTest").toString()),
+				equalTo(5));
+		assertThat(Long.parseLong(values.get("longTest").toString()),
+				equalTo(10L));
+	}
+
     @Test
     public void withSelection() {
         builder
