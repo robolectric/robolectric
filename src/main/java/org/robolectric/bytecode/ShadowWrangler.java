@@ -70,7 +70,7 @@ public class ShadowWrangler implements ClassHandler {
                 method.invoke(null);
             } catch (NoSuchMethodException e) {
                 if (setup.shouldPerformStaticInitializationIfShadowIsMissing()) {
-                    AndroidTranslator.performStaticInitialization(clazz);
+                    RobolectricInternals.performStaticInitialization(clazz);
                 }
             } catch (InvocationTargetException e) {
                 throw new RuntimeException(e);
@@ -78,7 +78,7 @@ public class ShadowWrangler implements ClassHandler {
                 throw new RuntimeException(e);
             }
         } else {
-            AndroidTranslator.performStaticInitialization(clazz);
+            RobolectricInternals.performStaticInitialization(clazz);
         }
     }
 

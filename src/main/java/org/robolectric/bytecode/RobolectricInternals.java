@@ -188,4 +188,19 @@ public class RobolectricInternals {
         if (lastDollarIndex != -1) simpleName = simpleName.substring(lastDollarIndex + 1);
         return String.format("$$robo$$%s_%04x_%s", simpleName, className.hashCode() & 0xffff, methodName);
     }
+
+    // we need a better spot for these methods that don't rely on being in the same classloader as their operands
+    public static void performStaticInitialization(Class<?> clazz) {
+        try {
+            Method originalStaticInitializer = clazz.getDeclaredMethod(InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME);
+            originalStaticInitializer.setAccessible(true);
+            originalStaticInitializer.invoke(null);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

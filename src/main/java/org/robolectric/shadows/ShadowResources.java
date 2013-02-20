@@ -113,7 +113,7 @@ public class ShadowResources {
     private ResName getResName(int id) {
         ResName resName = resourceLoader.getResourceExtractor().getResName(id);
         if (resName == null) {
-          throw new Resources.NotFoundException("couldn't find a name for resource id " + id);
+            throw new Resources.NotFoundException("couldn't find a name for resource id " + id);
         }
         return resName;
     }
@@ -184,7 +184,7 @@ public class ShadowResources {
     public CharSequence getText(int id) throws Resources.NotFoundException {
         return getString(id);
     }
-    
+
     public void setDensity(float density) {
         this.density = density;
     }
@@ -224,23 +224,27 @@ public class ShadowResources {
 
     @Implementation
     public int getInteger(int id) throws Resources.NotFoundException {
-    	return resourceLoader.getIntegerValue(getResName(id), getQualifiers());
+        return resourceLoader.getIntegerValue(getResName(id), getQualifiers());
     }
 
     @Implementation
     public int[] getIntArray(int id) throws Resources.NotFoundException {
         int[] arrayValue = resourceLoader.getIntegerArrayValue(getResName(id), getQualifiers());
         if (arrayValue == null) {
-            throw new Resources.NotFoundException();
+            throw new Resources.NotFoundException(notFound(id));
         }
         return arrayValue;
     }
 
     @Implementation
     public boolean getBoolean(int id) throws Resources.NotFoundException {
-    	return resourceLoader.getBooleanValue(getResName(id), getQualifiers());
+        try {
+            return resourceLoader.getBooleanValue(getResName(id), getQualifiers());
+        } catch (NullPointerException e) {
+            throw new Resources.NotFoundException(notFound(id));
+        }
     }
-    
+
     @Implementation
     public int getDimensionPixelSize(int id) throws Resources.NotFoundException {
         return (int) getDimension(id);
@@ -255,15 +259,14 @@ public class ShadowResources {
     public AssetManager getAssets() {
         return assetManager;
     }
-    
+
     @Implementation
-    public XmlResourceParser getXml(int id)
-    		throws Resources.NotFoundException {
-    	XmlResourceParser parser = resourceLoader.getXml(id);
-    	if (parser == null) {
-    		throw new Resources.NotFoundException();
-    	}
-    	return parser;
+    public XmlResourceParser getXml(int id) throws Resources.NotFoundException {
+        XmlResourceParser parser = resourceLoader.getXml(id);
+        if (parser == null) {
+            throw new Resources.NotFoundException();
+        }
+        return parser;
     }
 
     @Implementation
@@ -273,6 +276,10 @@ public class ShadowResources {
 
     public ResourceLoader getResourceLoader() {
         return resourceLoader;
+    }
+
+    private String notFound(int id) {
+        return "couldn't find resource " + getResName(id).getFullyQualifiedName();
     }
 
     @Implements(Resources.Theme.class)

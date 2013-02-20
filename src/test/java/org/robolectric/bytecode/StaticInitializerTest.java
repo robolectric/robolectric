@@ -27,7 +27,7 @@ public class StaticInitializerTest {
         bindShadowClass(ShadowClassWithoutStaticInitializerOverride.class);
         assertEquals("Floyd", ClassWithStaticInitializerB.name);
 
-        AndroidTranslator.performStaticInitialization(ClassWithStaticInitializerB.class);
+        RobolectricInternals.performStaticInitialization(ClassWithStaticInitializerB.class);
         assertEquals("Floyd", ClassWithStaticInitializerB.name);
     }
 
@@ -43,7 +43,7 @@ public class StaticInitializerTest {
         assertEquals(null, ClassWithStaticInitializerC.name);
         assertTrue(ShadowClassWithStaticInitializerOverride.initialized);
 
-        AndroidTranslator.performStaticInitialization(ClassWithStaticInitializerC.class);
+        RobolectricInternals.performStaticInitialization(ClassWithStaticInitializerC.class);
         assertEquals("Floyd", ClassWithStaticInitializerC.name);
     }
 

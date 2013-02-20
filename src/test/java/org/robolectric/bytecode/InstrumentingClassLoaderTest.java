@@ -526,7 +526,6 @@ abstract public class InstrumentingClassLoaderTest {
 
         @Override
         public boolean shouldAcquire(String name) {
-            System.out.println("name = " + name);
             if (name.equals(AClassToForget.class.getName())) throw new RuntimeException(name + " not found (for pretend)!");
             return super.shouldAcquire(name);
         }

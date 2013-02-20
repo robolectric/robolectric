@@ -12,8 +12,6 @@ import javassist.Translator;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -29,21 +27,6 @@ public class AndroidTranslator implements Translator {
     private final Setup setup;
 
     private static boolean debug = true;
-
-    public static void performStaticInitialization(Class<?> clazz) {
-        if (debug) System.out.println("static initializing " + clazz);
-        try {
-            Method originalStaticInitializer = clazz.getDeclaredMethod(InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME);
-            originalStaticInitializer.setAccessible(true);
-            originalStaticInitializer.invoke(null);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     public AndroidTranslator(ClassCache classCache, Setup setup) {
         this.classCache = classCache;
