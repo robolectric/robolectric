@@ -25,7 +25,7 @@ public class ShadowLooper {
 
     boolean quit;
 
-    private static synchronized ThreadLocal<Looper> makeThreadLocalLoopers() {
+    private static ThreadLocal<Looper> makeThreadLocalLoopers() {
         return new ThreadLocal<Looper>() {
             @Override
             protected Looper initialValue() {
@@ -34,7 +34,7 @@ public class ShadowLooper {
         };
     }
 
-    public static void resetThreadLoopers() {
+    public static synchronized void resetThreadLoopers() {
         looperForThread = makeThreadLocalLoopers();
     }
 

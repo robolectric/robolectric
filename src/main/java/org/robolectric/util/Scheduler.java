@@ -30,8 +30,8 @@ public class Scheduler {
 
     public synchronized void postDelayed(Runnable runnable, long delayMillis) {
         if (paused || delayMillis > 0 || Thread.currentThread() != associatedThread) {
-	        postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
-	        Collections.sort(postedRunnables);
+            postedRunnables.add(new PostedRunnable(runnable, currentTime + delayMillis));
+            Collections.sort(postedRunnables);
         } else {
             runnable.run();
         }
@@ -43,7 +43,7 @@ public class Scheduler {
 
     public synchronized void postAtFrontOfQueue(Runnable runnable) {
         if (paused || Thread.currentThread() != associatedThread) {
-        	postedRunnables.add(0, new PostedRunnable(runnable, currentTime));
+            postedRunnables.add(0, new PostedRunnable(runnable, currentTime));
         } else {
             runnable.run();
         }
