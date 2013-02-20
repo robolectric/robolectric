@@ -17,6 +17,8 @@ import java.util.jar.Manifest;
 public class ClassCache {
     private static final Attributes.Name VERSION_ATTRIBUTE = new Attributes.Name("version");
 
+    // Consider adopting JSR-305 concurrenc annotations to better keep track of synchronization requirements
+    // @GuardedBy("this")
     private Map<String, byte[]> cachedClasses = new HashMap<String, byte[]>();
     private boolean startedWriting = false;
 
@@ -58,7 +60,10 @@ public class ClassCache {
     }
 
     public byte[] getClassBytesFor(String name) {
-        return cachedClasses.get(name);
+        // needs to be synchronized as well
+        synchronized(this) {
+            return cachedClasses.get(name);
+        }
     }
 
     public boolean isWriting() {
@@ -68,7 +73,11 @@ public class ClassCache {
     }
 
     public void addClass(String className, byte[] classBytes) {
-        cachedClasses.put(className, classBytes);
+        // without this synchronization, a put could occur while entries are being written and a ConcurrentModificationException is thrown
+        // alternatives to this would be to use ConcurrentMap, but that's probably overkill for this
+        synchronized(this) {
+            cachedClasses.put(className, classBytes);
+        }
     }
 
     private void readEntries(JarFile cacheFile) {
