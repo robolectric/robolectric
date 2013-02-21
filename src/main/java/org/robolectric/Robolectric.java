@@ -93,6 +93,7 @@ import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.support.v4.app.DialogFragment;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.CursorLoader;
 import android.support.v4.view.PagerAdapter;
@@ -326,6 +327,7 @@ import org.robolectric.shadows.ShadowNotFoundException;
 import org.robolectric.shadows.ShadowNotification;
 import org.robolectric.shadows.ShadowNotificationManager;
 import org.robolectric.shadows.ShadowObjectAnimator;
+import org.robolectric.shadows.ShadowOverlayItem;
 import org.robolectric.shadows.ShadowPagerAdapter;
 import org.robolectric.shadows.ShadowPaint;
 import org.robolectric.shadows.ShadowPair;
@@ -693,7 +695,7 @@ public class Robolectric {
                 ShadowNfcAdapter.class,
                 ShadowNotificationManager.class,
                 ShadowNetworkInfo.class,
-                //ShadowOverlayItem.class,
+                ShadowOverlayItem.class,
                 ShadowObjectAnimator.class,
                 ShadowPagerAdapter.class,
                 ShadowPaint.class,
@@ -1093,9 +1095,9 @@ public class Robolectric {
         return (ShadowFragment) shadowOf_(instance);
     }
 
-    //public static ShadowFragmentActivity shadowOf(FragmentActivity instance) {
-    //    return (ShadowFragmentActivity) shadowOf_(instance);
-    //}
+    public static ShadowFragmentActivity shadowOf(FragmentActivity instance) {
+        return (ShadowFragmentActivity) shadowOf_(instance);
+    }
 
     public static ShadowFragmentPagerAdapter shadowOf(FragmentPagerAdapter instance) {
         return (ShadowFragmentPagerAdapter) shadowOf_(instance);

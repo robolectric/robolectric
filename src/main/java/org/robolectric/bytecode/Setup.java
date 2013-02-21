@@ -73,7 +73,6 @@ public class Setup {
         if (methodName.equals("hashCode") && paramClasses.length == 0) return true;
         if (methodName.equals("toString") && paramClasses.length == 0) return true;
 
-//        return true;
         return !isFromAndroidSdk(clazz);
     }
 
@@ -82,11 +81,6 @@ public class Setup {
             return false;
         }
 
-//        if (classInfo.getName().startsWith("android.support")) {
-//            return false;
-//        }
-//
-//
         if (isFromAndroidSdk(classInfo)) {
             return true;
         }
