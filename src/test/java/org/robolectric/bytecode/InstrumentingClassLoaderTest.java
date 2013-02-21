@@ -38,12 +38,12 @@ abstract public class InstrumentingClassLoaderTest {
         assertEquals(0, clazz.getModifiers() & Modifier.FINAL);
     }
 
-    @Test public void shouldAddDefaultConstructorIfMissing() throws Exception {
+    @Test public void becauseShadowsMustBeCreatedDuringInstantiation_shouldAddDefaultConstructorIfMissingWhichCallsShadow() throws Exception {
         Constructor<?> defaultCtor = loadClass(AClassWithNoDefaultConstructor.class).getConstructor();
         assertTrue(Modifier.isPublic(defaultCtor.getModifiers()));
         defaultCtor.setAccessible(true);
         defaultCtor.newInstance();
-        transcript.assertNoEventsSoFar();
+        transcript.assertEventsSoFar("methodInvoked: AClassWithNoDefaultConstructor.__constructor__()");
     }
 
     @Test public void shouldDelegateToHandlerForConstructors() throws Exception {

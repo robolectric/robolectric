@@ -1,21 +1,5 @@
 package org.robolectric.bytecode;
 
-import java.io.FileOutputStream;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.PrintWriter;
-import java.lang.annotation.Annotation;
-import java.lang.reflect.Modifier;
-import java.net.URL;
-import java.net.URLClassLoader;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.ListIterator;
-import java.util.Map;
-import java.util.Set;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
@@ -39,10 +23,24 @@ import org.objectweb.asm.tree.TypeInsnNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 import org.objectweb.asm.util.TraceClassVisitor;
 
-import static org.objectweb.asm.Type.ARRAY;
-import static org.objectweb.asm.Type.OBJECT;
-import static org.objectweb.asm.Type.VOID;
-import static org.objectweb.asm.Type.getType;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintWriter;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.Modifier;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Map;
+import java.util.Set;
+
+import static org.objectweb.asm.Type.*;
 import static org.robolectric.util.Util.readBytes;
 import static org.robolectric.util.Util.reverse;
 
@@ -352,6 +350,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                 MyGenerator m = new MyGenerator(defaultConstructor);
                 m.loadThis();
                 m.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V");
+                generateCallToClassHandler(defaultConstructor, CONSTRUCTOR_METHOD_NAME, m);
+                m.pop();
                 m.returnValue();
                 m.endMethod();
                 classNode.methods.add(defaultConstructor);
