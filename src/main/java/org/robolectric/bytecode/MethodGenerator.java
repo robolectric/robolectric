@@ -1,6 +1,14 @@
 package org.robolectric.bytecode;
 
-import javassist.*;
+import javassist.CannotCompileException;
+import javassist.ClassMap;
+import javassist.CtClass;
+import javassist.CtConstructor;
+import javassist.CtMethod;
+import javassist.CtNewConstructor;
+import javassist.CtNewMethod;
+import javassist.Modifier;
+import javassist.NotFoundException;
 import javassist.expr.ConstructorCall;
 import javassist.expr.ExprEditor;
 import javassist.expr.MethodCall;
@@ -18,6 +26,12 @@ public class MethodGenerator {
 
     private CtClass objectCtClass;
     private Set<String> instrumentedMethods = new HashSet<String>();
+    public static final ClassMap IDENTITY_CLASS_MAP = new ClassMap() {
+        @Override
+        public Object get(Object jvmClassName) {
+            return jvmClassName;
+        }
+    };
 
     public MethodGenerator(CtClass ctClass, Setup setup) {
         this.ctClass = ctClass;
@@ -73,7 +87,7 @@ public class MethodGenerator {
     }
 
     public void fixConstructor(CtConstructor ctConstructor) throws NotFoundException, CannotCompileException {
-        ctConstructor.instrument(new ExprEditor() {
+        ctConstructor.instrument(new NastyMethodInterceptor() {
             @Override public void edit(ConstructorCall c) throws CannotCompileException {
                 try {
                     CtConstructor constructor = c.getConstructor();
@@ -174,22 +188,19 @@ public class MethodGenerator {
             String methodName = ctMethod.getName();
             CtClass[] paramTypes = ctMethod.getParameterTypes();
 
-//            if (!isAbstract) {
-//                if (methodName.startsWith("set") && paramTypes.length == 1) {
-//                    String fieldName = "__" + methodName.substring(3);
-//                    if (declareField(ctClass, fieldName, paramTypes[0])) {
-//                        methodBody = fieldName + " = $1;\n" + methodBody;
-//                    }
-//                } else if (methodName.startsWith("get") && paramTypes.length == 0) {
-//                    String fieldName = "__" + methodName.substring(3);
-//                    if (declareField(ctClass, fieldName, returnType)) {
-//                        methodBody = "return " + fieldName + ";\n";
-//                    }
-//                }
-//            }
-
             boolean isStatic = Modifier.isStatic(originalModifiers);
             String methodBody = generateMethodBody(ctMethod, wasNative, wasAbstract, returnCtClass, returnType, isStatic, !isDeclaredOnClass);
+
+            String directMethodName = RobolectricInternals.directMethodName(ctClass.getName(), methodName);
+            if (!CONSTRUCTOR_METHOD_NAME.equals(methodName)) {
+                if (!wasNative && !wasAbstract) {
+                    CtMethod copy = CtNewMethod.copy(ctMethod, directMethodName, ctClass, IDENTITY_CLASS_MAP);
+                    ctClass.addMethod(copy);
+                } else {
+                    ctClass.addMethod(CtNewMethod.make(returnCtClass, directMethodName,
+                            paramTypes, new CtClass[0], null, ctClass));
+                }
+            }
 
             if (!isDeclaredOnClass) {
                 CtMethod newMethod = makeNewMethod(ctMethod, returnCtClass, methodName, paramTypes, "{\n" + methodBody + generateCallToSuper(ctMethod) + "\n}");
@@ -406,42 +417,44 @@ public class MethodGenerator {
         CtConstructor classInitializer = ctClass.getClassInitializer();
         CtMethod staticInitializerMethod;
         if (classInitializer == null) {
-            staticInitializerMethod = CtNewMethod.make(CtClass.voidType, AndroidTranslator.STATIC_INITIALIZER_METHOD_NAME, new CtClass[0], new CtClass[0], "{}", ctClass);
+            staticInitializerMethod = CtNewMethod.make(CtClass.voidType, InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME, new CtClass[0], new CtClass[0], "{}", ctClass);
         } else {
-            staticInitializerMethod = classInitializer.toMethod(AndroidTranslator.STATIC_INITIALIZER_METHOD_NAME, ctClass);
+            staticInitializerMethod = classInitializer.toMethod(InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME, ctClass);
         }
         staticInitializerMethod.setModifiers(Modifier.STATIC | Modifier.PUBLIC);
-
         if (!methodsToIntercept.isEmpty()) {
-            staticInitializerMethod.instrument(new ExprEditor() {
-                @Override
-                public void edit(MethodCall m) throws CannotCompileException {
-                    String methodName = m.getMethodName();
-                    Setup.MethodRef methodRef = new Setup.MethodRef(m.getClassName(), methodName);
-                    if (methodsToIntercept.contains(methodRef)) {
-                        try {
-                            CtMethod method = m.getMethod();
-                            StringBuilder buf = new StringBuilder();
-                            buf.append("$_ = ");
-                            buf.append(RobolectricInternals.class.getName());
-                            buf.append(".intercept($class, \"");
-                            buf.append(methodName);
-                            buf.append("\", (Object) $0, $args, ");
-                            appendParamArray(buf, method);
-                            buf.append(");");
-                            m.replace(buf.toString(), this);
-                        } catch (NotFoundException e) {
-                            throw new RuntimeException(e);
-                        }
-                    }
-                }
-            });
+            staticInitializerMethod.instrument(new NastyMethodInterceptor());
         }
-
         ctClass.addMethod(staticInitializerMethod);
 
         ctClass.makeClassInitializer().setBody("{\n" +
                 RobolectricInternals.class.getName() + ".classInitializing(" + ctClass.getName() + ".class);" +
                 "}");
+    }
+
+    private class NastyMethodInterceptor extends ExprEditor {
+        @Override
+        public void edit(MethodCall m) throws CannotCompileException {
+            String methodName = m.getMethodName();
+            Setup.MethodRef methodRef = new Setup.MethodRef(m.getClassName(), methodName);
+            if (methodsToIntercept.contains(methodRef)) {
+                try {
+                    CtMethod targetMethod = m.getMethod();
+                    StringBuilder buf = new StringBuilder();
+                    buf.append("$_ = ");
+                    buf.append(RobolectricInternals.class.getName());
+                    buf.append(".intercept(\"");
+                    buf.append(m.getClassName());
+                    buf.append("\", \"");
+                    buf.append(methodName);
+                    buf.append("\", (Object) $0, $args, ");
+                    appendParamArray(buf, targetMethod);
+                    buf.append(");");
+                    m.replace(buf.toString(), this);
+                } catch (NotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
     }
 }

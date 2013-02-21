@@ -5,16 +5,21 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.TestBroadcastReceiver;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.List;
 
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNotNull;
+import static junit.framework.Assert.assertNotSame;
+import static junit.framework.Assert.assertSame;
+import static junit.framework.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf_;
-import static junit.framework.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class LocalBroadcastManagerTest {

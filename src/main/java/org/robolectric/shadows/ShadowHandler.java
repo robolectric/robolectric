@@ -26,19 +26,24 @@ import static org.robolectric.Robolectric.shadowOf;
 public class ShadowHandler {
     @RealObject
     private Handler realHandler;
-    private Looper looper = Looper.myLooper();
-    private List<Message> messages = new ArrayList<Message>();
+    private Looper looper;
+    private final List<Message> messages = new ArrayList<Message>();
     private Handler.Callback callback;
 
     public void __constructor__() {
-        this.looper = Looper.myLooper();
+        __constructor__(Looper.myLooper(), null);
     }
 
     public void __constructor__(Looper looper) {
-        this.looper = looper;
+        __constructor__(looper, null);
     }
 
     public void __constructor__(Handler.Callback callback) {
+        __constructor__(Looper.myLooper(), callback);
+    }
+
+    public void __constructor__(Looper looper, Handler.Callback callback) {
+        this.looper = looper;
         this.callback = callback;
     }
 

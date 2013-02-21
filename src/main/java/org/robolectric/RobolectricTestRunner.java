@@ -2,11 +2,17 @@ package org.robolectric;
 
 import android.app.Application;
 import android.content.res.Resources;
+import org.junit.runners.BlockJUnit4ClassRunner;
+import org.junit.runners.model.FrameworkMethod;
+import org.junit.runners.model.InitializationError;
+import org.junit.runners.model.Statement;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
 import org.robolectric.annotation.Values;
+import org.robolectric.annotation.WithConstantInt;
+import org.robolectric.annotation.WithConstantString;
 import org.robolectric.bytecode.ClassHandler;
-import org.robolectric.bytecode.RobolectricClassLoader;
+import org.robolectric.bytecode.InstrumentingClassLoader;
 import org.robolectric.internal.RobolectricTestRunnerInterface;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
@@ -19,10 +25,6 @@ import org.robolectric.util.DatabaseConfig;
 import org.robolectric.util.DatabaseConfig.DatabaseMap;
 import org.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import org.robolectric.util.SQLiteMap;
-import org.junit.runners.BlockJUnit4ClassRunner;
-import org.junit.runners.model.FrameworkMethod;
-import org.junit.runners.model.InitializationError;
-import org.junit.runners.model.Statement;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -38,7 +40,8 @@ import java.util.Map;
 import static org.robolectric.Robolectric.shadowOf;
 
 /**
- * Installs a {@link RobolectricClassLoader} and {@link org.robolectric.res.ResourceLoader} in order to
+ * Installs a {@link org.robolectric.bytecode.InstrumentingClassLoader} and
+ * {@link org.robolectric.res.ResourceLoader} in order to
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements RobolectricTestRunnerInterface {
@@ -83,7 +86,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
     }
 
     protected static boolean isBootstrapped(Class<?> clazz) {
-        return clazz.getClassLoader() instanceof RobolectricClassLoader;
+        return clazz.getClassLoader() instanceof InstrumentingClassLoader;
     }
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
@@ -98,7 +101,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
       final Statement statement = super.methodBlock(method);
         return new Statement() {
             @Override public void evaluate() throws Throwable {
-            	HashMap<Field,Object> withConstantAnnos = getWithConstantAnnotations(method.getMethod());
+                Map<Field, Object> withConstantAnnos = getWithConstantAnnotations(method.getMethod());
 
             	// todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
                 try {
@@ -126,7 +129,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         setupLogging();
         configureShadows(method);
 
-        Robolectric.resetStaticState();
         resetStaticState();
 
         DatabaseConfig.setDatabaseMap(databaseMap); //Set static DatabaseMap in DBConfig
@@ -218,6 +220,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * Override this method to reset the state of static members before each test.
      */
     protected void resetStaticState() {
+        Robolectric.resetStaticState();
     }
 
     private String determineResourceQualifiers(Method method) {
@@ -291,24 +294,24 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 	 * Find all the class and method annotations and pass them to
 	 * addConstantFromAnnotation() for evaluation.
 	 *
-	 * TODO: Add compound annotations to suport defining more than one int and string at a time
+	 * TODO: Add compound annotations to support defining more than one int and string at a time
 	 * TODO: See http://stackoverflow.com/questions/1554112/multiple-annotations-of-the-same-type-on-one-element
 	 *
 	 * @param method
 	 * @return
 	 */
-    private HashMap<Field,Object> getWithConstantAnnotations(Method method) {
-    	HashMap<Field,Object> constants = new HashMap<Field,Object>();
+    private Map<Field, Object> getWithConstantAnnotations(Method method) {
+        Map<Field, Object> constants = new HashMap<Field, Object>();
 
-    	for(Annotation anno:method.getDeclaringClass().getAnnotations()) {
-    		addConstantFromAnnotation(constants, anno);
-    	}
+        for (Annotation anno : method.getDeclaringClass().getAnnotations()) {
+            addConstantFromAnnotation(constants, anno);
+        }
 
-    	for(Annotation anno:method.getAnnotations()) {
-    		addConstantFromAnnotation(constants, anno);
-    	}
+        for (Annotation anno : method.getAnnotations()) {
+            addConstantFromAnnotation(constants, anno);
+        }
 
-    	return constants;
+        return constants;
     }
 
 
@@ -318,15 +321,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      * @param constants
      * @param anno
      */
-    private void addConstantFromAnnotation(HashMap<Field,Object> constants, Annotation anno) {
+    private void addConstantFromAnnotation(Map<Field,Object> constants, Annotation anno) {
         try {
         	String name = anno.annotationType().getName();
         	Object newValue = null;
     	
-	    	if (name.equals( "org.robolectric.annotation.WithConstantString" )) {
+	    	if (name.equals(WithConstantString.class.getName())) {
 	    		newValue = (String) anno.annotationType().getMethod("newValue").invoke(anno);
 	    	} 
-	    	else if (name.equals( "org.robolectric.annotation.WithConstantInt" )) {
+	    	else if (name.equals(WithConstantInt.class.getName())) {
 	    		newValue = (Integer) anno.annotationType().getMethod("newValue").invoke(anno);
 	    	}
 	    	else {
@@ -351,12 +354,12 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
      *
      * @param constants
      */
-    private void setupConstants(HashMap<Field,Object> constants) {
-    	for(Field field:constants.keySet()) {
-    		Object newValue = constants.get(field);
-    		Object oldValue = Robolectric.Reflection.setFinalStaticField(field, newValue);
-    		constants.put(field,oldValue);
-    	}
+    private void setupConstants(Map<Field,Object> constants) {
+        for (Field field : constants.keySet()) {
+            Object newValue = constants.get(field);
+            Object oldValue = Robolectric.Reflection.setFinalStaticField(field, newValue);
+            constants.put(field, oldValue);
+        }
     }
 
     private void setupLogging() {
@@ -414,7 +417,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         return resourceLoader;
     }
 
-    // this method must live on a RobolectricClassLoader-loaded class, so it can't be on RobolectricContext
+    // this method must live on a InstrumentingClassLoader-loaded class, so it can't be on RobolectricContext
     protected ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
         Map<String, ResourceLoader> resourceLoaders = new HashMap<String, ResourceLoader>();
 

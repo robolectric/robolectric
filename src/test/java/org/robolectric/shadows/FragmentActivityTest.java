@@ -133,7 +133,7 @@ public class FragmentActivityTest {
 
         activity = new TestFragmentActivity();
         activity.onCreate(bundle);
-        shadowOf(activity).onStart();
+        shadowOf(activity).callOnStart();
         TestFragmentManager fragmentManager = (TestFragmentManager) activity.getSupportFragmentManager();
         assertEquals(2, fragmentManager.getFragments().size());
         TestFragment restoredFrag = (TestFragment) fragmentManager.getFragments().get(containerId);

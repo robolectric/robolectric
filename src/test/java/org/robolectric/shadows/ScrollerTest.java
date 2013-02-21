@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.view.animation.BounceInterpolator;
 import android.widget.Scroller;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
@@ -16,7 +17,7 @@ public class ScrollerTest {
 
     @Before
     public void setup() throws Exception {
-        scroller = new Scroller(null, null);
+        scroller = new Scroller(Robolectric.application, new BounceInterpolator());
     }
 
     @Test
@@ -42,7 +43,6 @@ public class ScrollerTest {
 
     @Test
     public void computeScrollOffsetShouldCalculateWhetherScrollIsFinished() throws Exception {
-
         assertThat(scroller.computeScrollOffset(), equalTo(false));
 
         scroller.startScroll(0, 0, 12, 36, 1000);

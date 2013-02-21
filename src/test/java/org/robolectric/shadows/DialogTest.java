@@ -119,7 +119,7 @@ public class DialogTest {
         
         dialog.show();
 
-        assertEquals(dialog, ShadowDialog.getLatestDialog());
+        assertSame(dialog, ShadowDialog.getLatestDialog());
         assertNull(ShadowAlertDialog.getLatestAlertDialog());
     }
 

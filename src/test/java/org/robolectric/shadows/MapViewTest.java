@@ -7,7 +7,7 @@ import android.view.View;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
 import org.robolectric.TestRunners;
-import org.robolectric.bytecode.AndroidTranslatorTest;
+import org.robolectric.bytecode.ShadowingTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -163,7 +163,7 @@ public class MapViewTest {
         }
     }
 
-    private class MyOverlay extends AndroidTranslatorTest.ItemizedOverlayForTests {
+    private class MyOverlay extends ShadowingTest.ItemizedOverlayForTests {
         private MotionEvent lastMotionEvent;
         private boolean shouldConsumeEvent = true;
 

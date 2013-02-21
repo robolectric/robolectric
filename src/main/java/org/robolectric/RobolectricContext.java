@@ -1,17 +1,17 @@
 package org.robolectric;
 
-import android.content.res.XmlResourceParser;
-import android.util.AttributeSet;
 import org.apache.maven.artifact.ant.DependenciesTask;
 import org.apache.maven.model.Dependency;
 import org.apache.tools.ant.Project;
 import org.robolectric.bytecode.AndroidTranslator;
+import org.robolectric.bytecode.AsmInstrumentingClassLoader;
 import org.robolectric.bytecode.ClassCache;
 import org.robolectric.bytecode.ClassHandler;
-import org.robolectric.bytecode.RobolectricClassLoader;
+import org.robolectric.bytecode.JavassistInstrumentingClassLoader;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.bytecode.Setup;
 import org.robolectric.bytecode.ShadowWrangler;
+import org.robolectric.bytecode.ZipClassCache;
 import org.robolectric.internal.RobolectricTestRunnerInterface;
 import org.robolectric.res.AndroidResourcePathFinder;
 import org.robolectric.res.ResourcePath;
@@ -21,7 +21,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLClassLoader;
 import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.Map;
@@ -32,7 +31,7 @@ public class RobolectricContext {
     private static final Map<Class<? extends RobolectricTestRunner>, RobolectricContext> contextsByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, RobolectricContext>();
 
     private final AndroidManifest appManifest;
-    private final RobolectricClassLoader robolectricClassLoader;
+    private final ClassLoader robolectricClassLoader;
     private final ClassHandler classHandler;
     public static RobolectricContext mostRecentRobolectricContext; // ick, race condition
 
@@ -50,7 +49,11 @@ public class RobolectricContext {
         synchronized (contextsByTestRunner) {
             robolectricContext = contextsByTestRunner.get(robolectricTestRunnerClass);
             if (robolectricContext == null) {
-                robolectricContext = factory.create();
+                try {
+                    robolectricContext = factory.create();
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
                 contextsByTestRunner.put(robolectricTestRunnerClass, robolectricContext);
             }
         }
@@ -82,7 +85,7 @@ public class RobolectricContext {
             classCacheDirectory = new File(classCachePath);
         }
 
-        return new ClassCache(new File(classCacheDirectory, "cached-robolectric-classes.jar").getAbsolutePath(), AndroidTranslator.CACHE_VERSION);
+        return new ZipClassCache(new File(classCacheDirectory, "cached-robolectric-classes.jar").getAbsolutePath(), AndroidTranslator.CACHE_VERSION);
     }
 
     public AndroidTranslator createAndroidTranslator(Setup setup, ClassCache classCache) {
@@ -107,14 +110,17 @@ public class RobolectricContext {
     }
 
     private Class<?> bootstrapTestClass(Class<?> testClass) {
-        Class<?> bootstrappedTestClass = robolectricClassLoader.bootstrap(testClass);
-        return bootstrappedTestClass;
+        try {
+            return robolectricClassLoader.loadClass(testClass.getName());
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public RobolectricTestRunnerInterface getBootstrappedTestRunner(RobolectricTestRunnerInterface originalTestRunner) {
         Class<?> originalTestClass = originalTestRunner.getTestClass().getJavaClass();
-        Class<?> bootstrappedTestClass = robolectricClassLoader.bootstrap(originalTestClass);
-        Class<?> bootstrappedTestRunnerClass = robolectricClassLoader.bootstrap(originalTestRunner.getClass());
+        Class<?> bootstrappedTestClass = bootstrapTestClass(originalTestClass);
+        Class<?> bootstrappedTestRunnerClass = bootstrapTestClass(originalTestRunner.getClass());
 
         try {
             Constructor<?> constructorForDelegate = bootstrappedTestRunnerClass.getConstructor(Class.class);
@@ -142,35 +148,30 @@ public class RobolectricContext {
         }
     }
 
-    protected RobolectricClassLoader createRobolectricClassLoader(Setup setup, ClassCache classCache, AndroidTranslator androidTranslator) {
-        final ClassLoader parentClassLoader = this.getClass().getClassLoader();
-        ClassLoader realAndroidJarsClassLoader = new URLClassLoader(
-                artifactUrls(realAndroidDependency("android-base"),
-                        realAndroidDependency("android-kxml2"),
-                        realAndroidDependency("android-luni"))
-        , null) {
-            @Override
-            protected Class<?> findClass(String s) throws ClassNotFoundException {
-                // load interfaces from the base classpath, not the real libs...
-                if (s.equals(AttributeSet.class.getName()) || s.equals(XmlResourceParser.class.getName())) {
-                    return parentClassLoader.loadClass(s);
-                }
-
-                try {
-                    return super.findClass(s);
-                } catch (ClassNotFoundException e) {
-                    return parentClassLoader.loadClass(s);
-                }
-            }
-        };
-        RobolectricClassLoader robolectricClassLoader = new RobolectricClassLoader(realAndroidJarsClassLoader, classCache, androidTranslator, setup);
+    protected ClassLoader createRobolectricClassLoader(Setup setup, ClassCache classCache, AndroidTranslator androidTranslator) {
+        URL[] urls = artifactUrls(realAndroidDependency("android-base"),
+                realAndroidDependency("android-kxml2"),
+                realAndroidDependency("android-luni"));
+        ClassLoader robolectricClassLoader;
+        if (useAsm()) {
+            robolectricClassLoader = new AsmInstrumentingClassLoader(setup, urls);
+        } else {
+            ClassLoader realSdkClassLoader = JavassistInstrumentingClassLoader.makeClassloader(this.getClass().getClassLoader(), urls);
+            robolectricClassLoader = new JavassistInstrumentingClassLoader(realSdkClassLoader, classCache, androidTranslator, setup);
+        }
         injectClassHandler(robolectricClassLoader);
         return robolectricClassLoader;
     }
 
-    private void injectClassHandler(RobolectricClassLoader robolectricClassLoader) {
+    public boolean useAsm() {
+        return true;
+    }
+
+    private void injectClassHandler(ClassLoader robolectricClassLoader) {
         try {
-            Field field = robolectricClassLoader.loadClass(RobolectricInternals.class.getName()).getDeclaredField("classHandler");
+            String className = RobolectricInternals.class.getName();
+            Class<?> robolectricInternalsClass = robolectricClassLoader.loadClass(className);
+            Field field = robolectricInternalsClass.getDeclaredField("classHandler");
             field.setAccessible(true);
             field.set(null, classHandler);
         } catch (NoSuchFieldException e) {
@@ -182,7 +183,7 @@ public class RobolectricContext {
         }
     }
 
-    public RobolectricClassLoader getRobolectricClassLoader() {
+    public ClassLoader getRobolectricClassLoader() {
         return robolectricClassLoader;
     }
 
@@ -230,7 +231,9 @@ public class RobolectricContext {
         return dependency;
     }
 
-    /** @deprecated use {@link org.robolectric.Robolectric.Reflection#setFinalStaticField(Class, String, Object)} */
+    /**
+     * @deprecated use {@link org.robolectric.Robolectric.Reflection#setFinalStaticField(Class, String, Object)}
+     */
     public static void setStaticValue(Class<?> clazz, String fieldName, Object value) {
         Robolectric.Reflection.setFinalStaticField(clazz, fieldName, value);
     }

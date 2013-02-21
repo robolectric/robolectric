@@ -15,7 +15,7 @@ public class AndroidTranslatorUnitTest {
 
     @Test
     public void testOnLoadWithNonInstrumentedClass() throws Exception {
-        ClassCache cache = mock(ClassCache.class);
+        ClassCache cache = mock(ZipClassCache.class);
 
         AndroidTranslator translator = new AndroidTranslator(cache, new Setup());
 
@@ -26,7 +26,7 @@ public class AndroidTranslatorUnitTest {
 
     @Test(expected = IllegalStateException.class)
     public void shouldThrowIllegalStateIfClassCacheIsWriting() throws Exception {
-        ClassCache cache = mock(ClassCache.class);
+        ClassCache cache = mock(ZipClassCache.class);
         when(cache.isWriting()).thenReturn(true);
         new AndroidTranslator(cache, new Setup()).onLoad(classPool, "java.lang.Object");
     }

@@ -11,11 +11,9 @@ import org.robolectric.internal.Implements;
  * Shadows the {@code android.webkit.CookieSyncManager} class.
  */
 @Implements(CookieSyncManager.class)
-public class ShadowCookieSyncManager {
+public class ShadowCookieSyncManager extends ShadowWebSyncManager {
 
     private static CookieSyncManager sRef;
-
-    private boolean synced = false;
 
     @Implementation
     public static synchronized CookieSyncManager createInstance(Context ctx) {
@@ -31,18 +29,5 @@ public class ShadowCookieSyncManager {
             throw new IllegalStateException("createInstance must be called first");
         }
         return sRef;
-    }
-
-    @Implementation
-    public void sync() {
-        synced = true;
-    }
-
-    public boolean synced() {
-        return synced;
-    }
-
-    public void reset() {
-        synced = false;
     }
 }

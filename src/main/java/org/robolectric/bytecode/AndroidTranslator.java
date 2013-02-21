@@ -1,12 +1,18 @@
 package org.robolectric.bytecode;
 
 import android.net.Uri;
-import javassist.*;
+import javassist.CannotCompileException;
+import javassist.ClassMap;
+import javassist.ClassPool;
+import javassist.CtClass;
+import javassist.CtField;
 import javassist.Modifier;
+import javassist.NotFoundException;
+import javassist.Translator;
 
 import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
+import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class AndroidTranslator implements Translator {
@@ -14,31 +20,13 @@ public class AndroidTranslator implements Translator {
      * IMPORTANT -- increment this number when the bytecode generated for modified classes changes
      * so the cache file can be invalidated.
      */
-    public static final int CACHE_VERSION = 23;
+    public static final int CACHE_VERSION = 24;
 //    public static final int CACHE_VERSION = -1;
-
-    public static final String CLASS_HANDLER_DATA_FIELD_NAME = "__shadow__"; // todo: rename
-    static final String STATIC_INITIALIZER_METHOD_NAME = "__staticInitializer__";
 
     private final ClassCache classCache;
     private final Setup setup;
 
-    private static boolean debug = false;
-
-    public static void performStaticInitialization(Class<?> clazz) {
-        if (debug) System.out.println("static initializing " + clazz);
-        try {
-            Method originalStaticInitializer = clazz.getDeclaredMethod(STATIC_INITIALIZER_METHOD_NAME);
-            originalStaticInitializer.setAccessible(true);
-            originalStaticInitializer.invoke(null);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
-    }
+    private static boolean debug = true;
 
     public AndroidTranslator(ClassCache classCache, Setup setup) {
         this.classCache = classCache;
@@ -50,7 +38,7 @@ public class AndroidTranslator implements Translator {
     }
 
     @Override
-    public void onLoad(ClassPool classPool, String className) throws NotFoundException, CannotCompileException {
+    public void onLoad(final ClassPool classPool, String className) throws NotFoundException, CannotCompileException {
         if (classCache.isWriting()) {
             throw new IllegalStateException("shouldn't be modifying bytecode after we've started writing cache! class=" + className);
         }
@@ -60,9 +48,12 @@ public class AndroidTranslator implements Translator {
             return;
         }
 
-        CtClass ctClass;
+        final CtClass ctClass;
         try {
-            String translatedClassName = setup.translateClassName(className);
+            Map<String,String> classNameTranslationMap = setup.classNameTranslations();
+            String translatedClassName = classNameTranslationMap.get(className);
+            if (translatedClassName == null) translatedClassName = className;
+
             ctClass = classPool.get(translatedClassName);
 
             if (!translatedClassName.equals(className)) {
@@ -71,6 +62,12 @@ public class AndroidTranslator implements Translator {
         } catch (NotFoundException e) {
             throw new IgnorableClassNotFoundException(e);
         }
+
+        ClassMap map = new ClassMap();
+        for (Map.Entry<String, String> entry : setup.classNameTranslations().entrySet()) {
+            map.put(entry.getKey(), entry.getValue());
+        }
+        ctClass.replaceClassName(map);
 
         boolean shouldInstrument = setup.shouldInstrument(new JavassistClassInfo(ctClass));
         if (debug)
@@ -86,9 +83,9 @@ public class AndroidTranslator implements Translator {
 
             CtClass objectClass = classPool.get(Object.class.getName());
             try {
-                ctClass.getField(CLASS_HANDLER_DATA_FIELD_NAME);
+                ctClass.getField(InstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME);
             } catch (NotFoundException e1) {
-                CtField field = new CtField(objectClass, CLASS_HANDLER_DATA_FIELD_NAME, ctClass);
+                CtField field = new CtField(objectClass, InstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME, ctClass);
                 field.setModifiers(java.lang.reflect.Modifier.PUBLIC);
                 ctClass.addField(field);
             }

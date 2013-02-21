@@ -398,4 +398,9 @@ public class ShadowBundle {
     public int hashCode() {
         return map != null ? map.hashCode() : 0;
     }
+
+    @Override @Implementation
+    public String toString() {
+        return map.toString();
+    }
 }

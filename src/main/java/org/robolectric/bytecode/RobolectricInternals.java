@@ -1,8 +1,6 @@
 package org.robolectric.bytecode;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.*;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -48,13 +46,18 @@ public class RobolectricInternals {
         }
     }
 
+    public static <T> T directlyOn(T shadowedObject, Class<T> clazz) {
+        return newInstance(clazz, new Class[]{DirectObjectMarker.class, clazz},
+                new Object[]{DirectObjectMarker.INSTANCE, shadowedObject});
+    }
+
     public static <T> T directlyOn(T shadowedObject) {
         Vars vars = getVars();
 
         if (vars.callDirectly != null) {
             Object expectedInstance = vars.callDirectly;
             vars.callDirectly = null;
-            throw new RuntimeException("already expecting a direct call on <" + expectedInstance + "> but here's a new request for <" + shadowedObject + ">", vars.stackTraceThrowable);
+            throw new RuntimeException("already expecting a direct call on <" + desc(expectedInstance) + "> but here's a new request for <" + desc(shadowedObject) + ">", vars.stackTraceThrowable);
         }
 
         vars.callDirectly = shadowedObject;
@@ -83,8 +86,11 @@ public class RobolectricInternals {
         }
     }
 
-    private static String desc(Object expectedInstance) {
-        return (expectedInstance instanceof Class) ? "class " + ((Class) expectedInstance).getName() : "instance of " + expectedInstance.getClass().getName();
+    private static String desc(Object o) {
+        return o == null ? "null" : (
+                (o instanceof Class)
+                        ? "class " + ((Class) o).getName()
+                        : "instance 0x" + Integer.toHexString(System.identityHashCode(o)) + " of " + o.getClass().getName());
     }
 
     public static Field getShadowField(Object instance) {
@@ -92,7 +98,7 @@ public class RobolectricInternals {
         Field field = shadowFieldMap.get(clazz);
         if (field == null) {
             try {
-                field = clazz.getField(AndroidTranslator.CLASS_HANDLER_DATA_FIELD_NAME);
+                field = clazz.getField(InstrumentingClassLoader.CLASS_HANDLER_DATA_FIELD_NAME);
             } catch (NoSuchFieldException e) {
                 throw new RuntimeException(instance.getClass().getName() + " has no shadow field", e);
             }
@@ -116,9 +122,9 @@ public class RobolectricInternals {
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
-    public static Object intercept(Class clazz, String methodName, Object instance, Object[] paramTypes, Object[] params) throws Throwable {
+    public static Object intercept(String className, String methodName, Object instance, Object[] paramTypes, Object[] params) throws Throwable {
         try {
-            return classHandler.intercept(clazz, methodName, instance, paramTypes, params);
+            return classHandler.intercept(className, methodName, instance, paramTypes, params);
         } catch(java.lang.LinkageError e) {
             throw new Exception(e);
         }
@@ -168,5 +174,33 @@ public class RobolectricInternals {
     @SuppressWarnings({"UnusedDeclaration"})
     public static Object autobox(double o) {
         return o;
+    }
+
+    public static String directMethodName(String methodName) {
+        return String.format("$$robo$$%s", methodName);
+    }
+
+    public static String directMethodName(String className, String methodName) {
+        String simpleName = className;
+        int lastDotIndex = simpleName.lastIndexOf(".");
+        if (lastDotIndex != -1) simpleName = simpleName.substring(lastDotIndex + 1);
+        int lastDollarIndex = simpleName.lastIndexOf("$");
+        if (lastDollarIndex != -1) simpleName = simpleName.substring(lastDollarIndex + 1);
+        return String.format("$$robo$$%s_%04x_%s", simpleName, className.hashCode() & 0xffff, methodName);
+    }
+
+    // we need a better spot for these methods that don't rely on being in the same classloader as their operands
+    public static void performStaticInitialization(Class<?> clazz) {
+        try {
+            Method originalStaticInitializer = clazz.getDeclaredMethod(InstrumentingClassLoader.STATIC_INITIALIZER_METHOD_NAME);
+            originalStaticInitializer.setAccessible(true);
+            originalStaticInitializer.invoke(null);
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        } catch (InvocationTargetException e) {
+            throw new RuntimeException(e);
+        } catch (IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

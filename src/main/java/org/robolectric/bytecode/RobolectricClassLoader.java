@@ -20,9 +20,9 @@ public class RobolectricClassLoader extends javassist.Loader {
         super(classLoader, null);
         this.setup = setup;
 
-        List<Class<?>> classesToDelegate = setup.getClassesToDelegateFromRcl();
-        for (Class<?> aClass : classesToDelegate) {
-            delegateLoadingOf(aClass.getName());
+        List<String> classesToDelegate = setup.getClassesToDelegateFromRcl();
+        for (String className : classesToDelegate) {
+            delegateLoadingOf(className);
         }
 
 

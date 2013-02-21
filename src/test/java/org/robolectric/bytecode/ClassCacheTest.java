@@ -8,7 +8,7 @@ public class ClassCacheTest {
 
     @Test
     public void fixForCorberturaAndSonarCodeCoverage() throws InterruptedException {
-        final ClassCache classCache = new ClassCache("target/test.txt", AndroidTranslator.CACHE_VERSION);
+        final ClassCache classCache = new ZipClassCache("target/test.txt", AndroidTranslator.CACHE_VERSION);
         
         // Substitute this LOCK with your monitor (could be you object you are
         // testing etc.)
@@ -47,7 +47,7 @@ public class ClassCacheTest {
 
     @Test
     public void fixForCorberturaAndSonarCodeCoverageTheOtherWayAround() throws InterruptedException {
-        final ClassCache classCache = new ClassCache("target/test.txt", AndroidTranslator.CACHE_VERSION);
+        final ZipClassCache classCache = new ZipClassCache("target/test.txt", AndroidTranslator.CACHE_VERSION);
         
         // Substitute this LOCK with your monitor (could be you object you are
         // testing etc.)
@@ -105,10 +105,10 @@ public class ClassCacheTest {
 
     class TestThreadSaveAllClassesToCache extends  Thread {
         public boolean ready = false;
-        final ClassCache classCache;
+        final ZipClassCache classCache;
         
         
-        public TestThreadSaveAllClassesToCache(ClassCache classCache) {
+        public TestThreadSaveAllClassesToCache(ZipClassCache classCache) {
             super();
             this.classCache = classCache;
         }

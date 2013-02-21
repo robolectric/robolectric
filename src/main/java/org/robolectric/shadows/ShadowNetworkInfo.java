@@ -20,6 +20,9 @@ public class ShadowNetworkInfo {
     private int connectionSubType;
     private NetworkInfo.DetailedState detailedState;
 
+    public static void __staticInitializer__() {
+    }
+
     public static NetworkInfo newInstance() {
         return newInstance(null);
     }

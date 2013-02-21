@@ -15,43 +15,64 @@ import org.robolectric.res.ResourcePath;
 import org.robolectric.util.DatabaseConfig;
 import org.robolectric.util.I18nException;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static java.util.Arrays.asList;
 
 public class Setup {
-    public List<Class<?>> getClassesToDelegateFromRcl() {
-        //noinspection unchecked
-        return asList(
-                Uri__FromAndroid.class,
-                RobolectricTestRunnerInterface.class,
-                RealObject.class,
-                ShadowWrangler.class,
-                Vars.class,
-                AndroidManifest.class,
-                DatabaseConfig.DatabaseMap.class,
-                R.class,
+    public static final List<String> CLASSES_TO_ALWAYS_DELEGATE = stringify(
+            Uri__FromAndroid.class,
+            RobolectricTestRunnerInterface.class,
+            RealObject.class,
+            ShadowWrangler.class,
+            Vars.class,
+            AndroidManifest.class,
+            DatabaseConfig.DatabaseMap.class,
+            R.class,
 
-                RobolectricClassLoader.class,
-                RobolectricContext.class,
-                RobolectricContext.Factory.class,
-                ResourcePath.class,
-                AndroidTranslator.class,
-                ClassHandler.class,
-                Instrument.class,
-                DoNotInstrument.class,
-                Values.class,
-                EnableStrictI18n.class,
-                DisableStrictI18n.class,
-                I18nException.class
-        );
+            org.robolectric.bytecode.InstrumentingClassLoader.class,
+            org.robolectric.bytecode.JavassistInstrumentingClassLoader.class,
+            org.robolectric.bytecode.AsmInstrumentingClassLoader.class,
+            RobolectricContext.class,
+            RobolectricContext.Factory.class,
+            ResourcePath.class,
+            AndroidTranslator.class,
+            ClassHandler.class,
+            Instrument.class,
+            DoNotInstrument.class,
+            Values.class,
+            EnableStrictI18n.class,
+            DisableStrictI18n.class,
+            I18nException.class,
+            org.robolectric.bytecode.DirectObjectMarker.class
+    );
+
+    private static List<String> stringify(Class... classes) {
+        ArrayList<String> strings = new ArrayList<String>();
+        for (Class aClass : classes) {
+            strings.add(aClass.getName());
+        }
+        return strings;
+    }
+
+    public List<String> getClassesToDelegateFromRcl() {
+        //noinspection unchecked
+        return CLASSES_TO_ALWAYS_DELEGATE;
     }
 
 
     public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz, String methodName, Class<?>[] paramClasses) {
+        if (clazz.getName().equals("android.app.PendingIntent")) return false; // todo: grot as we remove some more shadows
+        if (methodName.equals("equals") && paramClasses.length == 1 && paramClasses[0] == Object.class) return true;
+        if (methodName.equals("hashCode") && paramClasses.length == 0) return true;
+        if (methodName.equals("toString") && paramClasses.length == 0) return true;
+
         return !isFromAndroidSdk(clazz);
     }
 
@@ -65,7 +86,6 @@ public class Setup {
         }
 
         return false;
-
     }
 
     public boolean isFromAndroidSdk(ClassInfo classInfo) {
@@ -80,9 +100,9 @@ public class Setup {
     }
 
     public boolean isFromAndroidSdk(String className) {
-        return className.startsWith("android")
+        return className.startsWith("android.")
                 || className.startsWith("libcore.")
-                || className.startsWith("com.google.android.maps")
+                || className.startsWith("com.google.android.maps.")
                 || className.startsWith("org.apache.http.impl.client.DefaultRequestDirector");
     }
 
@@ -98,8 +118,17 @@ public class Setup {
             return name.contains("Test");
         }
 
+        if (name.matches("com\\.android\\.internal\\.R(\\$.*)?")) return true;
+
         return !(
                 name.matches(".*\\.R(|\\$[a-z]+)$")
+                        || CLASSES_TO_ALWAYS_DELEGATE.contains(name)
+                        || name.startsWith("java.")
+                        || name.startsWith("javax.")
+                        || name.startsWith("sun.")
+                        || name.startsWith("com.sun.")
+                        || name.startsWith("org.w3c.")
+                        || name.startsWith("org.xml.")
                         || name.startsWith("org.junit")
                         || name.startsWith("org.hamcrest")
                         || name.startsWith("org.specs2") // allows for android projects with mixed scala\java tests to be
@@ -110,30 +139,39 @@ public class Setup {
 
     public Set<MethodRef> methodsToIntercept() {
         return Collections.unmodifiableSet(new HashSet<MethodRef>(asList(
-                new MethodRef(System.class, "loadLibrary")
+                new MethodRef(System.class, "loadLibrary"),
+                new MethodRef("android.os.StrictMode", "trackActivity"),
+                new MethodRef("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", "*"),
+                new MethodRef("com.android.i18n.phonenumbers.PhoneNumberUtil", "*"),
+                new MethodRef("dalvik.system.CloseGuard", "get")
         )));
     }
 
-    public static class FakeSubclass {}
-
     /**
      * Map from a requested class to an alternate stand-in, or not.
-     * @param className
      * @return
      */
-    public String translateClassName(String className) {
-        if (className.equals("com.android.i18n.phonenumbers.NumberParseException")) {
-            return Exception.class.getName();
-        } else if (className.equals("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber")) {
-            return FakeSubclass.class.getName();
-        } else {
-            return className;
-        }
+    public Map<String, String> classNameTranslations() {
+        Map<String, String> map = new HashMap<String, String>();
+        map.put("com.android.i18n.phonenumbers.NumberParseException", Exception.class.getName());
+        map.put("com.android.i18n.phonenumbers.PhoneNumberUtil", FakeClass.class.getName());
+        map.put("com.android.i18n.phonenumbers.PhoneNumberUtil$PhoneNumberFormat", FakeClass.FakeInnerClass.class.getName());
+        map.put("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", FakeClass.class.getName());
+        map.put("dalvik.system.CloseGuard", Object.class.getName());
+        return map;
+    }
+
+    public static class FakeClass {
+        public static class FakeInnerClass {}
+    }
+
+    public boolean containsStubs(ClassInfo classInfo) {
+        return classInfo.getName().startsWith("com.google.android.maps.");
     }
 
     public static class MethodRef {
-        private final String className;
-        private final String methodName;
+        public final String className;
+        public final String methodName;
 
         public MethodRef(Class<?> clazz, String methodName) {
             this(clazz.getName(), methodName);
@@ -162,6 +200,14 @@ public class Setup {
             int result = className.hashCode();
             result = 31 * result + methodName.hashCode();
             return result;
+        }
+
+        @Override
+        public String toString() {
+            return "MethodRef{" +
+                    "className='" + className + '\'' +
+                    ", methodName='" + methodName + '\'' +
+                    '}';
         }
     }
 }

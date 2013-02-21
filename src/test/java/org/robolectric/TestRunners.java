@@ -121,6 +121,12 @@ public class TestRunners {
                     };
                 }
             }));
+
+
+        }
+
+        @Override
+        protected void resetStaticState() {
         }
 
         @Override protected void configureShadows(Method testMethod) {

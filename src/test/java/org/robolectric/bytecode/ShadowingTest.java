@@ -29,8 +29,6 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.core.StringContains.containsString;
-import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -42,7 +40,7 @@ import static org.robolectric.Robolectric.bindShadowClass;
 import static org.robolectric.Robolectric.directlyOn;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class AndroidTranslatorTest {
+public class ShadowingTest {
 
     @Test
     public void testStaticMethodsAreDelegated() throws Exception {
@@ -169,6 +167,7 @@ public class AndroidTranslatorTest {
         bindShadowClass(Pony.ShadowPony.class);
 
         assertEquals("I'm shadily prancing to market!", Pony.prance("market"));
+
         directlyOn(Pony.class);
         assertEquals("I'm prancing to market!", Pony.prance("market"));
 
@@ -195,8 +194,8 @@ public class AndroidTranslatorTest {
             e = e1;
         }
         assertNotNull(e);
-        assertThat(e.getMessage(), startsWith("expected to perform direct call on instance of android.view.View"));
-        assertThat(e.getMessage(), containsString(" but got instance of android.view.View"));
+        String message = e.getMessage().replaceAll("0x[0-9a-z]+", "0xXXXXXXXX");
+        assertThat(message, equalTo("expected to perform direct call on instance 0xXXXXXXXX of android.view.View but got instance 0xXXXXXXXX of android.view.View"));
     }
 
     @Test
@@ -239,13 +238,11 @@ public class AndroidTranslatorTest {
 
     @Test
     public void shouldGenerateSeparatedConstructorBodies() throws Exception {
-//        Robolectric.getShadowWranger().delegateBackToInstrumented = true;
-//        Robolectric.bindShadowClass(ShadowOfClassWithSomeConstructors.class);
         ClassWithSomeConstructors o = new ClassWithSomeConstructors("my name");
         assertNull(o.name);
 
-        Robolectric.directlyOn(o);
-        Method realConstructor = o.getClass().getMethod("__constructor__", String.class);
+        Method realConstructor = o.getClass().getDeclaredMethod(InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME, String.class);
+        realConstructor.setAccessible(true);
         realConstructor.invoke(o, "my name");
         assertEquals("my name", o.name);
     }
