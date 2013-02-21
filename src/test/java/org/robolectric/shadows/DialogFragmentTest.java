@@ -32,6 +32,9 @@ public class DialogFragmentTest {
         activity = new FragmentActivity();
         dialogFragment = new TestDialogFragment();
         fragmentManager = activity.getSupportFragmentManager();
+        shadowOf(activity).callOnCreate(null);
+        shadowOf(activity).callOnStart();
+        shadowOf(activity).callOnResume();
     }
 
     @Test

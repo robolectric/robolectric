@@ -118,11 +118,7 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     private ResourceLoader pickFor(ResName resName) {
-        if (resName == null) return new XResourceLoader(null) {
-            @Override
-            void doInitialize() {
-            }
-        };
+        if (resName == null) return new NullResourceLoader();
         return pickFor(resName.namespace);
     }
 
@@ -132,5 +128,20 @@ public class RoutingResourceLoader implements ResourceLoader {
             throw new RuntimeException("no ResourceLoader found for " + namespace);
         }
         return resourceLoader;
+    }
+
+    private static class NullResourceLoader extends XResourceLoader {
+        public NullResourceLoader() {
+            super(null);
+        }
+
+        @Override
+        void doInitialize() {
+        }
+
+        @Override
+        public String getNameForId(int id) {
+            return null;
+        }
     }
 }

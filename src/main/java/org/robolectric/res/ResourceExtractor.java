@@ -65,7 +65,7 @@ public class ResourceExtractor extends ResourceIndex {
     }
 
     @Override
-    public Integer getResourceId(ResName resName) {
+    public synchronized Integer getResourceId(ResName resName) {
         Integer id = resourceNameToId.get(resName);
         if (id == null && "android".equals(resName.namespace)) {
             if (maxUsedInt == null) {
@@ -80,7 +80,7 @@ public class ResourceExtractor extends ResourceIndex {
     }
 
     @Override
-    public ResName getResName(int resourceId) {
+    public synchronized ResName getResName(int resourceId) {
         return resourceIdToResName.get(resourceId);
     }
 }

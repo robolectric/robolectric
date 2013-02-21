@@ -51,6 +51,8 @@ abstract class XResourceLoader implements ResourceLoader {
         viewNodes.makeImmutable();
         menuNodes.makeImmutable();
         drawableNodes.makeImmutable();
+        preferenceNodes.makeImmutable();
+        xmlDocuments.makeImmutable();
     }
 
     @Override
@@ -154,6 +156,8 @@ abstract class XResourceLoader implements ResourceLoader {
 
     @Override
     public PreferenceNode getPreferenceNode(ResName resName, String qualifiers) {
+        initialize();
+
         return preferenceNodes.get(resName, qualifiers);
     }
 

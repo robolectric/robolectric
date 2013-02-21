@@ -36,6 +36,14 @@ public class MergedResourceIndex extends ResourceIndex {
 
     @Override
     public ResName getResName(int resourceId) {
-        return resourceIdToResName.get(resourceId);
+        // todo: this is pretty silly...
+        ResName resName = resourceIdToResName.get(resourceId);
+        if (resName == null) {
+            for (ResourceIndex subIndex : subIndexes) {
+                resName = subIndex.getResName(resourceId);
+                if (resName != null) return resName;
+            }
+        }
+        return resName;
     }
 }

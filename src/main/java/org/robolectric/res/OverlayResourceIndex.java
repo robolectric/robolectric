@@ -1,9 +1,5 @@
 package org.robolectric.res;
 
-import org.robolectric.Robolectric;
-
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -49,7 +45,8 @@ class OverlayResourceIndex extends ResourceIndex {
 
     @Override
     public ResName getResName(int resourceId) {
-        return resourceIdToResName.get(resourceId).withPackageName(packageName);
+        ResName resName = resourceIdToResName.get(resourceId);
+        return resName == null ? null : resName.withPackageName(packageName);
     }
 
     class ResEntries {
@@ -83,33 +80,33 @@ class OverlayResourceIndex extends ResourceIndex {
 //                }
 //            }
 //        }
-
-        private void setField(Class<?> rClass, ResName resName, int value) {
-            Class<?> innerClass = getInnerClass(rClass, resName.type);
-            try {
-                Field field = innerClass.getDeclaredField(resName.name);
-                if (Modifier.isFinal(field.getModifiers())) {
-                    System.err.println("*** WARNING!!! " + field + " is final!");
-                    Robolectric.Reflection.setFinalStaticField(innerClass, resName.name, value);
-                } else {
-                    field.set(null, value);
-                }
-            } catch (NoSuchFieldException e) {
-                throw new RuntimeException(e);
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
-
-        }
-
-        private Class<?> getInnerClass(Class<?> rClass, String name) {
-            for (Class<?> aClass : rClass.getClasses()) {
-                if (aClass.getSimpleName().equals(name)) {
-                    return aClass;
-                }
-            }
-            throw new RuntimeException("couldn't find " + rClass.getName() + "." + name);
-        }
+//
+//        private void setField(Class<?> rClass, ResName resName, int value) {
+//            Class<?> innerClass = getInnerClass(rClass, resName.type);
+//            try {
+//                Field field = innerClass.getDeclaredField(resName.name);
+//                if (Modifier.isFinal(field.getModifiers())) {
+//                    System.err.println("*** WARNING!!! " + field + " is final!");
+//                    Robolectric.Reflection.setFinalStaticField(innerClass, resName.name, value);
+//                } else {
+//                    field.set(null, value);
+//                }
+//            } catch (NoSuchFieldException e) {
+//                throw new RuntimeException(e);
+//            } catch (IllegalAccessException e) {
+//                throw new RuntimeException(e);
+//            }
+//
+//        }
+//
+//        private Class<?> getInnerClass(Class<?> rClass, String name) {
+//            for (Class<?> aClass : rClass.getClasses()) {
+//                if (aClass.getSimpleName().equals(name)) {
+//                    return aClass;
+//                }
+//            }
+//            throw new RuntimeException("couldn't find " + rClass.getName() + "." + name);
+//        }
     }
 
     class ResEntry {
