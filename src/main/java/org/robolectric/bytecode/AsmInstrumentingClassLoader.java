@@ -322,7 +322,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         }
 
         public void instrument() {
-            fixAccess(classNode);
+            makePublic(classNode);
             classNode.access = classNode.access & ~ACC_FINAL;
 
             Set<String> foundMethods = new HashSet<String>();
@@ -338,7 +338,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                     classNode.methods.add(generateStaticInitializerNotifierMethod());
                 } else if (method.name.equals("<init>")) {
                     instrumentConstructor(method);
-                } else if (!isSyntheticAccessorMethod(method)) {
+                } else if (!isSyntheticAccessorMethod(method) && !Modifier.isAbstract(method.access)) {
                     instrumentNormalMethod(method);
                 }
             }
@@ -407,7 +407,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         }
 
         private void instrumentConstructor(MethodNode method) {
-            fixAccess(method);
+            makePrivate(method);
 
             if (containsStubs) {
                 method.instructions.clear();
@@ -425,6 +425,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
             String[] exceptions = exceptionArray(method);
             MethodNode methodNode = new MethodNode(method.access, "<init>", method.desc, method.signature, exceptions);
+            makePublic(methodNode);
             MyGenerator m = new MyGenerator(methodNode);
 
             methodNode.instructions = removedInstructions;
@@ -499,7 +500,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         }
 
         private void instrumentNormalMethod(MethodNode method) {
-            fixAccess(method);
+            makePrivate(method);
             if ((method.access & ACC_ABSTRACT) == 0) method.access = method.access | ACC_FINAL;
 
             String originalName = method.name;
@@ -508,6 +509,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
             MethodNode delegatorMethodNode = new MethodNode(method.access, originalName, method.desc, method.signature, exceptionArray(method));
             delegatorMethodNode.access &= ~(ACC_NATIVE | ACC_ABSTRACT | ACC_FINAL);
+            makePublic(delegatorMethodNode);
 
             MyGenerator m = new MyGenerator(delegatorMethodNode);
 
@@ -562,6 +564,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         private MethodNode redirectorMethod(MethodNode method, String newName) {
             MethodNode redirector = new MethodNode(ASM4, newName, method.desc, method.signature, exceptionArray(method));
             redirector.access = method.access & ~(ACC_NATIVE | ACC_ABSTRACT | ACC_FINAL);
+            makePrivate(redirector);
             MyGenerator m = new MyGenerator(redirector);
 
             m.invokeMethod(internalClassName, method);
@@ -668,12 +671,16 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             }
         }
 
-        private void fixAccess(ClassNode clazz) {
+        private void makePublic(ClassNode clazz) {
             clazz.access = (clazz.access | ACC_PUBLIC) & ~(ACC_PROTECTED | ACC_PRIVATE);
         }
 
-        private void fixAccess(MethodNode method) {
+        private void makePublic(MethodNode method) {
             method.access = (method.access | ACC_PUBLIC) & ~(ACC_PROTECTED | ACC_PRIVATE);
+        }
+
+        private void makePrivate(MethodNode method) {
+            method.access = (method.access | ACC_PRIVATE) & ~(ACC_PUBLIC | ACC_PROTECTED);
         }
 
         private MethodNode generateStaticInitializerNotifierMethod() {
