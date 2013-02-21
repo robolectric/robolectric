@@ -39,7 +39,9 @@ public class DrawableResourceLoaderTest {
         documentLoader.loadResourceXmlSubDirs(testResources(), "drawable");
         documentLoader.loadResourceXmlSubDirs(systemResources(), "drawable");
 
-        resourceIndex = new MergedResourceIndex(testResources(), systemResources());
+        resourceIndex = new MergedResourceIndex(
+                new ResourceExtractor(testResources()),
+                new ResourceExtractor(systemResources()));
         drawableBuilder = new DrawableBuilder(resourceIndex);
         drawableResourceLoader.findNinePatchResources(testResources());
         drawableResourceLoader.findNinePatchResources(systemResources());

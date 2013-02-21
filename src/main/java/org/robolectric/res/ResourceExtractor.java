@@ -44,10 +44,6 @@ public class ResourceExtractor extends ResourceIndex {
                     String fieldName = field.getName();
                     ResName resName = new ResName(packageName, section, fieldName);
 
-                    if (section.equals("id") && fieldName.equals("abs__content") || fieldName.equals("gone")) {
-                      System.out.println(resName + " -> " + Integer.toHexString(value));
-                    }
-
                     resourceNameToId.put(resName, value);
 
                     if (resourceIdToResName.containsKey(value)) {

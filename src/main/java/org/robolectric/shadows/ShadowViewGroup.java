@@ -27,7 +27,6 @@ public class ShadowViewGroup extends ShadowView {
     @Implementation
     @Override
     public View findViewById(int id) {
-      System.out.println("findViewById 0x" + Integer.toHexString(id) + ": " + shadowOf(context).getResName(id));
         if (id == getId()) {
             return realView;
         }

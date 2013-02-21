@@ -87,6 +87,7 @@ public class ShadowPendingIntent {
 
     // no idea if these are right....
     @Override
+    @Implementation
     public boolean equals(Object o) {
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
@@ -106,6 +107,7 @@ public class ShadowPendingIntent {
     }
 
     @Override
+    @Implementation
     public int hashCode() {
         int result = savedIntent != null ? savedIntent.hashCode() : 0;
         if (savedContext != null) {

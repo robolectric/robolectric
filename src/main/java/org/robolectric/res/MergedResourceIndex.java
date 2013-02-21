@@ -1,33 +1,15 @@
 package org.robolectric.res;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 public class MergedResourceIndex extends ResourceIndex {
-    private static final ResourceRemapper RESOURCE_REMAPPER = new ResourceRemapper();
-    private static final boolean REMAP_RESOURCES = false;
+    private final ResourceIndex[] subIndexes;
 
-    private Map<ResName, Integer> resourceNameToId = new HashMap<ResName, Integer>();
-    private Map<Integer, ResName> resourceIdToResName = new HashMap<Integer, ResName>();
-    private Set<Class> processedRFiles = new HashSet<Class>();
-    private Integer maxUsedInt = null;
-
-    public MergedResourceIndex(ResourceIndex... subExtractors) {
-        for (ResourceIndex subExtractor : subExtractors) {
-            //HashSet<Class> overlapClasses = new HashSet<Class>(processedRFiles);
-            //overlapClasses.retainAll(subExtractor.processedRFiles);
-            //if (!overlapClasses.isEmpty()) {
-            //    throw new RuntimeException("found overlap for " + overlapClasses);
-            //}
-            //processedRFiles.addAll(subExtractor.processedRFiles);
-
-            merge(resourceNameToId, subExtractor.resourceNameToId, "resourceNameToId");
-            merge(resourceIdToResName, subExtractor.resourceIdToResName, "resourceIdToResName");
+    public MergedResourceIndex(ResourceIndex... subIndexes) {
+        this.subIndexes = subIndexes;
+        for (ResourceIndex subIndex : subIndexes) {
+            merge(resourceNameToId, subIndex.resourceNameToId, "resourceNameToId");
+            merge(resourceIdToResName, subIndex.resourceIdToResName, "resourceIdToResName");
         }
     }
 
@@ -39,80 +21,15 @@ public class MergedResourceIndex extends ResourceIndex {
         }
     }
 
-    public MergedResourceIndex(ResourcePath... resourcePaths) {
-        this(extract(resourcePaths));
-        for (ResourcePath resourcePath : resourcePaths) {
-            addRClass(resourcePath.rClass);
-        }
-    }
-
-    private static ResourceExtractor[] extract(ResourcePath[] resourcePaths) {
-        ResourceExtractor[] resourceExtractors = new ResourceExtractor[resourcePaths.length];
-        for (int i = 0; i < resourcePaths.length; i++) {
-            resourceExtractors[i] = new ResourceExtractor(resourcePaths[i]);
-        }
-        return resourceExtractors;
-    }
-
-    private void addRClass(Class<?> rClass) {
-        if (REMAP_RESOURCES) RESOURCE_REMAPPER.remapRClass(rClass);
-
-        if (!processedRFiles.add(rClass)) {
-            System.out.println("WARN: already extracted resources for " + rClass.getPackage().getName() + ", skipping. You should probably fix this.");
-            return;
-        }
-        String packageName = rClass.getPackage().getName();
-
-        for (Class innerClass : rClass.getClasses()) {
-            for (Field field : innerClass.getDeclaredFields()) {
-                if (field.getType().equals(Integer.TYPE) && Modifier.isStatic(field.getModifiers())) {
-                  String section = innerClass.getSimpleName();
-                  int value;
-                  try {
-                    value = field.getInt(null);
-                  } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                  }
-
-                  if (!section.equals("styleable")) {
-                    String fieldName = field.getName();
-                    ResName resName = new ResName(packageName, section, fieldName);
-
-                    if (section.equals("id") && fieldName.equals("abs__content") || fieldName.equals("gone")) {
-                      System.out.println(resName + " -> " + Integer.toHexString(value));
-                    }
-
-                    resourceNameToId.put(resName, value);
-
-                    if (resourceIdToResName.containsKey(value)) {
-                      String message =
-                          value + " is already defined with name: " + resourceIdToResName.get(
-                              value) + " can't also call it: " + resName;
-                      if (REMAP_RESOURCES) {
-                        throw new RuntimeException(message);
-                      } else {
-                        System.err.println(message);
-                      }
-                    }
-
-                    resourceIdToResName.put(value, resName);
-                  }
-                }
-            }
-        }
-    }
-
     @Override
     public Integer getResourceId(ResName resName) {
+        // todo: this is pretty silly...
         Integer id = resourceNameToId.get(resName);
-        if (id == null && "android".equals(resName.namespace)) {
-            if (maxUsedInt == null) {
-                maxUsedInt = resourceIdToResName.isEmpty() ? 0 : Collections.max(resourceIdToResName.keySet());
+        if (id == null) {
+            for (ResourceIndex subIndex : subIndexes) {
+                id = subIndex.getResourceId(resName);
+                if (id != null) return id;
             }
-            id = ++maxUsedInt;
-            resourceNameToId.put(resName, id);
-            resourceIdToResName.put(id, resName);
-            System.out.println("INFO: no id mapping found for " + resName.getFullyQualifiedName() + "; assigning " + id);
         }
         return id;
     }
