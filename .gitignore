@@ -6,10 +6,7 @@ eclipsebin
 
 # Ant
 bin/
-gen/
-build/
 out/
-lib/
 
 # Maven
 target
@@ -34,4 +31,3 @@ classes
 
 tmp
 local.properties
-pages
