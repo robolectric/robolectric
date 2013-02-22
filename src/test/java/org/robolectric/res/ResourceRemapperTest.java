@@ -25,9 +25,9 @@ public class ResourceRemapperTest {
         resourceRemapper.remapRClass(org.robolectric.lib3.R.class);
 
         assertUnique(
-                org.robolectric.lib1.R.id.button,
-                org.robolectric.lib2.R.id.button,
-                org.robolectric.lib3.R.id.button);
+                org.robolectric.lib1.R.id.lib_button,
+                org.robolectric.lib2.R.id.lib_button,
+                org.robolectric.lib3.R.id.lib_button);
 
         assertUnique(
                 org.robolectric.lib1.R.id.lib1_button,
@@ -67,9 +67,9 @@ public class ResourceRemapperTest {
     }
 
     private void resetInitialState() {
-        org.robolectric.lib1.R.id.button = 0x7f010001;
-        org.robolectric.lib2.R.id.button = 0x7f010001;
-        org.robolectric.lib3.R.id.button = 0x7f010001;
+        org.robolectric.lib1.R.id.lib_button = 0x7f010001;
+        org.robolectric.lib2.R.id.lib_button = 0x7f010001;
+        org.robolectric.lib3.R.id.lib_button = 0x7f010001;
 
         org.robolectric.lib1.R.id.lib1_button = 0x7f010002;
         org.robolectric.lib2.R.id.lib2_button = 0x7f010002;

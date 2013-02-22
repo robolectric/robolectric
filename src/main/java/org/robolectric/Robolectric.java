@@ -32,7 +32,9 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.CursorWrapper;
+import android.database.DataSetObservable;
 import android.database.MergeCursor;
+import android.database.Observable;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -92,7 +94,6 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.support.v4.content.CursorLoader;
-import android.support.v4.view.PagerAdapter;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
@@ -319,7 +320,6 @@ import org.robolectric.shadows.ShadowNotification;
 import org.robolectric.shadows.ShadowNotificationManager;
 import org.robolectric.shadows.ShadowObjectAnimator;
 import org.robolectric.shadows.ShadowOverlayItem;
-import org.robolectric.shadows.ShadowPagerAdapter;
 import org.robolectric.shadows.ShadowPaint;
 import org.robolectric.shadows.ShadowPair;
 import org.robolectric.shadows.ShadowParcel;
@@ -605,6 +605,7 @@ public class Robolectric {
                 ShadowCursorLoader.class,
                 ShadowCursorWrapper.class,
                 ShadowDatabaseUtils.class,
+                ShadowDataSetObservable.class,
                 ShadowDateFormat.class,
                 ShadowDefaultRequestDirector.class,
                 ShadowDisplay.class,
@@ -681,9 +682,9 @@ public class Robolectric {
                 ShadowNfcAdapter.class,
                 ShadowNotificationManager.class,
                 ShadowNetworkInfo.class,
+                ShadowObservable.class,
                 ShadowOverlayItem.class,
                 ShadowObjectAnimator.class,
-                ShadowPagerAdapter.class,
                 ShadowPaint.class,
                 ShadowPair.class,
                 ShadowParcel.class,
@@ -1212,10 +1213,6 @@ public class Robolectric {
         return (ShadowNotificationManager) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowPagerAdapter shadowOf(PagerAdapter instance) {
-        return (ShadowPagerAdapter) shadowOf_(instance);
-    }
-
     public static ShadowPaint shadowOf(Paint instance) {
         return (ShadowPaint) shadowOf_(instance);
     }
@@ -1584,7 +1581,8 @@ public class Robolectric {
     }
 
     public static boolean httpRequestWasMade(String uri) {
-        return getShadowApplication().getFakeHttpLayer().hasRequestMatchingRule(new FakeHttpLayer.UriRequestMatcher(uri));
+        return getShadowApplication().getFakeHttpLayer().hasRequestMatchingRule(
+            new FakeHttpLayer.UriRequestMatcher(uri));
     }
 
     /**
@@ -1839,5 +1837,13 @@ public class Robolectric {
 
     // marker for shadow classes when the implementation class is unlinkable
     public interface Anything {
+    }
+
+    @Implements(value = DataSetObservable.class, callThroughByDefault = true)
+    public static class ShadowDataSetObservable extends ShadowObservable {
+    }
+
+    @Implements(value = Observable.class, callThroughByDefault = true)
+    public static class ShadowObservable {
     }
 }

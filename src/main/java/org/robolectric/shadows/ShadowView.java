@@ -873,8 +873,7 @@ public class ShadowView {
     }
 
     private void applyOnClickAttribute() {
-        final String handlerName = attributeSet.getAttributeValue("android",
-                "onClick");
+        final String handlerName = attributeSet.getAttributeValue("android", "onClick");
         if (handlerName == null) {
             return;
         }

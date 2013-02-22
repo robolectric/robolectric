@@ -378,6 +378,11 @@ public class ShadowWrangler implements ClassHandler {
         public boolean prepare() {
             paramClasses = getParamClasses();
 
+            // todo: not this
+            if (clazz.getName().startsWith("android.support")) {
+                return false;
+            }
+
             Class<?> originalClass = loadClass(clazz.getName(), classLoader);
 
             declaredShadowClass = findDeclaredShadowClassForMethod(originalClass, methodName, paramClasses);
