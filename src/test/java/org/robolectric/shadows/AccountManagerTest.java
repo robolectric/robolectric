@@ -11,6 +11,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -27,7 +28,7 @@ public class AccountManagerTest {
     public void testGet() {
         AccountManager appAM = AccountManager.get(app);
         assertThat(appAM, notNullValue());
-        assertThat(AccountManager.get(app), sameInstance(appAM));
+        assertSame(AccountManager.get(app), appAM);
 
         Activity a = new Activity();
         assertThat(AccountManager.get(a), notNullValue());

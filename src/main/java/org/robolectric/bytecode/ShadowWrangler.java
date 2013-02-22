@@ -1,5 +1,6 @@
 package org.robolectric.bytecode;
 
+import android.support.v4.content.LocalBroadcastManager;
 import org.robolectric.internal.RealObject;
 import org.robolectric.util.I18nException;
 import org.robolectric.util.Join;
@@ -213,7 +214,7 @@ public class ShadowWrangler implements ClassHandler {
 
     private InvocationPlan getInvocationPlan(Class clazz, String methodName, Object instance, String[] paramTypes) {
         boolean isStatic = instance == null;
-        Class shadowClass = isStatic ? null : shadowOf(instance).getClass();
+        Class shadowClass = isStatic ? findDirectShadowClass(clazz) : shadowOf(instance).getClass();
         InvocationProfile invocationProfile = new InvocationProfile(clazz, shadowClass, methodName, isStatic, paramTypes);
         synchronized (invocationPlans) {
             InvocationPlan invocationPlan = invocationPlans.get(invocationProfile);
@@ -469,11 +470,6 @@ public class ShadowWrangler implements ClassHandler {
         public boolean prepare() {
             paramClasses = getParamClasses();
 
-            // todo: not this
-            if (clazz.getName().startsWith("android.support")) {
-                return false;
-            }
-
             Class<?> originalClass = loadClass(clazz.getName(), classLoader);
 
             declaredShadowClass = findDeclaredShadowClassForMethod(originalClass, methodName, paramClasses);
@@ -501,6 +497,11 @@ public class ShadowWrangler implements ClassHandler {
 
             if (isStatic != Modifier.isStatic(method.getModifiers())) {
                 throw new RuntimeException("method staticness of " + clazz.getName() + "." + methodName + " and " + declaredShadowClass.getName() + "." + method.getName() + " don't match");
+            }
+
+            // todo: not this
+            if (clazz.getName().startsWith("android.support") && !clazz.getName().equals(LocalBroadcastManager.class.getName())) {
+                return false;
             }
 
             method.setAccessible(true);
