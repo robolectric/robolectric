@@ -37,10 +37,12 @@ public class ShadowViewPager extends ShadowViewGroup {
 
     @Implementation
     public void setCurrentItem(int position) {
-        if (onPageChangeListener != null) {
-            onPageChangeListener.onPageSelected(position);
+        if (currentItem != position) {
+            currentItem = position;
+            if (onPageChangeListener != null) {
+                onPageChangeListener.onPageSelected(position);
+            }
         }
-        currentItem = position;
     }
     
     @Implementation
