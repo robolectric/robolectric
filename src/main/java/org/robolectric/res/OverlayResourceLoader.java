@@ -1,5 +1,7 @@
 package org.robolectric.res;
 
+import android.view.View;
+
 import java.util.List;
 
 public class OverlayResourceLoader extends XResourceLoader {
@@ -33,4 +35,27 @@ public class OverlayResourceLoader extends XResourceLoader {
         }
     }
 
+    @Override
+    public boolean hasAttributeFor(Class<? extends View> viewClass, String namespace, String attribute) {
+        initialize();
+
+        // todo: this sucks
+        for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
+            boolean b = subResourceLoader.hasAttributeFor(viewClass, namespace, attribute);
+            if (b) return true;
+        }
+        return false;
+    }
+
+    @Override
+    public String convertValueToEnum(Class<? extends View> viewClass, String namespace, String attribute, String part) {
+        initialize();
+
+        // todo: this sucks
+        for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
+            String s = subResourceLoader.convertValueToEnum(viewClass, namespace, attribute, part);
+            if (s != null) return s;
+        }
+        return null;
+    }
 }
