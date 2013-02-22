@@ -95,6 +95,8 @@ public final class R {
 
         public static final int marsupial = 0x10031;
         public static final int ungulate = 0x10032;
+
+        public static final int custom_view = 0x10033;
     }
 
     public static final class string {

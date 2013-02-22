@@ -19,6 +19,10 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.google.android.maps.MapView;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
@@ -30,18 +34,22 @@ import org.robolectric.util.CustomView;
 import org.robolectric.util.CustomView2;
 import org.robolectric.util.I18nException;
 import org.robolectric.util.TestUtil;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ViewLoaderTest {
@@ -208,6 +216,13 @@ public class ViewLoaderTest {
     public void shouldConstructCustomViewsWithAttributesConstructor() throws Exception {
         CustomView view = (CustomView) inflate("custom_layout");
         assertThat(view.attributeResourceValue, equalTo(R.string.hello));
+    }
+
+    @Test
+    public void shouldConstructCustomViewsWithAttributesWithURLEncodedNamespaces() throws Exception {
+        CustomView view = (CustomView) inflate("custom_layout4")
+                .findViewById(R.id.custom_view);
+        assertThat(view.namespacedResourceValue, equalTo(R.layout.text_views));
     }
 
     @Test
