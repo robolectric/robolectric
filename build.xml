@@ -49,8 +49,9 @@
     <target name="findAndroidUnix" unless="isWindows">
         <echo message="Finding the Android version in *nix"/>
         <exec executable="./find-android.sh"/>
-		<property file="local.properties"/>
     </target>
+
+    <property file="local.properties"/>
 
     <!-- Custom Android task to deal with the project target, and import the proper rules.
          This requires ant 1.6.0 or above. -->
@@ -164,13 +165,12 @@
     <target name="clean" description="cleanup module">
         <delete dir="${out.absolute.dir}"/>
         <delete dir="${out.test.absolute.dir}"/>
-        <delete dir="${tmp.dir}"/>
         <delete dir="${target.dir}"/>
     </target>
 
     <target name="test" depends="compile.tests" description="test all">
         <mkdir dir="${basedir}/out/reports/tests"/>
-        <junit showoutput="true" failureproperty="junit.failure">
+        <junit showoutput="true" failureproperty="junit.failure" fork="true" forkmode="once">
             <formatter type="plain" usefile="false" if="junit.console.out"/>
             <formatter type="plain"/>
             <formatter type="xml"/>
