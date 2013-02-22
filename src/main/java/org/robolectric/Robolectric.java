@@ -812,6 +812,7 @@ public class Robolectric {
     public static void resetStaticState() {
         getShadowWrangler().silence();
         Robolectric.application = null;
+        ShadowAccountManager.reset();
         ShadowBitmapFactory.reset();
         ShadowDrawable.reset();
         ShadowMediaStore.reset();
