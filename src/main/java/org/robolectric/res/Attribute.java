@@ -78,9 +78,9 @@ public class Attribute {
         return null;
     }
 
-    public static Attribute find(List<Attribute> attributes, int attrId, ResourceExtractor resourceExtractor) {
+    public static Attribute find(List<Attribute> attributes, int attrId, ResourceIndex resourceIndex) {
         for (Attribute attribute : attributes) {
-          Integer resourceId = resourceExtractor.getResourceId(attribute.resName);
+          Integer resourceId = resourceIndex.getResourceId(attribute.resName);
           if (resourceId != null && resourceId == attrId) {
                 return attribute;
             }
@@ -123,7 +123,7 @@ public class Attribute {
 
     public String qualifiedValue() {
         if (value.startsWith("@")) {
-            return ResourceExtractor.qualifyResourceName(value.substring(1), contextPackageName);
+            return ResName.qualifyResourceName(value.substring(1), contextPackageName);
         } else {
             return value;
         }

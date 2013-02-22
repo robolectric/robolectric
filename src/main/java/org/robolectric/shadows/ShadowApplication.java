@@ -575,6 +575,19 @@ public class ShadowApplication extends ShadowContextWrapper {
         return appManifest;
     }
 
+    private final Map<String, Object> singletons = new HashMap<String, Object>();
+
+    public <T> T getSingleton(Class<T> clazz, Provider<T> provider) {
+        synchronized (singletons) {
+            //noinspection unchecked
+            T item = (T) singletons.get(clazz.getName());
+            if (item == null) {
+                singletons.put(clazz.getName(), item = provider.get());
+            }
+            return item;
+        }
+    }
+
     public class Wrapper {
         public BroadcastReceiver broadcastReceiver;
         public IntentFilter intentFilter;

@@ -143,6 +143,8 @@ public class ShadowDialog {
         hasBeenDismissed = true;
 
         if (onDismissListener != null) {
+            DialogInterface.OnDismissListener onDismissListener = this.onDismissListener;
+            this.onDismissListener = null;
             onDismissListener.onDismiss(realDialog);
         }
     }

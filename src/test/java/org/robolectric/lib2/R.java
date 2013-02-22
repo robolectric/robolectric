@@ -2,7 +2,7 @@ package org.robolectric.lib2;
 
 public final class R {
     public static final class id {
-        public static int button = 0x7f010001;
+        public static int lib_button = 0x7f010001;
         public static int lib2_button = 0x7f010002;
     }
 
