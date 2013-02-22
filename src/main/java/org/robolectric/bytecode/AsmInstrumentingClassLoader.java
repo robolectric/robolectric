@@ -71,19 +71,32 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     @Override
     synchronized public Class loadClass(String name) throws ClassNotFoundException {
         Class<?> theClass = classes.get(name);
-        if (theClass != null) return theClass;
+        if (theClass != null) {
+            if (theClass == MissingClassMarker.class) {
+                throw new ClassNotFoundException(name);
+            } else {
+                return theClass;
+            }
+        }
 
         boolean shouldComeFromThisClassLoader = setup.shouldAcquire(name);
-//        System.out.println("loadClass: " + name + (shouldComeFromThisClassLoader ? " acquired!" : ""));
 
-        if (shouldComeFromThisClassLoader) {
-            theClass = findClass(name);
-        } else {
-            theClass = getParent().loadClass(name);
+        try {
+            if (shouldComeFromThisClassLoader) {
+                theClass = findClass(name);
+            } else {
+                theClass = getParent().loadClass(name);
+            }
+        } catch (ClassNotFoundException e) {
+            classes.put(name, MissingClassMarker.class);
+            throw e;
         }
 
         classes.put(name, theClass);
         return theClass;
+    }
+
+    private static class MissingClassMarker {
     }
 
     @Override

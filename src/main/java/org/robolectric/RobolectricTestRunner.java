@@ -14,6 +14,7 @@ import org.robolectric.annotation.WithConstantString;
 import org.robolectric.bytecode.ClassHandler;
 import org.robolectric.bytecode.InstrumentingClassLoader;
 import org.robolectric.internal.RobolectricTestRunnerInterface;
+import org.robolectric.res.OverlayResourceLoader;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
@@ -419,17 +420,15 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
 
     // this method must live on a InstrumentingClassLoader-loaded class, so it can't be on RobolectricContext
     protected ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
-        Map<String, ResourceLoader> resourceLoaders = new HashMap<String, ResourceLoader>();
+        List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<PackageResourceLoader>();
+        for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
+            appAndLibraryResourceLoaders.add(new PackageResourceLoader(resourcePath));
+        }
+        OverlayResourceLoader overlayResourceLoader = new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders);
 
-        List<ResourcePath> resourcePaths = new ArrayList<ResourcePath>();
-        for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
-            resourcePaths.add(resourcePath);
-        }
-        PackageResourceLoader appResourceLoader = new PackageResourceLoader(resourcePaths, appManifest.getPackageName());
-        for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
-            resourceLoaders.put(resourcePath.getPackageName(), appResourceLoader);
-        }
+        Map<String, ResourceLoader> resourceLoaders = new HashMap<String, ResourceLoader>();
         resourceLoaders.put("android", systemResourceLoader);
+        resourceLoaders.put(appManifest.getPackageName(), overlayResourceLoader);
         return new RoutingResourceLoader(resourceLoaders);
     }
 

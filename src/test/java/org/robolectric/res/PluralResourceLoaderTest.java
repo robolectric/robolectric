@@ -13,7 +13,7 @@ public class PluralResourceLoaderTest {
 
     @Before
     public void setUp() throws Exception {
-        ResourceExtractor extractor = new ResourceExtractor(testResources());
+        ResourceIndex extractor = new ResourceExtractor(testResources());
 
         pluralRulesResBundle = new ResBundle<PluralResourceLoader.PluralRules>();
         PluralResourceLoader pluralResourceLoader = new PluralResourceLoader(extractor, pluralRulesResBundle);

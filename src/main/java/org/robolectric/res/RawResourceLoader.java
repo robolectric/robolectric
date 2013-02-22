@@ -7,16 +7,16 @@ import java.io.InputStream;
 
 public class RawResourceLoader {
 
-    private ResourceExtractor resourceExtractor;
+    private ResourceIndex resourceIndex;
     private File resourceDir;
 
-    public RawResourceLoader(ResourceExtractor resourceExtractor, File resourceDir) {
-        this.resourceExtractor = resourceExtractor;
+    public RawResourceLoader(ResourceIndex resourceIndex, File resourceDir) {
+        this.resourceIndex = resourceIndex;
         this.resourceDir = resourceDir;
     }
 
     public InputStream getValue(int resourceId) {
-        String resourceFileName = resourceExtractor.getResName(resourceId).name;
+        String resourceFileName = resourceIndex.getResName(resourceId).name;
         File rawResourceDir = new File(resourceDir, "raw");
 
         File[] files = rawResourceDir.listFiles();

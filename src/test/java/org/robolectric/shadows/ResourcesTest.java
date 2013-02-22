@@ -9,22 +9,22 @@ import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.NinePatchDrawable;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.annotation.Values;
-import org.robolectric.res.PackageResourceLoader;
-import org.robolectric.res.ResourceLoader;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.annotation.Values;
+import org.robolectric.res.EmptyResourceLoader;
+import org.robolectric.res.ResourceLoader;
 import org.xmlpull.v1.XmlPullParser;
 
-import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.*;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
+import static org.robolectric.Robolectric.shadowOf;
 
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -75,7 +75,7 @@ public class ResourcesTest {
 
     @Test(expected = Resources.NotFoundException.class)
     public void testGetDrawableNullRClass() throws Exception {
-        ResourceLoader resourceLoader = new PackageResourceLoader();
+        ResourceLoader resourceLoader = new EmptyResourceLoader();
         resources = new Resources(null, null, null);
         ShadowResources.bind(resources, resourceLoader);
 

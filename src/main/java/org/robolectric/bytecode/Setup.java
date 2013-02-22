@@ -68,6 +68,10 @@ public class Setup {
 
 
     public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz, String methodName, Class<?>[] paramClasses) {
+        if (clazz.getName().startsWith("android.support")) {
+            return true;
+        }
+
         if (clazz.getName().equals("android.app.PendingIntent")) return false; // todo: grot as we remove some more shadows
         if (methodName.equals("equals") && paramClasses.length == 1 && paramClasses[0] == Object.class) return true;
         if (methodName.equals("hashCode") && paramClasses.length == 0) return true;

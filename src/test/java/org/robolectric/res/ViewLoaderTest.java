@@ -291,6 +291,9 @@ public class ViewLoaderTest {
     @Test
     public void testMultiOrientation() throws Exception {
         context = new FragmentActivity();
+        shadowOf(context).callOnCreate(null);
+        shadowOf(context).callOnStart();
+        shadowOf(context).callOnResume();
 
         // Default screen orientation should be portrait.
         ViewGroup view = (ViewGroup) inflate("multi_orientation");

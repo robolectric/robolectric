@@ -19,6 +19,7 @@ import android.widget.LinearLayout;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.Attribute;
 import org.robolectric.tester.android.view.TestWindow;
@@ -292,7 +293,7 @@ public class ViewTest {
 
     @Test
     public void shouldAddOnClickListenerFromAttribute() throws Exception {
-      RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
+      RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new EmptyResourceLoader(), null);
       attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
       view = new View(null, attrs);
@@ -308,7 +309,7 @@ public class ViewTest {
           called.set(true);
         }
       };
-      RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
+      RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new EmptyResourceLoader(), null);
       attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
       view = new View(context, attrs);

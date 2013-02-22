@@ -92,6 +92,18 @@ public abstract class TestUtil {
         return TEST_RESOURCE_PATH;
     }
 
+    public static ResourcePath lib1Resources() {
+        return new ResourcePath(org.robolectric.lib1.R.class, resourceFile("lib1/res"), resourceFile("lib1/assets"));
+    }
+
+    public static ResourcePath lib2Resources() {
+        return new ResourcePath(org.robolectric.lib2.R.class, resourceFile("lib2/res"), resourceFile("lib2/assets"));
+    }
+
+    public static ResourcePath lib3Resources() {
+        return new ResourcePath(org.robolectric.lib3.R.class, resourceFile("lib3/res"), resourceFile("lib3/assets"));
+    }
+
     public static ResourcePath systemResources() {
         return SYSTEM_RESOURCE_PATH;
     }

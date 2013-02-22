@@ -1,55 +1,23 @@
 package org.robolectric.res;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.*;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
-public class ResourceExtractor {
+public class ResourceExtractor extends ResourceIndex {
     private static final ResourceRemapper RESOURCE_REMAPPER = new ResourceRemapper();
     private static final boolean REMAP_RESOURCES = false;
 
-    private Map<ResName, Integer> resourceNameToId = new HashMap<ResName, Integer>();
-    private Map<Integer, ResName> resourceIdToResName = new HashMap<Integer, ResName>();
     private Set<Class> processedRFiles = new HashSet<Class>();
     private Integer maxUsedInt = null;
 
     public ResourceExtractor() {
     }
 
-    public ResourceExtractor(ResourceExtractor... subExtractors) {
-        for (ResourceExtractor subExtractor : subExtractors) {
-            HashSet<Class> overlapClasses = new HashSet<Class>(processedRFiles);
-            overlapClasses.retainAll(subExtractor.processedRFiles);
-            if (!overlapClasses.isEmpty()) {
-                throw new RuntimeException("found overlap for " + overlapClasses);
-            }
-            processedRFiles.addAll(subExtractor.processedRFiles);
-
-            merge(resourceNameToId, subExtractor.resourceNameToId, "resourceNameToId");
-            merge(resourceIdToResName, subExtractor.resourceIdToResName, "resourceIdToResName");
-        }
-    }
-
-    private static <K,V> void merge(Map<K, V> map1, Map<K, V> map2, String name) {
-        int expected = map1.size() + map2.size();
-        map1.putAll(map2);
-        if (map1.size() != expected) {
-            throw new IllegalStateException("there must have been some overlap for " + name + "! expected " + expected + " but got " + map1.size());
-        }
-    }
-
-    public ResourceExtractor(ResourcePath... resourcePaths) {
-        for (ResourcePath resourcePath : resourcePaths) {
-            addRClass(resourcePath.rClass);
-        }
-    }
-
-    public ResourceExtractor(List<ResourcePath> resourcePaths) {
-        for (ResourcePath resourcePath : resourcePaths) {
-            addRClass(resourcePath.rClass);
-        }
+    public ResourceExtractor(ResourcePath resourcePath) {
+        addRClass(resourcePath.rClass);
     }
 
     private void addRClass(Class<?> rClass) {
@@ -73,13 +41,20 @@ public class ResourceExtractor {
                   }
 
                   if (!section.equals("styleable")) {
-                    ResName resName = new ResName(packageName, section, field.getName());
+                    String fieldName = field.getName();
+                    ResName resName = new ResName(packageName, section, fieldName);
 
                     resourceNameToId.put(resName, value);
 
-                    if (resourceIdToResName.containsKey(value) && REMAP_RESOURCES) {
-                      throw new RuntimeException(
-                          value + " is already defined with name: " + resourceIdToResName.get(value) + " can't also call it: " + resName);
+                    if (resourceIdToResName.containsKey(value)) {
+                      String message =
+                          value + " is already defined with name: " + resourceIdToResName.get(
+                              value) + " can't also call it: " + resName;
+                      if (REMAP_RESOURCES) {
+                        throw new RuntimeException(message);
+                      } else {
+                        System.err.println(message);
+                      }
                     }
 
                     resourceIdToResName.put(value, resName);
@@ -89,24 +64,8 @@ public class ResourceExtractor {
         }
     }
 
-    public Integer getResourceId(String possiblyQualifiedResourceName, String contextPackageName) {
-        if (possiblyQualifiedResourceName == null ) {
-            return null;
-        }
-
-        if (possiblyQualifiedResourceName.equals("@null")) {
-            return 0;
-        }
-
-        String fullyQualifiedResourceName = qualifyResourceName(possiblyQualifiedResourceName, contextPackageName);
-
-        fullyQualifiedResourceName = fullyQualifiedResourceName.replaceAll("[@+]", "");
-        Integer resourceId = getResourceId(new ResName(fullyQualifiedResourceName));
-        // todo warn if resourceId is null
-        return resourceId;
-    }
-
-    public Integer getResourceId(ResName resName) {
+    @Override
+    public synchronized Integer getResourceId(ResName resName) {
         Integer id = resourceNameToId.get(resName);
         if (id == null && "android".equals(resName.namespace)) {
             if (maxUsedInt == null) {
@@ -120,20 +79,8 @@ public class ResourceExtractor {
         return id;
     }
 
-    public static @NotNull String qualifyResourceName(String possiblyQualifiedResourceName, String contextPackageName) {
-        if (possiblyQualifiedResourceName.contains(":")) {
-            return possiblyQualifiedResourceName;
-        } else {
-            return contextPackageName + ":" + possiblyQualifiedResourceName;
-        }
-    }
-
-    public String getResourceName(int resourceId) {
-        ResName resName = getResName(resourceId);
-        return (resName != null) ? resName.getFullyQualifiedName() : null;
-    }
-
-    public ResName getResName(int resourceId) {
+    @Override
+    public synchronized ResName getResName(int resourceId) {
         return resourceIdToResName.get(resourceId);
     }
 }

@@ -7,6 +7,7 @@ import android.preference.PreferenceGroup;
 import android.util.AttributeSet;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.Attribute;
 import org.junit.Before;
@@ -30,7 +31,7 @@ public class PreferenceGroupTest {
     @Before
     public void setUp() throws Exception {
     	context = new Activity();
-    	attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new PackageResourceLoader(), null);
+    	attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new EmptyResourceLoader(), null);
 
     	group = new TestPreferenceGroup(context, attrs);
     	shadow = Robolectric.shadowOf(group);

@@ -243,7 +243,7 @@ public class ShadowContextWrapper extends ShadowContext {
         baseContext = context;
     }
 
-    private ShadowApplication getShadowApplication() {
+    public ShadowApplication getShadowApplication() {
         return ((ShadowApplication) shadowOf(getApplicationContext()));
     }
 

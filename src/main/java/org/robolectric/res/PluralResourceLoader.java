@@ -13,7 +13,7 @@ import java.util.List;
 public class PluralResourceLoader extends XpathResourceXmlLoader {
     private ResBundle<PluralRules> pluralRulesResBundle;
 
-    public PluralResourceLoader(ResourceExtractor resourceExtractor, ResBundle<PluralRules> pluralRulesResBundle) {
+    public PluralResourceLoader(ResourceIndex resourceIndex, ResBundle<PluralRules> pluralRulesResBundle) {
         super("/resources/plurals", "plurals");
         this.pluralRulesResBundle = pluralRulesResBundle;
     }

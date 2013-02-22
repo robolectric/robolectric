@@ -32,7 +32,9 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.CursorWrapper;
+import android.database.DataSetObservable;
 import android.database.MergeCursor;
+import android.database.Observable;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -91,13 +93,7 @@ import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
-import android.support.v4.app.DialogFragment;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentActivity;
-import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.content.CursorLoader;
-import android.support.v4.view.PagerAdapter;
-import android.support.v4.view.ViewPager;
 import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
@@ -250,7 +246,6 @@ import org.robolectric.shadows.ShadowDatabaseUtils;
 import org.robolectric.shadows.ShadowDateFormat;
 import org.robolectric.shadows.ShadowDefaultRequestDirector;
 import org.robolectric.shadows.ShadowDialog;
-import org.robolectric.shadows.ShadowDialogFragment;
 import org.robolectric.shadows.ShadowDialogPreference;
 import org.robolectric.shadows.ShadowDisplay;
 import org.robolectric.shadows.ShadowDownloadManager;
@@ -261,9 +256,6 @@ import org.robolectric.shadows.ShadowEnvironment;
 import org.robolectric.shadows.ShadowExpandableListView;
 import org.robolectric.shadows.ShadowFilter;
 import org.robolectric.shadows.ShadowFloatMath;
-import org.robolectric.shadows.ShadowFragment;
-import org.robolectric.shadows.ShadowFragmentActivity;
-import org.robolectric.shadows.ShadowFragmentPagerAdapter;
 import org.robolectric.shadows.ShadowFrameLayout;
 import org.robolectric.shadows.ShadowGallery;
 import org.robolectric.shadows.ShadowGeoPoint;
@@ -328,7 +320,6 @@ import org.robolectric.shadows.ShadowNotification;
 import org.robolectric.shadows.ShadowNotificationManager;
 import org.robolectric.shadows.ShadowObjectAnimator;
 import org.robolectric.shadows.ShadowOverlayItem;
-import org.robolectric.shadows.ShadowPagerAdapter;
 import org.robolectric.shadows.ShadowPaint;
 import org.robolectric.shadows.ShadowPair;
 import org.robolectric.shadows.ShadowParcel;
@@ -420,7 +411,6 @@ import org.robolectric.shadows.ShadowViewConfiguration;
 import org.robolectric.shadows.ShadowViewFlipper;
 import org.robolectric.shadows.ShadowViewGroup;
 import org.robolectric.shadows.ShadowViewMeasureSpec;
-import org.robolectric.shadows.ShadowViewPager;
 import org.robolectric.shadows.ShadowViewStub;
 import org.robolectric.shadows.ShadowViewTreeObserver;
 import org.robolectric.shadows.ShadowWebSyncManager;
@@ -615,12 +605,12 @@ public class Robolectric {
                 ShadowCursorLoader.class,
                 ShadowCursorWrapper.class,
                 ShadowDatabaseUtils.class,
+                ShadowDataSetObservable.class,
                 ShadowDateFormat.class,
                 ShadowDefaultRequestDirector.class,
                 ShadowDisplay.class,
                 ShadowDrawable.class,
                 ShadowDialog.class,
-                ShadowDialogFragment.class,
                 ShadowDialogPreference.class,
                 ShadowDownloadManager.class,
                 ShadowDownloadManager.ShadowRequest.class,
@@ -631,9 +621,6 @@ public class Robolectric {
                 ShadowExpandableListView.class,
                 ShadowFilter.class,
                 ShadowFloatMath.class,
-                ShadowFragment.class,
-                ShadowFragmentActivity.class,
-                ShadowFragmentPagerAdapter.class,
                 ShadowFrameLayout.class,
                 ShadowGallery.class,
                 ShadowGeocoder.class,
@@ -695,9 +682,9 @@ public class Robolectric {
                 ShadowNfcAdapter.class,
                 ShadowNotificationManager.class,
                 ShadowNetworkInfo.class,
+                ShadowObservable.class,
                 ShadowOverlayItem.class,
                 ShadowObjectAnimator.class,
-                ShadowPagerAdapter.class,
                 ShadowPaint.class,
                 ShadowPair.class,
                 ShadowParcel.class,
@@ -795,7 +782,6 @@ public class Robolectric {
                 ShadowViewGroup.class,
                 ShadowViewFlipper.class,
                 ShadowViewMeasureSpec.class,
-                ShadowViewPager.class,
                 ShadowViewStub.class,
                 ShadowViewTreeObserver.class,
                 ShadowWebView.class,
@@ -812,6 +798,7 @@ public class Robolectric {
     public static void resetStaticState() {
         getShadowWrangler().silence();
         Robolectric.application = null;
+        ShadowAccountManager.reset();
         ShadowBitmapFactory.reset();
         ShadowDrawable.reset();
         ShadowMediaStore.reset();
@@ -820,7 +807,7 @@ public class Robolectric {
         ShadowLooper.resetThreadLoopers();
         ShadowDialog.reset();
         ShadowContentResolver.reset();
-        ShadowLocalBroadcastManager.reset();
+//        ShadowLocalBroadcastManager.reset();
         ShadowMimeTypeMap.reset();
         ShadowPowerManager.reset();
         ShadowStatFs.reset();
@@ -1059,10 +1046,6 @@ public class Robolectric {
         return (ShadowDialog) shadowOf_(instance);
     }
 
-    public static ShadowDialogFragment shadowOf(DialogFragment instance) {
-        return (ShadowDialogFragment) shadowOf_(instance);
-    }
-
     public static ShadowDialogPreference shadowOf(DialogPreference instance) {
         return (ShadowDialogPreference) shadowOf_(instance);
     }
@@ -1089,18 +1072,6 @@ public class Robolectric {
 
     public static ShadowFilter shadowOf(Filter instance) {
         return (ShadowFilter) shadowOf_(instance);
-    }
-
-    public static ShadowFragment shadowOf(Fragment instance) {
-        return (ShadowFragment) shadowOf_(instance);
-    }
-
-    public static ShadowFragmentActivity shadowOf(FragmentActivity instance) {
-        return (ShadowFragmentActivity) shadowOf_(instance);
-    }
-
-    public static ShadowFragmentPagerAdapter shadowOf(FragmentPagerAdapter instance) {
-        return (ShadowFragmentPagerAdapter) shadowOf_(instance);
     }
 
     public static ShadowFrameLayout shadowOf(FrameLayout instance) {
@@ -1241,10 +1212,6 @@ public class Robolectric {
 
     public static ShadowNotificationManager shadowOf(NotificationManager other) {
         return (ShadowNotificationManager) Robolectric.shadowOf_(other);
-    }
-
-    public static ShadowPagerAdapter shadowOf(PagerAdapter instance) {
-        return (ShadowPagerAdapter) shadowOf_(instance);
     }
 
     public static ShadowPaint shadowOf(Paint instance) {
@@ -1484,10 +1451,6 @@ public class Robolectric {
         return (ShadowViewFlipper) shadowOf_(instance);
     }
 
-    public static ShadowViewPager shadowOf(ViewPager instance) {
-        return (ShadowViewPager) shadowOf_(instance);
-    }
-
     public static ShadowViewTreeObserver shadowOf(ViewTreeObserver instance) {
         return (ShadowViewTreeObserver) shadowOf_(instance);
     }
@@ -1619,7 +1582,8 @@ public class Robolectric {
     }
 
     public static boolean httpRequestWasMade(String uri) {
-        return getShadowApplication().getFakeHttpLayer().hasRequestMatchingRule(new FakeHttpLayer.UriRequestMatcher(uri));
+        return getShadowApplication().getFakeHttpLayer().hasRequestMatchingRule(
+            new FakeHttpLayer.UriRequestMatcher(uri));
     }
 
     /**
@@ -1874,5 +1838,13 @@ public class Robolectric {
 
     // marker for shadow classes when the implementation class is unlinkable
     public interface Anything {
+    }
+
+    @Implements(value = DataSetObservable.class, callThroughByDefault = true)
+    public static class ShadowDataSetObservable extends ShadowObservable {
+    }
+
+    @Implements(value = Observable.class, callThroughByDefault = true)
+    public static class ShadowObservable {
     }
 }
