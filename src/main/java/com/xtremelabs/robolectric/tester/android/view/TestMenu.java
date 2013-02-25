@@ -20,7 +20,6 @@ public class TestMenu implements Menu {
     private static TestMenu lastMenu;
 
     public TestMenu() {
-        this(null);
         lastMenu = null;
     }
 
