@@ -315,21 +315,6 @@ public class ListViewTest {
         }
     }
 
-    @Test(expected = UnsupportedOperationException.class)
-    public void removeAllViews_shouldThrowAnException() throws Exception {
-        listView.removeAllViews();
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void removeView_shouldThrowAnException() throws Exception {
-        listView.removeView(new View(null));
-    }
-
-    @Test(expected = UnsupportedOperationException.class)
-    public void removeViewAt_shouldThrowAnException() throws Exception {
-        listView.removeViewAt(0);
-    }
-
     @Test
     public void getPositionForView_shouldReturnThePositionInTheListForTheView() throws Exception {
         prepareWithListAdapter();
