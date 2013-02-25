@@ -19,7 +19,7 @@ public class OverlayResourceLoader extends XResourceLoader {
     @Override
     void doInitialize() {
         for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
-            subResourceLoader.doInitialize();
+            subResourceLoader.initialize();
 
             booleanResolver.mergeLibraryStyle(subResourceLoader.booleanResolver, packageName);
             colorResolver.mergeLibraryStyle(subResourceLoader.colorResolver, packageName);

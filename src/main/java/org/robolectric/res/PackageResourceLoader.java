@@ -49,4 +49,11 @@ public class PackageResourceLoader extends XResourceLoader {
 
     protected void loadOtherResources(ResourcePath resourcePath) {
     }
+
+    @Override
+    public String toString() {
+        return "PackageResourceLoader{" +
+                "resourcePath=" + resourcePath +
+                '}';
+    }
 }
