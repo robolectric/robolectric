@@ -1,5 +1,9 @@
 package com.xtremelabs.robolectric.tester.android.view;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -8,19 +12,25 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 
-import java.util.ArrayList;
-import java.util.List;
-
 public class TestMenu implements Menu {
     private List<MenuItem> menuItems = new ArrayList<MenuItem>();
-    private Context context;
+    protected Context context;
+    
+    protected Activity activity;
+    private static TestMenu lastMenu;
 
     public TestMenu() {
-        this(null);
+        lastMenu = null;
     }
 
     public TestMenu(Context context) {
         this.context = context;
+        lastMenu = null;
+    }
+    
+    public TestMenu(Activity activity){
+    	this(activity.getApplicationContext());
+    	this.activity = activity;
     }
 
     @Override
@@ -32,9 +42,14 @@ public class TestMenu implements Menu {
     public MenuItem add(int titleRes) {
         return add(0, 0, 0, titleRes);
     }
+    
+    public static TestMenu getLastMenu(){
+    	return lastMenu;
+    }
 
     @Override
     public MenuItem add(int groupId, int itemId, int order, CharSequence title) {
+    	lastMenu = this;
         TestMenuItem menuItem = new TestMenuItem();
         menuItems.add(menuItem);
         menuItem.setItemId(itemId);
@@ -69,6 +84,7 @@ public class TestMenu implements Menu {
 
     @Override
     public SubMenu addSubMenu(int groupId, int itemId, int order, CharSequence title) {
+    	lastMenu = this;
         TestSubMenu tsm = new TestSubMenu();
         TestMenuItem menuItem = new TestMenuItem();
         menuItems.add(menuItem);
@@ -179,4 +195,13 @@ public class TestMenu implements Menu {
         }
         return null;
     }
+
+	public void clickOn(int index) {
+		TestMenuItem item = (TestMenuItem) getItem(index);
+		menuAction(item);
+	}
+	
+	protected void menuAction(TestMenuItem item){
+		activity.onOptionsItemSelected(item);
+	}
 }

@@ -6,6 +6,7 @@ import android.app.Application;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.*;
+import android.view.ContextMenu.ContextMenuInfo;
 
 public class TestMenuItem implements MenuItem {
 
@@ -16,6 +17,7 @@ public class TestMenuItem implements MenuItem {
     public int iconRes;
     private Intent intent;
     private SubMenu subMenu;
+	private ContextMenuInfo menuInfo;
 
     public TestMenuItem() {
         super();
@@ -186,7 +188,11 @@ public class TestMenuItem implements MenuItem {
 
     @Override
     public ContextMenu.ContextMenuInfo getMenuInfo() {
-        return null;
+        return menuInfo;
+    }
+    
+    public void setMenuInfo(ContextMenu.ContextMenuInfo menuInfo){
+    	this.menuInfo = menuInfo;
     }
 
     public void click() {

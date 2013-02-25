@@ -1,18 +1,21 @@
 package com.xtremelabs.robolectric.tester.android.view;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import junit.framework.Assert;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import android.app.Activity;
+import android.content.Intent;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+
+import com.xtremelabs.robolectric.R;
 import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import com.xtremelabs.robolectric.shadows.ShadowActivity;
-import com.xtremelabs.robolectric.tester.android.view.TestMenuItem;
-
-import android.app.Activity;
-import android.content.Intent;
 
 
 @RunWith(WithTestDefaultsRunner.class)
@@ -56,10 +59,56 @@ public class TestMenuTest {
     	assertNotNull(startedIntent);
     }
     
+    @Test
+    public void shouldShowMenuOnMenuButtonClick(){
+    	MyActivity activity = new MyActivity();
+    	ShadowActivity shadowActivity = Robolectric.shadowOf(activity);
+    	
+    	shadowActivity.pressMenuKey();
+    	TestMenu menu = TestMenu.getLastMenu();
+    	
+    	assertNotNull(menu);
+    	assertEquals("Test menu item 1", menu.getItem(0).getTitle());
+		assertEquals("Test menu item 2", menu.getItem(1).getTitle());
+		
+		assertFalse(activity.option1ActionPerformed);
+		menu.clickOn(0);
+		assertTrue(activity.option1ActionPerformed);
+		assertFalse(activity.option2ActionPerformed);
+		menu.clickOn(1);
+		assertTrue(activity.option2ActionPerformed);
+		
+		new TestMenu(activity);
+		assertNull(TestMenu.getLastMenu());
+    }
+    
     private static class MyActivity extends Activity {
+    	
+    	boolean option1ActionPerformed;
+    	boolean option2ActionPerformed;
+    	
         @Override protected void onDestroy() {
             super.onDestroy();
         }
+
+		@Override
+		public boolean onCreateOptionsMenu(Menu menu) {
+			MenuInflater inflater = getMenuInflater();
+			inflater.inflate(R.menu.test, menu);
+			return true;
+		}
+
+		@Override
+		public boolean onOptionsItemSelected(MenuItem item) {
+			if(item.getTitle().equals("Test menu item 1")){
+				option1ActionPerformed = true;
+			}
+			if(item.getTitle().equals("Test menu item 2")){
+				option2ActionPerformed = true;
+			}
+			return true;
+		}
+        
     }
     
 }

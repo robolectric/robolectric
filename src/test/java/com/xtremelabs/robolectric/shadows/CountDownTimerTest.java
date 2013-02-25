@@ -14,6 +14,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(WithTestDefaultsRunner.class)
 public class CountDownTimerTest {
@@ -78,5 +79,10 @@ public class CountDownTimerTest {
 	public void testAccessors() {
 		assertThat(shadowCountDownTimer.getCountDownInterval(), equalTo(countDownInterval));
 		assertThat(shadowCountDownTimer.getMillisInFuture(), equalTo(millisInFuture));
+	}
+	
+	@Test
+	public void shouldReturnLastCreatedTimer(){
+		assertNotNull(ShadowCountDownTimer.getLast());
 	}
 }
