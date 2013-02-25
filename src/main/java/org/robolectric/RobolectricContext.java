@@ -151,7 +151,9 @@ public class RobolectricContext {
     protected ClassLoader createRobolectricClassLoader(Setup setup, ClassCache classCache, AndroidTranslator androidTranslator) {
         URL[] urls = artifactUrls(realAndroidDependency("android-base"),
                 realAndroidDependency("android-kxml2"),
-                realAndroidDependency("android-luni"));
+                realAndroidDependency("android-luni"),
+                createDependency("org.json", "json", "20080701", "jar", null)
+        );
         ClassLoader robolectricClassLoader;
         if (useAsm()) {
             robolectricClassLoader = new AsmInstrumentingClassLoader(setup, urls);
@@ -222,12 +224,16 @@ public class RobolectricContext {
     }
 
     private Dependency realAndroidDependency(String artifactId) {
+        return createDependency("org.robolectric", artifactId, "4.1.2_r1_rc", "jar", "real");
+    }
+
+    private Dependency createDependency(String groupId, String artifactId, String version, String type, String classifier) {
         Dependency dependency = new Dependency();
-        dependency.setGroupId("org.robolectric");
+        dependency.setGroupId(groupId);
         dependency.setArtifactId(artifactId);
-        dependency.setVersion("4.1.2_r1_rc");
-        dependency.setType("jar");
-        dependency.setClassifier("real");
+        dependency.setVersion(version);
+        dependency.setType(type);
+        dependency.setClassifier(classifier);
         return dependency;
     }
 
