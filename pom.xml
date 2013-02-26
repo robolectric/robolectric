@@ -287,11 +287,11 @@
         <developer>
             <id>xian</id>
             <name>Christian Williams</name>
-            <email>xian@pivotallabs.com</email>
-            <organization>Pivotal Labs</organization>
-            <organizationUrl>http://pivotallabs.com/</organizationUrl>
+            <email>xian@squareup.com</email>
+            <organization>Square, Inc.</organization>
+            <organizationUrl>http://corner.squareup.com/</organizationUrl>
             <roles>
-                <role>Developer</role>
+                <role>Principal Developer</role>
             </roles>
             <timezone>PST/PDT</timezone>
         </developer>
@@ -302,7 +302,6 @@
             <organization>Pivotal Labs</organization>
             <organizationUrl>http://pivotallabs.com/</organizationUrl>
             <roles>
-                <role>Project Owner</role>
                 <role>Developer</role>
             </roles>
             <timezone>PST/PDT</timezone>
