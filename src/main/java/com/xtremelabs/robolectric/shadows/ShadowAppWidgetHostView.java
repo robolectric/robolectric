@@ -3,8 +3,9 @@ package com.xtremelabs.robolectric.shadows;
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetProviderInfo;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.shadows.ShadowFrameLayout;
 
 @Implements(AppWidgetHostView.class)
 public class ShadowAppWidgetHostView extends ShadowFrameLayout {

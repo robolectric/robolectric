@@ -23,5 +23,3 @@ cd maven-android-sdk-deployer/
 maven install -P <ANDROID_VERSION>
 ```
 
-
-

@@ -3,9 +3,10 @@ package com.xtremelabs.robolectric.shadows;
 import android.animation.Animator;
 import android.animation.AnimatorSet;
 import android.animation.TimeInterpolator;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
+import org.robolectric.shadows.ShadowAnimator;
 
 @Implements(AnimatorSet.class)
 public class ShadowAnimatorSet extends ShadowAnimator {

@@ -1,17 +1,15 @@
 package android.webkit;
 
-import android.webkit.WebSettings;
-import android.webkit.TestWebSettings;
-import com.xtremelabs.robolectric.Robolectric;
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
+import org.robolectric.internal.DoNotInstrument;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-@RunWith(WithTestDefaultsRunner.class)
+@RunWith(TestRunners.WithDefaults.class) @DoNotInstrument
 public class TestWebSettingsTest {
 
     private TestWebSettings webSettings;

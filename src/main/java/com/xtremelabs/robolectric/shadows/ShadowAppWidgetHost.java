@@ -4,11 +4,11 @@ import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
 import android.appwidget.AppWidgetProviderInfo;
 import android.content.Context;
-import com.xtremelabs.robolectric.internal.Implementation;
-import com.xtremelabs.robolectric.internal.Implements;
-import com.xtremelabs.robolectric.internal.RealObject;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.shadowOf;
 
 @Implements(AppWidgetHost.class)
 public class ShadowAppWidgetHost {

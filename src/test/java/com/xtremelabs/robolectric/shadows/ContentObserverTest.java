@@ -1,25 +1,19 @@
 package com.xtremelabs.robolectric.shadows;
 
-import static org.junit.Assert.*;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import com.xtremelabs.robolectric.WithTestDefaultsRunner;
-
 import android.database.ContentObserver;
 import android.net.Uri;
 import android.os.Handler;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
-@RunWith(WithTestDefaultsRunner.class)
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+
+@RunWith(TestRunners.WithDefaults.class)
 public class ContentObserverTest {
 	
 	private TestContentObserver observer;
