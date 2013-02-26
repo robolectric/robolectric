@@ -45,12 +45,12 @@ public class ShadowBitmap {
         shadowBitmap.setConfig(config);
         return scaledBitmap;
     }
-    
+
     @Implementation
     public static Bitmap createBitmap(Bitmap bitmap) {
         ShadowBitmap shadowBitmap = shadowOf(bitmap);
         shadowBitmap.appendDescription(" created from Bitmap object");
-        return bitmap;   	
+        return bitmap;
     }
 
     @Implementation
@@ -66,43 +66,43 @@ public class ShadowBitmap {
         shadowBitmap.setHeight(dstHeight);
         return scaledBitmap;
     }
-    
+
     @Implementation
     public void recycle() {
-    	recycled = true;
+        recycled = true;
     }
 
     @Implementation
     public final boolean isRecycled() {
-    	return recycled;
+        return recycled;
     }
-    
+
     @Implementation
     public Bitmap copy(Bitmap.Config config, boolean isMutable) {
-    	ShadowBitmap shadowBitmap = shadowOf(realBitmap);
-    	shadowBitmap.setConfig(config);
-    	shadowBitmap.setMutable(isMutable);
-		return realBitmap;    	
+        ShadowBitmap shadowBitmap = shadowOf(realBitmap);
+        shadowBitmap.setConfig(config);
+        shadowBitmap.setMutable(isMutable);
+        return realBitmap;
     }
-    
+
     @Implementation
     public final Bitmap.Config getConfig() {
-		return config;  	
+        return config;
     }
-    
+
     public void setConfig(Bitmap.Config config) {
-    	this.config = config;
+        this.config = config;
     }
-    
+
     @Implementation
     public final boolean isMutable() {
-    	return mutable;
+        return mutable;
     }
-    
+
     public void setMutable(boolean mutable) {
-    	this.mutable = mutable;
+        this.mutable = mutable;
     }
-    
+
     public void appendDescription(String s) {
         description += s;
     }
@@ -180,10 +180,8 @@ public class ShadowBitmap {
                 ", height=" + height +
                 '}';
     }
-    
+
     public Bitmap getRealBitmap() {
-    	return realBitmap;
+        return realBitmap;
     }
-    
-    
 }
