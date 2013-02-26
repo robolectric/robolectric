@@ -223,7 +223,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
         byte[] classBytes = classWriter.toByteArray();
 
-        if (debug || className.contains("GeoPoint") || className.contains("ClassWithFunnyConstructors")) {
+        if (debug) {
             try {
                 FileOutputStream fileOutputStream = new FileOutputStream("tmp/" + className + ".class");
                 fileOutputStream.write(classBytes);
