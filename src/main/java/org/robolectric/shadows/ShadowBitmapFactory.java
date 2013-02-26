@@ -11,7 +11,7 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.util.Join;
 
-import java.io.*;
+import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,30 +45,11 @@ public class ShadowBitmapFactory {
 
     @Implementation
     public static Bitmap decodeFile(String pathName) {
-        return decodeFile(pathName, null);
+        return create("file:" + pathName);
     }
 
     @Implementation
     public static Bitmap decodeFile(String pathName, BitmapFactory.Options options) {
-        File file = new File(pathName);
-        if (file.exists()){
-            try {
-                BufferedReader bufferedReader = new BufferedReader(new FileReader(file));
-                String line = bufferedReader.readLine();
-                StringBuilder sb = new StringBuilder();
-                while (line != null){
-                    sb.append(line);
-                    line = bufferedReader.readLine();
-                }
-                bufferedReader.close();
-
-                return create(sb.toString());
-
-            } catch (FileNotFoundException ignore) {
-            } catch (IOException ignore) {
-            }
-        }
-
         return create("file:" + pathName, options);
     }
 
