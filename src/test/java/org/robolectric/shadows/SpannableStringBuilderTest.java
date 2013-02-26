@@ -78,6 +78,14 @@ public class SpannableStringBuilderTest {
     }
 
     @Test
+    public void setSpan_canHandleGaps() throws Exception {
+        SpannableStringBuilder builder = new SpannableStringBuilder("abcd");
+        TypefaceSpan typeface1 = new TypefaceSpan("foo");
+        builder.setSpan(typeface1, 2, 3, 0);
+        assertNull(shadowOf(builder).getSpanAt(0));
+    }
+
+    @Test
     public void getSpanAt_returnsNullIfNoSpanAssigned() throws Exception {
         SpannableStringBuilder builder = new SpannableStringBuilder("abcd");
         assertNull(shadowOf(builder).getSpanAt(4));

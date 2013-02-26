@@ -72,15 +72,19 @@ public class ShadowSpannableStringBuilder implements CharSequence {
     public String toString() {
         return builder.toString();
     }
-    
+
     @Implementation
-    public SpannableStringBuilder delete( int start, int end ) {
-    	builder.delete( start, end );
+    public SpannableStringBuilder delete(int start, int end) {
+        builder.delete(start, end);
         return realSpannableStringBuilder;
     }
 
     @Implementation
     public void setSpan(Object what, int start, int end, int flags) {
+        for (int i = 0; i < start; i++) {
+            spans.add(null);
+        }
+
         for (int i = start; i <= end; i++) {
             spans.add(i, what);
         }
