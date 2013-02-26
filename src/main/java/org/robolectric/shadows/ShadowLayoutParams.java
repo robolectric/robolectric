@@ -13,4 +13,8 @@ public class ShadowLayoutParams {
         realLayoutParams.width = w;
         realLayoutParams.height = h;
     }
+
+    public void __constructor__(ViewGroup.LayoutParams source) {
+        __constructor__(source.width, source.height);
+    }
 }

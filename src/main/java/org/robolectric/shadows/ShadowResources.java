@@ -171,9 +171,12 @@ public class ShadowResources {
     public CharSequence getText(int id) throws Resources.NotFoundException {
         return getString(id);
     }
-    
+
     public void setDensity(float density) {
         this.density = density;
+        if (displayMetrics != null) {
+            displayMetrics.density = density;
+        }
     }
 
     public void setDisplay(Display display) {
@@ -227,7 +230,7 @@ public class ShadowResources {
     public boolean getBoolean(int id) throws Resources.NotFoundException {
     	return resourceLoader.getBooleanValue(getResName(id), getQualifiers());
     }
-    
+
     @Implementation
     public int getDimensionPixelSize(int id) throws Resources.NotFoundException {
         return (int) getDimension(id);
@@ -242,7 +245,7 @@ public class ShadowResources {
     public AssetManager getAssets() {
         return assetManager;
     }
-    
+
     @Implementation
     public XmlResourceParser getXml(int id) throws Resources.NotFoundException {
         Document document = resourceLoader.getXml(getResName(id), getQualifiers());

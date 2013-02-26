@@ -3,13 +3,15 @@ package org.robolectric.shadows;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
-
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class LooperTest {
@@ -33,6 +35,20 @@ public class LooperTest {
         ShadowLooper.idleMainLooper(1999);
         assertFalse(wasRun[0]);
         ShadowLooper.idleMainLooper(1);
+        assertTrue(wasRun[0]);
+    }
+
+    @Test
+    public void idleConstantly_runsPostDelayedTasksImmediately() {
+        ShadowLooper.idleMainLooperConstantly(true);
+        final boolean[] wasRun = new boolean[]{false};
+        new Handler().postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                wasRun[0] = true;
+            }
+        }, 2000);
+
         assertTrue(wasRun[0]);
     }
 

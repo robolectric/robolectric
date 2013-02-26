@@ -5,8 +5,17 @@ import org.robolectric.util.I18nException;
 import org.robolectric.util.Join;
 
 import java.lang.annotation.Annotation;
-import java.lang.reflect.*;
-import java.util.*;
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static java.util.Arrays.asList;
 
@@ -18,7 +27,7 @@ public class ShadowWrangler implements ClassHandler {
 
     public boolean debug = false;
     private boolean strictI18n = false;
-    
+
     private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
     private Map<String, String> shadowClassMap = new HashMap<String, String>();
     private boolean logMissingShadowMethods = false;
@@ -344,7 +353,7 @@ public class ShadowWrangler implements ClassHandler {
         public Object getShadow() {
             return shadow;
         }
-        
+
         public boolean isI18nSafe() {
         	// method is loaded by another class loader. So do everything reflectively.
         	Annotation[] annos = method.getAnnotations();
@@ -359,8 +368,8 @@ public class ShadowWrangler implements ClassHandler {
 					}
         		}
         	}
-        	
-        	return true;	
+
+        	return true;
         }
 
         public boolean prepare() {

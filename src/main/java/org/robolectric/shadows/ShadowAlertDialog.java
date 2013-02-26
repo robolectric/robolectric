@@ -9,6 +9,7 @@ import android.widget.Adapter;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import org.robolectric.Robolectric;
@@ -42,6 +43,7 @@ public class ShadowAlertDialog extends ShadowDialog {
     private View customTitleView;
     private ListAdapter adapter;
     private ListView listView;
+    private FrameLayout custom;
 
     /**
      * Non-Android accessor.
@@ -56,11 +58,22 @@ public class ShadowAlertDialog extends ShadowDialog {
     @Override
     @Implementation
     public View findViewById(int viewId) {
-        if(view == null) {
-            return super.findViewById(viewId);
+        if ( viewId == android.R.id.custom ) {
+        	return getCustomView();
         }
 
+        if (view == null) {
+            return super.findViewById(viewId);
+        }
+        
         return view.findViewById(viewId);
+    }
+    
+    public FrameLayout getCustomView() {
+       	if ( custom == null ) {
+    		custom = new FrameLayout(context);
+    	}
+    	return custom;
     }
 
     @Implementation
@@ -373,6 +386,13 @@ public class ShadowAlertDialog extends ShadowDialog {
             return realBuilder;
         }
 
+        @Implementation
+        public AlertDialog.Builder setAdapter (ListAdapter adapter, DialogInterface.OnClickListener listener){
+        	this.adapter = adapter;
+        	this.clickListener = listener;
+        	return realBuilder;
+        }
+        
         @Implementation(i18nSafe=false)
         public AlertDialog.Builder setPositiveButton(CharSequence text, final DialogInterface.OnClickListener listener) {
             this.positiveText = text;

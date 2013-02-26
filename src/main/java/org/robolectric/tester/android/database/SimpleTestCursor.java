@@ -26,6 +26,15 @@ public class SimpleTestCursor extends TestCursor {
     }
 
     @Override
+    public int getColumnIndexOrThrow(String columnName) throws IllegalArgumentException{
+        int col = getColumnIndex(columnName);
+        if(col == -1){
+            throw new IllegalArgumentException("No column with name: "+columnName);
+        }
+        return col;
+    }
+
+    @Override
     public int getColumnIndex(String columnName) {
         return columnNames.indexOf(columnName);
     }

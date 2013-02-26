@@ -1,35 +1,47 @@
 package org.robolectric.shadows;
 
-import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-import static org.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.*;
+import android.accounts.Account;
+import android.app.Activity;
+import android.content.ContentProvider;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.Intent;
+import android.content.OperationApplicationException;
+import android.content.PeriodicSync;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.net.Uri;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.RemoteException;
+import org.hamcrest.CoreMatchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.tester.android.database.TestCursor;
 
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import android.accounts.Account;
-import android.content.*;
-import android.os.Bundle;
-import org.robolectric.TestRunners;
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import android.app.Activity;
-import android.database.Cursor;
-import android.net.Uri;
-import android.os.RemoteException;
-
-import org.robolectric.tester.android.database.TestCursor;
+import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.hasItem;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ContentResolverTest {
@@ -351,7 +363,42 @@ public class ContentResolverTest {
         assertThat(contentResolver.delete(unrelated, null, null), is(1));
         assertThat(contentResolver.update(unrelated, new ContentValues(), null, null), is(0));
     }
+    
+    @Test
+    public void shouldRegisterContentObservers() throws Exception {
+    	TestContentObserver co = new TestContentObserver(null);
+    	ShadowContentResolver scr = Robolectric.shadowOf(contentResolver);
+    	
+    	assertThat( scr.getContentObserver( EXTERNAL_CONTENT_URI), nullValue() );
+    	
+    	contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
 
+    	assertThat( scr.getContentObserver(EXTERNAL_CONTENT_URI), sameInstance((ContentObserver)co) );
+
+    	assertThat( co.changed, equalTo(false));  
+    	contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
+    	assertThat( co.changed, equalTo(true));
+    	
+    	scr.clearContentObservers();
+    	assertThat( scr.getContentObserver(EXTERNAL_CONTENT_URI), nullValue() );
+    }
+    
+    @Test
+    public void shouldUnregisterContentObservers() throws Exception {
+    	TestContentObserver co = new TestContentObserver(null);
+    	ShadowContentResolver scr = Robolectric.shadowOf(contentResolver);
+    	contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
+    	assertThat( scr.getContentObserver(EXTERNAL_CONTENT_URI), sameInstance((ContentObserver)co) );
+
+    	contentResolver.unregisterContentObserver(co);
+    	assertThat( scr.getContentObserver( EXTERNAL_CONTENT_URI), nullValue() );
+
+    	assertThat( co.changed, equalTo(false));  
+    	contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
+    	assertThat( co.changed, equalTo(false));  
+    }
+    
+   
     static class QueryParamTrackingTestCursor extends TestCursor {
         public Uri uri;
         public String[] projection;
@@ -368,4 +415,22 @@ public class ContentResolverTest {
             this.sortOrder = sortOrder;
         }
     }
+    
+	private class TestContentObserver extends ContentObserver {
+		public TestContentObserver(Handler handler) {
+			super(handler);
+		}
+
+		public boolean changed = false;
+		
+		@Override
+		public void onChange(boolean selfChange) {
+			changed = true;
+		}
+
+		@Override
+		public void onChange(boolean selfChange, Uri uri) {
+			changed = true;
+		}
+	}
 }

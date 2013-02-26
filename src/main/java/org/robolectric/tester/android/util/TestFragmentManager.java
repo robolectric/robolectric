@@ -3,7 +3,11 @@ package org.robolectric.tester.android.util;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.*;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.app.FragmentTransaction;
 import android.view.View;
 import android.view.ViewGroup;
 import org.robolectric.Robolectric;
@@ -135,6 +139,10 @@ public class TestFragmentManager extends FragmentManager {
 
     public void addDialogFragment(String tag, DialogFragment fragment) {
         fragmentsByTag.put(tag, fragment);
+    }
+    
+    public void removeDialogFragment(DialogFragment fragment) {
+    	fragmentsByTag.values().remove(fragment);
     }
 
     public void addFragment(int containerViewId, String tag, Fragment fragment, boolean replace) {

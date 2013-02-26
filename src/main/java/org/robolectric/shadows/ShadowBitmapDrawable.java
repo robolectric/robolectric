@@ -28,11 +28,19 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     private TileMode tileModeY;
 
     public void __constructor__(Bitmap bitmap) {
-        this.bitmap = bitmap;
+        __constructor__(null, bitmap);
     }
 
     public void __constructor__(Resources resources, Bitmap bitmap) {
+        setBitmap(bitmap);
+    }
+
+    private void setBitmap(Bitmap bitmap) {
         this.bitmap = bitmap;
+        if (bitmap != null) {
+            setIntrinsicWidth(bitmap.getWidth());
+            setIntrinsicHeight(bitmap.getHeight());
+        }
     }
 
     /**
@@ -51,7 +59,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     public Drawable mutate() {
         BitmapDrawable real = newInstanceOf(BitmapDrawable.class);
         ShadowBitmapDrawable shadow = shadowOf(real);
-        shadow.bitmap = this.bitmap;
+        shadow.setBitmap(bitmap);
         shadow.colorFilter = this.colorFilter;
         shadow.drawableCreateFromStreamSource = drawableCreateFromStreamSource;
         return real;
@@ -116,7 +124,7 @@ public class ShadowBitmapDrawable extends ShadowDrawable {
     public TileMode getTileModeY() {
         return tileModeY;
     }
-    
+
     @Implementation
     public void setTileModeXY(TileMode modeX, TileMode modeY) {
         setTileModeX(modeX);

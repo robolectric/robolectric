@@ -19,6 +19,10 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import com.google.android.maps.MapView;
+import org.junit.Before;
+import org.junit.Ignore;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
@@ -30,18 +34,22 @@ import org.robolectric.util.CustomView;
 import org.robolectric.util.CustomView2;
 import org.robolectric.util.I18nException;
 import org.robolectric.util.TestUtil;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 
+import static org.hamcrest.CoreMatchers.containsString;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ViewLoaderTest {
@@ -307,6 +315,12 @@ public class ViewLoaderTest {
     public void testContentDescriptionIsSet() throws Exception {
         View mediaView = inflate("main");
         assertThat(mediaView.findViewById(R.id.time).getContentDescription().toString(), equalTo("Howdy"));
+    }
+
+    @Test
+    public void testAlphaIsSet() throws Exception {
+        View mediaView = inflate("main");
+        assertThat(mediaView.findViewById(R.id.time).getAlpha(), equalTo(.3f));
     }
 
     @Test

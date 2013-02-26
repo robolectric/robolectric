@@ -13,6 +13,7 @@ import android.text.method.MovementMethod;
 import android.text.method.TransformationMethod;
 import android.text.style.URLSpan;
 import android.text.util.Linkify;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.inputmethod.EditorInfo;
@@ -45,11 +46,12 @@ public class ShadowTextView extends ShadowView {
     private MovementMethod movementMethod;
     private boolean linksClickable;
     private int gravity;
-    private TextView.OnEditorActionListener onEditorActionListener;
     private int imeOptions = EditorInfo.IME_NULL;
+    private TextView.OnEditorActionListener onEditorActionListener;
     private int textAppearanceId;
     private TransformationMethod transformationMethod;
     private int inputType;
+    private int lines;
     protected int selectionStart = -1;
     protected int selectionEnd = -1;
     private Typeface typeface;
@@ -183,6 +185,17 @@ public class ShadowTextView extends ShadowView {
     }
 
     @Implementation
+    public void setTextSize(int unit, float value) {
+        if (unit == TypedValue.COMPLEX_UNIT_DIP || unit == TypedValue.COMPLEX_UNIT_SP) {
+            textSize = value * getResources().getDisplayMetrics().density;
+        } else if (unit == TypedValue.COMPLEX_UNIT_PX) {
+            textSize = value;
+        } else {
+            throw new IllegalArgumentException("ShadowTextView#setTextSize(int unit, float value) does not support that unit");
+        }
+    }
+
+    @Implementation
     public void setTextAppearance(Context context, int resid) {
         textAppearanceId = resid;
     }
@@ -220,6 +233,16 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public final boolean getLinksClickable() {
         return linksClickable;
+    }
+
+    @Implementation
+    public final int getLineCount() {
+        return lines;
+    }
+
+    @Implementation
+    public final void setLines(int lines) {
+        this.lines = lines;
     }
 
     @Implementation
@@ -365,15 +388,15 @@ public class ShadowTextView extends ShadowView {
     public String innerText() {
         return (text == null || getVisibility() != VISIBLE) ? "" : text.toString();
     }
-    
+
     @Implementation
     public void setError(CharSequence error) {
-      errorText = error;
+        errorText = error;
     }
-    
+
     @Implementation
     public CharSequence getError() {
-      return errorText;
+        return errorText;
     }
 
     @Override

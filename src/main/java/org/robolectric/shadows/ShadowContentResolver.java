@@ -1,7 +1,12 @@
 package org.robolectric.shadows;
 
 import android.accounts.Account;
-import android.content.*;
+import android.content.ContentProvider;
+import android.content.ContentProviderOperation;
+import android.content.ContentProviderResult;
+import android.content.ContentResolver;
+import android.content.ContentValues;
+import android.content.PeriodicSync;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.net.Uri;
@@ -14,7 +19,12 @@ import org.robolectric.tester.android.database.TestCursor;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 
 @Implements(ContentResolver.class)
 public class ShadowContentResolver {
@@ -30,11 +40,13 @@ public class ShadowContentResolver {
     private final Map<String, ArrayList<ContentProviderOperation>> contentProviderOperations = new HashMap<String, ArrayList<ContentProviderOperation>>();
     private ContentProviderResult[] contentProviderResults;
 
+    private final Map<Uri, ContentObserver> contentObservers = new HashMap<Uri,ContentObserver>();
+    
     private static final Map<String, Map<Account, Status>>  syncableAccounts =
             new HashMap<String, Map<Account, Status>>();
     private static final Map<String, ContentProvider> providers = new HashMap<String, ContentProvider>();
     private static boolean masterSyncAutomatically;
-
+    
     public static void reset() {
         syncableAccounts.clear();
         providers.clear();
@@ -167,7 +179,16 @@ public class ShadowContentResolver {
 
     @Implementation
     public void notifyChange(Uri uri, ContentObserver observer, boolean syncToNetwork) {
-       notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
+        notifiedUris.add(new NotifiedUri(uri, observer, syncToNetwork));
+        
+        // TODO does not support multiple observers for a URI
+        ContentObserver obs = contentObservers.get(uri);
+        if ( obs != null && obs != observer  ) {
+        	obs.dispatchChange( false, uri );
+        }
+    	if ( observer != null && observer.deliverSelfNotifications() ) {
+    		observer.dispatchChange( true, uri );
+    	}
     }
 
     @Implementation
@@ -337,9 +358,46 @@ public class ShadowContentResolver {
         return operations;
     }
 
-
     public void setContentProviderResult(ContentProviderResult[] contentProviderResults) {
         this.contentProviderResults = contentProviderResults;
+    }
+    
+    @Implementation
+    public void registerContentObserver( Uri uri, boolean notifyForDescendents, ContentObserver observer) {
+        // TODO does not support multiple observers for a URI
+    	contentObservers.put( uri, observer );
+    }
+    
+    @Implementation
+    public void unregisterContentObserver( ContentObserver observer ) {
+    	if ( observer != null && contentObservers.containsValue( observer ) ) {
+    		Set<Entry<Uri,ContentObserver>> entries = contentObservers.entrySet();
+    		for ( Entry<Uri,ContentObserver> e : entries ) {
+    			ContentObserver other = e.getValue();
+    			if ( observer == other || observer.equals(other) ) {
+    	        	contentObservers.remove( e.getKey() );
+    	        	return;
+    			}
+    		}
+    	}
+    }
+    
+    /**
+     * Non-Android accessor.  Clears the list of registered content observers.
+     * Commonly used in test case setup.
+     */
+    public void clearContentObservers() {
+    	contentObservers.clear();
+    }
+    
+    /**
+     * Non-Android accessor.  Returns the content observer registered with
+     * the given URI, or null if none registered.
+     * @param uri
+     * @return
+     */
+    public ContentObserver getContentObserver( Uri uri ) {
+    	return contentObservers.get(uri);
     }
 
     private TestCursor getCursor(Uri uri) {

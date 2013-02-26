@@ -3,7 +3,14 @@ package org.robolectric.shadows;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.DatabaseUtils;
-import android.database.sqlite.*;
+import android.database.sqlite.SQLiteClosable;
+import android.database.sqlite.SQLiteCursor;
+import android.database.sqlite.SQLiteCursorDriver;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteDatabaseCorruptException;
+import android.database.sqlite.SQLiteQuery;
+import android.database.sqlite.SQLiteQueryBuilder;
+import android.database.sqlite.SQLiteStatement;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
@@ -16,7 +23,11 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -41,17 +52,19 @@ public class ShadowSQLiteDatabase  {
     private WeakHashMap<SQLiteClosable, Object> mPrograms;
     private Transaction transaction;
     private boolean throwOnInsert;
+    private Set<Cursor> cursors = new HashSet<Cursor>();
+    private List<String> querySql = new ArrayList<String>();
 
     @Implementation
     public void setLockingEnabled(boolean lockingEnabled) {
         mLockingEnabled = lockingEnabled;
     }
-    
+
     public void lock() {
         if (!mLockingEnabled) return;
         mLock.lock();
     }
-    
+
     public void unlock() {
         if (!mLockingEnabled) return;
         mLock.unlock();
@@ -66,7 +79,7 @@ public class ShadowSQLiteDatabase  {
         connection = DatabaseConfig.getMemoryConnection();
         return newInstanceOf(SQLiteDatabase.class);
     }
-    
+
     @Implementation
     public long insert(String table, String nullColumnHack, ContentValues values) {
         try {
@@ -75,7 +88,7 @@ public class ShadowSQLiteDatabase  {
             return -1;
         }
     }
-    
+
     @Implementation
     public long insertOrThrow(String table, String nullColumnHack, ContentValues values) throws android.database.SQLException {
         if (throwOnInsert)
@@ -99,7 +112,7 @@ public class ShadowSQLiteDatabase  {
 
     @Implementation
     public long insertWithOnConflict(String table, String nullColumnHack,
-            ContentValues initialValues, int conflictAlgorithm) throws android.database.SQLException{
+                                     ContentValues initialValues, int conflictAlgorithm) throws android.database.SQLException {
 
         try {
             SQLStringAndBindings sqlInsertString = buildInsertString(table, initialValues, conflictAlgorithm);
@@ -134,6 +147,7 @@ public class ShadowSQLiteDatabase  {
 
         String sql = SQLiteQueryBuilder.buildQueryString(distinct, table,
                 columns, where, groupBy, having, orderBy, limit);
+        querySql.add(sql);
 
         ResultSet resultSet;
         try {
@@ -144,7 +158,8 @@ public class ShadowSQLiteDatabase  {
         }
 
         SQLiteCursor cursor = new SQLiteCursor(null, null, null, null);
-        shadowOf(cursor).setResultSet(resultSet,sql);
+        shadowOf(cursor).setResultSet(resultSet, sql);
+        cursors.add(cursor);
         return cursor;
     }
 
@@ -198,7 +213,7 @@ public class ShadowSQLiteDatabase  {
         }
 
         try {
-            String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
+            String scrubbedSql = DatabaseConfig.getScrubSQL(sql);
             connection.createStatement().execute(scrubbedSql);
         } catch (java.sql.SQLException e) {
             android.database.SQLException ase = new android.database.SQLException();
@@ -212,12 +227,12 @@ public class ShadowSQLiteDatabase  {
         if (bindArgs == null) {
             throw new IllegalArgumentException("Empty bindArgs");
         }
-        String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
-        
-        
+        String scrubbedSql = DatabaseConfig.getScrubSQL(sql);
+
+
         SQLiteStatement statement = null;
             try {
-                statement =compileStatement(scrubbedSql);
+                statement = compileStatement(scrubbedSql);
             if (bindArgs != null) {
                 int numArgs = bindArgs.length;
                 for (int i = 0; i < numArgs; i++) {
@@ -246,7 +261,7 @@ public class ShadowSQLiteDatabase  {
             
         }, sql, selectionArgs, null );
     }
-    
+
     @Implementation
     public Cursor rawQueryWithFactory (SQLiteDatabase.CursorFactory cursorFactory, String sql, String[] selectionArgs, String editTable) {
         String sqlBody = sql;
@@ -272,9 +287,10 @@ public class ShadowSQLiteDatabase  {
           
         SQLiteCursor cursor = (SQLiteCursor) cursorFactory.newCursor(null, null, null, null);
         shadowOf(cursor).setResultSet(resultSet, sqlBody);
+        cursors.add(cursor);
         return cursor;
     }
-    
+
     @Implementation
     public boolean isOpen() {
         return (connection != null);
@@ -347,7 +363,7 @@ public class ShadowSQLiteDatabase  {
      * Allows tests cases to query the transaction state
      * @return
      */
-    public boolean isTransactionSuccess() { 
+    public boolean isTransactionSuccess() {
         return transaction != null && transaction.success && transaction.descendantsSuccess;
     }
 
@@ -360,11 +376,11 @@ public class ShadowSQLiteDatabase  {
     public Connection getConnection() {
         return connection;
     }
-    
+
     @Implementation
     public SQLiteStatement compileStatement(String sql) throws SQLException {
         lock();
-        String scrubbedSql= DatabaseConfig.getScrubSQL(sql);
+        String scrubbedSql = DatabaseConfig.getScrubSQL(sql);
         try {
             SQLiteStatement stmt = Robolectric.newInstanceOf(SQLiteStatement.class);
             Robolectric.shadowOf(stmt).init(realSQLiteDatabase, scrubbedSql);
@@ -376,7 +392,7 @@ public class ShadowSQLiteDatabase  {
         }
     }
     
-       /**
+    /**
      * @param closable
      */
     void addSQLiteClosable(SQLiteClosable closable) {
@@ -395,6 +411,19 @@ public class ShadowSQLiteDatabase  {
         } finally {
             unlock();
         }
+    }
+
+    public boolean hasOpenCursors() {
+        for (Cursor cursor : cursors) {
+            if (!cursor.isClosed()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public List<String> getQuerySql() {
+        return querySql;
     }
 
     private static class Transaction {

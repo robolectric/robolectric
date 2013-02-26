@@ -108,6 +108,11 @@ public class ShadowLooper {
         shadowOf(Looper.getMainLooper()).idle(interval);
     }
 
+
+    public static void idleMainLooperConstantly(boolean shouldIdleConstantly) {
+        shadowOf(Looper.getMainLooper()).idleConstantly(shouldIdleConstantly);
+    }
+
     /**
      * Causes {@link Runnable}s that have been scheduled to run immediately to actually run. Does not advance the
      * scheduler's clock;
@@ -124,6 +129,10 @@ public class ShadowLooper {
      */
     public void idle(long intervalMillis) {
         scheduler.advanceBy(intervalMillis);
+    }
+
+    public void idleConstantly(boolean shouldIdleConstantly) {
+        scheduler.idleConstantly(shouldIdleConstantly);
     }
 
     /**
