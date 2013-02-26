@@ -60,7 +60,6 @@ public class ShadowLooper {
         if (this != shadowOf(getMainLooper())) {
             synchronized (realObject) {
                 while (!quit) {
-                    System.out.println(this + " quit = " + quit);
                     try {
                         realObject.wait();
                     } catch (InterruptedException ignore) {
@@ -74,7 +73,6 @@ public class ShadowLooper {
     public void quit() {
         if (this == shadowOf(getMainLooper())) throw new RuntimeException("Main thread not allowed to quit");
         synchronized (realObject) {
-            System.out.println(this + " quit -> true");
             quit = true;
             scheduler.reset();
             realObject.notifyAll();

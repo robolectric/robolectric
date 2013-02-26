@@ -6,6 +6,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.util.AttributeSet;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.widget.LinearLayout;
 import org.robolectric.R;
@@ -34,6 +35,7 @@ public class LocalActivityManagerContainer extends LinearLayout {
         final Window window = lam.startActivity("foo", new Intent(getContext(), InnerActivity.class));
         // Add the decorView's child to this LinearLayout's children.
         final View innerContents = window.getDecorView().findViewById(R.id.lam_inner_contents);
+        ((ViewGroup) innerContents.getParent()).removeView(innerContents);
         addView(innerContents);
     }
 
