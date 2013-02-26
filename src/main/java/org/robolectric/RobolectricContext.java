@@ -64,12 +64,10 @@ public class RobolectricContext {
     }
 
     public RobolectricContext() {
-        ClassCache classCache = createClassCache();
         Setup setup = createSetup();
         classHandler = createClassHandler(setup);
         appManifest = createAppManifest();
-        AndroidTranslator androidTranslator = createAndroidTranslator(setup, classCache);
-        robolectricClassLoader = createRobolectricClassLoader(setup, classCache, androidTranslator);
+        robolectricClassLoader = createRobolectricClassLoader(setup);
     }
 
     private ClassHandler createClassHandler(Setup setup) {
@@ -148,7 +146,7 @@ public class RobolectricContext {
         }
     }
 
-    protected ClassLoader createRobolectricClassLoader(Setup setup, ClassCache classCache, AndroidTranslator androidTranslator) {
+    protected ClassLoader createRobolectricClassLoader(Setup setup) {
         URL[] urls = artifactUrls(realAndroidDependency("android-base"),
                 realAndroidDependency("android-kxml2"),
                 realAndroidDependency("android-luni"),
@@ -158,6 +156,8 @@ public class RobolectricContext {
         if (useAsm()) {
             robolectricClassLoader = new AsmInstrumentingClassLoader(setup, urls);
         } else {
+            ClassCache classCache = createClassCache();
+            AndroidTranslator androidTranslator = createAndroidTranslator(setup, classCache);
             ClassLoader realSdkClassLoader = JavassistInstrumentingClassLoader.makeClassloader(this.getClass().getClassLoader(), urls);
             robolectricClassLoader = new JavassistInstrumentingClassLoader(realSdkClassLoader, classCache, androidTranslator, setup);
         }

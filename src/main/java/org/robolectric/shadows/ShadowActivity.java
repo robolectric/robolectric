@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.R;
 import android.app.Activity;
 import android.app.Application;
 import android.app.Dialog;
@@ -15,9 +16,9 @@ import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.FrameLayout;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
@@ -39,9 +40,6 @@ public class ShadowActivity extends ShadowContextWrapper {
     protected Activity realActivity;
 
     private Intent intent;
-    private FrameLayout contentViewContainer;
-    private View contentView;
-    private int orientation;
     private int resultCode;
     private Intent resultIntent;
     private Activity parent;
@@ -222,20 +220,14 @@ public class ShadowActivity extends ShadowContextWrapper {
      */
     @Implementation
     public void setContentView(int layoutResID) {
-        setContentView(getLayoutInflater().inflate(layoutResID, new FrameLayout(realActivity)));
+        getWindow().setContentView(layoutResID);
+        realActivity.onContentChanged();
     }
 
     @Implementation
     public void setContentView(View view) {
-        if (contentViewContainer != null && contentView != null) {
-            contentViewContainer.removeView(contentView);
-        }
-        contentView = view;
-        if (contentViewContainer != null) {
-            contentViewContainer.addView(contentView);
-        }
+        getWindow().setContentView(view);
         realActivity.onContentChanged();
-        getWindow().setContentView(contentView);
     }
 
     @Implementation
@@ -268,17 +260,7 @@ public class ShadowActivity extends ShadowContextWrapper {
      */
     @Implementation
     public View findViewById(int id) {
-        return getContentViewContainer().findViewById(id);
-    }
-
-    private View getContentViewContainer() {
-        if (contentViewContainer == null) {
-            contentViewContainer = new FrameLayout(realActivity);
-            contentViewContainer.setId(android.R.id.content);
-
-            if (contentView != null) contentViewContainer.addView(contentView, 0);
-        }
-        return contentViewContainer;
+        return getWindow().findViewById(id);
     }
 
     @Implementation
@@ -399,7 +381,7 @@ public class ShadowActivity extends ShadowContextWrapper {
      * @return the {@code contentView} set by one of the {@code setContentView()} methods
      */
     public View getContentView() {
-        return contentView;
+        return ((ViewGroup) getWindow().findViewById(R.id.content)).getChildAt(0);
     }
 
     /**

@@ -16,7 +16,6 @@ import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
-import org.robolectric.Robolectric;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -27,6 +26,7 @@ public class TestWindow extends Window {
     public int softInputMode;
     private TestWindowManager windowManager;
     private View contentView;
+    private FrameLayout decorView;
 
     public TestWindow(Context context) {
         super(context);
@@ -64,14 +64,26 @@ public class TestWindow extends Window {
 
     @Override
     public void setContentView(int layoutResID) {
-        setContentView(getLayoutInflater().inflate(layoutResID, null));
+        setContentView(getLayoutInflater().inflate(layoutResID, getDecorView()));
     }
 
     @Override 
     public void setContentView(View view) {
-        if (contentView != null) shadowOf(contentView).callOnDetachedFromWindow();
+        ViewGroup decorView = getDecorView();
+        if (contentView != null) {
+            shadowOf(contentView).callOnDetachedFromWindow();
+            decorView.removeView(contentView);
+
+        }
         contentView = view;
-        if (contentView != null) shadowOf(contentView).callOnAttachedToWindow();
+
+        if (contentView != null) {
+            if (contentView.getParent() != decorView && contentView != decorView) {
+                decorView.addView(contentView);
+            }
+
+            shadowOf(contentView).callOnAttachedToWindow();
+        }
     }
 
     @Override 
@@ -91,7 +103,7 @@ public class TestWindow extends Window {
 
     @Override 
     public LayoutInflater getLayoutInflater() {
-        return LayoutInflater.from(Robolectric.application);
+        return LayoutInflater.from(getContext());
     }
 
     @Override
@@ -187,17 +199,12 @@ public class TestWindow extends Window {
         return false;
     }
 
-    @Override public View getDecorView() {
-        final FrameLayout decorView = new FrameLayout(Robolectric.application);
-
-        // On a typical Android device you can call:
-        //   myWindow.getDecorView().findViewById(android.R.content)
-        final FrameLayout contentWrapper = new FrameLayout(Robolectric.application);
-        contentWrapper.setId(R.id.content);
-
-        decorView.addView(contentWrapper);
-        if (contentView != null) {
-            contentWrapper.addView(contentView);
+    @Override public ViewGroup getDecorView() {
+        if (decorView == null) {
+            decorView = new FrameLayout(getContext());
+            // On a typical Android device you can call:
+            //   myWindow.getDecorView().findViewById(android.R.content)
+            decorView.setId(R.id.content);
         }
         return decorView;
     }

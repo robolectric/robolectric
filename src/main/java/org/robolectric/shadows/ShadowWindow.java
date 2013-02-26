@@ -1,5 +1,6 @@
 package org.robolectric.shadows;
 
+import android.content.Context;
 import android.view.Window;
 import android.view.WindowManager;
 import org.robolectric.internal.Implementation;
@@ -9,6 +10,16 @@ import org.robolectric.internal.Implements;
 @Implements(Window.class)
 public class ShadowWindow {
     private int flags;
+    private Context context;
+
+    public void __constructor__(android.content.Context context) {
+        this.context = context;
+    }
+
+    @Implementation
+    public Context getContext() {
+        return context;
+    }
 
     @Implementation
     public WindowManager.LayoutParams getAttributes() {

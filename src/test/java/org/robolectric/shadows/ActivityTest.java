@@ -14,24 +14,27 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.FrameLayout;
-import org.robolectric.*;
-import org.robolectric.shadows.testing.OnMethodTestActivity;
-import org.robolectric.util.TestRunnable;
-import org.robolectric.util.Transcript;
 import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.ApplicationResolver;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.shadows.testing.OnMethodTestActivity;
+import org.robolectric.util.TestRunnable;
+import org.robolectric.util.Transcript;
 
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.robolectric.Robolectric.application;
-import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.util.TestUtil.assertInstanceOf;
-import static org.robolectric.util.TestUtil.newConfig;
 import static org.hamcrest.CoreMatchers.*;
 import static org.hamcrest.core.StringStartsWith.startsWith;
 import static org.junit.Assert.*;
+import static org.robolectric.Robolectric.application;
+import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.util.TestUtil.newConfig;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ActivityTest {
@@ -366,32 +369,31 @@ public class ActivityTest {
 
     @Test
     public void setDefaultKeyMode_shouldSetKeyMode() {
-    	int[] modes = {
-    			Activity.DEFAULT_KEYS_DISABLE,
-    			Activity.DEFAULT_KEYS_SHORTCUT,
-    			Activity.DEFAULT_KEYS_DIALER,
-    			Activity.DEFAULT_KEYS_SEARCH_LOCAL,
-    			Activity.DEFAULT_KEYS_SEARCH_GLOBAL
-    	};
-    	Activity activity = new Activity();
-    	ShadowActivity shadow = shadowOf(activity);
-    	
-    	for (int mode: modes) {
-    		activity.setDefaultKeyMode(mode);
-    		assertThat("Unexpected key mode",
-    				shadow.getDefaultKeymode(),
-    				equalTo(mode));
-    	}
+        int[] modes = {
+                Activity.DEFAULT_KEYS_DISABLE,
+                Activity.DEFAULT_KEYS_SHORTCUT,
+                Activity.DEFAULT_KEYS_DIALER,
+                Activity.DEFAULT_KEYS_SEARCH_LOCAL,
+                Activity.DEFAULT_KEYS_SEARCH_GLOBAL
+        };
+        Activity activity = new Activity();
+        ShadowActivity shadow = shadowOf(activity);
+
+        for (int mode : modes) {
+            activity.setDefaultKeyMode(mode);
+            assertThat("Unexpected key mode",
+                    shadow.getDefaultKeymode(),
+                    equalTo(mode));
+        }
     }
 
-    @Test
-    public void shouldSetContentViewWithFrameLayoutAsParent() throws Exception {
+    @Test // unclear what the correct behavior should be here...
+    public void shouldPopulateWindowDecorViewWithMergeLayoutContents() throws Exception {
         Activity activity = new Activity();
         activity.setContentView(R.layout.toplevel_merge);
 
-        View contentView = shadowOf(activity).getContentView();
-        assertInstanceOf(FrameLayout.class, contentView);
-        assertThat(((FrameLayout) contentView).getChildCount(), equalTo(2));
+        View contentView = activity.findViewById(android.R.id.content);
+        assertThat(((ViewGroup) contentView).getChildCount(), equalTo(2));
     }
 
     @Test public void setContentView_shouldReplaceOldContentView() throws Exception {
@@ -459,7 +461,7 @@ public class ActivityTest {
     }
 
     @Test
-      public void createGoesThroughFullLifeCycle() throws Exception {
+    public void createGoesThroughFullLifeCycle() throws Exception {
         TestActivity activity = new TestActivity();
 
         shadowOf(activity).create();
@@ -510,29 +512,29 @@ public class ActivityTest {
                 "onStart",
                 "onResume"
         );
-     
+
     }
-    
+
     @Test
     public void startAndStopManagingCursorTracksCursors() throws Exception {
         TestActivity activity = new TestActivity();
 
         ShadowActivity shadow = shadowOf(activity);
-        
-        assertThat( shadow.getManagedCursors(), notNullValue() );
-        assertThat( shadow.getManagedCursors().size(), equalTo(0) );  
-        
+
+        assertThat(shadow.getManagedCursors(), notNullValue());
+        assertThat(shadow.getManagedCursors().size(), equalTo(0));
+
         Cursor c = Robolectric.newInstanceOf(SQLiteCursor.class);
         activity.startManagingCursor(c);
 
-        assertThat( shadow.getManagedCursors(), notNullValue() );
-        assertThat( shadow.getManagedCursors().size(), equalTo(1) );
-        assertThat( shadow.getManagedCursors().get(0), sameInstance(c) );
+        assertThat(shadow.getManagedCursors(), notNullValue());
+        assertThat(shadow.getManagedCursors().size(), equalTo(1));
+        assertThat(shadow.getManagedCursors().get(0), sameInstance(c));
 
         activity.stopManagingCursor(c);
-        
-        assertThat( shadow.getManagedCursors(), notNullValue() );
-        assertThat( shadow.getManagedCursors().size(), equalTo(0) );
+
+        assertThat(shadow.getManagedCursors(), notNullValue());
+        assertThat(shadow.getManagedCursors().size(), equalTo(0));
     }
 
     private static class TestActivity extends Activity {
@@ -578,7 +580,7 @@ public class ActivityTest {
         public void onCreate(Bundle savedInstanceState) {
             transcript.add("onCreate");
 
-            if( isRecreating ) {
+            if (isRecreating) {
                 assertTrue(savedInstanceState.containsKey("TestActivityKey"));
                 assertEquals("TestActivityValue", savedInstanceState.getString("TestActivityKey"));
             }
@@ -670,29 +672,35 @@ public class ActivityTest {
 
     @Test
     public void callOnXxxMethods_shouldWorkIfNotDeclaredOnConcreteClass() throws Exception {
-        Activity activity = new Activity() {};
+        Activity activity = new Activity() {
+        };
         shadowOf(activity).callOnStart();
     }
 
     @Test
     public void getAndSetParentActivity_shouldWorkForTestingPurposes() throws Exception {
-        Activity parentActivity = new Activity(){};
-        Activity activity = new Activity(){};
+        Activity parentActivity = new Activity() {
+        };
+        Activity activity = new Activity() {
+        };
         shadowOf(activity).setParent(parentActivity);
         assertSame(parentActivity, activity.getParent());
     }
 
     @Test
     public void getAndSetRequestedOrientation_shouldRemember() throws Exception {
-        Activity activity = new Activity(){};
+        Activity activity = new Activity() {
+        };
         activity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());
     }
 
     @Test
     public void getAndSetRequestedOrientation_shouldDelegateToParentIfPresent() throws Exception {
-        Activity parentActivity = new Activity(){};
-        Activity activity = new Activity(){};
+        Activity parentActivity = new Activity() {
+        };
+        Activity activity = new Activity() {
+        };
         shadowOf(activity).setParent(parentActivity);
         parentActivity.setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT);
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_PORTRAIT, activity.getRequestedOrientation());

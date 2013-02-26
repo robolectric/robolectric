@@ -102,6 +102,8 @@ public class ShadowViewGroup extends ShadowView {
 
     @Implementation
     public void addView(View child, int index, ViewGroup.LayoutParams params) {
+        if (child == realView) throw new RuntimeException("why are you adding me as my own child!?! you got some problems.");
+
         child.setLayoutParams(params);
         if (index == -1) {
             children.add(child);

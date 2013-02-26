@@ -16,7 +16,7 @@ public abstract class AppSingletonizer<T> {
 
     synchronized public T getInstance(Context context) {
         Application applicationContext = (Application) context.getApplicationContext();
-        ShadowApplication shadowApplication = (ShadowApplication) shadowOf(applicationContext);
+        ShadowApplication shadowApplication = shadowOf(applicationContext);
         T instance = get(shadowApplication);
         if (instance == null) {
             instance = createInstance(applicationContext);
