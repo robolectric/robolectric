@@ -5,11 +5,29 @@ title: Release Notes
 
 # Release Notes
 
+-----
 ## 2.x Branch
+
+-----
+## [Release 2.0-alpha-2](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.0-alpha-2/) - February 26, 2013
+-----
+
+_Note:_
+This is an unstable alpha release: expect bugs and upcoming changes to the API.
+
+See [this blog post](http://robolectric.blogspot.com/2013/02/migrating-to-robolectric-20.html) for notes on upgrading.
+
+#### Features
+- Switched from Javassist to ASM for bytecode manipulation: much faster.
+- All classes in android.support.* are now unshadowed and should work as expected.
+- Improved resource and library project support.
 
 -----
 ## [Release 2.0-alpha-1](http://repo1.maven.org/maven2/org/robolectric/robolectric/2.0-alpha-1/) - January 29, 2013
 -----
+
+_Note:_
+This is an unstable alpha release: expect bugs and upcoming changes to the API.
 
 #### Features
 - Support for library projects.
@@ -18,6 +36,8 @@ title: Release Notes
 - Groundwork to remove many shadows and use actual android sdk code.
 - Moved to org.robolectric package and maven groupId.
 
+
+-----
 ## 1.x Branch
 
 -----
