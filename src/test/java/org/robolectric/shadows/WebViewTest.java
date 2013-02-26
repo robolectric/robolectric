@@ -5,18 +5,21 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
-import static org.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class WebViewTest {
@@ -180,5 +183,19 @@ public class WebViewTest {
         assertThat(shadowWebView.wasDestroyCalled(), equalTo(false));
         webView.destroy();
         assertThat(shadowWebView.wasDestroyCalled(), equalTo(true));
+    }
+    
+    @Test
+    public void shouldRecordOnPause() {
+    	assertThat( shadowWebView.wasOnPauseCalled(), equalTo(false));
+    	webView.onPause();
+    	assertThat( shadowWebView.wasOnPauseCalled(), equalTo(true));
+    }
+    
+    @Test
+    public void shouldRecordOnResume() {
+    	assertThat( shadowWebView.wasOnResumeCalled(), equalTo(false));
+    	webView.onResume();
+    	assertThat( shadowWebView.wasOnResumeCalled(), equalTo(true));
     }
 }

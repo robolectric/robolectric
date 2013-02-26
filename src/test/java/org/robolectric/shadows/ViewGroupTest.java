@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.app.Application;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
@@ -10,22 +11,29 @@ import android.view.animation.LayoutAnimationController;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static org.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertSame;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ViewGroupTest {
@@ -77,13 +85,16 @@ public class ViewGroupTest {
 
         AnimationListener animationListener = new AnimationListener() {
             @Override
-            public void onAnimationEnd(Animation a) { }
+            public void onAnimationEnd(Animation a) {
+            }
 
             @Override
-            public void onAnimationRepeat(Animation a) { }
+            public void onAnimationRepeat(Animation a) {
+            }
 
             @Override
-            public void onAnimationStart(Animation a) { }
+            public void onAnimationStart(Animation a) {
+            }
         };
         root.setLayoutAnimationListener(animationListener);
 
@@ -92,10 +103,10 @@ public class ViewGroupTest {
 
     @Test
     public void testLayoutAnimation() {
-    	assertThat(root.getLayoutAnimation(), nullValue());
-    	LayoutAnimationController layoutAnim = new LayoutAnimationController(context, null);
-    	root.setLayoutAnimation(layoutAnim);
-    	assertThat(root.getLayoutAnimation(), sameInstance(layoutAnim));
+        assertThat(root.getLayoutAnimation(), nullValue());
+        LayoutAnimationController layoutAnim = new LayoutAnimationController(context, null);
+        root.setLayoutAnimation(layoutAnim);
+        assertThat(root.getLayoutAnimation(), sameInstance(layoutAnim));
     }
 
     @Test
@@ -251,11 +262,23 @@ public class ViewGroupTest {
     }
 
     @Test
-    public void getChildAt_shouldReturnNullForInvalidIndices() {
+    public void getChildAt_shouldThrowIndexOutOfBoundsForInvalidIndices() { // 'cause that's what Android does
         assertThat(root.getChildCount(), equalTo(3));
-        assertThat(root.getChildAt(13), nullValue());
-        assertThat(root.getChildAt(3), nullValue());
-        assertThat(root.getChildAt(-1), nullValue());
+        assertThrowsExceptionForBadIndex(13);
+        assertThrowsExceptionForBadIndex(3);
+        assertThrowsExceptionForBadIndex(-1);
+    }
+
+    private void assertThrowsExceptionForBadIndex(int index) {
+        try {
+            assertThat(root.getChildAt(index), nullValue());
+            fail("no exception");
+        } catch (IndexOutOfBoundsException ex) {
+            //noinspection UnnecessaryReturnStatement
+            return;
+        } catch (Exception ex) {
+            fail("wrong exception type");
+        }
     }
 
     @Test
@@ -281,5 +304,107 @@ public class ViewGroupTest {
         root.removeView(child3a);
         assertThat(root.getChildCount(), equalTo(3));
         assertThat(child3a.getParent(), sameInstance((ViewParent) child3));
+    }
+
+    @Test
+    public void addView_whenChildAlreadyHasAParent_shouldThrow() throws Exception {
+        ViewGroup newRoot = new FrameLayout(context);
+        try {
+            newRoot.addView(child1);
+            fail("Expected IllegalStateException");
+        } catch (IllegalStateException e) {
+            // pass
+        }
+    }
+
+    @Test
+    public void shouldKnowWhenOnInterceptTouchEventWasCalled() throws Exception {
+        ViewGroup viewGroup = new FrameLayout(context);
+
+        MotionEvent touchEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0);
+        viewGroup.onInterceptTouchEvent(touchEvent);
+
+        assertThat(shadowOf(viewGroup).getInterceptedTouchEvent(), equalTo(touchEvent));
+    }
+
+    @Test
+    public void removeView_shouldRequestLayout() throws Exception {
+        View view = new View(context);
+        ViewGroup viewGroup = new FrameLayout(context);
+        viewGroup.addView(view);
+        shadowOf(viewGroup).setDidRequestLayout(false);
+
+        viewGroup.removeView(view);
+        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+    }
+
+    @Test
+    public void removeViewAt_shouldRequestLayout() throws Exception {
+        View view = new View(context);
+        ViewGroup viewGroup = new FrameLayout(context);
+        viewGroup.addView(view);
+        shadowOf(viewGroup).setDidRequestLayout(false);
+
+        viewGroup.removeViewAt(0);
+        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+    }
+
+    @Test
+    public void removeAllViews_shouldRequestLayout() throws Exception {
+        View view = new View(context);
+        ViewGroup viewGroup = new FrameLayout(context);
+        viewGroup.addView(view);
+        shadowOf(viewGroup).setDidRequestLayout(false);
+
+        viewGroup.removeAllViews();
+        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+    }
+
+    @Test
+    public void addView_shouldRequestLayout() throws Exception {
+        View view = new View(context);
+        ViewGroup viewGroup = new FrameLayout(context);
+        viewGroup.addView(view);
+
+        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+    }
+
+    @Test
+    public void addView_withIndex_shouldRequestLayout() throws Exception {
+        View view = new View(context);
+        ViewGroup viewGroup = new FrameLayout(context);
+        viewGroup.addView(view, 0);
+
+        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+    }
+
+    @Test
+    public void removeAllViews_shouldCallOnChildViewRemovedWithEachChild() throws Exception {
+        View view = new View(context);
+        ViewGroup viewGroup = new FrameLayout(context);
+        viewGroup.addView(view);
+
+        TestOnHierarchyChangeListener testListener = new TestOnHierarchyChangeListener();
+
+        viewGroup.setOnHierarchyChangeListener(testListener);
+        viewGroup.removeAllViews();
+        assertTrue(testListener.wasCalled());
+    }
+
+    class TestOnHierarchyChangeListener implements ViewGroup.OnHierarchyChangeListener {
+        boolean wasCalled = false;
+
+        @Override
+        public void onChildViewAdded(View parent, View child) {
+        }
+
+        @Override
+        public void onChildViewRemoved(View parent, View child) {
+            wasCalled = true;
+        }
+
+        public boolean wasCalled() {
+            return wasCalled;
+        }
     }
 }

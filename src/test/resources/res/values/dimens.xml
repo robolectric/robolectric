@@ -5,4 +5,6 @@
 	<dimen name="test_pt_dimen">12pt</dimen>
 	<dimen name="test_px_dimen">15px</dimen>
 	<dimen name="test_sp_dimen">5sp</dimen>
+	<dimen name="test_mm_dimen">42mm</dimen>
+	<dimen name="test_in_dimen">99in</dimen>
 </resources>

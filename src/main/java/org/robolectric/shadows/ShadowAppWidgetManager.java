@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.app.Application;
 import android.appwidget.AppWidgetManager;
 import android.appwidget.AppWidgetProvider;
+import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.view.View;
@@ -24,7 +25,7 @@ import static org.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AppWidgetManager.class)
 public class ShadowAppWidgetManager {
-    private static AppSingletonizer<AppWidgetManager> instances = new AppSingletonizer<AppWidgetManager>(AppWidgetManager.class) {
+    private static final AppSingletonizer<AppWidgetManager> instances = new AppSingletonizer<AppWidgetManager>(AppWidgetManager.class) {
         @Override
         protected AppWidgetManager get(ShadowApplication shadowApplication) {
             return shadowApplication.appWidgetManager;
@@ -47,9 +48,12 @@ public class ShadowAppWidgetManager {
     private AppWidgetManager realAppWidgetManager;
 
     private Context context;
-    private Map<Integer, WidgetInfo> widgetInfos = new HashMap<Integer, WidgetInfo>();
+    private final Map<Integer, WidgetInfo> widgetInfos = new HashMap<Integer, WidgetInfo>();
     private int nextWidgetId = 1;
     private boolean alwaysRecreateViewsDuringUpdate = false;
+    private boolean allowedToBindWidgets;
+    private boolean validWidgetProviderComponentName = true;
+    private final ArrayList<AppWidgetProviderInfo> installedProviders = new ArrayList<AppWidgetProviderInfo>();
 
     private static void bind(AppWidgetManager appWidgetManager, Context context) {
         // todo: implement
@@ -82,7 +86,7 @@ public class ShadowAppWidgetManager {
      */
     @Implementation
     public void updateAppWidget(int appWidgetId, RemoteViews views) {
-        WidgetInfo widgetInfo = getWidgetInfo(appWidgetId);
+        WidgetInfo widgetInfo = widgetInfos.get(appWidgetId);
         int layoutId = views.getLayoutId();
         if (widgetInfo.layoutId != layoutId || alwaysRecreateViewsDuringUpdate) {
             widgetInfo.view = createWidgetView(layoutId);
@@ -97,9 +101,7 @@ public class ShadowAppWidgetManager {
         List<Integer> idList = new ArrayList<Integer>();
         for (int id : widgetInfos.keySet()) {
             WidgetInfo widgetInfo = widgetInfos.get(id);
-            String widgetClass = widgetInfo.appWidgetProvider.getClass().getName();
-            String widgetPackage = widgetInfo.appWidgetProvider.getClass().getPackage().getName();
-            if (provider.getClassName().equals(widgetClass) && provider.getPackageName().equals(widgetPackage)) {
+            if (provider.equals(widgetInfo.providerComponent)) {
                 idList.add(id);
             }
         }
@@ -110,6 +112,57 @@ public class ShadowAppWidgetManager {
         return ids;
     }
 
+    @Implementation
+    public List<AppWidgetProviderInfo> getInstalledProviders() {
+        return new ArrayList<AppWidgetProviderInfo>(installedProviders);
+    }
+
+    public void addInstalledProvider(AppWidgetProviderInfo appWidgetProviderInfo) {
+        installedProviders.add(appWidgetProviderInfo);
+    }
+
+    public void addBoundWidget(int appWidgetId, AppWidgetProviderInfo providerInfo) {
+        addInstalledProvider(providerInfo);
+        bindAppWidgetId(appWidgetId, providerInfo.provider);
+        widgetInfos.get(appWidgetId).info = providerInfo;
+    }
+
+    /**
+     * @deprecated Use {@link #addBoundWidget(int, android.appwidget.AppWidgetProviderInfo)}
+     *             or {@link #addInstalledProvider(android.appwidget.AppWidgetProviderInfo)} instead
+     */
+    @Deprecated
+    public void putWidgetInfo(int appWidgetId, AppWidgetProviderInfo expectedWidgetInfo) {
+        addBoundWidget(appWidgetId, expectedWidgetInfo);
+    }
+
+    @Implementation
+    public AppWidgetProviderInfo getAppWidgetInfo(int appWidgetId) {
+        WidgetInfo widgetInfo = widgetInfos.get(appWidgetId);
+        if (widgetInfo == null) return null;
+        return widgetInfo.info;
+    }
+
+    private void bindAppWidgetId(int appWidgetId, ComponentName provider) {
+        WidgetInfo widgetInfo = new WidgetInfo(provider);
+        widgetInfos.put(appWidgetId, widgetInfo);
+        for (AppWidgetProviderInfo appWidgetProviderInfo : installedProviders) {
+            if (provider != null && provider.equals(appWidgetProviderInfo.provider)) {
+                widgetInfo.info = appWidgetProviderInfo;
+            }
+        }
+    }
+
+    @Implementation
+    public boolean bindAppWidgetIdIfAllowed(int appWidgetId, ComponentName provider) {
+        if (validWidgetProviderComponentName) {
+            bindAppWidgetId(appWidgetId, provider);
+            return allowedToBindWidgets;
+        } else {
+            throw new IllegalArgumentException("not an appwidget provider");
+        }
+    }
+
     /**
      * Triggers a reapplication of the most recent set of actions against the widget, which is what happens when the
      * phone is rotated. Does not attempt to simulate a change in screen geometry.
@@ -117,7 +170,7 @@ public class ShadowAppWidgetManager {
      * @param appWidgetId the ID of the widget to be affected
      */
     public void reconstructWidgetViewAsIfPhoneWasRotated(int appWidgetId) {
-        WidgetInfo widgetInfo = getWidgetInfo(appWidgetId);
+        WidgetInfo widgetInfo = widgetInfos.get(appWidgetId);
         widgetInfo.view = createWidgetView(widgetInfo.layoutId);
         widgetInfo.lastRemoteViews.reapply(context, widgetInfo.view);
     }
@@ -173,7 +226,7 @@ public class ShadowAppWidgetManager {
      * @return the widget associated with {@code widgetId}
      */
     public View getViewFor(int widgetId) {
-        return getWidgetInfo(widgetId).view;
+        return widgetInfos.get(widgetId).view;
     }
 
     /**
@@ -183,7 +236,7 @@ public class ShadowAppWidgetManager {
      * @return the {@code AppWidgetProvider} associated with {@code widgetId}
      */
     public AppWidgetProvider getAppWidgetProviderFor(int widgetId) {
-        return getWidgetInfo(widgetId).appWidgetProvider;
+        return widgetInfos.get(widgetId).appWidgetProvider;
     }
 
     /**
@@ -206,20 +259,34 @@ public class ShadowAppWidgetManager {
         return alwaysRecreateViewsDuringUpdate;
     }
 
-    private WidgetInfo getWidgetInfo(int widgetId) {
-        return widgetInfos.get(widgetId);
+    public void setAllowedToBindAppWidgets(boolean allowed) {
+        allowedToBindWidgets = allowed;
+    }
+
+    public void setValidWidgetProviderComponentName(boolean validWidgetProviderComponentName) {
+        this.validWidgetProviderComponentName = validWidgetProviderComponentName;
     }
 
     private class WidgetInfo {
-        private View view;
-        private int layoutId;
-        private AppWidgetProvider appWidgetProvider;
-        private RemoteViews lastRemoteViews;
+        View view;
+        int layoutId;
+        final AppWidgetProvider appWidgetProvider;
+        RemoteViews lastRemoteViews;
+        final ComponentName providerComponent;
+        AppWidgetProviderInfo info;
 
         public WidgetInfo(View view, int layoutId, AppWidgetProvider appWidgetProvider) {
             this.view = view;
             this.layoutId = layoutId;
             this.appWidgetProvider = appWidgetProvider;
+            String packageName = appWidgetProvider.getClass().getPackage().getName();
+            String className = appWidgetProvider.getClass().getName();
+            providerComponent = new ComponentName(packageName, className);
+        }
+
+        public WidgetInfo(ComponentName providerComponent) {
+            this.providerComponent = providerComponent;
+            this.appWidgetProvider = null;
         }
     }
 }

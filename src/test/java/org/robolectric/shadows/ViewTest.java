@@ -7,6 +7,7 @@ import android.graphics.Point;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.view.HapticFeedbackConstants;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.MeasureSpec;
@@ -16,30 +17,41 @@ import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import android.widget.LinearLayout;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.Attribute;
+import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.tester.android.view.TestWindow;
 import org.robolectric.util.TestAnimationListener;
 import org.robolectric.util.TestOnClickListener;
 import org.robolectric.util.TestOnLongClickListener;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import static org.robolectric.Robolectric.*;
 import static junit.framework.Assert.assertEquals;
-import static org.hamcrest.CoreMatchers.*;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.application;
+import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.Robolectric.visualize;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ViewTest {
@@ -564,6 +576,60 @@ public class ViewTest {
         assertThat(view.isLongClickable(), equalTo(true));
     }
 
+    @Test
+    public void setScaleX_shouldSetScaleX() throws Exception {
+        assertThat(shadowOf(view).getScaleX(), equalTo(1f));
+        shadowOf(view).setScaleX(2.5f);
+        assertThat(shadowOf(view).getScaleX(), equalTo(2.5f));
+        shadowOf(view).setScaleX(0.5f);
+        assertThat(shadowOf(view).getScaleX(), equalTo(0.5f));
+    }
+
+    @Test
+    public void setScaleY_shouldSetScaleY() throws Exception {
+        assertThat(shadowOf(view).getScaleX(), equalTo(1f));
+        shadowOf(view).setScaleY(2.5f);
+        assertThat(shadowOf(view).getScaleY(), equalTo(2.5f));
+        shadowOf(view).setScaleY(0.5f);
+        assertThat(shadowOf(view).getScaleY(), equalTo(0.5f));
+    }
+
+    @Test
+    public void performHapticFeedback_shouldSetLastPerformedHapticFeedback() throws Exception {
+        assertThat(shadowOf(view).lastHapticFeedbackPerformed(), equalTo(-1));
+        view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+        assertThat(shadowOf(view).lastHapticFeedbackPerformed(), equalTo(HapticFeedbackConstants.LONG_PRESS));
+    }
+
+    @Test
+    public void canAssertThatSuperDotOnLayoutWasCalledFromViewSubclasses() throws Exception {
+        TestView2 view = new TestView2(new Activity());
+        assertThat(shadowOf(view).onLayoutWasCalled(), equalTo(false));
+        view.onLayout(true, 1, 2, 3, 4);
+        assertThat(shadowOf(view).onLayoutWasCalled(), equalTo(true));
+    }
+
+    @Test
+    public void setScrolls_canBeAskedFor() throws Exception {
+        view.setScrollX(234);
+        view.setScrollY(544);
+        assertThat(view.getScrollX(), equalTo(234));
+        assertThat(view.getScrollY(), equalTo(544));
+    }
+
+    @Test
+    public void setScrolls_firesOnScrollChanged() throws Exception {
+        TestView testView = new TestView(new Activity());
+        testView.setScrollX(122);
+        testView.setScrollY(150);
+        testView.setScrollX(453);
+        assertThat(testView.oldl, equalTo(122));
+        testView.setScrollY(54);
+        assertThat(testView.l, equalTo(453));
+        assertThat(testView.t, equalTo(54));
+        assertThat(testView.oldt, equalTo(150));
+    }
+
     private static class TestAnimation extends Animation {
     }
 
@@ -581,8 +647,12 @@ public class ViewTest {
         }
     }
 
-    private static class TestView extends View {
+    public static class TestView extends View {
         boolean onAnimationEndWasCalled;
+        private int l;
+        private int t;
+        private int oldl;
+        private int oldt;
 
         public TestView(Context context) {
             super(context);
@@ -593,11 +663,24 @@ public class ViewTest {
             super.onAnimationEnd();
             onAnimationEndWasCalled = true;
         }
+
+        @Override
+        public void onScrollChanged(int l, int t, int oldl, int oldt) {
+            this.l = l;
+            this.t = t;
+            this.oldl = oldl;
+            this.oldt = oldt;
+        }
     }
 
     private static class TestView2 extends View {
         public TestView2(Context context) {
             super(context);
+        }
+
+        @Override
+        public void onLayout(boolean changed, int l, int t, int r, int b) {
+            super.onLayout(changed, l, t, r, b);
         }
 
         @Override

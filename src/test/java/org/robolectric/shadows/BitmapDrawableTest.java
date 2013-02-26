@@ -8,21 +8,22 @@ import android.graphics.ColorMatrixColorFilter;
 import android.graphics.Shader;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
-import org.robolectric.R;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import static org.robolectric.Robolectric.shadowOf;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class BitmapDrawableTest {
@@ -112,7 +113,7 @@ public class BitmapDrawableTest {
     @Test
     public void shouldStillHaveShadow() throws Exception {
         Drawable drawable = resources.getDrawable(R.drawable.an_image);
-        assertEquals(R.drawable.an_image, ((ShadowBitmapDrawable) Robolectric.shadowOf(drawable)).getLoadedFromResourceId());
+        assertEquals(R.drawable.an_image, Robolectric.shadowOf(drawable).getLoadedFromResourceId());
     }
 
     @Test
@@ -121,5 +122,19 @@ public class BitmapDrawableTest {
         drawable.setTileModeXY(Shader.TileMode.REPEAT, Shader.TileMode.MIRROR);
         assertEquals(Shader.TileMode.REPEAT, drawable.getTileModeX());
         assertEquals(Shader.TileMode.MIRROR, drawable.getTileModeY());
+    }
+
+    @Test
+    public void constructor_shouldSetTheIntrinsicWidthAndHeightToTheWidthAndHeightOfTheBitmap() throws Exception {
+        Bitmap bitmap = Bitmap.createBitmap(5, 10, Bitmap.Config.ARGB_8888);
+        BitmapDrawable drawable = new BitmapDrawable(Robolectric.application.getResources(), bitmap);
+        assertEquals(5, drawable.getIntrinsicWidth());
+        assertEquals(10, drawable.getIntrinsicHeight());
+    }
+
+    @Test
+    public void constructor_shouldAcceptNullBitmap() throws Exception {
+        BitmapDrawable drawable = new BitmapDrawable(Robolectric.application.getResources(), (Bitmap) null);
+        assertNotNull(drawable);
     }
 }

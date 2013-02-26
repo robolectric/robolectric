@@ -1,18 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Robolectric.shadowOf;
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNull;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.robolectric.TestRunners;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ContextWrapper;
@@ -21,9 +8,29 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-
+import android.widget.FrameLayout;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import static junit.framework.Assert.assertFalse;
+import static junit.framework.Assert.assertNull;
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.hamcrest.CoreMatchers.not;
+import static org.hamcrest.CoreMatchers.notNullValue;
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AlertDialogTest {
@@ -379,6 +386,17 @@ public class AlertDialogTest {
 
         dialog.setContentView(R.layout.main);
         assertNotNull(dialog.findViewById(R.id.title));
+    }
+    
+    @Test
+    public void shouldReturnACustomFrameLayout() {
+        AlertDialog dialog = new AlertDialog.Builder(Robolectric.application).create();
+
+        assertThat( dialog.findViewById( android.R.id.custom ), notNullValue() );
+        assertThat( dialog.findViewById( android.R.id.custom ), instanceOf(FrameLayout.class) );
+        assertThat( dialog.findViewById( android.R.id.custom ), 
+        		sameInstance(dialog.findViewById( android.R.id.custom )) );
+    
     }
 
 

@@ -1,19 +1,20 @@
+// Not in master, can maybe be deleted
 package org.robolectric.shadows;
 
 import android.graphics.Typeface;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import java.io.File;
 import java.io.FileWriter;
 
-import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertThat;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowTypefaceTest {

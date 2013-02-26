@@ -328,6 +328,12 @@ public class ViewLoaderTest {
     }
 
     @Test
+    public void testAlphaIsSet() throws Exception {
+        View mediaView = inflate("main");
+        assertThat(mediaView.findViewById(R.id.time).getAlpha(), equalTo(.3f));
+    }
+
+    @Test
     public void testViewBackgroundIdIsSet() throws Exception {
         View mediaView = inflate("main");
         ImageView imageView = (ImageView) mediaView.findViewById(R.id.image);
