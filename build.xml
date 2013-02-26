@@ -40,7 +40,7 @@
     <target name="findMavenUnix" unless="isWindows">
 		<property name="maven" value="mvn"/>
     </target>
-	
+
     <target name="findAndroidWindows" if="isWindows">
         <echo message="Finding the Android version in windows"/>
         <!--<exec executable="./find-android.bat"/>-->
@@ -170,6 +170,7 @@
 
     <target name="test" depends="compile.tests" description="test all">
         <mkdir dir="${basedir}/out/reports/tests"/>
+        <mkdir dir="tmp"/>
         <junit showoutput="true" failureproperty="junit.failure" fork="true" forkmode="once">
             <formatter type="plain" usefile="false" if="junit.console.out"/>
             <formatter type="plain"/>
