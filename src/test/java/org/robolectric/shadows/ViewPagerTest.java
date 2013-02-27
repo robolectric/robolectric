@@ -48,6 +48,15 @@ public class ViewPagerTest {
         assertTrue(listener.onPageSelectedCalled);
     }
 
+    @Test
+    public void setCurrentItem_shouldntInvokeListenerWhenSettingRedundantly() throws Exception {
+        TestOnPageChangeListener listener = new TestOnPageChangeListener();
+        pager.setOnPageChangeListener(listener);
+        assertFalse(listener.onPageSelectedCalled);
+        pager.setCurrentItem(pager.getCurrentItem());
+        assertFalse(listener.onPageSelectedCalled);
+    }
+
     private static class TestPagerAdapter extends PagerAdapter {
         @Override
         public int getCount() {
