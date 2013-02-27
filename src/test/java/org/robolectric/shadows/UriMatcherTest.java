@@ -39,13 +39,13 @@ public class UriMatcherTest {
         String path = "bar/cat";
 
         matcher.addURI(AUTH, path, 1);
-        org.junit.Assert.assertThat(node.map.keySet(), hasItem(AUTH));
+        assertThat(node.map.keySet()).contains(AUTH);
 
         node = node.map.get(AUTH);
-        org.junit.Assert.assertThat(node.map.keySet(), hasItem("bar"));
+        assertThat(node.map.keySet()).contains("bar");
 
         node = node.map.get("bar");
-        org.junit.Assert.assertThat(node.map.keySet(), hasItem("cat"));
+        assertThat(node.map.keySet()).contains("cat");
 
         node = node.map.get("cat");
         assertThat(node.code).isEqualTo(1);

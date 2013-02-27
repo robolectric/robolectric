@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-
 import android.preference.PreferenceActivity;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
@@ -15,12 +14,9 @@ import org.robolectric.annotation.Values;
 import org.robolectric.res.builder.LayoutBuilder;
 import org.robolectric.util.I18nException;
 
-import java.util.Arrays;
-
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.internal.matchers.IsCollectionContaining.hasItems;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.util.TestUtil.resourceFile;
 
@@ -97,20 +93,20 @@ public class ResourceLoaderTest {
     @Test
     public void testStringsAreResolved() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-        org.junit.Assert.assertThat(Arrays.asList(resourceLoader.getStringArrayValue(resourceLoader.getResourceIndex().getResName(R.array.items), "")), hasItems("foo", "bar"));
+        assertThat(resourceLoader.getStringArrayValue(resourceLoader.getResourceIndex().getResName(R.array.items), "")).containsExactly("foo", "bar");
     }
 
     @Test
     public void testStringsAreWithReferences() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-        org.junit.Assert.assertThat(Arrays.asList(resourceLoader.getStringArrayValue(resourceLoader.getResourceIndex().getResName(R.array.greetings), "")), hasItems("hola", "Hello"));
+        assertThat(resourceLoader.getStringArrayValue(resourceLoader.getResourceIndex().getResName(R.array.greetings), "")).containsExactly("hola", "Hello");
     }
 
     @Test
     public void shouldAddAndroidToSystemStringArrayName() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
-        org.junit.Assert.assertThat(Arrays.asList(resourceLoader.getStringArrayValue(resourceLoader.getResourceIndex().getResName(android.R.array.emailAddressTypes), "")), hasItems("Home", "Work", "Other", "Custom"));
-        org.junit.Assert.assertThat(Arrays.asList(resourceLoader.getStringArrayValue(resourceLoader.getResourceIndex().getResName(R.array.emailAddressTypes), "")), hasItems("Doggy", "Catty"));
+        assertThat(resourceLoader.getStringArrayValue(resourceLoader.getResourceIndex().getResName(android.R.array.emailAddressTypes), "")).containsExactly("Home", "Work", "Other", "Custom");
+        assertThat(resourceLoader.getStringArrayValue(resourceLoader.getResourceIndex().getResName(R.array.emailAddressTypes), "")).containsExactly("Doggy", "Catty");
     }
 
     @Test

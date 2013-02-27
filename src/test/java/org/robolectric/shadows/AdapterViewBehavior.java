@@ -9,7 +9,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.util.Transcript;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.robolectric.matchers.TextViewHasTextMatcher.hasText;
 
 public class AdapterViewBehavior {
     public static void shouldActAsAdapterView(AdapterView adapterView) throws Exception {
@@ -57,8 +56,8 @@ public class AdapterViewBehavior {
 
         ShadowHandler.idleMainLooper();
         assertThat(adapterView.getChildCount()).isEqualTo(2);
-        org.junit.Assert.assertThat((TextView) adapterView.getChildAt(0), hasText("Item 0"));
-        org.junit.Assert.assertThat((TextView) adapterView.getChildAt(1), hasText("Item 1"));
+        assertThat(((TextView) adapterView.getChildAt(0)).getText()).isEqualTo("Item 0");
+        assertThat(((TextView) adapterView.getChildAt(1)).getText()).isEqualTo("Item 1");
     }
 
     private static void testSetAdapter_ShouldSelectFirstItemAsynchronously(final AdapterView adapterView) throws Exception {

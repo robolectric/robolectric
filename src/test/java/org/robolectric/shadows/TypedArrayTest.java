@@ -17,7 +17,6 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.internal.matchers.IsCollectionContaining.hasItems;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -71,6 +70,6 @@ public class TypedArrayTest {
                 asList(new Attribute(TestUtil.TEST_PACKAGE + ":attr/items", "@array/greetings", TestUtil.TEST_PACKAGE)
                 ), shadowOf(resources).getResourceLoader(), null);
         TypedArray typedArray = ShadowTypedArray.create(resources, attributeSet, new int[]{R.attr.items});
-        org.junit.Assert.assertThat(asList(typedArray.getTextArray(0)), hasItems((CharSequence)"hola", "Hello"));
+        assertThat(typedArray.getTextArray(0)).containsExactly("hola", "Hello");
     }
 }

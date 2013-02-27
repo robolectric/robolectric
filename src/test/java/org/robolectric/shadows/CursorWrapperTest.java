@@ -42,7 +42,7 @@ public class CursorWrapperTest {
         }
 
         public void verifyForward(String methodName, Object... params) throws Exception {
-            org.junit.Assert.assertThat(cursorMethod.keySet(), hasItem(methodName));
+            assertThat(cursorMethod.keySet()).contains(methodName);
 
             Method method = cursorMethod.get(methodName);
             method.invoke(cursorWrapper, params);

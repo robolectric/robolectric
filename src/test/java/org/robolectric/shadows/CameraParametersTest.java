@@ -12,7 +12,6 @@ import org.robolectric.TestRunners;
 import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.internal.matchers.IsCollectionContaining.hasItem;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class CameraParametersTest {
@@ -81,7 +80,7 @@ public class CameraParametersTest {
         List<Integer> supportedFormats = parameters.getSupportedPreviewFormats();
         assertThat(supportedFormats).isNotNull();
         assertThat(supportedFormats.size()).isNotEqualTo((0));
-        org.junit.Assert.assertThat(supportedFormats, hasItem(ImageFormat.NV21));
+        assertThat(supportedFormats).contains(ImageFormat.NV21);
     }
 
     @Test
@@ -89,7 +88,7 @@ public class CameraParametersTest {
         List<Integer> supportedFormats = parameters.getSupportedPictureFormats();
         assertThat(supportedFormats).isNotNull();
         assertThat(supportedFormats.size()).isEqualTo(2);
-        org.junit.Assert.assertThat(supportedFormats, hasItem(new Integer(ImageFormat.NV21)));
+        assertThat(supportedFormats).contains(ImageFormat.NV21);
     }
 
     @Test

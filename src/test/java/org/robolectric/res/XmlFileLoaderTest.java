@@ -25,8 +25,6 @@ import java.util.Set;
 
 import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.anyOf;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
@@ -297,9 +295,7 @@ public class XmlFileLoaderTest {
     public void testGetLineNumber() throws XmlPullParserException, IOException {
         assertThat(parser.getLineNumber()).isEqualTo(-1);
         parseUntilNext(XmlResourceParser.START_TAG);
-        org.junit.Assert.assertThat(
-                "The root element should be at line 1.",
-                parser.getLineNumber(), equalTo(1));
+        assertThat(parser.getLineNumber()).isEqualTo(1).as("The root element should be at line 1.");
     }
 
     @Test
@@ -387,32 +383,20 @@ public class XmlFileLoaderTest {
     @Test
     public void testIsEmptyElementTag()
             throws XmlPullParserException, IOException {
-        org.junit.Assert.assertThat(
-                "Before START_DOCUMENT should return false.",
-                parser.isEmptyElementTag(),
-                equalTo(false));
+        assertThat(parser.isEmptyElementTag()).isEqualTo(false).as("Before START_DOCUMENT should return false.");
 
         forgeAndOpenDocument("<foo><bar/></foo>");
-        org.junit.Assert.assertThat(
-                "Not empty tag should return false.",
-                parser.isEmptyElementTag(),
-                equalTo(false));
+        assertThat(parser.isEmptyElementTag()).isEqualTo(false).as("Not empty tag should return false.");
 
         forgeAndOpenDocument("<foo/>");
-        org.junit.Assert.assertThat(
-                "In the Android implementation this method always return false.",
-                parser.isEmptyElementTag(),
-                equalTo(false));
+        assertThat(parser.isEmptyElementTag()).isEqualTo(false).as("In the Android implementation this method always return false.");
     }
 
     @Test
     public void testGetAttributeCount()
             throws XmlPullParserException, IOException {
-        org.junit.Assert.assertThat(
-                "When no node is being explored the number " +
-                        "of attributes should be -1.",
-                parser.getAttributeCount(),
-                equalTo(-1));
+        assertThat(parser.getAttributeCount()).isEqualTo(-1)
+                .as("When no node is being explored the number of attributes should be -1.");
 
         forgeAndOpenDocument("<foo bar=\"bar\"/>");
         assertThat(parser.getAttributeCount()).isEqualTo(1);
@@ -539,9 +523,7 @@ public class XmlFileLoaderTest {
             assertThat(parser.nextText()).isEqualTo(parser.getText());
             fail("nextText on a document with no text should have failed");
         } catch (XmlPullParserException ex) {
-            org.junit.Assert.assertThat(parser.getEventType(),
-                    anyOf(equalTo(XmlResourceParser.START_TAG),
-                            equalTo(XmlResourceParser.END_DOCUMENT)));
+            assertThat(parser.getEventType()).isIn(XmlResourceParser.START_TAG, XmlResourceParser.END_DOCUMENT);
         }
     }
 
@@ -658,13 +640,10 @@ public class XmlFileLoaderTest {
         // Negative unsigned int must be
         forgeAndOpenDocument("<foo xmlns:bar=\"-12\"/>");
 
-        org.junit.Assert.assertThat(
-                "Getting a negative number as unsigned should " +
-                        "return the default value.",
-                parser.getAttributeUnsignedIntValue(
-                        "http://www.w3.org/2000/xmlns/",
-                        "xmlns:bar", 0),
-                equalTo(0));
+        assertThat(parser.getAttributeUnsignedIntValue(
+                "http://www.w3.org/2000/xmlns/",
+                "xmlns:bar", 0)).isEqualTo(0).as("Getting a negative number as unsigned should " +
+                "return the default value.");
     }
 
     @Test
@@ -680,11 +659,8 @@ public class XmlFileLoaderTest {
         // Negative unsigned int must be
         forgeAndOpenDocument("<foo bar=\"-12\"/>");
 
-        org.junit.Assert.assertThat(
-                "Getting a negative number as unsigned should " +
-                        "return the default value.",
-                parser.getAttributeUnsignedIntValue(0, 0),
-                equalTo(0));
+        assertThat(parser.getAttributeUnsignedIntValue(0, 0)).isEqualTo(0).as("Getting a negative number as unsigned should " +
+                "return the default value.");
     }
 
     @Test

@@ -29,7 +29,6 @@ import org.robolectric.util.Transcript;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.shadowOf;
@@ -380,9 +379,7 @@ public class ActivityTest {
 
         for (int mode : modes) {
             activity.setDefaultKeyMode(mode);
-            org.junit.Assert.assertThat("Unexpected key mode",
-                    shadow.getDefaultKeymode(),
-                    equalTo(mode));
+            assertThat(shadow.getDefaultKeymode()).isEqualTo(mode).as("Unexpected key mode");
         }
     }
 

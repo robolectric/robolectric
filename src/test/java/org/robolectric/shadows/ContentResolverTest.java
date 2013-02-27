@@ -31,7 +31,6 @@ import java.util.List;
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
-import static org.junit.matchers.JUnitMatchers.hasItem;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -105,11 +104,11 @@ public class ContentResolverTest {
         assertThat(shadowContentResolver.getDeletedUris().size()).isEqualTo(0);
 
         assertThat(contentResolver.delete(uri21, null, null)).isEqualTo(1);
-        org.junit.Assert.assertThat(shadowContentResolver.getDeletedUris(), hasItem(uri21));
+        assertThat(shadowContentResolver.getDeletedUris()).contains(uri21);
         assertThat(shadowContentResolver.getDeletedUris().size()).isEqualTo(1);
 
         assertThat(contentResolver.delete(uri22, null, null)).isEqualTo(1);
-        org.junit.Assert.assertThat(shadowContentResolver.getDeletedUris(), hasItem(uri22));
+        assertThat(shadowContentResolver.getDeletedUris()).contains(uri22);
         assertThat(shadowContentResolver.getDeletedUris().size()).isEqualTo(2);
     }
 
