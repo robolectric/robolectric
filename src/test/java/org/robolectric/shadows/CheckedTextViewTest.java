@@ -2,10 +2,10 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.widget.CheckedTextView;
-import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;

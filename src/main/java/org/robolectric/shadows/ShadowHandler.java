@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;

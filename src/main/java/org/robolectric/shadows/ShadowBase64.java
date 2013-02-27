@@ -6,10 +6,7 @@ import org.robolectric.internal.Implements;
 
 import java.io.UnsupportedEncodingException;
 
-import static android.util.Base64.CRLF;
-import static android.util.Base64.NO_PADDING;
-import static android.util.Base64.NO_WRAP;
-import static android.util.Base64.URL_SAFE;
+import static android.util.Base64.*;
 
 /**
  * Slightly modified copy of the original android.util.Base64 class.

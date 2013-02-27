@@ -17,16 +17,14 @@
 
 package org.robolectric.shadows;
 
-import static org.robolectric.Robolectric.shadowOf;
-
-import java.util.Arrays;
-
 import android.util.SparseArray;
-
-import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
+
+import java.util.Arrays;
+
+import static org.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow implementation of SparseArray. Basically copied & pasted the

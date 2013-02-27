@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
 import android.text.format.DateFormat;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import java.util.Calendar;
 import java.util.Date;

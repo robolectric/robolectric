@@ -8,7 +8,6 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.hamcrest.CoreMatchers.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ObjectAnimatorTest {

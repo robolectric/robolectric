@@ -2,16 +2,15 @@ package org.robolectric.util;
 
 import android.content.ContentValues;
 import android.database.sqlite.SQLiteDatabase;
-import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import java.sql.SQLException;
 
-import static org.robolectric.util.SQLite.buildInsertString;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.robolectric.util.SQLite.buildInsertString;
 
 @DatabaseConfig.UsingDatabaseMap(H2Map.class)
 @RunWith(TestRunners.WithDefaults.class)

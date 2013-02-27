@@ -1,7 +1,7 @@
 package org.robolectric.res;
 
-import org.robolectric.util.Join;
 import org.junit.Test;
+import org.robolectric.util.Join;
 
 import java.util.ArrayList;
 import java.util.HashSet;

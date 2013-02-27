@@ -2,12 +2,12 @@ package org.robolectric.tester.android.view;
 
 import android.app.Activity;
 import android.content.Intent;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.shadows.ShadowActivity;
 import junit.framework.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.shadows.ShadowActivity;
 
 import static org.junit.Assert.assertNotNull;
 

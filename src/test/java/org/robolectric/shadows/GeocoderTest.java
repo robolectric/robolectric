@@ -3,17 +3,17 @@ package org.robolectric.shadows;
 import android.app.Activity;
 import android.location.Address;
 import android.location.Geocoder;
-import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import java.util.List;
 
-import static org.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class GeocoderTest {

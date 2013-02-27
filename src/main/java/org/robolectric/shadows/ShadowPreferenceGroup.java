@@ -1,14 +1,13 @@
 package org.robolectric.shadows;
 
-import java.util.ArrayList;
-
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
 import android.text.TextUtils;
-
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
+
+import java.util.ArrayList;
 
 /**
  * See: http://android.git.kernel.org/?p=platform/frameworks/base.git;a=blob_plain;f=core/java/android/preference/PreferenceGroup.java;hb=HEAD

@@ -1,10 +1,9 @@
 package org.robolectric.shadows;
 
+import android.os.CountDownTimer;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-
-import android.os.CountDownTimer;
 
 @Implements(CountDownTimer.class)
 public class ShadowCountDownTimer {

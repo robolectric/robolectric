@@ -4,7 +4,6 @@ import android.content.Context;
 import android.preference.EditTextPreference;
 import android.util.AttributeSet;
 import android.widget.EditText;
-
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 

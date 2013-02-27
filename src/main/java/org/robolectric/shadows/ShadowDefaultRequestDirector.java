@@ -1,10 +1,5 @@
 package org.robolectric.shadows;
 
-import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
-import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.ConnectionReuseStrategy;
@@ -24,6 +19,11 @@ import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
 import org.apache.http.protocol.HttpProcessor;
 import org.apache.http.protocol.HttpRequestExecutor;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
+import org.robolectric.tester.org.apache.http.HttpRequestInfo;
 
 import java.io.IOException;
 

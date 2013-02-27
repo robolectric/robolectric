@@ -1,10 +1,17 @@
 package org.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.fest.assertions.api.Assertions.assertThat;
+import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteCursor;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.CursorAdapter;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.util.DatabaseConfig;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
@@ -12,20 +19,7 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.robolectric.TestRunners;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import android.content.Context;
-import android.database.Cursor;
-import android.database.sqlite.SQLiteCursor;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CursorAdapter;
-
-import org.robolectric.Robolectric;
-import org.robolectric.util.DatabaseConfig;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class CursorAdapterTest {

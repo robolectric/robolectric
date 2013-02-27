@@ -1,11 +1,11 @@
 package org.robolectric.matchers;
 
 import android.widget.TextView;
-import org.robolectric.shadows.ShadowTextView;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
 import org.junit.internal.matchers.TypeSafeMatcher;
+import org.robolectric.shadows.ShadowTextView;
 
 import static org.robolectric.Robolectric.shadowOf;
 

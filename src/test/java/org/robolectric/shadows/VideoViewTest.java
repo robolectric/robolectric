@@ -1,15 +1,13 @@
 package org.robolectric.shadows;
 
-import org.robolectric.TestRunners;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.widget.VideoView;
-
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 

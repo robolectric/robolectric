@@ -27,8 +27,10 @@ import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.anyOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
-import static org.robolectric.util.TestUtil.*;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.robolectric.util.TestUtil.TEST_PACKAGE;
+import static org.robolectric.util.TestUtil.testResources;
 
 /**
  * Test class for {@link XmlFileLoader} and its inner

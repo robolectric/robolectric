@@ -1,17 +1,19 @@
 package org.robolectric.shadows;
 
-import java.util.List;
-
-import org.robolectric.TestRunners;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.AnimationSet;
+import android.view.animation.RotateAnimation;
+import android.view.animation.TranslateAnimation;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
-import android.view.animation.*;
+import java.util.List;
 
-import static org.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.*;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AnimationSetTest {

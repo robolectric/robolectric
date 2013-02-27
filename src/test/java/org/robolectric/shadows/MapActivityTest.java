@@ -2,9 +2,9 @@ package org.robolectric.shadows;
 
 import android.os.Bundle;
 import com.google.android.maps.MapActivity;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MapActivityTest {

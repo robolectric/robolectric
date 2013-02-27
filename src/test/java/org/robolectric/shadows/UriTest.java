@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
 import android.net.Uri;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 

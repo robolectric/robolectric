@@ -5,8 +5,6 @@ import org.junit.Test;
 import java.io.UnsupportedEncodingException;
 
 import static android.util.Base64.DEFAULT;
-import static android.util.Base64.NO_WRAP;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class ShadowBase64Test {

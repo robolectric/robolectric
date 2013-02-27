@@ -7,14 +7,13 @@ import android.text.Html;
 import android.text.Spanned;
 import android.widget.EditText;
 import android.widget.TextView;
-import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class HtmlTest {

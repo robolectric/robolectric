@@ -7,8 +7,8 @@ import android.preference.PreferenceScreen;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.res.PreferenceNode;
-import org.robolectric.res.builder.PreferenceBuilder;
 import org.robolectric.res.ResName;
+import org.robolectric.res.builder.PreferenceBuilder;
 import org.robolectric.util.I18nException;
 
 import static org.robolectric.Robolectric.shadowOf;

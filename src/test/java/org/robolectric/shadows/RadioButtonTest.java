@@ -2,13 +2,12 @@ package org.robolectric.shadows;
 
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)

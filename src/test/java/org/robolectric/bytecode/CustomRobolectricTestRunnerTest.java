@@ -1,19 +1,17 @@
 package org.robolectric.bytecode;
 
 import android.app.Application;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import java.lang.reflect.Method;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(CustomRobolectricTestRunnerTest.CustomRobolectricTestRunner.class)
 public class CustomRobolectricTestRunnerTest {

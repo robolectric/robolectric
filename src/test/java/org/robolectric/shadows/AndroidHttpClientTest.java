@@ -1,19 +1,17 @@
 package org.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.fest.assertions.api.Assertions.assertThat;
-
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.util.Strings;
+import android.net.http.AndroidHttpClient;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import android.net.http.AndroidHttpClient;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.util.Strings;
 
 import java.io.IOException;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AndroidHttpClientTest {

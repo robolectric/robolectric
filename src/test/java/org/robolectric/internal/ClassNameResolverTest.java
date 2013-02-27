@@ -1,8 +1,8 @@
 package org.robolectric.internal;
 
 import android.app.Application;
-import org.robolectric.TestApplication;
 import org.junit.Test;
+import org.robolectric.TestApplication;
 
 import static org.junit.Assert.assertEquals;
 

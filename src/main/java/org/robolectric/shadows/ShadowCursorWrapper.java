@@ -1,7 +1,11 @@
 package org.robolectric.shadows;
 
 import android.content.ContentResolver;
-import android.database.*;
+import android.database.CharArrayBuffer;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.database.CursorWrapper;
+import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
 import org.robolectric.internal.Implementation;

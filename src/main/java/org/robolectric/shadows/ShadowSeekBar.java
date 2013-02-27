@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.widget.SeekBar;
-
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;

@@ -2,9 +2,9 @@ package org.robolectric.shadows;
 
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertSame;
 

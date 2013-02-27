@@ -1,9 +1,8 @@
 package org.robolectric.shadows;
 
+import android.widget.ProgressBar;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
-
-import android.widget.ProgressBar;
 
 @Implements(ProgressBar.class)
 public class ShadowProgressBar extends ShadowView {

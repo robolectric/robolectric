@@ -2,7 +2,6 @@ package org.robolectric.util;
 
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class SQLiteTestHelper {

@@ -1,14 +1,12 @@
 package org.robolectric.shadows;
 
 
-import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
 @Implements(Message.class)
 public class ShadowMessage {

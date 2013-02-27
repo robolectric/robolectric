@@ -28,13 +28,12 @@
  */
 package org.robolectric.tester.org.apache.http.impl.client;
 
-import java.net.URI;
-
+import org.apache.http.annotation.NotThreadSafe;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpRequestBase;
 
-import org.apache.http.annotation.NotThreadSafe;
+import java.net.URI;
 
 /**
  * Redirect request (can be either GET or HEAD).

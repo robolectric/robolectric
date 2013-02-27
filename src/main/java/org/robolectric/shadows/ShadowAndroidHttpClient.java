@@ -1,9 +1,7 @@
 package org.robolectric.shadows;
 
-import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.internal.RealObject;
+import android.content.Context;
+import android.net.http.AndroidHttpClient;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -15,9 +13,10 @@ import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
-
-import android.content.Context;
-import android.net.http.AndroidHttpClient;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
 import java.io.IOException;
 

@@ -1,15 +1,14 @@
 package org.robolectric.shadows;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderOperation.Builder;
 import android.net.Uri;
-
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Implements(ContentProviderOperation.class)
 public class ShadowContentProviderOperation {

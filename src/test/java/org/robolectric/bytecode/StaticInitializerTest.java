@@ -1,15 +1,13 @@
 package org.robolectric.bytecode;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
+import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.bindShadowClass;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithoutDefaults.class)
 public class StaticInitializerTest {

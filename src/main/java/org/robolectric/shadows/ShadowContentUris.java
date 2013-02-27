@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.content.ContentUris;
 import android.net.Uri;
-
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 

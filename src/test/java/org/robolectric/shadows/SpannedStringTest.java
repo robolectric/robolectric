@@ -1,9 +1,9 @@
 package org.robolectric.shadows;
 
 import android.text.SpannedString;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;

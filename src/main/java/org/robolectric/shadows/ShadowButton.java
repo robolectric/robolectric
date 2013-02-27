@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.widget.Button;
-import android.widget.TextView;
 import org.robolectric.internal.Implements;
 
 @Implements(Button.class)

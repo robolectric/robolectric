@@ -1,13 +1,12 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Robolectric.shadowOf;
-
+import android.util.SparseArray;
+import android.util.SparseBooleanArray;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 
-import android.util.SparseArray;
-import android.util.SparseBooleanArray;
+import static org.robolectric.Robolectric.shadowOf;
 
 @Implements(SparseBooleanArray.class)
 public class ShadowSparseBooleanArray {

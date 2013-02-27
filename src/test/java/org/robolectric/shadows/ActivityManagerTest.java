@@ -2,14 +2,14 @@ package org.robolectric.shadows;
 
 import android.app.ActivityManager;
 import android.content.Context;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
-import static org.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ActivityManagerTest {

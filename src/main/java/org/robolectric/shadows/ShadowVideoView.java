@@ -1,10 +1,8 @@
 package org.robolectric.shadows;
 
-import static org.junit.Assert.assertThat;
 import android.media.MediaPlayer;
 import android.net.Uri;
 import android.widget.VideoView;
-
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
