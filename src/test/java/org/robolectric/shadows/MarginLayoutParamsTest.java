@@ -1,13 +1,10 @@
 package org.robolectric.shadows;
 
-import org.robolectric.TestRunners;
-
 import android.view.ViewGroup;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 /**

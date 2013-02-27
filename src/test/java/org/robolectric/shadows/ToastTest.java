@@ -1,14 +1,13 @@
 package org.robolectric.shadows;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
 import android.app.Activity;
 import android.widget.Toast;
-
-import org.robolectric.TestRunners;
-
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ToastTest {

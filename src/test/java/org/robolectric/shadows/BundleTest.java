@@ -2,12 +2,12 @@ package org.robolectric.shadows;
 
 import android.os.Bundle;
 import android.os.Parcelable;
-import org.robolectric.TestRunners;
 import junit.framework.AssertionFailedError;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import java.util.ArrayList;
 

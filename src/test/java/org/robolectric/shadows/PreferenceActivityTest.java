@@ -1,21 +1,15 @@
 package org.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertNotNull;
-import static org.fest.assertions.api.Assertions.assertThat;
-
-import org.robolectric.TestRunners;
+import android.preference.PreferenceActivity;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import android.app.Activity;
-import android.preference.PreferenceActivity;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceActivityTest {

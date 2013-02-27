@@ -1,9 +1,8 @@
 package org.robolectric.shadows;
 
+import android.view.View;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
-
-import android.view.View;
 
 /**
  * Shadow for {@code View.MeasureSpec} inner class.

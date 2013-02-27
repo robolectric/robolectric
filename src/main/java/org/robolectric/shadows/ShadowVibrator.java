@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.os.Vibrator;
-
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 

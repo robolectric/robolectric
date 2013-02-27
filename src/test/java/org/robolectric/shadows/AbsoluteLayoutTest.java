@@ -2,9 +2,9 @@ package org.robolectric.shadows;
 
 import android.view.ViewGroup;
 import android.widget.AbsoluteLayout;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 

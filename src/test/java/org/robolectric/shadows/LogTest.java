@@ -10,9 +10,8 @@ import java.io.PrintStream;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertFalse;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.shadows.ShadowLog.LogItem;
 

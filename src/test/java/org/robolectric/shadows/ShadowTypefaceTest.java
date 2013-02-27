@@ -12,7 +12,6 @@ import org.robolectric.TestRunners;
 import java.io.File;
 import java.io.FileWriter;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 

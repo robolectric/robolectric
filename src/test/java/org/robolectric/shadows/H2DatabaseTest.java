@@ -1,12 +1,11 @@
 package org.robolectric.shadows;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.util.DatabaseConfig;
 import org.robolectric.util.H2Map;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @DatabaseConfig.UsingDatabaseMap(H2Map.class)

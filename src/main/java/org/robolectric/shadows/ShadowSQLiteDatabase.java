@@ -16,7 +16,7 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 import org.robolectric.util.DatabaseConfig;
-import org.robolectric.util.SQLite.SQLStringAndBindings;
+import org.robolectric.util.SQLite.*;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -33,10 +33,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.util.SQLite.buildDeleteString;
-import static org.robolectric.util.SQLite.buildInsertString;
-import static org.robolectric.util.SQLite.buildUpdateString;
-import static org.robolectric.util.SQLite.buildWhereClause;
+import static org.robolectric.util.SQLite.*;
 
 /**
  * Shadow for {@code SQLiteDatabase} that simulates the movement of a {@code Cursor} through database tables.

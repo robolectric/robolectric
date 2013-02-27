@@ -17,10 +17,10 @@
 package org.robolectric.shadows;
 
 import android.util.SparseArray;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import static org.junit.Assert.*;
 

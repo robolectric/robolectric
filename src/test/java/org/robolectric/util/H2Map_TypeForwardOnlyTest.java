@@ -1,15 +1,14 @@
 package org.robolectric.util;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.fest.assertions.api.Assertions.assertThat;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.robolectric.TestRunners;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class H2Map_TypeForwardOnlyTest {

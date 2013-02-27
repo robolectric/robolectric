@@ -1,12 +1,12 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Robolectric.shadowOf_;
-
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.OverlayItem;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.util.Strings;
+
+import static org.robolectric.Robolectric.shadowOf_;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(OverlayItem.class)

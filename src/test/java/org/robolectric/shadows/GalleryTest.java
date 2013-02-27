@@ -3,10 +3,10 @@ package org.robolectric.shadows;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Gallery;
-import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;

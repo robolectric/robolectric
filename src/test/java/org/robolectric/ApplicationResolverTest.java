@@ -1,16 +1,16 @@
 package org.robolectric;
 
 import android.app.Application;
-import org.robolectric.shadows.ShadowApplication;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.shadows.ShadowApplication;
 
 import java.util.List;
 
-import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.util.TestUtil.newConfig;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.util.TestUtil.newConfig;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ApplicationResolverTest {

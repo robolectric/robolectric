@@ -9,7 +9,11 @@ import org.jetbrains.annotations.Nullable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.Collections;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class RobolectricClassLoader extends javassist.Loader {
     private final Map<String, Class> classes = new HashMap<String, Class>();

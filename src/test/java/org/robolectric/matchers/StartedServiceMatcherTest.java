@@ -4,7 +4,6 @@ import android.app.IntentService;
 import android.content.Context;
 import android.content.Intent;
 import android.service.wallpaper.WallpaperService;
-import org.robolectric.TestRunners;
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.StringDescription;
@@ -12,6 +11,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.internal.matchers.TypeSafeMatcher;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertThat;
 import static org.robolectric.matchers.StartedServiceMatcher.createIntent;

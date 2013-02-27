@@ -1,14 +1,19 @@
 package org.robolectric.tester.org.apache.http;
 
-import org.robolectric.Robolectric;
-import org.robolectric.shadows.HttpResponseGenerator;
-import org.apache.http.*;
+import org.apache.http.Header;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpException;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpResponse;
 import org.apache.http.client.RequestDirector;
 import org.apache.http.client.methods.HttpEntityEnclosingRequestBase;
 import org.apache.http.conn.ConnectTimeoutException;
 import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
+import org.robolectric.Robolectric;
+import org.robolectric.shadows.HttpResponseGenerator;
 
 import java.io.IOException;
 import java.net.URI;

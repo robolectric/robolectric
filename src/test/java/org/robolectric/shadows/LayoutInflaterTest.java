@@ -2,11 +2,11 @@ package org.robolectric.shadows;
 
 import android.content.ContextWrapper;
 import android.view.LayoutInflater;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertSame;

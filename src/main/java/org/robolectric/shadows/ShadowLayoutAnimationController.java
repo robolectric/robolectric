@@ -1,7 +1,6 @@
 package org.robolectric.shadows;
 
 import android.view.animation.LayoutAnimationController;
-
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 

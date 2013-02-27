@@ -2,14 +2,13 @@ package org.robolectric.shadows;
 
 import android.util.DisplayMetrics;
 import android.view.Display;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
+import static org.junit.Assert.assertEquals;
 import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DisplayTest {

@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.content.ContentProvider;
 import android.content.Context;
-
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;

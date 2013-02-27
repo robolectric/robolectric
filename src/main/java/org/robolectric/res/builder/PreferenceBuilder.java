@@ -6,8 +6,8 @@ import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.util.AttributeSet;
 import org.robolectric.Robolectric;
-import org.robolectric.res.PreferenceNode;
 import org.robolectric.res.Attribute;
+import org.robolectric.res.PreferenceNode;
 import org.robolectric.shadows.RoboAttributeSet;
 
 import java.lang.reflect.Constructor;

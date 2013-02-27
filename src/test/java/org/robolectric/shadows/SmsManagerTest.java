@@ -1,16 +1,13 @@
 package org.robolectric.shadows;
 
-import org.robolectric.TestRunners;
+import android.telephony.SmsManager;
 import junit.framework.Assert;
-
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import android.telephony.SmsManager;
-
 import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SmsManagerTest {

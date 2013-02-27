@@ -1,12 +1,11 @@
 package org.robolectric.res;
 
-import org.robolectric.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.util.TestUtil;
 
-import static org.robolectric.util.TestUtil.testResources;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.robolectric.util.TestUtil.testResources;
 
 public class PluralResourceLoaderTest {
     private ResBundle<PluralResourceLoader.PluralRules> pluralRulesResBundle;

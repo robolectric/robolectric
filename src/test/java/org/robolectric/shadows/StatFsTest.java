@@ -1,15 +1,13 @@
 package org.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.fest.assertions.api.Assertions.assertThat;
-
-import org.robolectric.TestRunners;
+import android.os.StatFs;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import android.os.StatFs;
+import org.robolectric.TestRunners;
 
 import java.io.File;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class StatFsTest {

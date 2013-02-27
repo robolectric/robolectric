@@ -5,18 +5,16 @@ import android.content.Context;
 import android.preference.Preference;
 import android.preference.PreferenceGroup;
 import android.util.AttributeSet;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.res.EmptyResourceLoader;
-import org.robolectric.res.PackageResourceLoader;
-import org.robolectric.res.Attribute;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.res.Attribute;
+import org.robolectric.res.EmptyResourceLoader;
 
 import java.util.ArrayList;
 
-import static org.hamcrest.CoreMatchers.*;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)

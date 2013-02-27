@@ -1,14 +1,13 @@
 package org.robolectric.shadows;
 
-import java.util.HashMap;
-
 import android.os.IBinder;
 import android.os.IInterface;
 import android.os.RemoteCallbackList;
 import android.os.RemoteException;
-
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
+
+import java.util.HashMap;
 
 @Implements(RemoteCallbackList.class)
 public class ShadowRemoteCallbackList<E extends IInterface> {

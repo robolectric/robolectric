@@ -1,23 +1,15 @@
 package org.robolectric.shadows;
 
-import static junit.framework.Assert.assertFalse;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertTrue;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.fest.assertions.api.Assertions.assertThat;
-
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
+import android.content.Context;
+import android.os.PowerManager;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
-import android.content.Context;
-import android.os.PowerManager;
+import static junit.framework.Assert.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PowerManagerTest {

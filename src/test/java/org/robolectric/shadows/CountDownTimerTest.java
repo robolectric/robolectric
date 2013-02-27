@@ -1,17 +1,11 @@
 package org.robolectric.shadows;
 
-import org.robolectric.TestRunners;
+import android.os.CountDownTimer;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import android.os.CountDownTimer;
-
 import org.robolectric.Robolectric;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
+import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 

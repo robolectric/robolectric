@@ -4,9 +4,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
-import org.robolectric.shadows.ShadowIntent;
 import org.hamcrest.Description;
 import org.junit.internal.matchers.TypeSafeMatcher;
+import org.robolectric.shadows.ShadowIntent;
 
 import java.util.Set;
 

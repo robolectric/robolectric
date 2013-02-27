@@ -9,9 +9,9 @@ import android.view.View;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceLoader;
 
 import java.io.File;
 import java.io.FileInputStream;

@@ -1,13 +1,13 @@
 package org.robolectric.shadows;
 
 import android.net.wifi.ScanResult;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
+import static junit.framework.Assert.assertNotNull;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
-import static junit.framework.Assert.assertNotNull;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ScanResultTest {

@@ -1,17 +1,14 @@
 package org.robolectric.shadows;
 
-import org.robolectric.TestRunners;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MessageTest {

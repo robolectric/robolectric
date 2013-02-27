@@ -1,9 +1,8 @@
 package org.robolectric.shadows;
 
+import android.os.StatFs;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
-
-import android.os.StatFs;
 
 import java.io.File;
 import java.util.HashMap;

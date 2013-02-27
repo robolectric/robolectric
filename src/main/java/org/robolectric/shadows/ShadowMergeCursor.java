@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.database.Cursor;
 import android.database.MergeCursor;
-
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 

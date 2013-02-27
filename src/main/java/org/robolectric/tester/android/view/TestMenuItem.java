@@ -2,7 +2,11 @@ package org.robolectric.tester.android.view;
 
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.view.*;
+import android.view.ActionProvider;
+import android.view.ContextMenu;
+import android.view.MenuItem;
+import android.view.SubMenu;
+import android.view.View;
 import org.robolectric.Robolectric;
 
 public class TestMenuItem implements MenuItem {

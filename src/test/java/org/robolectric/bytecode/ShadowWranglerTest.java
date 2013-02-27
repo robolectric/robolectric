@@ -1,5 +1,8 @@
 package org.robolectric.bytecode;
 
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.Implementation;
@@ -7,18 +10,15 @@ import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
 import org.robolectric.internal.RealObject;
 import org.robolectric.util.I18nException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import static org.robolectric.Robolectric.bindShadowClass;
-import static org.robolectric.Robolectric.shadowOf_;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.robolectric.Robolectric.bindShadowClass;
+import static org.robolectric.Robolectric.shadowOf_;
 
 @RunWith(TestRunners.WithoutDefaults.class)
 public class ShadowWranglerTest {

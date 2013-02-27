@@ -1,11 +1,10 @@
 package org.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.fest.assertions.api.Assertions.assertThat;
-
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DatabaseUtilsTest {

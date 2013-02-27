@@ -1,10 +1,10 @@
 package org.robolectric.tester.org.apache.http;
 
-import org.robolectric.TestRunners;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import java.util.Map;
 

@@ -1,17 +1,17 @@
 package org.robolectric.res;
 
-import org.robolectric.R;
-import org.robolectric.TestRunners;
-import org.robolectric.util.TestUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.R;
+import org.robolectric.TestRunners;
+import org.robolectric.util.TestUtil;
 
 import java.io.InputStream;
 
+import static org.junit.Assert.assertEquals;
 import static org.robolectric.util.TestUtil.resourceFile;
 import static org.robolectric.util.TestUtil.testResources;
-import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RawResourceLoaderTest {

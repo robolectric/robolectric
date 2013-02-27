@@ -1,16 +1,14 @@
 package org.robolectric.shadows;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import android.hardware.Camera;
 import android.view.SurfaceHolder;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Shadows the Android {@code Camera} class.

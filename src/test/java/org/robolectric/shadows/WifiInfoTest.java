@@ -2,9 +2,9 @@ package org.robolectric.shadows;
 
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import static android.content.Context.WIFI_SERVICE;
 import static org.fest.assertions.api.Assertions.assertThat;

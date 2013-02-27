@@ -1,10 +1,9 @@
 package org.robolectric.shadows;
 
+import android.view.ViewGroup;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-
-import android.view.ViewGroup;
 
 /**
  * Shadow for {@link ViewGroup.MarginLayoutParams} that simulates its implementation.

@@ -1,16 +1,15 @@
 package org.robolectric.shadows;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import android.content.ContentResolver;
 import android.database.AbstractCursor;
 import android.database.CursorWindow;
 import android.net.Uri;
-
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
+
+import java.util.HashMap;
+import java.util.Map;
 
 
 @Implements(AbstractCursor.class)

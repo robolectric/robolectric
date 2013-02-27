@@ -3,7 +3,6 @@ package org.robolectric.util;
 import org.junit.Before;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 public class SchedulerTest {

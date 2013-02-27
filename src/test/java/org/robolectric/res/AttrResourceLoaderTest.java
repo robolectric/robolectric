@@ -3,13 +3,12 @@ package org.robolectric.res;
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ImageView;
-import org.robolectric.util.CustomView;
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.util.CustomView;
 
-import static org.robolectric.util.TestUtil.*;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.robolectric.util.TestUtil.*;
 
 public class AttrResourceLoaderTest {
     private AttrResourceLoader attrResourceLoader;

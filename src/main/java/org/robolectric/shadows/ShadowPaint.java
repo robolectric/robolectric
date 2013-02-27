@@ -1,6 +1,10 @@
 package org.robolectric.shadows;
 
-import android.graphics.*;
+import android.graphics.ColorFilter;
+import android.graphics.Paint;
+import android.graphics.PathEffect;
+import android.graphics.Shader;
+import android.graphics.Typeface;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;

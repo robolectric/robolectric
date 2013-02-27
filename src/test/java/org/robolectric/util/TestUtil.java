@@ -18,8 +18,8 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Properties;
 
-import static org.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 import static org.junit.Assert.assertTrue;
+import static org.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 
 public abstract class TestUtil {
     public static final ResourcePath TEST_RESOURCE_PATH = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));

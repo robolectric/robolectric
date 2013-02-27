@@ -1,14 +1,13 @@
 package org.robolectric.shadows;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
-
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Implements(AnimationSet.class)
 public class ShadowAnimationSet extends ShadowAnimation {

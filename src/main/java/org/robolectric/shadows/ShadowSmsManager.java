@@ -3,7 +3,6 @@ package org.robolectric.shadows;
 import android.app.PendingIntent;
 import android.telephony.SmsManager;
 import android.text.TextUtils;
-
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;

@@ -14,6 +14,7 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 import org.robolectric.tester.android.view.TestWindow;
+
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;

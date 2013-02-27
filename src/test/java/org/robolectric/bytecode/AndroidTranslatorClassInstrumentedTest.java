@@ -2,15 +2,13 @@ package org.robolectric.bytecode;
 
 import android.graphics.Bitmap;
 import android.graphics.Paint;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithCustomClassList.class)

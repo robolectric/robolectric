@@ -6,17 +6,14 @@ import android.view.MotionEvent;
 import android.view.View;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.MapView;
-import org.robolectric.TestRunners;
-import org.robolectric.bytecode.ShadowingTest;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
+import org.robolectric.bytecode.ShadowingTest;
 
-import static org.robolectric.shadows.ShadowMapView.toE6;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.robolectric.shadows.ShadowMapView.toE6;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MapViewTest {

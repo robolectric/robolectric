@@ -1,26 +1,20 @@
 package org.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import android.database.Cursor;
+import android.database.MergeCursor;
+import android.database.sqlite.SQLiteCursor;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.util.DatabaseConfig;
 
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.util.DatabaseConfig;
-
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import android.database.Cursor;
-import android.database.MergeCursor;
-import android.database.sqlite.SQLiteCursor;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MergeCursorTest {

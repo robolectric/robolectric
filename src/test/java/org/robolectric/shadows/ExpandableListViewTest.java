@@ -2,13 +2,12 @@ package org.robolectric.shadows;
 
 import android.view.View;
 import android.widget.ExpandableListView;
-import org.robolectric.TestRunners;
-import org.robolectric.util.Transcript;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
+import org.robolectric.util.Transcript;
 
-import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)

@@ -14,9 +14,7 @@ import static android.content.pm.ApplicationInfo.*;
 import static java.util.Arrays.asList;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
-import static org.robolectric.util.TestUtil.joinPath;
-import static org.robolectric.util.TestUtil.newConfig;
-import static org.robolectric.util.TestUtil.resourceFile;
+import static org.robolectric.util.TestUtil.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AndroidManifestTest {

@@ -1,9 +1,9 @@
 package org.robolectric;
 
-import org.robolectric.util.Transcript;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.util.Transcript;
 
 import java.lang.reflect.Method;
 
