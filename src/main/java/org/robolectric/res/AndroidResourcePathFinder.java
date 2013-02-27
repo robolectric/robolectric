@@ -7,6 +7,7 @@ import java.io.*;
 import java.util.Properties;
 
 public class AndroidResourcePathFinder {
+    private static String pathToAndroidResources = null;
     private final int sdkVersion;
     private final ResourcePath resourcePath;
 
@@ -21,15 +22,18 @@ public class AndroidResourcePathFinder {
     }
 
     String getPathToAndroidResources() {
-        String resourcePath;
-        if ((resourcePath = getAndroidResourcePathFromLocalProperties()) != null) {
-            return resourcePath;
-        } else if ((resourcePath = getAndroidResourcePathFromSystemEnvironment()) != null) {
-            return resourcePath;
-        } else if ((resourcePath = getAndroidResourcePathFromSystemProperty()) != null) {
-            return resourcePath;
-        } else if ((resourcePath = getAndroidResourcePathByExecingWhichAndroid()) != null) {
-            return resourcePath;
+        if (pathToAndroidResources != null) {
+            return pathToAndroidResources;
+        }
+
+        if ((pathToAndroidResources = getAndroidResourcePathFromLocalProperties()) != null) {
+            return pathToAndroidResources;
+        } else if ((pathToAndroidResources = getAndroidResourcePathFromSystemEnvironment()) != null) {
+            return pathToAndroidResources;
+        } else if ((pathToAndroidResources = getAndroidResourcePathFromSystemProperty()) != null) {
+            return pathToAndroidResources;
+        } else if ((pathToAndroidResources = getAndroidResourcePathByExecingWhichAndroid()) != null) {
+            return pathToAndroidResources;
         }
 
         throw new RuntimeException("Unable to find path to Android SDK, (you probably need a local.properties file, see: http://pivotal.github.com/robolectric/resources.html");
