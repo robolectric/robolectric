@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ExpandableListViewTest {
@@ -41,7 +41,7 @@ public class ExpandableListViewTest {
     public void shouldPassTheViewToTheClickListener() throws Exception {
         expandableListView.setOnChildClickListener(myOnChildClickListener);
         expandableListView.performItemClick(null, 6, -1);
-        assertThat(myOnChildClickListener.expandableListView, sameInstance(expandableListView));
+        assertThat(myOnChildClickListener.expandableListView).isSameAs(expandableListView);
     }
 
     private class MyOnChildClickListener implements ExpandableListView.OnChildClickListener {

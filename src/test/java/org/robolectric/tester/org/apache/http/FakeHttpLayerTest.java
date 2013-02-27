@@ -1,6 +1,5 @@
 package org.robolectric.tester.org.apache.http;
 
-import org.robolectric.TestRunners;
 import org.apache.http.HttpEntity;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
@@ -11,11 +10,13 @@ import org.apache.http.util.EntityUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import java.io.IOException;
 
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.*;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class FakeHttpLayerTest {
@@ -30,31 +31,31 @@ public class FakeHttpLayerTest {
     @Test
     public void requestMatcherBuilder_shouldAddHost() throws Exception {
         requestMatcherBuilder.host("example.com");
-        assertThat("example.com", equalTo(requestMatcherBuilder.getHostname()));
+        assertThat("example.com").isEqualTo(requestMatcherBuilder.getHostname());
     }
 
     @Test
     public void requestMatcherBuilder_shouldAddMethod() throws Exception {
         requestMatcherBuilder.method("POST");
-        assertThat("POST", equalTo(requestMatcherBuilder.getMethod()));
+        assertThat("POST").isEqualTo(requestMatcherBuilder.getMethod());
     }
 
     @Test
     public void requestMatcherBuilder_shouldAddPath() throws Exception {
         requestMatcherBuilder.path("foo/bar");
-        assertThat("/foo/bar", equalTo(requestMatcherBuilder.getPath()));
+        assertThat("/foo/bar").isEqualTo(requestMatcherBuilder.getPath());
     }
 
     @Test
     public void requestMatcherBuilder_shouldAddParams() throws Exception {
         requestMatcherBuilder.param("param1", "param one");
-        assertThat("param one", equalTo(requestMatcherBuilder.getParam("param1")));
+        assertThat("param one").isEqualTo(requestMatcherBuilder.getParam("param1"));
     }
 
     @Test
     public void requestMatcherBuilder_shouldAddHeaders() throws Exception {
         requestMatcherBuilder.header("header1", "header one");
-        assertThat("header one", equalTo(requestMatcherBuilder.getHeader("header1")));
+        assertThat("header one").isEqualTo(requestMatcherBuilder.getHeader("header1"));
     }
 
     @Test

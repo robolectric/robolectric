@@ -17,9 +17,7 @@ import java.io.StringWriter;
 
 import static org.robolectric.Robolectric.bindShadowClass;
 import static org.robolectric.Robolectric.shadowOf_;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.core.StringContains.containsString;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithoutDefaults.class)
@@ -107,7 +105,7 @@ public class ShadowWranglerTest {
         bindShadowClass(ShadowTextFoo.class);
 
         TextFoo textFoo = new TextFoo(name);
-        assertThat(shadowOf(textFoo), instanceOf(ShadowTextFoo.class));
+        assertThat(shadowOf(textFoo)).isInstanceOf(ShadowTextFoo.class);
     }
 
     @Test
@@ -140,15 +138,15 @@ public class ShadowWranglerTest {
         e.printStackTrace(new PrintWriter(stringWriter));
         String stackTrace = stringWriter.getBuffer().toString();
 
-        assertThat(stackTrace, containsString("fake exception"));
-        assertThat(stackTrace, containsString(ExceptionThrowingShadowFoo.class.getName() + ".getName("));
-        assertThat(stackTrace, containsString(Foo.class.getName() + ".getName("));
-        assertThat(stackTrace, containsString(ShadowWranglerTest.class.getName() + ".shouldRemoveNoiseFromStackTraces"));
+        assertThat(stackTrace).contains("fake exception");
+        assertThat(stackTrace).contains(ExceptionThrowingShadowFoo.class.getName() + ".getName(");
+        assertThat(stackTrace).contains(Foo.class.getName() + ".getName(");
+        assertThat(stackTrace).contains(ShadowWranglerTest.class.getName() + ".shouldRemoveNoiseFromStackTraces");
 
-        assertThat(stackTrace, not(containsString("sun.reflect")));
-        assertThat(stackTrace, not(containsString("java.lang.reflect")));
-        assertThat(stackTrace, not(containsString(ShadowWrangler.class.getName() + ".")));
-        assertThat(stackTrace, not(containsString(RobolectricInternals.class.getName() + ".")));
+        assertThat(stackTrace).doesNotContain("sun.reflect");
+        assertThat(stackTrace).doesNotContain("java.lang.reflect");
+        assertThat(stackTrace).doesNotContain(ShadowWrangler.class.getName() + ".");
+        assertThat(stackTrace).doesNotContain(RobolectricInternals.class.getName() + ".");
     }
 
     @Test(expected = I18nException.class)

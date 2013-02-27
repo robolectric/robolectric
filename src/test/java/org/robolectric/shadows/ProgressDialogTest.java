@@ -4,24 +4,18 @@ import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.DialogInterface;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import java.util.concurrent.Callable;
 
-import static org.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertNull;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.*;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ProgressDialogTest {
@@ -37,47 +31,47 @@ public class ProgressDialogTest {
 
     @Test
     public void shouldExtendAlertDialog() {
-        assertThat(shadow, instanceOf(ShadowAlertDialog.class));
+        assertThat(shadow).isInstanceOf(ShadowAlertDialog.class);
     }
 
     @Test
     public void shouldSetMessage() {
         CharSequence message = "This is only a test";
 
-        assertThat(shadow.getMessage(), nullValue());
+        assertThat(shadow.getMessage()).isNull();
         dialog.setMessage(message);
-        assertThat(shadow.getMessage(), equalTo(message));
+        assertThat((CharSequence) shadow.getMessage()).isEqualTo(message);
     }
 
     @Test
     public void shouldSetIndeterminate() {
-        assertThat(dialog.isIndeterminate(), equalTo(false));
+        assertThat(dialog.isIndeterminate()).isFalse();
 
         dialog.setIndeterminate(true);
-        assertThat(dialog.isIndeterminate(), equalTo(true));
+        assertThat(dialog.isIndeterminate()).isTrue();
 
         dialog.setIndeterminate(false);
-        assertThat(dialog.isIndeterminate(), equalTo(false));
+        assertThat(dialog.isIndeterminate()).isFalse();
     }
 
     @Test
     public void shouldSetMax() {
-        assertThat(dialog.getMax(), equalTo(0));
-        assertThat(shadow.getMax(), equalTo(0));
+        assertThat(dialog.getMax()).isEqualTo(0);
+        assertThat(shadow.getMax()).isEqualTo(0);
 
         dialog.setMax(41);
-        assertThat(dialog.getMax(), equalTo(41));
-        assertThat(shadow.getMax(), equalTo(41));
+        assertThat(dialog.getMax()).isEqualTo(41);
+        assertThat(shadow.getMax()).isEqualTo(41);
     }
 
     @Test
     public void shouldSetProgress() {
-        assertThat(dialog.getProgress(), equalTo(0));
-        assertThat(shadow.getProgress(), equalTo(0));
+        assertThat(dialog.getProgress()).isEqualTo(0);
+        assertThat(shadow.getProgress()).isEqualTo(0);
 
         dialog.setProgress(42);
-        assertThat(dialog.getProgress(), equalTo(42));
-        assertThat(shadow.getProgress(), equalTo(42));
+        assertThat(dialog.getProgress()).isEqualTo(42);
+        assertThat(shadow.getProgress()).isEqualTo(42);
     }
 
     @Test
@@ -86,13 +80,13 @@ public class ProgressDialogTest {
         TestOnCancelListener cancelListener = new TestOnCancelListener();
         ProgressDialog progressDialog = ProgressDialog.show(context, "Title", "Message", true, true, cancelListener);
         ShadowProgressDialog shadowProgressDialog = shadowOf(progressDialog);
-        assertThat(shadowProgressDialog.getContext(), is(context));
-        assertThat(shadowProgressDialog.getMessage(), equalTo("Message"));
+        assertThat(shadowProgressDialog.getContext()).isSameAs(context);
+        assertThat(shadowProgressDialog.getMessage()).isEqualTo("Message");
         assertTrue(shadowProgressDialog.isIndeterminate());
         assertTrue(shadowProgressDialog.isCancelable());
 
         progressDialog.cancel();
-        assertThat(cancelListener.onCancelDialogInterface, is((DialogInterface) progressDialog));
+        assertThat(cancelListener.onCancelDialogInterface).isSameAs((DialogInterface) progressDialog);
     }
 
     @Test

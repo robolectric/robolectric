@@ -13,7 +13,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowEditTextTest {
@@ -30,12 +30,12 @@ public class ShadowEditTextTest {
     @Test
     public void shouldRespectMaxLength() throws Exception {
         editText.setText("0123456678");
-        assertThat(editText.getText().toString(), equalTo("01234"));
+        assertThat(editText.getText().toString()).isEqualTo("01234");
     }
     
     @Test
     public void shouldAcceptNullStrings() {
         editText.setText(null);
-        assertThat(editText.getText().toString(), equalTo(""));
+        assertThat(editText.getText().toString()).isEqualTo("");
     }
 }

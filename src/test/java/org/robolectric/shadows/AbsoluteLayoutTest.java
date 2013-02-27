@@ -6,8 +6,7 @@ import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AbsoluteLayoutTest {
@@ -15,6 +14,6 @@ public class AbsoluteLayoutTest {
     public void getLayoutParams_shouldReturnAbsoluteLayoutParams() throws Exception {
         ViewGroup.LayoutParams layoutParams = new AbsoluteLayout(null).getLayoutParams();
 
-        assertThat(layoutParams, instanceOf(AbsoluteLayout.LayoutParams.class));
+        assertThat(layoutParams).isInstanceOf(AbsoluteLayout.LayoutParams.class);
     }
 }

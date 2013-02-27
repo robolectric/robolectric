@@ -15,7 +15,7 @@ import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 
@@ -100,21 +100,21 @@ public class HandlerTest {
     public void testPostAndIdleMainLooper() throws Exception {
         new Handler().post(scratchRunnable);
         ShadowHandler.idleMainLooper();
-        assertThat(scratchRunnable.wasRun, equalTo(true));
+        assertThat(scratchRunnable.wasRun).isTrue();
     }
 
     @Test
     public void postDelayedThenIdleMainLooper_shouldNotRunRunnable() throws Exception {
         new Handler().postDelayed(scratchRunnable, 1);
         ShadowHandler.idleMainLooper();
-        assertThat(scratchRunnable.wasRun, equalTo(false));
+        assertThat(scratchRunnable.wasRun).isFalse();
     }
 
     @Test
     public void testPostDelayedThenRunMainLooperOneTask() throws Exception {
         new Handler().postDelayed(scratchRunnable, 1);
         ShadowHandler.runMainLooperOneTask();
-        assertThat(scratchRunnable.wasRun, equalTo(true));
+        assertThat(scratchRunnable.wasRun).isTrue();
     }
 
     @Test
@@ -127,14 +127,14 @@ public class HandlerTest {
 
         shadowLooper.unPause();
 
-        assertThat(scratchRunnable.wasRun, equalTo(false));
+        assertThat(scratchRunnable.wasRun).isFalse();
     }
 
     @Test
     public void testPostDelayedThenRunMainLooperToNextTask_shouldRunOneTask() throws Exception {
         new Handler().postDelayed(scratchRunnable, 1);
         ShadowHandler.runMainLooperToNextTask();
-        assertThat(scratchRunnable.wasRun, equalTo(true));
+        assertThat(scratchRunnable.wasRun).isTrue();
     }
 
     @Test
@@ -146,8 +146,8 @@ public class HandlerTest {
         new Handler().postDelayed(task2, 1);
 
         ShadowHandler.runMainLooperToNextTask();
-        assertThat(task1.wasRun, equalTo(true));
-        assertThat(task2.wasRun, equalTo(true));
+        assertThat(task1.wasRun).isTrue();
+        assertThat(task2.wasRun).isTrue();
     }
 
     @Test
@@ -159,8 +159,8 @@ public class HandlerTest {
         new Handler().postDelayed(task2, 1);
 
         ShadowHandler.runMainLooperOneTask();
-        assertThat(task1.wasRun, equalTo(true));
-        assertThat(task2.wasRun, equalTo(false));
+        assertThat(task1.wasRun).isTrue();
+        assertThat(task2.wasRun).isFalse();
     }
 
     @Test
@@ -174,9 +174,9 @@ public class HandlerTest {
         new Handler().postDelayed(task3, 100);
 
         ShadowHandler.runMainLooperToEndOfTasks();
-        assertThat(task1.wasRun, equalTo(true));
-        assertThat(task2.wasRun, equalTo(true));
-        assertThat(task3.wasRun, equalTo(true));
+        assertThat(task1.wasRun).isTrue();
+        assertThat(task2.wasRun).isTrue();
+        assertThat(task3.wasRun).isTrue();
     }
 
     @Test
@@ -191,10 +191,10 @@ public class HandlerTest {
         assertTrue(result);
 
         ShadowHandler.runMainLooperOneTask();
-        assertThat(task2.wasRun, equalTo(true));
-        assertThat(task1.wasRun, equalTo(false));
+        assertThat(task2.wasRun).isTrue();
+        assertThat(task1.wasRun).isFalse();
         ShadowHandler.runMainLooperOneTask();
-        assertThat(task1.wasRun, equalTo(true));
+        assertThat(task1.wasRun).isTrue();
     }
 
     @Test
@@ -224,12 +224,12 @@ public class HandlerTest {
     public void sendEmptyMessage_addMessageToQueue() {
         Robolectric.pauseMainLooper();
         Handler handler = new Handler();
-        assertThat(handler.hasMessages(123), equalTo(false));
+        assertThat(handler.hasMessages(123)).isFalse();
         handler.sendEmptyMessage(123);
-        assertThat(handler.hasMessages(456), equalTo(false));
-        assertThat(handler.hasMessages(123), equalTo(true));
+        assertThat(handler.hasMessages(456)).isFalse();
+        assertThat(handler.hasMessages(123)).isTrue();
         Robolectric.idleMainLooper(0);
-        assertThat(handler.hasMessages(123), equalTo(false));
+        assertThat(handler.hasMessages(123)).isFalse();
     }
 
     @Test
@@ -237,11 +237,11 @@ public class HandlerTest {
         Robolectric.pauseMainLooper();
         Handler handler = new Handler();
         handler.sendEmptyMessageDelayed(123, 500);
-        assertThat(handler.hasMessages(123), equalTo(true));
+        assertThat(handler.hasMessages(123)).isTrue();
         Robolectric.idleMainLooper(100);
-        assertThat(handler.hasMessages(123), equalTo(true));
+        assertThat(handler.hasMessages(123)).isTrue();
         Robolectric.idleMainLooper(400);
-        assertThat(handler.hasMessages(123), equalTo(false));
+        assertThat(handler.hasMessages(123)).isFalse();
     }
 
     @Test
@@ -250,7 +250,7 @@ public class HandlerTest {
         Handler handler = new Handler();
         handler.sendEmptyMessageDelayed(123, 500);
         handler.removeMessages(123);
-        assertThat(handler.hasMessages(123), equalTo(false));
+        assertThat(handler.hasMessages(123)).isFalse();
     }
 
     @Test
@@ -260,16 +260,16 @@ public class HandlerTest {
         Message.obtain(handler, 123, "foo").sendToTarget();
         Message.obtain(handler, 123, "bar").sendToTarget();
 
-        assertThat(handler.hasMessages(123), equalTo(true));
-        assertThat(handler.hasMessages(123, "foo"), equalTo(true));
-        assertThat(handler.hasMessages(123, "bar"), equalTo(true));
-        assertThat(handler.hasMessages(123, "baz"), equalTo(false));
+        assertThat(handler.hasMessages(123)).isTrue();
+        assertThat(handler.hasMessages(123, "foo")).isTrue();
+        assertThat(handler.hasMessages(123, "bar")).isTrue();
+        assertThat(handler.hasMessages(123, "baz")).isFalse();
 
         handler.removeMessages(123, "foo");
-        assertThat(handler.hasMessages(123), equalTo(true));
+        assertThat(handler.hasMessages(123)).isTrue();
 
         handler.removeMessages(123, "bar");
-        assertThat(handler.hasMessages(123), equalTo(false));
+        assertThat(handler.hasMessages(123)).isFalse();
     }
 
     @Test
@@ -293,7 +293,7 @@ public class HandlerTest {
         Handler handler = new Handler();
         Message message = handler.obtainMessage(123, testObject);
 
-        assertThat(handler, equalTo(message.getTarget()));
+        assertThat(handler).isEqualTo(message.getTarget());
 
         message.sendToTarget();
 
@@ -313,34 +313,34 @@ public class HandlerTest {
         handler.sendEmptyMessageDelayed(123, 500);
         handler.removeMessages(123);
         Robolectric.unPauseMainLooper();
-        assertThat(wasRun[0], equalTo(false));
+        assertThat(wasRun[0]).isFalse();
     }
 
     @Test
     public void shouldObtainMessage() throws Exception {
         Message m0 = new Handler().obtainMessage();
-        assertThat(m0.what, equalTo(0));
-        assertThat(m0.obj, nullValue());
+        assertThat(m0.what).isEqualTo(0);
+        assertThat(m0.obj).isNull();
 
         Message m1 = new Handler().obtainMessage(1);
-        assertThat(m1.what, equalTo(1));
-        assertThat(m1.obj, nullValue());
+        assertThat(m1.what).isEqualTo(1);
+        assertThat(m1.obj).isNull();
 
         Message m2 = new Handler().obtainMessage(1, "foo");
-        assertThat(m2.what, equalTo(1));
-        assertThat(m2.obj, equalTo((Object)"foo"));
+        assertThat(m2.what).isEqualTo(1);
+        assertThat(m2.obj).isEqualTo((Object) "foo");
 
         Message m3 = new Handler().obtainMessage(1, 2, 3);
-        assertThat(m3.what, equalTo(1));
-        assertThat(m3.arg1, equalTo(2));
-        assertThat(m3.arg2, equalTo(3));
-        assertThat(m3.obj, nullValue());
+        assertThat(m3.what).isEqualTo(1);
+        assertThat(m3.arg1).isEqualTo(2);
+        assertThat(m3.arg2).isEqualTo(3);
+        assertThat(m3.obj).isNull();
 
         Message m4 = new Handler().obtainMessage(1, 2, 3, "foo");
-        assertThat(m4.what, equalTo(1));
-        assertThat(m4.arg1, equalTo(2));
-        assertThat(m4.arg2, equalTo(3));
-        assertThat(m4.obj, equalTo((Object)"foo"));
+        assertThat(m4.what).isEqualTo(1);
+        assertThat(m4.arg1).isEqualTo(2);
+        assertThat(m4.arg2).isEqualTo(3);
+        assertThat(m4.obj).isEqualTo((Object) "foo");
     }
 
     @Test
@@ -359,15 +359,15 @@ public class HandlerTest {
         Robolectric.getUiThreadScheduler().advanceToLastPostedRunnable();
         h.sendEmptyMessageDelayed(0, 12000l);
         Robolectric.getUiThreadScheduler().advanceToLastPostedRunnable();
-        assertThat(msgs.size(), equalTo(3));
+        assertThat(msgs.size()).isEqualTo(3);
 
         Message m0 = msgs.get(0);
         Message m1 = msgs.get(1);
         Message m2 = msgs.get(2);
 
-        assertThat(m0.getWhen(), equalTo(0l));
-        assertThat(m1.getWhen(), equalTo(4000l));
-        assertThat(m2.getWhen(), equalTo(16000l));
+        assertThat(m0.getWhen()).isEqualTo(0l);
+        assertThat(m1.getWhen()).isEqualTo(4000l);
+        assertThat(m2.getWhen()).isEqualTo(16000l);
     }
 
     @Test

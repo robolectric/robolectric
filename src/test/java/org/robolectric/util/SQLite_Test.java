@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 
 import static org.robolectric.util.SQLite.*;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLite_Test {
@@ -29,34 +29,34 @@ public class SQLite_Test {
     @Test
     public void testBuildInsertString() throws Exception {
         SQLite.SQLStringAndBindings insertString = buildInsertString("table_name", values, SQLiteDatabase.CONFLICT_NONE);
-        assertThat(insertString.sql, equalTo("INSERT INTO table_name (float_value, byte_data, name, int_value) VALUES (?, ?, ?, ?);"));
+        assertThat(insertString.sql).isEqualTo("INSERT INTO table_name (float_value, byte_data, name, int_value) VALUES (?, ?, ?, ?);");
         SQLiteTestHelper.verifyColumnValues(insertString.columnValues);
     }
 
     @Test
     public void testBuildUpdateString() {
         SQLite.SQLStringAndBindings insertString = buildUpdateString("table_name", values, "id=?", new String[]{"1234"});
-        assertThat(insertString.sql, equalTo("UPDATE table_name SET float_value=?, byte_data=?, name=?, int_value=? WHERE id='1234';"));
+        assertThat(insertString.sql).isEqualTo("UPDATE table_name SET float_value=?, byte_data=?, name=?, int_value=? WHERE id='1234';");
         SQLiteTestHelper.verifyColumnValues(insertString.columnValues);
     }
 
     @Test
     public void testBuildDeleteString() {
         String deleteString = buildDeleteString("table_name", "id=?", new String[]{"1234"});
-        assertThat(deleteString, equalTo("DELETE FROM table_name WHERE id='1234';"));
+        assertThat(deleteString).isEqualTo("DELETE FROM table_name WHERE id='1234';");
     }
 
     @Test
     public void testBuildWhereClause() {
         String whereClause = buildWhereClause("id=? AND name=? AND int_value=?", new String[]{"1234", "Chuck", "33"});
-        assertThat(whereClause, equalTo("id='1234' AND name='Chuck' AND int_value='33'"));
+        assertThat(whereClause).isEqualTo("id='1234' AND name='Chuck' AND int_value='33'");
     }
 
     @Test
     public void testBuildColumnValuesClause() {
         SQLStringAndBindings columnValuesClause = buildColumnValuesClause(values);
 
-        assertThat(columnValuesClause.sql, equalTo("(float_value, byte_data, name, int_value) VALUES (?, ?, ?, ?)"));
+        assertThat(columnValuesClause.sql).isEqualTo("(float_value, byte_data, name, int_value) VALUES (?, ?, ?, ?)");
         SQLiteTestHelper.verifyColumnValues(columnValuesClause.columnValues);
     }
 
@@ -64,7 +64,7 @@ public class SQLite_Test {
     public void testBuildColumnAssignmentsClause() {
         SQLStringAndBindings columnAssignmentsClause = buildColumnAssignmentsClause(values);
 
-        assertThat(columnAssignmentsClause.sql, equalTo("float_value=?, byte_data=?, name=?, int_value=?"));
+        assertThat(columnAssignmentsClause.sql).isEqualTo("float_value=?, byte_data=?, name=?, int_value=?");
         SQLiteTestHelper.verifyColumnValues(columnAssignmentsClause.columnValues);
     }
 }

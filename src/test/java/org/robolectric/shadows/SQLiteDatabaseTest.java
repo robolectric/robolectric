@@ -15,7 +15,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 @DatabaseConfig.UsingDatabaseMap(SQLiteMap.class)
@@ -24,27 +24,26 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
 
     @Test
     public void shouldUseSQLiteDatabaseMap() throws Exception {
-        assertThat(DatabaseConfig.getDatabaseMap().getClass().getName(),
-                equalTo(SQLiteMap.class.getName()));
+        assertThat(DatabaseConfig.getDatabaseMap().getClass().getName()).isEqualTo(SQLiteMap.class.getName());
     }
 
     @Test
     public void testReplace() throws Exception {
         long id = addChuck();
-        assertThat(id, not(equalTo(-1L)));
+        assertThat(id).isNotEqualTo(-1L);
 
         ContentValues values = new ContentValues();
         values.put("id", id);
         values.put("name", "Norris");
 
         long replaceId = database.replace("table_name", null, values);
-        assertThat(replaceId, equalTo(id));
+        assertThat(replaceId).isEqualTo(id);
 
         String query = "SELECT name FROM table_name where id = " + id;
         ResultSet resultSet = executeQuery(query);
 
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getString(1), equalTo("Norris"));
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getString(1)).isEqualTo("Norris");
     }
 
     @Test
@@ -69,19 +68,19 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
         ResultSet secondResultSet = executeQuery(query + secondId);
         secondResultSet.next();
 
-        assertThat(firstId, equalTo(id));
-        assertThat(secondId, equalTo(id));
-        assertThat(firstResultSet.getString(1), equalTo(stringValueA));
-        assertThat(secondResultSet.getString(1), equalTo(stringValueB));
+        assertThat(firstId).isEqualTo(id);
+        assertThat(secondId).isEqualTo(id);
+        assertThat(firstResultSet.getString(1)).isEqualTo(stringValueA);
+        assertThat(secondResultSet.getString(1)).isEqualTo(stringValueB);
     }
 
     @Test
     public void shouldKeepTrackOfOpenCursors() throws Exception {
         Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);
 
-        assertThat(shadowOf(database).hasOpenCursors(), equalTo(true));
+        assertThat(shadowOf(database).hasOpenCursors()).isTrue();
         cursor.close();
-        assertThat(shadowOf(database).hasOpenCursors(), equalTo(false));
+        assertThat(shadowOf(database).hasOpenCursors()).isFalse();
 
     }
 
@@ -98,9 +97,9 @@ public class SQLiteDatabaseTest extends DatabaseTestBase {
             //ignore
         }
         List<String> queries = shadowOf(database).getQuerySql();
-        assertThat(queries.size(), equalTo(2));
-        assertThat(queries.get(0), equalTo("SELECT first_column FROM table_name_1"));
-        assertThat(queries.get(1), equalTo("SELECT second_column FROM table_name_2"));
+        assertThat(queries.size()).isEqualTo(2);
+        assertThat(queries.get(0)).isEqualTo("SELECT first_column FROM table_name_1");
+        assertThat(queries.get(1)).isEqualTo("SELECT second_column FROM table_name_2");
     }
 
     private ResultSet executeQuery(String query) throws SQLException {

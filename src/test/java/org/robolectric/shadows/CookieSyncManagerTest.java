@@ -9,20 +9,20 @@ import org.robolectric.TestRunners;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class CookieSyncManagerTest {
 
     @Test
     public void testCreateInstance() {
-        assertThat(CookieSyncManager.createInstance(new Activity()), notNullValue());
+        assertThat(CookieSyncManager.createInstance(new Activity())).isNotNull();
     }
 
     @Test
     public void testGetInstance() {
         CookieSyncManager.createInstance(new Activity());
-        assertThat(CookieSyncManager.getInstance(), notNullValue());
+        assertThat(CookieSyncManager.getInstance()).isNotNull();
     }
 
     @Test
@@ -31,10 +31,10 @@ public class CookieSyncManagerTest {
         CookieSyncManager mgr = CookieSyncManager.getInstance();
 
         ShadowCookieSyncManager shadowManager = Robolectric.shadowOf(mgr);
-        assertThat(shadowManager.synced(), equalTo(false));
+        assertThat(shadowManager.synced()).isFalse();
         mgr.sync();
-        assertThat(shadowManager.synced(), equalTo(true));
+        assertThat(shadowManager.synced()).isTrue();
         shadowManager.reset();
-        assertThat(shadowManager.synced(), equalTo(false));
+        assertThat(shadowManager.synced()).isFalse();
     }
 }

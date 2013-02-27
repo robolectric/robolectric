@@ -37,16 +37,9 @@ import org.robolectric.util.TestUtil;
 
 import java.util.ArrayList;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.*;
+import static org.junit.matchers.JUnitMatchers.containsString;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
@@ -74,7 +67,7 @@ public class ViewLoaderTest {
     public void testChoosesLayoutBasedOnDefaultScreenSize() throws Exception {
         ViewGroup view = (ViewGroup) inflate("different_screen_sizes");
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
-        assertThat(textView.getText().toString(), equalTo("default"));
+        assertThat(textView.getText().toString()).isEqualTo("default");
     }
 
     @Test @Values(qualifiers = "xlarge-land")
@@ -82,14 +75,14 @@ public class ViewLoaderTest {
 //        resourceLoader.setLayoutQualifierSearchPath("xlarge", "land");
         ViewGroup view = (ViewGroup) inflate("different_screen_sizes", "xlarge-land");
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
-        assertThat(textView.getText().toString(), equalTo("xlarge"));
+        assertThat(textView.getText().toString()).isEqualTo("xlarge");
     }
 
     @Test @Values(qualifiers = "doesnotexist-land-xlarge")
     public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
         ViewGroup view = (ViewGroup) inflate("different_screen_sizes", "doesnotexist-land-xlarge");
         TextView textView = (TextView) view.findViewById(android.R.id.text1);
-        assertThat(textView.getText().toString(), equalTo("land"));
+        assertThat(textView.getText().toString()).isEqualTo("land");
     }
 
     @Test
@@ -99,7 +92,7 @@ public class ViewLoaderTest {
 
         webView.loadUrl("www.example.com");
 
-        assertThat(shadowOf(webView).getLastLoadedUrl(), equalTo("www.example.com"));
+        assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("www.example.com");
     }
 
     @Test
@@ -137,7 +130,7 @@ public class ViewLoaderTest {
     @Test
     public void testIncludeShouldRetainAttributes() throws Exception {
         ViewGroup mediaView = (ViewGroup) inflate("media");
-        assertThat(mediaView.findViewById(R.id.include_id).getVisibility(), is(View.GONE));
+        assertThat(mediaView.findViewById(R.id.include_id).getVisibility()).isEqualTo(View.GONE);
     }
 
     @Test
@@ -170,7 +163,7 @@ public class ViewLoaderTest {
     @Test
     public void testIncludeShouldOverrideAttributesOfIncludedRootNode() throws Exception {
         ViewGroup overrideIncludeView = (ViewGroup) inflate("override_include");
-        assertThat(overrideIncludeView.findViewById(R.id.snippet_text).getVisibility(), is(View.INVISIBLE));
+        assertThat(overrideIncludeView.findViewById(R.id.snippet_text).getVisibility()).isEqualTo(View.INVISIBLE);
     }
 
     @Test
@@ -215,28 +208,28 @@ public class ViewLoaderTest {
     @Test
     public void shouldConstructCustomViewsWithAttributesConstructor() throws Exception {
         CustomView view = (CustomView) inflate("custom_layout");
-        assertThat(view.attributeResourceValue, equalTo(R.string.hello));
+        assertThat(view.attributeResourceValue).isEqualTo(R.string.hello);
     }
 
     @Test
     public void shouldConstructCustomViewsWithAttributesWithURLEncodedNamespaces() throws Exception {
         CustomView view = (CustomView) inflate("custom_layout4")
                 .findViewById(R.id.custom_view);
-        assertThat(view.namespacedResourceValue, equalTo(R.layout.text_views));
+        assertThat(view.namespacedResourceValue).isEqualTo(R.layout.text_views);
     }
 
     @Test
     public void testViewVisibilityIsSet() throws Exception {
         View mediaView = inflate("media");
-        assertThat(mediaView.findViewById(R.id.title).getVisibility(), equalTo(View.VISIBLE));
-        assertThat(mediaView.findViewById(R.id.subtitle).getVisibility(), equalTo(View.GONE));
+        assertThat(mediaView.findViewById(R.id.title).getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(mediaView.findViewById(R.id.subtitle).getVisibility()).isEqualTo(View.GONE);
     }
 
     @Test
     public void testTextViewTextIsSet() throws Exception {
         View mediaView = inflate("main");
-        assertThat(((TextView) mediaView.findViewById(R.id.title)).getText().toString(), equalTo("Main Layout"));
-        assertThat(((TextView) mediaView.findViewById(R.id.subtitle)).getText().toString(), equalTo("Hello"));
+        assertThat(((TextView) mediaView.findViewById(R.id.title)).getText().toString()).isEqualTo("Main Layout");
+        assertThat(((TextView) mediaView.findViewById(R.id.subtitle)).getText().toString()).isEqualTo("Hello");
     }
 
     @Test
@@ -244,24 +237,24 @@ public class ViewLoaderTest {
         View mediaView = inflate("main");
         ShadowTextView shadowTextView = shadowOf((TextView) mediaView.findViewById(R.id.title));
 
-        assertThat(shadowTextView.getCompoundDrawablesImpl().getTop(), equalTo(R.drawable.an_image));
-        assertThat(shadowTextView.getCompoundDrawablesImpl().getRight(), equalTo(R.drawable.an_other_image));
-        assertThat(shadowTextView.getCompoundDrawablesImpl().getBottom(), equalTo(R.drawable.third_image));
-        assertThat(shadowTextView.getCompoundDrawablesImpl().getLeft(), equalTo(R.drawable.fourth_image));
+        assertThat(shadowTextView.getCompoundDrawablesImpl().getTop()).isEqualTo(R.drawable.an_image);
+        assertThat(shadowTextView.getCompoundDrawablesImpl().getRight()).isEqualTo(R.drawable.an_other_image);
+        assertThat(shadowTextView.getCompoundDrawablesImpl().getBottom()).isEqualTo(R.drawable.third_image);
+        assertThat(shadowTextView.getCompoundDrawablesImpl().getLeft()).isEqualTo(R.drawable.fourth_image);
     }
 
     @Test
     public void testCheckBoxCheckedIsSet() throws Exception {
         View mediaView = inflate("main");
-        assertThat(((CheckBox) mediaView.findViewById(R.id.true_checkbox)).isChecked(), equalTo(true));
-        assertThat(((CheckBox) mediaView.findViewById(R.id.false_checkbox)).isChecked(), equalTo(false));
-        assertThat(((CheckBox) mediaView.findViewById(R.id.default_checkbox)).isChecked(), equalTo(false));
+        assertThat(((CheckBox) mediaView.findViewById(R.id.true_checkbox)).isChecked()).isTrue();
+        assertThat(((CheckBox) mediaView.findViewById(R.id.false_checkbox)).isChecked()).isFalse();
+        assertThat(((CheckBox) mediaView.findViewById(R.id.default_checkbox)).isChecked()).isFalse();
     }
 
     @Test
     public void testImageViewSrcIsSet() throws Exception {
         View mediaView = inflate("main");
-        assertThat(((ShadowImageView) shadowOf(mediaView.findViewById(R.id.image))).getResourceId(), equalTo(R.drawable.an_image));
+        assertThat(((ShadowImageView) shadowOf(mediaView.findViewById(R.id.image))).getResourceId()).isEqualTo(R.drawable.an_image);
     }
 
     @Test
@@ -318,19 +311,19 @@ public class ViewLoaderTest {
     @Test
     public void testViewEnabled() throws Exception {
         View mediaView = inflate("main");
-        assertThat(mediaView.findViewById(R.id.time).isEnabled(), equalTo(false));
+        assertThat(mediaView.findViewById(R.id.time).isEnabled()).isFalse();
     }
 
     @Test
     public void testContentDescriptionIsSet() throws Exception {
         View mediaView = inflate("main");
-        assertThat(mediaView.findViewById(R.id.time).getContentDescription().toString(), equalTo("Howdy"));
+        assertThat(mediaView.findViewById(R.id.time).getContentDescription().toString()).isEqualTo("Howdy");
     }
 
     @Test
     public void testAlphaIsSet() throws Exception {
         View mediaView = inflate("main");
-        assertThat(mediaView.findViewById(R.id.time).getAlpha(), equalTo(.3f));
+        assertThat(mediaView.findViewById(R.id.time).getAlpha()).isEqualTo(.3f);
     }
 
     @Test
@@ -339,7 +332,7 @@ public class ViewLoaderTest {
         ImageView imageView = (ImageView) mediaView.findViewById(R.id.image);
         ShadowImageView shadowImageView = Robolectric.shadowOf(imageView);
 
-        assertThat(shadowImageView.getBackgroundResourceId(), equalTo(R.drawable.image_background));
+        assertThat(shadowImageView.getBackgroundResourceId()).isEqualTo(R.drawable.image_background);
     }
 
     @Test
@@ -347,12 +340,12 @@ public class ViewLoaderTest {
         ClickActivity activity = new ClickActivity();
         activity.onCreate(null);
 
-        assertThat(activity.clicked, equalTo(false));
+        assertThat(activity.clicked).isFalse();
 
         Button button = (Button)activity.findViewById(R.id.button);
         button.performClick();
 
-        assertThat(activity.clicked, equalTo(true));
+        assertThat(activity.clicked).isTrue();
     }
 
     @Test
@@ -370,10 +363,10 @@ public class ViewLoaderTest {
             exception = e;
         } finally {
             assertNotNull(exception);
-            assertThat("The error message should contain the id name of the "
-                       + "faulty button",
-                       exception.getMessage(),
-                       containsString("invalid_onclick_button"));
+            org.junit.Assert.assertThat("The error message should contain the id name of the "
+                    + "faulty button",
+                    exception.getMessage(),
+                    containsString("invalid_onclick_button"));
         }
     }
 
@@ -381,8 +374,8 @@ public class ViewLoaderTest {
     public void shouldInvokeOnFinishInflate() throws Exception {
         CustomView2 outerCustomView = (CustomView2) inflate("custom_layout2");
         CustomView2 innerCustomView = (CustomView2) outerCustomView.getChildAt(0);
-        assertThat(outerCustomView.childCountAfterInflate, equalTo(1));
-        assertThat(innerCustomView.childCountAfterInflate, equalTo(3));
+        assertThat(outerCustomView.childCountAfterInflate).isEqualTo(1);
+        assertThat(innerCustomView.childCountAfterInflate).isEqualTo(3);
     }
 
     @SuppressWarnings("UnusedDeclaration")
@@ -395,7 +388,7 @@ public class ViewLoaderTest {
     @Test
     public void shouldInflateViewsWithClassAttr() throws Exception {
         CustomView3 outerCustomView = (CustomView3) inflate("custom_layout3");
-        assertThat(outerCustomView.getText().toString(), equalTo("Hello bonjour"));
+        assertThat(outerCustomView.getText().toString()).isEqualTo("Hello bonjour");
     }
 
     @Test

@@ -12,9 +12,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsEqual.equalTo;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AnimatorSetTest {
@@ -36,8 +34,8 @@ public class AnimatorSetTest {
 
         subject.start();
 
-        assertThat(target.getAlpha(), equalTo(0.0f));
-        assertThat(target.getScaleX(), equalTo(0.5f));
+        assertThat(target.getAlpha()).isEqualTo(0.0f);
+        assertThat(target.getScaleX()).isEqualTo(0.5f);
     }
 
     @Test
@@ -52,8 +50,8 @@ public class AnimatorSetTest {
         subject.start();
         Robolectric.idleMainLooper(70);
 
-        assertThat(target.getAlpha(), equalTo(3.0f));
-        assertThat(target.getScaleX(), equalTo(0.0f));
+        assertThat(target.getAlpha()).isEqualTo(3.0f);
+        assertThat(target.getScaleX()).isEqualTo(0.0f);
     }
 
     @Test
@@ -65,6 +63,6 @@ public class AnimatorSetTest {
         TimeInterpolator expectedInterpolator = new LinearInterpolator();
         subject.setInterpolator(expectedInterpolator);
 
-        assertThat(childAnimator.getInterpolator(), sameInstance(expectedInterpolator));
+        assertThat(childAnimator.getInterpolator()).isSameAs(expectedInterpolator);
     }
 }

@@ -27,7 +27,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RobolectricPackageManagerTest {
@@ -49,8 +49,8 @@ public class RobolectricPackageManagerTest {
     @Test
     public void getApplicationInfo__ThisApplication() throws Exception {
         ApplicationInfo info = rpm.getApplicationInfo(Robolectric.application.getPackageName(), 0);
-        assertThat(info, notNullValue());
-        assertThat(info.packageName, equalTo(Robolectric.application.getPackageName()));
+        assertThat(info).isNotNull();
+        assertThat(info.packageName).isEqualTo(Robolectric.application.getPackageName());
     }
 
     @Test
@@ -63,9 +63,9 @@ public class RobolectricPackageManagerTest {
         rpm.addPackage(packageInfo);
 
         ApplicationInfo info = rpm.getApplicationInfo(TEST_PACKAGE_NAME, 0);
-        assertThat(info, notNullValue());
-        assertThat(info.packageName, equalTo(TEST_PACKAGE_NAME));
-        assertThat(rpm.getApplicationLabel(info).toString(), equalTo(TEST_PACKAGE_LABEL));
+        assertThat(info).isNotNull();
+        assertThat(info.packageName).isEqualTo(TEST_PACKAGE_NAME);
+        assertThat(rpm.getApplicationLabel(info).toString()).isEqualTo(TEST_PACKAGE_LABEL);
     }
 
     @Test(expected = PackageManager.NameNotFoundException.class)
@@ -87,8 +87,8 @@ public class RobolectricPackageManagerTest {
         i.addCategory(Intent.CATEGORY_LAUNCHER);
 
         List<ResolveInfo> activities = rpm.queryIntentActivities(i, 0);
-        assertThat(activities, notNullValue());        // empty list, not null
-        assertThat(activities.size(), equalTo(0));
+        assertThat(activities).isNotNull();        // empty list, not null
+        assertThat(activities.size()).isEqualTo(0);
     }
 
     @Test
@@ -102,9 +102,9 @@ public class RobolectricPackageManagerTest {
         rpm.addResolveInfoForIntent(i, info);
 
         List<ResolveInfo> activities = rpm.queryIntentActivities(i, 0);
-        assertThat(activities, notNullValue());
-        assertThat(activities.size(), equalTo(1));
-        assertThat(activities.get(0).nonLocalizedLabel.toString(), equalTo(TEST_PACKAGE_LABEL));
+        assertThat(activities).isNotNull();
+        assertThat(activities.size()).isEqualTo(1);
+        assertThat(activities.get(0).nonLocalizedLabel.toString()).isEqualTo(TEST_PACKAGE_LABEL);
     }
 
     @Test
@@ -114,14 +114,14 @@ public class RobolectricPackageManagerTest {
         info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
         rpm.addResolveInfoForIntent(i, info);
 
-        assertThat(rpm.resolveActivity(i, 0), sameInstance(info));
+        assertThat(rpm.resolveActivity(i, 0)).isSameAs(info);
     }
 
     @Test
     public void resolveActivity__NoMatch() throws Exception {
         Intent i = new Intent();
         i.setComponent(new ComponentName("foo.bar", "No Activity"));
-        assertThat(rpm.resolveActivity(i, 0), nullValue());
+        assertThat(rpm.resolveActivity(i, 0)).isNull();
     }
 
     @Test
@@ -133,7 +133,7 @@ public class RobolectricPackageManagerTest {
         info.nonLocalizedLabel = TEST_PACKAGE_LABEL;
         rpm.addResolveInfoForIntent(i, info);
 
-        assertThat(rpm.resolveService(i, 0), sameInstance(info));
+        assertThat(rpm.resolveService(i, 0)).isSameAs(info);
     }
 
     @Test
@@ -147,14 +147,14 @@ public class RobolectricPackageManagerTest {
 
         rpm.removeResolveInfosForIntent(intent, "com.org");
 
-        assertThat(rpm.resolveActivity(intent, 0), nullValue());
+        assertThat(rpm.resolveActivity(intent, 0)).isNull();
     }
 
     @Test
     public void resolveService__NoMatch() throws Exception {
         Intent i = new Intent();
         i.setComponent(new ComponentName("foo.bar", "No Activity"));
-        assertThat(rpm.resolveService(i, 0), nullValue());
+        assertThat(rpm.resolveService(i, 0)).isNull();
     }
 
     @Test
@@ -164,22 +164,22 @@ public class RobolectricPackageManagerTest {
 
         rpm.addActivityIcon(i, d);
 
-        assertThat(rpm.getActivityIcon(i), sameInstance(d));
-        assertThat(rpm.getActivityIcon(i.getComponent()), sameInstance(d));
+        assertThat(rpm.getActivityIcon(i)).isSameAs(d);
+        assertThat(rpm.getActivityIcon(i.getComponent())).isSameAs(d);
     }
 
     @Test
     public void hasSystemFeature() throws Exception {
         // uninitialized
-        assertThat(rpm.hasSystemFeature(PackageManager.FEATURE_CAMERA), equalTo(false));
+        assertThat(rpm.hasSystemFeature(PackageManager.FEATURE_CAMERA)).isFalse();
 
         // positive
         rpm.setSystemFeature(PackageManager.FEATURE_CAMERA, true);
-        assertThat(rpm.hasSystemFeature(PackageManager.FEATURE_CAMERA), equalTo(true));
+        assertThat(rpm.hasSystemFeature(PackageManager.FEATURE_CAMERA)).isTrue();
 
         // negative
         rpm.setSystemFeature(PackageManager.FEATURE_CAMERA, false);
-        assertThat(rpm.hasSystemFeature(PackageManager.FEATURE_CAMERA), equalTo(false));
+        assertThat(rpm.hasSystemFeature(PackageManager.FEATURE_CAMERA)).isFalse();
     }
 
     @Test
@@ -198,8 +198,8 @@ public class RobolectricPackageManagerTest {
         List<ComponentName> activities = new ArrayList<ComponentName>();
         rpm.getPreferredActivities(filters, activities, null);
 
-        assertThat(activities.size(), equalTo(1));
-        assertThat(activities.get(0).getPackageName(), equalTo(packageName));
+        assertThat(activities.size()).isEqualTo(1);
+        assertThat(activities.get(0).getPackageName()).isEqualTo(packageName);
 
         // Test not match
         IntentFilter filter1 = new IntentFilter(Intent.ACTION_VIEW);
@@ -210,7 +210,7 @@ public class RobolectricPackageManagerTest {
 
         rpm.getPreferredActivities(filters, activities, null);
 
-        assertThat(activities.size(), equalTo(0));
+        assertThat(activities.size()).isEqualTo(0);
     }
 
     @Test
@@ -218,6 +218,6 @@ public class RobolectricPackageManagerTest {
         Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
         rpm.addDrawableResolution("com.example.foo", 4334, drawable);
         Drawable actual = rpm.getDrawable("com.example.foo", 4334, null);
-        assertThat(actual, sameInstance(drawable));
+        assertThat(actual).isSameAs(drawable);
     }
 }

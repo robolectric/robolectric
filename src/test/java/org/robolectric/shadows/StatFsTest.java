@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.robolectric.TestRunners;
 import org.junit.Test;
@@ -18,10 +18,10 @@ public class StatFsTest {
         ShadowStatFs.registerStats("/tmp", 100, 20, 10);
         StatFs statsFs = new StatFs("/tmp");
 
-        assertThat(statsFs.getBlockCount(), equalTo(100));
-        assertThat(statsFs.getFreeBlocks(), equalTo(20));
-        assertThat(statsFs.getAvailableBlocks(), equalTo(10));
-        assertThat(statsFs.getBlockSize(), equalTo(ShadowStatFs.BLOCK_SIZE));
+        assertThat(statsFs.getBlockCount()).isEqualTo(100);
+        assertThat(statsFs.getFreeBlocks()).isEqualTo(20);
+        assertThat(statsFs.getAvailableBlocks()).isEqualTo(10);
+        assertThat(statsFs.getBlockSize()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
     }
 
     @Test
@@ -29,19 +29,19 @@ public class StatFsTest {
         ShadowStatFs.registerStats(new File("/tmp"), 100, 20, 10);
         StatFs statsFs = new StatFs("/tmp");
 
-        assertThat(statsFs.getBlockCount(), equalTo(100));
-        assertThat(statsFs.getFreeBlocks(), equalTo(20));
-        assertThat(statsFs.getAvailableBlocks(), equalTo(10));
-        assertThat(statsFs.getBlockSize(), equalTo(ShadowStatFs.BLOCK_SIZE));
+        assertThat(statsFs.getBlockCount()).isEqualTo(100);
+        assertThat(statsFs.getFreeBlocks()).isEqualTo(20);
+        assertThat(statsFs.getAvailableBlocks()).isEqualTo(10);
+        assertThat(statsFs.getBlockSize()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
     }
 
     @Test
     public void shouldResetStateBetweenTests() throws Exception {
         StatFs statsFs = new StatFs("/tmp");
-        assertThat(statsFs.getBlockCount(), equalTo(0));
-        assertThat(statsFs.getFreeBlocks(), equalTo(0));
-        assertThat(statsFs.getAvailableBlocks(), equalTo(0));
-        assertThat(statsFs.getBlockSize(), equalTo(ShadowStatFs.BLOCK_SIZE));
+        assertThat(statsFs.getBlockCount()).isEqualTo(0);
+        assertThat(statsFs.getFreeBlocks()).isEqualTo(0);
+        assertThat(statsFs.getAvailableBlocks()).isEqualTo(0);
+        assertThat(statsFs.getBlockSize()).isEqualTo(ShadowStatFs.BLOCK_SIZE);
     }
 
     @Test
@@ -49,15 +49,15 @@ public class StatFsTest {
         ShadowStatFs.registerStats("/tmp", 100, 20, 10);
         StatFs statsFs = new StatFs("/tmp");
 
-        assertThat(statsFs.getBlockCount(), equalTo(100));
-        assertThat(statsFs.getFreeBlocks(), equalTo(20));
-        assertThat(statsFs.getAvailableBlocks(), equalTo(10));
+        assertThat(statsFs.getBlockCount()).isEqualTo(100);
+        assertThat(statsFs.getFreeBlocks()).isEqualTo(20);
+        assertThat(statsFs.getAvailableBlocks()).isEqualTo(10);
 
         ShadowStatFs.registerStats("/tmp", 3, 2, 1);
 
         statsFs.restat("/tmp");
-        assertThat(statsFs.getBlockCount(), equalTo(3));
-        assertThat(statsFs.getFreeBlocks(), equalTo(2));
-        assertThat(statsFs.getAvailableBlocks(), equalTo(1));
+        assertThat(statsFs.getBlockCount()).isEqualTo(3);
+        assertThat(statsFs.getFreeBlocks()).isEqualTo(2);
+        assertThat(statsFs.getAvailableBlocks()).isEqualTo(1);
     }
 }

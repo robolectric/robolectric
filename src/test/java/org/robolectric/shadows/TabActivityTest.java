@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TabActivityTest {
@@ -21,13 +21,13 @@ public class TabActivityTest {
         TabHost tabHost1 = activity.getTabHost();
         TabHost tabHost2 = activity.getTabHost();
 
-        assertThat(tabHost1, equalTo(tabHost2));
+        assertThat(tabHost1).isEqualTo(tabHost2);
     }
 
     @Test
     public void shouldGetTabWidget() throws Exception {
         TabActivity activity = new TabActivity();
         activity.setContentView(R.layout.tab_activity);
-        assertThat(activity.getTabWidget(), instanceOf(TabWidget.class));
+        assertThat(activity.getTabWidget()).isInstanceOf(TabWidget.class);
     }
 }

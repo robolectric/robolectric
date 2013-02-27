@@ -18,7 +18,7 @@ import java.util.List;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DialogPreferenceTest {
@@ -47,20 +47,20 @@ public class DialogPreferenceTest {
 
         preference = new TestDialogPreference(context, attrs, defStyle);
         shadow = Robolectric.shadowOf(preference);
-        assertThat(shadow.getContext(), sameInstance(context));
-        assertThat(shadow.getAttrs(), sameInstance((AttributeSet) attrs));
-        assertThat(shadow.getDefStyle(), equalTo(defStyle));
+        assertThat(shadow.getContext()).isSameAs(context);
+        assertThat(shadow.getAttrs()).isSameAs((AttributeSet) attrs);
+        assertThat(shadow.getDefStyle()).isEqualTo(defStyle);
 
         preference = new TestDialogPreference(context, attrs);
         shadow = Robolectric.shadowOf(preference);
-        assertThat(shadow.getContext(), sameInstance(context));
-        assertThat(shadow.getAttrs(), sameInstance((AttributeSet) attrs));
-        assertThat(shadow.getDefStyle(), equalTo(0));
+        assertThat(shadow.getContext()).isSameAs(context);
+        assertThat(shadow.getAttrs()).isSameAs((AttributeSet) attrs);
+        assertThat(shadow.getDefStyle()).isEqualTo(0);
     }
 
     @Test
     public void testGetDialogMessage() {
-        assertThat((String) preference.getDialogMessage(), equalTo(TEST_DIALOG_MESSAGE));
+        assertThat((String) preference.getDialogMessage()).isEqualTo(TEST_DIALOG_MESSAGE);
     }
 
     protected static class TestDialogPreference extends DialogPreference {

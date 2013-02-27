@@ -14,7 +14,7 @@ import java.sql.Statement;
 
 import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLiteStatementTest {
@@ -46,44 +46,44 @@ public class SQLiteStatementTest {
         insertStatement.bindLong(2, 1);
         long pkeyTwo = insertStatement.executeInsert();
 
-        assertThat(pkeyOne, equalTo(1L));
-        assertThat(pkeyTwo, equalTo(2L));
+        assertThat(pkeyOne).isEqualTo(1L);
+        assertThat(pkeyTwo).isEqualTo(2L);
 
         Statement statement = shadowOf(database).getConnection().createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM `routine`");
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getInt(1), equalTo(2));
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getInt(1)).isEqualTo(2);
 
         statement = shadowOf(database).getConnection().createStatement();
         resultSet = statement.executeQuery("SELECT `id`, `name` ,`lastUsed` FROM `routine`");
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getInt(1), equalTo(1));
-        assertThat(resultSet.getString(2), equalTo("Leg Press"));
-        assertThat(resultSet.getInt(3), equalTo(0));
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getLong(1), equalTo(2L));
-        assertThat(resultSet.getString(2), equalTo("Bench Press"));
-        assertThat(resultSet.getInt(3), equalTo(1));
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getInt(1)).isEqualTo(1);
+        assertThat(resultSet.getString(2)).isEqualTo("Leg Press");
+        assertThat(resultSet.getInt(3)).isEqualTo(0);
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getLong(1)).isEqualTo(2L);
+        assertThat(resultSet.getString(2)).isEqualTo("Bench Press");
+        assertThat(resultSet.getInt(3)).isEqualTo(1);
     }
 
     @Test
     public void simpleQueryTest() throws Exception {
 
         SQLiteStatement stmt = database.compileStatement("SELECT count(*) FROM `countme`");
-        assertThat(stmt.simpleQueryForLong(), equalTo(0L));
-        assertThat(stmt.simpleQueryForString(), equalTo("0"));
+        assertThat(stmt.simpleQueryForLong()).isEqualTo(0L);
+        assertThat(stmt.simpleQueryForString()).isEqualTo("0");
 
         SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `countme` (`name` ,`lastUsed` ) VALUES (?,?)");
         insertStatement.bindString(1, "Leg Press");
         insertStatement.bindLong(2, 0);
         insertStatement.executeInsert();
-        assertThat(stmt.simpleQueryForLong(), equalTo(1L));
-        assertThat(stmt.simpleQueryForString(), equalTo("1"));
+        assertThat(stmt.simpleQueryForLong()).isEqualTo(1L);
+        assertThat(stmt.simpleQueryForString()).isEqualTo("1");
         insertStatement.bindString(1, "Bench Press");
         insertStatement.bindLong(2, 1);
         insertStatement.executeInsert();
-        assertThat(stmt.simpleQueryForLong(), equalTo(2L));
-        assertThat(stmt.simpleQueryForString(), equalTo("2"));
+        assertThat(stmt.simpleQueryForLong()).isEqualTo(2L);
+        assertThat(stmt.simpleQueryForString()).isEqualTo("2");
     }
 
     @Test(expected = SQLiteDoneException.class)
@@ -91,14 +91,14 @@ public class SQLiteStatementTest {
         //throw SQLiteDOneException if no rows returned.
         SQLiteStatement stmt = database.compileStatement("SELECT * FROM `countme` where `name`= 'cessationoftime'");
 
-        assertThat(stmt.simpleQueryForString(), equalTo("0"));
+        assertThat(stmt.simpleQueryForString()).isEqualTo("0");
     }
 
     @Test(expected = SQLiteDoneException.class)
     public void simpleQueryForLongThrowsSQLiteDoneExceptionTest() throws Exception {
         //throw SQLiteDOneException if no rows returned.
         SQLiteStatement stmt = database.compileStatement("SELECT * FROM `countme` where `name`= 'cessationoftime'");
-        assertThat(stmt.simpleQueryForLong(), equalTo(0L));
+        assertThat(stmt.simpleQueryForLong()).isEqualTo(0L);
 
     }
 }

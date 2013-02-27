@@ -15,7 +15,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TelephonyManagerTest {
@@ -35,9 +35,9 @@ public class TelephonyManagerTest {
 	@Test
 	public void testListen() {
 		manager.listen(listener, PhoneStateListener.LISTEN_CALL_STATE);
-		assertThat(shadowManager.getListener(), notNullValue());
-		assertThat((MyPhoneStateListener) shadowManager.getListener(), sameInstance(listener));
-		assertThat(shadowManager.getEventFlags(), equalTo(PhoneStateListener.LISTEN_CALL_STATE));
+        assertThat(shadowManager.getListener()).isNotNull();
+        assertThat((MyPhoneStateListener) shadowManager.getListener()).isSameAs(listener);
+        assertThat(shadowManager.getEventFlags()).isEqualTo(PhoneStateListener.LISTEN_CALL_STATE);
 	}
 
     @Test

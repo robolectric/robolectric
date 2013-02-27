@@ -5,17 +5,15 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.widget.EditText;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
 import java.util.Random;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anyInt;
 import static org.mockito.Matchers.eq;
@@ -40,7 +38,7 @@ public class EditTextTest {
 
         editText.setText(excessiveInput);
 
-        assertThat(editText.getText().toString(), equalTo(excessiveInput.subSequence(0, maxLength)));
+        assertThat((CharSequence) editText.getText().toString()).isEqualTo(excessiveInput.subSequence(0, maxLength));
     }
 
     @Test
@@ -51,7 +49,7 @@ public class EditTextTest {
 
         editText.setText(input);
 
-        assertThat(editText.getText().toString(), equalTo(input));
+        assertThat(editText.getText().toString()).isEqualTo(input);
     }
 
     @Test
@@ -61,7 +59,7 @@ public class EditTextTest {
 
         editText.setText(input);
 
-        assertThat(editText.getText().toString(), equalTo(input));
+        assertThat(editText.getText().toString()).isEqualTo(input);
     }
 
     @Test
@@ -72,8 +70,8 @@ public class EditTextTest {
         editText.selectAll();
 
         ShadowTextView shadowTextView = Robolectric.shadowOf(editText);
-        assertThat(shadowTextView.getSelectionStart(), is(0));
-        assertThat(shadowTextView.getSelectionEnd(), is(2));
+        assertThat(shadowTextView.getSelectionStart()).isEqualTo(0);
+        assertThat(shadowTextView.getSelectionEnd()).isEqualTo(2);
     }
 
     private String anyString() {
@@ -110,6 +108,6 @@ public class EditTextTest {
         Context context = new Activity();
         LayoutInflater inflater = LayoutInflater.from(context);
         EditText editText = (EditText) inflater.inflate(R.layout.edit_text, null);
-        assertThat(editText.getHint().toString(), equalTo("Hello, Hint"));
+        assertThat(editText.getHint().toString()).isEqualTo("Hello, Hint");
     }
 }

@@ -1,20 +1,17 @@
 package org.robolectric.shadows;
 
-import java.util.concurrent.TimeUnit;
-
-import org.robolectric.TestRunners;
+import android.os.AsyncTask;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import android.os.AsyncTask;
-
 import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 import org.robolectric.util.Join;
 import org.robolectric.util.Transcript;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import java.util.concurrent.TimeUnit;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -107,17 +104,17 @@ public class AsyncTaskTest {
     public void executeReturnsAsyncTask() throws Exception {
         Robolectric.getBackgroundScheduler().unPause();
         AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
-        assertThat(asyncTask.execute("a", "b").get(), equalTo("c"));
+        assertThat(asyncTask.execute("a", "b").get()).isEqualTo("c");
     }
 
     @Test
     public void shouldGetStatusForAsyncTask() throws Exception {
         AsyncTask<String, String, String> asyncTask = new MyAsyncTask();
-        assertThat(asyncTask.getStatus(), is(AsyncTask.Status.PENDING));
+        assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.PENDING);
         asyncTask.execute("a");
-        assertThat(asyncTask.getStatus(), is(AsyncTask.Status.RUNNING));
+        assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.RUNNING);
         Robolectric.getBackgroundScheduler().unPause();
-        assertThat(asyncTask.getStatus(), is(AsyncTask.Status.FINISHED));
+        assertThat(asyncTask.getStatus()).isEqualTo(AsyncTask.Status.FINISHED);
     }
 
     private class MyAsyncTask extends AsyncTask<String, String, String> {

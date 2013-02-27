@@ -14,7 +14,7 @@ import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class HtmlTest {
@@ -29,14 +29,14 @@ public class HtmlTest {
     public void shouldBeAbleToGetTextFromTextViewAfterUsingSetTextWithHtmlDotFromHtml() throws Exception {
         TextView textView = new TextView(context);
         textView.setText(Html.fromHtml("<b>some</b> html text"));
-        assertThat(textView.getText().toString(), equalTo("<b>some</b> html text"));
+        assertThat(textView.getText().toString()).isEqualTo("<b>some</b> html text");
     }
 
     @Test
     public void shouldBeAbleToGetTextFromEditTextAfterUsingSetTextWithHtmlDotFromHtml() throws Exception {
         EditText editText = new EditText(context);
         editText.setText(Html.fromHtml("<b>some</b> html text"));
-        assertThat(editText.getText().toString(), equalTo("<b>some</b> html text"));
+        assertThat(editText.getText().toString()).isEqualTo("<b>some</b> html text");
     }
 
     @Test(expected = NullPointerException.class)

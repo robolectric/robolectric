@@ -1,22 +1,17 @@
 package org.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import android.database.AbstractCursor;
+import android.net.Uri;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.robolectric.TestRunners;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
-import android.database.AbstractCursor;
-import android.net.Uri;
-
-import org.robolectric.Robolectric;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AbstractCursorTest {
@@ -31,29 +26,29 @@ public class AbstractCursorTest {
     @Test
     public void testMoveToFirst() {
         cursor.theTable.add("Foobar");
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.getCount(), equalTo(1));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.getCount()).isEqualTo(1);
     }
 
     @Test
     public void testMoveToFirstEmptyList() {
-        assertThat(cursor.moveToFirst(), equalTo(false));
-        assertThat(cursor.getCount(), equalTo(0));
+        assertThat(cursor.moveToFirst()).isFalse();
+        assertThat(cursor.getCount()).isEqualTo(0);
     }
     
     @Test
     public void testMoveToLast() {
         cursor.theTable.add("Foobar");
         cursor.theTable.add("Bletch");
-    	
-        assertThat(cursor.moveToLast(), equalTo(true));
-        assertThat(cursor.getCount(), equalTo(2));
+
+        assertThat(cursor.moveToLast()).isTrue();
+        assertThat(cursor.getCount()).isEqualTo(2);
     }
 
     @Test
     public void testMoveToLastEmptyList() {
-        assertThat(cursor.moveToLast(), equalTo(false));
-        assertThat(cursor.getCount(), equalTo(0));
+        assertThat(cursor.moveToLast()).isFalse();
+        assertThat(cursor.getCount()).isEqualTo(0);
     }
     
     @Test
@@ -61,25 +56,25 @@ public class AbstractCursorTest {
         cursor.theTable.add("Foobar");
         cursor.theTable.add("Bletch");
 
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.getCount(), equalTo(2));
-        assertThat(cursor.getPosition(), equalTo(0));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.getCount()).isEqualTo(2);
+        assertThat(cursor.getPosition()).isEqualTo(0);
     }
 
     @Test
     public void testGetPositionSingleEntry() {
         cursor.theTable.add("Foobar");
 
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.getCount(), equalTo(1));
-        assertThat(cursor.getPosition(), equalTo(0));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.getCount()).isEqualTo(1);
+        assertThat(cursor.getPosition()).isEqualTo(0);
     }
 
     @Test
     public void testGetPositionEmptyList() {
-        assertThat(cursor.moveToFirst(), equalTo(false));
-        assertThat(cursor.getCount(), equalTo(0));
-        assertThat(cursor.getPosition(), equalTo(0));
+        assertThat(cursor.moveToFirst()).isFalse();
+        assertThat(cursor.getCount()).isEqualTo(0);
+        assertThat(cursor.getPosition()).isEqualTo(0);
     }
 
     @Test
@@ -87,10 +82,10 @@ public class AbstractCursorTest {
         cursor.theTable.add("Foobar");
         cursor.theTable.add("Bletch");
 
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.getCount(), equalTo(2));
-        assertThat(cursor.moveToNext(), equalTo(true));
-        assertThat(cursor.getPosition(), equalTo(1));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.getCount()).isEqualTo(2);
+        assertThat(cursor.moveToNext()).isTrue();
+        assertThat(cursor.getPosition()).isEqualTo(1);
     }
 
     @Test
@@ -98,132 +93,132 @@ public class AbstractCursorTest {
         cursor.theTable.add("Foobar");
         cursor.theTable.add("Bletch");
 
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.getCount(), equalTo(2));
-        assertThat(cursor.moveToNext(), equalTo(true));
-        assertThat(cursor.getPosition(), equalTo(1));
-        assertThat(cursor.isLast(), equalTo(true));
-        assertThat(cursor.moveToNext(), equalTo(false));
-        assertThat(cursor.isAfterLast(), equalTo(true));
-        assertThat(cursor.getPosition(), equalTo(2));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.getCount()).isEqualTo(2);
+        assertThat(cursor.moveToNext()).isTrue();
+        assertThat(cursor.getPosition()).isEqualTo(1);
+        assertThat(cursor.isLast()).isTrue();
+        assertThat(cursor.moveToNext()).isFalse();
+        assertThat(cursor.isAfterLast()).isTrue();
+        assertThat(cursor.getPosition()).isEqualTo(2);
     }
 
     @Test
     public void testAttemptToMovePastSingleEntry() {
         cursor.theTable.add("Foobar");
 
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.getCount(), equalTo(1));
-        assertThat(cursor.moveToNext(), equalTo(false));
-        assertThat(cursor.getPosition(), equalTo(1));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.getCount()).isEqualTo(1);
+        assertThat(cursor.moveToNext()).isFalse();
+        assertThat(cursor.getPosition()).isEqualTo(1);
     }
 
     @Test
     public void testAttemptToMovePastEmptyList() {
-        assertThat(cursor.moveToFirst(), equalTo(false));
-        assertThat(cursor.getCount(), equalTo(0));
-        assertThat(cursor.moveToNext(), equalTo(false));
-        assertThat(cursor.getPosition(), equalTo(0));
+        assertThat(cursor.moveToFirst()).isFalse();
+        assertThat(cursor.getCount()).isEqualTo(0);
+        assertThat(cursor.moveToNext()).isFalse();
+        assertThat(cursor.getPosition()).isEqualTo(0);
     }
     
     @Test
     public void testMoveToPrevious() {
         cursor.theTable.add("Foobar");
         cursor.theTable.add("Bletch");
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.moveToNext(), equalTo(true));
-        assertThat(cursor.getPosition(), equalTo(1));
-        assertThat(cursor.moveToPrevious(), equalTo(true));
-        assertThat(cursor.getPosition(), equalTo(0));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.moveToNext()).isTrue();
+        assertThat(cursor.getPosition()).isEqualTo(1);
+        assertThat(cursor.moveToPrevious()).isTrue();
+        assertThat(cursor.getPosition()).isEqualTo(0);
     }
     
     @Test
     public void testAttemptToMovePastStart() {
         cursor.theTable.add("Foobar");
         cursor.theTable.add("Bletch");
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.moveToPrevious(), equalTo(true));
-        assertThat(cursor.getPosition(), equalTo(-1));
-        assertThat(cursor.moveToPrevious(), equalTo(false));
-        assertThat(cursor.getPosition(), equalTo(-1));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.moveToPrevious()).isTrue();
+        assertThat(cursor.getPosition()).isEqualTo(-1);
+        assertThat(cursor.moveToPrevious()).isFalse();
+        assertThat(cursor.getPosition()).isEqualTo(-1);
     }
 
     @Test
     public void testIsFirst() {
         cursor.theTable.add("Foobar");
         cursor.theTable.add("Bletch");
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.isFirst(), equalTo(true));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.isFirst()).isTrue();
         cursor.moveToNext();
-        assertThat(cursor.isFirst(), equalTo(false));     
+        assertThat(cursor.isFirst()).isFalse();
         cursor.moveToFirst();
         cursor.moveToPrevious();
-        assertThat(cursor.isFirst(), equalTo(false));
+        assertThat(cursor.isFirst()).isFalse();
     }
 
     @Test
     public void testIsLast() {
         cursor.theTable.add("Foobar");
         cursor.theTable.add("Bletch");
-        assertThat(cursor.moveToFirst(), equalTo(true));
+        assertThat(cursor.moveToFirst()).isTrue();
         cursor.moveToNext();
-        assertThat(cursor.isLast(), equalTo(true));
+        assertThat(cursor.isLast()).isTrue();
         cursor.moveToPrevious();
-        assertThat(cursor.isLast(), equalTo(false));     
+        assertThat(cursor.isLast()).isFalse();
         cursor.moveToFirst();
         cursor.moveToNext();
-        assertThat(cursor.isLast(), equalTo(true));   	
+        assertThat(cursor.isLast()).isTrue();
     }
     
     @Test
     public void testIsBeforeFirst() {
         cursor.theTable.add("Foobar");
         cursor.theTable.add("Bletch");
-        assertThat(cursor.moveToFirst(), equalTo(true));
+        assertThat(cursor.moveToFirst()).isTrue();
         cursor.moveToNext();
-        assertThat(cursor.isLast(), equalTo(true));
+        assertThat(cursor.isLast()).isTrue();
         cursor.moveToPrevious();
-        assertThat(cursor.isLast(), equalTo(false));     
+        assertThat(cursor.isLast()).isFalse();
         cursor.moveToPrevious();
-        assertThat(cursor.isFirst(), equalTo(false));
+        assertThat(cursor.isFirst()).isFalse();
         cursor.moveToPrevious();
-        assertThat(cursor.isBeforeFirst(), equalTo(true));   	
+        assertThat(cursor.isBeforeFirst()).isTrue();
     }
     
     @Test
     public void testIsAfterLast() {
         cursor.theTable.add("Foobar");
         cursor.theTable.add("Bletch");
-        assertThat(cursor.moveToFirst(), equalTo(true));
+        assertThat(cursor.moveToFirst()).isTrue();
         cursor.moveToNext();
-        assertThat(cursor.isLast(), equalTo(true));
+        assertThat(cursor.isLast()).isTrue();
         cursor.moveToNext();
-        assertThat(cursor.isAfterLast(), equalTo(true));
+        assertThat(cursor.isAfterLast()).isTrue();
         cursor.moveToPrevious();
-        assertThat(cursor.isLast(), equalTo(true));
+        assertThat(cursor.isLast()).isTrue();
         cursor.moveToPrevious();
-        assertThat(cursor.isLast(), equalTo(false));
+        assertThat(cursor.isLast()).isFalse();
         cursor.moveToFirst();
         cursor.moveToNext();
-        assertThat(cursor.isAfterLast(), equalTo(false));
+        assertThat(cursor.isAfterLast()).isFalse();
         cursor.moveToNext();
-        assertThat(cursor.isAfterLast(), equalTo(true));    	
+        assertThat(cursor.isAfterLast()).isTrue();
     }
 
     @Test
     public void testGetNotificationUri() {
         Uri uri = Uri.parse("content://foo.com");
         ShadowAbstractCursor shadow = Robolectric.shadowOf_(cursor);
-        assertThat(shadow.getNotificationUri_Compatibility(), is(nullValue()));
+        assertThat(shadow.getNotificationUri_Compatibility()).isNull();
         cursor.setNotificationUri(null, uri);
-        assertThat(shadow.getNotificationUri_Compatibility(), is(uri));
+        assertThat(shadow.getNotificationUri_Compatibility()).isEqualTo(uri);
     }
 
 	@Test
 	public void testIsClosedWhenAfterCallingClose() {
-		assertThat(cursor.isClosed(), equalTo(false));
+        assertThat(cursor.isClosed()).isFalse();
 		cursor.close();
-		assertThat(cursor.isClosed(), equalTo(true));
+        assertThat(cursor.isClosed()).isTrue();
 	}
 
     private class TestCursor extends AbstractCursor {

@@ -13,7 +13,7 @@ import java.io.File;
 import java.io.FileWriter;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -37,7 +37,7 @@ public class ShadowTypefaceTest {
     @Test
     public void canAnswerAssetUsedDuringCreation() throws Exception {
         Typeface typeface = Typeface.createFromAsset(Robolectric.application.getAssets(), "myFont.ttf");
-        assertThat(shadowOf(typeface).getAssetPath(), equalTo("myFont.ttf"));
+        assertThat(shadowOf(typeface).getAssetPath()).isEqualTo("myFont.ttf");
     }
 
     @Test(expected = RuntimeException.class)

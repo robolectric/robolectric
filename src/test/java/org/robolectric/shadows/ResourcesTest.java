@@ -21,11 +21,9 @@ import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.ResourceLoader;
 import org.xmlpull.v1.XmlPullParser;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
-
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ResourcesTest {
@@ -49,18 +47,18 @@ public class ResourcesTest {
     @Test
     public void testConfiguration() {
         Configuration configuration = resources.getConfiguration();
-        assertThat(configuration, notNullValue());
-        assertThat(configuration.locale, notNullValue());
+        assertThat(configuration).isNotNull();
+        assertThat(configuration.locale).isNotNull();
     }
 
     @Test
     public void testConfigurationReturnsTheSameInstance() {
-        assertThat(resources.getConfiguration(), is(resources.getConfiguration()));
+        assertThat(resources.getConfiguration()).isSameAs(resources.getConfiguration());
     }
 
     @Test
     public void testNewTheme() {
-        assertThat(resources.newTheme(), notNullValue());
+        assertThat(resources.newTheme()).isNotNull();
     }
 
     @Test
@@ -79,7 +77,7 @@ public class ResourcesTest {
         resources = new Resources(null, null, null);
         ShadowResources.bind(resources, resourceLoader);
 
-        assertThat(resources.getDrawable(-12345), instanceOf(BitmapDrawable.class));
+        assertThat(resources.getDrawable(-12345)).isInstanceOf(BitmapDrawable.class);
     }
 
     /**
@@ -87,14 +85,14 @@ public class ResourcesTest {
      */
     @Test
     public void testGetAnimationDrawable() {
-        assertThat(resources.getDrawable(R.anim.test_anim_1), instanceOf(AnimationDrawable.class));
+        assertThat(resources.getDrawable(R.anim.test_anim_1)).isInstanceOf(AnimationDrawable.class);
     }
 
     @Test
     @Values(qualifiers = "fr")
     public void testGetValuesResFromSpecifiecQualifiers() {
         String hello = resources.getString(R.string.hello);
-        assertThat(hello, equalTo("Bonjour"));
+        assertThat(hello).isEqualTo("Bonjour");
     }
 
     /**
@@ -102,7 +100,7 @@ public class ResourcesTest {
      */
     @Test
     public void testGetColorDrawable() {
-        assertThat(resources.getDrawable(R.color.test_color_1), instanceOf(ColorDrawable.class));
+        assertThat(resources.getDrawable(R.color.test_color_1)).isInstanceOf(ColorDrawable.class);
     }
 
     /**
@@ -110,7 +108,7 @@ public class ResourcesTest {
      */
     @Test
     public void testGetColor() {
-        assertThat(resources.getColor(R.color.test_color_1), not(0));
+        assertThat(resources.getColor(R.color.test_color_1)).isNotEqualTo(0);
     }
 
     /**
@@ -118,7 +116,7 @@ public class ResourcesTest {
      */
     @Test
     public void testGetColorStateList() {
-        assertThat(resources.getColorStateList(R.color.test_color_1), instanceOf(ColorStateList.class));
+        assertThat(resources.getColorStateList(R.color.test_color_1)).isInstanceOf(ColorStateList.class);
     }
 
     /**
@@ -126,7 +124,7 @@ public class ResourcesTest {
      */
     @Test
     public void testGetBitmapDrawable() {
-        assertThat(resources.getDrawable(R.drawable.test_drawable_1), instanceOf(BitmapDrawable.class));
+        assertThat(resources.getDrawable(R.drawable.test_drawable_1)).isInstanceOf(BitmapDrawable.class);
     }
 
     /**
@@ -134,67 +132,65 @@ public class ResourcesTest {
      */
     @Test
     public void testGetNinePatchDrawable() {
-        assertThat(Robolectric.getShadowApplication().getResources().getDrawable(R.drawable.nine_patch_drawable),
-                instanceOf(NinePatchDrawable.class));
+        assertThat(Robolectric.getShadowApplication().getResources().getDrawable(R.drawable.nine_patch_drawable)).isInstanceOf(NinePatchDrawable.class);
     }
 
     @Test(expected = Resources.NotFoundException.class)
     public void testGetBitmapDrawableForUnknownId() {
-        assertThat(resources.getDrawable(Integer.MAX_VALUE), instanceOf(BitmapDrawable.class));
+        assertThat(resources.getDrawable(Integer.MAX_VALUE)).isInstanceOf(BitmapDrawable.class);
     }
 
     @Test
     public void testDensity() {
         Activity activity = new Activity();
-        assertThat(activity.getResources().getDisplayMetrics().density, equalTo(1f));
+        assertThat(activity.getResources().getDisplayMetrics().density).isEqualTo(1f);
 
         shadowOf(activity.getResources()).setDensity(1.5f);
-        assertThat(activity.getResources().getDisplayMetrics().density, equalTo(1.5f));
+        assertThat(activity.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
 
         Activity anotherActivity = new Activity();
-        assertThat(anotherActivity.getResources().getDisplayMetrics().density, equalTo(1.5f));
+        assertThat(anotherActivity.getResources().getDisplayMetrics().density).isEqualTo(1.5f);
     }
 
     @Test
     public void displayMetricsShouldNotHaveLotsOfZeros() throws Exception {
         Activity activity = new Activity();
-        assertThat(activity.getResources().getDisplayMetrics().heightPixels, equalTo(800));
-        assertThat(activity.getResources().getDisplayMetrics().widthPixels, equalTo(480));
+        assertThat(activity.getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
+        assertThat(activity.getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
     }
 
     @Test
     public void getSystemShouldReturnSystemResources() throws Exception {
-        assertThat(Resources.getSystem(), instanceOf(Resources.class));
+        assertThat(Resources.getSystem()).isInstanceOf(Resources.class);
     }
 
     @Test
     public void multipleCallsToGetSystemShouldReturnSameInstance() throws Exception {
-        assertThat(Resources.getSystem(), equalTo(Resources.getSystem()));
+        assertThat(Resources.getSystem()).isEqualTo(Resources.getSystem());
     }
 
     @Test
     public void applicationResourcesShouldHaveBothSystemAndLocalValues() throws Exception {
         Activity activity = new Activity();
-        assertThat(activity.getResources().getString(android.R.string.copy), equalTo("Copy"));
-        assertThat(activity.getResources().getString(R.string.copy), equalTo("Local Copy"));
+        assertThat(activity.getResources().getString(android.R.string.copy)).isEqualTo("Copy");
+        assertThat(activity.getResources().getString(R.string.copy)).isEqualTo("Local Copy");
     }
 
     @Ignore // todo fix
     @Test
     public void systemResourcesShouldHaveSystemValuesOnly() throws Exception {
-        assertThat(Resources.getSystem().getString(android.R.string.copy), equalTo("Copy"));
-        assertThat(Resources.getSystem().getString(R.string.copy), nullValue());
+        assertThat(Resources.getSystem().getString(android.R.string.copy)).isEqualTo("Copy");
+        assertThat(Resources.getSystem().getString(R.string.copy)).isNull();
     }
 
     @Test
     public void systemResourcesShouldReturnCorrectSystemId() throws Exception {
-        assertThat(Resources.getSystem().getIdentifier("copy", "android:string", null),
-                equalTo(android.R.string.copy));
+        assertThat(Resources.getSystem().getIdentifier("copy", "android:string", null)).isEqualTo(android.R.string.copy);
     }
 
     @Test
     public void systemResourcesShouldReturnZeroForLocalId() throws Exception {
-        assertThat(Resources.getSystem().getIdentifier("copy", "string", null), equalTo(0));
+        assertThat(Resources.getSystem().getIdentifier("copy", "string", null)).isEqualTo(0);
     }
 
     @Test
@@ -202,14 +198,14 @@ public class ResourcesTest {
         int resId = R.xml.preferences;
         XmlResourceParser parser = Robolectric.application.getResources().getXml(resId);
         // Assert that a resource file is returned
-        assertThat(parser, notNullValue());
+        assertThat(parser).isNotNull();
 
         // Assert that the resource file is the preference screen
         int event;
         do {
             event = parser.next();
         } while (event != XmlPullParser.START_TAG);
-        assertThat(parser.getName(), equalTo("PreferenceScreen"));
+        assertThat(parser.getName()).isEqualTo("PreferenceScreen");
     }
 
     @Test(expected = Resources.NotFoundException.class)

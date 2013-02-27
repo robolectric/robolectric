@@ -13,8 +13,8 @@ import org.junit.Test;
 import org.junit.internal.matchers.TypeSafeMatcher;
 import org.junit.runner.RunWith;
 
-import static org.robolectric.matchers.StartedServiceMatcher.createIntent;
 import static org.junit.Assert.assertThat;
+import static org.robolectric.matchers.StartedServiceMatcher.createIntent;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class StartedServiceMatcherTest {

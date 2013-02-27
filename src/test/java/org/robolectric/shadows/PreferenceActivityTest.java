@@ -5,7 +5,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.robolectric.TestRunners;
 import org.junit.Before;
@@ -32,30 +32,30 @@ public class PreferenceActivityTest {
     @Test
     public void shouldInitializeListViewInOnCreate() {
         shadow.callOnCreate(null);
-        assertThat(activity.getListView(), notNullValue());
+        assertThat(activity.getListView()).isNotNull();
     }
 
     @Test
     public void shouldInheritFromListActivity() {
-        assertThat(shadow, instanceOf(ShadowListActivity.class));
+        assertThat(shadow).isInstanceOf(ShadowListActivity.class);
     }
 
     @Test
     public void shouldNotInitializePreferenceScreen() {
-        assertThat(activity.getPreferenceScreen(), nullValue());
+        assertThat(activity.getPreferenceScreen()).isNull();
     }
 
     @Test
     public void shouldRecordPreferencesResourceId() {
-        assertThat(shadow.getPreferencesResId(), equalTo(-1));
+        assertThat(shadow.getPreferencesResId()).isEqualTo(-1);
         activity.addPreferencesFromResource(R.xml.preferences);
-        assertThat(shadow.getPreferencesResId(), equalTo(R.xml.preferences));
+        assertThat(shadow.getPreferencesResId()).isEqualTo(R.xml.preferences);
     }
 
     @Test
     public void shouldLoadPreferenceScreen() {
         activity.addPreferencesFromResource(R.xml.preferences);
-        assertThat(activity.getPreferenceScreen().getPreferenceCount(), equalTo(7));
+        assertThat(activity.getPreferenceScreen().getPreferenceCount()).isEqualTo(7);
     }
 
     @Test

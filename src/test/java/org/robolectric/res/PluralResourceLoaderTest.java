@@ -6,7 +6,7 @@ import org.junit.Test;
 
 import static org.robolectric.util.TestUtil.testResources;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 public class PluralResourceLoaderTest {
     private ResBundle<PluralResourceLoader.PluralRules> pluralRulesResBundle;
@@ -25,9 +25,9 @@ public class PluralResourceLoaderTest {
     public void testPluralsAreResolved() throws Exception {
         ResName resName = new ResName(TestUtil.TEST_PACKAGE, "plurals", "beer");
         PluralResourceLoader.PluralRules pluralRules = pluralRulesResBundle.getValue(resName, "").value;
-        assertThat(pluralRules.find(0).string, equalTo("@string/howdy"));
-        assertThat(pluralRules.find(1).string, equalTo("One beer"));
-        assertThat(pluralRules.find(2).string, equalTo("Two beers"));
-        assertThat(pluralRules.find(3).string, equalTo("%d beers, yay!"));
+        assertThat(pluralRules.find(0).string).isEqualTo("@string/howdy");
+        assertThat(pluralRules.find(1).string).isEqualTo("One beer");
+        assertThat(pluralRules.find(2).string).isEqualTo("Two beers");
+        assertThat(pluralRules.find(3).string).isEqualTo("%d beers, yay!");
     }
 }

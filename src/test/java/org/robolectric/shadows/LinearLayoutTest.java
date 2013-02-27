@@ -9,9 +9,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -30,7 +28,7 @@ public class LinearLayoutTest {
     public void getLayoutParams_shouldReturnLinearLayoutParams() throws Exception {
         ViewGroup.LayoutParams layoutParams =contextFreeLinearLayout.getLayoutParams();
 
-        assertThat(layoutParams, instanceOf(LinearLayout.LayoutParams.class));
+        assertThat(layoutParams).isInstanceOf(LinearLayout.LayoutParams.class);
     }
 
     @Test
@@ -44,17 +42,17 @@ public class LinearLayoutTest {
 
     @Test
     public void canAnswerOrientation() throws Exception {
-        assertThat(linearLayout.getOrientation(), equalTo(LinearLayout.HORIZONTAL));
+        assertThat(linearLayout.getOrientation()).isEqualTo(LinearLayout.HORIZONTAL);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
-        assertThat(linearLayout.getOrientation(), equalTo(LinearLayout.VERTICAL));
+        assertThat(linearLayout.getOrientation()).isEqualTo(LinearLayout.VERTICAL);
         linearLayout.setOrientation(LinearLayout.HORIZONTAL);
-        assertThat(linearLayout.getOrientation(), equalTo(LinearLayout.HORIZONTAL));
+        assertThat(linearLayout.getOrientation()).isEqualTo(LinearLayout.HORIZONTAL);
     }
 
     @Test
     public void canAnswerGravity() throws Exception {
-        assertThat(shadowOf(linearLayout).getGravity(), equalTo(Gravity.TOP | Gravity.START));
+        assertThat(shadowOf(linearLayout).getGravity()).isEqualTo(Gravity.TOP | Gravity.START);
         linearLayout.setGravity(Gravity.CENTER_VERTICAL);
-        assertThat(shadowOf(linearLayout).getGravity(), equalTo(Gravity.CENTER_VERTICAL));
+        assertThat(shadowOf(linearLayout).getGravity()).isEqualTo(Gravity.CENTER_VERTICAL);
     }
 }

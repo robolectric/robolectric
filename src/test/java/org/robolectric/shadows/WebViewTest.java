@@ -13,12 +13,8 @@ import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertEquals;
 import static junit.framework.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -36,51 +32,51 @@ public class WebViewTest {
     @Test
     public void shouldRecordLastLoadedUrl() {
         webView.loadUrl("http://example.com");
-        assertThat(shadowOf(webView).getLastLoadedUrl(), equalTo("http://example.com"));
+        assertThat(shadowOf(webView).getLastLoadedUrl()).isEqualTo("http://example.com");
     }
 
     @Test
     public void shouldRecordLastLoadedData() {
         webView.loadData("<html><body><h1>Hi</h1></body></html>", "text/html", "utf-8");
         ShadowWebView.LoadData lastLoadData = shadowOf(webView).getLastLoadData();
-        assertThat(lastLoadData.data, equalTo("<html><body><h1>Hi</h1></body></html>"));
-        assertThat(lastLoadData.mimeType, equalTo("text/html"));
-        assertThat(lastLoadData.encoding, equalTo("utf-8"));
+        assertThat(lastLoadData.data).isEqualTo("<html><body><h1>Hi</h1></body></html>");
+        assertThat(lastLoadData.mimeType).isEqualTo("text/html");
+        assertThat(lastLoadData.encoding).isEqualTo("utf-8");
     }
 
     @Test
     public void shouldRecordLastLoadDataWithBaseURL() throws Exception {
         webView.loadDataWithBaseURL("base/url", "<html><body><h1>Hi</h1></body></html>", "text/html", "utf-8", "history/url");
         ShadowWebView.LoadDataWithBaseURL lastLoadData = shadowOf(webView).getLastLoadDataWithBaseURL();
-        assertThat(lastLoadData.baseUrl, equalTo("base/url"));
-        assertThat(lastLoadData.data, equalTo("<html><body><h1>Hi</h1></body></html>"));
-        assertThat(lastLoadData.mimeType, equalTo("text/html"));
-        assertThat(lastLoadData.encoding, equalTo("utf-8"));
-        assertThat(lastLoadData.historyUrl, equalTo("history/url"));
+        assertThat(lastLoadData.baseUrl).isEqualTo("base/url");
+        assertThat(lastLoadData.data).isEqualTo("<html><body><h1>Hi</h1></body></html>");
+        assertThat(lastLoadData.mimeType).isEqualTo("text/html");
+        assertThat(lastLoadData.encoding).isEqualTo("utf-8");
+        assertThat(lastLoadData.historyUrl).isEqualTo("history/url");
     }
 
     @Test
     public void shouldReturnSettings() {
         WebSettings webSettings = webView.getSettings();
 
-        assertThat(webSettings, notNullValue());
+        assertThat(webSettings).isNotNull();
     }
 
     @Test
     public void shouldRecordWebViewClient() {
         WebViewClient webViewClient = new WebViewClient();
 
-        assertThat(shadowWebView.getWebViewClient(), nullValue());
+        assertThat(shadowWebView.getWebViewClient()).isNull();
         webView.setWebViewClient(webViewClient);
-        assertThat(shadowWebView.getWebViewClient(), sameInstance(webViewClient));
+        assertThat(shadowWebView.getWebViewClient()).isSameAs(webViewClient);
     }
 
     @Test
     public void shouldRecordWebChromeClient() {
         WebChromeClient webChromeClient = new WebChromeClient();
-        assertThat(shadowWebView.getWebChromeClient(), nullValue());
+        assertThat(shadowWebView.getWebChromeClient()).isNull();
         webView.setWebChromeClient(webChromeClient);
-        assertThat(shadowWebView.getWebChromeClient(), sameInstance(webChromeClient));
+        assertThat(shadowWebView.getWebChromeClient()).isSameAs(webChromeClient);
     }
     
     @Test
@@ -91,10 +87,10 @@ public class WebViewTest {
 				;
 			}
 		};
-		
-		assertThat(shadowWebView.getPictureListener(), nullValue());
+
+        assertThat(shadowWebView.getPictureListener()).isNull();
 		webView.setPictureListener(pictureListener);
-		assertThat(shadowWebView.getPictureListener(), sameInstance(pictureListener));
+        assertThat(shadowWebView.getPictureListener()).isSameAs(pictureListener);
     }
 
     @Test
@@ -102,9 +98,9 @@ public class WebViewTest {
         String[] names = {"name1", "name2"};
         for (String name : names) {
             Object obj = new Object();
-            assertThat(shadowWebView.getJavascriptInterface(name), nullValue());
+            assertThat(shadowWebView.getJavascriptInterface(name)).isNull();
             webView.addJavascriptInterface(obj, name);
-            assertThat(shadowWebView.getJavascriptInterface(name), sameInstance(obj));
+            assertThat(shadowWebView.getJavascriptInterface(name)).isSameAs(obj);
         }
     }
 
@@ -116,9 +112,9 @@ public class WebViewTest {
                 return;
             }
         };
-        assertThat(shadowWebView.getRunFlag(), equalTo(false));
+        assertThat(shadowWebView.getRunFlag()).isFalse();
         shadowWebView.post(testRun);
-        assertThat(shadowWebView.getRunFlag(), equalTo(true));
+        assertThat(shadowWebView.getRunFlag()).isTrue();
     }
 
     @Test
@@ -141,61 +137,61 @@ public class WebViewTest {
 
     @Test
     public void shouldRecordClearCacheWithoutDiskFiles() {
-        assertThat(shadowWebView.wasClearCacheCalled(), equalTo(false));
+        assertThat(shadowWebView.wasClearCacheCalled()).isFalse();
 
         webView.clearCache(false);
-        assertThat(shadowWebView.wasClearCacheCalled(), equalTo(true));
-        assertThat(shadowWebView.didClearCacheIncludeDiskFiles(), equalTo(false));
+        assertThat(shadowWebView.wasClearCacheCalled()).isTrue();
+        assertThat(shadowWebView.didClearCacheIncludeDiskFiles()).isFalse();
     }
 
     @Test
     public void shouldRecordClearCacheWithDiskFiles() {
-        assertThat(shadowWebView.wasClearCacheCalled(), equalTo(false));
+        assertThat(shadowWebView.wasClearCacheCalled()).isFalse();
 
         webView.clearCache(true);
-        assertThat(shadowWebView.wasClearCacheCalled(), equalTo(true));
-        assertThat(shadowWebView.didClearCacheIncludeDiskFiles(), equalTo(true));
+        assertThat(shadowWebView.wasClearCacheCalled()).isTrue();
+        assertThat(shadowWebView.didClearCacheIncludeDiskFiles()).isTrue();
     }
 
     @Test
     public void shouldRecordClearFormData() {
-        assertThat(shadowWebView.wasClearFormDataCalled(), equalTo(false));
+        assertThat(shadowWebView.wasClearFormDataCalled()).isFalse();
         webView.clearFormData();
-        assertThat(shadowWebView.wasClearFormDataCalled(), equalTo(true));
+        assertThat(shadowWebView.wasClearFormDataCalled()).isTrue();
     }
 
     @Test
     public void shouldRecordClearHistory() {
-        assertThat(shadowWebView.wasClearHistoryCalled(), equalTo(false));
+        assertThat(shadowWebView.wasClearHistoryCalled()).isFalse();
         webView.clearHistory();
-        assertThat(shadowWebView.wasClearHistoryCalled(), equalTo(true));
+        assertThat(shadowWebView.wasClearHistoryCalled()).isTrue();
     }
 
     @Test
     public void shouldRecordClearView() {
-        assertThat(shadowWebView.wasClearViewCalled(), equalTo(false));
+        assertThat(shadowWebView.wasClearViewCalled()).isFalse();
         webView.clearView();
-        assertThat(shadowWebView.wasClearViewCalled(), equalTo(true));
+        assertThat(shadowWebView.wasClearViewCalled()).isTrue();
     }
 
     @Test
     public void shouldRecordDestroy() {
-        assertThat(shadowWebView.wasDestroyCalled(), equalTo(false));
+        assertThat(shadowWebView.wasDestroyCalled()).isFalse();
         webView.destroy();
-        assertThat(shadowWebView.wasDestroyCalled(), equalTo(true));
+        assertThat(shadowWebView.wasDestroyCalled()).isTrue();
     }
     
     @Test
     public void shouldRecordOnPause() {
-    	assertThat( shadowWebView.wasOnPauseCalled(), equalTo(false));
+        assertThat(shadowWebView.wasOnPauseCalled()).isFalse();
     	webView.onPause();
-    	assertThat( shadowWebView.wasOnPauseCalled(), equalTo(true));
+        assertThat(shadowWebView.wasOnPauseCalled()).isTrue();
     }
     
     @Test
     public void shouldRecordOnResume() {
-    	assertThat( shadowWebView.wasOnResumeCalled(), equalTo(false));
+        assertThat(shadowWebView.wasOnResumeCalled()).isFalse();
     	webView.onResume();
-    	assertThat( shadowWebView.wasOnResumeCalled(), equalTo(true));
+        assertThat(shadowWebView.wasOnResumeCalled()).isTrue();
     }
 }

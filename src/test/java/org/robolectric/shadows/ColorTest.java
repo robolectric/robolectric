@@ -7,20 +7,20 @@ import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ColorTest {
     @Test
     public void testRgb() {
         int color = Color.rgb(160, 160, 160);
-        assertThat(color, is(-6250336));
+        assertThat(color).isEqualTo(-6250336);
     }
     
     @Test
     public void testArgb() {
         int color = Color.argb(100, 160, 160, 160);
-        assertThat(color, is(1688248480));
+        assertThat(color).isEqualTo(1688248480);
     }
 
     @Test

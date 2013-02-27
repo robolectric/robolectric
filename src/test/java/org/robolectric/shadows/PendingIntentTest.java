@@ -1,23 +1,18 @@
 package org.robolectric.shadows;
 
-import static org.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
-
-import org.robolectric.TestRunners;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.Context;
 import android.content.Intent;
 import android.content.IntentSender;
 import android.content.TestIntentSender;
-
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PendingIntentTest {
@@ -27,7 +22,7 @@ public class PendingIntentTest {
         PendingIntent service = PendingIntent.getService(null, 0, expectedIntent, 0);
 
         IntentSender intentSender = service.getIntentSender();
-        assertThat(expectedIntent, equalTo(((TestIntentSender) intentSender).intent));
+        assertThat(expectedIntent).isEqualTo(((TestIntentSender) intentSender).intent);
     }
 
     @Test
@@ -35,11 +30,11 @@ public class PendingIntentTest {
         Intent intent = new Intent();
         PendingIntent pendingIntent = PendingIntent.getBroadcast(Robolectric.application, 99, intent, 100);
         ShadowPendingIntent shadow = shadowOf(pendingIntent);
-        assertThat(shadow.isActivityIntent(), is(false));
-        assertThat(shadow.isBroadcastIntent(), is(true));
-        assertThat(shadow.isServiceIntent(), is(false));
-        assertThat(intent, equalTo(shadow.getSavedIntent()));
-        assertThat(Robolectric.application, equalTo(shadow.getSavedContext()));
+        assertThat(shadow.isActivityIntent()).isFalse();
+        assertThat(shadow.isBroadcastIntent()).isTrue();
+        assertThat(shadow.isServiceIntent()).isFalse();
+        assertThat(intent).isEqualTo(shadow.getSavedIntent());
+        assertThat((Context) Robolectric.application).isEqualTo(shadow.getSavedContext());
     }
 
     @Test
@@ -47,11 +42,11 @@ public class PendingIntentTest {
         Intent intent = new Intent();
         PendingIntent pendingIntent = PendingIntent.getActivity(Robolectric.application, 99, intent, 100);
         ShadowPendingIntent shadow = shadowOf(pendingIntent);
-        assertThat(shadow.isActivityIntent(), is(true));
-        assertThat(shadow.isBroadcastIntent(), is(false));
-        assertThat(shadow.isServiceIntent(), is(false));
-        assertThat(intent, equalTo(shadow.getSavedIntent()));
-        assertThat(Robolectric.application, equalTo(shadow.getSavedContext()));
+        assertThat(shadow.isActivityIntent()).isTrue();
+        assertThat(shadow.isBroadcastIntent()).isFalse();
+        assertThat(shadow.isServiceIntent()).isFalse();
+        assertThat(intent).isEqualTo(shadow.getSavedIntent());
+        assertThat((Context) Robolectric.application).isEqualTo(shadow.getSavedContext());
     }
     
     @Test
@@ -59,11 +54,11 @@ public class PendingIntentTest {
         Intent intent = new Intent();
         PendingIntent pendingIntent = PendingIntent.getService(Robolectric.application, 99, intent, 100);
         ShadowPendingIntent shadow = shadowOf(pendingIntent);
-        assertThat(shadow.isActivityIntent(), is(false));
-        assertThat(shadow.isBroadcastIntent(), is(false));
-        assertThat(shadow.isServiceIntent(), is(true));
-        assertThat(intent, equalTo(shadow.getSavedIntent()));
-        assertThat(Robolectric.application, equalTo(shadow.getSavedContext()));
+        assertThat(shadow.isActivityIntent()).isFalse();
+        assertThat(shadow.isBroadcastIntent()).isFalse();
+        assertThat(shadow.isServiceIntent()).isTrue();
+        assertThat(intent).isEqualTo(shadow.getSavedIntent());
+        assertThat((Context) Robolectric.application).isEqualTo(shadow.getSavedContext());
     }
     
     @Test
@@ -78,8 +73,8 @@ public class PendingIntentTest {
         forActivity.send(otherContext, 0, fillIntent);
         
         Intent i = shadowOf(otherContext).getNextStartedActivity();
-        assertThat(i, notNullValue());
-        assertThat(i, sameInstance(intent));
-        assertThat(i.getIntExtra("TEST", -1), equalTo(23));
+        assertThat(i).isNotNull();
+        assertThat(i).isSameAs(intent);
+        assertThat(i.getIntExtra("TEST", -1)).isEqualTo(23);
     }
 }

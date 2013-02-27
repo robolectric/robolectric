@@ -10,7 +10,7 @@ import static android.content.Context.KEYGUARD_SERVICE;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -20,10 +20,10 @@ public class KeyguardManagerTest {
 	public void testIsInRestrcitedInputMode() {
 		Activity activity = new Activity();
 		KeyguardManager mgr = ( KeyguardManager ) activity.getSystemService( KEYGUARD_SERVICE );
-		assertThat( mgr.inKeyguardRestrictedInputMode(), equalTo( false ) );
+        assertThat(mgr.inKeyguardRestrictedInputMode()).isFalse();
 		ShadowKeyguardManager shadowMgr = shadowOf(mgr);
 		shadowMgr.setinRestrictedInputMode( true );
-		assertThat( mgr.inKeyguardRestrictedInputMode(), equalTo( true ) );		
+        assertThat(mgr.inKeyguardRestrictedInputMode()).isTrue();
 	}
 
     @Test

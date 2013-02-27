@@ -8,7 +8,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
@@ -84,22 +84,22 @@ public class PowerManagerTest {
     @Test
     public void shouldLogLatestWakeLock() throws Exception {
     	ShadowPowerManager.reset();
-    	assertThat( shadowPowerManager.getLatestWakeLock(), nullValue() );
+        assertThat(shadowPowerManager.getLatestWakeLock()).isNull();
 
     	PowerManager.WakeLock lock = powerManager.newWakeLock(0, "TAG");
     	lock.acquire();
 
-    	assertThat( shadowPowerManager.getLatestWakeLock(), notNullValue() );
-    	assertThat( shadowPowerManager.getLatestWakeLock(), sameInstance( lock ) );
-    	assertThat( lock.isHeld(), equalTo(true) );
+        assertThat(shadowPowerManager.getLatestWakeLock()).isNotNull();
+        assertThat(shadowPowerManager.getLatestWakeLock()).isSameAs(lock);
+        assertThat(lock.isHeld()).isTrue();
     	
     	lock.release();
-    	
-    	assertThat( shadowPowerManager.getLatestWakeLock(), notNullValue() );
-    	assertThat( shadowPowerManager.getLatestWakeLock(), sameInstance( lock ) );
-    	assertThat( lock.isHeld(), equalTo(false) );
+
+        assertThat(shadowPowerManager.getLatestWakeLock()).isNotNull();
+        assertThat(shadowPowerManager.getLatestWakeLock()).isSameAs(lock);
+        assertThat(lock.isHeld()).isFalse();
     	
     	ShadowPowerManager.reset();
-    	assertThat( shadowPowerManager.getLatestWakeLock(), nullValue() );
+        assertThat(shadowPowerManager.getLatestWakeLock()).isNull();
     }
 }

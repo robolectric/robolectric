@@ -15,11 +15,13 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ListViewTest {
@@ -64,14 +66,14 @@ public class ListViewTest {
             listView.addHeaderView(new View(null));
             fail();
         } catch (java.lang.IllegalStateException exception) {
-            assertThat(exception.getMessage(), equalTo("Cannot add header view to list -- setAdapter has already been called"));
+            assertThat(exception.getMessage()).isEqualTo("Cannot add header view to list -- setAdapter has already been called");
         }
 
         try {
             listView.addHeaderView(new View(null), null, false);
             fail();
         } catch (java.lang.IllegalStateException exception) {
-            assertThat(exception.getMessage(), equalTo("Cannot add header view to list -- setAdapter has already been called"));
+            assertThat(exception.getMessage()).isEqualTo("Cannot add header view to list -- setAdapter has already been called");
         }
     }
 
@@ -89,16 +91,16 @@ public class ListViewTest {
         listView.addHeaderView(view1);
         listView.addHeaderView(view2, null, false);
         listView.addHeaderView(view3, null, false);
-        assertThat(listView.getHeaderViewsCount(), equalTo(4));
-        assertThat(shadowOf(listView).getHeaderViews().get(0), sameInstance(view0));
-        assertThat(shadowOf(listView).getHeaderViews().get(1), sameInstance(view1));
-        assertThat(shadowOf(listView).getHeaderViews().get(2), sameInstance(view2));
-        assertThat(shadowOf(listView).getHeaderViews().get(3), sameInstance(view3));
+        assertThat(listView.getHeaderViewsCount()).isEqualTo(4);
+        assertThat(shadowOf(listView).getHeaderViews().get(0)).isSameAs(view0);
+        assertThat(shadowOf(listView).getHeaderViews().get(1)).isSameAs(view1);
+        assertThat(shadowOf(listView).getHeaderViews().get(2)).isSameAs(view2);
+        assertThat(shadowOf(listView).getHeaderViews().get(3)).isSameAs(view3);
 
-        assertThat(listView.findViewById(0), notNullValue());
-        assertThat(listView.findViewById(1), notNullValue());
-        assertThat(listView.findViewById(2), notNullValue());
-        assertThat(listView.findViewById(3), notNullValue());
+        assertThat(listView.findViewById(0)).isNotNull();
+        assertThat(listView.findViewById(1)).isNotNull();
+        assertThat(listView.findViewById(2)).isNotNull();
+        assertThat(listView.findViewById(3)).isNotNull();
     }
 
     @Test
@@ -108,7 +110,7 @@ public class ListViewTest {
 
         listView.addHeaderView(view);
 
-        assertThat(listView.findViewById(42), is(view));
+        assertThat(listView.findViewById(42)).isSameAs(view);
     }
 
     @Test
@@ -118,7 +120,7 @@ public class ListViewTest {
             listView.addFooterView(new View(null));
             fail();
         } catch (java.lang.IllegalStateException exception) {
-            assertThat(exception.getMessage(), equalTo("Cannot add footer view to list -- setAdapter has already been called"));
+            assertThat(exception.getMessage()).isEqualTo("Cannot add footer view to list -- setAdapter has already been called");
 
         }
     }
@@ -129,8 +131,8 @@ public class ListViewTest {
         View view1 = new View(null);
         listView.addFooterView(view0);
         listView.addFooterView(view1);
-        assertThat(shadowOf(listView).getFooterViews().get(0), sameInstance(view0));
-        assertThat(shadowOf(listView).getFooterViews().get(1), sameInstance(view1));
+        assertThat(shadowOf(listView).getFooterViews().get(0)).isSameAs(view0);
+        assertThat(shadowOf(listView).getFooterViews().get(1)).isSameAs(view1);
     }
 
     @Test
@@ -140,7 +142,7 @@ public class ListViewTest {
 
         listView.addFooterView(view);
 
-        assertThat(listView.findViewById(42), is(view));
+        assertThat(listView.findViewById(42)).isSameAs(view);
     }
 
     @Test
@@ -152,9 +154,9 @@ public class ListViewTest {
 
         prepareListWithThreeItems();
 
-        assertThat(listView.getChildCount(), equalTo(5));
-        assertThat(listView.getChildAt(0), is(header));
-        assertThat(listView.getChildAt(4), is(footer));
+        assertThat(listView.getChildCount()).isEqualTo(5);
+        assertThat(listView.getChildAt(0)).isSameAs(header);
+        assertThat(listView.getChildAt(4)).isSameAs(footer);
     }
 
     @Test
@@ -165,14 +167,14 @@ public class ListViewTest {
 
         prepareListWithThreeItems();
 
-        assertThat(listView.getFooterViewsCount(), equalTo(2));
+        assertThat(listView.getFooterViewsCount()).isEqualTo(2);
     }
 
     @Test
     public void smoothScrollBy_shouldBeRecorded() throws Exception {
         listView.smoothScrollBy(42, 420);
-        assertThat(shadowOf(listView).getLastSmoothScrollByDistance(), equalTo(42));
-        assertThat(shadowOf(listView).getLastSmoothScrollByDuration(), equalTo(420));
+        assertThat(shadowOf(listView).getLastSmoothScrollByDistance()).isEqualTo(42);
+        assertThat(shadowOf(listView).getLastSmoothScrollByDuration()).isEqualTo(420);
     }
 
     @Test
@@ -202,13 +204,13 @@ public class ListViewTest {
     public void findItemContainingText_shouldFindChildByString() throws Exception {
         ShadowListView shadowListView = prepareListWithThreeItems();
         View item1 = shadowListView.findItemContainingText("Item 1");
-        assertThat(item1, sameInstance(listView.getChildAt(1)));
+        assertThat(item1).isSameAs(listView.getChildAt(1));
     }
 
     @Test
     public void findItemContainingText_shouldReturnNullIfNotFound() throws Exception {
         ShadowListView shadowListView = prepareListWithThreeItems();
-        assertThat(shadowListView.findItemContainingText("Non-existant item"), nullValue());
+        assertThat(shadowListView.findItemContainingText("Non-existant item")).isNull();
     }
 
     @Test
@@ -282,7 +284,7 @@ public class ListViewTest {
     public void testShouldBeAbleToTurnOffAutomaticRowUpdates() throws Exception {
         try {
             TranscriptAdapter adapter1 = new TranscriptAdapter();
-            assertThat(adapter1.getCount(), equalTo(1));
+            assertThat(adapter1.getCount()).isEqualTo(1);
             listView.setAdapter(adapter1);
             transcript.assertEventsSoFar("called getView");
             transcript.clear();
@@ -293,7 +295,7 @@ public class ListViewTest {
             ShadowAdapterView.automaticallyUpdateRowViews(false);
 
             TranscriptAdapter adapter2 = new TranscriptAdapter();
-            assertThat(adapter2.getCount(), equalTo(1));
+            assertThat(adapter2.getCount()).isEqualTo(1);
             listView.setAdapter(adapter2);
             adapter2.notifyDataSetChanged();
             transcript.assertNoEventsSoFar();
@@ -322,13 +324,13 @@ public class ListViewTest {
     public void getPositionForView_shouldReturnThePositionInTheListForTheView() throws Exception {
         prepareWithListAdapter();
         View childViewOfListItem = ((ViewGroup) listView.getChildAt(1)).getChildAt(0);
-        assertThat(listView.getPositionForView(childViewOfListItem), equalTo(1));
+        assertThat(listView.getPositionForView(childViewOfListItem)).isEqualTo(1);
     }
 
     @Test
     public void getPositionForView_shouldReturnInvalidPostionForViewThatIsNotFound() throws Exception {
         prepareWithListAdapter();
-        assertThat(listView.getPositionForView(new View(null)), equalTo(AdapterView.INVALID_POSITION));
+        assertThat(listView.getPositionForView(new View(null))).isEqualTo(AdapterView.INVALID_POSITION);
     }
 
     @Test
@@ -355,35 +357,35 @@ public class ListViewTest {
     @Test
     public void shouldRecordLatestCallToSmoothScrollToPostion() throws Exception {
         listView.smoothScrollToPosition(10);
-        assertThat(shadowOf(listView).getSmoothScrolledPosition(), equalTo(10));
+        assertThat(shadowOf(listView).getSmoothScrolledPosition()).isEqualTo(10);
     }
 
     @Test
     public void givenChoiceModeIsSingle_whenGettingCheckedItemPosition_thenReturnPosition() {
         prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemChecked();
 
-        assertThat(listView.getCheckedItemPosition(), is(checkedItemPosition));
+        assertThat(listView.getCheckedItemPosition()).isEqualTo(checkedItemPosition);
     }
 
     @Test
     public void givenChoiceModeIsMultiple_whenGettingCheckedItemPosition_thenReturnInvalidPosition() {
         prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemChecked();
 
-        assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
+        assertThat(listView.getCheckedItemPosition()).isEqualTo(ListView.INVALID_POSITION);
     }
 
     @Test
     public void givenChoiceModeIsNone_whenGettingCheckedItemPosition_thenReturnInvalidPosition() {
         prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_NONE);
 
-        assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
+        assertThat(listView.getCheckedItemPosition()).isEqualTo(ListView.INVALID_POSITION);
     }
 
     @Test
     public void givenNoItemsChecked_whenGettingCheckedItemOisition_thenReturnInvalidPosition() {
         prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE);
 
-        assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
+        assertThat(listView.getCheckedItemPosition()).isEqualTo(ListView.INVALID_POSITION);
     }
 
     @Test
@@ -392,14 +394,14 @@ public class ListViewTest {
 
         listView.setChoiceMode(ListView.CHOICE_MODE_NONE);
 
-        assertThat(listView.getCheckedItemPosition(), is(ListView.INVALID_POSITION));
+        assertThat(listView.getCheckedItemPosition()).isEqualTo(ListView.INVALID_POSITION);
     }
 
     @Test
     public void givenChoiceModeIsMultipleAndMultipleItemsAreChecked_whenGettingCheckedItemPositions_thenReturnCheckedPositions() {
         prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemsChecked();
 
-        assertThat(listView.getCheckedItemPositions(), equalTo(checkedItemPositions));
+        assertThat(listView.getCheckedItemPositions()).isEqualTo(checkedItemPositions);
     }
 
     @Test
@@ -408,7 +410,7 @@ public class ListViewTest {
         SparseBooleanArray expectedCheckedItemPositions = new SparseBooleanArray();
         expectedCheckedItemPositions.put(lastCheckedPosition, true);
 
-        assertThat(listView.getCheckedItemPositions(), equalTo(expectedCheckedItemPositions));
+        assertThat(listView.getCheckedItemPositions()).isEqualTo(expectedCheckedItemPositions);
     }
 
     @Test
@@ -425,7 +427,7 @@ public class ListViewTest {
 
         listView.performItemClick(null, positionToClick, 0);
 
-        assertThat(listView.getCheckedItemPosition(), equalTo(positionToClick));
+        assertThat(listView.getCheckedItemPosition()).isEqualTo(positionToClick);
     }
 
     @Test
@@ -434,7 +436,7 @@ public class ListViewTest {
 
         listView.performItemClick(null, checkedItemPosition, 0);
 
-        assertThat(listView.getCheckedItemPosition(), equalTo(checkedItemPosition));
+        assertThat(listView.getCheckedItemPosition()).isEqualTo(checkedItemPosition);
     }
 
     @Test
@@ -446,7 +448,7 @@ public class ListViewTest {
 
         listView.performItemClick(null, positionToClick, 0);
 
-        assertThat(listView.getCheckedItemPositions(), equalTo(expectedCheckedItemPositions));
+        assertThat(listView.getCheckedItemPositions()).isEqualTo(expectedCheckedItemPositions);
     }
 
     @Test

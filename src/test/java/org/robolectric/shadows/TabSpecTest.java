@@ -17,7 +17,7 @@ import org.junit.runner.RunWith;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TabSpecTest {
@@ -33,8 +33,8 @@ public class TabSpecTest {
         TabHost.TabSpec spec = new TabHost(null).newTabSpec("foo");
         View view = new View(null);
         TabHost.TabSpec self = spec.setIndicator(view);
-        assertThat(self, is(spec));
-        assertThat(shadowOf(spec).getIndicatorAsView(), is(view));
+        assertThat(self).isSameAs(spec);
+        assertThat(shadowOf(spec).getIndicatorAsView()).isSameAs(view);
     }
 
     @Test
@@ -42,8 +42,8 @@ public class TabSpecTest {
         TabHost.TabSpec spec = new TabHost(null).newTabSpec("foo");
         Intent intent = new Intent();
         TabHost.TabSpec self = spec.setContent(intent);
-        assertThat(self, is(spec));
-        assertThat(shadowOf(spec).getContentAsIntent(), is(intent));
+        assertThat(self).isSameAs(spec);
+        assertThat(shadowOf(spec).getContentAsIntent()).isSameAs(intent);
     }
     
    
@@ -53,17 +53,17 @@ public class TabSpecTest {
         TabHost.TabSpec spec = new TabHost(null).newTabSpec("foo")
         .setContent(R.layout.main).setIndicator("labelText");
 
-        assertThat(shadowOf(spec).getIndicatorLabel(), is("labelText"));
-        assertThat(shadowOf(spec).getText(), is("labelText"));
+        assertThat(shadowOf(spec).getIndicatorLabel()).isEqualTo("labelText");
+        assertThat(shadowOf(spec).getText()).isEqualTo("labelText");
     }
     @Test
     public void shouldGetAndSetTheIndicatorLabelAndIcon() throws Exception {
         TabHost.TabSpec spec = new TabHost(null).newTabSpec("foo")
         .setContent(R.layout.main).setIndicator("labelText",icon1);
 
-        assertThat(shadowOf(spec).getIndicatorLabel(), is("labelText"));
-        assertThat(shadowOf(spec).getText(), is("labelText"));
-        assertThat(shadowOf(spec).getIndicatorIcon(), is(icon1));
+        assertThat(shadowOf(spec).getIndicatorLabel()).isEqualTo("labelText");
+        assertThat(shadowOf(spec).getText()).isEqualTo("labelText");
+        assertThat(shadowOf(spec).getIndicatorIcon()).isSameAs(icon1);
     }
     
     @Test
@@ -81,7 +81,7 @@ public class TabSpecTest {
         TextView textView = (TextView) shadowFoo.getContentView();
 
 
-        assertThat(textView.getText().toString(), equalTo("The Text of Foo"));
+        assertThat(textView.getText().toString()).isEqualTo("The Text of Foo");
     }
     
     @Test
@@ -92,7 +92,7 @@ public class TabSpecTest {
 		ShadowTabSpec shadowFoo = shadowOf(foo);
         int viewId = shadowFoo.getContentViewId();
 
-        assertThat(viewId, equalTo(R.id.title));
+        assertThat(viewId).isEqualTo(R.id.title);
 }
     
     private class TestIcon extends Drawable {

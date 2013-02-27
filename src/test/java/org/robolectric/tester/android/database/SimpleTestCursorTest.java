@@ -13,7 +13,7 @@ import java.util.ArrayList;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -39,41 +39,41 @@ public class SimpleTestCursorTest {
     @Test
     public void doingQueryShouldMakeQueryParamsAvailable() throws Exception {
         contentResolver.query(uri, new String[]{"projection"}, "selection", new String[]{"selection"}, "sortOrder");
-        assertThat(cursor.uri, equalTo(uri));
-        assertThat(cursor.projection[0], equalTo("projection"));
-        assertThat(cursor.selection, equalTo("selection"));
-        assertThat(cursor.selectionArgs[0], equalTo("selection"));
-        assertThat(cursor.sortOrder, equalTo("sortOrder"));
+        assertThat(cursor.uri).isEqualTo(uri);
+        assertThat(cursor.projection[0]).isEqualTo("projection");
+        assertThat(cursor.selection).isEqualTo("selection");
+        assertThat(cursor.selectionArgs[0]).isEqualTo("selection");
+        assertThat(cursor.sortOrder).isEqualTo("sortOrder");
     }
 
     @Test
     public void canGetStringsAndLongs() throws Exception {
         cursor.setResults(new Object[][]{new Object[]{"aString", 1234L}});
-        assertThat(cursor.moveToNext(), equalTo(true));
-        assertThat(cursor.getString(cursor.getColumnIndex("stringColumn")), equalTo("aString"));
-        assertThat(cursor.getLong(cursor.getColumnIndex("longColumn")), equalTo(1234L));
+        assertThat(cursor.moveToNext()).isTrue();
+        assertThat(cursor.getString(cursor.getColumnIndex("stringColumn"))).isEqualTo("aString");
+        assertThat(cursor.getLong(cursor.getColumnIndex("longColumn"))).isEqualTo(1234L);
     }
 
     @Test
     public void moveToNextAdvancesToNextRow() throws Exception {
         cursor.setResults(new Object[][] { new Object[] { "aString", 1234L }, new Object[] { "anotherString", 5678L }});
-        assertThat(cursor.moveToNext(), equalTo(true));
-        assertThat(cursor.moveToNext(), equalTo(true));
-        assertThat(cursor.getString(cursor.getColumnIndex("stringColumn")), equalTo("anotherString"));
-        assertThat(cursor.getLong(cursor.getColumnIndex("longColumn")), equalTo(5678L));
+        assertThat(cursor.moveToNext()).isTrue();
+        assertThat(cursor.moveToNext()).isTrue();
+        assertThat(cursor.getString(cursor.getColumnIndex("stringColumn"))).isEqualTo("anotherString");
+        assertThat(cursor.getLong(cursor.getColumnIndex("longColumn"))).isEqualTo(5678L);
     }
 
     @Test
     public void closeIsRemembered() throws Exception {
         cursor.close();
-        assertThat(cursor.getCloseWasCalled(), equalTo(true));
+        assertThat(cursor.getCloseWasCalled()).isTrue();
     }
 
     @Test
     public void getColumnIndex(){
-        assertThat(cursor.getColumnIndex("invalidColumn"), is(-1));
-        assertThat(cursor.getColumnIndex("stringColumn"), is(0));
-        assertThat(cursor.getColumnIndexOrThrow("stringColumn"), is(0));
+        assertThat(cursor.getColumnIndex("invalidColumn")).isEqualTo(-1);
+        assertThat(cursor.getColumnIndex("stringColumn")).isEqualTo(0);
+        assertThat(cursor.getColumnIndexOrThrow("stringColumn")).isEqualTo(0);
         try{
             cursor.getColumnIndexOrThrow("invalidColumn");
             fail();

@@ -4,18 +4,17 @@ import android.graphics.Canvas;
 import android.graphics.ColorFilter;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 
-import static org.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertFalse;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DrawableTest {
@@ -46,7 +45,7 @@ public class DrawableTest {
     public void testCreateFromStream_shouldSetTheInputStreamOnTheReturnedDrawable() throws Exception {
         ByteArrayInputStream byteInputStream = new ByteArrayInputStream(new byte[0]);
         Drawable drawable = Drawable.createFromStream(byteInputStream, "src name");
-        assertThat(shadowOf(drawable).getInputStream(), equalTo((InputStream) byteInputStream));
+        assertThat(shadowOf(drawable).getInputStream()).isEqualTo((InputStream) byteInputStream);
     }
 
     @Test
@@ -55,10 +54,10 @@ public class DrawableTest {
         drawable.setBounds(1, 2, 3, 4);
         Rect r = new Rect();
         drawable.copyBounds(r);
-        assertThat(r.left, is(1));
-        assertThat(r.top, is(2));
-        assertThat(r.right, is(3));
-        assertThat(r.bottom, is(4));
+        assertThat(r.left).isEqualTo(1);
+        assertThat(r.top).isEqualTo(2);
+        assertThat(r.right).isEqualTo(3);
+        assertThat(r.bottom).isEqualTo(4);
     }
 
     @Test
@@ -66,10 +65,10 @@ public class DrawableTest {
         Drawable drawable = ShadowDrawable.createFromStream(new ByteArrayInputStream(new byte[0]), "my_source");
         drawable.setBounds(1, 2, 3, 4);
         Rect r = drawable.copyBounds();
-        assertThat(r.left, is(1));
-        assertThat(r.top, is(2));
-        assertThat(r.right, is(3));
-        assertThat(r.bottom, is(4));
+        assertThat(r.left).isEqualTo(1);
+        assertThat(r.top).isEqualTo(2);
+        assertThat(r.right).isEqualTo(3);
+        assertThat(r.bottom).isEqualTo(4);
     }
 
     @Test
@@ -82,7 +81,7 @@ public class DrawableTest {
     @Test
     public void testGetLoadedFromResourceId_shouldDefaultToNegativeOne() throws Exception {
         Drawable drawable = new TestDrawable();
-        assertThat(shadowOf(drawable).getLoadedFromResourceId(), is(-1));
+        assertThat(shadowOf(drawable).getLoadedFromResourceId()).isEqualTo(-1);
     }
 
     @Test
@@ -90,14 +89,14 @@ public class DrawableTest {
         Drawable drawable = new TestDrawable();
         ShadowDrawable shadowDrawable = shadowOf(drawable);
         shadowDrawable.setLoadedFromResourceId(99);
-        assertThat(shadowDrawable.getLoadedFromResourceId(), is(99));
+        assertThat(shadowDrawable.getLoadedFromResourceId()).isEqualTo(99);
     }
 
     @Test
     public void testCreateFromResourceId_shouldSetTheId() throws Exception {
         Drawable drawable = ShadowDrawable.createFromResourceId(34758);
         ShadowDrawable shadowDrawable = shadowOf(drawable);
-        assertThat(shadowDrawable.getLoadedFromResourceId(), is(34758));
+        assertThat(shadowDrawable.getLoadedFromResourceId()).isEqualTo(34758);
     }
 
     @Test

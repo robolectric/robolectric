@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 
 import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TranslateAnimationTest {
@@ -25,14 +25,14 @@ public class TranslateAnimationTest {
 
     @Test
     public void animationParametersFromConstructor() throws Exception {
-        assertThat(shadow.getFromXType(), equalTo(1));
-        assertThat(shadow.getFromXValue(), equalTo(2f));
-        assertThat(shadow.getToXType(), equalTo(3));
-        assertThat(shadow.getToXValue(), equalTo(4f));
-        assertThat(shadow.getFromYType(), equalTo(5));
-        assertThat(shadow.getFromYValue(), equalTo(6f));
-        assertThat(shadow.getToYType(), equalTo(7));
-        assertThat(shadow.getToYValue(), equalTo(8f));
+        assertThat(shadow.getFromXType()).isEqualTo(1);
+        assertThat(shadow.getFromXValue()).isEqualTo(2f);
+        assertThat(shadow.getToXType()).isEqualTo(3);
+        assertThat(shadow.getToXValue()).isEqualTo(4f);
+        assertThat(shadow.getFromYType()).isEqualTo(5);
+        assertThat(shadow.getFromYValue()).isEqualTo(6f);
+        assertThat(shadow.getToYType()).isEqualTo(7);
+        assertThat(shadow.getToYValue()).isEqualTo(8f);
     }
     
     @Test
@@ -40,13 +40,13 @@ public class TranslateAnimationTest {
     	TranslateAnimation animation2 = new TranslateAnimation(1, 2, 3, 4);
     	ShadowTranslateAnimation shadow2 = shadowOf(animation2);
     	int defType = Animation.ABSOLUTE;
-        assertThat(shadow2.getFromXType(), equalTo(defType));
-        assertThat(shadow2.getFromXValue(), equalTo(1f));
-        assertThat(shadow2.getToXType(), equalTo(defType));
-        assertThat(shadow2.getToXValue(), equalTo(2f));
-        assertThat(shadow2.getFromYType(), equalTo(defType));
-        assertThat(shadow2.getFromYValue(), equalTo(3f));
-        assertThat(shadow2.getToYType(), equalTo(defType));
-        assertThat(shadow2.getToYValue(), equalTo(4f));
+        assertThat(shadow2.getFromXType()).isEqualTo(defType);
+        assertThat(shadow2.getFromXValue()).isEqualTo(1f);
+        assertThat(shadow2.getToXType()).isEqualTo(defType);
+        assertThat(shadow2.getToXValue()).isEqualTo(2f);
+        assertThat(shadow2.getFromYType()).isEqualTo(defType);
+        assertThat(shadow2.getFromYValue()).isEqualTo(3f);
+        assertThat(shadow2.getToYType()).isEqualTo(defType);
+        assertThat(shadow2.getToYValue()).isEqualTo(4f);
     }
 }

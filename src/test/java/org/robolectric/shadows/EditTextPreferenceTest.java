@@ -2,7 +2,7 @@ package org.robolectric.shadows;
 
 import static junit.framework.Assert.assertNotNull;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.robolectric.TestRunners;
 import org.junit.Before;
@@ -37,7 +37,7 @@ public class EditTextPreferenceTest {
 	@Test
 	public void testSetText() {
 		preference.setText(SOME_TEXT);
-		assertThat((String) preference.getEditText().getText().toString(), equalTo(SOME_TEXT));
+        assertThat((String) preference.getEditText().getText().toString()).isEqualTo(SOME_TEXT);
 	}
 
 }

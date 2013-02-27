@@ -23,7 +23,7 @@ import org.robolectric.internal.Instrument;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 
-import static org.hamcrest.CoreMatchers.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.robolectric.Robolectric.bindShadowClass;
@@ -38,8 +38,8 @@ public class ShadowingTest {
 
         Context context = mock(Context.class);
         AccountManager.get(context);
-        assertThat(ShadowAccountManagerForTests.wasCalled, is(true));
-        assertThat(ShadowAccountManagerForTests.context, sameInstance(context));
+        assertThat(ShadowAccountManagerForTests.wasCalled).isTrue();
+        assertThat(ShadowAccountManagerForTests.context).isSameAs(context);
     }
 
     @Implements(AccountManager.class)
@@ -84,7 +84,7 @@ public class ShadowingTest {
         Paint paint = new Paint();
         paint.setColor(1234);
 
-        assertThat(paint.getColor(), is(1234));
+        assertThat(paint.getColor()).isEqualTo(1234);
     }
 
     @Implements(Paint.class)
@@ -115,8 +115,8 @@ public class ShadowingTest {
         Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
         ctor.setAccessible(true);
         ClassWithNoDefaultConstructor instance = ctor.newInstance();
-        assertThat(Robolectric.shadowOf_(instance), not(nullValue()));
-        assertThat(Robolectric.shadowOf_(instance), instanceOf(ShadowForClassWithNoDefaultConstructor.class));
+        assertThat(Robolectric.shadowOf_(instance)).isNotNull();
+        assertThat(Robolectric.shadowOf_(instance)).isInstanceOf(ShadowForClassWithNoDefaultConstructor.class);
         assertTrue(ShadowForClassWithNoDefaultConstructor.shadowDefaultConstructorCalled);
         assertFalse(ShadowForClassWithNoDefaultConstructor.shadowDefaultConstructorImplementorCalled);
     }
@@ -185,7 +185,7 @@ public class ShadowingTest {
         }
         assertNotNull(e);
         String message = e.getMessage().replaceAll("0x[0-9a-z]+", "0xXXXXXXXX");
-        assertThat(message, equalTo("expected to perform direct call on instance 0xXXXXXXXX of android.view.View but got instance 0xXXXXXXXX of android.view.View"));
+        assertThat(message).isEqualTo("expected to perform direct call on instance 0xXXXXXXXX of android.view.View but got instance 0xXXXXXXXX of android.view.View");
     }
 
     @Test
@@ -202,7 +202,7 @@ public class ShadowingTest {
         }
 
         assertNotNull(e);
-        assertThat(e.getMessage(), equalTo("expected to perform direct call on class android.view.View but got class android.widget.TextView"));
+        assertThat(e.getMessage()).isEqualTo("expected to perform direct call on class android.view.View but got class android.widget.TextView");
     }
 
     @Implements(TextView.class)
@@ -223,7 +223,7 @@ public class ShadowingTest {
             e = e1;
         }
         assertNotNull(e);
-        assertThat(e.getMessage(), equalTo("already expecting a direct call on <class android.view.View> but here's a new request for <class android.view.View>"));
+        assertThat(e.getMessage()).isEqualTo("already expecting a direct call on <class android.view.View> but here's a new request for <class android.view.View>");
     }
 
     @Test

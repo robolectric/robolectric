@@ -1,12 +1,10 @@
 package org.robolectric.res;
 
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.R;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.*;
 
 public class ResourceExtractorTest {
@@ -21,32 +19,32 @@ public class ResourceExtractorTest {
 
     @Test
     public void shouldHandleStyleable() throws Exception {
-        assertThat(ResName.getResourceId(resourceIndex, "id/textStyle", R.class.getPackage().getName()), equalTo(R.id.textStyle));
-        assertThat(ResName.getResourceId(resourceIndex, "styleable/TitleBar_textStyle", R.class.getPackage().getName()), CoreMatchers.<Object>nullValue());
+        assertThat(ResName.getResourceId(resourceIndex, "id/textStyle", R.class.getPackage().getName())).isEqualTo(R.id.textStyle);
+        assertThat(ResName.getResourceId(resourceIndex, "styleable/TitleBar_textStyle", R.class.getPackage().getName())).isNull();
     }
 
     @Test
     public void shouldPrefixResourcesWithPackageContext() throws Exception {
-        assertThat(ResName.getResourceId(resourceIndex, "id/text1", "android"), equalTo(android.R.id.text1));
-        assertThat(ResName.getResourceId(resourceIndex, "id/text1", R.class.getPackage().getName()), equalTo(R.id.text1));
+        assertThat(ResName.getResourceId(resourceIndex, "id/text1", "android")).isEqualTo(android.R.id.text1);
+        assertThat(ResName.getResourceId(resourceIndex, "id/text1", R.class.getPackage().getName())).isEqualTo(R.id.text1);
     }
 
     @Test
     public void shouldPrefixAllSystemResourcesWithAndroid() throws Exception {
-        assertThat(ResName.getResourceId(resourceIndex, "android:id/text1", "android"), equalTo(android.R.id.text1));
+        assertThat(ResName.getResourceId(resourceIndex, "android:id/text1", "android")).isEqualTo(android.R.id.text1);
     }
 
     @Test
     public void shouldHandleNull() throws Exception {
-        assertThat(ResName.getResourceId(resourceIndex, "@null", ""), equalTo(0));
-        assertThat(ResName.getResourceId(resourceIndex, "@null", "android"), equalTo(0));
-        assertThat(ResName.getResourceId(resourceIndex, "@null", "anything"), equalTo(0));
+        assertThat(ResName.getResourceId(resourceIndex, "@null", "")).isEqualTo(0);
+        assertThat(ResName.getResourceId(resourceIndex, "@null", "android")).isEqualTo(0);
+        assertThat(ResName.getResourceId(resourceIndex, "@null", "anything")).isEqualTo(0);
     }
 
     @Test
     public void shouldRetainPackageNameForFullyQualifiedQueries() throws Exception {
-        assertThat(resourceIndex.getResName(android.R.id.text1).getFullyQualifiedName(), equalTo("android:id/text1"));
-        assertThat(resourceIndex.getResName(R.id.burritos).getFullyQualifiedName(), equalTo("org.robolectric:id/burritos"));
+        assertThat(resourceIndex.getResName(android.R.id.text1).getFullyQualifiedName()).isEqualTo("android:id/text1");
+        assertThat(resourceIndex.getResName(R.id.burritos).getFullyQualifiedName()).isEqualTo("org.robolectric:id/burritos");
     }
 
     @Test
@@ -59,9 +57,9 @@ public class ResourceExtractorTest {
                 new ResourceExtractor(lib3Resources()));
         resourceIndex = new MergedResourceIndex(overlayResourceIndex, new ResourceExtractor(systemResources()));
 
-        assertThat(resourceIndex.getResourceId(new ResName("org.robolectric", "string", "in_all_libs")), equalTo(R.string.in_all_libs));
-        assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib1", "string", "in_all_libs")), equalTo(R.string.in_all_libs));
-        assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib2", "string", "in_all_libs")), equalTo(R.string.in_all_libs));
-        assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib3", "string", "in_all_libs")), equalTo(R.string.in_all_libs));
+        assertThat(resourceIndex.getResourceId(new ResName("org.robolectric", "string", "in_all_libs"))).isEqualTo(R.string.in_all_libs);
+        assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib1", "string", "in_all_libs"))).isEqualTo(R.string.in_all_libs);
+        assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib2", "string", "in_all_libs"))).isEqualTo(R.string.in_all_libs);
+        assertThat(resourceIndex.getResourceId(new ResName("org.robolectric.lib3", "string", "in_all_libs"))).isEqualTo(R.string.in_all_libs);
     }
 }

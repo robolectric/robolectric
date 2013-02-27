@@ -8,9 +8,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -30,17 +28,17 @@ public class GalleryTest {
     @Test
     public void onKeyDown_dPadRightShouldTriggerKeyEventDPadRight() throws Exception {
         assertTrue(gallery.onKeyDown(KeyEvent.KEYCODE_DPAD_RIGHT, event));
-        assertThat(listener.keyCode, equalTo(KeyEvent.KEYCODE_DPAD_RIGHT));
-        assertThat((Gallery) listener.view, sameInstance(gallery));
-        assertThat(listener.event, sameInstance(event));
+        assertThat(listener.keyCode).isEqualTo(KeyEvent.KEYCODE_DPAD_RIGHT);
+        assertThat((Gallery) listener.view).isSameAs(gallery);
+        assertThat(listener.event).isSameAs(event);
     }
 
     @Test
     public void onKeyDown_dPadLeftShouldTriggerKeyEventListener() throws Exception {
         assertTrue(gallery.onKeyDown(KeyEvent.KEYCODE_DPAD_RIGHT, event));
-        assertThat(listener.keyCode, equalTo(KeyEvent.KEYCODE_DPAD_RIGHT));
-        assertThat((Gallery)listener.view, sameInstance(gallery));
-        assertThat(listener.event, sameInstance(event));
+        assertThat(listener.keyCode).isEqualTo(KeyEvent.KEYCODE_DPAD_RIGHT);
+        assertThat((Gallery) listener.view).isSameAs(gallery);
+        assertThat(listener.event).isSameAs(event);
     }
 
     private static class TestOnKeyListener implements View.OnKeyListener {

@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.robolectric.TestRunners;
 import org.junit.Before;
@@ -28,29 +28,29 @@ public class VibratorTest {
     @Test
     public void vibrateMilliseconds() {
         vibrator.vibrate(5000);
-        
-        assertThat(shadowVibrator.isVibrating(), is(true));
-        assertThat(shadowVibrator.getMilliseconds(), equalTo(5000L));
+
+        assertThat(shadowVibrator.isVibrating()).isTrue();
+        assertThat(shadowVibrator.getMilliseconds()).isEqualTo(5000L);
     }
     
     @Test
     public void vibratePattern() {
         long[] pattern = new long[] { 0, 200 };
         vibrator.vibrate(pattern, 2);
-        
-        assertThat(shadowVibrator.isVibrating(), is(true));
-        assertThat(shadowVibrator.getPattern(), equalTo(pattern));
-        assertThat(shadowVibrator.getRepeat(), equalTo(2));
+
+        assertThat(shadowVibrator.isVibrating()).isTrue();
+        assertThat(shadowVibrator.getPattern()).isEqualTo(pattern);
+        assertThat(shadowVibrator.getRepeat()).isEqualTo(2);
     }
     
     @Test
     public void cancelled() {
         vibrator.vibrate(5000);
-        assertThat(shadowVibrator.isVibrating(), is(true));
-        assertThat(shadowVibrator.isCancelled(), is(false));
+        assertThat(shadowVibrator.isVibrating()).isTrue();
+        assertThat(shadowVibrator.isCancelled()).isFalse();
         vibrator.cancel();
-        
-        assertThat(shadowVibrator.isVibrating(), is(false));
-        assertThat(shadowVibrator.isCancelled(), is(true));
+
+        assertThat(shadowVibrator.isVibrating()).isFalse();
+        assertThat(shadowVibrator.isCancelled()).isTrue();
     }
 }

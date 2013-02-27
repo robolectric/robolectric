@@ -5,25 +5,20 @@ import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiInfo;
 import android.net.wifi.WifiManager;
 import android.util.Pair;
-import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
 import java.util.ArrayList;
 import java.util.List;
 
 import static android.content.Context.WIFI_SERVICE;
+import static junit.framework.Assert.assertTrue;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.shadowOf;
-import static junit.framework.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class WifiManagerTest {
@@ -65,19 +60,19 @@ public class WifiManagerTest {
         int networkId = 666;
         wifiManager.enableNetwork(networkId, true);
         Pair<Integer, Boolean> lastEnabled = shadowWifiManager.getLastEnabledNetwork();
-        assertThat(lastEnabled, equalTo(new Pair<Integer, Boolean>(666, true)));
+        assertThat(lastEnabled).isEqualTo(new Pair<Integer, Boolean>(666, true));
 
         int anotherNetworkId = 777;
         wifiManager.enableNetwork(anotherNetworkId, false);
         lastEnabled = shadowWifiManager.getLastEnabledNetwork();
-        assertThat(lastEnabled, equalTo(new Pair<Integer, Boolean>(777, false)));
+        assertThat(lastEnabled).isEqualTo(new Pair<Integer, Boolean>(777, false));
     }
 
     @Test
     public void shouldReturnSetScanResults() throws Exception {
         List<ScanResult> scanResults = new ArrayList<ScanResult>();
         shadowWifiManager.setScanResults(scanResults);
-        assertThat(wifiManager.getScanResults(), sameInstance(scanResults));
+        assertThat(wifiManager.getScanResults()).isSameAs(scanResults);
     }
 
     @Test
@@ -85,15 +80,15 @@ public class WifiManagerTest {
         WifiConfiguration wifiConfiguration = new WifiConfiguration();
         wifiConfiguration.networkId = -1;
         int networkId = wifiManager.addNetwork(wifiConfiguration);
-        assertThat(networkId, equalTo(0));
-        assertThat(wifiManager.getConfiguredNetworks().get(0), not(sameInstance(wifiConfiguration)));
-        assertThat(wifiConfiguration.networkId, equalTo(-1));
-        assertThat(wifiManager.getConfiguredNetworks().get(0).networkId, equalTo(0));
+        assertThat(networkId).isEqualTo(0);
+        assertThat(wifiManager.getConfiguredNetworks().get(0)).isNotSameAs(wifiConfiguration);
+        assertThat(wifiConfiguration.networkId).isEqualTo(-1);
+        assertThat(wifiManager.getConfiguredNetworks().get(0).networkId).isEqualTo(0);
 
         WifiConfiguration anotherConfig = new WifiConfiguration();
-        assertThat(wifiManager.addNetwork(anotherConfig), equalTo(1));
-        assertThat(anotherConfig.networkId, equalTo(-1));
-        assertThat(wifiManager.getConfiguredNetworks().get(1).networkId, equalTo(1));
+        assertThat(wifiManager.addNetwork(anotherConfig)).isEqualTo(1);
+        assertThat(anotherConfig.networkId).isEqualTo(-1);
+        assertThat(wifiManager.getConfiguredNetworks().get(1).networkId).isEqualTo(1);
     }
 
     @Test
@@ -105,32 +100,32 @@ public class WifiManagerTest {
         WifiConfiguration anotherConfig = new WifiConfiguration();
         int networkId = wifiManager.addNetwork(anotherConfig);
 
-        assertThat(networkId, equalTo(1));
+        assertThat(networkId).isEqualTo(1);
         WifiConfiguration configuration = new WifiConfiguration();
         configuration.networkId = networkId;
         configuration.priority = 44;
 
-        assertThat(wifiManager.updateNetwork(configuration), equalTo(networkId));
+        assertThat(wifiManager.updateNetwork(configuration)).isEqualTo(networkId);
         List<WifiConfiguration> configuredNetworks = wifiManager.getConfiguredNetworks();
-        assertThat(configuredNetworks.size(), equalTo(2));
-        assertThat(configuration.priority, equalTo(44));
-        assertThat(configuredNetworks.get(1).priority, equalTo(44));
+        assertThat(configuredNetworks.size()).isEqualTo(2);
+        assertThat(configuration.priority).isEqualTo(44);
+        assertThat(configuredNetworks.get(1).priority).isEqualTo(44);
     }
 
     @Test
     public void updateNetwork_shouldRejectNullandNewConfigs() throws Exception {
         WifiConfiguration config = new WifiConfiguration();
         config.networkId = -1;
-        assertThat(wifiManager.updateNetwork(config), equalTo(-1));
-        assertThat(wifiManager.updateNetwork(null), equalTo(-1));
+        assertThat(wifiManager.updateNetwork(config)).isEqualTo(-1);
+        assertThat(wifiManager.updateNetwork(null)).isEqualTo(-1);
         assertTrue(wifiManager.getConfiguredNetworks().isEmpty());
     }
 
     @Test
     public void shouldSaveConfigurations() throws Exception {
         shadowWifiManager.wasSaved = false;
-        assertThat(wifiManager.saveConfiguration(), equalTo(true));
-        assertThat(shadowWifiManager.wasSaved, equalTo(true));
+        assertThat(wifiManager.saveConfiguration()).isTrue();
+        assertThat(shadowWifiManager.wasSaved).isTrue();
     }
 
     @Test

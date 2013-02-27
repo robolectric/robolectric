@@ -19,7 +19,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -36,44 +36,44 @@ public class ParcelTest {
 
     @Test
     public void testObtain() {
-        assertThat(parcel, notNullValue());
-        assertThat(shadowParcel.getIndex(), equalTo(0));
-        assertThat(shadowParcel.getParcelData().size(), equalTo(0));
+        assertThat(parcel).isNotNull();
+        assertThat(shadowParcel.getIndex()).isEqualTo(0);
+        assertThat(shadowParcel.getParcelData().size()).isEqualTo(0);
     }
 
     @Test
     public void testReadIntWhenEmpty() {
-        assertThat(parcel.readInt(), equalTo(0));
+        assertThat(parcel.readInt()).isEqualTo(0);
     }
 
     @Test
     public void testReadLongWhenEmpty() {
-        assertThat(parcel.readLong(), equalTo(0l));
+        assertThat(parcel.readLong()).isEqualTo(0l);
     }
 
     @Test
     public void testReadStringWhenEmpty() {
-        assertThat(parcel.readString(), nullValue());
+        assertThat(parcel.readString()).isNull();
     }
 
     @Test
     public void testReadStrongBinderWhenEmpty() {
-        assertThat(parcel.readStrongBinder(), nullValue());
+        assertThat(parcel.readStrongBinder()).isNull();
     }
 
     @Test
     public void testReadWriteSingleString() {
         String val = "test";
         parcel.writeString(val);
-        assertThat(parcel.readString(), equalTo(val));
+        assertThat(parcel.readString()).isEqualTo(val);
     }
 
     @Test
     public void testWriteNullString() {
         parcel.writeString(null);
-        assertThat(parcel.readString(), nullValue());
-        assertThat(shadowParcel.getIndex(), equalTo(0));
-        assertThat(shadowParcel.getParcelData().size(), equalTo(0));
+        assertThat(parcel.readString()).isNull();
+        assertThat(shadowParcel.getIndex()).isEqualTo(0);
+        assertThat(shadowParcel.getParcelData().size()).isEqualTo(0);
     }
 
     @Test
@@ -82,17 +82,17 @@ public class ParcelTest {
             parcel.writeString(Integer.toString(i));
         }
         for (int i = 0; i < 10; ++i) {
-            assertThat(parcel.readString(), equalTo(Integer.toString(i)));
+            assertThat(parcel.readString()).isEqualTo(Integer.toString(i));
         }
         // now try to read past the number of items written and see what happens
-        assertThat(parcel.readString(), nullValue());
+        assertThat(parcel.readString()).isNull();
     }
 
     @Test
     public void testReadWriteSingleInt() {
         int val = 5;
         parcel.writeInt(val);
-        assertThat(parcel.readInt(), equalTo(val));
+        assertThat(parcel.readInt()).isEqualTo(val);
     }
 
     @Test
@@ -117,7 +117,7 @@ public class ParcelTest {
     public void testReadWriteSingleFloat() {
         float val = 5.2f;
         parcel.writeFloat(val);
-        assertThat(parcel.readFloat(), equalTo(val));
+        assertThat(parcel.readFloat()).isEqualTo(val);
     }
 
     @Test
@@ -153,17 +153,17 @@ public class ParcelTest {
             parcel.writeInt(i);
         }
         for (int i = 0; i < 10; ++i) {
-            assertThat(parcel.readInt(), equalTo(i));
+            assertThat(parcel.readInt()).isEqualTo(i);
         }
         // now try to read past the number of items written and see what happens
-        assertThat(parcel.readInt(), equalTo(0));
+        assertThat(parcel.readInt()).isEqualTo(0);
     }
 
     @Test
     public void testReadWriteSingleByte() {
         byte val = 1;
         parcel.writeByte(val);
-        assertThat(parcel.readByte(), equalTo(val));
+        assertThat(parcel.readByte()).isEqualTo(val);
     }
 
     @Test
@@ -172,10 +172,10 @@ public class ParcelTest {
             parcel.writeByte(i);
         }
         for (byte i = Byte.MIN_VALUE; i < Byte.MAX_VALUE; ++i) {
-            assertThat(parcel.readByte(), equalTo(i));
+            assertThat(parcel.readByte()).isEqualTo(i);
         }
         // now try to read past the number of items written and see what happens
-        assertThat(parcel.readByte(), equalTo((byte) 0));
+        assertThat(parcel.readByte()).isEqualTo((byte) 0);
     }
 
 
@@ -186,12 +186,12 @@ public class ParcelTest {
             parcel.writeInt(i);
         }
         for (int i = 0; i < 10; ++i) {
-            assertThat(parcel.readString(), equalTo(Integer.toString(i)));
-            assertThat(parcel.readInt(), equalTo(i));
+            assertThat(parcel.readString()).isEqualTo(Integer.toString(i));
+            assertThat(parcel.readInt()).isEqualTo(i);
         }
         // now try to read past the number of items written and see what happens
-        assertThat(parcel.readString(), nullValue());
-        assertThat(parcel.readInt(), equalTo(0));
+        assertThat(parcel.readString()).isNull();
+        assertThat(parcel.readInt()).isEqualTo(0);
     }
 
     @Test(expected = ClassCastException.class)
@@ -212,7 +212,7 @@ public class ParcelTest {
     public void testReadWriteSingleLong() {
         long val = 5;
         parcel.writeLong(val);
-        assertThat(parcel.readLong(), equalTo(val));
+        assertThat(parcel.readLong()).isEqualTo(val);
     }
 
     @Test
@@ -221,10 +221,10 @@ public class ParcelTest {
             parcel.writeLong(i);
         }
         for (long i = 0; i < 10; ++i) {
-            assertThat(parcel.readLong(), equalTo(i));
+            assertThat(parcel.readLong()).isEqualTo(i);
         }
         // now try to read past the number of items written and see what happens
-        assertThat(parcel.readLong(), equalTo(0l));
+        assertThat(parcel.readLong()).isEqualTo(0l);
     }
 
     @Test
@@ -234,12 +234,12 @@ public class ParcelTest {
             parcel.writeLong(i);
         }
         for (long i = 0; i < 10; ++i) {
-            assertThat(parcel.readString(), equalTo(Long.toString(i)));
-            assertThat(parcel.readLong(), equalTo(i));
+            assertThat(parcel.readString()).isEqualTo(Long.toString(i));
+            assertThat(parcel.readLong()).isEqualTo(i);
         }
         // now try to read past the number of items written and see what happens
-        assertThat(parcel.readString(), nullValue());
-        assertThat(parcel.readLong(), equalTo(0l));
+        assertThat(parcel.readString()).isNull();
+        assertThat(parcel.readLong()).isEqualTo(0l);
     }
 
     @Test(expected = ClassCastException.class)

@@ -5,8 +5,7 @@ import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class UriTest {
@@ -14,12 +13,12 @@ public class UriTest {
     public void shouldParseUris() throws Exception {
         Uri testUri = Uri.parse("http://someplace.com:8080/a/path?param=value&another_param=another_value#top");
 
-        assertThat(testUri.getQuery(), equalTo("param=value&another_param=another_value"));
-        assertThat(testUri.getPort(), equalTo(8080));
-        assertThat(testUri.getAuthority(), equalTo("someplace.com:8080"));
-        assertThat(testUri.getHost(), equalTo("someplace.com"));
-        assertThat(testUri.getFragment(), equalTo("top"));
-        assertThat(testUri.getPath(), equalTo("/a/path"));
-        assertThat(testUri.getScheme(), equalTo("http"));
+        assertThat(testUri.getQuery()).isEqualTo("param=value&another_param=another_value");
+        assertThat(testUri.getPort()).isEqualTo(8080);
+        assertThat(testUri.getAuthority()).isEqualTo("someplace.com:8080");
+        assertThat(testUri.getHost()).isEqualTo("someplace.com");
+        assertThat(testUri.getFragment()).isEqualTo("top");
+        assertThat(testUri.getPath()).isEqualTo("/a/path");
+        assertThat(testUri.getScheme()).isEqualTo("http");
     }
 }

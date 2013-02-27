@@ -2,12 +2,11 @@ package org.robolectric.shadows;
 
 import android.text.format.Time;
 import android.util.TimeFormatException;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -16,7 +15,7 @@ public class TimeTest {
     public void shouldSetToNow() throws Exception {
         Time t = new Time();
         t.setToNow();
-        assertThat(t.toMillis(false), not(equalTo(0l)));
+        assertThat(t.toMillis(false)).isNotEqualTo(0l);
     }
 
     @Test

@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class CameraSizeTest {
@@ -24,22 +24,22 @@ public class CameraSizeTest {
 
     @Test
     public void testConstructor() throws Exception {
-        assertThat(cameraSize.width, equalTo(480));
-        assertThat(cameraSize.height, equalTo(320));
+        assertThat(cameraSize.width).isEqualTo(480);
+        assertThat(cameraSize.height).isEqualTo(320);
     }
 
     @Test
     public void testSetWidth() throws Exception {
-        assertThat(cameraSize.width, not(equalTo(640)));
+        assertThat(cameraSize.width).isNotEqualTo(640);
         cameraSize.width = 640;
-        assertThat(cameraSize.width, equalTo(640));
+        assertThat(cameraSize.width).isEqualTo(640);
     }
 
     @Test
     public void testSetHeight() throws Exception {
-        assertThat(cameraSize.height, not(equalTo(480)));
+        assertThat(cameraSize.height).isNotEqualTo(480);
         cameraSize.height = 480;
-        assertThat(cameraSize.height, equalTo(480));
+        assertThat(cameraSize.height).isEqualTo(480);
     }
 
 }

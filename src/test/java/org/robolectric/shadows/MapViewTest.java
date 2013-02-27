@@ -16,7 +16,7 @@ import static org.robolectric.shadows.ShadowMapView.toE6;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MapViewTest {
@@ -45,9 +45,9 @@ public class MapViewTest {
     public void shouldDispatchTouchEventsToOverlays() throws Exception {
         mapView.dispatchTouchEvent(sourceEvent);
 
-        assertThat(overlay1.lastMotionEvent, sameInstance(sourceEvent));
-        assertThat(overlay2.lastMotionEvent, nullValue());
-        assertThat(mapTouchListener.lastMotionEvent, nullValue());
+        assertThat(overlay1.lastMotionEvent).isSameAs(sourceEvent);
+        assertThat(overlay2.lastMotionEvent).isNull();
+        assertThat(mapTouchListener.lastMotionEvent).isNull();
     }
 
     @Test
@@ -57,9 +57,9 @@ public class MapViewTest {
 
         mapView.dispatchTouchEvent(sourceEvent);
 
-        assertThat(overlay1.lastMotionEvent, sameInstance(sourceEvent));
-        assertThat(overlay2.lastMotionEvent, sameInstance(sourceEvent));
-        assertThat(mapTouchListener.lastMotionEvent, nullValue());
+        assertThat(overlay1.lastMotionEvent).isSameAs(sourceEvent);
+        assertThat(overlay2.lastMotionEvent).isSameAs(sourceEvent);
+        assertThat(mapTouchListener.lastMotionEvent).isNull();
     }
 
     @Test
@@ -69,9 +69,9 @@ public class MapViewTest {
 
         mapView.dispatchTouchEvent(sourceEvent);
 
-        assertThat(overlay1.lastMotionEvent, sameInstance(sourceEvent));
-        assertThat(overlay2.lastMotionEvent, sameInstance(sourceEvent));
-        assertThat(mapTouchListener.lastMotionEvent, sameInstance(sourceEvent));
+        assertThat(overlay1.lastMotionEvent).isSameAs(sourceEvent);
+        assertThat(overlay2.lastMotionEvent).isSameAs(sourceEvent);
+        assertThat(mapTouchListener.lastMotionEvent).isSameAs(sourceEvent);
     }
 
     @Test
@@ -80,7 +80,7 @@ public class MapViewTest {
 
         dispatchTouchEvent(MotionEvent.ACTION_DOWN, 10, 10);
         dispatchTouchEvent(MotionEvent.ACTION_UP, 11, 11);
-        assertThat(mapView.getMapCenter(), equalTo(new GeoPoint(toE6(26), toE6(24))));
+        assertThat(mapView.getMapCenter()).isEqualTo(new GeoPoint(toE6(26), toE6(24)));
     }
 
     @Test
@@ -91,7 +91,7 @@ public class MapViewTest {
         dispatchTouchEvent(MotionEvent.ACTION_MOVE, 11, 11);
         dispatchTouchEvent(MotionEvent.ACTION_MOVE, 12, 12);
         dispatchTouchEvent(MotionEvent.ACTION_UP, 11, 11);
-        assertThat(mapView.getMapCenter(), equalTo(new GeoPoint(toE6(26), toE6(24))));
+        assertThat(mapView.getMapCenter()).isEqualTo(new GeoPoint(toE6(26), toE6(24)));
     }
 
     @Test
@@ -102,7 +102,7 @@ public class MapViewTest {
         dispatchTouchEvent(MotionEvent.ACTION_MOVE, 11, 11);
         dispatchTouchEvent(MotionEvent.ACTION_MOVE, 12, 12);
         dispatchTouchEvent(MotionEvent.ACTION_CANCEL, 11, 11);
-        assertThat(mapView.getMapCenter(), equalTo(new GeoPoint(toE6(25), toE6(25))));
+        assertThat(mapView.getMapCenter()).isEqualTo(new GeoPoint(toE6(25), toE6(25)));
     }
 
     private void initMapForDrag() {
@@ -123,12 +123,9 @@ public class MapViewTest {
         mapView.getController().zoomToSpan(toE6(spanLat), toE6(spanLng));
         mapView.layout(50, 60, 650, 460);
 
-        assertThat(mapView.getProjection().fromPixels(50, 60),
-                equalTo(new GeoPoint(toE6(21), toE6(1))));
-        assertThat(mapView.getProjection().fromPixels(350, 260),
-                equalTo(new GeoPoint(toE6(11), toE6(16))));
-        assertThat(mapView.getProjection().fromPixels(650, 460),
-                equalTo(new GeoPoint(toE6(1), toE6(31))));
+        assertThat(mapView.getProjection().fromPixels(50, 60)).isEqualTo(new GeoPoint(toE6(21), toE6(1)));
+        assertThat(mapView.getProjection().fromPixels(350, 260)).isEqualTo(new GeoPoint(toE6(11), toE6(16)));
+        assertThat(mapView.getProjection().fromPixels(650, 460)).isEqualTo(new GeoPoint(toE6(1), toE6(31)));
     }
 
     @Test
@@ -142,12 +139,9 @@ public class MapViewTest {
         mapView.getController().zoomToSpan(toE6(spanLat), toE6(spanLng));
         mapView.layout(50, 60, 650, 460);
 
-        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(21), toE6(1)), null),
-                equalTo(new Point(50, 60)));
-        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(11), toE6(16)), null),
-                equalTo(new Point(350, 260)));
-        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(1), toE6(31)), null),
-                equalTo(new Point(650, 460)));
+        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(21), toE6(1)), null)).isEqualTo(new Point(50, 60));
+        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(11), toE6(16)), null)).isEqualTo(new Point(350, 260));
+        assertThat(mapView.getProjection().toPixels(new GeoPoint(toE6(1), toE6(31)), null)).isEqualTo(new Point(650, 460));
     }
 
     private void dispatchTouchEvent(int action, int x, int y) {

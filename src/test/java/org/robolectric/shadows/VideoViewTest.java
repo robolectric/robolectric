@@ -1,10 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
-
 import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,6 +10,8 @@ import android.net.Uri;
 import android.widget.VideoView;
 
 import org.robolectric.Robolectric;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class VideoViewTest {
@@ -30,7 +27,7 @@ public class VideoViewTest {
     	TestPreparedListener l = new TestPreparedListener();
     	view.setOnPreparedListener(l);
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat((TestPreparedListener)(shadowVideoView.getOnPreparedListener()), sameInstance(l));
+        assertThat((TestPreparedListener) (shadowVideoView.getOnPreparedListener())).isSameAs(l);
     }
     
     @Test
@@ -38,7 +35,7 @@ public class VideoViewTest {
     	TestErrorListener l = new TestErrorListener();
     	view.setOnErrorListener(l);
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat((TestErrorListener)(shadowVideoView.getOnErrorListener()), sameInstance(l));
+        assertThat((TestErrorListener) (shadowVideoView.getOnErrorListener())).isSameAs(l);
     }
     
     @Test
@@ -46,48 +43,48 @@ public class VideoViewTest {
     	TestCompletionListener l = new TestCompletionListener();
     	view.setOnCompletionListener(l);
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat((TestCompletionListener)(shadowVideoView.getOnCompletionListener()), sameInstance(l));
+        assertThat((TestCompletionListener) (shadowVideoView.getOnCompletionListener())).isSameAs(l);
     }
     
     @Test
     public void shouldSetVideoPath() throws Exception {
     	view.setVideoPath("video.mp4");
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat(shadowVideoView.getVideoPath(), equalTo("video.mp4"));
+        assertThat(shadowVideoView.getVideoPath()).isEqualTo("video.mp4");
     	view.setVideoPath(null);
-    	assertThat(shadowVideoView.getVideoPath(), nullValue());
+        assertThat(shadowVideoView.getVideoPath()).isNull();
     }
     
     @Test
     public void shouldSetVideoURI() throws Exception {
     	view.setVideoURI(Uri.parse("video.mp4"));
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat(shadowVideoView.getVideoURIString(), equalTo("video.mp4"));
+        assertThat(shadowVideoView.getVideoURIString()).isEqualTo("video.mp4");
     	view.setVideoURI(null);
-    	assertThat(shadowVideoView.getVideoURIString(), nullValue());
+        assertThat(shadowVideoView.getVideoURIString()).isNull();
     }
     
     @Test
     public void shoulDetermineIsPlaying() throws Exception {
-    	assertThat(view.isPlaying(), equalTo(false));
+        assertThat(view.isPlaying()).isFalse();
     	view.start();
-    	assertThat(view.isPlaying(), equalTo(true));
+        assertThat(view.isPlaying()).isTrue();
     	view.stopPlayback();
-    	assertThat(view.isPlaying(), equalTo(false));
+        assertThat(view.isPlaying()).isFalse();
     }
     
     @Test
     public void shouldStartPlaying() throws Exception {
     	view.start();
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat(shadowVideoView.getCurrentVideoState(), equalTo(ShadowVideoView.START));
+        assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.START);
     }
     
     @Test
     public void shouldStopPlayback() throws Exception {
     	view.stopPlayback();
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat(shadowVideoView.getCurrentVideoState(), equalTo(ShadowVideoView.STOP));
+        assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.STOP);
     }
     
     @Test
@@ -95,8 +92,8 @@ public class VideoViewTest {
     	view.start();
     	view.suspend();
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat(shadowVideoView.getPrevVideoState(), equalTo(ShadowVideoView.START));
-    	assertThat(shadowVideoView.getCurrentVideoState(), equalTo(ShadowVideoView.SUSPEND));
+        assertThat(shadowVideoView.getPrevVideoState()).isEqualTo(ShadowVideoView.START);
+        assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.SUSPEND);
     }
     
     @Test
@@ -105,8 +102,8 @@ public class VideoViewTest {
     	view.suspend();
     	view.resume();
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat(shadowVideoView.getPrevVideoState(), equalTo(ShadowVideoView.SUSPEND));
-    	assertThat(shadowVideoView.getCurrentVideoState(), equalTo(ShadowVideoView.RESUME));
+        assertThat(shadowVideoView.getPrevVideoState()).isEqualTo(ShadowVideoView.SUSPEND);
+        assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.RESUME);
     }
     
     
@@ -115,23 +112,23 @@ public class VideoViewTest {
     	view.start();
     	view.pause();
     	ShadowVideoView shadowVideoView = Robolectric.shadowOf(view);
-    	assertThat(shadowVideoView.getPrevVideoState(), equalTo(ShadowVideoView.START));
-    	assertThat(shadowVideoView.getCurrentVideoState(), equalTo(ShadowVideoView.PAUSE));
+        assertThat(shadowVideoView.getPrevVideoState()).isEqualTo(ShadowVideoView.START);
+        assertThat(shadowVideoView.getCurrentVideoState()).isEqualTo(ShadowVideoView.PAUSE);
     }
     
     @Test
     public void shouldDetermineIfPausable() throws Exception {
     	view.start();
-    	assertThat(view.canPause(), equalTo(true));
+        assertThat(view.canPause()).isTrue();
 
     	view.pause();
-    	assertThat(view.canPause(), equalTo(false));
+        assertThat(view.canPause()).isFalse();
     	
     	view.resume();
-    	assertThat(view.canPause(), equalTo(true));
+        assertThat(view.canPause()).isTrue();
     	
     	view.suspend();
-    	assertThat(view.canPause(), equalTo(false));
+        assertThat(view.canPause()).isFalse();
     }
          
     /**

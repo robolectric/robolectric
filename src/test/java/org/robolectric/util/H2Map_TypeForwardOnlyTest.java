@@ -1,7 +1,7 @@
 package org.robolectric.util;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -23,7 +23,7 @@ public class H2Map_TypeForwardOnlyTest {
    
     
     @Test
-    public void testGetH2ResultSetIs_TYPE_FORWARD_ONLY() throws SQLException {   	
-    	assertThat(map.getResultSetType(),equalTo(ResultSet.TYPE_FORWARD_ONLY));
+    public void testGetH2ResultSetIs_TYPE_FORWARD_ONLY() throws SQLException {
+        assertThat(map.getResultSetType()).isEqualTo(ResultSet.TYPE_FORWARD_ONLY);
     }
 }

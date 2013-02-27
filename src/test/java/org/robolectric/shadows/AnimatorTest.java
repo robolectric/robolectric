@@ -7,12 +7,11 @@ import org.junit.runner.RunWith;
 import org.robolectric.RobolectricShadowOfLevel16;
 import org.robolectric.TestRunners;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AnimatorTest {
-	
+
     @Test
     public void shouldBeAbleToStart() throws Exception {
         Animator animator = new StubAnimator();
@@ -22,11 +21,11 @@ public class AnimatorTest {
         animator.addListener(endListener);
 
         RobolectricShadowOfLevel16.shadowOf(animator).start();
-        assertThat(startListener.startWasCalled, equalTo(true));
+        assertThat(startListener.startWasCalled).isTrue();
 
-        assertThat(endListener.endWasCalled, equalTo(true));
+        assertThat(endListener.endWasCalled).isTrue();
     }
-	
+
     @Test
     public void shouldBeAbleToNotifyListenersOfStartAndEnd() throws Exception {
         Animator animator = new StubAnimator();
@@ -36,10 +35,10 @@ public class AnimatorTest {
         animator.addListener(endListener);
 
         RobolectricShadowOfLevel16.shadowOf(animator).notifyStart();
-        assertThat(startListener.startWasCalled, equalTo(true));
+        assertThat(startListener.startWasCalled).isTrue();
 
         RobolectricShadowOfLevel16.shadowOf(animator).notifyEnd();
-        assertThat(endListener.endWasCalled, equalTo(true));
+        assertThat(endListener.endWasCalled).isTrue();
     }
 
     private static class StubAnimator extends Animator {

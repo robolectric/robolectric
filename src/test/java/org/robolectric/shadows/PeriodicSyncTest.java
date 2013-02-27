@@ -3,14 +3,12 @@ package org.robolectric.shadows;
 import android.accounts.Account;
 import android.content.PeriodicSync;
 import android.os.Bundle;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PeriodicSyncTest {
@@ -21,9 +19,9 @@ public class PeriodicSyncTest {
         PeriodicSync sync = new PeriodicSync(a, "auth",
                 new Bundle(), 120l);
 
-        assertThat(sync.account, is(a));
-        assertThat(sync.authority, equalTo("auth"));
-        assertThat(sync.period, equalTo(120l));
+        assertThat(sync.account).isSameAs(a);
+        assertThat(sync.authority).isEqualTo("auth");
+        assertThat(sync.period).isEqualTo(120l);
         assertNotNull(sync.extras);
     }
 }

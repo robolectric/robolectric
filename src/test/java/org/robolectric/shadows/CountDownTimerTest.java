@@ -13,7 +13,7 @@ import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
 import static org.hamcrest.CoreMatchers.notNullValue;
 
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class CountDownTimerTest {
@@ -45,38 +45,38 @@ public class CountDownTimerTest {
 	
 	@Test
 	public void testInvokeOnTick() {
-		assertThat(msg, not(equalTo("onTick() is called")));
-		shadowCountDownTimer.invokeTick(countDownInterval);
-		assertThat(msg, equalTo("onTick() is called"));		
-	}
+        assertThat(msg).isNotEqualTo("onTick() is called");
+        shadowCountDownTimer.invokeTick(countDownInterval);
+        assertThat(msg).isEqualTo("onTick() is called");
+    }
 	
 	@Test
 	public void testInvokeOnFinish() {
-		assertThat(msg, not(equalTo("onFinish() is called")));
-		shadowCountDownTimer.invokeFinish();
-		assertThat(msg, equalTo("onFinish() is called"));
-	}
+        assertThat(msg).isNotEqualTo("onFinish() is called");
+        shadowCountDownTimer.invokeFinish();
+        assertThat(msg).isEqualTo("onFinish() is called");
+    }
 	
 	@Test
 	public void testStart() {
-		assertThat(shadowCountDownTimer.hasStarted(), equalTo(false));
+        assertThat(shadowCountDownTimer.hasStarted()).isFalse();
 		CountDownTimer timer = shadowCountDownTimer.start();
-		assertThat(timer, notNullValue());
-		assertThat(shadowCountDownTimer.hasStarted(), equalTo(true));
+        assertThat(timer).isNotNull();
+        assertThat(shadowCountDownTimer.hasStarted()).isTrue();
 	}
 	
 	@Test
 	public void testCancel() {
 		CountDownTimer timer = shadowCountDownTimer.start();
-		assertThat(timer, notNullValue());
-		assertThat(shadowCountDownTimer.hasStarted(), equalTo(true));
+        assertThat(timer).isNotNull();
+        assertThat(shadowCountDownTimer.hasStarted()).isTrue();
 		shadowCountDownTimer.cancel();
-		assertThat(shadowCountDownTimer.hasStarted(), equalTo(false));			
+        assertThat(shadowCountDownTimer.hasStarted()).isFalse();
 	}
 	
 	@Test
 	public void testAccessors() {
-		assertThat(shadowCountDownTimer.getCountDownInterval(), equalTo(countDownInterval));
-		assertThat(shadowCountDownTimer.getMillisInFuture(), equalTo(millisInFuture));
+        assertThat(shadowCountDownTimer.getCountDownInterval()).isEqualTo(countDownInterval);
+        assertThat(shadowCountDownTimer.getMillisInFuture()).isEqualTo(millisInFuture);
 	}
 }

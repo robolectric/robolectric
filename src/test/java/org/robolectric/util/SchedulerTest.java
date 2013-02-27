@@ -4,7 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 public class SchedulerTest {
     private Transcript transcript;
@@ -23,13 +23,13 @@ public class SchedulerTest {
         scheduler.postDelayed(new AddToTranscript("two"), 0);
         scheduler.postDelayed(new AddToTranscript("three"), 1000);
 
-        assertThat(scheduler.advanceBy(0), equalTo(true));
+        assertThat(scheduler.advanceBy(0)).isTrue();
         transcript.assertEventsSoFar("one", "two");
 
-        assertThat(scheduler.advanceBy(0), equalTo(false));
+        assertThat(scheduler.advanceBy(0)).isFalse();
         transcript.assertNoEventsSoFar();
 
-        assertThat(scheduler.advanceBy(1000), equalTo(true));
+        assertThat(scheduler.advanceBy(1000)).isTrue();
         transcript.assertEventsSoFar("three");
     }
 
@@ -110,11 +110,11 @@ public class SchedulerTest {
         TestRunnable runnable = new TestRunnable();
         scheduler.post(runnable);
         scheduler.post(runnable);
-        assertThat(scheduler.enqueuedTaskCount(), equalTo(3));
+        assertThat(scheduler.enqueuedTaskCount()).isEqualTo(3);
         scheduler.remove(runnable);
-        assertThat(scheduler.enqueuedTaskCount(), equalTo(1));
+        assertThat(scheduler.enqueuedTaskCount()).isEqualTo(1);
         scheduler.advanceToLastPostedRunnable();
-        assertThat(runnable.wasRun, equalTo(false));
+        assertThat(runnable.wasRun).isFalse();
     }
 
     @Test
@@ -124,11 +124,11 @@ public class SchedulerTest {
         TestRunnable runnable = new TestRunnable();
         scheduler.post(runnable);
 
-        assertThat(runnable.wasRun, equalTo(false));
+        assertThat(runnable.wasRun).isFalse();
 
         scheduler.reset();
         scheduler.post(runnable);
-        assertThat(runnable.wasRun, equalTo(true));
+        assertThat(runnable.wasRun).isTrue();
     }
 
     @Test
@@ -138,15 +138,15 @@ public class SchedulerTest {
         TestRunnable runnable1 = new TestRunnable();
         scheduler.post(runnable1);
 
-        assertThat(runnable1.wasRun, equalTo(false));
+        assertThat(runnable1.wasRun).isFalse();
 
         scheduler.reset();
 
         TestRunnable runnable2 = new TestRunnable();
         scheduler.post(runnable2);
 
-        assertThat(runnable1.wasRun, equalTo(false));
-        assertThat(runnable2.wasRun, equalTo(true));
+        assertThat(runnable1.wasRun).isFalse();
+        assertThat(runnable2.wasRun).isTrue();
     }
 
     private class AddToTranscript implements Runnable {

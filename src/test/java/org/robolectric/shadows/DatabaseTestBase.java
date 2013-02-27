@@ -3,18 +3,18 @@ package org.robolectric.shadows;
 import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import org.robolectric.Robolectric;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.robolectric.Robolectric;
 
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.*;
 
 
 public abstract class DatabaseTestBase {
@@ -89,13 +89,13 @@ public abstract class DatabaseTestBase {
 
         Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);
 
-        assertThat(cursor.moveToFirst(), equalTo(true));
+        assertThat(cursor.moveToFirst()).isTrue();
 
         byte[] byteValueFromDatabase = cursor.getBlob(0);
         String stringValueFromDatabase = cursor.getString(1);
 
-        assertThat(stringValueFromDatabase, equalTo(stringColumnValue));
-        assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
+        assertThat(stringValueFromDatabase).isEqualTo(stringColumnValue);
+        assertThat(byteValueFromDatabase).isEqualTo(byteColumnValue);
     }
 
     @Test
@@ -112,13 +112,13 @@ public abstract class DatabaseTestBase {
 
         Cursor cursor = database.rawQuery("select second_column, first_column from table_name", null);
 
-        assertThat(cursor.moveToFirst(), equalTo(true));
+        assertThat(cursor.moveToFirst()).isTrue();
 
         byte[] byteValueFromDatabase = cursor.getBlob(0);
         String stringValueFromDatabase = cursor.getString(1);
 
-        assertThat(stringValueFromDatabase, equalTo(stringColumnValue));
-        assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
+        assertThat(stringValueFromDatabase).isEqualTo(stringColumnValue);
+        assertThat(byteValueFromDatabase).isEqualTo(byteColumnValue);
     }
     
     @Test(expected = android.database.SQLException.class)
@@ -146,11 +146,11 @@ public abstract class DatabaseTestBase {
         database.insertOrThrow("table_name", null, values);
         
         Cursor cursor = database.rawQuery("select second_column, first_column from table_name", null);
-        assertThat(cursor.moveToFirst(), equalTo(true));
+        assertThat(cursor.moveToFirst()).isTrue();
         byte[] byteValueFromDatabase = cursor.getBlob(0);
         String stringValueFromDatabase = cursor.getString(1);
-        assertThat(stringValueFromDatabase, equalTo(stringColumnValue));
-        assertThat(byteValueFromDatabase, equalTo(byteColumnValue));
+        assertThat(stringValueFromDatabase).isEqualTo(stringColumnValue);
+        assertThat(byteValueFromDatabase).isEqualTo(byteColumnValue);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -166,19 +166,19 @@ public abstract class DatabaseTestBase {
     @Test
     public void testRawQueryCount() throws Exception {
         Cursor cursor = database.rawQuery("select second_column, first_column from rawtable WHERE `id` = ?", new String[]{"1"});
-        assertThat(cursor.getCount(), equalTo(1));
+        assertThat(cursor.getCount()).isEqualTo(1);
     }
 
     @Test
     public void testRawQueryCount2() throws Exception {
         Cursor cursor = database.rawQuery("select second_column, first_column from rawtable", null);
-        assertThat(cursor.getCount(), equalTo(2));
+        assertThat(cursor.getCount()).isEqualTo(2);
     }
 
     @Test
     public void testRawQueryCount3() throws Exception {
         Cursor cursor = database.rawQuery("select second_column, first_column from rawtable", new String[]{});
-        assertThat(cursor.getCount(), equalTo(2));
+        assertThat(cursor.getCount()).isEqualTo(2);
     }
     /*
      * Reason why testRawQueryCount4() and testRawQueryCount5() expects exceptions even though exceptions are not found in Android.
@@ -247,7 +247,7 @@ public abstract class DatabaseTestBase {
     public void testEmptyTable() throws Exception {
         Cursor cursor = database.query("table_name", new String[]{"second_column", "first_column"}, null, null, null, null, null);
 
-        assertThat(cursor.moveToFirst(), equalTo(false));
+        assertThat(cursor.moveToFirst()).isFalse();
     }
 
     @Test
@@ -257,7 +257,7 @@ public abstract class DatabaseTestBase {
 
         long id = database.insert("table_name", null, values);
 
-        assertThat(id, not(equalTo(0L)));
+        assertThat(id).isNotEqualTo(0L);
     }
 
     @Test
@@ -267,18 +267,18 @@ public abstract class DatabaseTestBase {
 
         long key = database.insertWithOnConflict("table_name", null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
-        assertThat(key, not(equalTo(0L)));
+        assertThat(key).isNotEqualTo(0L);
     }
 
     @Test
     public void testUpdate() throws Exception {
         addChuck();
 
-        assertThat(updateName(1234L, "Buster"), equalTo(1));
+        assertThat(updateName(1234L, "Buster")).isEqualTo(1);
 
         Cursor cursor = database.query("table_name", new String[]{"id", "name"}, null, null, null, null, null);
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.getCount(), equalTo(1));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.getCount()).isEqualTo(1);
 
         assertIdAndName(cursor, 1234L, "Buster");
     }
@@ -287,11 +287,11 @@ public abstract class DatabaseTestBase {
     public void testUpdateNoMatch() throws Exception {
         addChuck();
 
-        assertThat(updateName(5678L, "Buster"), equalTo(0));
+        assertThat(updateName(5678L, "Buster")).isEqualTo(0);
 
         Cursor cursor = database.query("table_name", new String[]{"id", "name"}, null, null, null, null, null);
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.getCount(), equalTo(1));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.getCount()).isEqualTo(1);
 
         assertIdAndName(cursor, 1234L, "Chuck");
     }
@@ -301,20 +301,20 @@ public abstract class DatabaseTestBase {
         addChuck();
         addJulie();
 
-        assertThat(updateName("Belvedere"), equalTo(2));
+        assertThat(updateName("Belvedere")).isEqualTo(2);
 
         Cursor cursor = database.query("table_name", new String[]{"id", "name"}, null, null, null, null, null);
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.getCount(), equalTo(2));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.getCount()).isEqualTo(2);
 
         assertIdAndName(cursor, 1234L, "Belvedere");
-        assertThat(cursor.moveToNext(), equalTo(true));
+        assertThat(cursor.moveToNext()).isTrue();
 
         assertIdAndName(cursor, 1235L, "Belvedere");
-        assertThat(cursor.isLast(), equalTo(true));
-        assertThat(cursor.moveToNext(), equalTo(false));
-        assertThat(cursor.isAfterLast(), equalTo(true));
-        assertThat(cursor.moveToNext(), equalTo(false));
+        assertThat(cursor.isLast()).isTrue();
+        assertThat(cursor.moveToNext()).isFalse();
+        assertThat(cursor.isAfterLast()).isTrue();
+        assertThat(cursor.moveToNext()).isFalse();
     }
 
     @Test
@@ -322,7 +322,7 @@ public abstract class DatabaseTestBase {
         addChuck();
 
         int deleted = database.delete("table_name", "id=1234", null);
-        assertThat(deleted, equalTo(1));
+        assertThat(deleted).isEqualTo(1);
 
         assertEmptyDatabase();
     }
@@ -332,7 +332,7 @@ public abstract class DatabaseTestBase {
         addChuck();
 
         int deleted = database.delete("table_name", "id=5678", null);
-        assertThat(deleted, equalTo(0));
+        assertThat(deleted).isEqualTo(0);
 
         assertNonEmptyDatabase();
     }
@@ -343,7 +343,7 @@ public abstract class DatabaseTestBase {
         addJulie();
 
         int deleted = database.delete("table_name", "1", null);
-        assertThat(deleted, equalTo(2));
+        assertThat(deleted).isEqualTo(2);
 
         assertEmptyDatabase();
     }
@@ -358,14 +358,14 @@ public abstract class DatabaseTestBase {
 
         statement = shadowOf(database).getConnection().createStatement();
         resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getInt(1), equalTo(1));
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getInt(1)).isEqualTo(1);
 
         statement = shadowOf(database).getConnection().createStatement();
         resultSet = statement.executeQuery("SELECT * FROM table_name");
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getInt(1), equalTo(1234));
-        assertThat(resultSet.getString(4), equalTo("Chuck"));
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getInt(1)).isEqualTo(1234);
+        assertThat(resultSet.getString(4)).isEqualTo("Chuck");
     }
 
     @Test
@@ -379,19 +379,19 @@ public abstract class DatabaseTestBase {
 
         statement = shadowOf(database).getConnection().createStatement();
         resultSet = statement.executeQuery("SELECT COUNT(*) FROM `routine`");
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getInt(1), equalTo(2));
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getInt(1)).isEqualTo(2);
 
         statement = shadowOf(database).getConnection().createStatement();
         resultSet = statement.executeQuery("SELECT `id`, `name` ,`lastUsed` FROM `routine`");
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getInt(1), equalTo(1));
-        assertThat(resultSet.getString(2), equalTo("Leg Press"));
-        assertThat(resultSet.getInt(3), equalTo(0));
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getLong(1), equalTo(2L));
-        assertThat(resultSet.getString(2), equalTo("Bench Press"));
-        assertThat(resultSet.getInt(3), equalTo(1));
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getInt(1)).isEqualTo(1);
+        assertThat(resultSet.getString(2)).isEqualTo("Leg Press");
+        assertThat(resultSet.getInt(3)).isEqualTo(0);
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getLong(1)).isEqualTo(2L);
+        assertThat(resultSet.getString(2)).isEqualTo("Bench Press");
+        assertThat(resultSet.getInt(3)).isEqualTo(1);
     }
 
     @Test(expected = android.database.SQLException.class)
@@ -436,8 +436,8 @@ public abstract class DatabaseTestBase {
         cursor.moveToFirst();
         int firstIndex = cursor.getColumnIndex("first_column");
         int nameIndex = cursor.getColumnIndex("name");
-        assertThat(cursor.getString(nameIndex), equalTo(name));
-        assertThat(cursor.getString(firstIndex), equalTo((String)null));
+        assertThat(cursor.getString(nameIndex)).isEqualTo(name);
+        assertThat(cursor.getString(firstIndex)).isEqualTo((String) null);
 
     }
 
@@ -449,12 +449,12 @@ public abstract class DatabaseTestBase {
 
         Cursor cursor = database.rawQuery("select * from exectable", null);
         cursor.moveToFirst();
-        assertThat(cursor.getCount(), equalTo(0));
+        assertThat(cursor.getCount()).isEqualTo(0);
 
         database.execSQL("insert into exectable (first_column) values (?);", new String[]{});
         Cursor cursor2 = database.rawQuery("select * from exectable", new String[]{null});
         cursor.moveToFirst();
-        assertThat(cursor2.getCount(), equalTo(1));
+        assertThat(cursor2.getCount()).isEqualTo(1);
 
     }
 
@@ -466,10 +466,10 @@ public abstract class DatabaseTestBase {
         values.put("name", "Chuck");
 
         long key = database.insert("auto_table", null, values);
-        assertThat(key, not(equalTo(0L)));
+        assertThat(key).isNotEqualTo(0L);
 
         long key2 = database.insert("auto_table", null, values);
-        assertThat(key2, not(equalTo(key)));
+        assertThat(key2).isNotEqualTo(key);
     }
 
     @Test(expected = IllegalStateException.class)
@@ -481,9 +481,9 @@ public abstract class DatabaseTestBase {
 
     @Test
     public void testIsOpen() throws Exception {
-        assertThat(database.isOpen(), equalTo(true));
+        assertThat(database.isOpen()).isTrue();
         database.close();
-        assertThat(database.isOpen(), equalTo(false));
+        assertThat(database.isOpen()).isFalse();
     }
 
     @Test
@@ -496,27 +496,27 @@ public abstract class DatabaseTestBase {
 
     @Test
     public void testSuccessTransaction() throws Exception {
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.beginTransaction();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.setTransactionSuccessful();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(true));
+        assertThat(shDatabase.isTransactionSuccess()).isTrue();
         database.endTransaction();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
 
         Statement statement = shadowOf(database).getConnection().createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getInt(1), equalTo(1));
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getInt(1)).isEqualTo(1);
     }
 
     @Test
     public void testFailureTransaction() throws Exception {
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.beginTransaction();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
 
         database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
 
@@ -524,63 +524,63 @@ public abstract class DatabaseTestBase {
         final String select = "SELECT COUNT(*) FROM table_name";
 
         ResultSet rs = statement.executeQuery(select);
-        assertThat(rs.next(), equalTo(true));
-        assertThat(rs.getInt(1), equalTo(1));
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getInt(1)).isEqualTo(1);
         rs.close();
 
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.endTransaction();
 
         statement = shadowOf(database).getConnection().createStatement();
         rs = statement.executeQuery(select);
-        assertThat(rs.next(), equalTo(true));
-        assertThat(rs.getInt(1), equalTo(0));
+        assertThat(rs.next()).isTrue();
+        assertThat(rs.getInt(1)).isEqualTo(0);
 
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
     }
 
     @Test
     public void testSuccessNestedTransaction() throws Exception {
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.beginTransaction();
         database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.beginTransaction();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.execSQL("INSERT INTO table_name (id, name) VALUES(12345, 'Julie');");
         database.setTransactionSuccessful();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(true));
+        assertThat(shDatabase.isTransactionSuccess()).isTrue();
         database.endTransaction();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.setTransactionSuccessful();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(true));
+        assertThat(shDatabase.isTransactionSuccess()).isTrue();
         database.endTransaction();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         Statement statement = shadowOf(database).getConnection().createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getInt(1), equalTo(2));
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getInt(1)).isEqualTo(2);
     }
 
     @Test
     public void testFailureNestedTransaction() throws Exception {
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.beginTransaction();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.execSQL("INSERT INTO table_name (id, name) VALUES(1234, 'Chuck');");
         database.beginTransaction();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.execSQL("INSERT INTO table_name (id, name) VALUES(12345, 'Julie');");
         database.endTransaction();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.setTransactionSuccessful();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         database.endTransaction();
-        assertThat(shDatabase.isTransactionSuccess(), equalTo(false));
+        assertThat(shDatabase.isTransactionSuccess()).isFalse();
         Statement statement = shadowOf(database).getConnection().createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT COUNT(*) FROM table_name");
-        assertThat(resultSet.next(), equalTo(true));
-        assertThat(resultSet.getInt(1), equalTo(0));
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getInt(1)).isEqualTo(0);
     }
 
     @Test
@@ -591,17 +591,17 @@ public abstract class DatabaseTestBase {
             database.setTransactionSuccessful();
             fail("didn't receive the expected IllegalStateException");
         } catch (IllegalStateException e) {
-            assertThat(e.getMessage(), equalTo("transaction already successfully"));
+            assertThat(e.getMessage()).isEqualTo("transaction already successfully");
         }
     }
     
     @Test
     public void testInTransaction() throws Exception {
-    	assertThat(database.inTransaction(), equalTo(false));
+        assertThat(database.inTransaction()).isFalse();
     	database.beginTransaction();
-    	assertThat( database.inTransaction(), equalTo(true) );
+        assertThat(database.inTransaction()).isTrue();
     	database.endTransaction();
-    	assertThat( database.inTransaction(), equalTo(false) );    	
+        assertThat(database.inTransaction()).isFalse();
     }
 
     protected long addChuck() {
@@ -637,20 +637,20 @@ public abstract class DatabaseTestBase {
 
         idValueFromDatabase = cursor.getLong(0);
         stringValueFromDatabase = cursor.getString(1);
-        assertThat(idValueFromDatabase, equalTo(id));
-        assertThat(stringValueFromDatabase, equalTo(name));
+        assertThat(idValueFromDatabase).isEqualTo(id);
+        assertThat(stringValueFromDatabase).isEqualTo(name);
     }
 
     protected void assertEmptyDatabase() {
         Cursor cursor = database.query("table_name", new String[]{"id", "name"}, null, null, null, null, null);
-        assertThat(cursor.moveToFirst(), equalTo(false));
-        assertThat(cursor.isClosed(), equalTo(false));
-        assertThat(cursor.getCount(), equalTo(0));
+        assertThat(cursor.moveToFirst()).isFalse();
+        assertThat(cursor.isClosed()).isFalse();
+        assertThat(cursor.getCount()).isEqualTo(0);
     }
 
     protected void assertNonEmptyDatabase() {
         Cursor cursor = database.query("table_name", new String[]{"id", "name"}, null, null, null, null, null);
-        assertThat(cursor.moveToFirst(), equalTo(true));
-        assertThat(cursor.getCount(), not(equalTo(0)));
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.getCount()).isNotEqualTo(0);
     }
 }

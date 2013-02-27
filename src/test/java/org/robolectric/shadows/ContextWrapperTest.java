@@ -25,7 +25,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -113,25 +113,25 @@ public class ContextWrapperTest {
     @Test
     public void shouldReturnSameApplicationEveryTime() throws Exception {
         Activity activity = new Activity();
-        assertThat(activity.getApplication(), sameInstance(activity.getApplication()));
+        assertThat(activity.getApplication()).isSameAs(activity.getApplication());
 
-        assertThat(activity.getApplication(), sameInstance(new Activity().getApplication()));
+        assertThat(activity.getApplication()).isSameAs(new Activity().getApplication());
     }
 
     @Test
     public void shouldReturnSameApplicationContextEveryTime() throws Exception {
         Activity activity = new Activity();
-        assertThat(activity.getApplicationContext(), sameInstance(activity.getApplicationContext()));
+        assertThat(activity.getApplicationContext()).isSameAs(activity.getApplicationContext());
 
-        assertThat(activity.getApplicationContext(), sameInstance(new Activity().getApplicationContext()));
+        assertThat(activity.getApplicationContext()).isSameAs(new Activity().getApplicationContext());
     }
 
     @Test
     public void shouldReturnSameContentResolverEveryTime() throws Exception {
         Activity activity = new Activity();
-        assertThat(activity.getContentResolver(), sameInstance(activity.getContentResolver()));
+        assertThat(activity.getContentResolver()).isSameAs(activity.getContentResolver());
 
-        assertThat(activity.getContentResolver(), sameInstance(new Activity().getContentResolver()));
+        assertThat(activity.getContentResolver()).isSameAs(new Activity().getContentResolver());
     }
 
     @Test
@@ -152,28 +152,28 @@ public class ContextWrapperTest {
     @Test
     public void checkPermissionsShouldReturnPermissionGrantedToAddedPermissions() throws Exception {
         shadowOf(contextWrapper).grantPermissions("foo", "bar");
-        assertThat(contextWrapper.checkPermission("foo", 0, 0), equalTo(PERMISSION_GRANTED));
-        assertThat(contextWrapper.checkPermission("bar", 0, 0), equalTo(PERMISSION_GRANTED));
-        assertThat(contextWrapper.checkPermission("baz", 0, 0), equalTo(PERMISSION_DENIED));
+        assertThat(contextWrapper.checkPermission("foo", 0, 0)).isEqualTo(PERMISSION_GRANTED);
+        assertThat(contextWrapper.checkPermission("bar", 0, 0)).isEqualTo(PERMISSION_GRANTED);
+        assertThat(contextWrapper.checkPermission("baz", 0, 0)).isEqualTo(PERMISSION_DENIED);
     }
 
     @Test
     public void shouldReturnAContext() {
-    	assertThat(contextWrapper.getBaseContext(), notNullValue());
+        assertThat(contextWrapper.getBaseContext()).isNotNull();
     	ShadowContextWrapper shContextWrapper = Robolectric.shadowOf(contextWrapper);
     	shContextWrapper.attachBaseContext(null);
-    	assertThat(contextWrapper.getBaseContext(), nullValue());
+        assertThat(contextWrapper.getBaseContext()).isNull();
 
     	Activity baseContext = new Activity();
     	shContextWrapper.attachBaseContext(baseContext);
-    	assertThat(contextWrapper.getBaseContext(), sameInstance((Context) baseContext));
+        assertThat(contextWrapper.getBaseContext()).isSameAs((Context) baseContext);
     }
 
     private void assertSameInstanceEveryTime(String serviceName) {
         Activity activity = new Activity();
-        assertThat(activity.getSystemService(serviceName), sameInstance(activity.getSystemService(serviceName)));
+        assertThat(activity.getSystemService(serviceName)).isSameAs(activity.getSystemService(serviceName));
 
-        assertThat(activity.getSystemService(serviceName), sameInstance(new Activity().getSystemService(serviceName)));
+        assertThat(activity.getSystemService(serviceName)).isSameAs(new Activity().getSystemService(serviceName));
     }
 
     @Test
@@ -200,6 +200,6 @@ public class ContextWrapperTest {
 
     @Test
     public void packageManagerShouldNotBeNullWhenWrappingAnApplication() {
-        assertThat(new Application().getPackageManager(), notNullValue());
+        assertThat(new Application().getPackageManager()).isNotNull();
     }
 }

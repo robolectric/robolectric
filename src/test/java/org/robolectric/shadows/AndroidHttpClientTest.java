@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
@@ -21,13 +21,13 @@ public class AndroidHttpClientTest {
     @Test
     public void testNewInstance() throws Exception {
         AndroidHttpClient client = AndroidHttpClient.newInstance("foo");
-        assertThat(client, not(nullValue()));
+        assertThat(client).isNotNull();
     }
 
     @Test
     public void testNewInstanceWithContext() throws Exception {
         AndroidHttpClient client = AndroidHttpClient.newInstance("foo", Robolectric.application);
-        assertThat(client, not(nullValue()));
+        assertThat(client).isNotNull();
     }
 
     @Test
@@ -35,7 +35,7 @@ public class AndroidHttpClientTest {
         AndroidHttpClient client = AndroidHttpClient.newInstance("foo");
         Robolectric.addPendingHttpResponse(200, "foo");
         HttpResponse resp = client.execute(new HttpGet("/foo"));
-        assertThat(resp.getStatusLine().getStatusCode(), is(200));
-        assertThat(Strings.fromStream(resp.getEntity().getContent()), equalTo("foo"));
+        assertThat(resp.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(Strings.fromStream(resp.getEntity().getContent())).isEqualTo("foo");
     }
 }

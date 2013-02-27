@@ -6,7 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import android.app.Activity;
 import android.view.animation.LayoutAnimationController;
@@ -27,7 +27,7 @@ public class LayoutAnimationControllerTest {
 	public void testResourceId() {
 		int id = 1;
 		shadow.setLoadedFromResourceId(1);
-		assertThat(shadow.getLoadedFromResourceId(), equalTo(id));
+        assertThat(shadow.getLoadedFromResourceId()).isEqualTo(id);
 	}
 
 }

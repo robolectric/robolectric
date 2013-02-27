@@ -10,7 +10,7 @@ import java.util.Arrays;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RadioGroupTest {
@@ -19,9 +19,9 @@ public class RadioGroupTest {
     @Test
     public void checkedRadioButtonId() throws Exception {
         RadioGroup radioGroup = new RadioGroup(null);
-        assertThat(radioGroup.getCheckedRadioButtonId(), equalTo(-1));
+        assertThat(radioGroup.getCheckedRadioButtonId()).isEqualTo(-1);
         radioGroup.check(99);
-        assertThat(radioGroup.getCheckedRadioButtonId(), equalTo(99));
+        assertThat(radioGroup.getCheckedRadioButtonId()).isEqualTo(99);
     }
 
     @Test

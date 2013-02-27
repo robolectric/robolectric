@@ -7,21 +7,20 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.LayerDrawable;
 import android.graphics.drawable.StateListDrawable;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.builder.DrawableBuilder;
 import org.robolectric.shadows.ShadowStateListDrawable;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import static org.robolectric.util.TestUtil.*;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
+import static org.robolectric.util.TestUtil.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DrawableResourceLoaderTest {
@@ -88,7 +87,7 @@ public class DrawableResourceLoaderTest {
         for (int i = 0; i < drawables.length; i++) {
             ResName resName = getResName(drawables[i]);
             Drawable drawable = drawableBuilder.getDrawable(resName, null, drawableNodes.get(resName, ""));
-            assertThat(drawable, instanceOf(BitmapDrawable.class));
+            assertThat(drawable).isInstanceOf(BitmapDrawable.class);
         }
     }
 
@@ -96,7 +95,7 @@ public class DrawableResourceLoaderTest {
     public void testLayerDrawable() {
         ResName resName = getResName(R.drawable.rainbow);
         Drawable drawable = drawableBuilder.getDrawable(resName, mock(Resources.class), drawableNodes.get(resName, ""));
-        assertThat(drawable, instanceOf(LayerDrawable.class));
+        assertThat(drawable).isInstanceOf(LayerDrawable.class);
         assertEquals(8, ((LayerDrawable) drawable).getNumberOfLayers());
 
         assertEquals(6, ((LayerDrawable) drawableBuilder.getDrawable(resName, mock(Resources.class), drawableNodes.get(resName, "xlarge"))).getNumberOfLayers());
@@ -106,16 +105,16 @@ public class DrawableResourceLoaderTest {
     public void testStateListDrawable() {
         ResName resName = getResName(R.drawable.state_drawable);
         Drawable drawable = drawableBuilder.getDrawable(resName, null, drawableNodes.get(resName, ""));
-        assertThat(drawable, instanceOf(StateListDrawable.class));
+        assertThat(drawable).isInstanceOf(StateListDrawable.class);
         ShadowStateListDrawable shDrawable = Robolectric.shadowOf((StateListDrawable) drawable);
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_selected), equalTo(R.drawable.l0_red));
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_pressed), equalTo(R.drawable.l1_orange));
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_focused), equalTo(R.drawable.l2_yellow));
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_checkable), equalTo(R.drawable.l3_green));
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_checked), equalTo(R.drawable.l4_blue));
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_enabled), equalTo(R.drawable.l5_indigo));
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_window_focused), equalTo(R.drawable.l6_violet));
-        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_active), equalTo(R.drawable.l7_white));
+        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_selected)).isEqualTo(R.drawable.l0_red);
+        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_pressed)).isEqualTo(R.drawable.l1_orange);
+        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_focused)).isEqualTo(R.drawable.l2_yellow);
+        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_checkable)).isEqualTo(R.drawable.l3_green);
+        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_checked)).isEqualTo(R.drawable.l4_blue);
+        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_enabled)).isEqualTo(R.drawable.l5_indigo);
+        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_window_focused)).isEqualTo(R.drawable.l6_violet);
+        assertThat(shDrawable.getResourceIdForState(android.R.attr.state_active)).isEqualTo(R.drawable.l7_white);
     }
 
     @Test public void shouldCreateAnimsAndColors() throws Exception {
@@ -127,11 +126,11 @@ public class DrawableResourceLoaderTest {
 
     @Test
     public void shouldIdentifyNinePatchDrawables() {
-        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(getResName(R.drawable.nine_patch_drawable), "")), equalTo(true));
-        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(getResName(R.drawable.l2_yellow), "")), equalTo(false));
-        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(getResName(R.drawable.state_drawable), "")), equalTo(false));
-        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(getResName(R.drawable.animation_list), "")), equalTo(false));
-        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(null, "")), equalTo(false));
+        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(getResName(R.drawable.nine_patch_drawable), ""))).isTrue();
+        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(getResName(R.drawable.l2_yellow), ""))).isFalse();
+        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(getResName(R.drawable.state_drawable), ""))).isFalse();
+        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(getResName(R.drawable.animation_list), ""))).isFalse();
+        assertThat(drawableBuilder.isNinePatchDrawable(drawableNodes.get(null, ""))).isFalse();
     }
 
     private ResName getResName(int resourceId) {

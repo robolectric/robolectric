@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SpinnerTest {
@@ -24,6 +24,6 @@ public class SpinnerTest {
     public void testPrompt() {
         spinner.setPrompt("foo");
 
-        assertThat(spinner.getPrompt().toString(), is("foo"));
+        assertThat(spinner.getPrompt().toString()).isEqualTo("foo");
     }
 }

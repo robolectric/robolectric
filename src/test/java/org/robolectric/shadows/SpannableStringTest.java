@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SpannableStringTest {
@@ -24,7 +24,7 @@ public class SpannableStringTest {
 
     @Test
     public void testToString() {
-        assertThat(spanStr.toString(), sameInstance(TEST_STRING));
+        assertThat(spanStr.toString()).isSameAs(TEST_STRING);
     }
 
     @Test
@@ -46,9 +46,9 @@ public class SpannableStringTest {
         spanStr.removeSpan(s1);
 
         Object[] spans = spanStr.getSpans(0, TEST_STRING.length(), Object.class);
-        assertThat(spans, notNullValue());
-        assertThat(spans.length, equalTo(1));
-        assertThat((UnderlineSpan) spans[0], sameInstance(s2));
+        assertThat(spans).isNotNull();
+        assertThat(spans.length).isEqualTo(1);
+        assertThat((UnderlineSpan) spans[0]).isSameAs(s2);
     }
 
     @Test
@@ -59,42 +59,42 @@ public class SpannableStringTest {
         spanStr.setSpan(s2, 20, 30, 0);
 
         Object[] spans = spanStr.getSpans(0, TEST_STRING.length(), Object.class);
-        assertThat(spans, notNullValue());
-        assertThat(spans.length, equalTo(2));
+        assertThat(spans).isNotNull();
+        assertThat(spans.length).isEqualTo(2);
         assertBothSpans(s1, s2);
 
         spans = spanStr.getSpans(0, TEST_STRING.length(), URLSpan.class);
-        assertThat(spans, notNullValue());
-        assertThat(spans.length, equalTo(1));
-        assertThat((URLSpan) spans[0], sameInstance(s1));
+        assertThat(spans).isNotNull();
+        assertThat(spans.length).isEqualTo(1);
+        assertThat((URLSpan) spans[0]).isSameAs(s1);
 
         spans = spanStr.getSpans(11, 35, Object.class);
-        assertThat(spans, notNullValue());
-        assertThat(spans.length, equalTo(1));
-        assertThat((UnderlineSpan) spans[0], sameInstance(s2));
+        assertThat(spans).isNotNull();
+        assertThat(spans.length).isEqualTo(1);
+        assertThat((UnderlineSpan) spans[0]).isSameAs(s2);
 
         spans = spanStr.getSpans(21, 35, Object.class);
-        assertThat(spans, notNullValue());
-        assertThat(spans.length, equalTo(1));
-        assertThat((UnderlineSpan) spans[0], sameInstance(s2));
+        assertThat(spans).isNotNull();
+        assertThat(spans.length).isEqualTo(1);
+        assertThat((UnderlineSpan) spans[0]).isSameAs(s2);
 
         spans = spanStr.getSpans(5, 15, Object.class);
-        assertThat(spans, notNullValue());
-        assertThat(spans.length, equalTo(1));
-        assertThat((URLSpan) spans[0], sameInstance(s1));
+        assertThat(spans).isNotNull();
+        assertThat(spans.length).isEqualTo(1);
+        assertThat((URLSpan) spans[0]).isSameAs(s1);
     }
 
     private void assertBothSpans(URLSpan s1, UnderlineSpan s2) {
         Object[] spans = spanStr.getSpans(0, TEST_STRING.length(), Object.class);
         if (spans[0] instanceof URLSpan) {
-            assertThat((URLSpan) spans[0], sameInstance(s1));
+            assertThat((URLSpan) spans[0]).isSameAs(s1);
         } else {
-            assertThat((UnderlineSpan) spans[0], sameInstance(s2));
+            assertThat((UnderlineSpan) spans[0]).isSameAs(s2);
         }
         if (spans[1] instanceof UnderlineSpan) {
-            assertThat((UnderlineSpan) spans[1], sameInstance(s2));
+            assertThat((UnderlineSpan) spans[1]).isSameAs(s2);
         } else {
-            assertThat((URLSpan) spans[1], sameInstance(s1));
+            assertThat((URLSpan) spans[1]).isSameAs(s1);
         }
     }
 

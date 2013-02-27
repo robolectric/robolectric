@@ -12,7 +12,7 @@ import java.util.List;
 import static junit.framework.Assert.assertEquals;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.shadows.ShadowLog.LogItem;
 
@@ -128,7 +128,7 @@ public class LogTest {
         try {
             ShadowLog.stream = new PrintStream(bos);
             Log.d("tag", "msg");
-            assertThat(new String(bos.toByteArray()), equalTo("D/tag: msg" + System.getProperty("line.separator")));
+            assertThat(new String(bos.toByteArray())).isEqualTo("D/tag: msg" + System.getProperty("line.separator"));
 
 
             Log.w("tag", new RuntimeException());
@@ -148,10 +148,10 @@ public class LogTest {
     	Log.d( "tag2", "6" );
 
     	List<LogItem> allItems = ShadowLog.getLogs();
-    	assertThat( allItems.size(), equalTo(6) );
+        assertThat(allItems.size()).isEqualTo(6);
     	int i = 1;
     	for ( LogItem item : allItems ) {
-    		assertThat( item.msg, equalTo(Integer.toString(i)) );
+            assertThat(item.msg).isEqualTo(Integer.toString(i));
     		i++;
     	}
     	assertUniformLogsForTag( "tag1", 3 );
@@ -161,12 +161,12 @@ public class LogTest {
 
     private void assertUniformLogsForTag( String tag, int count ) {
     	List<LogItem> tag1Items = ShadowLog.getLogsForTag( tag );
-    	assertThat( tag1Items.size(), equalTo( count ) );
+        assertThat(tag1Items.size()).isEqualTo(count);
     	int last = -1;
     	for (LogItem item : tag1Items) {
-    		assertThat(item.tag, equalTo(tag));
+            assertThat(item.tag).isEqualTo(tag);
     		int current = Integer.parseInt(item.msg);
-    		assertThat(current > last, equalTo(true));
+            assertThat(current > last).isTrue();
     		last = current;
     	}
     }

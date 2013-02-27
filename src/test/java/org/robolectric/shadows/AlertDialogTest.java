@@ -28,7 +28,7 @@ import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -43,14 +43,14 @@ public class AlertDialogTest {
         AlertDialog alert = builder.create();
         alert.show();
 
-        assertThat(alert.isShowing(), equalTo(true));
+        assertThat(alert.isShowing()).isTrue();
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
         assertEquals("title", shadowAlertDialog.getTitle());
-        assertThat(shadowAlertDialog.getMessage(), equalTo("message"));
-        assertThat(shadowAlertDialog.isCancelable(), equalTo(true));
-        assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog()), sameInstance(shadowAlertDialog));
-        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(alert));
+        assertThat(shadowAlertDialog.getMessage()).isEqualTo("message");
+        assertThat(shadowAlertDialog.isCancelable()).isTrue();
+        assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog())).isSameAs(shadowAlertDialog);
+        assertThat(ShadowAlertDialog.getLatestAlertDialog()).isSameAs(alert);
     }
 
     @Test
@@ -59,16 +59,16 @@ public class AlertDialogTest {
                 .setTitle(null) //
                 .setMessage(null);
         ShadowAlertDialog shadowAlertDialog = shadowOf(builder.create());
-        assertThat(shadowAlertDialog.getTitle().toString(), equalTo(""));
-        assertThat(shadowAlertDialog.getMessage(), equalTo(""));
+        assertThat(shadowAlertDialog.getTitle().toString()).isEqualTo("");
+        assertThat(shadowAlertDialog.getMessage()).isEqualTo("");
     }
     
     @Test
     public void getLatestAlertDialog_shouldReturnARealAlertDialog() throws Exception {
-        assertThat(ShadowAlertDialog.getLatestAlertDialog(), nullValue());
+        assertThat(ShadowAlertDialog.getLatestAlertDialog()).isNull();
 
         AlertDialog dialog = new AlertDialog.Builder(new ContextWrapper(null)).show();
-        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(dialog));
+        assertThat(ShadowAlertDialog.getLatestAlertDialog()).isSameAs(dialog);
     }
 
     @Test
@@ -77,8 +77,8 @@ public class AlertDialogTest {
         builder.setPositiveButton("OK", null);
         AlertDialog dialog = builder.create();
         dialog.show();
-        assertThat(shadowOf(dialog).getButton(AlertDialog.BUTTON_POSITIVE), not(nullValue()));
-        assertThat(shadowOf(dialog).getButton(AlertDialog.BUTTON_NEGATIVE), nullValue());
+        assertThat(shadowOf(dialog).getButton(AlertDialog.BUTTON_POSITIVE)).isNotNull();
+        assertThat(shadowOf(dialog).getButton(AlertDialog.BUTTON_NEGATIVE)).isNull();
     }
 
     @Test
@@ -97,13 +97,13 @@ public class AlertDialogTest {
         AlertDialog alert = builder.create();
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-        assertThat(shadowAlertDialog.getMessage(), equalTo("message"));
+        assertThat(shadowAlertDialog.getMessage()).isEqualTo("message");
 
         shadowAlertDialog.setMessage("new message");
-        assertThat(shadowAlertDialog.getMessage(), equalTo("new message"));
+        assertThat(shadowAlertDialog.getMessage()).isEqualTo("new message");
 
         shadowAlertDialog.setMessage(null);
-        assertThat(shadowAlertDialog.getMessage(), nullValue());
+        assertThat(shadowAlertDialog.getMessage()).isNull();
     }
 
     @Test
@@ -113,7 +113,7 @@ public class AlertDialogTest {
 
         AlertDialog alert = builder.create();
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-        assertThat(shadowAlertDialog.getMessage(), equalTo("Hello"));
+        assertThat(shadowAlertDialog.getMessage()).isEqualTo("Hello");
     }
 
     @Test
@@ -124,7 +124,7 @@ public class AlertDialogTest {
         builder.setView(view);
 
         AlertDialog alert = builder.create();
-        assertThat(shadowOf(alert).getView(), equalTo((View) view));
+        assertThat(shadowOf(alert).getView()).isEqualTo((View) view);
     }
 
     @Test
@@ -132,10 +132,10 @@ public class AlertDialogTest {
         ContextWrapper context = new ContextWrapper(null);
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         View view = new View(context);
-        assertThat(builder.setCustomTitle(view), sameInstance(builder));
+        assertThat(builder.setCustomTitle(view)).isSameAs(builder);
 
         AlertDialog alert = builder.create();
-        assertThat(shadowOf(alert).getCustomTitleView(), equalTo((View) view));
+        assertThat(shadowOf(alert).getCustomTitleView()).isEqualTo((View) view);
     }
     
     @Test
@@ -148,9 +148,9 @@ public class AlertDialogTest {
         
         final Button positiveButton = shadowOf(alertDialog).getButton(AlertDialog.BUTTON_POSITIVE);
         positiveButton.performClick();
-        
-        assertThat(positiveButton.getText().toString(), equalTo("More Positive"));
-        assertThat(listener.clickedItem, equalTo(AlertDialog.BUTTON_POSITIVE));
+
+        assertThat(positiveButton.getText().toString()).isEqualTo("More Positive");
+        assertThat(listener.clickedItem).isEqualTo(AlertDialog.BUTTON_POSITIVE);
     }
     
     @Test
@@ -163,9 +163,9 @@ public class AlertDialogTest {
         
         final Button negativeButton = shadowOf(alertDialog).getButton(AlertDialog.BUTTON_NEGATIVE);
         negativeButton.performClick();
-        
-        assertThat(negativeButton.getText().toString(), equalTo("More Negative"));
-        assertThat(listener.clickedItem, equalTo(AlertDialog.BUTTON_NEGATIVE));
+
+        assertThat(negativeButton.getText().toString()).isEqualTo("More Negative");
+        assertThat(listener.clickedItem).isEqualTo(AlertDialog.BUTTON_NEGATIVE);
     }
     
     @Test
@@ -178,9 +178,9 @@ public class AlertDialogTest {
         
         final Button neutralButton = shadowOf(alertDialog).getButton(AlertDialog.BUTTON_NEUTRAL);
         neutralButton.performClick();
-        
-        assertThat(neutralButton.getText().toString(), equalTo("Still Neutral"));
-        assertThat(listener.clickedItem, equalTo(AlertDialog.BUTTON_NEUTRAL));
+
+        assertThat(neutralButton.getText().toString()).isEqualTo("Still Neutral");
+        assertThat(listener.clickedItem).isEqualTo(AlertDialog.BUTTON_NEUTRAL);
     }
 
     @Test
@@ -233,14 +233,14 @@ public class AlertDialogTest {
         AlertDialog alert = builder.create();
         alert.show();
 
-        assertThat(alert.isShowing(), equalTo(true));
+        assertThat(alert.isShowing()).isTrue();
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
-        assertThat(shadowAlertDialog.getTitle().toString(), equalTo("title"));
-        assertThat(shadowAlertDialog.getItems().length, equalTo(2));
+        assertThat(shadowAlertDialog.getTitle().toString()).isEqualTo("title");
+        assertThat(shadowAlertDialog.getItems().length).isEqualTo(2);
         assertEquals(shadowAlertDialog.getItems()[0], "Aloha");
-        assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog()), sameInstance(shadowAlertDialog));
-        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(alert));
+        assertThat(shadowOf(ShadowAlertDialog.getLatestAlertDialog())).isSameAs(shadowAlertDialog);
+        assertThat(ShadowAlertDialog.getLatestAlertDialog()).isSameAs(alert);
     }
 
 
@@ -306,13 +306,13 @@ public class AlertDialogTest {
         AlertDialog alert = builder.create();
         alert.show();
 
-        assertThat(alert.isShowing(), equalTo(true));
+        assertThat(alert.isShowing()).isTrue();
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
         assertEquals(shadowAlertDialog.getCheckedItemIndex(), 1);
         assertEquals(shadowAlertDialog.getItems()[0], "foo");
-        assertThat(shadowAlertDialog.getItems().length, equalTo(2));
-        assertThat(ShadowAlertDialog.getLatestAlertDialog(), sameInstance(alert));
+        assertThat(shadowAlertDialog.getItems().length).isEqualTo(2);
+        assertThat(ShadowAlertDialog.getLatestAlertDialog()).isSameAs(alert);
     }
 
     @Test
@@ -327,12 +327,12 @@ public class AlertDialogTest {
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
         shadowAlertDialog.clickOnItem(0);
-        assertThat(listener.clickedItem, equalTo(0));
-        assertThat(shadowAlertDialog.getCheckedItemIndex(), equalTo(0));
+        assertThat(listener.clickedItem).isEqualTo(0);
+        assertThat(shadowAlertDialog.getCheckedItemIndex()).isEqualTo(0);
 
         shadowAlertDialog.clickOnItem(1);
-        assertThat(listener.clickedItem, equalTo(1));
-        assertThat(shadowAlertDialog.getCheckedItemIndex(), equalTo(1));
+        assertThat(listener.clickedItem).isEqualTo(1);
+        assertThat(shadowAlertDialog.getCheckedItemIndex()).isEqualTo(1);
 
     }
 
@@ -353,12 +353,12 @@ public class AlertDialogTest {
 
         ShadowAlertDialog shadowAlertDialog = shadowOf(alert);
         shadowAlertDialog.clickOnItem(0);
-        assertThat(listener.clickedItem, equalTo(0));
-        assertThat(shadowAlertDialog.getCheckedItemIndex(), equalTo(0));
+        assertThat(listener.clickedItem).isEqualTo(0);
+        assertThat(shadowAlertDialog.getCheckedItemIndex()).isEqualTo(0);
 
         shadowAlertDialog.clickOnItem(1);
-        assertThat(listener.clickedItem, equalTo(1));
-        assertThat(shadowAlertDialog.getCheckedItemIndex(), equalTo(1));
+        assertThat(listener.clickedItem).isEqualTo(1);
+        assertThat(shadowAlertDialog.getCheckedItemIndex()).isEqualTo(1);
 
     }
 
@@ -367,14 +367,14 @@ public class AlertDialogTest {
         ContextWrapper context = new ContextWrapper(null);
         AlertDialog dialog = new AlertDialog.Builder(context).create();
 
-        assertThat(dialog.findViewById(99), nullValue());
+        assertThat(dialog.findViewById(99)).isNull();
 
         View view = new View(context);
         view.setId(99);
         dialog.setView(view);
-        assertThat(dialog.findViewById(99), sameInstance(view));
+        assertThat(dialog.findViewById(99)).isSameAs(view);
 
-        assertThat(dialog.findViewById(66), nullValue());
+        assertThat(dialog.findViewById(66)).isNull();
     }
 
     @Test
@@ -382,7 +382,7 @@ public class AlertDialogTest {
         AlertDialog dialog = new AlertDialog(Robolectric.application) {
         };
 
-        assertThat(dialog.findViewById(99), nullValue());
+        assertThat(dialog.findViewById(99)).isNull();
 
         dialog.setContentView(R.layout.main);
         assertNotNull(dialog.findViewById(R.id.title));
@@ -392,10 +392,9 @@ public class AlertDialogTest {
     public void shouldReturnACustomFrameLayout() {
         AlertDialog dialog = new AlertDialog.Builder(Robolectric.application).create();
 
-        assertThat( dialog.findViewById( android.R.id.custom ), notNullValue() );
-        assertThat( dialog.findViewById( android.R.id.custom ), instanceOf(FrameLayout.class) );
-        assertThat( dialog.findViewById( android.R.id.custom ), 
-        		sameInstance(dialog.findViewById( android.R.id.custom )) );
+        assertThat(dialog.findViewById(android.R.id.custom)).isNotNull();
+        assertThat(dialog.findViewById(android.R.id.custom)).isInstanceOf(FrameLayout.class);
+        assertThat(dialog.findViewById(android.R.id.custom)).isSameAs(dialog.findViewById(android.R.id.custom));
     
     }
 

@@ -1,20 +1,24 @@
 package org.robolectric.shadows;
 
 import android.content.ContentResolver;
-import android.database.*;
+import android.database.CharArrayBuffer;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.database.CursorWrapper;
+import android.database.DataSetObserver;
 import android.net.Uri;
 import android.os.Bundle;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mockito;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import java.lang.reflect.Method;
 import java.util.HashMap;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.matchers.JUnitMatchers.hasItem;
 import static org.mockito.Mockito.*;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -38,7 +42,7 @@ public class CursorWrapperTest {
         }
 
         public void verifyForward(String methodName, Object... params) throws Exception {
-            assertThat(cursorMethod.keySet(), hasItem(methodName));
+            org.junit.Assert.assertThat(cursorMethod.keySet(), hasItem(methodName));
 
             Method method = cursorMethod.get(methodName);
             method.invoke(cursorWrapper, params);
@@ -99,7 +103,7 @@ public class CursorWrapperTest {
         CursorWrapper cursorWrapper = new CursorWrapper(mockCursor);
         ShadowCursorWrapper shadow = Robolectric.shadowOf(cursorWrapper);
 
-        assertThat(shadow.getWrappedCursor(), is(sameInstance(mockCursor)));
+        assertThat(shadow.getWrappedCursor()).isSameAs(mockCursor);
     }
 
 }

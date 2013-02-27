@@ -7,10 +7,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static android.content.Context.WIFI_SERVICE;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class WifiInfoTest {
@@ -23,6 +22,6 @@ public class WifiInfoTest {
 
         wifiManager = (WifiManager) application.getSystemService(WIFI_SERVICE);
         wifiInfo = wifiManager.getConnectionInfo();
-        assertThat(wifiInfo.getMacAddress(), equalTo("mac address"));
+        assertThat(wifiInfo.getMacAddress()).isEqualTo("mac address");
     }
 }

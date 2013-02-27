@@ -5,17 +5,14 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
 import static junit.framework.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ListActivityTest {
@@ -41,7 +38,7 @@ public class ListActivityTest {
         ListAdapter adapter = new CountingAdapter(5);
         listActivity.setListAdapter(adapter);
 
-        assertThat(listActivity.getListAdapter(), is(notNullValue()));
+        assertThat(listActivity.getListAdapter()).isNotNull();
     }
 
     @Test
@@ -65,7 +62,7 @@ public class ListActivityTest {
     public void shouldSetAdapterOnListView() throws Exception {
         ListAdapter adapter = new CountingAdapter(5);
         listActivity.setListAdapter(adapter);
-        assertThat(listView.getAdapter(), sameInstance(adapter));
+        assertThat(listView.getAdapter()).isSameAs(adapter);
     }
 
     @Test(expected = RuntimeException.class)

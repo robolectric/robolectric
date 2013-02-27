@@ -18,8 +18,7 @@ import org.robolectric.res.EmptyResourceLoader;
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class PreferenceTest {
@@ -46,21 +45,21 @@ public class PreferenceTest {
 
         preference = new TestPreference(context, attrs, defStyle);
         shadow = Robolectric.shadowOf(preference);
-        assertThat(shadow.getContext(), sameInstance(context));
-        assertThat(shadow.getAttrs(), sameInstance((AttributeSet) attrs));
-        assertThat(shadow.getDefStyle(), equalTo(defStyle));
+        assertThat(shadow.getContext()).isSameAs(context);
+        assertThat(shadow.getAttrs()).isSameAs((AttributeSet) attrs);
+        assertThat(shadow.getDefStyle()).isEqualTo(defStyle);
 
         preference = new TestPreference(context, attrs);
         shadow = Robolectric.shadowOf(preference);
-        assertThat(shadow.getContext(), sameInstance(context));
-        assertThat(shadow.getAttrs(), sameInstance((AttributeSet) attrs));
-        assertThat(shadow.getDefStyle(), equalTo(0));
+        assertThat(shadow.getContext()).isSameAs(context);
+        assertThat(shadow.getAttrs()).isSameAs((AttributeSet) attrs);
+        assertThat(shadow.getDefStyle()).isEqualTo(0);
 
         preference = new TestPreference(context);
         shadow = Robolectric.shadowOf(preference);
-        assertThat(shadow.getContext(), sameInstance(context));
-        assertThat(shadow.getAttrs(), nullValue());
-        assertThat(shadow.getDefStyle(), equalTo(0));
+        assertThat(shadow.getContext()).isSameAs(context);
+        assertThat(shadow.getAttrs()).isNull();
+        assertThat(shadow.getDefStyle()).isEqualTo(0);
     }
 
     @Test
@@ -71,61 +70,61 @@ public class PreferenceTest {
         attrs = new RoboAttributeSet(attributes, new EmptyResourceLoader(), null);
 
         preference = new TestPreference(context, attrs);
-        assertThat(preference.getKey(), equalTo(key));
+        assertThat(preference.getKey()).isEqualTo(key);
     }
 
     @Test
     public void shouldHaveAKey() {
         String key = "key_value";
 
-        assertThat(preference.getKey(), nullValue());
+        assertThat(preference.getKey()).isNull();
         preference.setKey(key);
-        assertThat(preference.getKey(), equalTo(key));
+        assertThat(preference.getKey()).isEqualTo(key);
     }
 
     @Test
     public void shouldHaveATitle() {
         CharSequence title = "Test Preference";
 
-        assertThat(preference.getTitle(), nullValue());
+        assertThat(preference.getTitle()).isNull();
         preference.setTitle(title);
-        assertThat(preference.getTitle(), equalTo(title));
+        assertThat(preference.getTitle()).isEqualTo(title);
     }
 
     @Test
     public void shouldSetTitleByResourceId() {
         CharSequence expected = "Hello";
 
-        assertThat(preference.getTitle(), not(equalTo(expected)));
+        assertThat(preference.getTitle()).isNotEqualTo(expected);
         preference.setTitle(R.string.hello);
-        assertThat(preference.getTitle(), equalTo(expected));
+        assertThat(preference.getTitle()).isEqualTo(expected);
     }
 
     @Test
     public void shouldHaveASummary() {
         CharSequence summary = "This is only a test.";
 
-        assertThat(preference.getSummary(), nullValue());
+        assertThat(preference.getSummary()).isNull();
         preference.setSummary(summary);
-        assertThat(preference.getSummary(), equalTo(summary));
+        assertThat(preference.getSummary()).isEqualTo(summary);
     }
 
     @Test
     public void shouldSetSummaryByResourceId() {
         CharSequence expected = "Hello";
 
-        assertThat(preference.getSummary(), not(equalTo(expected)));
+        assertThat(preference.getSummary()).isNotEqualTo(expected);
         preference.setSummary(R.string.hello);
-        assertThat(preference.getSummary(), equalTo(expected));
+        assertThat(preference.getSummary()).isEqualTo(expected);
     }
 
     @Test
     public void shouldRememberDefaultValue() {
         Object defaultValue = "Zoodles was here";
 
-        assertThat(shadow.getDefaultValue(), nullValue());
+        assertThat(shadow.getDefaultValue()).isNull();
         preference.setDefaultValue(defaultValue);
-        assertThat(shadow.getDefaultValue(), sameInstance(defaultValue));
+        assertThat(shadow.getDefaultValue()).isSameAs(defaultValue);
     }
 
     @Test
@@ -134,19 +133,19 @@ public class PreferenceTest {
 
         for (int order : values) {
             preference.setOrder(order);
-            assertThat(preference.getOrder(), equalTo(order));
+            assertThat(preference.getOrder()).isEqualTo(order);
         }
     }
 
     @Test
     public void shouldEnable() {
-        assertThat(preference.isEnabled(), equalTo(true));
+        assertThat(preference.isEnabled()).isTrue();
 
         preference.setEnabled(false);
-        assertThat(preference.isEnabled(), equalTo(false));
+        assertThat(preference.isEnabled()).isFalse();
 
         preference.setEnabled(true);
-        assertThat(preference.isEnabled(), equalTo(true));
+        assertThat(preference.isEnabled()).isTrue();
     }
 
     @Test
@@ -155,8 +154,8 @@ public class PreferenceTest {
 
         for (boolean shouldPersist : values) {
             shadow.setPersistent(shouldPersist);
-            assertThat(preference.shouldPersist(), equalTo(shouldPersist));
-            assertThat(preference.isPersistent(), equalTo(shouldPersist));
+            assertThat(preference.shouldPersist()).isEqualTo(shouldPersist);
+            assertThat(preference.isPersistent()).isEqualTo(shouldPersist);
         }
     }
 
@@ -169,10 +168,10 @@ public class PreferenceTest {
             shadow.persistInt(persistedInt);
 
             shadow.setPersistent(false);
-            assertThat(preference.getPersistedInt(defaultValue), equalTo(defaultValue));
+            assertThat(preference.getPersistedInt(defaultValue)).isEqualTo(defaultValue);
 
             shadow.setPersistent(true);
-            assertThat(preference.getPersistedInt(defaultValue), equalTo(persistedInt));
+            assertThat(preference.getPersistedInt(defaultValue)).isEqualTo(persistedInt);
         }
     }
 
@@ -186,7 +185,7 @@ public class PreferenceTest {
         };
 
         preference.setOnPreferenceClickListener(onPreferenceClickListener);
-        assertThat(shadow.getOnPreferenceClickListener(), sameInstance(onPreferenceClickListener));
+        assertThat(shadow.getOnPreferenceClickListener()).isSameAs(onPreferenceClickListener);
     }
 
     @Test
@@ -200,9 +199,9 @@ public class PreferenceTest {
         };
         preference.setOnPreferenceClickListener(onPreferenceClickListener);
 
-        assertThat(clicked, equalTo(false));
-        assertThat(shadow.click(), equalTo(true));
-        assertThat(clicked, equalTo(true));
+        assertThat(clicked).isFalse();
+        assertThat(shadow.click()).isTrue();
+        assertThat(clicked).isTrue();
     }
 
     @Test
@@ -211,8 +210,8 @@ public class PreferenceTest {
         preference.setOnPreferenceChangeListener(null);
 
         for (Integer newValue : values) {
-            assertThat("Case " + newValue, preference.callChangeListener(newValue), equalTo(true));
-            assertThat("Case " + newValue, shadow.getCallChangeListenerValue(), sameInstance((Object) newValue));
+            assertThat(preference.callChangeListener(newValue)).isTrue().as("Case " + newValue);
+            assertThat(shadow.getCallChangeListenerValue()).isSameAs(newValue).as("Case " + newValue);
         }
     }
 
@@ -224,8 +223,8 @@ public class PreferenceTest {
                 return (Integer) o != 666;
             }
         });
-        assertThat(preference.callChangeListener(666), is(false));
-        assertThat(preference.callChangeListener(777), is(true));
+        assertThat(preference.callChangeListener(666)).isFalse();
+        assertThat(preference.callChangeListener(777)).isTrue();
     }
 
     @Test
@@ -238,23 +237,23 @@ public class PreferenceTest {
         };
 
         preference.setOnPreferenceChangeListener(onPreferenceChangeListener);
-        assertThat(shadow.getOnPreferenceChangeListener(), sameInstance(onPreferenceChangeListener));
+        assertThat(shadow.getOnPreferenceChangeListener()).isSameAs(onPreferenceChangeListener);
     }
 
 
     @Test
     public void shouldReturnIntent() {
-        assertThat(preference.getIntent(), nullValue());
+        assertThat(preference.getIntent()).isNull();
         preference.setIntent(new Intent());
-        assertThat(preference.getIntent(), notNullValue());
+        assertThat(preference.getIntent()).isNotNull();
     }
 
     @Test
     public void shouldRememberDependency() {
-        assertThat(preference.getDependency(), nullValue());
+        assertThat(preference.getDependency()).isNull();
         preference.setDependency("TEST_PREF_KEY");
-        assertThat(preference.getDependency(), notNullValue());
-        assertThat(preference.getDependency(), equalTo("TEST_PREF_KEY"));
+        assertThat(preference.getDependency()).isNotNull();
+        assertThat(preference.getDependency()).isEqualTo("TEST_PREF_KEY");
     }
 
     private static class TestPreference extends Preference {

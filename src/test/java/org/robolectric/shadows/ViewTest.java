@@ -23,10 +23,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.res.EmptyResourceLoader;
-import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.Attribute;
-import org.robolectric.res.PackageResourceLoader;
+import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.tester.android.view.TestWindow;
 import org.robolectric.util.TestAnimationListener;
 import org.robolectric.util.TestOnClickListener;
@@ -38,20 +36,9 @@ import java.util.ArrayList;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static junit.framework.Assert.assertEquals;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertTrue;
-import static org.robolectric.Robolectric.application;
-import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.Robolectric.visualize;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.*;
+import static org.robolectric.Robolectric.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ViewTest {
@@ -66,19 +53,19 @@ public class ViewTest {
 
     @Test
     public void testHasNullLayoutParamsUntilAddedToParent() throws Exception {
-        assertThat(view.getLayoutParams(), nullValue());
+        assertThat(view.getLayoutParams()).isNull();
         new LinearLayout(application).addView(view);
-        assertThat(view.getLayoutParams(), notNullValue());
+        assertThat(view.getLayoutParams()).isNotNull();
     }
 
     @Test
     public void layout_shouldAffectWidthAndHeight() throws Exception {
-        assertThat(view.getWidth(), equalTo(0));
-        assertThat(view.getHeight(), equalTo(0));
+        assertThat(view.getWidth()).isEqualTo(0);
+        assertThat(view.getHeight()).isEqualTo(0);
 
         view.layout(100, 200, 303, 404);
-        assertThat(view.getWidth(), equalTo(303 - 100));
-        assertThat(view.getHeight(), equalTo(404 - 200));
+        assertThat(view.getWidth()).isEqualTo(303 - 100);
+        assertThat(view.getHeight()).isEqualTo(404 - 200);
     }
 
     @Test
@@ -88,8 +75,8 @@ public class ViewTest {
                 setMeasuredDimension(123, 456);
             }
         };
-        assertThat(view1.getMeasuredWidth(), equalTo(123));
-        assertThat(view1.getMeasuredHeight(), equalTo(456));
+        assertThat(view1.getMeasuredWidth()).isEqualTo(123);
+        assertThat(view1.getMeasuredHeight()).isEqualTo(456);
     }
 
     @Test
@@ -209,29 +196,29 @@ public class ViewTest {
 
     @Test
     public void getBackground_shouldReturnNullIfNoBackgroundHasBeenSet() throws Exception {
-        assertThat(view.getBackground(), nullValue());
+        assertThat(view.getBackground()).isNull();
     }
 
     @Test
     public void shouldSetBackgroundColor() {
         int red = 0xffff0000;
         view.setBackgroundColor(red);
-        assertThat((ColorDrawable) view.getBackground(), equalTo(new ColorDrawable(red)));
+        assertThat((ColorDrawable) view.getBackground()).isEqualTo(new ColorDrawable(red));
     }
 
     @Test
     public void shouldSetBackgroundResource() throws Exception {
         view.setBackgroundResource(R.drawable.an_image);
-        assertThat(view.getBackground(), equalTo(view.getResources().getDrawable(R.drawable.an_image)));
-        assertThat(shadowOf(view).getBackgroundResourceId(), equalTo(R.drawable.an_image));
+        assertThat(view.getBackground()).isEqualTo(view.getResources().getDrawable(R.drawable.an_image));
+        assertThat(shadowOf(view).getBackgroundResourceId()).isEqualTo(R.drawable.an_image);
     }
 
     @Test
     public void shouldClearBackgroundResource() throws Exception {
         view.setBackgroundResource(R.drawable.an_image);
         view.setBackgroundResource(0);
-        assertThat(view.getBackground(), equalTo(null));
-        assertThat(shadowOf(view).getBackgroundResourceId(), equalTo(0));
+        assertThat(view.getBackground()).isEqualTo(null);
+        assertThat(shadowOf(view).getBackgroundResourceId()).isEqualTo(0);
     }
 
     @Test
@@ -240,7 +227,7 @@ public class ViewTest {
 
         for (int color : colors) {
             view.setBackgroundColor(color);
-            assertThat(shadowOf(view).getBackgroundColor(), equalTo(color));
+            assertThat(shadowOf(view).getBackgroundColor()).isEqualTo(color);
         }
     }
 
@@ -248,8 +235,8 @@ public class ViewTest {
     public void shouldRecordBackgroundDrawable() {
         Drawable drawable = new BitmapDrawable(BitmapFactory.decodeFile("some/fake/file"));
         view.setBackgroundDrawable(drawable);
-        assertThat(view.getBackground(), sameInstance(drawable));
-        assertThat(visualize(view), equalTo("background:\nBitmap for file:some/fake/file"));
+        assertThat(view.getBackground()).isSameAs(drawable);
+        assertThat(visualize(view)).isEqualTo("background:\nBitmap for file:some/fake/file");
     }
 
     @Test
@@ -348,7 +335,7 @@ public class ViewTest {
     public void shouldSetAnimation() throws Exception {
         Animation anim = new TestAnimation();
         view.setAnimation(anim);
-        assertThat(view.getAnimation(), sameInstance(anim));
+        assertThat(view.getAnimation()).isSameAs(anim);
     }
 
     @Test
@@ -356,23 +343,23 @@ public class ViewTest {
         Animation anim = new TestAnimation();
         TestAnimationListener listener = new TestAnimationListener();
         anim.setAnimationListener(listener);
-        assertThat(listener.wasStartCalled, equalTo(false));
-        assertThat(listener.wasRepeatCalled, equalTo(false));
-        assertThat(listener.wasEndCalled, equalTo(false));
+        assertThat(listener.wasStartCalled).isFalse();
+        assertThat(listener.wasRepeatCalled).isFalse();
+        assertThat(listener.wasEndCalled).isFalse();
         view.startAnimation(anim);
-        assertThat(listener.wasStartCalled, equalTo(true));
-        assertThat(listener.wasRepeatCalled, equalTo(false));
-        assertThat(listener.wasEndCalled, equalTo(false));
+        assertThat(listener.wasStartCalled).isTrue();
+        assertThat(listener.wasRepeatCalled).isFalse();
+        assertThat(listener.wasEndCalled).isFalse();
         view.clearAnimation();
-        assertThat(listener.wasStartCalled, equalTo(true));
-        assertThat(listener.wasRepeatCalled, equalTo(false));
-        assertThat(listener.wasEndCalled, equalTo(true));
+        assertThat(listener.wasStartCalled).isTrue();
+        assertThat(listener.wasRepeatCalled).isFalse();
+        assertThat(listener.wasEndCalled).isTrue();
     }
 
     @Test
     public void shouldFindViewWithTag() {
         view.setTag("tagged");
-        assertThat(view.findViewWithTag("tagged"), sameInstance(view));
+        assertThat(view.findViewWithTag("tagged")).isSameAs(view);
     }
 
     @Test
@@ -383,13 +370,13 @@ public class ViewTest {
                 return "blarg";
             }
         };
-        assertThat(view.findViewWithTag("blarg"), sameInstance(view));
+        assertThat(view.findViewWithTag("blarg")).isSameAs(view);
     }
 
     @Test
     public void scrollTo_shouldStoreTheScrolledCoordinates() throws Exception {
         view.scrollTo(1, 2);
-        assertThat(shadowOf(view).scrollToCoordinates, equalTo(new Point(1, 2)));
+        assertThat(shadowOf(view).scrollToCoordinates).isEqualTo(new Point(1, 2));
     }
 
     @Test
@@ -409,8 +396,8 @@ public class ViewTest {
     @Test
     public void getViewTreeObserver_shouldReturnTheSameObserverFromMultipleCalls() throws Exception {
         ViewTreeObserver observer = view.getViewTreeObserver();
-        assertThat(observer, instanceOf(ViewTreeObserver.class));
-        assertThat(view.getViewTreeObserver(), sameInstance(observer));
+        assertThat(observer).isInstanceOf(ViewTreeObserver.class);
+        assertThat(view.getViewTreeObserver()).isSameAs(observer);
     }
 
     @Test
@@ -418,9 +405,9 @@ public class ViewTest {
         TouchableView touchableView = new TouchableView(null);
         MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
         touchableView.dispatchTouchEvent(event);
-        assertThat(touchableView.event, sameInstance(event));
+        assertThat(touchableView.event).isSameAs(event);
         view.dispatchTouchEvent(event);
-        assertThat(shadowOf(view).getLastTouchEvent(), sameInstance(event));
+        assertThat(shadowOf(view).getLastTouchEvent()).isSameAs(event);
     }
 
     @Test
@@ -433,7 +420,7 @@ public class ViewTest {
         });
         MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
         view.dispatchTouchEvent(event);
-        assertThat(shadowOf(view).getLastTouchEvent(), nullValue());
+        assertThat(shadowOf(view).getLastTouchEvent()).isNull();
     }
 
     @Test
@@ -446,7 +433,7 @@ public class ViewTest {
         });
         MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
         view.dispatchTouchEvent(event);
-        assertThat(shadowOf(view).getLastTouchEvent(), sameInstance(event));
+        assertThat(shadowOf(view).getLastTouchEvent()).isSameAs(event);
     }
 
     @Test
@@ -470,18 +457,18 @@ public class ViewTest {
         // View does not provide its own onMeasure implementation
         TestView view1 = new TestView(new Activity());
 
-        assertThat(view1.getHeight(), equalTo(0));
-        assertThat(view1.getWidth(), equalTo(0));
-        assertThat(view1.getMeasuredHeight(), equalTo(0));
-        assertThat(view1.getMeasuredWidth(), equalTo(0));
+        assertThat(view1.getHeight()).isEqualTo(0);
+        assertThat(view1.getWidth()).isEqualTo(0);
+        assertThat(view1.getMeasuredHeight()).isEqualTo(0);
+        assertThat(view1.getMeasuredWidth()).isEqualTo(0);
 
         view1.measure(MeasureSpec.makeMeasureSpec(150, MeasureSpec.AT_MOST),
                 MeasureSpec.makeMeasureSpec(300, MeasureSpec.AT_MOST));
 
-        assertThat(view1.getHeight(), equalTo(0));
-        assertThat(view1.getWidth(), equalTo(0));
-        assertThat(view1.getMeasuredHeight(), equalTo(300));
-        assertThat(view1.getMeasuredWidth(), equalTo(150));
+        assertThat(view1.getHeight()).isEqualTo(0);
+        assertThat(view1.getWidth()).isEqualTo(0);
+        assertThat(view1.getMeasuredHeight()).isEqualTo(300);
+        assertThat(view1.getMeasuredWidth()).isEqualTo(150);
     }
 
     @Test
@@ -489,18 +476,18 @@ public class ViewTest {
         // View provides its own onMeasure implementation
         TestView2 view2 = new TestView2(new Activity());
 
-        assertThat(view2.getHeight(), equalTo(0));
-        assertThat(view2.getWidth(), equalTo(0));
-        assertThat(view2.getMeasuredHeight(), equalTo(0));
-        assertThat(view2.getMeasuredWidth(), equalTo(0));
+        assertThat(view2.getHeight()).isEqualTo(0);
+        assertThat(view2.getWidth()).isEqualTo(0);
+        assertThat(view2.getMeasuredHeight()).isEqualTo(0);
+        assertThat(view2.getMeasuredWidth()).isEqualTo(0);
 
         view2.measure(MeasureSpec.makeMeasureSpec(1000, MeasureSpec.AT_MOST),
                 MeasureSpec.makeMeasureSpec(600, MeasureSpec.AT_MOST));
 
-        assertThat(view2.getHeight(), equalTo(0));
-        assertThat(view2.getWidth(), equalTo(0));
-        assertThat(view2.getMeasuredHeight(), equalTo(400));
-        assertThat(view2.getMeasuredWidth(), equalTo(800));
+        assertThat(view2.getHeight()).isEqualTo(0);
+        assertThat(view2.getWidth()).isEqualTo(0);
+        assertThat(view2.getMeasuredHeight()).isEqualTo(400);
+        assertThat(view2.getMeasuredWidth()).isEqualTo(800);
     }
 
     @Test
@@ -509,8 +496,8 @@ public class ViewTest {
         view.setTranslationX(8.9f);
         view.setTranslationY(4.6f);
 
-        assertThat(view.getTranslationX(), equalTo(8.9f));
-        assertThat(view.getTranslationY(), equalTo(4.6f));
+        assertThat(view.getTranslationX()).isEqualTo(8.9f);
+        assertThat(view.getTranslationY()).isEqualTo(4.6f);
     }
 
     @Test
@@ -518,103 +505,103 @@ public class ViewTest {
         view = new TestView(new Activity());
         view.setAlpha(9.1f);
 
-        assertThat(view.getAlpha(), equalTo(9.1f));
+        assertThat(view.getAlpha()).isEqualTo(9.1f);
     }
 
     @Test
     public void itKnowsIfTheViewIsShown() {
         view.setVisibility(View.VISIBLE);
-        assertThat(view.isShown(), is(true));
+        assertThat(view.isShown()).isTrue();
     }
 
     @Test
     public void itKnowsIfTheViewIsNotShown() {
         view.setVisibility(View.GONE);
-        assertThat(view.isShown(), is(false));
+        assertThat(view.isShown()).isFalse();
 
         view.setVisibility(View.INVISIBLE);
-        assertThat(view.isShown(), is(false));
+        assertThat(view.isShown()).isFalse();
     }
 
     @Test
     public void shouldTrackRequestLayoutCalls() throws Exception {
-        assertThat(shadowOf(view).didRequestLayout(), is(false));
+        assertThat(shadowOf(view).didRequestLayout()).isFalse();
         view.requestLayout();
-        assertThat(shadowOf(view).didRequestLayout(), is(true));
+        assertThat(shadowOf(view).didRequestLayout()).isTrue();
         shadowOf(view).setDidRequestLayout(false);
-        assertThat(shadowOf(view).didRequestLayout(), is(false));
+        assertThat(shadowOf(view).didRequestLayout()).isFalse();
     }
 
     public void shouldClickAndNotClick() throws Exception {
-        assertThat(view.isClickable(), equalTo(false));
+        assertThat(view.isClickable()).isFalse();
         view.setClickable(true);
-        assertThat(view.isClickable(), equalTo(true));
+        assertThat(view.isClickable()).isTrue();
         view.setClickable(false);
-        assertThat(view.isClickable(), equalTo(false));
+        assertThat(view.isClickable()).isFalse();
         view.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 ;
             }
         });
-        assertThat(view.isClickable(), equalTo(true));
+        assertThat(view.isClickable()).isTrue();
     }
 
     @Test
     public void shouldLongClickAndNotLongClick() throws Exception {
-        assertThat(view.isLongClickable(), equalTo(false));
+        assertThat(view.isLongClickable()).isFalse();
         view.setLongClickable(true);
-        assertThat(view.isLongClickable(), equalTo(true));
+        assertThat(view.isLongClickable()).isTrue();
         view.setLongClickable(false);
-        assertThat(view.isLongClickable(), equalTo(false));
+        assertThat(view.isLongClickable()).isFalse();
         view.setOnLongClickListener(new OnLongClickListener() {
             @Override
             public boolean onLongClick(View v) {
                 return false;
             }
         });
-        assertThat(view.isLongClickable(), equalTo(true));
+        assertThat(view.isLongClickable()).isTrue();
     }
 
     @Test
     public void setScaleX_shouldSetScaleX() throws Exception {
-        assertThat(shadowOf(view).getScaleX(), equalTo(1f));
+        assertThat(shadowOf(view).getScaleX()).isEqualTo(1f);
         shadowOf(view).setScaleX(2.5f);
-        assertThat(shadowOf(view).getScaleX(), equalTo(2.5f));
+        assertThat(shadowOf(view).getScaleX()).isEqualTo(2.5f);
         shadowOf(view).setScaleX(0.5f);
-        assertThat(shadowOf(view).getScaleX(), equalTo(0.5f));
+        assertThat(shadowOf(view).getScaleX()).isEqualTo(0.5f);
     }
 
     @Test
     public void setScaleY_shouldSetScaleY() throws Exception {
-        assertThat(shadowOf(view).getScaleX(), equalTo(1f));
+        assertThat(shadowOf(view).getScaleX()).isEqualTo(1f);
         shadowOf(view).setScaleY(2.5f);
-        assertThat(shadowOf(view).getScaleY(), equalTo(2.5f));
+        assertThat(shadowOf(view).getScaleY()).isEqualTo(2.5f);
         shadowOf(view).setScaleY(0.5f);
-        assertThat(shadowOf(view).getScaleY(), equalTo(0.5f));
+        assertThat(shadowOf(view).getScaleY()).isEqualTo(0.5f);
     }
 
     @Test
     public void performHapticFeedback_shouldSetLastPerformedHapticFeedback() throws Exception {
-        assertThat(shadowOf(view).lastHapticFeedbackPerformed(), equalTo(-1));
+        assertThat(shadowOf(view).lastHapticFeedbackPerformed()).isEqualTo(-1);
         view.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-        assertThat(shadowOf(view).lastHapticFeedbackPerformed(), equalTo(HapticFeedbackConstants.LONG_PRESS));
+        assertThat(shadowOf(view).lastHapticFeedbackPerformed()).isEqualTo(HapticFeedbackConstants.LONG_PRESS);
     }
 
     @Test
     public void canAssertThatSuperDotOnLayoutWasCalledFromViewSubclasses() throws Exception {
         TestView2 view = new TestView2(new Activity());
-        assertThat(shadowOf(view).onLayoutWasCalled(), equalTo(false));
+        assertThat(shadowOf(view).onLayoutWasCalled()).isFalse();
         view.onLayout(true, 1, 2, 3, 4);
-        assertThat(shadowOf(view).onLayoutWasCalled(), equalTo(true));
+        assertThat(shadowOf(view).onLayoutWasCalled()).isTrue();
     }
 
     @Test
     public void setScrolls_canBeAskedFor() throws Exception {
         view.setScrollX(234);
         view.setScrollY(544);
-        assertThat(view.getScrollX(), equalTo(234));
-        assertThat(view.getScrollY(), equalTo(544));
+        assertThat(view.getScrollX()).isEqualTo(234);
+        assertThat(view.getScrollY()).isEqualTo(544);
     }
 
     @Test
@@ -623,11 +610,11 @@ public class ViewTest {
         testView.setScrollX(122);
         testView.setScrollY(150);
         testView.setScrollX(453);
-        assertThat(testView.oldl, equalTo(122));
+        assertThat(testView.oldl).isEqualTo(122);
         testView.setScrollY(54);
-        assertThat(testView.l, equalTo(453));
-        assertThat(testView.t, equalTo(54));
-        assertThat(testView.oldt, equalTo(150));
+        assertThat(testView.l).isEqualTo(453);
+        assertThat(testView.t).isEqualTo(54);
+        assertThat(testView.oldt).isEqualTo(150);
     }
 
     private static class TestAnimation extends Animation {

@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.robolectric.TestRunners;
 import org.junit.Test;
@@ -61,8 +61,8 @@ public class ServiceTest {
         service.stopForeground(true);
         
         ShadowService shadowService = shadowOf(service);
-        assertThat(shadowService.isForegroundStopped(), is(true));
-        assertThat(shadowService.getNotificationShouldRemoved(), is(true));
+        assertThat(shadowService.isForegroundStopped()).isTrue();
+        assertThat(shadowService.getNotificationShouldRemoved()).isTrue();
     }
     
     private static class MyService extends Service {

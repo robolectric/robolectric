@@ -13,7 +13,7 @@ import org.junit.runner.RunWith;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SQLiteOpenHelperTest {
@@ -45,7 +45,7 @@ public class SQLiteOpenHelperTest {
         SQLiteDatabase db1 = helper.getReadableDatabase();
         SQLiteDatabase db2 = helper.getReadableDatabase();
 
-        assertThat(db1, sameInstance(db2));
+        assertThat(db1).isSameAs(db2);
     }
 
     @Test
@@ -67,33 +67,33 @@ public class SQLiteOpenHelperTest {
         SQLiteDatabase db1 = helper.getWritableDatabase();
         SQLiteDatabase db2 = helper.getWritableDatabase();
 
-        assertThat(db1, sameInstance(db2));
+        assertThat(db1).isSameAs(db2);
     }
 
     @Test
     public void testClose() throws Exception {
         SQLiteDatabase database = helper.getWritableDatabase();
 
-        assertThat(database.isOpen(), equalTo(true));
+        assertThat(database.isOpen()).isTrue();
         helper.close();
-        assertThat(database.isOpen(), equalTo(false));
+        assertThat(database.isOpen()).isFalse();
     }
 
     private void assertInitialDB(SQLiteDatabase database) {
         assertDatabaseOpened(database);
-        assertThat(helper.onCreateCalled, equalTo(true));
+        assertThat(helper.onCreateCalled).isTrue();
     }
 
     private void assertSubsequentDB(SQLiteDatabase database) {
         assertDatabaseOpened(database);
-        assertThat(helper.onCreateCalled, equalTo(false));
+        assertThat(helper.onCreateCalled).isFalse();
     }
 
     private void assertDatabaseOpened(SQLiteDatabase database) {
-        assertThat(database, notNullValue());
-        assertThat(database.isOpen(), equalTo(true));
-        assertThat(helper.onOpenCalled, equalTo(true));
-        assertThat(helper.onUpgradeCalled, equalTo(false));
+        assertThat(database).isNotNull();
+        assertThat(database.isOpen()).isTrue();
+        assertThat(helper.onOpenCalled).isTrue();
+        assertThat(helper.onUpgradeCalled).isFalse();
     }
 
     private class TestOpenHelper extends SQLiteOpenHelper {

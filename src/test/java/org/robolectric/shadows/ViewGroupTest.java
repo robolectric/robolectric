@@ -22,17 +22,8 @@ import org.robolectric.TestRunners;
 import java.io.ByteArrayOutputStream;
 import java.io.PrintStream;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsNull.nullValue;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -81,7 +72,7 @@ public class ViewGroupTest {
 
     @Test
     public void testLayoutAnimationListener() {
-        assertThat(root.getLayoutAnimationListener(), nullValue());
+        assertThat(root.getLayoutAnimationListener()).isNull();
 
         AnimationListener animationListener = new AnimationListener() {
             @Override
@@ -98,26 +89,26 @@ public class ViewGroupTest {
         };
         root.setLayoutAnimationListener(animationListener);
 
-        assertThat(root.getLayoutAnimationListener(), sameInstance(animationListener));
+        assertThat(root.getLayoutAnimationListener()).isSameAs(animationListener);
     }
 
     @Test
     public void testLayoutAnimation() {
-        assertThat(root.getLayoutAnimation(), nullValue());
+        assertThat(root.getLayoutAnimation()).isNull();
         LayoutAnimationController layoutAnim = new LayoutAnimationController(context, null);
         root.setLayoutAnimation(layoutAnim);
-        assertThat(root.getLayoutAnimation(), sameInstance(layoutAnim));
+        assertThat(root.getLayoutAnimation()).isSameAs(layoutAnim);
     }
 
     @Test
     public void testRemoveChildAt() throws Exception {
         root.removeViewAt(1);
 
-        assertThat(root.getChildCount(), equalTo(2));
-        assertThat(root.getChildAt(0), sameInstance(child1));
-        assertThat(root.getChildAt(1), sameInstance((View) child3));
+        assertThat(root.getChildCount()).isEqualTo(2);
+        assertThat(root.getChildAt(0)).isSameAs(child1);
+        assertThat(root.getChildAt(1)).isSameAs((View) child3);
 
-        assertThat(child2.getParent(), nullValue());
+        assertThat(child2.getParent()).isNull();
     }
 
     @Test
@@ -126,9 +117,9 @@ public class ViewGroupTest {
         root.addView(child1);
         root.addView(child2);
         root.addView(child3, 1);
-        assertThat(root.getChildAt(0), sameInstance(child1));
-        assertThat(root.getChildAt(1), sameInstance((View) child3));
-        assertThat(root.getChildAt(2), sameInstance(child2));
+        assertThat(root.getChildAt(0)).isSameAs(child1);
+        assertThat(root.getChildAt(1)).isSameAs((View) child3);
+        assertThat(root.getChildAt(2)).isSameAs(child2);
     }
 
     @Test
@@ -140,9 +131,9 @@ public class ViewGroupTest {
         root.addView(child1);
         root.addView(child2);
         root.addView(child3, 1);
-        assertThat(root.findViewWithTag("tag1"), sameInstance(child1));
-        assertThat(root.findViewWithTag("tag2"), sameInstance((View) child2));
-        assertThat((ViewGroup) root.findViewWithTag("tag3"), sameInstance(child3));
+        assertThat(root.findViewWithTag("tag1")).isSameAs(child1);
+        assertThat(root.findViewWithTag("tag2")).isSameAs((View) child2);
+        assertThat((ViewGroup) root.findViewWithTag("tag3")).isSameAs(child3);
     }
 
     @Test
@@ -154,8 +145,8 @@ public class ViewGroupTest {
         root.addView(child1);
         root.addView(child2);
         root.addView(child3, 1);
-        assertThat(root.findViewWithTag("tag21"), equalTo(null));
-        assertThat((ViewGroup) root.findViewWithTag("tag23"), equalTo(null));
+        assertThat(root.findViewWithTag("tag21")).isEqualTo(null);
+        assertThat((ViewGroup) root.findViewWithTag("tag23")).isEqualTo(null);
     }
 
     @Test
@@ -172,13 +163,13 @@ public class ViewGroupTest {
         child3b.setTag("tag2");
 
         //can find views by tag from root
-        assertThat(root.findViewWithTag("tag1"), sameInstance(child1));
-        assertThat(root.findViewWithTag("tag2"), sameInstance((View) child2));
-        assertThat((ViewGroup) root.findViewWithTag("tag3"), sameInstance(child3));
+        assertThat(root.findViewWithTag("tag1")).isSameAs(child1);
+        assertThat(root.findViewWithTag("tag2")).isSameAs((View) child2);
+        assertThat((ViewGroup) root.findViewWithTag("tag3")).isSameAs(child3);
 
         //can find views by tag from child3
-        assertThat(child3.findViewWithTag("tag1"), sameInstance(child3a));
-        assertThat(child3.findViewWithTag("tag2"), sameInstance(child3b));
+        assertThat(child3.findViewWithTag("tag1")).isSameAs(child3a);
+        assertThat(child3.findViewWithTag("tag2")).isSameAs(child3b);
     }
 
     @Test
@@ -189,7 +180,7 @@ public class ViewGroupTest {
                 return "blarg";
             }
         };
-        assertThat((ViewGroup) viewGroup.findViewWithTag("blarg"), sameInstance(viewGroup));
+        assertThat((ViewGroup) viewGroup.findViewWithTag("blarg")).isSameAs(viewGroup);
     }
 
     @Test
@@ -263,7 +254,7 @@ public class ViewGroupTest {
 
     @Test
     public void getChildAt_shouldThrowIndexOutOfBoundsForInvalidIndices() { // 'cause that's what Android does
-        assertThat(root.getChildCount(), equalTo(3));
+        assertThat(root.getChildCount()).isEqualTo(3);
         assertThrowsExceptionForBadIndex(13);
         assertThrowsExceptionForBadIndex(3);
         assertThrowsExceptionForBadIndex(-1);
@@ -271,7 +262,7 @@ public class ViewGroupTest {
 
     private void assertThrowsExceptionForBadIndex(int index) {
         try {
-            assertThat(root.getChildAt(index), nullValue());
+            assertThat(root.getChildAt(index)).isNull();
             fail("no exception");
         } catch (IndexOutOfBoundsException ex) {
             //noinspection UnnecessaryReturnStatement
@@ -283,27 +274,27 @@ public class ViewGroupTest {
 
     @Test
     public void layoutParams_shouldBeViewGroupLayoutParams() {
-        assertThat(child1.getLayoutParams(), instanceOf(FrameLayout.LayoutParams.class));
-        assertThat(child1.getLayoutParams(), instanceOf(ViewGroup.LayoutParams.class));
+        assertThat(child1.getLayoutParams()).isInstanceOf(FrameLayout.LayoutParams.class);
+        assertThat(child1.getLayoutParams()).isInstanceOf(ViewGroup.LayoutParams.class);
     }
 
     @Test
     public void removeView_removesView() throws Exception {
-        assertThat(root.getChildCount(), equalTo(3));
+        assertThat(root.getChildCount()).isEqualTo(3);
         root.removeView(child1);
-        assertThat(root.getChildCount(), equalTo(2));
-        assertThat(root.getChildAt(0), sameInstance(child2));
-        assertThat(root.getChildAt(1), sameInstance((View) child3));
-        assertThat(child1.getParent(), nullValue());
+        assertThat(root.getChildCount()).isEqualTo(2);
+        assertThat(root.getChildAt(0)).isSameAs(child2);
+        assertThat(root.getChildAt(1)).isSameAs((View) child3);
+        assertThat(child1.getParent()).isNull();
     }
 
     @Test
     public void removeView_resetsParentOnlyIfViewIsInViewGroup() throws Exception {
-        assertThat(root.getChildCount(), equalTo(3));
+        assertThat(root.getChildCount()).isEqualTo(3);
         assertNotSame(child3a.getParent(), root);
         root.removeView(child3a);
-        assertThat(root.getChildCount(), equalTo(3));
-        assertThat(child3a.getParent(), sameInstance((ViewParent) child3));
+        assertThat(root.getChildCount()).isEqualTo(3);
+        assertThat(child3a.getParent()).isSameAs((ViewParent) child3);
     }
 
     @Test
@@ -324,7 +315,7 @@ public class ViewGroupTest {
         MotionEvent touchEvent = MotionEvent.obtain(0, 0, MotionEvent.ACTION_DOWN, 0, 0, 0);
         viewGroup.onInterceptTouchEvent(touchEvent);
 
-        assertThat(shadowOf(viewGroup).getInterceptedTouchEvent(), equalTo(touchEvent));
+        assertThat(shadowOf(viewGroup).getInterceptedTouchEvent()).isEqualTo(touchEvent);
     }
 
     @Test
@@ -335,7 +326,7 @@ public class ViewGroupTest {
         shadowOf(viewGroup).setDidRequestLayout(false);
 
         viewGroup.removeView(view);
-        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+        assertThat(shadowOf(viewGroup).didRequestLayout()).isTrue();
     }
 
     @Test
@@ -346,7 +337,7 @@ public class ViewGroupTest {
         shadowOf(viewGroup).setDidRequestLayout(false);
 
         viewGroup.removeViewAt(0);
-        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+        assertThat(shadowOf(viewGroup).didRequestLayout()).isTrue();
     }
 
     @Test
@@ -357,7 +348,7 @@ public class ViewGroupTest {
         shadowOf(viewGroup).setDidRequestLayout(false);
 
         viewGroup.removeAllViews();
-        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+        assertThat(shadowOf(viewGroup).didRequestLayout()).isTrue();
     }
 
     @Test
@@ -366,7 +357,7 @@ public class ViewGroupTest {
         ViewGroup viewGroup = new FrameLayout(context);
         viewGroup.addView(view);
 
-        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+        assertThat(shadowOf(viewGroup).didRequestLayout()).isTrue();
     }
 
     @Test
@@ -375,7 +366,7 @@ public class ViewGroupTest {
         ViewGroup viewGroup = new FrameLayout(context);
         viewGroup.addView(view, 0);
 
-        assertThat(shadowOf(viewGroup).didRequestLayout(), equalTo(true));
+        assertThat(shadowOf(viewGroup).didRequestLayout()).isTrue();
     }
 
     @Test

@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.robolectric.TestRunners;
 import org.junit.Before;
@@ -36,9 +36,9 @@ public class RatingBarTest {
     
     @Test
     public void testOnSeekBarChangedListener() {
-        assertThat(shadow.getOnRatingBarChangeListener(), sameInstance(listener));
+        assertThat(shadow.getOnRatingBarChangeListener()).isSameAs(listener);
         ratingBar.setOnRatingBarChangeListener(null);
-        assertThat(shadow.getOnRatingBarChangeListener(), nullValue());
+        assertThat(shadow.getOnRatingBarChangeListener()).isNull();
     }
     
     @Test
@@ -59,7 +59,7 @@ public class RatingBarTest {
     public void testInheritance() {
         TestRatingBar ratingBar = new TestRatingBar(new Activity());
         ShadowRatingBar shadow = Robolectric.shadowOf(ratingBar);
-        assertThat(shadow, instanceOf(ShadowAbsSeekBar.class));
+        assertThat(shadow).isInstanceOf(ShadowAbsSeekBar.class);
     }
     
     private static class TestRatingBar extends RatingBar {

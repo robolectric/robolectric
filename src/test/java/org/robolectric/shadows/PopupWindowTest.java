@@ -17,12 +17,9 @@ import org.robolectric.tester.android.view.TestWindowManager;
 
 import static android.view.MotionEvent.ACTION_DOWN;
 import static android.view.MotionEvent.obtain;
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertNotNull;
-import static junit.framework.Assert.assertSame;
-import static org.hamcrest.CoreMatchers.is;
+import static junit.framework.Assert.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -45,21 +42,21 @@ public class PopupWindowTest {
             View contentView = new View(null);
             popupWindow.setContentView(contentView);
 
-            assertThat(popupWindow.getContentView(), is(contentView));
+            assertThat(popupWindow.getContentView()).isSameAs(contentView);
         }
 
         @Test
         public void testSetWidth() {
             popupWindow.setWidth(1);
 
-            assertThat(popupWindow.getWidth(), is(1));
+            assertThat(popupWindow.getWidth()).isEqualTo(1);
         }
 
         @Test
         public void testSetHeight() {
             popupWindow.setHeight(2);
 
-            assertThat(popupWindow.getHeight(), is(2));
+            assertThat(popupWindow.getHeight()).isEqualTo(2);
         }
 
         @Test
@@ -107,7 +104,7 @@ public class PopupWindowTest {
             BitmapDrawable bitmapDrawable = new BitmapDrawable();
             popupWindow.setBackgroundDrawable(bitmapDrawable);
 
-            assertThat((BitmapDrawable) popupWindow.getBackground(), is(bitmapDrawable));
+            assertThat((BitmapDrawable) popupWindow.getBackground()).isSameAs(bitmapDrawable);
         }
 
         @Test

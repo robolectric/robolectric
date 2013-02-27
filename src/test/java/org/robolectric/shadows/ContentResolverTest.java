@@ -16,7 +16,6 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.RemoteException;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,17 +29,9 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static android.provider.MediaStore.Images.Media.EXTERNAL_CONTENT_URI;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.hasItem;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.*;
+import static org.junit.matchers.JUnitMatchers.hasItem;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -68,8 +59,8 @@ public class ContentResolverTest {
     public void insert_shouldReturnIncreasingUris() throws Exception {
         shadowContentResolver.setNextDatabaseIdForInserts(21);
 
-        assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues()), equalTo(uri21));
-        assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues()), equalTo(uri22));
+        assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri21);
+        assertThat(contentResolver.insert(EXTERNAL_CONTENT_URI, new ContentValues())).isEqualTo(uri22);
     }
 
     @Test
@@ -77,15 +68,15 @@ public class ContentResolverTest {
         ContentValues contentValues = new ContentValues();
         contentValues.put("foo", "bar");
         contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
-        assertThat(shadowContentResolver.getInsertStatements().size(), is(1));
-        assertThat(shadowContentResolver.getInsertStatements().get(0).getUri(), equalTo(EXTERNAL_CONTENT_URI));
-        assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues().getAsString("foo"), equalTo("bar"));
+        assertThat(shadowContentResolver.getInsertStatements().size()).isEqualTo(1);
+        assertThat(shadowContentResolver.getInsertStatements().get(0).getUri()).isEqualTo(EXTERNAL_CONTENT_URI);
+        assertThat(shadowContentResolver.getInsertStatements().get(0).getContentValues().getAsString("foo")).isEqualTo("bar");
 
         contentValues = new ContentValues();
         contentValues.put("hello", "world");
         contentResolver.insert(EXTERNAL_CONTENT_URI, contentValues);
-        assertThat(shadowContentResolver.getInsertStatements().size(), is(2));
-        assertThat(shadowContentResolver.getInsertStatements().get(1).getContentValues().getAsString("hello"), equalTo("world"));
+        assertThat(shadowContentResolver.getInsertStatements().size()).isEqualTo(2);
+        assertThat(shadowContentResolver.getInsertStatements().get(1).getContentValues().getAsString("hello")).isEqualTo("world");
     }
 
     @Test
@@ -93,50 +84,50 @@ public class ContentResolverTest {
         ContentValues contentValues = new ContentValues();
         contentValues.put("foo", "bar");
         contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, "robolectric", new String[] { "awesome" });
-        assertThat(shadowContentResolver.getUpdateStatements().size(), is(1));
-        assertThat(shadowContentResolver.getUpdateStatements().get(0).getUri(), equalTo(EXTERNAL_CONTENT_URI));
-        assertThat(shadowContentResolver.getUpdateStatements().get(0).getContentValues().getAsString("foo"), equalTo("bar"));
-        assertThat(shadowContentResolver.getUpdateStatements().get(0).getWhere(), equalTo("robolectric"));
-        assertThat(shadowContentResolver.getUpdateStatements().get(0).getSelectionArgs(), equalTo(new String[] { "awesome" }));
+        assertThat(shadowContentResolver.getUpdateStatements().size()).isEqualTo(1);
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getUri()).isEqualTo(EXTERNAL_CONTENT_URI);
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getContentValues().getAsString("foo")).isEqualTo("bar");
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getWhere()).isEqualTo("robolectric");
+        assertThat(shadowContentResolver.getUpdateStatements().get(0).getSelectionArgs()).isEqualTo(new String[]{"awesome"});
 
         contentValues = new ContentValues();
         contentValues.put("hello", "world");
         contentResolver.update(EXTERNAL_CONTENT_URI, contentValues, null, null);
-        assertThat(shadowContentResolver.getUpdateStatements().size(), is(2));
-        assertThat(shadowContentResolver.getUpdateStatements().get(1).getUri(), equalTo(EXTERNAL_CONTENT_URI));
-        assertThat(shadowContentResolver.getUpdateStatements().get(1).getContentValues().getAsString("hello"), equalTo("world"));
-        assertThat(shadowContentResolver.getUpdateStatements().get(1).getWhere(), nullValue());
-        assertThat(shadowContentResolver.getUpdateStatements().get(1).getSelectionArgs(), nullValue());
+        assertThat(shadowContentResolver.getUpdateStatements().size()).isEqualTo(2);
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getUri()).isEqualTo(EXTERNAL_CONTENT_URI);
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getContentValues().getAsString("hello")).isEqualTo("world");
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getWhere()).isNull();
+        assertThat(shadowContentResolver.getUpdateStatements().get(1).getSelectionArgs()).isNull();
     }
 
     @Test
     public void delete_shouldTrackDeletedUris() throws Exception {
-        assertThat(shadowContentResolver.getDeletedUris().size(), equalTo(0));
+        assertThat(shadowContentResolver.getDeletedUris().size()).isEqualTo(0);
 
-        assertThat(contentResolver.delete(uri21, null, null), equalTo(1));
-        assertThat(shadowContentResolver.getDeletedUris(), hasItem(uri21));
-        assertThat(shadowContentResolver.getDeletedUris().size(), equalTo(1));
+        assertThat(contentResolver.delete(uri21, null, null)).isEqualTo(1);
+        org.junit.Assert.assertThat(shadowContentResolver.getDeletedUris(), hasItem(uri21));
+        assertThat(shadowContentResolver.getDeletedUris().size()).isEqualTo(1);
 
-        assertThat(contentResolver.delete(uri22, null, null), equalTo(1));
-        assertThat(shadowContentResolver.getDeletedUris(), hasItem(uri22));
-        assertThat(shadowContentResolver.getDeletedUris().size(), equalTo(2));
+        assertThat(contentResolver.delete(uri22, null, null)).isEqualTo(1);
+        org.junit.Assert.assertThat(shadowContentResolver.getDeletedUris(), hasItem(uri22));
+        assertThat(shadowContentResolver.getDeletedUris().size()).isEqualTo(2);
     }
 
     @Test
     public void delete_shouldTrackDeletedStatements() {
-        assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(0));
+        assertThat(shadowContentResolver.getDeleteStatements().size()).isEqualTo(0);
 
-        assertThat(contentResolver.delete(uri21, "id", new String[] { "5" }), equalTo(1));
-        assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(1));
-        assertThat(shadowContentResolver.getDeleteStatements().get(0).getUri(), equalTo(uri21));
-        assertThat(shadowContentResolver.getDeleteStatements().get(0).getWhere(), equalTo("id"));
-        assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0], equalTo("5"));
+        assertThat(contentResolver.delete(uri21, "id", new String[]{"5"})).isEqualTo(1);
+        assertThat(shadowContentResolver.getDeleteStatements().size()).isEqualTo(1);
+        assertThat(shadowContentResolver.getDeleteStatements().get(0).getUri()).isEqualTo(uri21);
+        assertThat(shadowContentResolver.getDeleteStatements().get(0).getWhere()).isEqualTo("id");
+        assertThat(shadowContentResolver.getDeleteStatements().get(0).getSelectionArgs()[0]).isEqualTo("5");
 
-        assertThat(contentResolver.delete(uri21, "foo", new String[] { "bar" }), equalTo(1));
-        assertThat(shadowContentResolver.getDeleteStatements().size(), equalTo(2));
-        assertThat(shadowContentResolver.getDeleteStatements().get(1).getUri(), equalTo(uri21));
-        assertThat(shadowContentResolver.getDeleteStatements().get(1).getWhere(), equalTo("foo"));
-        assertThat(shadowContentResolver.getDeleteStatements().get(1).getSelectionArgs()[0], equalTo("bar"));
+        assertThat(contentResolver.delete(uri21, "foo", new String[]{"bar"})).isEqualTo(1);
+        assertThat(shadowContentResolver.getDeleteStatements().size()).isEqualTo(2);
+        assertThat(shadowContentResolver.getDeleteStatements().get(1).getUri()).isEqualTo(uri21);
+        assertThat(shadowContentResolver.getDeleteStatements().get(1).getWhere()).isEqualTo("foo");
+        assertThat(shadowContentResolver.getDeleteStatements().get(1).getSelectionArgs()[0]).isEqualTo("bar");
     }
 
     @Test
@@ -144,8 +135,7 @@ public class ContentResolverTest {
         assertNull(shadowContentResolver.query(null, null, null, null, null));
         TestCursor cursor = new TestCursor();
         shadowContentResolver.setCursor(cursor);
-        assertThat((TestCursor) shadowContentResolver.query(null, null, null, null, null),
-                sameInstance(cursor));
+        assertThat((TestCursor) shadowContentResolver.query(null, null, null, null, null)).isSameAs(cursor);
     }
 
     @Test
@@ -158,10 +148,8 @@ public class ContentResolverTest {
         shadowContentResolver.setCursor(uri21, cursor21);
         shadowContentResolver.setCursor(uri22, cursor22);
 
-        assertThat((TestCursor) shadowContentResolver.query(uri21, null, null, null, null),
-                sameInstance(cursor21));
-        assertThat((TestCursor) shadowContentResolver.query(uri22, null, null, null, null),
-                sameInstance(cursor22));
+        assertThat((TestCursor) shadowContentResolver.query(uri21, null, null, null, null)).isSameAs(cursor21);
+        assertThat((TestCursor) shadowContentResolver.query(uri22, null, null, null, null)).isSameAs(cursor22);
     }
 
     @Test
@@ -175,22 +163,22 @@ public class ContentResolverTest {
 
         shadowContentResolver.setCursor(testCursor);
         Cursor cursor = shadowContentResolver.query(uri21, projection, selection, selectionArgs, sortOrder);
-        assertThat((QueryParamTrackingTestCursor)cursor, equalTo(testCursor));
-        assertThat(testCursor.uri, equalTo(uri21));
-        assertThat(testCursor.projection, equalTo(projection));
-        assertThat(testCursor.selection, equalTo(selection));
-        assertThat(testCursor.selectionArgs, equalTo(selectionArgs));
-        assertThat(testCursor.sortOrder, equalTo(sortOrder));
+        assertThat((QueryParamTrackingTestCursor) cursor).isEqualTo(testCursor);
+        assertThat(testCursor.uri).isEqualTo(uri21);
+        assertThat(testCursor.projection).isEqualTo(projection);
+        assertThat(testCursor.selection).isEqualTo(selection);
+        assertThat(testCursor.selectionArgs).isEqualTo(selectionArgs);
+        assertThat(testCursor.sortOrder).isEqualTo(sortOrder);
     }
 
     @Test
     public void openInputStream_shouldReturnAnInputStream() throws Exception {
-        assertThat(contentResolver.openInputStream(uri21), CoreMatchers.instanceOf(InputStream.class));
+        assertThat(contentResolver.openInputStream(uri21)).isInstanceOf(InputStream.class);
     }
 
     @Test
     public void openOutputStream_shouldReturnAnOutputStream() throws Exception {
-        assertThat(contentResolver.openOutputStream(uri21), CoreMatchers.instanceOf(OutputStream.class));
+        assertThat(contentResolver.openOutputStream(uri21)).isInstanceOf(OutputStream.class);
     }
 
     @Test
@@ -198,16 +186,16 @@ public class ContentResolverTest {
         contentResolver.notifyChange(Uri.parse("foo"), null, true);
         contentResolver.notifyChange(Uri.parse("bar"), null);
 
-        assertThat(shadowContentResolver.getNotifiedUris().size(), equalTo(2));
+        assertThat(shadowContentResolver.getNotifiedUris().size()).isEqualTo(2);
         ShadowContentResolver.NotifiedUri uri = shadowContentResolver.getNotifiedUris().get(0);
 
-        assertThat(uri.uri.toString(), equalTo("foo"));
+        assertThat(uri.uri.toString()).isEqualTo("foo");
         assertTrue(uri.syncToNetwork);
         assertNull(uri.observer);
 
         uri = shadowContentResolver.getNotifiedUris().get(1);
 
-        assertThat(uri.uri.toString(), equalTo("bar"));
+        assertThat(uri.uri.toString()).isEqualTo("bar");
         assertFalse(uri.syncToNetwork);
         assertNull(uri.observer);
     }
@@ -215,8 +203,8 @@ public class ContentResolverTest {
     @Test
     public void applyBatch() throws RemoteException, OperationApplicationException {
         ArrayList<ContentProviderOperation> resultOperations = shadowContentResolver.getContentProviderOperations(AUTHORITY);
-        assertThat(resultOperations, notNullValue());
-        assertThat(resultOperations.size(), is(0));
+        assertThat(resultOperations).isNotNull();
+        assertThat(resultOperations.size()).isEqualTo(0);
 
         ContentProviderResult[] contentProviderResults = new ContentProviderResult[] {
                 new ContentProviderResult(1),
@@ -239,28 +227,28 @@ public class ContentResolverTest {
         ContentProviderResult[] result = contentResolver.applyBatch(AUTHORITY, operations);
 
         resultOperations = shadowContentResolver.getContentProviderOperations(AUTHORITY);
-        assertThat(resultOperations, equalTo(operations));
-        assertThat(result, equalTo(contentProviderResults));
+        assertThat(resultOperations).isEqualTo(operations);
+        assertThat(result).isEqualTo(contentProviderResults);
     }
 
     @Test
     public void shouldKeepTrackOfSyncRequests() throws Exception {
         ShadowContentResolver.Status status = ShadowContentResolver.getStatus(a, AUTHORITY, true);
         assertNotNull(status);
-        assertThat(status.syncRequests, equalTo(0));
+        assertThat(status.syncRequests).isEqualTo(0);
         ContentResolver.requestSync(a, AUTHORITY, new Bundle());
-        assertThat(status.syncRequests, equalTo(1));
+        assertThat(status.syncRequests).isEqualTo(1);
         assertNotNull(status.syncExtras);
     }
 
     @Test
     public void shouldSetIsSyncable() throws Exception {
-        assertThat(ContentResolver.getIsSyncable(a, AUTHORITY), equalTo(-1));
-        assertThat(ContentResolver.getIsSyncable(b, AUTHORITY), equalTo(-1));
+        assertThat(ContentResolver.getIsSyncable(a, AUTHORITY)).isEqualTo(-1);
+        assertThat(ContentResolver.getIsSyncable(b, AUTHORITY)).isEqualTo(-1);
         ContentResolver.setIsSyncable(a, AUTHORITY, 1);
         ContentResolver.setIsSyncable(b, AUTHORITY, 2);
-        assertThat(ContentResolver.getIsSyncable(a, AUTHORITY), equalTo(1));
-        assertThat(ContentResolver.getIsSyncable(b, AUTHORITY), equalTo(2));
+        assertThat(ContentResolver.getIsSyncable(a, AUTHORITY)).isEqualTo(1);
+        assertThat(ContentResolver.getIsSyncable(b, AUTHORITY)).isEqualTo(2);
     }
 
     @Test
@@ -275,8 +263,8 @@ public class ContentResolverTest {
         ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000l);
         ShadowContentResolver.Status status = ShadowContentResolver.getStatus(a, AUTHORITY);
         assertNotNull(status);
-        assertThat(status.syncs.size(), is(1));
-        assertThat(status.syncs.get(0).period, is(6000l));
+        assertThat(status.syncs.size()).isEqualTo(1);
+        assertThat(status.syncs.get(0).period).isEqualTo(6000l);
         assertNotNull(status.syncs.get(0).extras);
     }
 
@@ -284,21 +272,21 @@ public class ContentResolverTest {
     public void shouldRemovePeriodSync() throws Exception {
         ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000l);
         ContentResolver.removePeriodicSync(a, AUTHORITY, new Bundle());
-        assertThat(ShadowContentResolver.getStatus(a, AUTHORITY).syncs.size(), is(0));
+        assertThat(ShadowContentResolver.getStatus(a, AUTHORITY).syncs.size()).isEqualTo(0);
     }
 
     @Test
     public void shouldGetPeriodSyncs() throws Exception {
-        assertThat(ContentResolver.getPeriodicSyncs(a, AUTHORITY).size(), is(0));
+        assertThat(ContentResolver.getPeriodicSyncs(a, AUTHORITY).size()).isEqualTo(0);
         ContentResolver.addPeriodicSync(a, AUTHORITY, new Bundle(), 6000l);
 
         List<PeriodicSync> syncs = ContentResolver.getPeriodicSyncs(a, AUTHORITY);
-        assertThat(syncs.size(), is(1));
+        assertThat(syncs.size()).isEqualTo(1);
 
         PeriodicSync first = syncs.get(0);
-        assertThat(first.account, equalTo(a));
-        assertThat(first.authority, equalTo(AUTHORITY));
-        assertThat(first.period, equalTo(6000l));
+        assertThat(first.account).isEqualTo(a);
+        assertThat(first.authority).isEqualTo(AUTHORITY);
+        assertThat(first.period).isEqualTo(6000l);
         assertNotNull(first.extras);
     }
 
@@ -355,32 +343,32 @@ public class ContentResolverTest {
 
         assertNotNull(contentResolver.query(uri, null, null, null, null));
         assertNull(contentResolver.insert(uri, new ContentValues()));
-        assertThat(contentResolver.delete(uri, null, null), is(-1));
-        assertThat(contentResolver.update(uri, new ContentValues(), null, null), is(-1));
+        assertThat(contentResolver.delete(uri, null, null)).isEqualTo(-1);
+        assertThat(contentResolver.update(uri, new ContentValues(), null, null)).isEqualTo(-1);
 
         assertNull(contentResolver.query(unrelated, null, null, null, null));
         assertNotNull(contentResolver.insert(unrelated, new ContentValues()));
-        assertThat(contentResolver.delete(unrelated, null, null), is(1));
-        assertThat(contentResolver.update(unrelated, new ContentValues(), null, null), is(0));
+        assertThat(contentResolver.delete(unrelated, null, null)).isEqualTo(1);
+        assertThat(contentResolver.update(unrelated, new ContentValues(), null, null)).isEqualTo(0);
     }
     
     @Test
     public void shouldRegisterContentObservers() throws Exception {
     	TestContentObserver co = new TestContentObserver(null);
     	ShadowContentResolver scr = Robolectric.shadowOf(contentResolver);
-    	
-    	assertThat( scr.getContentObserver( EXTERNAL_CONTENT_URI), nullValue() );
+
+        assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isNull();
     	
     	contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
 
-    	assertThat( scr.getContentObserver(EXTERNAL_CONTENT_URI), sameInstance((ContentObserver)co) );
+        assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isSameAs((ContentObserver) co);
 
-    	assertThat( co.changed, equalTo(false));  
+        assertThat(co.changed).isFalse();
     	contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
-    	assertThat( co.changed, equalTo(true));
+        assertThat(co.changed).isTrue();
     	
     	scr.clearContentObservers();
-    	assertThat( scr.getContentObserver(EXTERNAL_CONTENT_URI), nullValue() );
+        assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isNull();
     }
     
     @Test
@@ -388,14 +376,14 @@ public class ContentResolverTest {
     	TestContentObserver co = new TestContentObserver(null);
     	ShadowContentResolver scr = Robolectric.shadowOf(contentResolver);
     	contentResolver.registerContentObserver(EXTERNAL_CONTENT_URI, true, co);
-    	assertThat( scr.getContentObserver(EXTERNAL_CONTENT_URI), sameInstance((ContentObserver)co) );
+        assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isSameAs((ContentObserver) co);
 
     	contentResolver.unregisterContentObserver(co);
-    	assertThat( scr.getContentObserver( EXTERNAL_CONTENT_URI), nullValue() );
+        assertThat(scr.getContentObserver(EXTERNAL_CONTENT_URI)).isNull();
 
-    	assertThat( co.changed, equalTo(false));  
+        assertThat(co.changed).isFalse();
     	contentResolver.notifyChange(EXTERNAL_CONTENT_URI, null);
-    	assertThat( co.changed, equalTo(false));  
+        assertThat(co.changed).isFalse();
     }
     
    

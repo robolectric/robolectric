@@ -9,7 +9,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class H2MapTest {
@@ -23,22 +23,22 @@ public class H2MapTest {
 
     @Test
     public void testDriverClassName() {
-        assertThat(map.getDriverClassName(), equalTo("org.h2.Driver"));
+        assertThat(map.getDriverClassName()).isEqualTo("org.h2.Driver");
     }
 
     @Test
     public void testConnectionString() {
-        assertThat(map.getConnectionString(), equalTo("jdbc:h2:mem:"));
+        assertThat(map.getConnectionString()).isEqualTo("jdbc:h2:mem:");
     }
 
     @Test
     public void testScrubSQLReplacesAutoIncrement() throws SQLException {
-        assertThat(map.getScrubSQL("autoincrement"), equalTo("auto_increment"));
+        assertThat(map.getScrubSQL("autoincrement")).isEqualTo("auto_increment");
     }
 
     @Test
     public void testScrubSQLReplacesIntegerWithBigInt() throws SQLException {
-        assertThat(map.getScrubSQL("integer"), equalTo("bigint(19)"));
+        assertThat(map.getScrubSQL("integer")).isEqualTo("bigint(19)");
     }
 
     @Test
@@ -58,21 +58,21 @@ public class H2MapTest {
 
     @Test
     public void testGetSelectLastInsertIdentity() throws SQLException {
-        assertThat(map.getSelectLastInsertIdentity(), equalTo("SELECT IDENTITY();"));
+        assertThat(map.getSelectLastInsertIdentity()).isEqualTo("SELECT IDENTITY();");
     }
 
     @Test
     public void testGetH2ResultSetIs_TYPE_SCROLL_INSENSITIVE() throws SQLException {
-        assertThat(map.getResultSetType(), equalTo(ResultSet.TYPE_SCROLL_INSENSITIVE));
+        assertThat(map.getResultSetType()).isEqualTo(ResultSet.TYPE_SCROLL_INSENSITIVE);
     }
 
     @Test
     public void scrubSQL_shouldRemoveConflictAlgorithms() throws Exception {
-        assertThat(map.getScrubSQL("INSERT INTO "), equalTo("INSERT INTO "));
-        assertThat(map.getScrubSQL("INSERT OR ROLLBACK INTO "), equalTo("INSERT INTO "));
-        assertThat(map.getScrubSQL("INSERT OR ABORT INTO "), equalTo("INSERT INTO "));
-        assertThat(map.getScrubSQL("INSERT OR FAIL INTO "), equalTo("INSERT INTO "));
-        assertThat(map.getScrubSQL("INSERT OR IGNORE INTO "), equalTo("INSERT INTO "));
-        assertThat(map.getScrubSQL("INSERT OR REPLACE INTO "), equalTo("INSERT INTO "));
+        assertThat(map.getScrubSQL("INSERT INTO ")).isEqualTo("INSERT INTO ");
+        assertThat(map.getScrubSQL("INSERT OR ROLLBACK INTO ")).isEqualTo("INSERT INTO ");
+        assertThat(map.getScrubSQL("INSERT OR ABORT INTO ")).isEqualTo("INSERT INTO ");
+        assertThat(map.getScrubSQL("INSERT OR FAIL INTO ")).isEqualTo("INSERT INTO ");
+        assertThat(map.getScrubSQL("INSERT OR IGNORE INTO ")).isEqualTo("INSERT INTO ");
+        assertThat(map.getScrubSQL("INSERT OR REPLACE INTO ")).isEqualTo("INSERT INTO ");
     }
 }

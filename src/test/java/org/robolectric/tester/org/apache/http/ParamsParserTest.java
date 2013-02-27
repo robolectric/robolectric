@@ -8,8 +8,7 @@ import org.junit.runner.RunWith;
 
 import java.util.Map;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ParamsParserTest {
@@ -22,7 +21,7 @@ public class ParamsParserTest {
         post.setEntity(response.getEntity());
         Map<String,String> params = ParamsParser.parseParams(post);
 
-        assertThat("foobar", equalTo(params.get("param1")));
+        assertThat("foobar").isEqualTo(params.get("param1"));
     }
 
     @Test
@@ -30,6 +29,6 @@ public class ParamsParserTest {
         HttpGet httpGet = new HttpGet("example.com");
         TestHttpResponse response = new TestHttpResponse();
         response.setResponseBody("param1=foobar");
-        assertThat(ParamsParser.parseParams(httpGet).size(), equalTo(0));
+        assertThat(ParamsParser.parseParams(httpGet).size()).isEqualTo(0);
     }
 }

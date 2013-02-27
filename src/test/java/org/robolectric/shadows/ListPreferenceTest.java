@@ -14,7 +14,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ListPreferenceTest {
@@ -30,45 +30,45 @@ public class ListPreferenceTest {
     
 	@Test
 	public void shouldInheritFromDialogPreference() {
-		assertThat(shadow, instanceOf(ShadowDialogPreference.class));
+        assertThat(shadow).isInstanceOf(ShadowDialogPreference.class);
 	}	
 	
 	@Test
 	public void shouldHaveEntries() {
 		CharSequence[] entries = { "this", "is", "only", "a", "test" };
-		
-		assertThat(listPreference.getEntries(), nullValue());
+
+        assertThat(listPreference.getEntries()).isNull();
 		listPreference.setEntries(entries);
-		assertThat(listPreference.getEntries(), sameInstance(entries));		
+        assertThat(listPreference.getEntries()).isSameAs(entries);
 	}
 	
 	@Test
 	public void shouldSetEntriesByResourceId() {
-		assertThat(listPreference.getEntries(), nullValue());
+        assertThat(listPreference.getEntries()).isNull();
 		listPreference.setEntries(R.array.greetings);
-		assertThat(listPreference.getEntries(), notNullValue());			
+        assertThat(listPreference.getEntries()).isNotNull();
 	}
 	
 	@Test
 	public void shouldHaveEntryValues() {
 		CharSequence[] entryValues = { "this", "is", "only", "a", "test" };
-		
-		assertThat(listPreference.getEntryValues(), nullValue());
+
+        assertThat(listPreference.getEntryValues()).isNull();
 		listPreference.setEntryValues(entryValues);
-		assertThat(listPreference.getEntryValues(), sameInstance(entryValues));		
+        assertThat(listPreference.getEntryValues()).isSameAs(entryValues);
 	}
 	
 	@Test
 	public void shouldSetEntryValuesByResourceId() {
-		assertThat(listPreference.getEntryValues(), nullValue());
+        assertThat(listPreference.getEntryValues()).isNull();
 		listPreference.setEntryValues(R.array.greetings);
-		assertThat(listPreference.getEntryValues(), notNullValue());			
+        assertThat(listPreference.getEntryValues()).isNotNull();
 	}
 	
 	@Test
 	public void shouldSetValue() {
-		assertThat(listPreference.getValue(), nullValue());
+        assertThat(listPreference.getValue()).isNull();
 		listPreference.setValue("testing");
-		assertThat(listPreference.getValue(), equalTo("testing"));
+        assertThat(listPreference.getValue()).isEqualTo("testing");
 	}
 }

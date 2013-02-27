@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 import static org.robolectric.Robolectric.shadowOf;
 import static junit.framework.Assert.assertNotNull;
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class WifiConfigurationTest {
@@ -42,22 +42,22 @@ public class WifiConfigurationTest {
 
         WifiConfiguration copy = shadowOf(wifiConfiguration).copy();
 
-        assertThat(copy.networkId, equalTo(1));
-        assertThat(copy.SSID, equalTo("SSID"));
-        assertThat(copy.BSSID, equalTo("BSSID"));
-        assertThat(copy.preSharedKey, equalTo("preSharedKey"));
-        assertThat(copy.status, equalTo(666));
-        assertThat(copy.wepTxKeyIndex, equalTo(777));
-        assertThat(copy.priority, equalTo(2));
-        assertThat(copy.hiddenSSID, equalTo(true));
-        assertThat(copy.allowedKeyManagement.get(1), equalTo(true));
-        assertThat(copy.allowedProtocols.get(2), equalTo(true));
-        assertThat(copy.allowedAuthAlgorithms.get(3), equalTo(true));
-        assertThat(copy.allowedPairwiseCiphers.get(4), equalTo(true));
-        assertThat(copy.allowedGroupCiphers.get(5), equalTo(true));
-        assertThat(copy.wepKeys[0], equalTo("0"));
-        assertThat(copy.wepKeys[1], equalTo("1"));
-        assertThat(copy.wepKeys[2], equalTo("2"));
-        assertThat(copy.wepKeys[3], equalTo("3"));
+        assertThat(copy.networkId).isEqualTo(1);
+        assertThat(copy.SSID).isEqualTo("SSID");
+        assertThat(copy.BSSID).isEqualTo("BSSID");
+        assertThat(copy.preSharedKey).isEqualTo("preSharedKey");
+        assertThat(copy.status).isEqualTo(666);
+        assertThat(copy.wepTxKeyIndex).isEqualTo(777);
+        assertThat(copy.priority).isEqualTo(2);
+        assertThat(copy.hiddenSSID).isTrue();
+        assertThat(copy.allowedKeyManagement.get(1)).isTrue();
+        assertThat(copy.allowedProtocols.get(2)).isTrue();
+        assertThat(copy.allowedAuthAlgorithms.get(3)).isTrue();
+        assertThat(copy.allowedPairwiseCiphers.get(4)).isTrue();
+        assertThat(copy.allowedGroupCiphers.get(5)).isTrue();
+        assertThat(copy.wepKeys[0]).isEqualTo("0");
+        assertThat(copy.wepKeys[1]).isEqualTo("1");
+        assertThat(copy.wepKeys[2]).isEqualTo("2");
+        assertThat(copy.wepKeys[3]).isEqualTo("3");
     }
 }

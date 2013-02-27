@@ -11,7 +11,7 @@ import org.junit.runner.RunWith;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class StateListDrawableTest {
@@ -27,7 +27,7 @@ public class StateListDrawableTest {
         ShadowStateListDrawable shadow = shadowOf(stateListDrawable);
         Drawable drawableForState = shadow.getDrawableForState(states);
         assertNotNull(drawableForState);
-        assertThat(((ShadowBitmapDrawable) shadowOf(drawableForState)).getPath(), is("/foo"));
+        assertThat(((ShadowBitmapDrawable) shadowOf(drawableForState)).getPath()).isEqualTo("/foo");
     }
 
     @Test
@@ -40,6 +40,6 @@ public class StateListDrawableTest {
         ShadowStateListDrawable shadow = shadowOf(stateListDrawable);
         Drawable drawableForState = shadow.getDrawableForState(StateSet.WILD_CARD);
         assertNotNull(drawableForState);
-        assertThat(((ShadowBitmapDrawable) shadowOf(drawableForState)).getPath(), is("/foo"));
+        assertThat(((ShadowBitmapDrawable) shadowOf(drawableForState)).getPath()).isEqualTo("/foo");
     }
 }

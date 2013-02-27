@@ -17,7 +17,7 @@ import org.robolectric.res.builder.PreferenceBuilder;
 import org.robolectric.util.I18nException;
 
 import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.testResources;
 
@@ -51,22 +51,22 @@ public class PreferenceLoaderTest {
     }
 
     protected void assertThatScreenMatchesExpected(PreferenceScreen screen) {
-        assertThat(screen.getPreferenceCount(), equalTo(7));
+        assertThat(screen.getPreferenceCount()).isEqualTo(7);
 
-        assertThat(screen.getPreference(0), instanceOf(PreferenceCategory.class));
-        assertThat(((PreferenceCategory) screen.getPreference(0)).getPreference(0), instanceOf(Preference.class));
+        assertThat(screen.getPreference(0)).isInstanceOf(PreferenceCategory.class);
+        assertThat(((PreferenceCategory) screen.getPreference(0)).getPreference(0)).isInstanceOf(Preference.class);
 
         PreferenceScreen innerScreen = (PreferenceScreen) screen.getPreference(1);
-        assertThat(innerScreen, instanceOf(PreferenceScreen.class));
-        assertThat(innerScreen.getKey().toString(), is("screen"));
-        assertThat(innerScreen.getTitle().toString(), is("Screen Test"));
-        assertThat(innerScreen.getSummary(), nullValue());
-        assertThat(innerScreen.getPreference(0), instanceOf(Preference.class));
+        assertThat(innerScreen).isInstanceOf(PreferenceScreen.class);
+        assertThat(innerScreen.getKey().toString()).isEqualTo("screen");
+        assertThat(innerScreen.getTitle().toString()).isEqualTo("Screen Test");
+        assertThat(innerScreen.getSummary()).isNull();
+        assertThat(innerScreen.getPreference(0)).isInstanceOf(Preference.class);
 
-        assertThat(screen.getPreference(2), instanceOf(CheckBoxPreference.class));
-        assertThat(screen.getPreference(3), instanceOf(EditTextPreference.class));
-        assertThat(screen.getPreference(4), instanceOf(ListPreference.class));
-        assertThat(screen.getPreference(5), instanceOf(Preference.class));
-        assertThat(screen.getPreference(6), instanceOf(RingtonePreference.class));
+        assertThat(screen.getPreference(2)).isInstanceOf(CheckBoxPreference.class);
+        assertThat(screen.getPreference(3)).isInstanceOf(EditTextPreference.class);
+        assertThat(screen.getPreference(4)).isInstanceOf(ListPreference.class);
+        assertThat(screen.getPreference(5)).isInstanceOf(Preference.class);
+        assertThat(screen.getPreference(6)).isInstanceOf(RingtonePreference.class);
     }
 }

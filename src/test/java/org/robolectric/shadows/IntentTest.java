@@ -26,7 +26,7 @@ import static org.hamcrest.CoreMatchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class IntentTest {
@@ -334,37 +334,37 @@ public class IntentTest {
                 .setType("image/*")
                 .addCategory("category.name");
 
-        assertThat(intentA, equalTo(intentB));
+        assertThat(intentA).isEqualTo(intentB);
 
         intentB.setAction("other action");
-        assertThat(intentA, not(equalTo(intentB)));
+        assertThat(intentA).isNotEqualTo(intentB);
 
         intentB.setAction("action");
         intentB.setData(Uri.parse("content:other"));
-        assertThat(intentA, not(equalTo(intentB)));
+        assertThat(intentA).isNotEqualTo(intentB);
 
         intentB.setData(Uri.parse("content:1"));
         intentB.setComponent(new ComponentName("other-pkg", "other-cls"));
-        assertThat(intentA, not(equalTo(intentB)));
+        assertThat(intentA).isNotEqualTo(intentB);
 
         intentB.setComponent(new ComponentName("pkg", "cls"));
         intentB.putExtra("extra", "foo");
-        assertThat(intentA, not(equalTo(intentB)));
+        assertThat(intentA).isNotEqualTo(intentB);
 
         intentB.putExtra("extra", "blah");
         intentB.setType("other/*");
-        assertThat(intentA, not(equalTo(intentB)));
+        assertThat(intentA).isNotEqualTo(intentB);
 
         intentB.setType("image/*");
-        assertThat(intentA, equalTo(intentB));
+        assertThat(intentA).isEqualTo(intentB);
 
         intentB.removeCategory("category.name");
-        assertThat(intentA, not(equalTo(intentB)));
+        assertThat(intentA).isNotEqualTo(intentB);
     }
 
     @Test
     public void equals_whenOtherObjectIsNotAnIntent_shouldReturnFalse() throws Exception {
-        assertThat((Object) new Intent(), not(equalTo(new Object())));
+        assertThat((Object) new Intent()).isNotEqualTo(new Object());
     }
 
     @Test
@@ -381,7 +381,7 @@ public class IntentTest {
     public void setUri_setsUri() throws Exception {
         Intent intent = new Intent();
         shadowOf(intent).setURI("http://foo");
-        assertThat(intent.toURI(), is("http://foo"));
+        assertThat(intent.toURI()).isEqualTo("http://foo");
     }
 
     @Test
@@ -390,8 +390,8 @@ public class IntentTest {
         final ArrayList<String> strings = new ArrayList<String>(Arrays.asList("hi", "there"));
 
         intent.putStringArrayListExtra("KEY", strings);
-        assertThat(intent.getStringArrayListExtra("KEY"), equalTo(strings));
-        assertThat(Robolectric.shadowOf(intent.getExtras()).getStringArrayList("KEY"), equalTo(strings));
+        assertThat(intent.getStringArrayListExtra("KEY")).isEqualTo(strings);
+        assertThat(Robolectric.shadowOf(intent.getExtras()).getStringArrayList("KEY")).isEqualTo(strings);
     }
     
     @Test
@@ -400,8 +400,8 @@ public class IntentTest {
         final ArrayList<Integer> integers = new ArrayList<Integer>(Arrays.asList(100, 200, 300));
 
         intent.putIntegerArrayListExtra("KEY", integers);
-        assertThat(intent.getIntegerArrayListExtra("KEY"), equalTo(integers));
-        assertThat(Robolectric.shadowOf(intent.getExtras()).getIntegerArrayList("KEY"), equalTo(integers));
+        assertThat(intent.getIntegerArrayListExtra("KEY")).isEqualTo(integers);
+        assertThat(Robolectric.shadowOf(intent.getExtras()).getIntegerArrayList("KEY")).isEqualTo(integers);
     }
 
     private static class TestSerializable implements Serializable {

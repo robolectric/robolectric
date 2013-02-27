@@ -3,7 +3,7 @@ package org.robolectric.shadows;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.fail;
 
 import java.sql.Connection;
@@ -89,24 +89,24 @@ public class MergeCursorTest {
     public void testEmptyCursors() throws Exception {
     	// null cursor list
     	cursor = new MergeCursor( null );
-    	assertThat( cursor.getCount(), equalTo(0) );
-    	assertThat( cursor.moveToFirst(), equalTo(false) );
-    	assertThat( cursor.getColumnNames(), notNullValue() );
+        assertThat(cursor.getCount()).isEqualTo(0);
+        assertThat(cursor.moveToFirst()).isFalse();
+        assertThat(cursor.getColumnNames()).isNotNull();
     	
     	// cursor list with null contents
     	cursor = new MergeCursor( new Cursor[1] );
-    	assertThat( cursor.getCount(), equalTo(0) );    	
-    	assertThat( cursor.moveToFirst(), equalTo(false) );
-    	assertThat( cursor.getColumnNames(), notNullValue() );
+        assertThat(cursor.getCount()).isEqualTo(0);
+        assertThat(cursor.moveToFirst()).isFalse();
+        assertThat(cursor.getColumnNames()).isNotNull();
 
     	// cursor list with partially null contents
     	Cursor[] cursors = new Cursor[2];
     	cursors[0] = null;
     	cursors[1] = dbCursor1;
     	cursor = new MergeCursor( cursors );
-    	assertThat( cursor.getCount(), equalTo(TABLE_1_INSERTS.length) );
-    	assertThat( cursor.moveToFirst(), equalTo(true) );
-    	assertThat( cursor.getColumnNames(), notNullValue() );
+        assertThat(cursor.getCount()).isEqualTo(TABLE_1_INSERTS.length);
+        assertThat(cursor.moveToFirst()).isTrue();
+        assertThat(cursor.getColumnNames()).isNotNull();
     }
     
     @Test
@@ -116,12 +116,12 @@ public class MergeCursorTest {
     	cursors[1] = null;
     	
     	cursor = new MergeCursor( cursors );
-    	assertThat( cursor.getCount(), equalTo(0) );
-    	assertThat( cursor.getColumnNames(), notNullValue() );
+        assertThat(cursor.getCount()).isEqualTo(0);
+        assertThat(cursor.getColumnNames()).isNotNull();
     	
     	cursor.moveToPosition(0);
 
-    	assertThat( cursor.getColumnNames(), notNullValue() );    	
+        assertThat(cursor.getColumnNames()).isNotNull();
     }
     
     @Test
@@ -144,16 +144,16 @@ public class MergeCursorTest {
 	private void assertBounds( Cursor[] cursors, int expectedLength ) {
     	cursor = new MergeCursor( cursors );
 
-		assertThat( cursor.getCount(), equalTo(expectedLength) );
-    	assertThat( cursor.moveToFirst(), equalTo(true) );
+        assertThat(cursor.getCount()).isEqualTo(expectedLength);
+        assertThat(cursor.moveToFirst()).isTrue();
     	
     	for ( int i = 0; i < expectedLength; i++ ) {
-    		assertThat( cursor.moveToPosition(i), equalTo(true) );
-        	assertThat( cursor.isAfterLast(), equalTo(false) );
+            assertThat(cursor.moveToPosition(i)).isTrue();
+            assertThat(cursor.isAfterLast()).isFalse();
     	}
-    	assertThat( cursor.moveToNext(), equalTo(false) );
-    	assertThat( cursor.isAfterLast(), equalTo(true) );
-    	assertThat( cursor.moveToPosition(expectedLength), equalTo(false) );
+        assertThat(cursor.moveToNext()).isFalse();
+        assertThat(cursor.isAfterLast()).isTrue();
+        assertThat(cursor.moveToPosition(expectedLength)).isFalse();
 	}
     
     @Test
@@ -180,35 +180,35 @@ public class MergeCursorTest {
     }
     
     private void assertDataCursor1() throws Exception {
-        assertThat( cursor.getInt(0), equalTo(1234) );
-        assertThat( cursor.getString(1), equalTo("Chuck") );
-        assertThat( cursor.getInt(2), equalTo(3463) );
-        assertThat( cursor.getFloat(3), equalTo(1.5f) );
-        assertThat( cursor.getDouble(4), equalTo(3.14159) );
+        assertThat(cursor.getInt(0)).isEqualTo(1234);
+        assertThat(cursor.getString(1)).isEqualTo("Chuck");
+        assertThat(cursor.getInt(2)).isEqualTo(3463);
+        assertThat(cursor.getFloat(3)).isEqualTo(1.5f);
+        assertThat(cursor.getDouble(4)).isEqualTo(3.14159);
     	
     	cursor.moveToNext();
-        assertThat( cursor.getInt(0), equalTo(1235) );
-        assertThat( cursor.getString(1), equalTo("Julie") );
+        assertThat(cursor.getInt(0)).isEqualTo(1235);
+        assertThat(cursor.getString(1)).isEqualTo("Julie");
     	
     	cursor.moveToNext();
-        assertThat( cursor.getInt(0), equalTo(1236) );
-        assertThat( cursor.getString(1), equalTo("Chris") );
+        assertThat(cursor.getInt(0)).isEqualTo(1236);
+        assertThat(cursor.getString(1)).isEqualTo("Chris");
     }
     
     private void assertDataCursor2() throws Exception {
-        assertThat( cursor.getInt(0), equalTo(4321) );
-        assertThat( cursor.getString(1), equalTo("Mary") );
-        assertThat( cursor.getInt(2), equalTo(3245) );
-        assertThat( cursor.getFloat(3), equalTo(5.4f) );
-        assertThat( cursor.getDouble(4), equalTo(2.7818) );
+        assertThat(cursor.getInt(0)).isEqualTo(4321);
+        assertThat(cursor.getString(1)).isEqualTo("Mary");
+        assertThat(cursor.getInt(2)).isEqualTo(3245);
+        assertThat(cursor.getFloat(3)).isEqualTo(5.4f);
+        assertThat(cursor.getDouble(4)).isEqualTo(2.7818);
     	
     	cursor.moveToNext();
-        assertThat( cursor.getInt(0), equalTo(4322) );
-        assertThat( cursor.getString(1), equalTo("Elizabeth") );
+        assertThat(cursor.getInt(0)).isEqualTo(4322);
+        assertThat(cursor.getString(1)).isEqualTo("Elizabeth");
     	
     	cursor.moveToNext();
-        assertThat( cursor.getInt(0), equalTo(4323) );
-        assertThat( cursor.getString(1), equalTo("Chester") );
+        assertThat(cursor.getInt(0)).isEqualTo(4323);
+        assertThat(cursor.getString(1)).isEqualTo("Chester");
     }
 
     @Test
@@ -245,25 +245,25 @@ public class MergeCursorTest {
     }
     
 	private void assertColumnNamesCursor1(String[] columnNames) {
-		assertThat(columnNames.length, equalTo(7));
-    	assertThat(columnNames[0], equalTo("id"));
-        assertThat(columnNames[1], equalTo("name_1"));
-        assertThat(columnNames[2], equalTo("value_1"));
-        assertThat(columnNames[3], equalTo("float_value_1"));
-        assertThat(columnNames[4], equalTo("double_value_1"));
-        assertThat(columnNames[5], equalTo("blob_value_1"));
-        assertThat(columnNames[6], equalTo("clob_value_1"));
+        assertThat(columnNames.length).isEqualTo(7);
+        assertThat(columnNames[0]).isEqualTo("id");
+        assertThat(columnNames[1]).isEqualTo("name_1");
+        assertThat(columnNames[2]).isEqualTo("value_1");
+        assertThat(columnNames[3]).isEqualTo("float_value_1");
+        assertThat(columnNames[4]).isEqualTo("double_value_1");
+        assertThat(columnNames[5]).isEqualTo("blob_value_1");
+        assertThat(columnNames[6]).isEqualTo("clob_value_1");
 	}
 	
 	private void assertColumnNamesCursor2(String[] columnNames) {
-		assertThat(columnNames.length, equalTo(7));
-    	assertThat(columnNames[0], equalTo("id"));
-        assertThat(columnNames[1], equalTo("name_2"));
-        assertThat(columnNames[2], equalTo("value_2"));
-        assertThat(columnNames[3], equalTo("float_value_2"));
-        assertThat(columnNames[4], equalTo("double_value_2"));
-        assertThat(columnNames[5], equalTo("blob_value_2"));
-        assertThat(columnNames[6], equalTo("clob_value_2"));
+        assertThat(columnNames.length).isEqualTo(7);
+        assertThat(columnNames[0]).isEqualTo("id");
+        assertThat(columnNames[1]).isEqualTo("name_2");
+        assertThat(columnNames[2]).isEqualTo("value_2");
+        assertThat(columnNames[3]).isEqualTo("float_value_2");
+        assertThat(columnNames[4]).isEqualTo("double_value_2");
+        assertThat(columnNames[5]).isEqualTo("blob_value_2");
+        assertThat(columnNames[6]).isEqualTo("clob_value_2");
 	}
     
     @Test
@@ -273,15 +273,15 @@ public class MergeCursorTest {
     	cursors[1] = dbCursor2;
     	cursor = new MergeCursor( cursors );
 
-    	assertThat( cursor.isClosed(), equalTo(false) );
-    	assertThat( dbCursor1.isClosed(), equalTo(false) );
-    	assertThat( dbCursor2.isClosed(), equalTo(false) );
+        assertThat(cursor.isClosed()).isFalse();
+        assertThat(dbCursor1.isClosed()).isFalse();
+        assertThat(dbCursor2.isClosed()).isFalse();
     	
     	cursor.close();
-    	
-    	assertThat( cursor.isClosed(), equalTo(true) );
-    	assertThat( dbCursor1.isClosed(), equalTo(true) );
-    	assertThat( dbCursor2.isClosed(), equalTo(true) );
+
+        assertThat(cursor.isClosed()).isTrue();
+        assertThat(dbCursor1.isClosed()).isTrue();
+        assertThat(dbCursor2.isClosed()).isTrue();
     }
 
 }

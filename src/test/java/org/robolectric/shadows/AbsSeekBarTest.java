@@ -9,7 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AbsSeekBarTest {
@@ -18,7 +18,7 @@ public class AbsSeekBarTest {
 	public void testInheritance() {
 		TestAbsSeekBar seekBar = new TestAbsSeekBar(new Activity());
 		ShadowAbsSeekBar shadow = Robolectric.shadowOf(seekBar);
-		assertThat(shadow, instanceOf(ShadowProgressBar.class));
+        assertThat(shadow).isInstanceOf(ShadowProgressBar.class);
 	}
 	
 	private static class TestAbsSeekBar extends AbsSeekBar {

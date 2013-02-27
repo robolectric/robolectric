@@ -4,13 +4,9 @@ import org.apache.http.Header;
 import org.apache.http.HeaderIterator;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicHeader;
-import org.hamcrest.CoreMatchers;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 public class TestHttpResponseTest {
 
@@ -20,11 +16,11 @@ public class TestHttpResponseTest {
                 new TestHttpResponse(304, "REDIRECTED",
                         new BasicHeader("Location", "http://bar.com"));
 
-        assertThat(resp.getFirstHeader("None"), nullValue());
-        assertThat(new TestHttpResponse(200, "OK").getFirstHeader("Foo"), nullValue());
+        assertThat(resp.getFirstHeader("None")).isNull();
+        assertThat(new TestHttpResponse(200, "OK").getFirstHeader("Foo")).isNull();
 
         for (String l : new String[] { "location", "Location" }) {
-            assertThat(resp.getFirstHeader(l).getValue(), equalTo("http://bar.com"));
+            assertThat(resp.getFirstHeader(l).getValue()).isEqualTo("http://bar.com");
         }
     }
 
@@ -35,10 +31,10 @@ public class TestHttpResponseTest {
                         new BasicHeader("Location", "http://bar.com"),
                         new BasicHeader("Location", "http://zombo.com"));
 
-        assertThat(resp.getLastHeader("None"), nullValue());
+        assertThat(resp.getLastHeader("None")).isNull();
 
         for (String l : new String[] { "location", "Location" }) {
-            assertThat(resp.getLastHeader(l).getValue(), equalTo("http://zombo.com"));
+            assertThat(resp.getLastHeader(l).getValue()).isEqualTo("http://zombo.com");
         }
     }
 
@@ -48,8 +44,8 @@ public class TestHttpResponseTest {
                 new TestHttpResponse(304, "ZOMBO",
                         new BasicHeader("X-Zombo-Com", "Welcome"));
 
-        assertThat(resp.containsHeader("X-Zombo-Com"), is(true));
-        assertThat(resp.containsHeader("Location"), is(false));
+        assertThat(resp.containsHeader("X-Zombo-Com")).isTrue();
+        assertThat(resp.containsHeader("Location")).isFalse();
     }
 
     @Test
@@ -61,10 +57,10 @@ public class TestHttpResponseTest {
 
         HeaderIterator it = resp.headerIterator();
 
-        assertThat(it.hasNext(), is(true));
-        assertThat(it.nextHeader().getValue(), equalTo("http://bar.com"));
-        assertThat(it.nextHeader().getValue(), equalTo("http://zombo.com"));
-        assertThat(it.hasNext(), is(false));
+        assertThat(it.hasNext()).isTrue();
+        assertThat(it.nextHeader().getValue()).isEqualTo("http://bar.com");
+        assertThat(it.nextHeader().getValue()).isEqualTo("http://zombo.com");
+        assertThat(it.hasNext()).isFalse();
     }
 
     @Test
@@ -77,11 +73,11 @@ public class TestHttpResponseTest {
 
         HeaderIterator it = resp.headerIterator("Location");
 
-        assertThat(it.hasNext(), is(true));
-        assertThat(it.nextHeader().getValue(), equalTo("http://bar.com"));
-        assertThat(it.hasNext(), is(true));
-        assertThat(it.nextHeader().getValue(), equalTo("http://foo.com"));
-        assertThat(it.hasNext(), is(false));
+        assertThat(it.hasNext()).isTrue();
+        assertThat(it.nextHeader().getValue()).isEqualTo("http://bar.com");
+        assertThat(it.hasNext()).isTrue();
+        assertThat(it.nextHeader().getValue()).isEqualTo("http://foo.com");
+        assertThat(it.hasNext()).isFalse();
     }
 
 
@@ -95,35 +91,35 @@ public class TestHttpResponseTest {
 
 
         Header[] headers = resp.getHeaders("Location");
-        assertThat(headers.length, is(2));
-        assertThat(headers[0].getValue(), CoreMatchers.equalTo("http://bar.com"));
-        assertThat(headers[1].getValue(), CoreMatchers.equalTo("http://foo.com"));
+        assertThat(headers.length).isEqualTo(2);
+        assertThat(headers[0].getValue()).isEqualTo("http://bar.com");
+        assertThat(headers[1].getValue()).isEqualTo("http://foo.com");
     }
 
     @Test
     public void canAddNewBasicHeader() {
         TestHttpResponse response = new TestHttpResponse(200, "abc");
-        assertThat(response.getAllHeaders().length, is(0));
+        assertThat(response.getAllHeaders().length).isEqualTo(0);
         response.addHeader(new BasicHeader("foo", "bar"));
-        assertThat(response.getAllHeaders().length, is(1));
-        assertThat(response.getHeaders("foo")[0].getValue(), CoreMatchers.equalTo("bar"));
+        assertThat(response.getAllHeaders().length).isEqualTo(1);
+        assertThat(response.getHeaders("foo")[0].getValue()).isEqualTo("bar");
     }
     
     @Test
     public void canOverrideExistingHeaderValue() {
         TestHttpResponse response = new TestHttpResponse(200, "abc", new BasicHeader("foo", "bar"));
         response.setHeader(new BasicHeader("foo", "bletch"));
-        assertThat(response.getAllHeaders().length, is(1));
-        assertThat(response.getHeaders("foo")[0].getValue(), CoreMatchers.equalTo("bletch"));
+        assertThat(response.getAllHeaders().length).isEqualTo(1);
+        assertThat(response.getHeaders("foo")[0].getValue()).isEqualTo("bletch");
     }
     
     @Test
     public void onlyOverridesFirstHeaderValue() {
         TestHttpResponse response = new TestHttpResponse(200, "abc", new BasicHeader("foo", "bar"), new BasicHeader("foo", "baz"));
         response.setHeader(new BasicHeader("foo", "bletch"));
-        assertThat(response.getAllHeaders().length, is(2));
-        assertThat(response.getHeaders("foo")[0].getValue(), CoreMatchers.equalTo("bletch"));
-        assertThat(response.getHeaders("foo")[1].getValue(), CoreMatchers.equalTo("baz"));
+        assertThat(response.getAllHeaders().length).isEqualTo(2);
+        assertThat(response.getHeaders("foo")[0].getValue()).isEqualTo("bletch");
+        assertThat(response.getHeaders("foo")[1].getValue()).isEqualTo("baz");
     }
 
 }

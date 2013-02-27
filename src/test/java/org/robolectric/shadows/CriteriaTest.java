@@ -1,16 +1,13 @@
 package org.robolectric.shadows;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-
-import org.robolectric.TestRunners;
+import android.location.Criteria;
 import junit.framework.Assert;
-
-import org.hamcrest.core.IsEqual;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
-import android.location.Criteria;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class CriteriaTest {
@@ -24,13 +21,13 @@ public class CriteriaTest {
     @Test
     public void shouldReturnAccuracy() {
         criteria.setAccuracy(Criteria.ACCURACY_COARSE);
-        assertThat(Criteria.ACCURACY_COARSE, IsEqual.equalTo(criteria.getAccuracy()));
+        assertThat(criteria.getAccuracy()).isEqualTo(Criteria.ACCURACY_COARSE);
     }
 
     @Test
     public void shouldReturnPowerRequirement() {
         criteria.setPowerRequirement(Criteria.POWER_HIGH);
-        assertThat(Criteria.POWER_HIGH, IsEqual.equalTo(criteria.getPowerRequirement()));
+        assertThat(criteria.getPowerRequirement()).isEqualTo(Criteria.POWER_HIGH);
     }
 
     @Test

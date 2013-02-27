@@ -2,86 +2,84 @@ package org.robolectric.shadows;
 
 import android.content.UriMatcher;
 import android.net.Uri;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.shadows.ShadowUriMatcher.MatchNode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.shadows.ShadowUriMatcher.MatchNode;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.matchers.JUnitMatchers.hasItem;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class UriMatcherTest {
-	static final String AUTH = "com.foo";
-	static final int NO_MATCH = -2;
+    static final String AUTH = "com.foo";
+    static final int NO_MATCH = -2;
 
-	UriMatcher matcher;
-	MatchNode root;
+    UriMatcher matcher;
+    MatchNode root;
     Uri URI;
-    
-	@Before public void getMatcher() {
+
+    @Before public void getMatcher() {
         URI = Uri.parse("content://" + AUTH);
-		matcher = new UriMatcher(NO_MATCH);
-		root = Robolectric.shadowOf(matcher).rootNode;
-	}
+        matcher = new UriMatcher(NO_MATCH);
+        root = Robolectric.shadowOf(matcher).rootNode;
+    }
 
-	@Test public void canInstantiate() {
-		assertThat(root.code, is(NO_MATCH));
-		assertThat(root.map.isEmpty(), is(true));
-		assertThat(root.number, is(nullValue()));
-		assertThat(root.text, is(nullValue()));
-	}
+    @Test public void canInstantiate() {
+        assertThat(root.code).isEqualTo(NO_MATCH);
+        assertThat(root.map.isEmpty()).isTrue();
+        assertThat(root.number).isNull();
+        assertThat(root.text).isNull();
+    }
 
-	@Test public void canAddBasicMatch() {
-		MatchNode node = root;
-		String path = "bar/cat";
+    @Test public void canAddBasicMatch() {
+        MatchNode node = root;
+        String path = "bar/cat";
 
-		matcher.addURI(AUTH, path, 1);
-		assertThat(node.map.keySet(), hasItem(AUTH));
+        matcher.addURI(AUTH, path, 1);
+        org.junit.Assert.assertThat(node.map.keySet(), hasItem(AUTH));
 
-		node = node.map.get(AUTH);
-		assertThat(node.map.keySet(), hasItem("bar"));
+        node = node.map.get(AUTH);
+        org.junit.Assert.assertThat(node.map.keySet(), hasItem("bar"));
 
-		node = node.map.get("bar");
-		assertThat(node.map.keySet(), hasItem("cat"));
+        node = node.map.get("bar");
+        org.junit.Assert.assertThat(node.map.keySet(), hasItem("cat"));
 
-		node = node.map.get("cat");
-		assertThat(node.code, is(1));
-	}
+        node = node.map.get("cat");
+        assertThat(node.code).isEqualTo(1);
+    }
 
-	@Test public void canAddWildcardMatches() {
-		matcher.addURI(AUTH, "#", 1);
-		matcher.addURI(AUTH, "*", 2);
-		MatchNode node = root.map.get(AUTH);
+    @Test public void canAddWildcardMatches() {
+        matcher.addURI(AUTH, "#", 1);
+        matcher.addURI(AUTH, "*", 2);
+        MatchNode node = root.map.get(AUTH);
 
-		assertThat(node.number.code, is(1));
-		assertThat(node.text.code, is(2));
-	}
+        assertThat(node.number.code).isEqualTo(1);
+        assertThat(node.text.code).isEqualTo(2);
+    }
 
-	@Test public void canMatch() {
-		matcher.addURI(AUTH, "bar", 1);
-		assertThat(matcher.match(Uri.withAppendedPath(URI, "bar")), is(1));
+    @Test public void canMatch() {
+        matcher.addURI(AUTH, "bar", 1);
+        assertThat(matcher.match(Uri.withAppendedPath(URI, "bar"))).isEqualTo(1);
 
-		matcher.addURI(AUTH, "bar/#", 2);
-		assertThat(matcher.match(Uri.withAppendedPath(URI, "bar/1")), is(2));
+        matcher.addURI(AUTH, "bar/#", 2);
+        assertThat(matcher.match(Uri.withAppendedPath(URI, "bar/1"))).isEqualTo(2);
 
-		matcher.addURI(AUTH, "*", 3);
-		assertThat(matcher.match(Uri.withAppendedPath(URI, "bar")), is(1));
-		assertThat(matcher.match(Uri.withAppendedPath(URI, "cat")), is(3));
+        matcher.addURI(AUTH, "*", 3);
+        assertThat(matcher.match(Uri.withAppendedPath(URI, "bar"))).isEqualTo(1);
+        assertThat(matcher.match(Uri.withAppendedPath(URI, "cat"))).isEqualTo(3);
 
-		matcher.addURI(AUTH, "transport/*/#/type", 4);
-		assertThat(matcher.match(Uri.withAppendedPath(URI, "transport/land/45/type")), is(4));
-	}
+        matcher.addURI(AUTH, "transport/*/#/type", 4);
+        assertThat(matcher.match(Uri.withAppendedPath(URI, "transport/land/45/type"))).isEqualTo(4);
+    }
 
-	@Test public void returnsRootCodeForIfNoMatch() {
-		matcher.addURI(AUTH, "bar/#", 1);
-		assertThat(matcher.match(Uri.withAppendedPath(URI, "cat")), is(NO_MATCH));
-		assertThat(matcher.match(Uri.withAppendedPath(URI, "bar")), is(NO_MATCH));
-		assertThat(matcher.match(Uri.withAppendedPath(URI, "bar/cat")), is(NO_MATCH));
-	}
+    @Test public void returnsRootCodeForIfNoMatch() {
+        matcher.addURI(AUTH, "bar/#", 1);
+        assertThat(matcher.match(Uri.withAppendedPath(URI, "cat"))).isEqualTo(NO_MATCH);
+        assertThat(matcher.match(Uri.withAppendedPath(URI, "bar"))).isEqualTo(NO_MATCH);
+        assertThat(matcher.match(Uri.withAppendedPath(URI, "bar/cat"))).isEqualTo(NO_MATCH);
+    }
 
 }

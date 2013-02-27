@@ -25,12 +25,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -67,7 +63,7 @@ public class RobolectricTest {
         // There's a shadow method for this in ShadowView but not TestShadowView
         aView.getContext();
         String output = buff.toString();
-        assertThat(output, containsString("No Shadow method found for View.__constructor__(android.content.Context)\n"));
+        assertThat(output).contains("No Shadow method found for View.__constructor__(android.content.Context)\n");
         buff.reset();
 
         aView.findViewById(27);
@@ -95,13 +91,13 @@ public class RobolectricTest {
 
     @Test
     public void shouldResetBackgroundSchedulerBeforeTests() throws Exception {
-        assertThat(Robolectric.getBackgroundScheduler().isPaused(), equalTo(false));
+        assertThat(Robolectric.getBackgroundScheduler().isPaused()).isFalse();
         Robolectric.getBackgroundScheduler().pause();
     }
 
     @Test
     public void shouldResetBackgroundSchedulerAfterTests() throws Exception {
-        assertThat(Robolectric.getBackgroundScheduler().isPaused(), equalTo(false));
+        assertThat(Robolectric.getBackgroundScheduler().isPaused()).isFalse();
         Robolectric.getBackgroundScheduler().pause();
     }
 
@@ -148,15 +144,15 @@ public class RobolectricTest {
 
     @Test
     public void shouldUseSetDensityForContexts() throws Exception {
-        assertThat(new Activity().getResources().getDisplayMetrics().density, equalTo(1.0f));
+        assertThat(new Activity().getResources().getDisplayMetrics().density).isEqualTo(1.0f);
         Robolectric.setDisplayMetricsDensity(1.5f);
-        assertThat(new Activity().getResources().getDisplayMetrics().density, equalTo(1.5f));
+        assertThat(new Activity().getResources().getDisplayMetrics().density).isEqualTo(1.5f);
     }
 
     @Test
     public void shouldUseSetDisplayForContexts() throws Exception {
-        assertThat(new Activity().getResources().getDisplayMetrics().widthPixels, equalTo(480));
-        assertThat(new Activity().getResources().getDisplayMetrics().heightPixels, equalTo(800));
+        assertThat(new Activity().getResources().getDisplayMetrics().widthPixels).isEqualTo(480);
+        assertThat(new Activity().getResources().getDisplayMetrics().heightPixels).isEqualTo(800);
 
         Display display = Robolectric.newInstanceOf(Display.class);
         ShadowDisplay shadowDisplay = shadowOf(display);
@@ -164,8 +160,8 @@ public class RobolectricTest {
         shadowDisplay.setHeight(200);
         Robolectric.setDefaultDisplay(display);
 
-        assertThat(new Activity().getResources().getDisplayMetrics().widthPixels, equalTo(100));
-        assertThat(new Activity().getResources().getDisplayMetrics().heightPixels, equalTo(200));
+        assertThat(new Activity().getResources().getDisplayMetrics().widthPixels).isEqualTo(100);
+        assertThat(new Activity().getResources().getDisplayMetrics().heightPixels).isEqualTo(200);
     }
 
     @Test

@@ -1,8 +1,5 @@
 package org.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
-
 import org.robolectric.TestRunners;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -10,6 +7,11 @@ import org.junit.runner.RunWith;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MessageTest {
@@ -25,7 +27,7 @@ public class MessageTest {
         Message m = new Message();
         Bundle b = new Bundle();
         m.setData(b);
-        assertThat(m.getData(), equalTo(b));
+        assertThat(m.getData()).isEqualTo(b);
     }
 
     @Test
@@ -35,7 +37,7 @@ public class MessageTest {
         Message m = new Message();
         Bundle b = new Bundle();
         m.setData(b);
-        assertThat(m.peekData(), equalTo(b));
+        assertThat(m.peekData()).isEqualTo(b);
     }
 
     @Test
@@ -43,7 +45,7 @@ public class MessageTest {
         Message m = new Message();
         Handler h = new Handler();
         m.setTarget(h);
-        assertThat(m.getTarget(), equalTo(h));
+        assertThat(m.getTarget()).isEqualTo(h);
     }
 
     @Test
@@ -59,11 +61,11 @@ public class MessageTest {
         Message m2 = new Message();
         m2.copyFrom(m);
 
-        assertThat(m2.arg1, equalTo(m.arg1));
-        assertThat(m2.arg2, equalTo(m.arg2));
-        assertThat(m2.obj, equalTo(m.obj));
-        assertThat(m2.what, equalTo(m.what));
-        assertThat(m2.getData(), equalTo(m.getData()));
+        assertThat(m2.arg1).isEqualTo(m.arg1);
+        assertThat(m2.arg2).isEqualTo(m.arg2);
+        assertThat(m2.obj).isEqualTo(m.obj);
+        assertThat(m2.what).isEqualTo(m.what);
+        assertThat(m2.getData()).isEqualTo(m.getData());
         assertNull(m2.getTarget());
     }
 
@@ -77,7 +79,7 @@ public class MessageTest {
     public void testObtainWithHandler() throws Exception {
         Handler h = new Handler();
         Message m = Message.obtain(h);
-        assertThat(m.getTarget(), equalTo(h));
+        assertThat(m.getTarget()).isEqualTo(h);
     }
 
     @Test
@@ -86,9 +88,9 @@ public class MessageTest {
         int what = 10;
         Message m = Message.obtain(h, what);
 
-        assertThat(m.getTarget(), equalTo(h));
-        assertThat(m.what, equalTo(what));
-        assertThat(m.getTarget(), equalTo(h));
+        assertThat(m.getTarget()).isEqualTo(h);
+        assertThat(m.what).isEqualTo(what);
+        assertThat(m.getTarget()).isEqualTo(h);
     }
 
     @Test
@@ -98,10 +100,10 @@ public class MessageTest {
         Object obj = "test";
         Message m = Message.obtain(h, what, obj);
 
-        assertThat(m.getTarget(), equalTo(h));
-        assertThat(m.what, equalTo(what));
-        assertThat(m.getTarget(), equalTo(h));
-        assertThat(m.obj, equalTo(obj));
+        assertThat(m.getTarget()).isEqualTo(h);
+        assertThat(m.what).isEqualTo(what);
+        assertThat(m.getTarget()).isEqualTo(h);
+        assertThat(m.obj).isEqualTo(obj);
     }
 
     @Test
@@ -112,10 +114,10 @@ public class MessageTest {
         int arg2 = 5;
         Message m = Message.obtain(h, what, arg1, arg2);
 
-        assertThat(m.getTarget(), equalTo(h));
-        assertThat(m.what, equalTo(what));
-        assertThat(m.arg1, equalTo(arg1));
-        assertThat(m.arg2, equalTo(arg2));
+        assertThat(m.getTarget()).isEqualTo(h);
+        assertThat(m.what).isEqualTo(what);
+        assertThat(m.arg1).isEqualTo(arg1);
+        assertThat(m.arg2).isEqualTo(arg2);
     }
 
     @Test
@@ -127,11 +129,11 @@ public class MessageTest {
         Object obj = "test";
         Message m = Message.obtain(h, what, arg1, arg2, obj);
 
-        assertThat(m.getTarget(), equalTo(h));
-        assertThat(m.what, equalTo(what));
-        assertThat(m.arg1, equalTo(arg1));
-        assertThat(m.arg2, equalTo(arg2));
-        assertThat(m.obj, equalTo(obj));
+        assertThat(m.getTarget()).isEqualTo(h);
+        assertThat(m.what).isEqualTo(what);
+        assertThat(m.arg1).isEqualTo(arg1);
+        assertThat(m.arg2).isEqualTo(arg2);
+        assertThat(m.obj).isEqualTo(obj);
     }
 
     @Test
@@ -146,12 +148,12 @@ public class MessageTest {
         m.setTarget(new Handler());
         Message m2 = Message.obtain(m);
 
-        assertThat(m2.arg1, equalTo(m.arg1));
-        assertThat(m2.arg2, equalTo(m.arg2));
-        assertThat(m2.obj, equalTo(m.obj));
-        assertThat(m2.what, equalTo(m.what));
-        assertThat(m2.getData(), equalTo(m.getData()));
-        assertThat(m2.getTarget(), equalTo(m.getTarget()));
+        assertThat(m2.arg1).isEqualTo(m.arg1);
+        assertThat(m2.arg2).isEqualTo(m.arg2);
+        assertThat(m2.obj).isEqualTo(m.obj);
+        assertThat(m2.what).isEqualTo(m.what);
+        assertThat(m2.getData()).isEqualTo(m.getData());
+        assertThat(m2.getTarget()).isEqualTo(m.getTarget());
     }
 
     @Test

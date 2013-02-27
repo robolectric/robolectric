@@ -1,19 +1,15 @@
 package org.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import org.robolectric.TestRunners;
+import android.database.CursorIndexOutOfBoundsException;
+import android.database.MatrixCursor;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.TestRunners;
 
-import android.database.CursorIndexOutOfBoundsException;
-import android.database.MatrixCursor;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MatrixCursorTest {
@@ -32,18 +28,18 @@ public class MatrixCursorTest {
         MatrixCursor cursor = new MatrixCursor(new String[]{"a", "b", "c"});
         cursor.addRow(new Object[]{"foo", 10L, 0.1f});
         cursor.addRow(new Object[]{"baz", 20L, null});
-        assertThat(cursor.getCount(), equalTo(2));
+        assertThat(cursor.getCount()).isEqualTo(2);
 
         assertTrue(cursor.moveToFirst());
 
-        assertThat(cursor.getString(0), equalTo("foo"));
-        assertThat(cursor.getLong(1), equalTo(10L));
-        assertThat(cursor.getFloat(2), equalTo(0.1f));
+        assertThat(cursor.getString(0)).isEqualTo("foo");
+        assertThat(cursor.getLong(1)).isEqualTo(10L);
+        assertThat(cursor.getFloat(2)).isEqualTo(0.1f);
 
         assertTrue(cursor.moveToNext());
 
-        assertThat(cursor.getString(0), equalTo("baz"));
-        assertThat(cursor.getLong(1), equalTo(20L));
+        assertThat(cursor.getString(0)).isEqualTo("baz");
+        assertThat(cursor.getLong(1)).isEqualTo(20L);
         assertTrue(cursor.isNull(2));
 
         assertFalse(cursor.moveToNext());
@@ -53,16 +49,16 @@ public class MatrixCursorTest {
     public void shouldDefineColumnNames() throws Exception {
         MatrixCursor cursor = new MatrixCursor(new String[]{"a", "b", "c"});
 
-        assertThat(cursor.getColumnCount(), equalTo(3));
+        assertThat(cursor.getColumnCount()).isEqualTo(3);
 
-        assertThat(cursor.getColumnName(0), equalTo("a"));
-        assertThat(cursor.getColumnName(1), equalTo("b"));
-        assertThat(cursor.getColumnName(2), equalTo("c"));
+        assertThat(cursor.getColumnName(0)).isEqualTo("a");
+        assertThat(cursor.getColumnName(1)).isEqualTo("b");
+        assertThat(cursor.getColumnName(2)).isEqualTo("c");
 
-        assertThat(cursor.getColumnNames(), equalTo(new String[]{"a", "b", "c"}));
+        assertThat(cursor.getColumnNames()).isEqualTo(new String[]{"a", "b", "c"});
 
-        assertThat(cursor.getColumnIndex("b"), equalTo(1));
-        assertThat(cursor.getColumnIndex("z"), equalTo(-1));
+        assertThat(cursor.getColumnIndex("b")).isEqualTo(1);
+        assertThat(cursor.getColumnIndex("z")).isEqualTo(-1);
     }
 
     @Test
@@ -73,7 +69,7 @@ public class MatrixCursorTest {
         cursor.addRow(new Object[]{blob});
         assertTrue(cursor.moveToFirst());
 
-        assertThat(cursor.getBlob(0), equalTo(blob));
+        assertThat(cursor.getBlob(0)).isEqualTo(blob);
     }
 
     @Test
@@ -82,19 +78,19 @@ public class MatrixCursorTest {
         cursor.addRow(new Object[]{42, 3.3});
         assertTrue(cursor.moveToFirst());
 
-        assertThat(cursor.getString(0), equalTo("42"));
-        assertThat(cursor.getShort(0), equalTo((short) 42));
-        assertThat(cursor.getInt(0), equalTo(42));
-        assertThat(cursor.getLong(0), equalTo(42L));
-        assertThat(cursor.getFloat(0), equalTo(42.0F));
-        assertThat(cursor.getDouble(0), equalTo(42.0));
+        assertThat(cursor.getString(0)).isEqualTo("42");
+        assertThat(cursor.getShort(0)).isEqualTo((short) 42);
+        assertThat(cursor.getInt(0)).isEqualTo(42);
+        assertThat(cursor.getLong(0)).isEqualTo(42L);
+        assertThat(cursor.getFloat(0)).isEqualTo(42.0F);
+        assertThat(cursor.getDouble(0)).isEqualTo(42.0);
 
-        assertThat(cursor.getString(1), equalTo("3.3"));
-        assertThat(cursor.getShort(1), equalTo((short) 3));
-        assertThat(cursor.getInt(1), equalTo(3));
-        assertThat(cursor.getLong(1), equalTo(3L));
-        assertThat(cursor.getFloat(1), equalTo(3.3F));
-        assertThat(cursor.getDouble(1), equalTo(3.3));
+        assertThat(cursor.getString(1)).isEqualTo("3.3");
+        assertThat(cursor.getShort(1)).isEqualTo((short) 3);
+        assertThat(cursor.getInt(1)).isEqualTo(3);
+        assertThat(cursor.getLong(1)).isEqualTo(3L);
+        assertThat(cursor.getFloat(1)).isEqualTo(3.3F);
+        assertThat(cursor.getDouble(1)).isEqualTo(3.3);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -127,31 +123,31 @@ public class MatrixCursorTest {
 
     @Test
     public void returnsNullWhenGettingStringFromNullColumn() {
-        assertThat(singleColumnSingleNullValueMatrixCursor.getString(0), is(nullValue()));
+        assertThat(singleColumnSingleNullValueMatrixCursor.getString(0)).isNull();
     }
 
     @Test
     public void returnsZeroWhenGettingIntFromNullColumn() {
-        assertThat(singleColumnSingleNullValueMatrixCursor.getInt(0), is(equalTo(0)));
+        assertThat(singleColumnSingleNullValueMatrixCursor.getInt(0)).isEqualTo(0);
     }
 
     @Test
     public void returnsZeroWhenGettingLongFromNullColumn() {
-        assertThat(singleColumnSingleNullValueMatrixCursor.getLong(0), is(equalTo(0L)));
+        assertThat(singleColumnSingleNullValueMatrixCursor.getLong(0)).isEqualTo(0L);
     }
 
     @Test
     public void returnsZeroWhenGettingShortFromNullColumn() {
-        assertThat(singleColumnSingleNullValueMatrixCursor.getShort(0), is(equalTo((short) 0)));
+        assertThat(singleColumnSingleNullValueMatrixCursor.getShort(0)).isEqualTo((short) 0);
     }
 
     @Test
     public void returnsZeroWhenGettingFloatFromNullColumn() {
-        assertThat(singleColumnSingleNullValueMatrixCursor.getFloat(0), is(equalTo(0.0f)));
+        assertThat(singleColumnSingleNullValueMatrixCursor.getFloat(0)).isEqualTo(0.0f);
     }
 
     @Test
     public void returnsZeroWhenGettingDoubleFromNullColumn() {
-        assertThat(singleColumnSingleNullValueMatrixCursor.getDouble(0), is(equalTo(0.0)));
+        assertThat(singleColumnSingleNullValueMatrixCursor.getDouble(0)).isEqualTo(0.0);
     }
 }

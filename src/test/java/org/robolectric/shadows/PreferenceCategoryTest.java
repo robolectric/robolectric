@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.robolectric.TestRunners;
 import org.junit.Before;
@@ -27,6 +27,6 @@ public class PreferenceCategoryTest {
     
 	@Test
 	public void shouldInheritFromPreferenceGroup() {
-		assertThat(shadow, instanceOf(ShadowPreferenceGroup.class));
+        assertThat(shadow).isInstanceOf(ShadowPreferenceGroup.class);
 	}	
 }

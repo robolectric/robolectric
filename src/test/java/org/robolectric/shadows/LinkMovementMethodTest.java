@@ -6,14 +6,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.instanceOf;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class LinkMovementMethodTest {
 
     @Test
     public void getInstance_shouldReturnAnInstanceOf_LinkedMovementMethod() throws Exception {
-        assertThat(LinkMovementMethod.getInstance(), instanceOf(LinkMovementMethod.class));
+        assertThat(LinkMovementMethod.getInstance()).isInstanceOf(LinkMovementMethod.class);
     }
 
 }

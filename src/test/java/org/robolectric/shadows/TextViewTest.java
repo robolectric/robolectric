@@ -19,7 +19,6 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.inputmethod.EditorInfo;
 import android.widget.TextView;
-import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,7 +31,7 @@ import java.util.List;
 import java.util.Random;
 
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -58,25 +57,25 @@ public class TextViewTest {
 
         shadowOf(textView).triggerEditorAction(EditorInfo.IME_ACTION_GO);
 
-        assertThat(actionListener.textView, is(textView));
-        assertThat(actionListener.sentImeId, equalTo(EditorInfo.IME_ACTION_GO));
+        assertThat(actionListener.textView).isSameAs(textView);
+        assertThat(actionListener.sentImeId).isEqualTo(EditorInfo.IME_ACTION_GO);
     }
 
     @Test
     public void testGetUrls() throws Exception {
         textView.setText("here's some text http://google.com/\nblah\thttp://another.com/123?456 blah");
 
-        assertThat(urlStringsFrom(textView.getUrls()), equalTo(asList(
+        assertThat(urlStringsFrom(textView.getUrls())).isEqualTo(asList(
                 "http://google.com/",
                 "http://another.com/123?456"
-        )));
+        ));
     }
 
     @Test
     public void testGetGravity() throws Exception {
-        assertThat(textView.getGravity(), not(equalTo(Gravity.CENTER)));
+        assertThat(textView.getGravity()).isNotEqualTo(Gravity.CENTER);
         textView.setGravity(Gravity.CENTER);
-        assertThat(textView.getGravity(), equalTo(Gravity.CENTER));
+        assertThat(textView.getGravity()).isEqualTo(Gravity.CENTER);
     }
 
     @Test
@@ -85,18 +84,18 @@ public class TextViewTest {
 
         assertNull(textView.getMovementMethod());
         textView.setMovementMethod(movement);
-        assertThat(textView.getMovementMethod(), sameInstance(movement));
+        assertThat(textView.getMovementMethod()).isSameAs(movement);
     }
 
     @Test
     public void testLinksClickable() {
-        assertThat(textView.getLinksClickable(), equalTo(false));
+        assertThat(textView.getLinksClickable()).isFalse();
 
         textView.setLinksClickable(true);
-        assertThat(textView.getLinksClickable(), equalTo(true));
+        assertThat(textView.getLinksClickable()).isTrue();
 
         textView.setLinksClickable(false);
-        assertThat(textView.getLinksClickable(), equalTo(false));
+        assertThat(textView.getLinksClickable()).isFalse();
     }
 
     @Test
@@ -104,7 +103,7 @@ public class TextViewTest {
         TextView textView = new TextView(null);
         textView.setTextAppearance(null, 5);
 
-        assertThat(shadowOf(textView).getTextAppearanceId(), equalTo(5));
+        assertThat(shadowOf(textView).getTextAppearanceId()).isEqualTo(5);
     }
 
     @Test
@@ -113,16 +112,16 @@ public class TextViewTest {
         activity.setContentView(R.layout.text_views);
 
         TextView black = (TextView) activity.findViewById(R.id.black_text_view);
-        assertThat(black.getText().toString(), equalTo("Black Text"));
-        assertThat(shadowOf(black).getTextColorHexValue(), equalTo(0));
+        assertThat(black.getText().toString()).isEqualTo("Black Text");
+        assertThat(shadowOf(black).getTextColorHexValue()).isEqualTo(0);
 
         TextView white = (TextView) activity.findViewById(R.id.white_text_view);
-        assertThat(white.getText().toString(), equalTo("White Text"));
-        assertThat(shadowOf(white).getTextColorHexValue(), equalTo(activity.getResources().getColor(android.R.color.white)));
+        assertThat(white.getText().toString()).isEqualTo("White Text");
+        assertThat(shadowOf(white).getTextColorHexValue()).isEqualTo(activity.getResources().getColor(android.R.color.white));
 
         TextView grey = (TextView) activity.findViewById(R.id.grey_text_view);
-        assertThat(grey.getText().toString(), equalTo("Grey Text"));
-        assertThat(shadowOf(grey).getTextColorHexValue(), equalTo(activity.getResources().getColor(R.color.grey42)));
+        assertThat(grey.getText().toString()).isEqualTo("Grey Text");
+        assertThat(shadowOf(grey).getTextColorHexValue()).isEqualTo(activity.getResources().getColor(R.color.grey42));
     }
 
     @Test
@@ -131,22 +130,22 @@ public class TextViewTest {
         activity.setContentView(R.layout.text_views_hints);
 
         TextView black = (TextView) activity.findViewById(R.id.black_text_view_hint);
-        assertThat(black.getHint().toString(), equalTo("Black Hint"));
-        assertThat(shadowOf(black).getHintColorHexValue(), equalTo(0));
+        assertThat(black.getHint().toString()).isEqualTo("Black Hint");
+        assertThat(shadowOf(black).getHintColorHexValue()).isEqualTo(0);
 
         TextView white = (TextView) activity.findViewById(R.id.white_text_view_hint);
-        assertThat(white.getHint().toString(), equalTo("White Hint"));
-        assertThat(shadowOf(white).getHintColorHexValue(), equalTo(activity.getResources().getColor(android.R.color.white)));
+        assertThat(white.getHint().toString()).isEqualTo("White Hint");
+        assertThat(shadowOf(white).getHintColorHexValue()).isEqualTo(activity.getResources().getColor(android.R.color.white));
 
         TextView grey = (TextView) activity.findViewById(R.id.grey_text_view_hint);
-        assertThat(grey.getHint().toString(), equalTo("Grey Hint"));
-        assertThat(shadowOf(grey).getHintColorHexValue(), equalTo(activity.getResources().getColor(R.color.grey42)));
+        assertThat(grey.getHint().toString()).isEqualTo("Grey Hint");
+        assertThat(shadowOf(grey).getHintColorHexValue()).isEqualTo(activity.getResources().getColor(R.color.grey42));
     }
 
     @Test
     public void shouldNotHaveTransformationMethodByDefault() {
         ShadowTextView view = new ShadowTextView();
-        assertThat(view.getTransformationMethod(), is(CoreMatchers.<Object>nullValue()));
+        assertThat(view.getTransformationMethod()).isNull();
     }
 
     @Test
@@ -158,9 +157,9 @@ public class TextViewTest {
     
     @Test
     public void testGetInputType() throws Exception {
-        assertThat(textView.getInputType(), not(equalTo(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD)));
+        assertThat(textView.getInputType()).isNotEqualTo(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
         textView.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
-        assertThat(textView.getInputType(), equalTo(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD));
+        assertThat(textView.getInputType()).isEqualTo(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
     }
     
     @Test
@@ -236,7 +235,7 @@ public class TextViewTest {
 
         textView.setText(NEW_TEXT);
 
-        assertThat(mockTextWatcher.afterTextChangeArgument.toString(), equalTo(NEW_TEXT));
+        assertThat(mockTextWatcher.afterTextChangeArgument.toString()).isEqualTo(NEW_TEXT);
     }
 
     
@@ -278,7 +277,7 @@ public class TextViewTest {
 
         textView.append(NEW_TEXT);
 
-        assertThat(mockTextWatcher.afterTextChangeArgument.toString(), equalTo(INITIAL_TEXT + NEW_TEXT));
+        assertThat(mockTextWatcher.afterTextChangeArgument.toString()).isEqualTo(INITIAL_TEXT + NEW_TEXT);
     }
 
     @Test
@@ -293,7 +292,7 @@ public class TextViewTest {
 
     @Test
     public void getPaint_returnsMeasureTextEnabledObject() throws Exception {
-        assertThat(textView.getPaint().measureText("12345"), equalTo(5f));
+        assertThat(textView.getPaint().measureText("12345")).isEqualTo(5f);
     }
 
     @Test
@@ -376,7 +375,7 @@ public class TextViewTest {
     public void canSetAndGetInputFilters() throws Exception {
         final InputFilter[] expectedFilters = new InputFilter[]{new InputFilter.LengthFilter(1)};
         textView.setFilters(expectedFilters);
-        assertThat(textView.getFilters(), is(expectedFilters));
+        assertThat(textView.getFilters()).isSameAs(expectedFilters);
     }
 
     @Test
@@ -409,25 +408,25 @@ public class TextViewTest {
     public void testNoArgAppend() {
         textView.setText("a");
         textView.append("b");
-        assertThat(textView.getText().toString(), equalTo("ab"));
+        assertThat(textView.getText().toString()).isEqualTo("ab");
     }
 
     @Test
     public void setTextSize_shouldHandleDips() throws Exception {
         shadowOf(Robolectric.application.getResources()).setDensity(1.5f);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 10);
-        assertThat(textView.getTextSize(), equalTo(15f));
+        assertThat(textView.getTextSize()).isEqualTo(15f);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 20);
-        assertThat(textView.getTextSize(), equalTo(30f));
+        assertThat(textView.getTextSize()).isEqualTo(30f);
     }
 
     @Test
     public void setTextSize_shouldHandlePixels() throws Exception {
         shadowOf(Robolectric.application.getResources()).setDensity(1.5f);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 10);
-        assertThat(textView.getTextSize(), equalTo(10f));
+        assertThat(textView.getTextSize()).isEqualTo(10f);
         textView.setTextSize(TypedValue.COMPLEX_UNIT_PX, 20);
-        assertThat(textView.getTextSize(), equalTo(20f));
+        assertThat(textView.getTextSize()).isEqualTo(20f);
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -438,9 +437,9 @@ public class TextViewTest {
     @Test
     public void setLines_setsTheLines() throws Exception {
         textView.setLines(1);
-        assertThat(textView.getLineCount(), equalTo(1));
+        assertThat(textView.getLineCount()).isEqualTo(1);
         textView.setLines(4);
-        assertThat(textView.getLineCount(), equalTo(4));
+        assertThat(textView.getLineCount()).isEqualTo(4);
     }
 
     private List<MockTextWatcher> anyNumberOfTextWatchers() {
@@ -455,9 +454,9 @@ public class TextViewTest {
     private void assertEachTextWatcherEventWasInvoked(MockTextWatcher mockTextWatcher) {
         assertTrue("Expected each TextWatcher event to have been invoked once", mockTextWatcher.methodsCalled.size() == 3);
 
-        assertThat(mockTextWatcher.methodsCalled.get(0), equalTo("beforeTextChanged"));
-        assertThat(mockTextWatcher.methodsCalled.get(1), equalTo("onTextChanged"));
-        assertThat(mockTextWatcher.methodsCalled.get(2), equalTo("afterTextChanged"));
+        assertThat(mockTextWatcher.methodsCalled.get(0)).isEqualTo("beforeTextChanged");
+        assertThat(mockTextWatcher.methodsCalled.get(1)).isEqualTo("onTextChanged");
+        assertThat(mockTextWatcher.methodsCalled.get(2)).isEqualTo("afterTextChanged");
     }
 
     private List<String> urlStringsFrom(URLSpan[] urlSpans) {

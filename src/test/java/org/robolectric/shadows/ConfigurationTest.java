@@ -12,7 +12,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ConfigurationTest {
@@ -29,23 +29,23 @@ public class ConfigurationTest {
     @Test
     public void testSetToDefaults() throws Exception {
         configuration.setToDefaults();
-        assertThat(configuration.screenLayout, equalTo(Configuration.SCREENLAYOUT_LONG_NO | Configuration.SCREENLAYOUT_SIZE_NORMAL));
+        assertThat(configuration.screenLayout).isEqualTo(Configuration.SCREENLAYOUT_LONG_NO | Configuration.SCREENLAYOUT_SIZE_NORMAL);
     }
     
     @Test
     public void testSetLocale() {
     	shConfiguration.setLocale( Locale.US );
-    	assertThat( configuration.locale, equalTo( Locale.US ) );
+        assertThat(configuration.locale).isEqualTo(Locale.US);
 
     	shConfiguration.setLocale( Locale.FRANCE);
-    	assertThat( configuration.locale, equalTo( Locale.FRANCE ) );
+        assertThat(configuration.locale).isEqualTo(Locale.FRANCE);
     }
 
     @Test
     public void testConstructCopy() {
         configuration.setToDefaults();
         Configuration clone = new Configuration(configuration);
-        assertThat( configuration, equalTo( clone ) );
+        assertThat(configuration).isEqualTo(clone);
     }
 
 }

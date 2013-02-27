@@ -8,7 +8,7 @@ import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.not;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AccountTest {
@@ -17,8 +17,8 @@ public class AccountTest {
     public void shouldHaveStringsConstructor() throws Exception {
         Account account = new Account("name", "type");
 
-        assertThat(account.name, equalTo("name"));
-        assertThat(account.type, equalTo("type"));
+        assertThat(account.name).isEqualTo("name");
+        assertThat(account.type).isEqualTo("type");
     }
 
     @Test
@@ -28,8 +28,8 @@ public class AccountTest {
         p.writeString("type");
 
         Account account = new Account(p);
-        assertThat(account.name, equalTo("name"));
-        assertThat(account.type, equalTo("type"));
+        assertThat(account.name).isEqualTo("name");
+        assertThat(account.type).isEqualTo("type");
     }
 
     @Test(expected = IllegalArgumentException.class)
@@ -45,14 +45,14 @@ public class AccountTest {
     @Test
     public void shouldHaveToString() throws Exception {
         Account account = new Account("name", "type");
-        assertThat(account.toString(), equalTo("Account {name=name, type=type}"));
+        assertThat(account.toString()).isEqualTo("Account {name=name, type=type}");
     }
 
     @Test
     public void shouldProvideEqualAndHashCode() throws Exception {
-        assertThat(new Account("a", "b"), equalTo(new Account("a", "b")));
-        assertThat(new Account("a", "b"), not(equalTo(new Account("c", "b"))));
-        assertThat(new Account("a", "b").hashCode(), equalTo(new Account("a", "b").hashCode()));
-        assertThat(new Account("a", "b").hashCode(), not(equalTo(new Account("c", "b").hashCode())));
+        assertThat(new Account("a", "b")).isEqualTo(new Account("a", "b"));
+        assertThat(new Account("a", "b")).isNotEqualTo(new Account("c", "b"));
+        assertThat(new Account("a", "b").hashCode()).isEqualTo(new Account("a", "b").hashCode());
+        assertThat(new Account("a", "b").hashCode()).isNotEqualTo(new Account("c", "b").hashCode());
     }
 }

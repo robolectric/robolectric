@@ -10,8 +10,7 @@ import org.robolectric.res.EmptyResourceLoader;
 
 import java.util.ArrayList;
 
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ImageButtonTest {
@@ -19,6 +18,6 @@ public class ImageButtonTest {
     public void testBackground() throws Exception {
         RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new EmptyResourceLoader(), null);
         ImageButton button = new ImageButton(Robolectric.application, attrs);
-        assertThat(button.getBackground(), notNullValue());
+        assertThat(button.getBackground()).isNotNull();
     }
 }

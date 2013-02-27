@@ -4,22 +4,21 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.Attribute;
 import org.robolectric.util.TestUtil;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
 
-import static org.robolectric.Robolectric.shadowOf;
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.core.IsCollectionContaining.hasItems;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.internal.matchers.IsCollectionContaining.hasItems;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TypedArrayTest {
@@ -37,22 +36,22 @@ public class TypedArrayTest {
 
     @Test
     public void getInt_shouldReturnDefaultValue() throws Exception {
-        assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getInt(0, -1), equalTo(-1));
+        assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getInt(0, -1)).isEqualTo(-1);
     }
 
     @Test
     public void getInteger_shouldReturnDefaultValue() throws Exception {
-        assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getInteger(0, -1), equalTo(-1));
+        assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getInteger(0, -1)).isEqualTo(-1);
     }
 
     @Test
     public void getResourceId_shouldReturnDefaultValue() throws Exception {
-        assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getResourceId(0, -1), equalTo(-1));
+        assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getResourceId(0, -1)).isEqualTo(-1);
     }
 
     @Test
     public void getDimension_shouldReturnDefaultValue() throws Exception {
-        assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getDimension(0, -1f), equalTo(-1f));
+        assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getDimension(0, -1f)).isEqualTo(-1f);
     }
 
     @Test
@@ -72,6 +71,6 @@ public class TypedArrayTest {
                 asList(new Attribute(TestUtil.TEST_PACKAGE + ":attr/items", "@array/greetings", TestUtil.TEST_PACKAGE)
                 ), shadowOf(resources).getResourceLoader(), null);
         TypedArray typedArray = ShadowTypedArray.create(resources, attributeSet, new int[]{R.attr.items});
-        assertThat(asList(typedArray.getTextArray(0)), hasItems((CharSequence)"hola", "Hello"));
+        org.junit.Assert.assertThat(asList(typedArray.getTextArray(0)), hasItems((CharSequence)"hola", "Hello"));
     }
 }

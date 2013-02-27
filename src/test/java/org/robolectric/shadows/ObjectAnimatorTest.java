@@ -7,12 +7,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.notNullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.hamcrest.CoreMatchers.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ObjectAnimatorTest {
@@ -21,9 +17,9 @@ public class ObjectAnimatorTest {
         Object expectedTarget = new Object();
         String propertyName = "expectedProperty";
         ObjectAnimator animator = ObjectAnimator.ofFloat(expectedTarget, propertyName, 0.5f, 0.4f);
-        assertThat(animator, notNullValue());
-        assertThat(animator.getTarget(), equalTo(expectedTarget));
-        assertThat(animator.getPropertyName(), equalTo(propertyName));
+        assertThat(animator).isNotNull();
+        assertThat(animator.getTarget()).isEqualTo(expectedTarget);
+        assertThat(animator.getPropertyName()).isEqualTo(propertyName);
     }
 
     @Test
@@ -32,8 +28,8 @@ public class ObjectAnimatorTest {
         String propertyName = "expectedProperty";
         ObjectAnimator animator = ObjectAnimator.ofFloat(expectedTarget, propertyName, 0.5f, 0.4f);
 
-        assertThat(animator.setDuration(2876), equalTo(animator));
-        assertThat(animator.getDuration(), equalTo(2876l));
+        assertThat(animator.setDuration(2876)).isEqualTo(animator);
+        assertThat(animator.getDuration()).isEqualTo(2876l);
     }
 
     @Test
@@ -43,12 +39,12 @@ public class ObjectAnimatorTest {
         animator.setDuration(1000);
 
         animator.start();
-        assertThat(target.getTranslationX(), equalTo(0.5f));
+        assertThat(target.getTranslationX()).isEqualTo(0.5f);
         Robolectric.idleMainLooper(999);
         // I don't need these values to change gradually. If you do by all means implement that. PBG
-        assertThat(target.getTranslationX(), not(0.4f));
+        assertThat(target.getTranslationX()).isNotEqualTo(0.4f);
         Robolectric.idleMainLooper(1);
-        assertThat(target.getTranslationX(), equalTo(0.4f));
+        assertThat(target.getTranslationX()).isEqualTo(0.4f);
     }
 
     @Test
@@ -58,9 +54,9 @@ public class ObjectAnimatorTest {
         animator.setDuration(1000);
 
         animator.start();
-        assertThat(target.getBottom(), equalTo(1));
+        assertThat(target.getBottom()).isEqualTo(1);
         Robolectric.idleMainLooper(1000);
-        assertThat(target.getBottom(), equalTo(4));
+        assertThat(target.getBottom()).isEqualTo(4);
     }
 
     @Test
@@ -74,10 +70,10 @@ public class ObjectAnimatorTest {
         animator.addListener(endListener);
         animator.start();
 
-        assertThat(startListener.startWasCalled, equalTo(true));
-        assertThat(endListener.endWasCalled, equalTo(false));
+        assertThat(startListener.startWasCalled).isTrue();
+        assertThat(endListener.endWasCalled).isFalse();
         Robolectric.idleMainLooper(1);
-        assertThat(endListener.endWasCalled, equalTo(true));
+        assertThat(endListener.endWasCalled).isTrue();
     }
 
     @Test
@@ -85,7 +81,7 @@ public class ObjectAnimatorTest {
         View target = new View(null);
         ObjectAnimator expectedAnimator = ObjectAnimator.ofFloat(target, "translationX", 0f, 1f);
 
-        assertThat(ShadowObjectAnimator.getAnimatorsFor(target).get("translationX"), sameInstance(expectedAnimator));
+        assertThat(ShadowObjectAnimator.getAnimatorsFor(target).get("translationX")).isSameAs(expectedAnimator);
     }
 
     @Test
@@ -95,11 +91,11 @@ public class ObjectAnimatorTest {
         long duration = 70;
         expectedAnimator.setDuration(duration);
 
-        assertThat(expectedAnimator.isRunning(), is(false));
+        assertThat(expectedAnimator.isRunning()).isFalse();
         expectedAnimator.start();
-        assertThat(expectedAnimator.isRunning(), is(true));
+        assertThat(expectedAnimator.isRunning()).isTrue();
         Robolectric.idleMainLooper(duration);
-        assertThat(expectedAnimator.isRunning(), is(false));
+        assertThat(expectedAnimator.isRunning()).isFalse();
     }
 
     @Test
@@ -112,11 +108,11 @@ public class ObjectAnimatorTest {
 
         animator.start();
 
-        assertThat(endListener.endWasCalled, equalTo(false));
+        assertThat(endListener.endWasCalled).isFalse();
         ShadowObjectAnimator.pauseEndNotifications();
         Robolectric.idleMainLooper(1);
-        assertThat(endListener.endWasCalled, equalTo(false));
+        assertThat(endListener.endWasCalled).isFalse();
         ShadowObjectAnimator.unpauseEndNotifications();
-        assertThat(endListener.endWasCalled, equalTo(true));
+        assertThat(endListener.endWasCalled).isTrue();
     }
 }

@@ -8,7 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MediaPlayerTest {
@@ -28,7 +28,7 @@ public class MediaPlayerTest {
 
         for (int position : positions) {
             shadowMediaPlayer.setCurrentPosition(position);
-            assertThat(mediaPlayer.getCurrentPosition(), equalTo(position));
+            assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(position);
         }
     }
 }

@@ -8,9 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import static junit.framework.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.MatcherAssert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowBinderTest {
@@ -20,10 +18,10 @@ public class ShadowBinderTest {
         Parcel data = Parcel.obtain();
         Parcel reply = Parcel.obtain();
         assertTrue(testBinder.transact(2, data, reply, 3));
-        assertThat(testBinder.code, equalTo(2));
-        assertThat(testBinder.data, sameInstance(data));
-        assertThat(testBinder.reply, sameInstance(reply));
-        assertThat(testBinder.flags, equalTo(3));
+        assertThat(testBinder.code).isEqualTo(2);
+        assertThat(testBinder.data).isSameAs(data);
+        assertThat(testBinder.reply).isSameAs(reply);
+        assertThat(testBinder.flags).isEqualTo(3);
     }
 
     static class TestBinder extends Binder {

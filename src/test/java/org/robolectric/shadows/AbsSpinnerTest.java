@@ -9,14 +9,13 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Gallery;
 import android.widget.Spinner;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
 
-import static org.hamcrest.CoreMatchers.*;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AbsSpinnerTest {
@@ -50,17 +49,17 @@ public class AbsSpinnerTest {
 	public void getSelectedItemShouldReturnCorrectValue(){
 		spinner.setAdapter(arrayAdapter);
 		spinner.setSelection(0);
-		assertThat((String) spinner.getSelectedItem(), equalTo("foo"));
-		assertThat((String) spinner.getSelectedItem(), not(equalTo("bar")));
+        assertThat((String) spinner.getSelectedItem()).isEqualTo("foo");
+        assertThat((String) spinner.getSelectedItem()).isNotEqualTo("bar");
 		
 		spinner.setSelection(1);
-		assertThat((String) spinner.getSelectedItem(), equalTo("bar"));
-		assertThat((String) spinner.getSelectedItem(), not(equalTo("foo")));
+        assertThat((String) spinner.getSelectedItem()).isEqualTo("bar");
+		assertThat((String) spinner.getSelectedItem()).isNotEqualTo("foo");
 	}
 	
 	@Test
 	public void getSelectedItemShouldReturnNull_NoAdapterSet(){
-		assertThat(spinner.getSelectedItem(), nullValue());
+        assertThat(spinner.getSelectedItem()).isNull();
 	}
 	
 	@Test (expected = IndexOutOfBoundsException.class)	
@@ -73,11 +72,11 @@ public class AbsSpinnerTest {
 	public void setSelectionWithAnimatedTransition() {		
 		spinner.setAdapter(arrayAdapter);
 		spinner.setSelection(0, true);
-		
-		assertThat((String) spinner.getSelectedItem(), equalTo("foo"));
-		assertThat((String) spinner.getSelectedItem(), not(equalTo("bar")));
-		
-		assertThat(shadowSpinner.isAnimatedTransition(), equalTo(true));
+
+        assertThat((String) spinner.getSelectedItem()).isEqualTo("foo");
+        assertThat((String) spinner.getSelectedItem()).isNotEqualTo("bar");
+
+        assertThat(shadowSpinner.isAnimatedTransition()).isTrue();
 	}
 
     private static class MyArrayAdapter extends ArrayAdapter<String> {

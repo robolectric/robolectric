@@ -13,7 +13,7 @@ import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertTrue;
 
 /**
@@ -55,19 +55,19 @@ public class TestSharedPreferencesTest {
 
         TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
         assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
-        assertThat(anotherSharedPreferences.getFloat("float", 666f), equalTo(1.1f));
-        assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(2));
-        assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(3l));
-        assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
-        assertThat(anotherSharedPreferences.getStringSet( "stringSet", null ), equalTo(stringSet ));
+        assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
+        assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
+        assertThat(anotherSharedPreferences.getLong("long", 666l)).isEqualTo(3l);
+        assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
+        assertThat(anotherSharedPreferences.getStringSet("stringSet", null)).isEqualTo(stringSet);
     }
 
     @Test
     public void getAll_shouldReturnAllValues() throws Exception {
         editor.commit();
         Map<String, ?> all = sharedPreferences.getAll();
-        assertThat(all.size(), equalTo(6));
-        assertThat((Integer) all.get("int"), equalTo(2));
+        assertThat(all.size()).isEqualTo(6);
+        assertThat((Integer) all.get("int")).isEqualTo(2);
     }
 
     @Test
@@ -84,13 +84,13 @@ public class TestSharedPreferencesTest {
 
         TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
         assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
-        assertThat(anotherSharedPreferences.getFloat("float", 666f), equalTo(1.1f));
-        assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(2));
-        assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(3l));
-        assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
+        assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
+        assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
+        assertThat(anotherSharedPreferences.getLong("long", 666l)).isEqualTo(3l);
+        assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
 
-        assertThat(anotherSharedPreferences.getString("deleteMe", "awol"), equalTo("awol"));
-        assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops"), equalTo("baz"));
+        assertThat(anotherSharedPreferences.getString("deleteMe", "awol")).isEqualTo("awol");
+        assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops")).isEqualTo("baz");
     }
 
     @Test
@@ -105,13 +105,13 @@ public class TestSharedPreferencesTest {
 
         TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
         assertTrue(anotherSharedPreferences.getBoolean("boolean", false));
-        assertThat(anotherSharedPreferences.getFloat("float", 666f), equalTo(1.1f));
-        assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(2));
-        assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(3l));
-        assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
+        assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(1.1f);
+        assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(2);
+        assertThat(anotherSharedPreferences.getLong("long", 666l)).isEqualTo(3l);
+        assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
 
-        assertThat(anotherSharedPreferences.getString("deleteMe", "awol"), equalTo("awol"));
-        assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops"), equalTo("baz"));
+        assertThat(anotherSharedPreferences.getString("deleteMe", "awol")).isEqualTo("awol");
+        assertThat(anotherSharedPreferences.getString("dontDeleteMe", "oops")).isEqualTo("baz");
     }
     
     @Test
@@ -119,7 +119,7 @@ public class TestSharedPreferencesTest {
         editor.apply();
 
         TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, FILENAME, 3);
-        assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("foobar"));
+        assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("foobar");
     }
 
     @Test
@@ -127,10 +127,10 @@ public class TestSharedPreferencesTest {
         TestSharedPreferences anotherSharedPreferences = new TestSharedPreferences(content, "bazBang", 3);
 
         assertFalse(anotherSharedPreferences.getBoolean("boolean", false));
-        assertThat(anotherSharedPreferences.getFloat("float", 666f), equalTo(666f));
-        assertThat(anotherSharedPreferences.getInt("int", 666), equalTo(666));
-        assertThat(anotherSharedPreferences.getLong("long", 666l), equalTo(666l));
-        assertThat(anotherSharedPreferences.getString("string", "wacka wa"), equalTo("wacka wa"));
+        assertThat(anotherSharedPreferences.getFloat("float", 666f)).isEqualTo(666f);
+        assertThat(anotherSharedPreferences.getInt("int", 666)).isEqualTo(666);
+        assertThat(anotherSharedPreferences.getLong("long", 666l)).isEqualTo(666l);
+        assertThat(anotherSharedPreferences.getString("string", "wacka wa")).isEqualTo("wacka wa");
     }
 
     @Test

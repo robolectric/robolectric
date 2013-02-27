@@ -8,15 +8,8 @@ import android.widget.TextView;
 import org.robolectric.Robolectric;
 import org.robolectric.util.Transcript;
 
-import static org.robolectric.Robolectric.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.matchers.TextViewHasTextMatcher.hasText;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.core.CombinableMatcher.both;
-import static org.junit.Assert.assertThat;
 
 public class AdapterViewBehavior {
     public static void shouldActAsAdapterView(AdapterView adapterView) throws Exception {
@@ -59,13 +52,13 @@ public class AdapterViewBehavior {
     private static void testSetAdapter_ShouldCauseViewsToBeRenderedAsynchronously(AdapterView adapterView) throws Exception {
         adapterView.setAdapter(new CountingAdapter(2));
 
-        assertThat(adapterView.getCount(), equalTo(2));
-        assertThat(adapterView.getChildCount(), equalTo(0));
+        assertThat(adapterView.getCount()).isEqualTo(2);
+        assertThat(adapterView.getChildCount()).isEqualTo(0);
 
         ShadowHandler.idleMainLooper();
-        assertThat(adapterView.getChildCount(), equalTo(2));
-        assertThat((TextView) adapterView.getChildAt(0), hasText("Item 0"));
-        assertThat((TextView) adapterView.getChildAt(1), hasText("Item 1"));
+        assertThat(adapterView.getChildCount()).isEqualTo(2);
+        org.junit.Assert.assertThat((TextView) adapterView.getChildAt(0), hasText("Item 0"));
+        org.junit.Assert.assertThat((TextView) adapterView.getChildAt(1), hasText("Item 1"));
     }
 
     private static void testSetAdapter_ShouldSelectFirstItemAsynchronously(final AdapterView adapterView) throws Exception {
@@ -74,9 +67,10 @@ public class AdapterViewBehavior {
         adapterView.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                assertThat(parent, sameInstance(adapterView));
-                assertThat(view, both(sameInstance(adapterView.getChildAt(position))).and(not(nullValue())));
-                assertThat(id, equalTo(adapterView.getAdapter().getItemId(position)));
+                assertThat(parent).isSameAs(adapterView);
+                assertThat(view).isNotNull();
+                assertThat(view).isSameAs(adapterView.getChildAt(position));
+                assertThat(id).isEqualTo(adapterView.getAdapter().getItemId(position));
                 transcript.add("selected item " + position);
             }
 
@@ -117,9 +111,9 @@ public class AdapterViewBehavior {
     	
     	View emptyView = new View(adapterView.getContext());
 		adapterView.setEmptyView(emptyView);
-		
-		assertThat(adapterView.getVisibility(), is(View.GONE));
-		assertThat(emptyView.getVisibility(), is(View.VISIBLE));
+
+        assertThat(adapterView.getVisibility()).isEqualTo(View.GONE);
+        assertThat(emptyView.getVisibility()).isEqualTo(View.VISIBLE);
     }
     
     private static void testSetEmptyView_ShouldHideAdapterViewIfAdapterViewIsEmpty(final AdapterView adapterView) throws Exception {
@@ -127,9 +121,9 @@ public class AdapterViewBehavior {
     	
     	View emptyView = new View(adapterView.getContext());
 		adapterView.setEmptyView(emptyView);
-		
-		assertThat(adapterView.getVisibility(), is(View.GONE));
-		assertThat(emptyView.getVisibility(), is(View.VISIBLE));
+
+        assertThat(adapterView.getVisibility()).isEqualTo(View.GONE);
+        assertThat(emptyView.getVisibility()).isEqualTo(View.VISIBLE);
     }
 
     private static void testSetEmptyView_ShouldHideEmptyViewIfAdapterViewIsNotEmpty(final AdapterView adapterView) throws Exception {
@@ -137,9 +131,9 @@ public class AdapterViewBehavior {
     	
     	View emptyView = new View(adapterView.getContext());
 		adapterView.setEmptyView(emptyView);
-		
-		assertThat(adapterView.getVisibility(), is(View.VISIBLE));
-		assertThat(emptyView.getVisibility(), is(View.GONE));
+
+        assertThat(adapterView.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(emptyView.getVisibility()).isEqualTo(View.GONE);
     }
     
     private static void testSetEmptyView_ShouldHideEmptyViewWhenAdapterGetsNewItem(final AdapterView adapterView) throws Exception {
@@ -148,16 +142,16 @@ public class AdapterViewBehavior {
     	
     	View emptyView = new View(adapterView.getContext());
 		adapterView.setEmptyView(emptyView);
-		
-		assertThat(adapterView.getVisibility(), is(View.GONE));
-		assertThat(emptyView.getVisibility(), is(View.VISIBLE));
+
+        assertThat(adapterView.getVisibility()).isEqualTo(View.GONE);
+        assertThat(emptyView.getVisibility()).isEqualTo(View.VISIBLE);
 		
 		adapter.setCount(1);
 		
 		ShadowHandler.idleMainLooper();
-		
-		assertThat(adapterView.getVisibility(), is(View.VISIBLE));
-		assertThat(emptyView.getVisibility(), is(View.GONE));
+
+        assertThat(adapterView.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(emptyView.getVisibility()).isEqualTo(View.GONE);
     }
     
     private static void testSetEmptyView_ShouldHideAdapterViewWhenAdapterBecomesEmpty(final AdapterView adapterView) throws Exception {
@@ -166,16 +160,16 @@ public class AdapterViewBehavior {
     	
     	View emptyView = new View(adapterView.getContext());
 		adapterView.setEmptyView(emptyView);
-		
-		assertThat(adapterView.getVisibility(), is(View.GONE));
-		assertThat(emptyView.getVisibility(), is(View.VISIBLE));
+
+        assertThat(adapterView.getVisibility()).isEqualTo(View.GONE);
+        assertThat(emptyView.getVisibility()).isEqualTo(View.VISIBLE);
 		
 		adapter.setCount(0);
 		
 		ShadowHandler.idleMainLooper();
-		
-		assertThat(adapterView.getVisibility(), is(View.VISIBLE));
-		assertThat(emptyView.getVisibility(), is(View.GONE));
+
+        assertThat(adapterView.getVisibility()).isEqualTo(View.VISIBLE);
+        assertThat(emptyView.getVisibility()).isEqualTo(View.GONE);
     }
 
     private static void shouldOnlyUpdateOnceIfInvalidatedMultipleTimes(final AdapterView adapterView) {

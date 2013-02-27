@@ -30,9 +30,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
-import static org.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.core.IsEqual.equalTo;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class DefaultRequestDirectorTest {
@@ -66,8 +66,8 @@ public class DefaultRequestDirectorTest {
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://example.com"), null);
 
         assertNotNull(response);
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
-        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a happy response body"));
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a happy response body");
     }
 
     @Test
@@ -80,8 +80,8 @@ public class DefaultRequestDirectorTest {
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
 
         assertNotNull(response);
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
-        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a happy response body"));
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a happy response body");
     }
 
     @Test
@@ -92,8 +92,8 @@ public class DefaultRequestDirectorTest {
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
 
         assertNotNull(response);
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
-        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a cheery response body"));
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a cheery response body");
     }
 
     @Test
@@ -105,7 +105,7 @@ public class DefaultRequestDirectorTest {
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
 
         assertNotNull(response);
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(404));
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(404);
     }
 
     @Test
@@ -114,13 +114,13 @@ public class DefaultRequestDirectorTest {
 
         HttpResponse getResponse = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
         assertNotNull(getResponse);
-        assertThat(getResponse.getStatusLine().getStatusCode(), equalTo(200));
-        assertThat(Strings.fromStream(getResponse.getEntity().getContent()), equalTo("a cheery response body"));
+        assertThat(getResponse.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(Strings.fromStream(getResponse.getEntity().getContent())).isEqualTo("a cheery response body");
 
         HttpResponse postResponse = requestDirector.execute(null, new HttpPost("http://some.uri"), null);
         assertNotNull(postResponse);
-        assertThat(postResponse.getStatusLine().getStatusCode(), equalTo(200));
-        assertThat(Strings.fromStream(postResponse.getEntity().getContent()), equalTo("a cheery response body"));
+        assertThat(postResponse.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(Strings.fromStream(postResponse.getEntity().getContent())).isEqualTo("a cheery response body");
     }
 
     @Test
@@ -128,23 +128,23 @@ public class DefaultRequestDirectorTest {
         TestHttpResponse testHttpResponse = new TestHttpResponse(200, "a cheery response body");
         Robolectric.addHttpResponseRule("http://some.uri", testHttpResponse);
 
-        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(true));
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed()).isTrue();
 
         HttpResponse getResponse = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
         InputStream getResponseStream = getResponse.getEntity().getContent();
-        assertThat(Strings.fromStream(getResponseStream), equalTo("a cheery response body"));
-        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(false));
+        assertThat(Strings.fromStream(getResponseStream)).isEqualTo("a cheery response body");
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed()).isFalse();
 
         HttpResponse postResponse = requestDirector.execute(null, new HttpPost("http://some.uri"), null);
         InputStream postResponseStream = postResponse.getEntity().getContent();
-        assertThat(Strings.fromStream(postResponseStream), equalTo("a cheery response body"));
-        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(false));
+        assertThat(Strings.fromStream(postResponseStream)).isEqualTo("a cheery response body");
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed()).isFalse();
 
         getResponseStream.close();
-        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(false));
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed()).isFalse();
 
         postResponseStream.close();
-        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed(), equalTo(true));
+        assertThat(testHttpResponse.entityContentStreamsHaveBeenClosed()).isTrue();
     }
 
     @Test
@@ -154,8 +154,8 @@ public class DefaultRequestDirectorTest {
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
 
         assertNotNull(response);
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
-        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a cheery response body"));
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a cheery response body");
     }
 
     @Test
@@ -167,8 +167,8 @@ public class DefaultRequestDirectorTest {
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
 
         assertNotNull(response);
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
-        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a gloomy response body"));
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a gloomy response body");
     }
 
     @Test
@@ -180,8 +180,8 @@ public class DefaultRequestDirectorTest {
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://some.uri"), null);
 
         assertNotNull(response);
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(500));
-        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("later"));
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(500);
+        assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("later");
     }
 
     @Test
@@ -196,13 +196,13 @@ public class DefaultRequestDirectorTest {
 
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://matching.uri"), null);
         assertNotNull(response);
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
-        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a cheery response body"));
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a cheery response body");
 
         response = requestDirector.execute(null, new HttpGet("http://non-matching.uri"), null);
         assertNotNull(response);
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(404));
-        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("no such page"));
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(404);
+        assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("no such page");
     }
 
     @Test
@@ -210,8 +210,8 @@ public class DefaultRequestDirectorTest {
         Robolectric.addPendingHttpResponse(200, "a happy response body");
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://example.com"), null);
 
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
-        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a happy response body"));
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a happy response body");
     }
 
     @Test
@@ -222,11 +222,11 @@ public class DefaultRequestDirectorTest {
         HttpResponse response1 = requestDirector.execute(null, new HttpGet("http://example.com"), null);
         HttpResponse response2 = requestDirector.execute(null, new HttpGet("www.example.com"), null);
 
-        assertThat(response1.getStatusLine().getStatusCode(), equalTo(200));
-        assertThat(Strings.fromStream(response1.getEntity().getContent()), equalTo("a happy response body"));
+        assertThat(response1.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(Strings.fromStream(response1.getEntity().getContent())).isEqualTo("a happy response body");
 
-        assertThat(response2.getStatusLine().getStatusCode(), equalTo(201));
-        assertThat(Strings.fromStream(response2.getEntity().getContent()), equalTo("another happy response body"));
+        assertThat(response2.getStatusLine().getStatusCode()).isEqualTo(201);
+        assertThat(Strings.fromStream(response2.getEntity().getContent())).isEqualTo("another happy response body");
     }
 
     @Test
@@ -238,12 +238,12 @@ public class DefaultRequestDirectorTest {
         requestDirector.execute(null, new HttpGet("www.example.com"), null);
 
         HttpUriRequest request1 = (HttpUriRequest) Robolectric.getSentHttpRequest(0);
-        assertThat(request1.getMethod(), equalTo(HttpGet.METHOD_NAME));
-        assertThat(request1.getURI(), equalTo(URI.create("http://example.com")));
+        assertThat(request1.getMethod()).isEqualTo(HttpGet.METHOD_NAME);
+        assertThat(request1.getURI()).isEqualTo(URI.create("http://example.com"));
 
         HttpUriRequest request2 = (HttpUriRequest) Robolectric.getSentHttpRequest(1);
-        assertThat(request2.getMethod(), equalTo(HttpGet.METHOD_NAME));
-        assertThat(request2.getURI(), equalTo(URI.create("www.example.com")));
+        assertThat(request2.getMethod()).isEqualTo(HttpGet.METHOD_NAME);
+        assertThat(request2.getURI()).isEqualTo(URI.create("www.example.com"));
     }
 
     @Test
@@ -252,7 +252,7 @@ public class DefaultRequestDirectorTest {
             requestDirector.execute(null, new HttpGet("http://example.com"), null);
             fail();
         } catch (RuntimeException expected) {
-            assertThat(expected.getMessage(), equalTo("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse(). Request was: GET http://example.com"));
+            assertThat(expected.getMessage()).isEqualTo("Unexpected call to execute, no pending responses are available. See Robolectric.addPendingResponse(). Request was: GET http://example.com");
         }
     }
 
@@ -294,8 +294,7 @@ public class DefaultRequestDirectorTest {
         DefaultHttpClient client = new DefaultHttpClient();
         HttpResponse response = client.execute(new HttpGet("http://www.nowhere.org"));
 
-        assertThat(((HttpUriRequest) Robolectric.getSentHttpRequest(0)).getURI(),
-                equalTo(URI.create("http://www.nowhere.org")));
+        assertThat(((HttpUriRequest) Robolectric.getSentHttpRequest(0)).getURI()).isEqualTo(URI.create("http://www.nowhere.org"));
 
         Assert.assertNotNull(response);
         String responseStr = new BasicResponseHandler().handleResponse(response);
@@ -313,8 +312,7 @@ public class DefaultRequestDirectorTest {
         client.execute(new HttpGet("http://www.second.org"));
         client.execute(new HttpGet("http://www.third.org"));
 
-        assertThat(((HttpUriRequest) Robolectric.getLatestSentHttpRequest()).getURI(),
-                equalTo(URI.create("http://www.third.org")));
+        assertThat(((HttpUriRequest) Robolectric.getLatestSentHttpRequest()).getURI()).isEqualTo(URI.create("http://www.third.org"));
     }
 
 
@@ -392,8 +390,8 @@ public class DefaultRequestDirectorTest {
         HttpResponse response = requestDirector.execute(null, new HttpGet("http://example.com"), null);
 
         assertNotNull(response);
-        assertThat(response.getStatusLine().getStatusCode(), equalTo(200));
-        assertThat(Strings.fromStream(response.getEntity().getContent()), equalTo("a happy response body"));
+        assertThat(response.getStatusLine().getStatusCode()).isEqualTo(200);
+        assertThat(Strings.fromStream(response.getEntity().getContent())).isEqualTo("a happy response body");
     }
 
 }

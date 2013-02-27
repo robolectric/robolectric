@@ -1,18 +1,14 @@
 package org.robolectric.shadows;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-
-import org.robolectric.TestRunners;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-
 import android.content.ContentProviderOperation;
 import android.content.ContentProviderOperation.Builder;
 import android.net.Uri;
-
+import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ContentProviderOperationTest {
@@ -25,13 +21,13 @@ public class ContentProviderOperationTest {
         builder.withValue("intValue", 5);
         ContentProviderOperation operation = builder.build();
         ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(operation);
-        assertThat(operation.getUri(), equalTo(URI));
-        assertThat(shadowOperation.isInsert(), is(true));
-        assertThat(shadowOperation.isUpdate(), is(false));
-        assertThat(shadowOperation.isDelete(), is(false));
-        assertThat(shadowOperation.getValues().size(), is(2));
-        assertThat(shadowOperation.getValues().get("stringValue").toString(), equalTo("bar"));
-        assertThat(Integer.parseInt(shadowOperation.getValues().get("intValue").toString()), is(5));
+        assertThat(operation.getUri()).isEqualTo(URI);
+        assertThat(shadowOperation.isInsert()).isTrue();
+        assertThat(shadowOperation.isUpdate()).isFalse();
+        assertThat(shadowOperation.isDelete()).isFalse();
+        assertThat(shadowOperation.getValues().size()).isEqualTo(2);
+        assertThat(shadowOperation.getValues().get("stringValue").toString()).isEqualTo("bar");
+        assertThat(Integer.parseInt(shadowOperation.getValues().get("intValue").toString())).isEqualTo(5);
     }
     
     @Test
@@ -42,8 +38,8 @@ public class ContentProviderOperationTest {
         ContentProviderOperation operation = builder.build();
         ShadowContentProviderOperationBuilder shadowBuilder = Robolectric.shadowOf(builder);
         ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(operation);
-        assertThat(shadowBuilder.getWithValueBackReference("my_id"), is(0));
-        assertThat(shadowOperation.getWithValueBackReference("my_id"), is(0));
+        assertThat(shadowBuilder.getWithValueBackReference("my_id")).isEqualTo(0);
+        assertThat(shadowOperation.getWithValueBackReference("my_id")).isEqualTo(0);
     }
 
     @Test
@@ -53,11 +49,11 @@ public class ContentProviderOperationTest {
         builder.withSelection("id_column", new String[] { "5" });
         ContentProviderOperation operation = builder.build();
         ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(operation);
-        assertThat(operation.getUri(), equalTo(URI));
-        assertThat(shadowOperation.isInsert(), is(false));
-        assertThat(shadowOperation.isUpdate(), is(true));
-        assertThat(shadowOperation.isDelete(), is(false));
-        assertThat(shadowOperation.getSelections().get("id_column"), equalTo(new String[] { "5" }));
+        assertThat(operation.getUri()).isEqualTo(URI);
+        assertThat(shadowOperation.isInsert()).isFalse();
+        assertThat(shadowOperation.isUpdate()).isTrue();
+        assertThat(shadowOperation.isDelete()).isFalse();
+        assertThat(shadowOperation.getSelections().get("id_column")).isEqualTo(new String[]{"5"});
     }
 
     @Test
@@ -67,10 +63,10 @@ public class ContentProviderOperationTest {
         builder.withSelection("id_column", new String[] { "5" });
         ContentProviderOperation operation = builder.build();
         ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(operation);
-        assertThat(operation.getUri(), equalTo(URI));
-        assertThat(shadowOperation.isInsert(), is(false));
-        assertThat(shadowOperation.isUpdate(), is(false));
-        assertThat(shadowOperation.isDelete(), is(true));
-        assertThat(shadowOperation.getSelections().get("id_column"), equalTo(new String[] { "5" }));
+        assertThat(operation.getUri()).isEqualTo(URI);
+        assertThat(shadowOperation.isInsert()).isFalse();
+        assertThat(shadowOperation.isUpdate()).isFalse();
+        assertThat(shadowOperation.isDelete()).isTrue();
+        assertThat(shadowOperation.getSelections().get("id_column")).isEqualTo(new String[]{"5"});
     }
 }

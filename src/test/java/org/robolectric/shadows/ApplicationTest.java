@@ -30,10 +30,7 @@ import org.robolectric.util.TestBroadcastReceiver;
 import java.io.FileDescriptor;
 import java.util.List;
 
-import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.hamcrest.core.IsInstanceOf.instanceOf;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.util.TestUtil.newConfig;
@@ -47,8 +44,8 @@ public class ApplicationTest {
 
     @Test
     public void shouldBeAContext() throws Exception {
-        assertThat(new Activity().getApplication(), sameInstance(Robolectric.application));
-        assertThat(new Activity().getApplication().getApplicationContext(), sameInstance((Context) Robolectric.application));
+        assertThat(new Activity().getApplication()).isSameAs(Robolectric.application);
+        assertThat(new Activity().getApplication().getApplicationContext()).isSameAs(Robolectric.application);
     }
 
     @Test
@@ -93,8 +90,8 @@ public class ApplicationTest {
 
     private void checkSystemService(String name, Class expectedClass) {
         Object systemService = Robolectric.application.getSystemService(name);
-        assertThat(systemService, instanceOf(expectedClass));
-        assertThat(systemService, sameInstance(Robolectric.application.getSystemService(name)));
+        assertThat(systemService).isInstanceOf(expectedClass);
+        assertThat(systemService).isSameAs(Robolectric.application.getSystemService(name));
     }
 
     @Test

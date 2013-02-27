@@ -15,7 +15,7 @@ import java.io.InputStream;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -140,10 +140,10 @@ public class BitmapFactoryTest {
         byte[] data = {23, -125, 0, 52, 23, 18, 76, 43};
 
         Bitmap bitmap = ShadowBitmapFactory.decodeByteArray(data, 0, data.length);
-        assertThat(bitmap, notNullValue());
-        assertThat(shadowOf(bitmap).getDescription(), equalTo("Bitmap for byte array, checksum: 3693078531"));
-        assertThat(bitmap.getWidth(), equalTo(100));
-        assertThat(bitmap.getHeight(), equalTo(100));
+        assertThat(bitmap).isNotNull();
+        assertThat(shadowOf(bitmap).getDescription()).isEqualTo("Bitmap for byte array, checksum: 3693078531");
+        assertThat(bitmap.getWidth()).isEqualTo(100);
+        assertThat(bitmap.getHeight()).isEqualTo(100);
 
     }
 
@@ -154,9 +154,9 @@ public class BitmapFactoryTest {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inSampleSize = 4;
         Bitmap bitmap = ShadowBitmapFactory.decodeByteArray(data, 0, data.length - 1, options);
-        assertThat(shadowOf(bitmap).getDescription(), equalTo("Bitmap for byte array, checksum: 3693078531 bytes 0..7 with options inSampleSize=4"));
-        assertThat(bitmap.getWidth(), equalTo(25));
-        assertThat(bitmap.getHeight(), equalTo(25));
+        assertThat(shadowOf(bitmap).getDescription()).isEqualTo("Bitmap for byte array, checksum: 3693078531 bytes 0..7 with options inSampleSize=4");
+        assertThat(bitmap.getWidth()).isEqualTo(25);
+        assertThat(bitmap.getHeight()).isEqualTo(25);
     }
 
     @Test
@@ -166,17 +166,17 @@ public class BitmapFactoryTest {
 
         options.inSampleSize = 0;
         Bitmap bm = ShadowBitmapFactory.create(name, options);
-        assertThat(bm.getWidth(), equalTo(100));
-        assertThat(bm.getHeight(), equalTo(100));
+        assertThat(bm.getWidth()).isEqualTo(100);
+        assertThat(bm.getHeight()).isEqualTo(100);
 
         options.inSampleSize = 2;
         bm = ShadowBitmapFactory.create(name, options);
-        assertThat(bm.getWidth(), equalTo(50));
-        assertThat(bm.getHeight(), equalTo(50));
+        assertThat(bm.getWidth()).isEqualTo(50);
+        assertThat(bm.getHeight()).isEqualTo(50);
 
         options.inSampleSize = 101;
         bm = ShadowBitmapFactory.create(name, options);
-        assertThat(bm.getWidth(), equalTo(1));
-        assertThat(bm.getHeight(), equalTo(1));
+        assertThat(bm.getWidth()).isEqualTo(1);
+        assertThat(bm.getHeight()).isEqualTo(1);
     }
 }

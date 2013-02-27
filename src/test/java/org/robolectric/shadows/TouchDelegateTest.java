@@ -1,7 +1,7 @@
 package org.robolectric.shadows;
 
 import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 import org.robolectric.TestRunners;
 import org.junit.Before;
@@ -32,13 +32,13 @@ public class TouchDelegateTest {
 	@Test
 	public void testBounds() {
 		Rect bounds = td.getBounds();
-		assertThat( bounds, equalTo( rect ) );
+        assertThat(bounds).isEqualTo(rect);
 	}
 	
 	@Test
 	public void tetsDelegateView() {
 		View view = td.getDelegateView();
-		assertThat( view, equalTo( this.view ) );
+        assertThat(view).isEqualTo(this.view);
 	}
 	
 }

@@ -13,9 +13,11 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class MenuInflaterTest {
@@ -46,7 +48,7 @@ public class MenuInflaterTest {
     public void shouldInflateComplexMenu() throws Exception {
         TestMenu testMenu = new TestMenu();
         new MenuInflater(context).inflate(R.menu.test_withchilds, testMenu);
-        assertThat(testMenu.size(), equalTo(4));
+        assertThat(testMenu.size()).isEqualTo(4);
     }
 
     @Test
@@ -55,8 +57,8 @@ public class MenuInflaterTest {
         new MenuInflater(context).inflate(R.menu.test_withchilds, testMenu);
         MenuItem mi = testMenu.findItem(R.id.test_submenu_1);
         assertTrue(mi.hasSubMenu());
-        assertThat(mi.getSubMenu().size(), equalTo(2) );
-        assertThat(mi.getSubMenu().getItem(1).getTitle() + "", equalTo("Test menu item 3") );
+        assertThat(mi.getSubMenu().size()).isEqualTo(2);
+        assertThat(mi.getSubMenu().getItem(1).getTitle() + "").isEqualTo("Test menu item 3");
     }
 
     @Test(expected=I18nException.class)

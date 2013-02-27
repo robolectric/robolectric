@@ -8,69 +8,66 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ContentObserverTest {
-	
-	private TestContentObserver observer;
 
-	@Before
-	public void setUp() throws Exception {
-		observer = new TestContentObserver(null);
-	}
+    private TestContentObserver observer;
 
-	@Test
-	public void testDispatchChangeBooleanUri() {
-		assertThat( observer.changed, equalTo(false) );
-		assertThat( observer.selfChange, equalTo(false) );
-		assertThat( observer.uri, nullValue() );
-		
-		Uri uri = Uri.parse("http://www.somewhere.com");
-		observer.dispatchChange( true, uri );
+    @Before
+    public void setUp() throws Exception {
+        observer = new TestContentObserver(null);
+    }
 
-		assertThat( observer.changed, equalTo(true) );
-		assertThat( observer.selfChange, equalTo(true) );
-		assertThat( observer.uri, sameInstance(uri) );	
-	}
+    @Test
+    public void testDispatchChangeBooleanUri() {
+        assertThat(observer.changed).isFalse();
+        assertThat(observer.selfChange).isFalse();
+        assertThat(observer.uri).isNull();
 
-	@Test
-	public void testDispatchChangeBoolean() {
-		assertThat( observer.changed, equalTo(false) );
-		assertThat( observer.selfChange, equalTo(false) );
-		
-		Uri uri = Uri.parse("http://www.somewhere.com");
-		observer.dispatchChange( true );
+        Uri uri = Uri.parse("http://www.somewhere.com");
+        observer.dispatchChange(true, uri);
 
-		assertThat( observer.changed, equalTo(true) );
-		assertThat( observer.selfChange, equalTo(true) );
-	}
+        assertThat(observer.changed).isTrue();
+        assertThat(observer.selfChange).isTrue();
+        assertThat(observer.uri).isSameAs(uri);
+    }
 
-	private class TestContentObserver extends ContentObserver {
-		
-		public TestContentObserver(Handler handler) {
-			super(handler);
-		}
+    @Test
+    public void testDispatchChangeBoolean() {
+        assertThat(observer.changed).isFalse();
+        assertThat(observer.selfChange).isFalse();
 
-		public boolean changed = false;
-		public boolean selfChange = false;
-		public Uri uri = null;
-		
-		@Override
-		public void onChange(boolean selfChange) {
-			changed = true;
-			this.selfChange = selfChange;
-		}
+        Uri uri = Uri.parse("http://www.somewhere.com");
+        observer.dispatchChange(true);
 
-		@Override
-		public void onChange(boolean selfChange, Uri uri) {
-			changed = true;
-			this.selfChange = selfChange;
-			this.uri = uri;
-		}
-	}
-	
+        assertThat(observer.changed).isTrue();
+        assertThat(observer.selfChange).isTrue();
+    }
+
+    private class TestContentObserver extends ContentObserver {
+
+        public TestContentObserver(Handler handler) {
+            super(handler);
+        }
+
+        public boolean changed = false;
+        public boolean selfChange = false;
+        public Uri uri = null;
+
+        @Override
+        public void onChange(boolean selfChange) {
+            changed = true;
+            this.selfChange = selfChange;
+        }
+
+        @Override
+        public void onChange(boolean selfChange, Uri uri) {
+            changed = true;
+            this.selfChange = selfChange;
+            this.uri = uri;
+        }
+    }
+
 }

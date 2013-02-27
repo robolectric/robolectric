@@ -9,9 +9,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.TestRunners;
+import org.robolectric.res.Attribute;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.res.Attribute;
 import org.robolectric.util.CustomView;
 
 import java.io.File;
@@ -21,18 +21,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 
 import static java.util.Arrays.asList;
-import static org.hamcrest.CoreMatchers.containsString;
-import static org.hamcrest.CoreMatchers.endsWith;
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.not;
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.CoreMatchers.startsWith;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.*;
 import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
 
@@ -49,11 +39,11 @@ public class ContextTest {
 
         File[] files = context.getFilesDir().listFiles();
         assertNotNull(files);
-        assertThat(files.length, is(0));
+        assertThat(files.length).isEqualTo(0);
 
         File[] cachedFiles = context.getFilesDir().listFiles();
         assertNotNull(cachedFiles);
-        assertThat(cachedFiles.length, is(0));
+        assertThat(cachedFiles.length).isEqualTo(0);
     }
 
     @After
@@ -79,30 +69,30 @@ public class ContextTest {
     @Test
     public void shouldGetApplicationDataDirectory() throws IOException {
         File dataDir = new File(ShadowContext.FILES_DIR, "data");
-        assertThat(dataDir.mkdir(), is(true));
+        assertThat(dataDir.mkdir()).isTrue();
 
         dataDir = context.getDir("data", Context.MODE_PRIVATE);
-        assertThat(dataDir, not(nullValue()));
-        assertThat(dataDir.exists(), is(true));
+        assertThat(dataDir).isNotNull();
+        assertThat(dataDir.exists()).isTrue();
     }
 
 
     @Test
     public void shouldCreateIfDoesNotExistAndGetApplicationDataDirectory() {
         File dataDir = new File(ShadowContext.FILES_DIR, "data");
-        assertThat(dataDir.exists(), is(false));
+        assertThat(dataDir.exists()).isFalse();
 
         dataDir = context.getDir("data", Context.MODE_PRIVATE);
-        assertThat(dataDir, not(nullValue()));
-        assertThat(dataDir.exists(), is(true));
+        assertThat(dataDir).isNotNull();
+        assertThat(dataDir.exists()).isTrue();
     }
 
     @Test
     public void shouldStubThemeStuff() throws Exception {
-        assertThat(context.obtainStyledAttributes(null), not(nullValue()));
-        assertThat(context.obtainStyledAttributes(0, null), not(nullValue()));
-        assertThat(context.obtainStyledAttributes(null, null), not(nullValue()));
-        assertThat(context.obtainStyledAttributes(null, null, 0, 0), not(nullValue()));
+        assertThat(context.obtainStyledAttributes(null)).isNotNull();
+        assertThat(context.obtainStyledAttributes(0, null)).isNotNull();
+        assertThat(context.obtainStyledAttributes(null, null)).isNotNull();
+        assertThat(context.obtainStyledAttributes(null, null, 0, 0)).isNotNull();
     }
 
     @Test
@@ -120,9 +110,9 @@ public class ContextTest {
         assertNotNull(context.getCacheDir());
         File cacheTest = new File(context.getCacheDir(), "__test__");
 
-        assertThat(cacheTest.getAbsolutePath(), startsWith(System.getProperty("java.io.tmpdir")));
-        assertThat(cacheTest.getAbsolutePath(), containsString("android-cache"));
-        assertThat(cacheTest.getAbsolutePath(), endsWith(File.separator + "__test__"));
+        assertThat(cacheTest.getAbsolutePath()).startsWith(System.getProperty("java.io.tmpdir"));
+        assertThat(cacheTest.getAbsolutePath()).contains("android-cache");
+        assertThat(cacheTest.getAbsolutePath()).endsWith(File.separator + "__test__");
 
         FileOutputStream fos = null;
         try {
@@ -140,9 +130,9 @@ public class ContextTest {
         assertNotNull(context.getExternalCacheDir());
         File cacheTest = new File(context.getExternalCacheDir(), "__test__");
 
-        assertThat(cacheTest.getAbsolutePath(), startsWith(System.getProperty("java.io.tmpdir")));
-        assertThat(cacheTest.getAbsolutePath(), containsString("android-external-cache"));
-        assertThat(cacheTest.getAbsolutePath(), endsWith(File.separator + "__test__"));
+        assertThat(cacheTest.getAbsolutePath()).startsWith(System.getProperty("java.io.tmpdir"));
+        assertThat(cacheTest.getAbsolutePath()).contains("android-external-cache");
+        assertThat(cacheTest.getAbsolutePath()).endsWith(File.separator + "__test__");
 
         FileOutputStream fos = null;
         try {
@@ -163,7 +153,7 @@ public class ContextTest {
 
 	@Test
 	public void fileList() throws Exception {
-		assertThat(context.fileList(), equalTo(context.getFilesDir().list()));
+        assertThat(context.fileList()).isEqualTo(context.getFilesDir().list());
 	}
 
     @Test
@@ -202,7 +192,7 @@ public class ContextTest {
 
             byte[] bytes = new byte[fileContents.length()];
             fileInputStream.read(bytes);
-            assertThat(bytes, equalTo(fileContents.getBytes()));
+            assertThat(bytes).isEqualTo(fileContents.getBytes());
         } finally {
             if (fileInputStream != null)
                 fileInputStream.close();
@@ -237,7 +227,7 @@ public class ContextTest {
             fileInputStream = new FileInputStream(new File(context.getFilesDir(), file.getName()));
             byte[] readBuffer = new byte[fileContents.length()];
             fileInputStream.read(readBuffer);
-            assertThat(new String(readBuffer), equalTo(fileContents));
+            assertThat(new String(readBuffer)).isEqualTo(fileContents);
         } finally {
             if (fileInputStream != null)
                 fileInputStream.close();
@@ -260,9 +250,9 @@ public class ContextTest {
         File filesDir = context.getFilesDir();
         File file = new File(filesDir, "test.txt");
         boolean successfully = file.createNewFile();
-        assertThat(successfully, is(true));
+        assertThat(successfully).isTrue();
         successfully = context.deleteFile(file.getName());
-        assertThat(successfully, is(true));
+        assertThat(successfully).isTrue();
     }
 
     @Test
@@ -270,7 +260,7 @@ public class ContextTest {
         File filesDir = context.getFilesDir();
         File file = new File(filesDir, "test.txt");
         boolean successfully = context.deleteFile(file.getName());
-        assertThat(successfully, is(false));
+        assertThat(successfully).isFalse();
     }
 
     @Test
@@ -286,15 +276,15 @@ public class ContextTest {
         ), resourceLoader, CustomView.class);
 
         TypedArray a = context.obtainStyledAttributes(roboAttributeSet, R.styleable.CustomView);
-        assertThat(a.getInt(R.styleable.CustomView_itemType, -1234), equalTo(1 /* ungulate */));
-        assertThat(a.getInt(R.styleable.CustomView_scrollBars, -1234), equalTo(0x300));
-        assertThat(a.getString(R.styleable.CustomView_keycode), equalTo("^q"));
-        assertThat(a.getText(R.styleable.CustomView_keycode).toString(), equalTo("^q"));
-        assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 1f), equalTo(1.5f));
-        assertThat(a.getBoolean(R.styleable.CustomView_aspectRatioEnabled, false), equalTo(true));
+        assertThat(a.getInt(R.styleable.CustomView_itemType, -1234)).isEqualTo(1 /* ungulate */);
+        assertThat(a.getInt(R.styleable.CustomView_scrollBars, -1234)).isEqualTo(0x300);
+        assertThat(a.getString(R.styleable.CustomView_keycode)).isEqualTo("^q");
+        assertThat(a.getText(R.styleable.CustomView_keycode).toString()).isEqualTo("^q");
+        assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 1f)).isEqualTo(1.5f);
+        assertThat(a.getBoolean(R.styleable.CustomView_aspectRatioEnabled, false)).isTrue();
 
         TypedArray typedArray = context.obtainStyledAttributes(roboAttributeSet, new int[]{R.id.keycode, R.id.itemType});
-        assertThat(typedArray.getString(0), equalTo("^q"));
-        assertThat(typedArray.getInt(1, -1234), equalTo(1 /* ungulate */));
+        assertThat(typedArray.getString(0)).isEqualTo("^q");
+        assertThat(typedArray.getInt(1, -1234)).isEqualTo(1 /* ungulate */);
     }
 }

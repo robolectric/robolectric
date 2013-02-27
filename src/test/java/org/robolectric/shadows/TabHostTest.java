@@ -17,7 +17,7 @@ import static org.hamcrest.CoreMatchers.instanceOf;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
+import static org.fest.assertions.api.Assertions.assertThat;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class TabHostTest {
@@ -26,7 +26,7 @@ public class TabHostTest {
     public void newTabSpec_shouldMakeATabSpec() throws Exception {
         TabHost tabHost = new TabHost(null);
         TabHost.TabSpec tabSpec = tabHost.newTabSpec("Foo");
-        assertThat(tabSpec.getTag(), equalTo("Foo"));
+        assertThat(tabSpec.getTag()).isEqualTo("Foo");
     }
 
     @Test
@@ -42,8 +42,8 @@ public class TabHostTest {
         tabHost.addTab(foo);
         tabHost.addTab(bar);
 
-        assertThat(tabHost.getChildAt(0), is(fooView));
-        assertThat(tabHost.getChildAt(1), is(barView));
+        assertThat(tabHost.getChildAt(0)).isSameAs(fooView);
+        assertThat(tabHost.getChildAt(1)).isSameAs(barView);
     }
 
     @Test
@@ -57,8 +57,8 @@ public class TabHostTest {
         tabHost.addTab(bar);
         tabHost.addTab(baz);
 
-        assertThat(shadowOf(tabHost).getSpecByTag("Bar"), is(bar));
-        assertThat(shadowOf(tabHost).getSpecByTag("Baz"), is(baz));
+        assertThat(shadowOf(tabHost).getSpecByTag("Bar")).isSameAs(bar);
+        assertThat(shadowOf(tabHost).getSpecByTag("Baz")).isSameAs(baz);
         assertNull(shadowOf(tabHost).getSpecByTag("Whammie"));
     }
 
@@ -79,7 +79,7 @@ public class TabHostTest {
 
         tabHost.setCurrentTab(2);
 
-        assertThat(listener.tag, equalTo("Baz"));
+        assertThat(listener.tag).isEqualTo("Baz");
     }
 
     @Test
@@ -99,7 +99,7 @@ public class TabHostTest {
 
         tabHost.setCurrentTabByTag("Bar");
 
-        assertThat(listener.tag, equalTo("Bar"));
+        assertThat(listener.tag).isEqualTo("Bar");
     }
 
     @Test
@@ -119,7 +119,7 @@ public class TabHostTest {
         tabHost.setCurrentTabByTag("Foo");
         TextView textView = (TextView) tabHost.getCurrentView();
 
-        assertThat(textView.getText().toString(), equalTo("The Text of Foo"));
+        assertThat(textView.getText().toString()).isEqualTo("The Text of Foo");
     }
     @Test
     public void shouldRetrieveTheCurrentViewFromViewId() {
@@ -133,7 +133,7 @@ public class TabHostTest {
          tabHost.setCurrentTabByTag("Foo");
          TextView textView = (TextView) tabHost.getCurrentView();
 
-         assertThat(textView.getText().toString(), equalTo("Main Layout"));
+        assertThat(textView.getText().toString()).isEqualTo("Main Layout");
     }
 
     private static class TestOnTabChangeListener implements TabHost.OnTabChangeListener {
@@ -159,7 +159,7 @@ public class TabHostTest {
 
         tabHost.setCurrentTabByTag("Bar");
 
-        assertThat(tabHost.getCurrentTabTag(), equalTo("Bar"));
+        assertThat(tabHost.getCurrentTabTag()).isEqualTo("Bar");
     }
 
     @Test
@@ -173,17 +173,17 @@ public class TabHostTest {
         tabHost.addTab(foo);
         tabHost.addTab(bar);
         tabHost.addTab(baz);
-        assertThat(shadowOf(tabHost).getCurrentTabSpec(), equalTo(foo));
-        assertThat(tabHost.getCurrentTab(), equalTo(0));
+        assertThat(shadowOf(tabHost).getCurrentTabSpec()).isEqualTo(foo);
+        assertThat(tabHost.getCurrentTab()).isEqualTo(0);
         tabHost.setCurrentTabByTag("Bar");
-        assertThat(tabHost.getCurrentTab(), equalTo(1));
-        assertThat(shadowOf(tabHost).getCurrentTabSpec(), equalTo(bar));
+        assertThat(tabHost.getCurrentTab()).isEqualTo(1);
+        assertThat(shadowOf(tabHost).getCurrentTabSpec()).isEqualTo(bar);
         tabHost.setCurrentTabByTag("Foo");
-        assertThat(tabHost.getCurrentTab(), equalTo(0));
-        assertThat(shadowOf(tabHost).getCurrentTabSpec(), equalTo(foo));
+        assertThat(tabHost.getCurrentTab()).isEqualTo(0);
+        assertThat(shadowOf(tabHost).getCurrentTabSpec()).isEqualTo(foo);
         tabHost.setCurrentTabByTag("Baz");
-        assertThat(tabHost.getCurrentTab(), equalTo(2));
-        assertThat(shadowOf(tabHost).getCurrentTabSpec(), equalTo(baz));
+        assertThat(tabHost.getCurrentTab()).isEqualTo(2);
+        assertThat(shadowOf(tabHost).getCurrentTabSpec()).isEqualTo(baz);
     }
 
     @Test
@@ -193,7 +193,7 @@ public class TabHostTest {
         tabHost.addTab(foo);
 
         tabHost.setCurrentTabByTag(null);
-        assertThat(tabHost.getCurrentTabTag(), equalTo("Foo"));
+        assertThat(tabHost.getCurrentTabTag()).isEqualTo("Foo");
     }
 
     @Test
@@ -201,6 +201,6 @@ public class TabHostTest {
         TabActivity activity = new TabActivity();
         activity.setContentView(R.layout.tab_activity);
         TabHost host = new TabHost(activity);
-        assertThat(host.getTabWidget(), instanceOf(TabWidget.class));
+        assertThat(host.getTabWidget()).isInstanceOf(TabWidget.class);
     }
 }
