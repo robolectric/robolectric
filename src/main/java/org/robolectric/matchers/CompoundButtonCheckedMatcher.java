@@ -4,7 +4,7 @@ import android.widget.CompoundButton;
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
 import org.hamcrest.Matcher;
-import org.hamcrest.TypeSafeMatcher;
+import org.junit.internal.matchers.TypeSafeMatcher;
 
 public class CompoundButtonCheckedMatcher<T extends CompoundButton> extends TypeSafeMatcher<T> {
     private boolean expected;
@@ -13,7 +13,7 @@ public class CompoundButtonCheckedMatcher<T extends CompoundButton> extends Type
         this.expected = expected;
     }
 
-    @Override protected boolean matchesSafely(T compoundButton) {
+    @Override public boolean matchesSafely(T compoundButton) {
         return compoundButton != null && expected == compoundButton.isChecked();
     }
 
