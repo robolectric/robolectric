@@ -33,6 +33,7 @@ public class RobolectricContext {
     private final AndroidManifest appManifest;
     private final ClassLoader robolectricClassLoader;
     private final ClassHandler classHandler;
+    private ResourcePath systemResourcePath;
     public static RobolectricContext mostRecentRobolectricContext; // ick, race condition
 
     public interface Factory {
@@ -102,9 +103,13 @@ public class RobolectricContext {
         return classHandler;
     }
 
-    public ResourcePath getSystemResourcePath() {
-        AndroidManifest manifest = getAppManifest();
-        return AndroidResourcePathFinder.getSystemResourcePath(manifest.getRealSdkVersion(), manifest.getResourcePath());
+    public synchronized ResourcePath getSystemResourcePath() {
+        if (systemResourcePath == null) {
+            int realSdkVersion = appManifest.getRealSdkVersion();
+            ResourcePath resourcePath = appManifest.getResourcePath();
+            systemResourcePath = AndroidResourcePathFinder.getSystemResourcePath(realSdkVersion, resourcePath);
+        }
+        return systemResourcePath;
     }
 
     private Class<?> bootstrapTestClass(Class<?> testClass) {
