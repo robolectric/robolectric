@@ -1,6 +1,7 @@
 package org.robolectric.bytecode;
 
 import android.support.v4.content.LocalBroadcastManager;
+import org.robolectric.internal.Implementation;
 import org.robolectric.internal.RealObject;
 import org.robolectric.util.I18nException;
 import org.robolectric.util.Join;
@@ -452,12 +453,12 @@ public class ShadowWrangler implements ClassHandler {
         public boolean isI18nSafe() {
             // method is loaded by another class loader. So do everything reflectively.
             Annotation[] annos = method.getAnnotations();
-            for (int i = 0; i < annos.length; i++) {
-                String name = annos[i].annotationType().getName();
-                if (name.equals("org.robolectric.internal.Implementation")) {
+            for (Annotation anno : annos) {
+                String name = anno.annotationType().getName();
+                if (name.equals(Implementation.class.getName())) {
                     try {
-                        Method m = (annos[i]).getClass().getMethod("i18nSafe");
-                        return (Boolean) m.invoke(annos[i]);
+                        Method m = (anno).getClass().getMethod("i18nSafe");
+                        return (Boolean) m.invoke(anno);
                     } catch (Exception e) {
                         return true;    // should probably throw some other exception
                     }

@@ -9,7 +9,7 @@ public class NullDatabaseMap implements DatabaseMap {
 		
 	@Override
 	public String getDriverClassName() {
-		return "org.robolectric.util.NullDatabaseMap";
+		return NullDatabaseMap.class.getName();
 	}
 
 	@Override
