@@ -34,7 +34,7 @@ Make sure that robolectric and its dependencies (including JUnit) appear before 
 
 ----
 
-### Unable to find path to Android SDK
+### Unable to find Android SDK
 Robolectric cannot find your Android SDK. You can tell Robolectric how to find your SDK root in several ways:
 
 ##### `local.properties` file
