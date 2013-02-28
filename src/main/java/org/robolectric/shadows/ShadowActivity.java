@@ -634,7 +634,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     public List<Cursor> getManagedCursors() {
     	return managedCusors;
     }
-    
+
     private final class ActivityInvoker {
         private Method method;
 

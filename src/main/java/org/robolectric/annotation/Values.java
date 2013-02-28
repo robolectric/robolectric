@@ -15,11 +15,4 @@ public @interface Values {
 	 * @return
 	 */
 	String qualifiers() default "";
-	
-	/**
-	 * Use qualifiers instead
-	 * @return
-	 */
-	@Deprecated
-	String locale() default "";
 }

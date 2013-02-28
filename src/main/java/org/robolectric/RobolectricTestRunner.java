@@ -229,9 +229,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner implements Rob
         Values values = method.getAnnotation(Values.class);
         if (values != null) {
             qualifiers = values.qualifiers();
-            if (qualifiers.isEmpty()) {
-                qualifiers = values.locale();
-            }
         }
         return qualifiers;
     }

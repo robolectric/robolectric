@@ -57,12 +57,6 @@ public class RobolectricTestRunnerTest {
     }
 
     @Test
-    @Values(locale = "fr")
-    public void internalBeforeTest_setLocale() {
-        assertEquals("fr", Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).getQualifiers());
-    }
-
-    @Test
     @Values(qualifiers = "fr")
     public void internalBeforeTest_testValuesResQualifiers() {
         assertEquals("fr", Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).getQualifiers());
