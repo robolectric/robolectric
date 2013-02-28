@@ -5,7 +5,6 @@ title: Help and Resources
 
 ## Who's Using Robolectric?
 * [Pivotal Labs](http://pivotallabs.com/ "Pivotal Labs: Home")
-* [Xtreme Labs Inc.](http://www.xtremelabs.com/ "Mobile App Development | Blackberry Apps| iPhone Apps | Xtreme Labs Inc.")
 * [Square](https://squareup.com/)
 * [Path](http://www.path.com/ "Path")
 * [Zoodles](http://www.zoodles.com/home/marketing "Zoodles: A safe Kid Mode&#153; for every device")
@@ -15,9 +14,10 @@ title: Help and Resources
 * [NASA Trained Monkeys](http://www.nasatrainedmonkeys.com/ "NASA Trained Monkeys")
 * [Zauber](http://www.zaubersoftware.com/en/home/ "Zauber | Software Development Outsourcing")
 * [RoboGuice](http://code.google.com/p/roboguice/ "roboguice - Google Guice on Android - Google Project Hosting")
+* [Android in Practice](http://code.google.com/p/android-in-practice/ "android-in-practice -Source code and demo apps for the Manning book &quot;Android in Practice&quot; - Google Project Hosting")
+* [Xtreme Labs Inc.](http://www.xtremelabs.com/ "Mobile App Development | Blackberry Apps| iPhone Apps | Xtreme Labs Inc.")
 * [Robolectric Sample](https://github.com/pivotal/RobolectricSample)
 * [Android IntelliJ Starter](https://github.com/pivotal/AndroidIntelliJStarter)
-* [Android in Practice](http://code.google.com/p/android-in-practice/ "android-in-practice -Source code and demo apps for the Manning book &quot;Android in Practice&quot; - Google Project Hosting")
 
 ## Presentation: TDD Android Applications with Robolectric
 Pivotal Labs developers have given this presentation several times.
@@ -30,52 +30,50 @@ Pivotal Labs developers have given this presentation several times.
 
 ### java.lang.RuntimeException: Stub!
 
-* Make sure that robolectric and its dependencies appear before the Android API jars in the classpath.
+Make sure that robolectric and its dependencies (including JUnit) appear before the Android API jars in the classpath.
 
-### WARNING: Unable to find path to Android SDK
-Robolectric cannot find your Android SDK. Try the following: 
+----
 
-* Set the `sdk.dir` in `local.properties` by running the following: 
+### Unable to find path to Android SDK
+Robolectric cannot find your Android SDK. You can tell Robolectric how to find your SDK root in several ways:
 
-         $ android update project -p .
+##### `local.properties` file
+Set the `sdk.dir` in a `local.properties` file by running the following in your project's root dir:
 
-Setting up a `local.properties` file is the only solution that will work for most IDEs since they will not pass the path from the shell to the tests.
+    $ android update project -p .
 
-* Set `ANDROID_HOME` environment variable. You can put this in `.bash_profile` for example.
+ Setting up a `local.properties` file is a solution that will work for most IDEs since you don't need to worry about getting environment variables passed around.
 
-         export ANDROID_HOME=/path/to/android/sdk
+##### `ANDROID_HOME` environment variable
+Set `ANDROID_HOME` environment variable. You can put this in your `.bash_profile` for example. You may need to do some [extra work](http://www.dowdandassociates.com/content/howto-set-environment-variable-mac-os-x-etclaunchdconf) to get your IDE to pick it up.
+
+    export ANDROID_HOME=/path/to/android/sdk
+
+##### `android.sdk.path` system property
+Set the Java system property `android.sdk.path`, e.g. by putting `-Dandroid.sdk.path=/path/to/android/sdk` on the command line.
+
+##### `which android`
+As a last resort, Robolectric will try running `which android` to find the executable on your path. Add the SDK tools to your path:
+
+    PATH=/path/to/android/sdk/tools:$PATH
 
 ### Type com.google.android.maps.MapView not present
 
 <div class="stacktrace">java.lang.TypeNotPresentException: Typecom.google.android.maps.MapView not present
-       at sun.reflect.annotation.TypeNotPresentExceptionProxy.generateException(TypeNotPresentExceptionProxy.java:45)
-       at sun.reflect.annotation.AnnotationInvocationHandler.invoke(AnnotationInvocationHandler.java:74)
-       at $Proxy6.value(Unknown Source)
-       at com.xtremelabs.robolectric.Robolectric.bindShadowClass(Robolectric.java:67)
-       at com.xtremelabs.robolectric.Robolectric.bindShadowClasses(Robolectric.java:76)
-       at com.xtremelabs.robolectric.Robolectric.bindDefaultShadowClasses(Robolectric.java:71)
-       at com.xtremelabs.robolectric.RobolectricTestRunner.setupApplicationState(RobolectricTestRunner.java:231)
-       at com.xtremelabs.robolectric.RobolectricTestRunner.internalBeforeTest(RobolectricTestRunner.java:177)
+       at org.robolectric.Robolectric.bindShadowClass(Robolectric.java:67)
 Caused by: java.lang.ClassNotFoundException: caught an exception while obtaining a class file for com.google.android.maps.MapView
-       at javassist.Loader.findClass(Loader.java:359)
-       at com.xtremelabs.robolectric.RobolectricClassLoader.findClass(RobolectricClassLoader.java:60)
-       at javassist.Loader.loadClass(Loader.java:311)
-       at java.lang.ClassLoader.loadClass(ClassLoader.java:266)
-       at com.xtremelabs.robolectric.RobolectricClassLoader.loadClass(RobolectricClassLoader.java:37)
-       at java.lang.Class.forName0(Native Method)
-       at java.lang.Class.forName(Class.java:264)
 ...
-       at com.xtremelabs.robolectric.Robolectric.bindShadowClass(Robolectric.java:63)       ... 19 more
-Caused by: javassist.NotFoundException:android.widget.ZoomButtonsController
-       at javassist.ClassPool.get(ClassPool.java:436)
-...
-       at com.xtremelabs.robolectric.AndroidTranslator.describe(AndroidTranslator.java:208)
-       at com.xtremelabs.robolectric.AndroidTranslator.fixMethod(AndroidTranslator.java:212)
-       at com.xtremelabs.robolectric.AndroidTranslator.fixMethods(AndroidTranslator.java:196)
-       at com.xtremelabs.robolectric.AndroidTranslator.onLoad(AndroidTranslator.java:80)
-       at javassist.Loader.findClass(Loader.java:340)       ... 37 more
 </div>
 
 1. Make sure you have the Google Maps API jar in your build path.
 2. Even if you're building against an earlier version of the API, link Robolectric to version 7 or higher.
 
+### Could not resolve dependencies for project: Could not find artifact com.google.android.maps:maps:jar:16_r2 in central (http://repo1.maven.org/maven2)
+
+The jerk lawyers at Google won't allow the Google maps add-on library stubs to be uploaded to Maven Central. You need to manually install them yourself.
+
+Make sure you've got Android SDK 16 or later downloaded, then do this:
+
+    cd $ANDROID_HOME
+    ls -1d add-ons/addon-google_apis-google-* | sort | tail -1 |
+        xargs -I% mvn install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=16_r2 -Dpackaging=jar -Dfile=%/libs/maps.jar
