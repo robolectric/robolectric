@@ -1,4 +1,4 @@
-package com.xtremelabs.robolectric.shadows;
+package org.robolectric.shadows;
 
 import android.appwidget.AppWidgetHost;
 import android.appwidget.AppWidgetHostView;
@@ -8,6 +8,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.shadows.ShadowAppWidgetHostView;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
