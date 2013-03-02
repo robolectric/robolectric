@@ -4,8 +4,9 @@ import android.graphics.Bitmap;
 import android.graphics.Paint;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
@@ -15,9 +16,8 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public class AndroidTranslatorClassInstrumentedTest {
 
     @Test
+    @Config(shadows = ShadowPaintForTests.class)
     public void testNativeMethodsAreDelegated() throws Exception {
-        Robolectric.bindShadowClass(ShadowPaintForTests.class);
-
         Paint paint = new Paint();
         paint.setColor(1234);
 
@@ -25,9 +25,8 @@ public class AndroidTranslatorClassInstrumentedTest {
     }
 
     @Test
+    @Config(shadows = ShadowClassWithPrivateConstructor.class)
     public void testClassesWithPrivateDefaultConstructorsCanBeShadowed() {
-        Robolectric.bindShadowClass(ShadowClassWithPrivateConstructor.class);
-
         ClassWithPrivateConstructor inst = new ClassWithPrivateConstructor();
         assertThat(inst.getInt()).isEqualTo(42);
     }
@@ -44,9 +43,8 @@ public class AndroidTranslatorClassInstrumentedTest {
      * in the InstrumentingClassLoader CustomClassNames arrayList
      */
     @Test
+    @Config(shadows = ShadowCustomPaint.class)
     public void testCustomMethodShadowed() throws Exception {
-        Robolectric.bindShadowClass(ShadowCustomPaint.class);
-
         CustomPaint customPaint = new CustomPaint();
         assertThat(customPaint.getColor()).isEqualTo(10);
         assertThat(customPaint.getColorName()).isEqualTo("rainbow");
@@ -57,9 +55,8 @@ public class AndroidTranslatorClassInstrumentedTest {
      * not in the InstrumentingClassLoader CustomClassNames arrayList
      */
     @Test
+    @Config(shadows = ShadowCustomXmasPaint.class)
     public void testCustomMethodNotShadowed() throws Exception {
-        Robolectric.bindShadowClass(ShadowCustomXmasPaint.class);
-
         CustomXmasPaint customXmasPaint = new CustomXmasPaint();
         assertThat(customXmasPaint.getColor()).isEqualTo(999);
         assertThat(customXmasPaint.getColorName()).isEqualTo("XMAS");

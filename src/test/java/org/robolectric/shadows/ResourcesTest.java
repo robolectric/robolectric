@@ -16,7 +16,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.annotation.Values;
+import org.robolectric.annotation.Config;
 import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.ResourceLoader;
 import org.xmlpull.v1.XmlPullParser;
@@ -89,7 +89,7 @@ public class ResourcesTest {
     }
 
     @Test
-    @Values(qualifiers = "fr")
+    @Config(qualifiers = "fr")
     public void testGetValuesResFromSpecifiecQualifiers() {
         String hello = resources.getString(R.string.hello);
         assertThat(hello).isEqualTo("Bonjour");

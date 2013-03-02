@@ -26,7 +26,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.annotation.Values;
+import org.robolectric.annotation.Config;
 import org.robolectric.res.builder.LayoutBuilder;
 import org.robolectric.shadows.ShadowImageView;
 import org.robolectric.shadows.ShadowTextView;
@@ -70,7 +70,7 @@ public class ViewLoaderTest {
         assertThat(textView.getText().toString()).isEqualTo("default");
     }
 
-    @Test @Values(qualifiers = "xlarge-land")
+    @Test @Config(qualifiers = "xlarge-land")
     public void testChoosesLayoutBasedOnSearchPath_choosesFirstFileFoundOnPath() throws Exception {
 //        resourceLoader.setLayoutQualifierSearchPath("xlarge", "land");
         ViewGroup view = (ViewGroup) inflate("different_screen_sizes", "xlarge-land");
@@ -78,7 +78,7 @@ public class ViewLoaderTest {
         assertThat(textView.getText().toString()).isEqualTo("xlarge");
     }
 
-    @Test @Values(qualifiers = "doesnotexist-land-xlarge")
+    @Test @Config(qualifiers = "doesnotexist-land-xlarge")
     public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
         ViewGroup view = (ViewGroup) inflate("different_screen_sizes", "doesnotexist-land-xlarge");
         TextView textView = (TextView) view.findViewById(android.R.id.text1);

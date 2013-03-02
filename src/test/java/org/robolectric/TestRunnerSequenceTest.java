@@ -4,23 +4,28 @@ import android.app.Application;
 import org.junit.Test;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.annotation.Config;
 import org.robolectric.bytecode.Setup;
+import org.robolectric.internal.TestLifecycle;
 import org.robolectric.util.Transcript;
 
 import java.lang.reflect.Method;
 
+import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.resourceFile;
 
 public class TestRunnerSequenceTest {
-    public static Transcript transcript;
+    public static class StateHolder {
+        public static Transcript transcript;
+    }
 
     @Test public void shouldRunThingsInTheRightOrder() throws Exception {
-        transcript = new Transcript();
-        new TestRunnerSequenceTest.Runner(SimpleTest.class).run(new RunNotifier());
-        transcript.assertEventsSoFar(
+        StateHolder.transcript = new Transcript();
+        new Runner(SimpleTest.class).run(new RunNotifier());
+        StateHolder.transcript.assertEventsSoFar(
                 "configureShadows",
-                "resetStaticState",
-                "setupApplicationState",
+//                "resetStaticState", // no longer an overridable hook
+//                "setupApplicationState", // no longer an overridable hook
                 "createApplication",
                 "beforeTest",
                 "prepareTest",
@@ -29,66 +34,63 @@ public class TestRunnerSequenceTest {
         );
     }
 
+    @Test public void shouldReleaseAllStateAfterClassSoWeDontLeakMemory() throws Exception {
+        RobolectricTestRunner robolectricTestRunner = new Runner(SimpleTest.class);
+        robolectricTestRunner.run(new RunNotifier());
+        assertTrue(robolectricTestRunner.allStateIsCleared());
+    }
+
     public static class SimpleTest {
         @Test public void shouldDoNothingMuch() throws Exception {
-            transcript.add("TEST!");
+            StateHolder.transcript.add("TEST!");
         }
     }
 
     public static class Runner extends RobolectricTestRunner {
         public Runner(Class<?> testClass) throws InitializationError {
-            super(RobolectricContext.bootstrap(Runner.class, testClass, new RobolectricContext.Factory() {
-                @Override
-                public RobolectricContext create() {
-                    return new RobolectricContext() {
-                        @Override public Setup createSetup() {
-                            return new Setup() {
-                                @Override public boolean shouldAcquire(String name) {
-                                    if (name.equals(TestRunnerSequenceTest.class.getName())) return false;
-                                    return super.shouldAcquire(name);
-                                }
-                            };
-                        }
+            super(testClass);
+        }
 
-                        @Override protected AndroidManifest createAppManifest() {
-                            return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
-                        }
-                    };
+        @Override public Setup createSetup() {
+            return new Setup() {
+                @Override public boolean shouldAcquire(String name) {
+                    if (name.equals(StateHolder.class.getName())) return false;
+                    return super.shouldAcquire(name);
                 }
-            }));
-        }
-
-        @Override protected void configureShadows(Method testMethod) {
-            transcript.add("configureShadows");
-            super.configureShadows(testMethod);
-        }
-
-        @Override protected void resetStaticState() {
-            transcript.add("resetStaticState");
+            };
         }
 
         @Override
-        public void setupApplicationState(Method testMethod) {
-            transcript.add("setupApplicationState");
-            super.setupApplicationState(testMethod);
+        protected AndroidManifest createAppManifest() {
+            return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
         }
 
-        @Override protected Application createApplication() {
-            transcript.add("createApplication");
-            return super.createApplication();
+        @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {
+            return MyTestLifecycle.class;
         }
 
-        @Override public void beforeTest(Method method) {
-            transcript.add("beforeTest");
+        @Override protected void configureShadows(Config config) {
+            StateHolder.transcript.add("configureShadows");
+            super.configureShadows(config);
+        }
+    }
+
+    public static class MyTestLifecycle extends DefaultTestLifecycle {
+        @Override public Application createApplication(Method method) {
+            StateHolder.transcript.add("createApplication");
+            return super.createApplication(method);
         }
 
         @Override public void prepareTest(Object test) {
-            transcript.add("prepareTest");
-            super.prepareTest(test);
+            StateHolder.transcript.add("prepareTest");
+        }
+
+        @Override public void beforeTest(Method method) {
+            StateHolder.transcript.add("beforeTest");
         }
 
         @Override public void afterTest(Method method) {
-            transcript.add("afterTest");
+            StateHolder.transcript.add("afterTest");
         }
     }
 }

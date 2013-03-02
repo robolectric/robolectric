@@ -6,8 +6,10 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.TestLifecycle;
 
 import java.lang.reflect.Method;
 
@@ -42,6 +44,7 @@ public class CustomRobolectricTestRunnerTest {
         assertEquals("shouldInvokeBeforeTestWithTheCorrectMethod", testMethod.getName());
     }
 
+    // todo: make this less dumb
     @AfterClass
     public static void shouldHaveCalledAfterTest() {
         assertTrue(beforeCallCount > 0);
@@ -53,20 +56,26 @@ public class CustomRobolectricTestRunnerTest {
             super(testClass);
         }
 
-        @Override public void prepareTest(Object test) {
-            ((CustomRobolectricTestRunnerTest) test).preparedTest = test;
+        @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {
+            return MyTestLifecycle.class;
         }
 
-        @Override public void beforeTest(Method method) {
-            testMethod = method;
-        }
+        public static class MyTestLifecycle extends DefaultTestLifecycle {
+            @Override public void prepareTest(Object test) {
+                ((CustomRobolectricTestRunnerTest) test).preparedTest = test;
+            }
 
-        @Override public void afterTest(Method method) {
-            afterTestCallCount++;
-        }
+            @Override public void beforeTest(Method method) {
+                testMethod = method;
+            }
 
-        @Override protected Application createApplication() {
-            return new CustomApplication();
+            @Override public void afterTest(Method method) {
+                afterTestCallCount++;
+            }
+
+            @Override public Application createApplication(Method method) {
+                return new CustomApplication();
+            }
         }
     }
 

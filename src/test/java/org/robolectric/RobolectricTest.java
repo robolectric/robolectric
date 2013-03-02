@@ -16,6 +16,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.shadows.ShadowDisplay;
@@ -55,8 +56,8 @@ public class RobolectricTest {
 
     @Test
     @Ignore // When this test is run via ant (not Intellj and not Maven) we get a bunch of "No Shadow method found for Typeface.finalize()" in the log along with the message for getContext()
+    @Config(shadows = TestShadowView.class)
     public void shouldLogMissingInvokedShadowMethodsWhenRequested() throws Exception {
-        Robolectric.bindShadowClass(TestShadowView.class);
         Robolectric.logMissingInvokedShadowMethods();
 
         View aView = new View(null);

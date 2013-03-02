@@ -1,5 +1,6 @@
 package org.robolectric.bytecode;
 
+import android.os.Build;
 import org.junit.Test;
 import org.robolectric.util.Transcript;
 import org.robolectric.util.Util;
@@ -15,6 +16,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import static org.fest.reflect.core.Reflection.staticField;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.directlyOn;
 
@@ -429,6 +432,12 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         assertArrayEquals(new Integer[]{}, Util.reverse(new Integer[]{}));
     }
 
+    @Test public void shouldMakeBuildVersionIntsNonFinal() throws Exception {
+        Class<?> versionClass = loadClass(Build.VERSION.class);
+        int modifiers = staticField("SDK_INT").ofType(int.class).in(versionClass).info().getModifiers();
+        assertThat(Modifier.isFinal(modifiers)).as("SDK_INT should be non-final").isFalse();
+    }
+
     /////////////////////////////
 
     private Object getDeclaredFieldValue(Class<?> aClass, Object o, String fieldName) throws Exception {
@@ -444,10 +453,6 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
 
         public MyClassHandler(Transcript transcript) {
             this.transcript = transcript;
-        }
-
-        @Override
-        public void reset() {
         }
 
         @Override

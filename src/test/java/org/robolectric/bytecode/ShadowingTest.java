@@ -16,6 +16,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.annotation.Config;
+import org.robolectric.annotation.Config;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
@@ -26,16 +28,14 @@ import java.lang.reflect.Method;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
-import static org.robolectric.Robolectric.bindShadowClass;
 import static org.robolectric.Robolectric.directlyOn;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ShadowingTest {
 
     @Test
+    @Config(shadows = {ShadowAccountManagerForTests.class})
     public void testStaticMethodsAreDelegated() throws Exception {
-        bindShadowClass(ShadowAccountManagerForTests.class);
-
         Context context = mock(Context.class);
         AccountManager.get(context);
         assertThat(ShadowAccountManagerForTests.wasCalled).isTrue();
@@ -55,9 +55,8 @@ public class ShadowingTest {
     }
 
     @Test
+    @Config(shadows = {ShadowClassWithProtectedMethod.class})
     public void testProtectedMethodsAreDelegated() throws Exception {
-        bindShadowClass(ShadowClassWithProtectedMethod.class);
-
         ClassWithProtectedMethod overlay = new ClassWithProtectedMethod();
         assertEquals("shadow name", overlay.getName());
     }
@@ -78,9 +77,8 @@ public class ShadowingTest {
     }
 
     @Test
+    @Config(shadows = {ShadowPaintForTests.class})
     public void testNativeMethodsAreDelegated() throws Exception {
-        bindShadowClass(ShadowPaintForTests.class);
-
         Paint paint = new Paint();
         paint.setColor(1234);
 
@@ -109,9 +107,8 @@ public class ShadowingTest {
 
     @Ignore // todo we need to figure out a better way to deal with this...
     @Test // the shadow will still have its default constructor called; it would be duplicative to call __constructor__() too.
+    @Config(shadows = {ShadowForClassWithNoDefaultConstructor.class})
     public void forClassWithNoDefaultConstructor_generatedDefaultConstructorShouldNotCallShadow() throws Exception {
-        bindShadowClass(ShadowForClassWithNoDefaultConstructor.class);
-
         Constructor<ClassWithNoDefaultConstructor> ctor = ClassWithNoDefaultConstructor.class.getDeclaredConstructor();
         ctor.setAccessible(true);
         ClassWithNoDefaultConstructor instance = ctor.newInstance();
@@ -142,8 +139,8 @@ public class ShadowingTest {
     }
 
     @Test
+    @Config(shadows = {Pony.ShadowPony.class})
     public void directlyOn_shouldCallThroughToOriginalMethodBody() throws Exception {
-        bindShadowClass(Pony.ShadowPony.class);
         Pony pony = new Pony();
 
         assertEquals("Fake whinny! You're on my neck!", pony.ride("neck"));
@@ -153,9 +150,8 @@ public class ShadowingTest {
     }
 
     @Test
+    @Config(shadows = {Pony.ShadowPony.class})
     public void testDirectlyOn_Statics() throws Exception {
-        bindShadowClass(Pony.ShadowPony.class);
-
         assertEquals("I'm shadily prancing to market!", Pony.prance("market"));
 
         directlyOn(Pony.class);
@@ -165,9 +161,8 @@ public class ShadowingTest {
     }
 
     @Test
+    @Config(shadows = {Pony.ShadowPony.class})
     public void whenShadowHandlerIsInClassicMode_shouldNotCallRealForUnshadowedMethod() throws Exception {
-        bindShadowClass(Pony.ShadowPony.class);
-
         assertEquals(null, new Pony().saunter("the salon"));
     }
 
@@ -189,8 +184,8 @@ public class ShadowingTest {
     }
 
     @Test
+    @Config(shadows = {TextViewWithDummyGetTextColorsMethod.class})
     public void testDirectlyOn_Statics_InstanceChecking() throws Exception {
-        bindShadowClass(TextViewWithDummyGetTextColorsMethod.class);
         assertNotNull(TextView.getTextColors(null, null)); // the real implementation would asplode
 
         Exception e = null;
@@ -266,8 +261,9 @@ public class ShadowingTest {
         assertEquals(view, view);
     }
 
-    @Test public void withNonApiSubclassesWhichExtendApi_shouldStillBeInvoked() throws Exception {
-        bindShadowClass(ShadowApiImplementedClass.class);
+    @Test
+    @Config(shadows = {ShadowApiImplementedClass.class})
+    public void withNonApiSubclassesWhichExtendApi_shouldStillBeInvoked() throws Exception {
         assertEquals("did foo", new NonApiSubclass().doSomething("foo"));
     }
 

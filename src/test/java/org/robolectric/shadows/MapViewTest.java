@@ -145,7 +145,7 @@ public class MapViewTest {
         mapView.dispatchTouchEvent(MotionEvent.obtain(0, 0, action, x, y, 0));
     }
 
-    private static class MyOnTouchListener implements View.OnTouchListener {
+    public static class MyOnTouchListener implements View.OnTouchListener {
         private MotionEvent lastMotionEvent;
 
         @Override public boolean onTouch(View v, MotionEvent event) {
