@@ -3,10 +3,14 @@ package org.robolectric;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.res.ResourcePath;
+import org.robolectric.test.TemporaryFolder;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,6 +22,8 @@ import static org.robolectric.util.TestUtil.*;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class AndroidManifestTest {
+    @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Test
     public void shouldReadBroadcastReceivers() throws Exception {
         AndroidManifest config = newConfig("TestAndroidManifestWithReceivers.xml");
@@ -47,17 +53,18 @@ public class AndroidManifestTest {
     }
 
     @Test
-    public void shouldReadSdkVersionFromAndroidManifest() throws Exception {
-        assertEquals(42, newConfig("TestAndroidManifestWithSdkVersion.xml").getSdkVersion());
-        assertEquals(3, newConfig("TestAndroidManifestWithSdkVersion.xml").getMinSdkVersion());
+    public void shouldReadTargetSdkVersionFromAndroidManifestOrDefaultToMin() throws Exception {
+        assertEquals(42, newConfigWith("android:targetSdkVersion=\"42\" android:minSdkVersion=\"7\"").getTargetSdkVersion());
+        assertEquals(7, newConfigWith("android:minSdkVersion=\"7\"").getTargetSdkVersion());
+        assertEquals(1, newConfigWith("").getTargetSdkVersion());
     }
-    
+
     @Test
-    public void shouldRessolveSdkVersionForResources() throws Exception {
-        assertEquals(3, newConfig("TestAndroidManifestWithMinSdkVersionOnly.xml").getRealSdkVersion());
-        assertEquals(42, newConfig("TestAndroidManifestWithSdkVersion.xml").getRealSdkVersion());
+    public void shouldReadMinSdkVersionFromAndroidManifestOrDefaultToOne() throws Exception {
+        assertEquals(17, newConfigWith("android:minSdkVersion=\"17\"").getMinSdkVersion());
+        assertEquals(1, newConfigWith("").getMinSdkVersion());
     }
-    
+
     @Test
     public void shouldReadProcessFromAndroidManifest() throws Exception {
     	assertEquals("robolectricprocess", newConfig("TestAndroidManifestWithProcess.xml").getProcessName());
@@ -79,6 +86,18 @@ public class AndroidManifestTest {
                 joinPath(".", "src", "test", "resources", "lib1", "..", "lib3", "res"),
                 joinPath(".", "src", "test", "resources", "lib2", "res")),
                 resourcePaths);
+    }
+
+    /////////////////////////////
+
+    public AndroidManifest newConfigWith(String usesSdkAttrs) throws IOException {
+        File f = temporaryFolder.newFile("whatever.xml",
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "          package=\"org.robolectric\">\n" +
+                        "    <uses-sdk " + usesSdkAttrs + "/>\n" +
+                        "</manifest>\n");
+        return new AndroidManifest(f, null, null);
     }
 
     private List<String> stringify(List<ResourcePath> resourcePaths) {

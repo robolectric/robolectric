@@ -13,7 +13,7 @@ import org.robolectric.bytecode.Setup;
 import org.robolectric.bytecode.ShadowWrangler;
 import org.robolectric.bytecode.ZipClassCache;
 import org.robolectric.internal.RobolectricTestRunnerInterface;
-import org.robolectric.res.AndroidResourcePathFinder;
+import org.robolectric.res.AndroidSdkFinder;
 import org.robolectric.res.ResourcePath;
 
 import java.io.File;
@@ -105,9 +105,8 @@ public class RobolectricContext {
 
     public synchronized ResourcePath getSystemResourcePath() {
         if (systemResourcePath == null) {
-            int realSdkVersion = appManifest.getRealSdkVersion();
-            ResourcePath resourcePath = appManifest.getResourcePath();
-            systemResourcePath = AndroidResourcePathFinder.getSystemResourcePath(realSdkVersion, resourcePath);
+            int targetSdkVersion = appManifest.getTargetSdkVersion();
+            systemResourcePath = new AndroidSdkFinder().findSystemResourcePath(targetSdkVersion);
         }
         return systemResourcePath;
     }

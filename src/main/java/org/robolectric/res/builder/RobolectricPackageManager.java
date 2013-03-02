@@ -55,7 +55,7 @@ public class RobolectricPackageManager extends StubPackageManager {
             if (applicationInfo == null) {
                 applicationInfo = new ApplicationInfo();
                 applicationInfo.flags = androidManifest.getApplicationFlags();
-                applicationInfo.targetSdkVersion = androidManifest.getSdkVersion();
+                applicationInfo.targetSdkVersion = androidManifest.getTargetSdkVersion();
                 applicationInfo.packageName = androidManifest.getPackageName();
                 applicationInfo.processName = androidManifest.getProcessName();
                 applicationInfo.name = androidManifest.getApplicationName();
