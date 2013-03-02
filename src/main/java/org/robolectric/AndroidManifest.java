@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Properties;
 
 import static android.content.pm.ApplicationInfo.*;
-import static org.robolectric.Robolectric.DEFAULT_SDK_VERSION;
 
 public class AndroidManifest {
     private final File androidManifestFile;
@@ -30,10 +29,8 @@ public class AndroidManifest {
     private String processName;
     private String applicationName;
     private boolean manifestIsParsed = false;
-    private int sdkVersion;
-    private int minSdkVersion;
-    private boolean sdkVersionSpecified = true;
-    private boolean minSdkVersionSpecified = true;
+    private Integer targetSdkVersion;
+    private Integer minSdkVersion;
     private int applicationFlags;
     private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
     private List<AndroidManifest> libraryManifests;
@@ -98,21 +95,8 @@ public class AndroidManifest {
             packageName = getTagAttributeText(manifestDocument, "manifest", "package");
             rClassName = packageName + ".R";
             applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
-            Integer minSdkVer = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
-            Integer sdkVer = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
-            if (minSdkVer == null) {
-                minSdkVersion = DEFAULT_SDK_VERSION;
-                minSdkVersionSpecified = false;
-            } else {
-                minSdkVersion = minSdkVer;
-            }
-            if (sdkVer == null) {
-                sdkVersion = DEFAULT_SDK_VERSION;
-                sdkVersionSpecified = false;
-            } else {
-                sdkVersion = sdkVer;
-            }
-
+            minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
+            targetSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:targetSdkVersion");
             processName = getTagAttributeText(manifestDocument, "application", "android:process");
             if (processName == null) {
                 processName = packageName;
@@ -121,6 +105,7 @@ public class AndroidManifest {
             parseApplicationFlags(manifestDocument);
             parseReceivers(manifestDocument, packageName);
         } catch (Exception ignored) {
+            ignored.printStackTrace();
         }
         manifestIsParsed = true;
     }
@@ -210,12 +195,12 @@ public class AndroidManifest {
 
     public int getMinSdkVersion() {
         parseAndroidManifest();
-        return minSdkVersion;
+        return minSdkVersion == null ? 1 : minSdkVersion;
     }
 
-    public int getSdkVersion() {
+    public int getTargetSdkVersion() {
         parseAndroidManifest();
-        return sdkVersion;
+        return targetSdkVersion == null ? getMinSdkVersion() : targetSdkVersion;
     }
 
     public int getApplicationFlags() {
@@ -375,17 +360,6 @@ public class AndroidManifest {
         result = 31 * result + (resDirectory != null ? resDirectory.hashCode() : 0);
         result = 31 * result + (assetsDirectory != null ? assetsDirectory.hashCode() : 0);
         return result;
-    }
-
-    public int getRealSdkVersion() {
-        parseAndroidManifest();
-        if (sdkVersionSpecified) {
-            return sdkVersion;
-        }
-        if (minSdkVersionSpecified) {
-            return minSdkVersion;
-        }
-        return sdkVersion;
     }
 
     private static class ReceiverAndIntentFilter {
