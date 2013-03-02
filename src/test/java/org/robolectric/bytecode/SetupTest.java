@@ -4,12 +4,7 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import org.junit.Before;
 import org.junit.Test;
-import org.robolectric.util.Function;
 
-import java.util.LinkedHashMap;
-import java.util.Map;
-
-import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -56,36 +51,5 @@ public class SetupTest {
 
     ClassInfo wrap(CtClass ctClass) {
         return new AndroidTranslator.JavassistClassInfo(ctClass);
-    }
-
-    @Test
-    public void getInterceptionHandler_whenCallIsNotRecognized_shouldReturnDoNothingHandler() throws Exception {
-        Function<Object,Object> handler = setup.getInterceptionHandler("unrecognizedClass", "nonMethod");
-
-        assertThat(handler)
-                .isNotNull()
-                .isSameAs(Setup.DO_NOTHING_HANDLER);
-        assertThat(handler.call(null)).isNull();
-    }
-
-    @Test
-    public void getInterceptionHandler_whenInterceptingElderOnLinkedHashMap_shouldReturnNonDoNothingHandler() throws Exception {
-        Function<Object,Object> handler = setup.getInterceptionHandler("java/util/LinkedHashMap", "eldest");
-
-        assertThat(handler).isNotSameAs(Setup.DO_NOTHING_HANDLER);
-    }
-
-    @Test
-    public void elderOnLinkedHashMapHandler_shouldReturnEldestMemberOfLinkedHashMap() throws Exception {
-        LinkedHashMap<Integer, String> map = new LinkedHashMap<Integer, String>(2);
-        map.put(1, "one");
-        map.put(2, "two");
-
-        Function<Object,Object> handler = setup.getInterceptionHandler("java/util/LinkedHashMap", "eldest");
-
-        Map.Entry<Integer, String> eldestMember = map.entrySet().iterator().next();
-        assertThat(handler.call(map)).isEqualTo(eldestMember);
-        assertThat(eldestMember.getKey()).isEqualTo(1);
-        assertThat(eldestMember.getValue()).isEqualTo("one");
     }
 }

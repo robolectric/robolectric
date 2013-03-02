@@ -3,6 +3,7 @@ package org.robolectric.bytecode;
 import android.support.v4.content.LocalBroadcastManager;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.RealObject;
+import org.robolectric.util.Function;
 import org.robolectric.util.I18nException;
 import org.robolectric.util.Join;
 
@@ -23,6 +24,12 @@ import java.util.Map;
 import static java.util.Arrays.asList;
 
 public class ShadowWrangler implements ClassHandler {
+    public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
+        @Override
+        public Object call(Object value) {
+            return null;
+        }
+    };
     private static final int MAX_CALL_DEPTH = 200;
     private static final boolean STRIP_SHADOW_STACK_TRACES = true;
 
@@ -232,7 +239,23 @@ public class ShadowWrangler implements ClassHandler {
         if (debug)
             System.out.println("DEBUG: intercepted call to " + className + "." + methodName + "(" + Join.join(", ", params) + ")");
 
-        return setup.getInterceptionHandler(className, methodName).call(instance);
+        return getInterceptionHandler(className, methodName).call(instance);
+    }
+
+    public Function<Object, Object> getInterceptionHandler(String className, String methodName) {
+        className = className.replace('/', '.');
+
+        if (className.equals(LinkedHashMap.class.getName()) && methodName.equals("eldest")) {
+            return new Function<Object, Object>() {
+                @Override
+                public Object call(Object value) {
+                    LinkedHashMap map = (LinkedHashMap) value;
+                    return map.entrySet().iterator().next();
+                }
+            };
+        }
+
+        return ShadowWrangler.DO_NOTHING_HANDLER;
     }
 
     private <T extends Throwable> T stripStackTrace(T throwable) {

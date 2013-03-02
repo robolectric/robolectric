@@ -13,7 +13,6 @@ import org.robolectric.internal.RealObject;
 import org.robolectric.internal.RobolectricTestRunnerInterface;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.util.DatabaseConfig;
-import org.robolectric.util.Function;
 import org.robolectric.util.I18nException;
 
 import java.util.ArrayList;
@@ -54,12 +53,6 @@ public class Setup {
             I18nException.class,
             org.robolectric.bytecode.DirectObjectMarker.class
     );
-    public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
-        @Override
-        public Object call(Object value) {
-            return null;
-        }
-    };
 
     private static List<String> stringify(Class... classes) {
         ArrayList<String> strings = new ArrayList<String>();
@@ -158,22 +151,6 @@ public class Setup {
                 new MethodRef("com.android.i18n.phonenumbers.PhoneNumberUtil", "*"),
                 new MethodRef("dalvik.system.CloseGuard", "get")
         )));
-    }
-
-    public Function<Object, Object> getInterceptionHandler(String className, String methodName) {
-        className = className.replace('/', '.');
-
-        if (className.equals(LinkedHashMap.class.getName()) && methodName.equals("eldest")) {
-            return new Function<Object, Object>() {
-                @Override
-                public Object call(Object value) {
-                    LinkedHashMap map = (LinkedHashMap) value;
-                    return map.entrySet().iterator().next();
-                }
-            };
-        }
-
-        return DO_NOTHING_HANDLER;
     }
 
     /**
