@@ -170,10 +170,6 @@ import android.widget.VideoView;
 import android.widget.ViewAnimator;
 import android.widget.ViewFlipper;
 import android.widget.ZoomButtonsController;
-import org.robolectric.shadows.ShadowAnimatorSet;
-import org.robolectric.shadows.ShadowAppWidgetHost;
-import org.robolectric.shadows.ShadowAppWidgetHostView;
-import org.robolectric.shadows.ShadowContentObserver;
 import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
@@ -206,6 +202,9 @@ import org.robolectric.shadows.ShadowAnimationDrawable;
 import org.robolectric.shadows.ShadowAnimationSet;
 import org.robolectric.shadows.ShadowAnimationUtils;
 import org.robolectric.shadows.ShadowAnimator;
+import org.robolectric.shadows.ShadowAnimatorSet;
+import org.robolectric.shadows.ShadowAppWidgetHost;
+import org.robolectric.shadows.ShadowAppWidgetHostView;
 import org.robolectric.shadows.ShadowAppWidgetManager;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.shadows.ShadowArrayAdapter;
@@ -237,6 +236,7 @@ import org.robolectric.shadows.ShadowComponentName;
 import org.robolectric.shadows.ShadowCompoundButton;
 import org.robolectric.shadows.ShadowConfiguration;
 import org.robolectric.shadows.ShadowConnectivityManager;
+import org.robolectric.shadows.ShadowContentObserver;
 import org.robolectric.shadows.ShadowContentProvider;
 import org.robolectric.shadows.ShadowContentProviderOperation;
 import org.robolectric.shadows.ShadowContentProviderOperationBuilder;
@@ -324,6 +324,7 @@ import org.robolectric.shadows.ShadowMessage;
 import org.robolectric.shadows.ShadowMessenger;
 import org.robolectric.shadows.ShadowMimeTypeMap;
 import org.robolectric.shadows.ShadowMotionEvent;
+import org.robolectric.shadows.ShadowNativeLruCache;
 import org.robolectric.shadows.ShadowNdefMessage;
 import org.robolectric.shadows.ShadowNdefRecord;
 import org.robolectric.shadows.ShadowNetworkInfo;
@@ -693,6 +694,7 @@ public class Robolectric {
                 ShadowMessenger.class,
                 ShadowMimeTypeMap.class,
                 ShadowMotionEvent.class,
+                ShadowNativeLruCache.class,
                 ShadowNotification.class,
                 ShadowNdefMessage.class,
                 ShadowNdefRecord.class,

@@ -231,7 +231,8 @@ public class ShadowWrangler implements ClassHandler {
     public Object intercept(String className, String methodName, Object instance, Object[] paramTypes, Object[] params) throws Throwable {
         if (debug)
             System.out.println("DEBUG: intercepted call to " + className + "." + methodName + "(" + Join.join(", ", params) + ")");
-        return null;
+
+        return setup.getInterceptionHandler(className, methodName).call(instance);
     }
 
     private <T extends Throwable> T stripStackTrace(T throwable) {

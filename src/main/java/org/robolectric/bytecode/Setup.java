@@ -13,12 +13,14 @@ import org.robolectric.internal.RealObject;
 import org.robolectric.internal.RobolectricTestRunnerInterface;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.util.DatabaseConfig;
+import org.robolectric.util.Function;
 import org.robolectric.util.I18nException;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -52,6 +54,12 @@ public class Setup {
             I18nException.class,
             org.robolectric.bytecode.DirectObjectMarker.class
     );
+    public static final Function<Object, Object> DO_NOTHING_HANDLER = new Function<Object, Object>() {
+        @Override
+        public Object call(Object value) {
+            return null;
+        }
+    };
 
     private static List<String> stringify(Class... classes) {
         ArrayList<String> strings = new ArrayList<String>();
@@ -143,6 +151,7 @@ public class Setup {
 
     public Set<MethodRef> methodsToIntercept() {
         return Collections.unmodifiableSet(new HashSet<MethodRef>(asList(
+                new MethodRef(LinkedHashMap.class, "eldest"),
                 new MethodRef(System.class, "loadLibrary"),
                 new MethodRef("android.os.StrictMode", "trackActivity"),
                 new MethodRef("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", "*"),
@@ -151,8 +160,25 @@ public class Setup {
         )));
     }
 
+    public Function<Object, Object> getInterceptionHandler(String className, String methodName) {
+        className = className.replace('/', '.');
+
+        if (className.equals(LinkedHashMap.class.getName()) && methodName.equals("eldest")) {
+            return new Function<Object, Object>() {
+                @Override
+                public Object call(Object value) {
+                    LinkedHashMap map = (LinkedHashMap) value;
+                    return map.entrySet().iterator().next();
+                }
+            };
+        }
+
+        return DO_NOTHING_HANDLER;
+    }
+
     /**
      * Map from a requested class to an alternate stand-in, or not.
+     *
      * @return
      */
     public Map<String, String> classNameTranslations() {

@@ -40,7 +40,10 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
-import static org.objectweb.asm.Type.*;
+import static org.objectweb.asm.Type.ARRAY;
+import static org.objectweb.asm.Type.OBJECT;
+import static org.objectweb.asm.Type.VOID;
+import static org.objectweb.asm.Type.getType;
 import static org.robolectric.util.Util.readBytes;
 import static org.robolectric.util.Util.reverse;
 
@@ -659,6 +662,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                     instructions.add(new TypeInsnNode(CHECKCAST, remapType(returnType.getInternalName())));
                     break;
                 case ARRAY:
+                     // wrong
                     instructions.add(new InsnNode(POP));
                     instructions.add(new InsnNode(ACONST_NULL));
                     break;
@@ -666,18 +670,22 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                     instructions.add(new InsnNode(POP));
                     break;
                 case Type.LONG:
+                    // wrong: should do Long#toLong()
                     instructions.add(new InsnNode(POP));
                     instructions.add(new InsnNode(LCONST_0));
                     break;
                 case Type.FLOAT:
+                     // wrong
                     instructions.add(new InsnNode(POP));
                     instructions.add(new InsnNode(FCONST_0));
                     break;
                 case Type.DOUBLE:
+                     // wrong
                     instructions.add(new InsnNode(POP));
                     instructions.add(new InsnNode(DCONST_0));
                     break;
                 default:
+                     // wrong
                     instructions.add(new InsnNode(POP));
                     instructions.add(new InsnNode(ICONST_0));
                 break;
