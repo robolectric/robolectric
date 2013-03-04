@@ -25,7 +25,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.AbstractList;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.RandomAccess;
 
 /**
  * Immutable URI reference. A URI reference includes a URI and a fragment, the
