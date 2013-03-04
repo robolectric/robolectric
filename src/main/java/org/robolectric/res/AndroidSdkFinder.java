@@ -104,15 +104,24 @@ public class AndroidSdkFinder {
     }
 
     private File getAndroidResourcePathByExecingWhichAndroid() {
+        File file = shellExec("which", "android");
+        if (file == null) file = shellExec("bash", "-l", "-c", "which android");
+        return file;
+    }
+
+    private File shellExec(String... args) {
         // Hand tested
         // Should always work from the command line. Often fails in IDEs because
         // they don't pass the full PATH in the environment
         try {
-            Process process = Runtime.getRuntime().exec(new String[]{"which", "android"});
-            String sdkPath = new BufferedReader(new InputStreamReader(process.getInputStream())).readLine();
-            if (sdkPath != null && sdkPath.endsWith("tools/android")) {
-                String sdkPath1 = sdkPath.substring(0, sdkPath.indexOf("tools/android"));
-                return new File(sdkPath1);
+            Process process = Runtime.getRuntime().exec(args);
+            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String sdkPath;
+            while ((sdkPath = reader.readLine()) != null) {
+                if (sdkPath.endsWith("tools/android")) {
+                    String sdkPath1 = sdkPath.substring(0, sdkPath.indexOf("tools/android"));
+                    return new File(sdkPath1);
+                }
             }
         } catch (IOException e) {
             // fine we'll try something else
