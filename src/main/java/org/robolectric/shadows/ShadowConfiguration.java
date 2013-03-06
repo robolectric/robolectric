@@ -12,7 +12,7 @@ public class ShadowConfiguration {
 
     @RealObject
     private Configuration realConfiguration;
-    
+
     public int screenLayout;
     public int touchscreen;
     public int orientation;
@@ -146,11 +146,6 @@ public class ShadowConfiguration {
                 Configuration.SCREENLAYOUT_SIZE_NORMAL;
     }
 
-    @Implementation
-    public String toString() {
-        return realConfiguration.toString();
-    }
-    
     public void setLocale( Locale l ) {
     	realConfiguration.locale = l;
     }
