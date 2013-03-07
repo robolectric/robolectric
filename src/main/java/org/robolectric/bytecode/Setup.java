@@ -14,6 +14,7 @@ import org.robolectric.internal.RobolectricTestRunnerInterface;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.util.DatabaseConfig;
 import org.robolectric.util.I18nException;
+import org.robolectric.util.Transcript;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,6 +52,7 @@ public class Setup {
             EnableStrictI18n.class,
             DisableStrictI18n.class,
             I18nException.class,
+            Transcript.class,
             org.robolectric.bytecode.DirectObjectMarker.class
     );
 
