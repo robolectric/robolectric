@@ -9,13 +9,22 @@ package org.robolectric.annotation;
 public @interface Config {
 
     /**
-     * qualifiers for the values folder, such as "normal-hdpi-16"
+     * The Android SDK level to emulate. If not specified, Robolectric defaults to the targetSdkVersion in your app's manifest.
+     */
+    int emulateSdk() default -1;
+
+    /**
+     * Qualifiers for the resource resolution, such as "fr-normal-port-hdpi".
      */
     String qualifiers() default "";
 
-    Class<?>[] shadows() default {};
-
-    int sdk() default -1;
-
+    /**
+     * The Android SDK level to report in Build.VERSION.SDK_INT.
+     */
     int reportSdk() default -1;
+
+    /**
+     * A list of shadow classes to enable, in addition to those that are already present.
+     */
+    Class<?>[] shadows() default {};
 }
