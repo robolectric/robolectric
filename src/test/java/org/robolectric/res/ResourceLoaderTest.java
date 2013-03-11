@@ -10,7 +10,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.annotation.Values;
+import org.robolectric.annotation.Config;
 import org.robolectric.res.builder.LayoutBuilder;
 import org.robolectric.util.I18nException;
 
@@ -62,7 +62,7 @@ public class ResourceLoaderTest {
         preferenceActivity.addPreferencesFromResource(R.xml.preferences);
     }
 
-    @Test @Values(qualifiers = "doesnotexist-land-xlarge")
+    @Test @Config(qualifiers = "doesnotexist-land-xlarge")
     public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
         ViewGroup viewGroup = new FrameLayout(Robolectric.application);

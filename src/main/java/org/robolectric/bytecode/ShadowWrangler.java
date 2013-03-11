@@ -45,7 +45,7 @@ public class ShadowWrangler implements ClassHandler {
         }
     };
     private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
-    private Map<String, ShadowConfig> shadowClassMap = new HashMap<String, ShadowConfig>();
+    private ShadowMap shadowClassMap = null;
     private boolean logMissingShadowMethods = false;
     private static ThreadLocal<Info> infos = new ThreadLocal<Info>() {
         @Override
@@ -54,18 +54,12 @@ public class ShadowWrangler implements ClassHandler {
         }
     };
 
-    private static class Info {
-        private int callDepth = 0;
+    public void setShadowMap(ShadowMap shadowMap) {
+        this.shadowClassMap = shadowMap;
     }
 
-    static class ShadowConfig {
-        final String shadowClassName;
-        final boolean callThroughByDefault;
-
-        ShadowConfig(String shadowClassName, boolean callThroughByDefault) {
-            this.callThroughByDefault = callThroughByDefault;
-            this.shadowClassName = shadowClassName;
-        }
+    private static class Info {
+        private int callDepth = 0;
     }
 
     public ShadowWrangler(Setup setup) {
@@ -75,11 +69,6 @@ public class ShadowWrangler implements ClassHandler {
     @Override
     public void setStrictI18n(boolean strictI18n) {
         this.strictI18n = strictI18n;
-    }
-
-    @Override
-    public void reset() {
-        shadowClassMap.clear();
     }
 
     @Override
@@ -105,19 +94,6 @@ public class ShadowWrangler implements ClassHandler {
         } else {
             RobolectricInternals.performStaticInitialization(clazz);
         }
-    }
-
-    public void bindShadowClass(String realClassName, Class<?> shadowClass, boolean callThroughByDefault) {
-        bindShadowClass(realClassName, shadowClass.getName(), callThroughByDefault);
-    }
-
-    public void bindShadowClass(Class<?> realClass, Class<?> shadowClass, boolean callThroughByDefault) {
-        bindShadowClass(realClass.getName(), shadowClass.getName(), callThroughByDefault);
-    }
-
-    public void bindShadowClass(String realClassName, String shadowClassName, boolean callThroughByDefault) {
-        shadowClassMap.put(realClassName, new ShadowConfig(shadowClassName, callThroughByDefault));
-        if (debug) System.out.println("shadow " + realClassName + " with " + shadowClassName);
     }
 
     private String indent(int count) {

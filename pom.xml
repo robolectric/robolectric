@@ -27,7 +27,7 @@
         <dependency>
             <groupId>org.objenesis</groupId>
             <artifactId>objenesis</artifactId>
-            <version>1.0</version>
+            <version>1.3</version>
         </dependency>
 
         <dependency>
@@ -111,6 +111,7 @@
             <version>r7</version>
         </dependency>
 
+        <!-- this needs to come above fest-reflect or we pick up the wrong org.fest.util.Strings -->
         <dependency>
             <groupId>org.easytesting</groupId>
             <artifactId>fest-assert-core</artifactId>
@@ -119,16 +120,22 @@
         </dependency>
 
         <dependency>
+            <groupId>org.easytesting</groupId>
+            <artifactId>fest-reflect</artifactId>
+            <version>1.4</version>
+        </dependency>
+
+        <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
-            <version>1.8.5</version>
+            <version>1.9.5</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>com.intellij</groupId>
             <artifactId>annotations</artifactId>
-            <version>9.0.4</version>
+            <version>12.0</version>
             <scope>provided</scope>
         </dependency>
 

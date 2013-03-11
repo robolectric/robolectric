@@ -6,9 +6,12 @@ import android.widget.TextView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
-import org.robolectric.annotation.Values;
+import org.robolectric.internal.TestLifecycle;
+
+import java.lang.reflect.Method;
 
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.shadowOf;
@@ -57,7 +60,7 @@ public class RobolectricTestRunnerTest {
     }
 
     @Test
-    @Values(qualifiers = "fr")
+    @Config(qualifiers = "fr")
     public void internalBeforeTest_testValuesResQualifiers() {
         assertEquals("fr", Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).getQualifiers());
     }
@@ -87,16 +90,20 @@ public class RobolectricTestRunnerTest {
 
     public static class RunnerForTesting extends TestRunners.WithDefaults {
         public static RunnerForTesting instance;
-        private final AndroidManifest androidManifest;
 
         public RunnerForTesting(Class<?> testClass) throws InitializationError {
             super(testClass);
             instance = this;
-            androidManifest = getRobolectricContext().getAppManifest();
         }
 
-        @Override protected Application createApplication() {
-            return new MyTestApplication();
+        @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {
+            return MyTestLifecycle.class;
+        }
+
+        public static class MyTestLifecycle extends DefaultTestLifecycle {
+            @Override public Application createApplication(Method method) {
+                return new MyTestApplication();
+            }
         }
     }
 

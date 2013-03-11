@@ -1,8 +1,6 @@
 package org.robolectric.bytecode;
 
 public interface ClassHandler {
-    void reset();
-
     void classInitializing(Class clazz);
 
     Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Throwable;

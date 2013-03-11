@@ -53,13 +53,16 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     private static final Type STRING_TYPE = getType(String.class);
     private static final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
 
+    public static int num = 0;
+
     private static boolean debug = false;
 
     private final Setup setup;
     private final URLClassLoader urls;
     private final Map<String, Class> classes = new HashMap<String, Class>();
-    private Set<Setup.MethodRef> methodsToIntercept;
+    private final Set<Setup.MethodRef> methodsToIntercept;
     private final Map<String, String> classesToRemap;
+    private final int myNum = num++;
 
     public static final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
 
@@ -402,6 +405,13 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 //            for (MethodNode method : (List<MethodNode>)classNode.methods) {
 //                System.out.println("method = " + method.name + method.desc);
 //            }
+
+            if (className.equals("android.os.Build$VERSION")) {
+                for (Object field : classNode.fields) {
+                    FieldNode fieldNode = (FieldNode) field;
+                    fieldNode.access &= ~(Modifier.FINAL);
+                }
+            }
         }
 
         private boolean isSyntheticAccessorMethod(MethodNode method) {

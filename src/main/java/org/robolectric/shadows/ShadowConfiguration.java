@@ -7,6 +7,8 @@ import org.robolectric.internal.RealObject;
 
 import java.util.Locale;
 
+import static org.robolectric.Robolectric.directlyOn;
+
 @Implements(Configuration.class)
 public class ShadowConfiguration {
 

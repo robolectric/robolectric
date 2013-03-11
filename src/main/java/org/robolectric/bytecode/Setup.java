@@ -3,14 +3,19 @@ package org.robolectric.bytecode;
 import android.R;
 import android.net.Uri__FromAndroid;
 import org.robolectric.AndroidManifest;
+import org.robolectric.RobolectricBase;
 import org.robolectric.RobolectricContext;
+import org.robolectric.RobolectricTestRunner;
+import org.robolectric.annotation.Config;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
-import org.robolectric.annotation.Values;
 import org.robolectric.internal.DoNotInstrument;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
+import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.RealObject;
-import org.robolectric.internal.RobolectricTestRunnerInterface;
+import org.robolectric.internal.TestLifecycle;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.util.DatabaseConfig;
 import org.robolectric.util.I18nException;
@@ -29,8 +34,9 @@ import static java.util.Arrays.asList;
 
 public class Setup {
     public static final List<String> CLASSES_TO_ALWAYS_DELEGATE = stringify(
+            RobolectricBase.class,
             Uri__FromAndroid.class,
-            RobolectricTestRunnerInterface.class,
+            TestLifecycle.class,
             RealObject.class,
             ShadowWrangler.class,
             Vars.class,
@@ -42,18 +48,22 @@ public class Setup {
             org.robolectric.bytecode.JavassistInstrumentingClassLoader.class,
             org.robolectric.bytecode.AsmInstrumentingClassLoader.class,
             RobolectricContext.class,
-            RobolectricContext.Factory.class,
+            RobolectricTestRunner.class,
+            RobolectricTestRunner.HelperTestRunner.class,
             ResourcePath.class,
             AndroidTranslator.class,
             ClassHandler.class,
+            Implements.class,
+            Implementation.class,
             Instrument.class,
             DoNotInstrument.class,
-            Values.class,
+            Config.class,
             EnableStrictI18n.class,
             DisableStrictI18n.class,
             I18nException.class,
             Transcript.class,
-            org.robolectric.bytecode.DirectObjectMarker.class
+            org.robolectric.bytecode.DirectObjectMarker.class,
+            ParallelUniverseInterface.class
     );
 
     private static List<String> stringify(Class... classes) {
