@@ -334,6 +334,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         ClassHandler classHandler = robolectricContext.getClassHandler();
         classHandler.setStrictI18n(strictI18n);
 
+        if (config != null && config.emulateSdk() != -1) {
+            throw new UnsupportedOperationException("Sorry, emulateSdk is not yet supported... coming soon!");
+        }
+
         int sdkVersion = pickReportedSdkVersion(config);
         Class<?> versionClass = robolectricContext.bootstrappedClass(Build.VERSION.class);
         staticField("SDK_INT").ofType(int.class).in(versionClass).set(sdkVersion);
