@@ -241,15 +241,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
     @Override
     protected Statement classBlock(RunNotifier notifier) {
-        Class bootstrappedTestClass = robolectricContext.bootstrappedClass(getTestClass().getJavaClass());
-        HelperTestRunner helperTestRunner;
-        try {
-            helperTestRunner = new HelperTestRunner(bootstrappedTestClass);
-        } catch (InitializationError initializationError) {
-            throw new RuntimeException(initializationError);
-        }
-
-        final Statement statement = helperTestRunner.classBlock(notifier);
+        final Statement statement = super.classBlock(notifier);
         return new Statement() {
             @Override
             public void evaluate() throws Throwable {
@@ -263,7 +255,56 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
-        throw new UnsupportedOperationException("shouldn't be called");
+        Class bootstrappedTestClass = robolectricContext.bootstrappedClass(getTestClass().getJavaClass());
+        HelperTestRunner helperTestRunner;
+        try {
+            helperTestRunner = new HelperTestRunner(bootstrappedTestClass);
+        } catch (InitializationError initializationError) {
+            throw new RuntimeException(initializationError);
+        }
+
+        setupLogging();
+
+        Config config = method.getMethod().getAnnotation(Config.class);
+        configureShadows(config);
+
+
+        final Method bootstrappedMethod;
+        try {
+            //noinspection unchecked
+            bootstrappedMethod = bootstrappedTestClass.getMethod(method.getName());
+        } catch (NoSuchMethodException e) {
+            throw new RuntimeException(e);
+        }
+
+        try {
+            internalBeforeTest(bootstrappedMethod, databaseMap, config);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new RuntimeException(e);
+        }
+
+        final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
+        return new Statement() {
+            @Override public void evaluate() throws Throwable {
+                Map<Field, Object> withConstantAnnos = getWithConstantAnnotations(bootstrappedMethod);
+
+                // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
+                try {
+                    if (withConstantAnnos.isEmpty()) {
+                        statement.evaluate();
+                    } else {
+                        synchronized (this) {
+                            setupConstants(withConstantAnnos);
+                            statement.evaluate();
+                            setupConstants(withConstantAnnos);
+                        }
+                    }
+                } finally {
+                    internalAfterTest(bootstrappedMethod);
+                }
+            }
+        };
     }
 
     protected void configureShadows(Config config) {
@@ -604,41 +645,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         }
 
         @Override public Statement methodBlock(FrameworkMethod method) {
-            setupLogging();
-
-            Config config = method.getMethod().getAnnotation(Config.class);
-            configureShadows(config);
-
-
-            final Method bootstrappedMethod = method.getMethod();
-            try {
-                internalBeforeTest(bootstrappedMethod, databaseMap, config);
-            } catch (Exception e) {
-                e.printStackTrace();
-                throw new RuntimeException(e);
-            }
-
-            final Statement statement = super.methodBlock(new FrameworkMethod(bootstrappedMethod));
-            return new Statement() {
-                @Override public void evaluate() throws Throwable {
-                    Map<Field, Object> withConstantAnnos = getWithConstantAnnotations(bootstrappedMethod);
-
-                    // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
-                    try {
-                        if (withConstantAnnos.isEmpty()) {
-                            statement.evaluate();
-                        } else {
-                            synchronized (this) {
-                                setupConstants(withConstantAnnos);
-                                statement.evaluate();
-                                setupConstants(withConstantAnnos);
-                            }
-                        }
-                    } finally {
-                        internalAfterTest(bootstrappedMethod);
-                    }
-                }
-            };
+            return super.methodBlock(method);
         }
     }
 }
