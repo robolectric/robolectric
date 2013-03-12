@@ -265,7 +265,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
         setupLogging();
 
-        Config config = method.getMethod().getAnnotation(Config.class);
+        Config config = getConfig(method);
         configureShadows(config);
 
 
@@ -305,6 +305,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                 }
             }
         };
+    }
+
+    public Config getConfig(FrameworkMethod method) {
+        return method.getMethod().getAnnotation(Config.class);
     }
 
     protected void configureShadows(Config config) {

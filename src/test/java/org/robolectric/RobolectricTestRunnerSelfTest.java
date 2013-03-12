@@ -16,8 +16,8 @@ import java.lang.reflect.Method;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.shadowOf;
 
-@RunWith(RobolectricTestRunnerTest.RunnerForTesting.class)
-public class RobolectricTestRunnerTest {
+@RunWith(RobolectricTestRunnerSelfTest.RunnerForTesting.class)
+public class RobolectricTestRunnerSelfTest {
 
     @Test
     public void shouldInitializeAndBindApplicationButNotCallOnCreate() throws Exception {
