@@ -35,6 +35,7 @@ import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
 import org.robolectric.shadows.ShadowLog;
+import org.robolectric.util.AnnotationUtil;
 import org.robolectric.util.DatabaseConfig;
 import org.robolectric.util.DatabaseConfig.DatabaseMap;
 import org.robolectric.util.DatabaseConfig.UsingDatabaseMap;
@@ -265,7 +266,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
         setupLogging();
 
-        Config config = getConfig(method);
+        Config config = getConfig(method.getMethod());
         configureShadows(config);
 
 
@@ -307,8 +308,18 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         };
     }
 
-    public Config getConfig(FrameworkMethod method) {
-        return method.getMethod().getAnnotation(Config.class);
+    public Config getConfig(Method method) {
+        Config methodConfig = method.getAnnotation(Config.class);
+        if (methodConfig == null) {
+            methodConfig = AnnotationUtil.defaultsFor(Config.class);
+        }
+
+        Config classConfig = method.getDeclaringClass().getAnnotation(Config.class);
+        if (classConfig == null) {
+            classConfig = AnnotationUtil.defaultsFor(Config.class);
+        }
+
+        return new Config.Implementation(classConfig, methodConfig);
     }
 
     protected void configureShadows(Config config) {
