@@ -1,16 +1,15 @@
-package org.robolectric.bytecode;
+package org.robolectric.bytecode.testing;
 
+import org.robolectric.bytecode.ShadowWranglerTest;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 
 @Implements(Foo.class)
 public class ShadowFoo extends ShadowWranglerTest.ShadowFooParent {
-    @RealObject Foo realFooField;
-    Foo realFooInConstructor;
-
-    Foo realFooCtor;
-
-    String name;
+    @RealObject public Foo realFooField;
+    public Foo realFooInConstructor;
+    public Foo realFooCtor;
+    public String name;
 
     public ShadowFoo(Foo foo) {
         this.realFooCtor = foo;

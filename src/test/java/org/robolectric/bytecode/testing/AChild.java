@@ -1,5 +1,6 @@
-package org.robolectric.bytecode;
+package org.robolectric.bytecode.testing;
 
+import org.robolectric.bytecode.testing.AParent;
 import org.robolectric.internal.Instrument;
 
 @Instrument

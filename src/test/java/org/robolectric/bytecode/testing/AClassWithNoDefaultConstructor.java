@@ -1,10 +1,9 @@
-package org.robolectric.bytecode;
+package org.robolectric.bytecode.testing;
 
 import org.robolectric.internal.Instrument;
 
 @SuppressWarnings("UnusedDeclaration")
-@Instrument
-class AClassWithNoDefaultConstructor {
+@Instrument public class AClassWithNoDefaultConstructor {
     private String name;
 
     AClassWithNoDefaultConstructor(String name) {

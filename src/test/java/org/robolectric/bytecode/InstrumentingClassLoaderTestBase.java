@@ -2,6 +2,31 @@ package org.robolectric.bytecode;
 
 import android.os.Build;
 import org.junit.Test;
+import org.robolectric.bytecode.testing.AChild;
+import org.robolectric.bytecode.testing.AClassThatCallsAMethodReturningAForgettableClass;
+import org.robolectric.bytecode.testing.AClassThatRefersToAForgettableClass;
+import org.robolectric.bytecode.testing.AClassThatRefersToAForgettableClassInItsConstructor;
+import org.robolectric.bytecode.testing.AClassThatRefersToAForgettableClassInMethodCalls;
+import org.robolectric.bytecode.testing.AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive;
+import org.robolectric.bytecode.testing.AClassToForget;
+import org.robolectric.bytecode.testing.AClassToRemember;
+import org.robolectric.bytecode.testing.AClassWithEqualsHashCodeToString;
+import org.robolectric.bytecode.testing.AClassWithFunnyConstructors;
+import org.robolectric.bytecode.testing.AClassWithMethodReturningArray;
+import org.robolectric.bytecode.testing.AClassWithMethodReturningBoolean;
+import org.robolectric.bytecode.testing.AClassWithMethodReturningDouble;
+import org.robolectric.bytecode.testing.AClassWithMethodReturningInteger;
+import org.robolectric.bytecode.testing.AClassWithNativeMethod;
+import org.robolectric.bytecode.testing.AClassWithNoDefaultConstructor;
+import org.robolectric.bytecode.testing.AClassWithStaticMethod;
+import org.robolectric.bytecode.testing.AClassWithoutEqualsHashCodeToString;
+import org.robolectric.bytecode.testing.AFinalClass;
+import org.robolectric.bytecode.testing.AnEnum;
+import org.robolectric.bytecode.testing.AnExampleClass;
+import org.robolectric.bytecode.testing.AnInstrumentedChild;
+import org.robolectric.bytecode.testing.AnInstrumentedClassWithoutToStringWithSuperToString;
+import org.robolectric.bytecode.testing.AnUninstrumentedClass;
+import org.robolectric.bytecode.testing.AnUninstrumentedParent;
 import org.robolectric.util.Transcript;
 import org.robolectric.util.Util;
 
@@ -242,7 +267,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         Class<?> aClass = loadClass(AClassWithFunnyConstructors.class);
         Object o = aClass.getDeclaredConstructor(String.class).newInstance("hortense");
         transcript.assertEventsSoFar(
-                "methodInvoked: AClassWithFunnyConstructors.__constructor__(org.robolectric.bytecode.AnUninstrumentedParent UninstrumentedParent{parentName='hortense'}, java.lang.String foo)",
+                "methodInvoked: AClassWithFunnyConstructors.__constructor__(" + AnUninstrumentedParent.class.getName() + " UninstrumentedParent{parentName='hortense'}, java.lang.String foo)",
                 "methodInvoked: AClassWithFunnyConstructors.__constructor__(java.lang.String hortense)");
 
         // should not run constructor bodies...
@@ -255,7 +280,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         Class<?> aClass = loadClass(AClassWithFunnyConstructors.class);
         Object instance = aClass.getConstructor(String.class).newInstance("horace");
         transcript.assertEventsSoFar(
-                "methodInvoked: AClassWithFunnyConstructors.__constructor__(org.robolectric.bytecode.AnUninstrumentedParent UninstrumentedParent{parentName='horace'}, java.lang.String foo)",
+                "methodInvoked: AClassWithFunnyConstructors.__constructor__(" + AnUninstrumentedParent.class.getName() + " UninstrumentedParent{parentName='horace'}, java.lang.String foo)",
                 "methodInvoked: AClassWithFunnyConstructors.__constructor__(java.lang.String horace)");
 
         // each directly-accessible constructor body will need to be called explicitly, with the correct args...
@@ -549,7 +574,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         @Override
         public Map<String, String> classNameTranslations() {
             Map<String, String> map = new HashMap<String, String>();
-            map.put("org.robolectric.bytecode.AClassToForget", "org.robolectric.bytecode.AClassToRemember");
+            map.put(AClassToForget.class.getName(), AClassToRemember.class.getName());
             return map;
         }
 

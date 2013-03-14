@@ -1,4 +1,4 @@
-package org.robolectric.bytecode;
+package org.robolectric.bytecode.testing;
 
 public class AClassToForget {
     public String memorableMethod() {

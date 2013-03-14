@@ -6,6 +6,8 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
+import org.robolectric.bytecode.testing.Foo;
+import org.robolectric.bytecode.testing.ShadowFoo;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
@@ -210,7 +212,7 @@ public class ShadowWranglerTest {
     public static class ShadowFooParent {
         @RealObject
         private Foo realFoo;
-        Foo realFooInParentConstructor;
+        public Foo realFooInParentConstructor;
 
         public void __constructor__(String name) {
             realFooInParentConstructor = realFoo;

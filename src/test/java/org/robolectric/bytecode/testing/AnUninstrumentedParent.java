@@ -1,4 +1,4 @@
-package org.robolectric.bytecode;
+package org.robolectric.bytecode.testing;
 
 import org.robolectric.internal.DoNotInstrument;
 
