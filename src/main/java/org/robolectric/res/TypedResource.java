@@ -20,4 +20,15 @@ public class TypedResource<T> {
     public String asString() {
         return ((String) getData());
     }
+
+    public boolean isFile() {
+        return false;
+    }
+
+    @Override public String toString() {
+        return getClass().getSimpleName() + "{" +
+                "data=" + data +
+                ", resType=" + resType +
+                '}';
+    }
 }

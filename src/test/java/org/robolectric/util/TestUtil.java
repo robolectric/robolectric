@@ -1,12 +1,16 @@
 package org.robolectric.util;
 
+import android.content.res.Resources;
 import org.robolectric.AndroidManifest;
 import org.robolectric.MavenCentral;
 import org.robolectric.R;
 import org.robolectric.SdkConfig;
+import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
+import org.robolectric.shadows.ShadowResources;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -26,6 +30,7 @@ public abstract class TestUtil {
     public static final ResourcePath TEST_RESOURCE_PATH = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
     public static final String SYSTEM_PACKAGE = android.R.class.getPackage().getName();
     public static final String TEST_PACKAGE = R.class.getPackage().getName();
+    public static final String TEST_PACKAGE_NS = ResourceLoader.ANDROID_RES_NS_PREFIX + R.class.getPackage().getName();
     public static File testDirLocation;
 
     public static void assertEquals(Collection<?> expected, Collection<?> actual) {
@@ -132,5 +137,13 @@ public abstract class TestUtil {
             file = new File(file, part);
         }
         return file.getPath();
+    }
+
+    public static Resources createResourcesFor(ResourceLoader resourceLoader) {
+        return ShadowResources.createFor(resourceLoader);
+    }
+
+    public static Resources emptyResources() {
+        return ShadowResources.createFor(new EmptyResourceLoader());
     }
 }

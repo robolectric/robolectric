@@ -1,6 +1,6 @@
 package org.robolectric.res;
 
-import android.view.View;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 
 import java.io.InputStream;
@@ -27,7 +27,7 @@ public class RoutingResourceLoader implements ResourceLoader {
         return pickFor(id).getNameForId(id);
     }
 
-    @Override public TypedResource getValue(ResName resName, String qualifiers) {
+    @Override public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
         return pickFor(resName).getValue(resName, qualifiers);
     }
 
@@ -71,14 +71,8 @@ public class RoutingResourceLoader implements ResourceLoader {
         return pickFor(resName).getMenuNode(resName, qualifiers);
     }
 
-    @Override
-    public boolean hasAttributeFor(Class<? extends View> viewClass, String namespace, String attribute) {
-        return pickFor(namespace).hasAttributeFor(viewClass, namespace, attribute);
-    }
-
-    @Override
-    public String convertValueToEnum(Class<? extends View> viewClass, String namespace, String attribute, String part) {
-        return pickFor(namespace).convertValueToEnum(viewClass, namespace, attribute, part);
+    @Override public boolean providesFor(String namespace) {
+        return whichProvidesFor(namespace) != null;
     }
 
     private ResourceLoader pickFor(int id) {
@@ -97,9 +91,20 @@ public class RoutingResourceLoader implements ResourceLoader {
         }
         ResourceLoader resourceLoader = resourceLoaders.get(namespace);
         if (resourceLoader == null) {
+            resourceLoader = whichProvidesFor(namespace);
+            if (resourceLoader != null) return resourceLoader;
             throw new RuntimeException("no ResourceLoader found for " + namespace);
         }
         return resourceLoader;
+    }
+
+    private ResourceLoader whichProvidesFor(String namespace) {
+        for (ResourceLoader loader : resourceLoaders.values()) {
+            if (loader.providesFor(namespace)) {
+                return loader;
+            }
+        }
+        return null;
     }
 
     private static class NullResourceLoader extends XResourceLoader {
@@ -113,6 +118,10 @@ public class RoutingResourceLoader implements ResourceLoader {
         @Override
         public String getNameForId(int id) {
             return null;
+        }
+
+        @Override public boolean providesFor(String namespace) {
+            return true;
         }
     }
 }

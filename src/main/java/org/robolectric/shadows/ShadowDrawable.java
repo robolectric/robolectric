@@ -1,9 +1,15 @@
 package org.robolectric.shadows;
 
+import android.content.res.Resources;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.NinePatch;
 import android.graphics.Rect;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.NinePatchDrawable;
+import android.util.DisplayMetrics;
+import android.util.TypedValue;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
@@ -12,6 +18,8 @@ import org.robolectric.internal.RealObject;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+import static org.fest.reflect.core.Reflection.method;
+import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -21,7 +29,7 @@ public class ShadowDrawable {
     private static int defaultIntrinsicHeight = -1;
     static ArrayList<String> corruptStreamSources = new ArrayList<String>();
 
-    @RealObject Drawable realObject;
+    @RealObject Drawable realDrawable;
 
     private Rect bounds = new Rect(0, 0, 0, 0);
     private int intrinsicWidth = defaultIntrinsicWidth;
@@ -44,6 +52,44 @@ public class ShadowDrawable {
         return drawable;
     }
 
+    @Implementation // todo: this sucks, it's all just so we can detect 9-patches
+    public static Drawable createFromResourceStream(Resources res, TypedValue value,
+                                                    InputStream is, String srcName, BitmapFactory.Options opts) {
+        if (is == null) {
+            return null;
+        }
+        Rect pad = new Rect();
+        if (opts == null) opts = new BitmapFactory.Options();
+        opts.inScreenDensity = DisplayMetrics.DENSITY_DEFAULT;
+
+        Bitmap  bm = BitmapFactory.decodeResourceStream(res, value, is, pad, opts);
+        if (bm != null) {
+            boolean isNinePatch = srcName.contains(".9.");
+            if (isNinePatch) {
+                method("setNinePatchChunk").withParameterTypes(byte[].class).in(bm).invoke(new byte[0]);
+            }
+
+            byte[] np = bm.getNinePatchChunk();
+            if (np == null || !NinePatch.isNinePatchChunk(np)) {
+                np = null;
+                pad = null;
+            }
+            int[] layoutBounds = method("getLayoutBounds").withReturnType(int[].class).in(bm).invoke();
+            Rect layoutBoundsRect = null;
+            if (layoutBounds != null) {
+                layoutBoundsRect = new Rect(layoutBounds[0], layoutBounds[1],
+                        layoutBounds[2], layoutBounds[3]);
+            }
+            if (np != null) {
+                // todo: wrong
+                return new NinePatchDrawable(res, bm, np, pad, /*layoutBoundsRect,*/ srcName);
+            }
+
+            return new BitmapDrawable(res, bm);
+        }
+        return null;
+    }
+
     @Implementation
     public static Drawable createFromPath(String pathName) {
         BitmapDrawable drawable = new BitmapDrawable(Robolectric.newInstanceOf(Bitmap.class));
@@ -57,6 +103,7 @@ public class ShadowDrawable {
         shadowOf(bitmap).createdFromResId = resourceId;
         BitmapDrawable drawable = new BitmapDrawable(bitmap);
         shadowOf(drawable).validate(); // start off not invalidated
+        shadowOf(drawable).setLoadedFromResourceId(resourceId);
         return drawable;
     }
 
@@ -141,8 +188,8 @@ public class ShadowDrawable {
 
     @Override @Implementation
     public boolean equals(Object o) {
-        if (realObject == o) return true;
-        if (o == null || realObject.getClass() != o.getClass()) return false;
+        if (realDrawable == o) return true;
+        if (o == null || realDrawable.getClass() != o.getClass()) return false;
 
         ShadowDrawable that = shadowOf((Drawable) o);
 
@@ -164,11 +211,13 @@ public class ShadowDrawable {
     @Implementation
     public void setAlpha(int alpha) {
         this.alpha = alpha;
+        // todo: directlyOn(realDrawable, Drawable.class).invalidateSelf();
     }
 
     @Implementation
     public void invalidateSelf() {
         wasInvalidated = true;
+        directlyOn(realDrawable, Drawable.class, "invalidateSelf").invoke();
     }
 
     public int getAlpha() {

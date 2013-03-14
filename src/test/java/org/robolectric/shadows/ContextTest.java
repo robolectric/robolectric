@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.res.Resources;
 import android.content.res.TypedArray;
 import org.junit.After;
 import org.junit.Before;
@@ -13,6 +14,7 @@ import org.robolectric.res.Attribute;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.CustomView;
+import org.robolectric.util.TestUtil;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -266,24 +268,25 @@ public class ContextTest {
     @Test
     public void obtainStyledAttributes_shouldExtractAttributesFromAttributeSet() throws Exception {
         ResourceLoader resourceLoader = new PackageResourceLoader(TEST_RESOURCE_PATH);
+        Resources resources = TestUtil.createResourcesFor(resourceLoader);
 
         RoboAttributeSet roboAttributeSet = new RoboAttributeSet(asList(
                 new Attribute(TEST_PACKAGE + ":attr/itemType", "ungulate", TEST_PACKAGE),
                 new Attribute(TEST_PACKAGE + ":attr/scrollBars", "horizontal|vertical", TEST_PACKAGE),
-                new Attribute(TEST_PACKAGE + ":attr/keycode", "^q", TEST_PACKAGE),
+                new Attribute(TEST_PACKAGE + ":attr/quitKeyCombo", "^q", TEST_PACKAGE),
                 new Attribute(TEST_PACKAGE + ":attr/aspectRatio", "1.5", TEST_PACKAGE),
                 new Attribute(TEST_PACKAGE + ":attr/aspectRatioEnabled", "true", TEST_PACKAGE)
-        ), resourceLoader, CustomView.class);
+        ), resources, CustomView.class);
 
         TypedArray a = context.obtainStyledAttributes(roboAttributeSet, R.styleable.CustomView);
         assertThat(a.getInt(R.styleable.CustomView_itemType, -1234)).isEqualTo(1 /* ungulate */);
         assertThat(a.getInt(R.styleable.CustomView_scrollBars, -1234)).isEqualTo(0x300);
-        assertThat(a.getString(R.styleable.CustomView_keycode)).isEqualTo("^q");
-        assertThat(a.getText(R.styleable.CustomView_keycode).toString()).isEqualTo("^q");
+        assertThat(a.getString(R.styleable.CustomView_quitKeyCombo)).isEqualTo("^q");
+        assertThat(a.getText(R.styleable.CustomView_quitKeyCombo).toString()).isEqualTo("^q");
         assertThat(a.getFloat(R.styleable.CustomView_aspectRatio, 1f)).isEqualTo(1.5f);
         assertThat(a.getBoolean(R.styleable.CustomView_aspectRatioEnabled, false)).isTrue();
 
-        TypedArray typedArray = context.obtainStyledAttributes(roboAttributeSet, new int[]{R.id.keycode, R.id.itemType});
+        TypedArray typedArray = context.obtainStyledAttributes(roboAttributeSet, new int[]{R.attr.quitKeyCombo, R.attr.itemType});
         assertThat(typedArray.getString(0)).isEqualTo("^q");
         assertThat(typedArray.getInt(1, -1234)).isEqualTo(1 /* ungulate */);
     }

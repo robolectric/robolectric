@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.jetbrains.annotations.NotNull;
 
 public class ResBunch {
     private final Map<String, ResMap<TypedResource>> types = new LinkedHashMap<String, ResMap<TypedResource>>();
@@ -26,12 +27,12 @@ public class ResBunch {
         return valuesMap;
     }
 
-    public TypedResource get(ResName resName, String qualifiers) {
+    public TypedResource get(@NotNull ResName resName, String qualifiers) {
         Value value = getValue(resName, qualifiers);
         return value == null ? null : value.value;
     }
 
-    public Value getValue(ResName resName, String qualifiers) {
+    public Value getValue(@NotNull ResName resName, String qualifiers) {
         ResMap<TypedResource> valuesMap = getValuesMap(resName.type);
         Values values = valuesMap.find(resName);
         return (values != null) ? pick(values, qualifiers) : null;

@@ -13,6 +13,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -172,7 +173,7 @@ public class ViewGroupTest {
         assertThat(child3.findViewWithTag("tag2")).isSameAs(child3b);
     }
 
-    @Test
+    @Test @Ignore("This doesn't actually match Android's behavior, at least in Jelly Bean.")
     public void shouldFindViewWithTag_whenViewGroupOverridesGetTag() throws Exception {
         ViewGroup viewGroup = new LinearLayout(Robolectric.application) {
             @Override
@@ -185,19 +186,28 @@ public class ViewGroupTest {
 
     @Test
     public void hasFocus_shouldReturnTrueIfAnyChildHasFocus() throws Exception {
+        makeFocusable(root, child1, child2, child3, child3a, child3b);
         assertFalse(root.hasFocus());
 
         child1.requestFocus();
         assertTrue(root.hasFocus());
 
         child1.clearFocus();
-        assertFalse(root.hasFocus());
+        assertFalse(child1.hasFocus());
+        assertTrue(root.hasFocus());
 
         child3b.requestFocus();
         assertTrue(root.hasFocus());
 
         child3b.clearFocus();
-        assertFalse(root.hasFocus());
+        assertFalse(child3b.hasFocus());
+        assertFalse(child3.hasFocus());
+        assertTrue(root.hasFocus());
+
+        child2.requestFocus();
+        assertFalse(child3.hasFocus());
+        assertTrue(child2.hasFocus());
+        assertTrue(root.hasFocus());
 
         root.requestFocus();
         assertTrue(root.hasFocus());
@@ -381,6 +391,12 @@ public class ViewGroupTest {
         viewGroup.setOnHierarchyChangeListener(testListener);
         viewGroup.removeAllViews();
         assertTrue(testListener.wasCalled());
+    }
+
+    private void makeFocusable(View... views) {
+        for (View view : views) {
+            view.setFocusable(true);
+        }
     }
 
     class TestOnHierarchyChangeListener implements ViewGroup.OnHierarchyChangeListener {

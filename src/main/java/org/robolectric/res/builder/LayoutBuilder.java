@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.robolectric.Robolectric.shadowOf;
+import static org.robolectric.res.ResourceLoader.ANDROID_NS;
 
 public class LayoutBuilder {
     public static final ResName ATTR_LAYOUT = new ResName(":attr/layout");
@@ -36,8 +37,7 @@ public class LayoutBuilder {
         if (viewNode.isInclude()) {
             List<Attribute> viewNodeAttributes = viewNode.getAttributes();
             Attribute layoutAttribute = Attribute.find(viewNodeAttributes, ATTR_LAYOUT);
-            ResName resName = new ResName(layoutAttribute.qualifiedValue());
-            return inflateView(context, resName, viewNodeAttributes, parent, qualifiers);
+            return inflateView(context, layoutAttribute.getResourceReference(), viewNodeAttributes, parent, qualifiers);
         } else {
             View view = create(viewNode, context, parent);
 
@@ -136,8 +136,8 @@ public class LayoutBuilder {
 
         FragmentActivity activity = (FragmentActivity) context;
 
-        String tag = attributeSet.getAttributeValue("android", "tag");
-        int id = attributeSet.getAttributeResourceValue("android", "id", 0);
+        String tag = attributeSet.getAttributeValue(ANDROID_NS, "tag");
+        int id = attributeSet.getAttributeResourceValue(ANDROID_NS, "id", 0);
         // TODO: this should probably be changed to call TestFragmentManager.addFragment so that the
         // inflated fragments don't get started twice (once in the commit, and once in ShadowFragmentActivity's
         // onStart()

@@ -39,15 +39,15 @@ public class ShadowPaint {
     private float textSize;
 
     public void __constructor__(int flags) {
-    	this.flags = flags;
-    	antiAlias = ( flags & Paint.ANTI_ALIAS_FLAG ) == Paint.ANTI_ALIAS_FLAG;   
+        this.flags = flags;
+        antiAlias = (flags & Paint.ANTI_ALIAS_FLAG) == Paint.ANTI_ALIAS_FLAG;
     }
-    
+
     @Implementation
     public int getFlags() {
-    	return flags;
+        return flags;
     }
-    
+
     @Implementation
     public Shader setShader(Shader shader) {
         this.shader = shader;
@@ -222,25 +222,25 @@ public class ShadowPaint {
         this.filter = filter;
         return filter;
     }
-    
+
     @Implementation
     public void setAntiAlias(boolean antiAlias) {
-    	this.antiAlias = antiAlias;
+        this.antiAlias = antiAlias;
     }
-    
+
     @Implementation
     public void setDither(boolean dither) {
-    	this.dither = dither;
+        this.dither = dither;
     }
-    
+
     @Implementation
     public final boolean isDither() {
-    	return dither;
+        return dither;
     }
-    
+
     @Implementation
     public final boolean isAntiAlias() {
-    	return antiAlias;
+        return antiAlias;
     }
 
     @Implementation

@@ -1,37 +1,49 @@
 package org.robolectric.shadows;
 
 import android.content.res.AssetManager;
-import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
+import android.util.LongSparseArray;
+import android.util.TypedValue;
 import android.view.Display;
+import org.jetbrains.annotations.NotNull;
 import org.robolectric.Robolectric;
+import org.robolectric.internal.HiddenApi;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 import org.robolectric.res.Attribute;
 import org.robolectric.res.DrawableNode;
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.Plural;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResType;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.Style;
 import org.robolectric.res.TypedResource;
+import org.robolectric.res.XmlFileLoader;
 import org.robolectric.res.builder.DrawableBuilder;
 import org.robolectric.res.builder.XmlFileBuilder;
 import org.w3c.dom.Document;
 
 import java.io.InputStream;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
+import static org.fest.reflect.core.Reflection.field;
 import static org.robolectric.Robolectric.directlyOn;
-import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
 
 /**
@@ -42,6 +54,7 @@ import static org.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Resources.class)
 public class ShadowResources {
+    private static boolean DEBUG = false;
     private static Resources system = null;
 
     private float density = 1.0f;
@@ -49,7 +62,22 @@ public class ShadowResources {
     private Display display;
     @RealObject Resources realResources;
     private ResourceLoader resourceLoader;
-    private ResourceIndex resourceIndex;
+
+    public static void reset() {
+        for (Field field : Resources.class.getDeclaredFields()) {
+            if (Modifier.isStatic(field.getModifiers()) && field.getType().equals(LongSparseArray.class)) {
+                try {
+                    field.setAccessible(true);
+                    LongSparseArray longSparseArray = (LongSparseArray) field.get(null);
+                    if (longSparseArray != null) {
+                        longSparseArray.clear();
+                    }
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
 
     public static void setSystemResources(ResourceLoader systemResourceLoader) {
         AssetManager assetManager = Robolectric.newInstanceOf(AssetManager.class);
@@ -67,52 +95,199 @@ public class ShadowResources {
     }
 
     @Implementation
+    public static Resources getSystem() {
+        return system;
+    }
+
+    public static Resources createFor(ResourceLoader resourceLoader) {
+        AssetManager assetManager = ShadowAssetManager.bind(Robolectric.newInstanceOf(AssetManager.class), null, resourceLoader);
+        return bind(new Resources(assetManager, new DisplayMetrics(), new Configuration()), resourceLoader);
+    }
+
+    private TypedArray attrsToTypedArray(AttributeSet set, int[] attrs, int defStyleAttr, int themeResourceId, int defStyleRes) {
+            /*
+             * When determining the final value of a particular attribute, there are four inputs that come into play:
+             *
+             * 1. Any attribute values in the given AttributeSet.
+             * 2. The style resource specified in the AttributeSet (named "style").
+             * 3. The default style specified by defStyleAttr and defStyleRes
+             * 4. The base values in this theme.
+             */
+        ResourceLoader resourceLoader = getResourceLoader();
+        ShadowAssetManager shadowAssetManager = shadowOf(realResources.getAssets());
+        String qualifiers = shadowAssetManager.getQualifiers();
+
+        if (set == null) {
+            set = new RoboAttributeSet(new ArrayList<Attribute>(), realResources, null);
+        }
+        Style defStyleFromAttr = null;
+        Style defStyleFromRes = null;
+        Style theme = null;
+
+        if (themeResourceId != 0) {
+            // Load the style for the theme we represent. E.g. "@style/Theme.Robolectric"
+            ResName themeStyleName = getResName(themeResourceId);
+            if (DEBUG) System.out.println("themeStyleName = " + themeStyleName);
+
+            theme = ShadowAssetManager.resolveStyle(resourceLoader, themeStyleName, shadowAssetManager.getQualifiers());
+
+            if (defStyleAttr != 0) {
+                // Load the theme attribute for the default style attributes. E.g., attr/buttonStyle
+                ResName defStyleName = getResName(defStyleAttr);
+
+                // Load the style for the default style attribute. E.g. "@style/Widget.Robolectric.Button";
+                Attribute defStyleAttribute = theme.getAttrValue(defStyleName);
+                if (defStyleAttribute != null) {
+                    while (defStyleAttribute.isStyleReference()) {
+                        Attribute other = theme.getAttrValue(defStyleAttribute.getStyleReference());
+                        if (other == null) {
+                            throw new RuntimeException("couldn't dereference " + defStyleAttribute);
+                        }
+                        defStyleAttribute = other;
+
+                        // todo
+                        System.out.println("TODO: Not handling " + defStyleAttribute + " yet in ShadowResouces!");
+                    }
+
+                    if (defStyleAttribute.isResourceReference()) {
+                        ResName defStyleResName = defStyleAttribute.getResourceReference();
+                        defStyleFromAttr = ShadowAssetManager.resolveStyle(resourceLoader, defStyleResName, shadowAssetManager.getQualifiers());
+                    }
+                }
+            }
+        }
+
+        if (defStyleRes != 0) {
+            ResName resName = getResName(defStyleRes);
+            if (resName.type.equals("attr")) {
+                Attribute attributeValue = findAttributeValue(getResName(defStyleRes), set, defStyleFromAttr, defStyleFromAttr, theme);
+                if (attributeValue != null && attributeValue.isStyleReference()) {
+                    resName = theme.getAttrValue(attributeValue.getStyleReference()).getResourceReference();
+                }
+            }
+            defStyleFromRes = ShadowAssetManager.resolveStyle(resourceLoader, resName, shadowAssetManager.getQualifiers());
+        }
+
+        List<Attribute> attributes = new ArrayList<Attribute>();
+        if (attrs == null) attrs = new int[0];
+        for (int attr : attrs) {
+            ResName attrName = tryResName(attr); // todo probably getResName instead here?
+            if (attrName == null) continue;
+
+            Attribute attribute = findAttributeValue(attrName, set, defStyleFromAttr, defStyleFromRes, theme);
+            while (attribute != null && attribute.isStyleReference()) {
+                ResName otherAttrName = attribute.getStyleReference();
+                if (theme == null) throw new RuntimeException("no theme, but trying to look up " + otherAttrName);
+                attribute = theme.getAttrValue(otherAttrName);
+                if (attribute != null) {
+                    attribute = new Attribute(attrName, attribute.value, attribute.contextPackageName);
+                }
+            }
+
+            if (attribute != null) {
+                Attribute.put(attributes, attribute);
+            }
+        }
+
+        return ShadowTypedArray.create(realResources, attributes, attrs);
+    }
+
+    private Attribute findAttributeValue(ResName attrName, AttributeSet attributeSet, Style defStyleFromAttr, Style defStyleFromRes, Style theme) {
+        String attrValue = attributeSet.getAttributeValue(attrName.getNamespaceUri(), attrName.name);
+        if (attrValue != null) {
+            if (DEBUG) System.out.println("Got " + attrName + " from attr: " + attrValue);
+            return new Attribute(attrName, attrValue, "fixme!!!");
+        }
+
+        // todo: check for style attribute...
+
+        // else if attr in defStyleFromAttr, use its value
+        if (defStyleFromAttr != null) {
+            Attribute attribute = defStyleFromAttr.getAttrValue(attrName);
+            if (attribute != null) {
+                if (DEBUG) System.out.println("Got " + attrName + " from defStyleFromAttr: " + attribute);
+                return attribute;
+            }
+        }
+
+        if (defStyleFromRes != null) {
+            Attribute attribute = defStyleFromRes.getAttrValue(attrName);
+            if (attribute != null) {
+                if (DEBUG) System.out.println("Got " + attrName + " from defStyleFromRes: " + attribute);
+                return attribute;
+            }
+        }
+
+        // else if attr in theme, use its value
+        if (theme != null) {
+            Attribute attribute = theme.getAttrValue(attrName);
+            if (attribute != null) {
+                if (DEBUG) System.out.println("Got " + attrName + " from theme: " + attribute);
+                return attribute;
+            }
+        }
+
+        return null;
+    }
+
+    @Implementation
+    public TypedArray obtainAttributes(AttributeSet set, int[] attrs) {
+        return attrsToTypedArray(set, attrs, 0, 0, 0);
+    }
+
+    @Implementation
     public void updateConfiguration(Configuration config, DisplayMetrics metrics) {
         shadowOf(realResources.getAssets()).setQualifiers(shadowOf(config).getQualifiers());
         directlyOn(realResources, Resources.class).updateConfiguration(config, metrics);
     }
 
-//    todo: should implement this:
-//    @Implementation
-//    public void updateConfiguration(Configuration config, DisplayMetrics metrics, CompatibilityInfo compat) {
-//    }
-
     @Implementation
     public int getIdentifier(String name, String defType, String defPackage) {
         ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
+        ResName resName = ResName.qualifyResName(name, defPackage, defType);
+        Integer resourceId = resourceIndex.getResourceId(resName);
+        if (resourceId == null) return 0;
+        return resourceId;
+    }
 
-        // Probably ResName should be refactored to accept partial names.
-        // ResName should act as a qualifiedName parser in this case.
-        if (!name.contains("/") && defType != null) {
-            name = defType + "/" + name;
-        }
+    @Implementation
+    public String getResourceName(int resId) throws Resources.NotFoundException {
+        return getResName(resId).getFullyQualifiedName();
+    }
 
-        Integer index = ResName.getResourceId(resourceIndex, name, defPackage);
-        if (index == null) {
-            return 0;
-        }
-        return index;
+    @Implementation
+    public String getResourcePackageName(int resId) throws Resources.NotFoundException {
+        return getResName(resId).namespace;
+    }
+
+    @Implementation
+    public String getResourceTypeName(int resId) throws Resources.NotFoundException {
+        return getResName(resId).type;
+    }
+
+    @Implementation
+    public String getResourceEntryName(int resId) throws Resources.NotFoundException {
+        return getResName(resId).name;
     }
 
     private boolean isEmpty(String s) {
         return s == null || s.length() == 0;
     }
 
-    private ResName getResName(int id) {
+    private @NotNull ResName getResName(int id) {
         ResName resName = resourceLoader.getResourceIndex().getResName(id);
         if (resName == null) {
-            throw new Resources.NotFoundException("couldn't find a name for resource id " + id);
+            throw new Resources.NotFoundException("Unable to find resource ID #0x" + Integer.toHexString(id));
         }
         return resName;
     }
 
-    private String getQualifiers() {
-        return shadowOf(realResources.getConfiguration()).getQualifiers();
+    private ResName tryResName(int id) {
+        return resourceLoader.getResourceIndex().getResName(id);
     }
 
-    @Implementation
-    public ColorStateList getColorStateList(int id) {
-        return new ColorStateList(new int[0][0], new int[0]);
+    private String getQualifiers() {
+        return shadowOf(realResources.getConfiguration()).getQualifiers();
     }
 
     @Implementation
@@ -164,41 +339,24 @@ public class ShadowResources {
     }
 
     @Implementation
-    public Drawable getDrawable(int drawableResourceId) throws Resources.NotFoundException {
-        ResName resName = getResName(drawableResourceId);
-        String qualifiers = getQualifiers();
-        DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, qualifiers);
-        final DrawableBuilder drawableBuilder = new DrawableBuilder(getResourceLoader().getResourceIndex());
-        return drawableBuilder.getDrawable(resName, realResources, drawableNode);
-    }
-
-    private static final String[] UNITS = {"dp", "dip", "pt", "px", "sp"};
-    Float temporaryDimenConverter(String rawValue) {
-        int end = rawValue.length();
-        for (String unit : UNITS) {
-            int index = rawValue.indexOf(unit);
-            if (index >= 0 && end > index) {
-                end = index;
-            }
-        }
-
-        return Float.parseFloat(rawValue.substring(0, end));
-    }
-
-    @Implementation
     public XmlResourceParser getXml(int id) throws Resources.NotFoundException {
-        Document document = resourceLoader.getXml(getResName(id), getQualifiers());
+        ResName resName = getResName(id);
+        Document document = resourceLoader.getXml(resName, getQualifiers());
         if (document == null) {
             throw new Resources.NotFoundException();
         }
-        XmlFileBuilder xmlFileBuilder = new XmlFileBuilder();
-        XmlResourceParser parser = xmlFileBuilder.getXml(document);
-        return parser;
+        return new XmlFileBuilder().getXml(document, resName.getFullyQualifiedName(), resName.namespace, realResources);
     }
 
-    @Implementation
-    public final android.content.res.Resources.Theme newTheme() {
-        return inject(realResources, newInstanceOf(Resources.Theme.class));
+    @HiddenApi @Implementation
+    public XmlResourceParser loadXmlResourceParser(String file, int id, int assetCookie, String type) throws Resources.NotFoundException {
+        FsFile fsFile = Fs.fileFromPath(file);
+        Document document = new XmlFileLoader(null).parse(fsFile);
+        if (document == null) {
+            throw new Resources.NotFoundException(notFound(id));
+        }
+        String packageName = getResName(id).namespace;
+        return new XmlFileBuilder().getXml(document, fsFile.getPath(), packageName, realResources);
     }
 
     public ResourceLoader getResourceLoader() {
@@ -210,11 +368,23 @@ public class ShadowResources {
     }
 
     @Implements(Resources.Theme.class)
-    public static class ShadowTheme implements UsesResources {
+    public static class ShadowTheme {
+        @RealObject Resources.Theme realTheme;
         protected Resources resources;
+        private int styleResourceId;
 
-        public void injectResources(Resources resources) {
-            this.resources = resources;
+        @Implementation
+        public void applyStyle(int resid, boolean force) {
+            this.styleResourceId = resid;
+        }
+
+        @Implementation
+        public void setTo(Resources.Theme other) {
+            this.styleResourceId = shadowOf(other).styleResourceId;
+        }
+
+        public int getStyleResourceId() {
+            return styleResourceId;
         }
 
         @Implementation
@@ -224,22 +394,54 @@ public class ShadowResources {
 
         @Implementation
         public TypedArray obtainStyledAttributes(int resid, int[] attrs) throws android.content.res.Resources.NotFoundException {
-            return obtainStyledAttributes(null, attrs, 0, 0);
+            return obtainStyledAttributes(null, attrs, 0, resid);
         }
 
         @Implementation
         public TypedArray obtainStyledAttributes(AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
-            if (set == null) {
-                set = new RoboAttributeSet(new ArrayList<Attribute>(), shadowOf(resources).getResourceLoader(), null);
-            }
+            return shadowOf(getResources()).attrsToTypedArray(set, attrs, defStyleAttr, styleResourceId, defStyleRes);
+        }
 
-            return ShadowTypedArray.create(resources, set, attrs);
+        Resources getResources() {
+            // ugh
+            return field("this$0").ofType(Resources.class).in(realTheme).get();
         }
     }
 
     @Implementation
-    public static Resources getSystem() {
-        return system;
+    public final Resources.Theme newTheme() {
+        Resources.Theme theme = directlyOn(realResources, Resources.class).newTheme();
+        int themeId = field("mTheme").ofType(int.class).in(theme).get();
+        shadowOf(realResources.getAssets()).setTheme(themeId, theme);
+        return theme;
+    }
+
+    @HiddenApi @Implementation
+    public Drawable loadDrawable(TypedValue value, int id) {
+        ResName resName = tryResName(id);
+        if (resName != null && resName.type.equals("anim")) {
+            DrawableNode drawableNode = resourceLoader.getDrawableNode(resName, getQualifiers());
+            Drawable drawable = new DrawableBuilder(resourceLoader.getResourceIndex())
+                    .getXmlDrawable(realResources, (DrawableNode.Xml) drawableNode, resName);
+            shadowOf(drawable).setLoadedFromResourceId(id);
+            return drawable;
+        }
+
+        Drawable drawable = (Drawable) directlyOn(realResources, Resources.class, "loadDrawable", TypedValue.class, int.class).invoke(value, id);
+        // todo: this kinda sucks, find some better way...
+        if (drawable != null) {
+            shadowOf(drawable).setLoadedFromResourceId(id);
+            if (drawable instanceof BitmapDrawable) {
+                Bitmap bitmap = ((BitmapDrawable) drawable).getBitmap();
+                if (bitmap != null) {
+                    ShadowBitmap shadowBitmap = shadowOf(bitmap);
+                    if (shadowBitmap.createdFromResId == -1) {
+                        shadowBitmap.setCreatedFromResId(id, resName);
+                    }
+                }
+            }
+        }
+        return drawable;
     }
 
     public static <T> T inject(Resources resources, T instance) {

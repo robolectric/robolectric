@@ -94,17 +94,16 @@ public class ContextWrapperTest {
 
         new ContextWrapper(Robolectric.application).unregisterReceiver(receiver);
     }
-	
-	@Test
-	public void broadcasts_shouldBeLogged() {
-		Intent broadcastIntent = new Intent("foo");
-		contextWrapper.sendBroadcast(broadcastIntent);
-		
-		List<Intent> broadcastIntents = shadowOf(contextWrapper).getBroadcastIntents();
-		assertTrue(broadcastIntents.size() == 1);
-		assertEquals(broadcastIntent, broadcastIntents.get(0));
-	}
-	
+
+    @Test
+    public void broadcasts_shouldBeLogged() {
+        Intent broadcastIntent = new Intent("foo");
+        contextWrapper.sendBroadcast(broadcastIntent);
+
+        List<Intent> broadcastIntents = shadowOf(contextWrapper).getBroadcastIntents();
+        assertTrue(broadcastIntents.size() == 1);
+        assertEquals(broadcastIntent, broadcastIntents.get(0));
+    }
 
     @Test
     public void shouldReturnSameApplicationEveryTime() throws Exception {
@@ -156,13 +155,14 @@ public class ContextWrapperTest {
     @Test
     public void shouldReturnAContext() {
         assertThat(contextWrapper.getBaseContext()).isNotNull();
-    	ShadowContextWrapper shContextWrapper = Robolectric.shadowOf(contextWrapper);
-    	shContextWrapper.attachBaseContext(null);
+
+        contextWrapper = new ContextWrapper(null);
+        shadowOf(contextWrapper).callAttachBaseContext(null);
         assertThat(contextWrapper.getBaseContext()).isNull();
 
-    	Activity baseContext = new Activity();
-    	shContextWrapper.attachBaseContext(baseContext);
-        assertThat(contextWrapper.getBaseContext()).isSameAs((Context) baseContext);
+        Activity baseContext = new Activity();
+        shadowOf(contextWrapper).callAttachBaseContext(baseContext);
+        assertThat(contextWrapper.getBaseContext()).isSameAs(baseContext);
     }
 
     private void assertSameInstanceEveryTime(String serviceName) {

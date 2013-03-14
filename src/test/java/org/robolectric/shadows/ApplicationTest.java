@@ -117,21 +117,14 @@ public class ApplicationTest {
 
     @Test
     public void packageManager_shouldKnowPackageName() throws Exception {
-        AndroidManifest appManifest = newConfigWith("com.wacka.wa", "");
-        Application application = new DefaultTestLifecycle().createApplication(null, appManifest);
-        shadowOf(application).bind(appManifest, null);
-
-        assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo("com.wacka.wa", 0).packageName);
+        assertThat(Robolectric.application.getPackageManager().getApplicationInfo("org.robolectric", 0).packageName)
+                .isEqualTo("org.robolectric");
     }
 
     @Test
     public void packageManager_shouldKnowApplicationName() throws Exception {
-        AndroidManifest appManifest = newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>");
-        Application application = new DefaultTestLifecycle().createApplication(null, appManifest);
-        shadowOf(application).bind(appManifest, null);
-
-        assertEquals("org.robolectric.TestApplication",
-                application.getPackageManager().getApplicationInfo("org.robolectric", 0).name);
+        assertThat(Robolectric.application.getPackageManager().getApplicationInfo("org.robolectric", 0).name)
+                .isEqualTo("org.robolectric.TestApplication");
     }
 
     @Test

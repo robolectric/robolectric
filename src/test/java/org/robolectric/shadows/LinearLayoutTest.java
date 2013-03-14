@@ -23,13 +23,6 @@ public class LinearLayoutTest {
     }
 
     @Test
-    public void getLayoutParams_shouldReturnLinearLayoutParams() throws Exception {
-        ViewGroup.LayoutParams layoutParams = linearLayout.getLayoutParams();
-
-        assertThat(layoutParams).isInstanceOf(LinearLayout.LayoutParams.class);
-    }
-
-    @Test
     public void getLayoutParams_shouldReturnTheSameLinearLayoutParamsFromTheSetter() throws Exception {
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(1, 2);
         linearLayout.setLayoutParams(params);

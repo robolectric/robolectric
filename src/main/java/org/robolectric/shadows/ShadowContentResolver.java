@@ -16,6 +16,7 @@ import android.os.Bundle;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
+import org.robolectric.internal.NamedStream;
 import org.robolectric.tester.android.database.TestCursor;
 
 import java.io.IOException;
@@ -87,17 +88,7 @@ public class ShadowContentResolver {
             }
         }
 
-        return new InputStream() {
-            @Override
-            public int read() throws IOException {
-                throw new UnsupportedOperationException();
-            }
-
-            @Override
-            public String toString() {
-                return "stream for " + uri;
-            }
-        };
+        return new MyInputStream(uri);
     }
     
     @Implementation
@@ -486,6 +477,24 @@ public class ShadowContentResolver {
 
         public String[] getSelectionArgs() {
             return selectionArgs;
+        }
+    }
+
+    private static class MyInputStream extends InputStream implements NamedStream {
+        private final Uri uri;
+
+        public MyInputStream(Uri uri) {
+            this.uri = uri;
+        }
+
+        @Override
+        public int read() throws IOException {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public String toString() {
+            return "stream for " + uri;
         }
     }
 }

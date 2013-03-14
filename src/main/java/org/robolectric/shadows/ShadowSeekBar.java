@@ -1,11 +1,12 @@
 package org.robolectric.shadows;
 
 import android.widget.SeekBar;
+import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 
-@Implements(value = SeekBar.class, inheritImplementationMethods = true)
+@Implements(value = SeekBar.class)
 public class ShadowSeekBar extends ShadowAbsSeekBar {
 
     @RealObject
@@ -16,15 +17,7 @@ public class ShadowSeekBar extends ShadowAbsSeekBar {
     @Implementation
     public void setOnSeekBarChangeListener(SeekBar.OnSeekBarChangeListener listener) {
         this.listener = listener;
-    }
-
-    @Override
-    @Implementation
-    public void setProgress(int progress) {
-        super.setProgress(progress);
-        if (listener != null) {
-            listener.onProgressChanged(realSeekBar, progress, true);
-        }
+        Robolectric.directlyOn(realSeekBar, SeekBar.class).setOnSeekBarChangeListener(listener);
     }
 
     public SeekBar.OnSeekBarChangeListener getOnSeekBarChangeListener() {

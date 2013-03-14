@@ -31,4 +31,8 @@ public class MethodSignature {
     @Override public String toString() {
         return className + "." + methodName + "(" + Join.join(", ", paramTypes) + ")";
     }
+
+    boolean matches(String className, String methodName) {
+        return this.className.equals(className) && this.methodName.equals(methodName);
+    }
 }

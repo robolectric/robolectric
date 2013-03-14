@@ -8,9 +8,9 @@ import android.content.res.XmlResourceParser;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
+import android.graphics.drawable.Drawable;
 import android.graphics.drawable.NinePatchDrawable;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
@@ -180,7 +180,7 @@ public class ResourcesTest {
      */
     @Test
     public void testGetAnimationDrawable() {
-        assertThat(resources.getDrawable(R.anim.test_anim_1)).isInstanceOf(AnimationDrawable.class);
+        assertThat(resources.getDrawable(R.anim.animation_list)).isInstanceOf(AnimationDrawable.class);
     }
 
     @Test @Config(qualifiers = "fr")
@@ -193,7 +193,9 @@ public class ResourcesTest {
      */
     @Test
     public void testGetColorDrawable() {
-        assertThat(resources.getDrawable(R.color.test_color_1)).isInstanceOf(ColorDrawable.class);
+        Drawable drawable = resources.getDrawable(R.color.color_with_alpha);
+        assertThat(drawable).isInstanceOf(ColorDrawable.class);
+        assertThat(((ColorDrawable) drawable).getColor()).isEqualTo(0x802C76AD);
     }
 
     @Test
@@ -216,7 +218,7 @@ public class ResourcesTest {
      */
     @Test
     public void testGetColorStateList() {
-        assertThat(resources.getColorStateList(R.color.test_color_1)).isInstanceOf(ColorStateList.class);
+        assertThat(resources.getColorStateList(R.color.color_state_list)).isInstanceOf(ColorStateList.class);
     }
 
     /**
@@ -224,7 +226,7 @@ public class ResourcesTest {
      */
     @Test
     public void testGetBitmapDrawable() {
-        assertThat(resources.getDrawable(R.drawable.test_drawable_1)).isInstanceOf(BitmapDrawable.class);
+        assertThat(resources.getDrawable(R.drawable.an_image)).isInstanceOf(BitmapDrawable.class);
     }
 
     /**
@@ -296,16 +298,9 @@ public class ResourcesTest {
         assertThat(activity.getResources().getString(R.string.copy)).isEqualTo("Local Copy");
     }
 
-    @Ignore // todo fix
-    @Test
-    public void systemResourcesShouldHaveSystemValuesOnly() throws Exception {
-        assertThat(Resources.getSystem().getString(android.R.string.copy)).isEqualTo("Copy");
-        assertThat(Resources.getSystem().getString(R.string.copy)).isNull();
-    }
-
     @Test
     public void systemResourcesShouldReturnCorrectSystemId() throws Exception {
-        assertThat(Resources.getSystem().getIdentifier("copy", "android:string", null)).isEqualTo(android.R.string.copy);
+        assertThat(Resources.getSystem().getIdentifier("copy", "string", "android")).isEqualTo(android.R.string.copy);
     }
 
     @Test

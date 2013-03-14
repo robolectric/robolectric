@@ -17,6 +17,7 @@ public class RobolectricInternals {
     // initialized via magic by SdkEnvironment
     private static ClassHandler classHandler;
     private static final Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
+    public static boolean inActivityControllerBlock = false;
 
     public static ClassHandler getClassHandler() {
         return classHandler;
@@ -192,8 +193,8 @@ public class RobolectricInternals {
         return getConstructor(clazz, instance, parameterClasses);
     }
 
-    public static Invoker<Void> getConstructor(Class<?> clazz, Object realView, Class... parameterTypes) {
+    public static Invoker<Void> getConstructor(Class<?> clazz, Object instance, Class... parameterTypes) {
         String name = directMethodName(clazz.getName(), InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME);
-        return method(name).withParameterTypes(parameterTypes).in(realView);
+        return method(name).withParameterTypes(parameterTypes).in(instance);
     }
 }

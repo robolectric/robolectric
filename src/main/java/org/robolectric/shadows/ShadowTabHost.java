@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.R;
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.view.View;
@@ -19,7 +20,7 @@ import java.util.List;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(value = TabHost.class, inheritImplementationMethods = true)
+@Implements(value = TabHost.class)
 public class ShadowTabHost extends ShadowFrameLayout {
     private List<TabHost.TabSpec> tabSpecs = new ArrayList<TabHost.TabSpec>();
     private TabHost.OnTabChangeListener listener;
@@ -95,8 +96,8 @@ public class ShadowTabHost extends ShadowFrameLayout {
         View v = ts.getContentView();
         if (v == null) {
             int viewId = ts.getContentViewId();
-            if (getContext() instanceof Activity) {
-                v = ((Activity) getContext()).findViewById(viewId);
+            if (realView.getContext() instanceof Activity) {
+                v = ((Activity) realView.getContext()).findViewById(viewId);
             } else {
                 return null;
             }
@@ -106,6 +107,7 @@ public class ShadowTabHost extends ShadowFrameLayout {
 
     @Implementation
     public TabWidget getTabWidget() {
+        Context context = realView.getContext();
         if (context instanceof Activity) {
             return (TabWidget) ((Activity)context).findViewById(R.id.tabs);
         } else {

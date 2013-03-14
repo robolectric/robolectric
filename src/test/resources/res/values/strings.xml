@@ -12,6 +12,7 @@
     <string name="only_in_main">from main</string>
     <string name="in_all_libs">from main</string>
     <string name="in_main_and_lib1">from main</string>
-    <string name="ok">OK</string>
+    <string name="ok">@string/ok2</string>
+    <string name="ok2">ok yup!</string>
     <string name="interpolate">Here's a %s!</string>
 </resources>

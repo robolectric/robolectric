@@ -8,7 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.content.pm.PackageManager;
+import android.content.res.Resources;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Selection;
@@ -20,11 +20,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
+import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-import org.robolectric.tester.android.view.TestWindow;
+import org.robolectric.res.ResName;
+import org.robolectric.tester.android.view.RoboWindow;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -33,6 +36,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static org.fest.reflect.core.Reflection.field;
+import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf;
 
 @Implements(Activity.class)
@@ -45,7 +50,6 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     private Intent resultIntent;
     private Activity parent;
     private boolean finishWasCalled;
-    private TestWindow window;
 
     private List<IntentForResult> startedActivitiesForResults = new ArrayList<IntentForResult>();
 
@@ -64,6 +68,36 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     private int mDefaultKeyMode = Activity.DEFAULT_KEYS_DISABLE;
     private SpannableStringBuilder mDefaultKeySsb = null;
     private boolean destroyed = false;
+
+    public void __constructor__() {
+        RobolectricInternals.getConstructor(Activity.class, realActivity, new Class[0]).invoke();
+
+        if (!RobolectricInternals.inActivityControllerBlock) {
+            field("mApplication").ofType(Application.class).in(realActivity).set(Robolectric.application);
+            callAttachBaseContext(Robolectric.application);
+            if (!setThemeFromManifest()) {
+                // todo: should we set a default theme?
+            }
+        }
+    }
+
+    public boolean setThemeFromManifest() {
+        ShadowApplication shadowApplication = shadowOf(realActivity.getApplication());
+        AndroidManifest appManifest = shadowApplication.getAppManifest();
+        if (appManifest == null) return false;
+
+        String themeRef = appManifest.getThemeRef(realActivity.getClass());
+
+        if (themeRef != null) {
+            ResName style = ResName.qualifyResName(themeRef.replace("@", ""), appManifest.getPackageName(), "style");
+            Integer themeRes = shadowApplication.getResourceLoader().getResourceIndex().getResourceId(style);
+            if (themeRes == null)
+                throw new Resources.NotFoundException("no such theme " + style.getFullyQualifiedName());
+            realActivity.setTheme(themeRes);
+            return true;
+        }
+        return false;
+    }
 
     public void callOnCreate(Bundle bundle) {
         invokeReflectively("onCreate", Bundle.class, bundle);
@@ -179,28 +213,28 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
     @Implementation
     public void setDefaultKeyMode(int keyMode) {
-    	mDefaultKeyMode = keyMode;
-        
+        mDefaultKeyMode = keyMode;
+
         // Some modes use a SpannableStringBuilder to track & dispatch input events
         // This list must remain in sync with the switch in onKeyDown()
         switch (mDefaultKeyMode) {
-        case Activity.DEFAULT_KEYS_DISABLE:
-        case Activity.DEFAULT_KEYS_SHORTCUT:
-        	mDefaultKeySsb = null;      // not used in these modes
-            break;
-        case Activity.DEFAULT_KEYS_DIALER:
-        case Activity.DEFAULT_KEYS_SEARCH_LOCAL:
-        case Activity.DEFAULT_KEYS_SEARCH_GLOBAL:
-        	mDefaultKeySsb = new SpannableStringBuilder();
-            Selection.setSelection(mDefaultKeySsb, 0);
-            break;
-        default:
-            throw new IllegalArgumentException();
+            case Activity.DEFAULT_KEYS_DISABLE:
+            case Activity.DEFAULT_KEYS_SHORTCUT:
+                mDefaultKeySsb = null;      // not used in these modes
+                break;
+            case Activity.DEFAULT_KEYS_DIALER:
+            case Activity.DEFAULT_KEYS_SEARCH_LOCAL:
+            case Activity.DEFAULT_KEYS_SEARCH_GLOBAL:
+                mDefaultKeySsb = new SpannableStringBuilder();
+                Selection.setSelection(mDefaultKeySsb, 0);
+                break;
+            default:
+                throw new IllegalArgumentException();
         }
     }
-    
+
     public int getDefaultKeymode() {
-    	return mDefaultKeyMode;
+        return mDefaultKeyMode;
     }
 
     @Implementation(i18nSafe = false)
@@ -277,9 +311,10 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
     /**
      * Allow setting of Parent fragmentActivity (for unit testing purposes only)
+     *
      * @param parent Parent fragmentActivity to set on this fragmentActivity
      */
-    public void setParent(Activity parent){
+    public void setParent(Activity parent) {
         this.parent = parent;
     }
 
@@ -306,23 +341,24 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     }
 
     /**
-     * Constructs a new Window (a {@link org.robolectric.tester.android.view.TestWindow}) if no window has previously been
+     * Constructs a new Window (a {@link org.robolectric.tester.android.view.RoboWindow}) if no window has previously been
      * set.
      *
      * @return the window associated with this Activity
      */
     @Implementation
     public Window getWindow() {
+        Window window = directlyOn(realActivity, Activity.class).getWindow();
         if (window == null) {
-            window = new TestWindow(realActivity);
+            setWindow(window = new RoboWindow(realActivity));
         }
         return window;
     }
 
-    public void setWindow(TestWindow wind){
-    	window = wind;
+    public void setWindow(Window window) {
+        field("mWindow").ofType(Window.class).in(realActivity).set(window);
     }
-    
+
     @Implementation
     public void runOnUiThread(Runnable action) {
         Robolectric.getUiThreadScheduler().post(action);
@@ -355,7 +391,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
     @Implementation
     public void setRequestedOrientation(int requestedOrientation) {
-        if (getParent() != null){
+        if (getParent() != null) {
             getParent().setRequestedOrientation(requestedOrientation);
         } else {
             this.requestedOrientation = requestedOrientation;
@@ -364,16 +400,16 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
     @Implementation
     public int getRequestedOrientation() {
-        if (getParent() != null){
+        if (getParent() != null) {
             return getParent().getRequestedOrientation();
         } else {
             return this.requestedOrientation;
         }
     }
 
-  @Implementation
+    @Implementation
     public int getTaskId() {
-      return 0;
+        return 0;
     }
 
     @Implementation
@@ -490,6 +526,10 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
         onKeyUpWasCalled = false;
     }
 
+    public void performLayout() {
+        shadowOf(getWindow()).performLayout();
+    }
+
     /**
      * Container object to hold an Intent, together with the requestCode used
      * in a call to {@code Activity#startActivityForResult(Intent, int)}
@@ -524,7 +564,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
         final ActivityInvoker invoker = new ActivityInvoker();
         invoker.call("onActivityResult", Integer.TYPE, Integer.TYPE, Intent.class)
-            .with(requestCode, resultCode, resultIntent);
+                .with(requestCode, resultCode, resultIntent);
     }
 
     @Implementation
@@ -560,10 +600,10 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
 
             if (bundle == null) {
                 invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class)
-                    .with(id, dialog);
+                        .with(id, dialog);
             } else {
                 invoker.call("onPrepareDialog", Integer.TYPE, Dialog.class, Bundle.class)
-                    .with(id, dialog, bundle);
+                        .with(id, dialog, bundle);
             }
 
             dialogForId.put(id, dialog);
@@ -636,34 +676,34 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
         invoker.call("onStart").withNothing();
         invoker.call("onResume").withNothing();
     }
-    
+
     @Implementation
     public void onSaveInstanceState(Bundle outState) {
     }
 
     @Implementation
     public void startManagingCursor(Cursor c) {
-    	managedCusors.add(c);
-    }    
+        managedCusors.add(c);
+    }
 
     @Implementation
     public void stopManagingCursor(Cursor c) {
-    	managedCusors.remove(c);
+        managedCusors.remove(c);
     }
 
     public List<Cursor> getManagedCursors() {
-    	return managedCusors;
+        return managedCusors;
     }
 
     private final class ActivityInvoker {
         private Method method;
 
-        public ActivityInvoker call(final String methodName, final Class ...argumentClasses) {
+        public ActivityInvoker call(final String methodName, final Class... argumentClasses) {
             try {
                 method = Activity.class.getDeclaredMethod(methodName, argumentClasses);
                 method.setAccessible(true);
                 return this;
-            } catch(NoSuchMethodException e) {
+            } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
         }
@@ -672,14 +712,14 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
             return with();
         }
 
-        public Object with(final Object ...parameters) {
+        public Object with(final Object... parameters) {
             try {
                 return method.invoke(realActivity, parameters);
-            } catch(IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
-            } catch(IllegalArgumentException e) {
+            } catch (IllegalArgumentException e) {
                 throw new RuntimeException(e);
-            } catch(InvocationTargetException e) {
+            } catch (InvocationTargetException e) {
                 throw new RuntimeException(e);
             }
         }

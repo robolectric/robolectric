@@ -32,6 +32,24 @@ public abstract class XpathResourceXmlLoader extends XmlLoader {
             this.vtdNav = vtdNav;
         }
 
+        public String getElementName() {
+            try {
+                return vtdNav.toString(vtdNav.getCurrentIndex());
+            } catch (NavException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public XmlNode getFirstChild() {
+            try {
+              VTDNav cloneVtdNav = vtdNav.cloneNav();
+              if (!cloneVtdNav.toElement(VTDNav.FIRST_CHILD)) return null;
+              return new XmlNode(cloneVtdNav);
+            } catch (NavException e) {
+              throw new RuntimeException(e);
+            }
+        }
+
         public String getTextContent() {
             try {
                 return vtdNav.getXPathStringVal();

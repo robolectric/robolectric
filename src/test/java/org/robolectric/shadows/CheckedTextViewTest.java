@@ -44,7 +44,7 @@ public class CheckedTextViewTest {
         assertFalse(view.isChecked());
         view.toggle();
         assertTrue(view.isChecked());
-        view.performClick();
+        view.toggle();  // Used to support performClick(), but Android doesn't. Sigh.
         assertFalse(view.isChecked());
     }
 }

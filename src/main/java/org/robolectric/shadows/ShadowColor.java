@@ -30,10 +30,14 @@ public class ShadowColor {
             }
             colorString = buf.toString();
         }
-        return method(RobolectricInternals.directMethodName(Color.class.getName(), "parseColor"))
-                .withReturnType(int.class)
-                .withParameterTypes(String.class)
-                .in(Color.class)
-                .invoke(colorString);
+        try {
+            return method(RobolectricInternals.directMethodName(Color.class.getName(), "parseColor"))
+                    .withReturnType(int.class)
+                    .withParameterTypes(String.class)
+                    .in(Color.class)
+                    .invoke(colorString);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Can't parse value from color \"" + colorString + "\"", e);
+        }
     }
 }

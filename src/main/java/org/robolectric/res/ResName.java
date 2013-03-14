@@ -16,7 +16,7 @@ public class ResName {
     public final @NotNull String name;
 
     public ResName(@NotNull String namespace, @NotNull String type, @NotNull String name) {
-        this.name = name;
+        this.name = name.indexOf('.') != -1 ? name.replace('.', '_') : name;
         this.namespace = namespace;
         this.type = type;
     }
@@ -28,7 +28,8 @@ public class ResName {
         }
         namespace = matcher.group(NAMESPACE);
         type = matcher.group(TYPE);
-        name = matcher.group(NAME);
+        String nameStr = matcher.group(NAME);
+        name = nameStr.indexOf('.') != -1 ? nameStr.replace('.', '_') : nameStr;
 
         if (namespace.equals("xmlns")) throw new IllegalStateException("\"" + fullyQualifiedName + "\" unexpected");
     }
@@ -55,12 +56,12 @@ public class ResName {
     }
 
     public static Integer getResourceId(ResourceIndex resourceIndex, String possiblyQualifiedResourceName, String contextPackageName) {
-        if (possiblyQualifiedResourceName == null ) {
+        if (possiblyQualifiedResourceName == null) {
             return null;
         }
 
         if (possiblyQualifiedResourceName.equals("@null")) {
-            return 0;
+            return null;
         }
 
         String fullyQualifiedResourceName = qualifyResourceName(possiblyQualifiedResourceName, contextPackageName, null);
@@ -106,8 +107,18 @@ public class ResName {
         return namespace + ":" + type + "/" + name;
     }
 
+    public String getNamespaceUri() {
+        return "http://schemas.android.com/apk/res/" + namespace;
+    }
+
     public ResName withPackageName(String packageName) {
         if (packageName.equals(namespace)) return this;
         return new ResName(packageName, type, name);
+    }
+
+    public void mustBe(String expectedType) {
+        if (!type.equals(expectedType)) {
+            throw new RuntimeException("expected " + getFullyQualifiedName() + " to be a " + expectedType);
+        }
     }
 }

@@ -6,6 +6,12 @@ import android.graphics.BitmapFactory;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.net.Uri;
+import org.robolectric.Robolectric;
+import org.robolectric.internal.Implementation;
+import org.robolectric.internal.Implements;
+import org.robolectric.internal.NamedStream;
+import org.robolectric.util.Join;
+
 import java.io.InputStream;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
@@ -14,10 +20,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.zip.CRC32;
 import java.util.zip.Checksum;
-import org.robolectric.Robolectric;
-import org.robolectric.internal.Implementation;
-import org.robolectric.internal.Implements;
-import org.robolectric.util.Join;
 
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -62,7 +64,7 @@ public class ShadowBitmapFactory {
 
     @Implementation
     public static Bitmap decodeStream(InputStream is, Rect outPadding, BitmapFactory.Options opts) {
-        Bitmap bitmap = create(is.toString().replaceFirst("stream for ", ""), opts);
+        Bitmap bitmap = create(is instanceof NamedStream ? is.toString().replace("stream for ", "") : null, opts);
         ShadowBitmap shadowBitmap = shadowOf(bitmap);
         shadowBitmap.createdFromStream = is;
         return bitmap;
@@ -99,7 +101,7 @@ public class ShadowBitmapFactory {
     public static Bitmap create(String name, BitmapFactory.Options options) {
         Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
         ShadowBitmap shadowBitmap = shadowOf(bitmap);
-        shadowBitmap.appendDescription("Bitmap for " + name);
+        shadowBitmap.appendDescription(name == null ? "Bitmap" : "Bitmap for " + name);
 
         String optionsString = stringify(options);
         if (!optionsString.isEmpty()) {

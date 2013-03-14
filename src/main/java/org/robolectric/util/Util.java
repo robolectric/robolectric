@@ -7,6 +7,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Util {
     public static void copy(InputStream in, OutputStream out) throws IOException {
@@ -50,5 +52,21 @@ public class Util {
 
     public static URL url(String path) throws MalformedURLException {
         return new URL("file:/" + (path.startsWith("/") ? "/" + path : path));
+    }
+
+    public static List<Integer> intArrayToList(int[] ints) {
+        List<Integer> youSuckJava = new ArrayList<Integer>();
+        for (int attr1 : ints) {
+            youSuckJava.add(attr1);
+        }
+        return youSuckJava;
+    }
+
+    public static int parseInt(String valueFor) {
+        if (valueFor.startsWith("0x")) {
+            return Integer.parseInt(valueFor.substring(2), 16);
+        } else {
+            return Integer.parseInt(valueFor, 10);
+        }
     }
 }

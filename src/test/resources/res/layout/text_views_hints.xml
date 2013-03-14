@@ -10,7 +10,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="Black Hint"
-            android:hintColor="#000000"
+            android:textColorHint="#000000"
             />
 
     <TextView
@@ -18,7 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="White Hint"
-            android:hintColor="@android:color/white"
+            android:textColorHint="@android:color/white"
             />
 
     <TextView
@@ -26,6 +26,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:hint="Grey Hint"
-            android:hintColor="@color/grey42"
+            android:textColorHint="@color/grey42"
             />
 </LinearLayout>

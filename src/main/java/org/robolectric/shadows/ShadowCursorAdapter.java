@@ -30,6 +30,7 @@ import android.widget.CursorAdapter;
 import android.widget.FilterQueryProvider;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -41,6 +42,7 @@ import java.util.List;
  */
 @Implements(CursorAdapter.class)
 public class ShadowCursorAdapter extends ShadowBaseAdapter {
+    @RealObject CursorAdapter realCursorAdapter;
 
     private List<View> views = new ArrayList<View>();
 
@@ -303,12 +305,12 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
             mRowIDColumn = cursor.getColumnIndexOrThrow("_id");
             mDataValid = true;
             // notify the observers about the new cursor
-            notifyDataSetChanged();
+            realCursorAdapter.notifyDataSetChanged();
         } else {
             mRowIDColumn = -1;
             mDataValid = false;
             // notify the observers about the lack of a data set
-            notifyDataSetInvalidated();
+            realCursorAdapter.notifyDataSetInvalidated();
         }
     }
 
@@ -430,13 +432,13 @@ public class ShadowCursorAdapter extends ShadowBaseAdapter {
         @Override
         public void onChanged() {
             mDataValid = true;
-            notifyDataSetChanged();
+            realCursorAdapter.notifyDataSetChanged();
         }
 
         @Override
         public void onInvalidated() {
             mDataValid = false;
-            notifyDataSetInvalidated();
+            realCursorAdapter.notifyDataSetInvalidated();
         }
     }
 

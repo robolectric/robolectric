@@ -1,13 +1,12 @@
 package org.robolectric.res;
 
-import android.view.View;
+import org.jetbrains.annotations.NotNull;
 import org.w3c.dom.Document;
 
 import java.io.IOException;
 import java.io.InputStream;
 
 abstract class XResourceLoader implements ResourceLoader {
-    final AttrResourceLoader attrResourceLoader = new AttrResourceLoader();
     final ResBunch data = new ResBunch();
     final ResBundle<PluralResourceLoader.PluralRules> pluralsData = new ResBundle<PluralResourceLoader.PluralRules>();
     final ResBundle<String> stringData = new ResBundle<String>();
@@ -52,7 +51,7 @@ abstract class XResourceLoader implements ResourceLoader {
         return resourceIndex.getResourceName(id);
     }
 
-    public TypedResource getValue(ResName resName, String qualifiers) {
+    public TypedResource getValue(@NotNull ResName resName, String qualifiers) {
         initialize();
         ResBunch.Value value = data.getValue(resName, qualifiers);
         return value == null ? null : value.getTypedResource();
@@ -114,18 +113,6 @@ abstract class XResourceLoader implements ResourceLoader {
     @Override
     public ResourceIndex getResourceIndex() {
         return resourceIndex;
-    }
-
-    @Override
-    public boolean hasAttributeFor(Class<? extends View> viewClass, String namespace, String attribute) {
-        initialize();
-        return attrResourceLoader.hasAttributeFor(viewClass, namespace, attribute);
-    }
-
-    @Override
-    public String convertValueToEnum(Class<? extends View> viewClass, String namespace, String attribute, String part) {
-        initialize();
-        return attrResourceLoader.convertValueToEnum(viewClass, namespace, attribute, part);
     }
 
     abstract static class Resolver<T> {

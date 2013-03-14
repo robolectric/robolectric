@@ -94,6 +94,7 @@ public class Setup {
         String className = classInfo.getName();
         return className.startsWith("android.")
                 || className.startsWith("libcore.")
+                || className.startsWith("com.android.internal.")
                 || className.startsWith("com.google.android.maps.")
                 || className.startsWith("org.apache.http.impl.client.DefaultRequestDirector");
     }
@@ -134,7 +135,12 @@ public class Setup {
                 new MethodRef("com.android.i18n.phonenumbers.PhoneNumberUtil", "*"),
                 new MethodRef("dalvik.system.CloseGuard", "get"),
                 new MethodRef("java.lang.AutoCloseable", "*"),
-                new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale")
+                new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale"),
+                new MethodRef("com.android.internal.policy.PolicyManager", "*"),
+                new MethodRef("android.view.CompatibilityInfoHolder", "*"),
+                new MethodRef("android.content.res.CompatibilityInfo", "*"),
+                new MethodRef("android.view.FallbackEventHandler", "*"),
+                new MethodRef("android.view.IWindowSession", "*")
         )));
     }
 

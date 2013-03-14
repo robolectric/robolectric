@@ -7,6 +7,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.os.Parcelable;
 import org.robolectric.Robolectric;
+import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
@@ -45,15 +46,18 @@ public class ShadowIntent {
     public void __constructor__(Context packageContext, Class cls) {
         componentName = new ComponentName(packageContext, cls);
         intentClass = cls;
+        RobolectricInternals.getConstructor(Intent.class, realIntent, Context.class, Class.class).invoke(packageContext, cls);
     }
 
     public void __constructor__(String action, Uri uri) {
         this.action = action;
         data = uri;
+        RobolectricInternals.getConstructor(Intent.class, realIntent, String.class, Uri.class).invoke(action, uri);
     }
 
     public void __constructor__(String action) {
         __constructor__(action, null);
+        RobolectricInternals.getConstructor(Intent.class, realIntent, String.class).invoke(action);
     }
 
     public void __constructor__(Intent intent) {
@@ -68,6 +72,7 @@ public class ShadowIntent {
         packageName = other.packageName;
         categories.addAll(other.categories);
         uri = other.uri;
+        RobolectricInternals.getConstructor(Intent.class, realIntent, Intent.class).invoke(intent);
     }
 
     @Implementation

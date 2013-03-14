@@ -16,13 +16,13 @@ public class TestWindowTest {
 
     @Test
     public void windowManager__shouldNotBeNull() throws Exception {
-        TestWindow window = new TestWindow(null);
+        RoboWindow window = new RoboWindow(null);
         Assert.assertNotNull(window.getWindowManager());
     }
 
     @Test
     public void decorViewFindViewById__shouldReturnContentWrapper() throws Exception {
-        TestWindow window = new TestWindow(Robolectric.application);
+        RoboWindow window = new RoboWindow(Robolectric.application);
         View contentView = new View(Robolectric.application);
         contentView.setTag("content view");
         window.setContentView(contentView);
@@ -35,7 +35,7 @@ public class TestWindowTest {
     }
     
     @Test public void setContentViewByResource() throws Exception {
-        TestWindow window = new TestWindow(Robolectric.application);
+        RoboWindow window = new RoboWindow(Robolectric.application);
         window.setContentView(R.layout.text_views);
 
         ViewGroup contentWrapper = (ViewGroup) window.findViewById(android.R.id.content);

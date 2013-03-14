@@ -1,9 +1,12 @@
 package org.robolectric;
 
+import android.app.Activity;
+import org.robolectric.res.ActivityData;
 import org.robolectric.res.Fs;
 import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
@@ -14,7 +17,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import static android.content.pm.ApplicationInfo.*;
@@ -23,17 +28,20 @@ public class AndroidManifest {
     private final FsFile androidManifestFile;
     private final FsFile resDirectory;
     private final FsFile assetsDirectory;
+    private boolean manifestIsParsed = false;
+
+    private String applicationName;
     private String rClassName;
     private String packageName;
     private String processName;
-    private String applicationName;
-    private boolean manifestIsParsed = false;
+    private String themeRef;
     private Integer targetSdkVersion;
     private Integer minSdkVersion;
     private int versionCode;
     private String versionName;
     private int applicationFlags;
     private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
+    private final Map<String, ActivityData> activityDatas = new LinkedHashMap<String, ActivityData>();
     private List<AndroidManifest> libraryManifests;
 
     /**
@@ -41,8 +49,8 @@ public class AndroidManifest {
      * <p/>
      * The manifest will be baseDir/AndroidManifest.xml, res will be baseDir/res, and assets in baseDir/assets.
      *
-     * @deprecated Use {@link #AndroidManifest(org.robolectric.res.FsFile, org.robolectric.res.FsFile, org.robolectric.res.FsFile)} instead.}
      * @param baseDir the base directory of your Android project
+     * @deprecated Use {@link #AndroidManifest(org.robolectric.res.FsFile, org.robolectric.res.FsFile, org.robolectric.res.FsFile)} instead.}
      */
     public AndroidManifest(final File baseDir) {
         this(Fs.newFile(baseDir));
@@ -72,8 +80,13 @@ public class AndroidManifest {
         this.assetsDirectory = assetsDirectory;
     }
 
-    public FsFile getAndroidManifestFile() {
-        return androidManifestFile;
+    public String getThemeRef(Class<? extends Activity> activityClass) {
+        ActivityData activityData = getActivityData(activityClass.getName());
+        String themeRef = activityData != null ? activityData.getThemeRef() : null;
+        if (themeRef == null) {
+            themeRef = getThemeRef();
+        }
+        return themeRef;
     }
 
     public String getRClassName() throws Exception {
@@ -96,7 +109,7 @@ public class AndroidManifest {
         }
     }
 
-    private void parseAndroidManifest() {
+    void parseAndroidManifest() {
         if (manifestIsParsed) {
             return;
         }
@@ -119,28 +132,26 @@ public class AndroidManifest {
                 processName = packageName;
             }
 
+            themeRef = getTagAttributeText(manifestDocument, "application", "android:theme");
+
             parseApplicationFlags(manifestDocument);
-            parseReceivers(manifestDocument, packageName);
+            parseReceivers(manifestDocument);
+            parseActivities(manifestDocument);
         } catch (Exception ignored) {
             ignored.printStackTrace();
         }
         manifestIsParsed = true;
     }
 
-    private void parseReceivers(final Document manifestDocument, String packageName) {
+    private void parseReceivers(final Document manifestDocument) {
         Node application = manifestDocument.getElementsByTagName("application").item(0);
-        if (application == null) {
-            return;
-        }
+        if (application == null) return;
+
         for (Node receiverNode : getChildrenTags(application, "receiver")) {
             Node namedItem = receiverNode.getAttributes().getNamedItem("android:name");
-            if (namedItem == null) {
-                continue;
-            }
-            String receiverName = namedItem.getTextContent();
-            if (receiverName.startsWith(".")) {
-                receiverName = packageName + receiverName;
-            }
+            if (namedItem == null) continue;
+
+            String receiverName = resolveClassRef(namedItem.getTextContent());
             for (Node intentFilterNode : getChildrenTags(receiverNode, "intent-filter")) {
                 List<String> actions = new ArrayList<String>();
                 for (Node actionNode : getChildrenTags(intentFilterNode, "action")) {
@@ -152,6 +163,27 @@ public class AndroidManifest {
                 receivers.add(new ReceiverAndIntentFilter(receiverName, actions));
             }
         }
+    }
+
+    private void parseActivities(final Document manifestDocument) {
+        Node application = manifestDocument.getElementsByTagName("application").item(0);
+        if (application == null) return;
+
+        for (Node receiverNode : getChildrenTags(application, "activity")) {
+            NamedNodeMap attributes = receiverNode.getAttributes();
+            Node nameAttr = attributes.getNamedItem("android:name");
+            Node themeAttr = attributes.getNamedItem("android:theme");
+            if (nameAttr == null) continue;
+            String activityName = nameAttr.getNodeValue();
+            activityDatas.put(activityName,
+                    new ActivityData(activityName,
+                            themeAttr == null ? null : resolveClassRef(themeAttr.getNodeValue())
+                    ));
+        }
+    }
+
+    private String resolveClassRef(String maybePartialClassName) {
+        return (maybePartialClassName.startsWith(".")) ? packageName + maybePartialClassName : maybePartialClassName;
     }
 
     private List<Node> getChildrenTags(final Node node, final String tagName) {
@@ -373,6 +405,14 @@ public class AndroidManifest {
         result = 31 * result + (resDirectory != null ? resDirectory.hashCode() : 0);
         result = 31 * result + (assetsDirectory != null ? assetsDirectory.hashCode() : 0);
         return result;
+    }
+
+    public ActivityData getActivityData(String activityClassName) {
+        return activityDatas.get(activityClassName);
+    }
+
+    public String getThemeRef() {
+        return themeRef;
     }
 
     private static class ReceiverAndIntentFilter {

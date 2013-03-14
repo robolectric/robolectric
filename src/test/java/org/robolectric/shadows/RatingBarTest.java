@@ -31,9 +31,9 @@ public class RatingBarTest {
     
     @Test
     public void testOnSeekBarChangedListener() {
-        assertThat(shadow.getOnRatingBarChangeListener()).isSameAs(listener);
+        assertThat(ratingBar.getOnRatingBarChangeListener()).isSameAs(listener);
         ratingBar.setOnRatingBarChangeListener(null);
-        assertThat(shadow.getOnRatingBarChangeListener()).isNull();
+        assertThat(ratingBar.getOnRatingBarChangeListener()).isNull();
     }
     
     @Test

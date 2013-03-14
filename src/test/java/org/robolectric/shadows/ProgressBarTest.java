@@ -6,7 +6,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.res.Attribute;
+import org.robolectric.res.ResName;
+import org.robolectric.util.TestUtil;
 
+import static java.util.Arrays.asList;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
@@ -18,7 +22,11 @@ public class ProgressBarTest {
 
     @Before
     public void setUp() {
-        progressBar = new ProgressBar(Robolectric.application);
+        progressBar = new ProgressBar(Robolectric.application, new RoboAttributeSet(asList(
+                new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "max"), "100", TestUtil.TEST_PACKAGE),
+                new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminate"), "false", TestUtil.TEST_PACKAGE),
+                new Attribute(new ResName(TestUtil.SYSTEM_PACKAGE, "attr", "indeterminateOnly"), "false", TestUtil.TEST_PACKAGE)
+        ), Robolectric.application.getResources(), null));
     }
 
     @Test
