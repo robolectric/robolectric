@@ -116,7 +116,8 @@ public class RoboAttributeSet implements AttributeSet {
 
     @Override
     public int getAttributeNameResource(int index) {
-        throw new UnsupportedOperationException();
+        ResName resName = attributes.get(index).resName;
+        return resourceLoader.getResourceIndex().getResourceId(resName);
     }
 
     @Override
