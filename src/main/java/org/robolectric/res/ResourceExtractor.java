@@ -3,14 +3,12 @@ package org.robolectric.res;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 public class ResourceExtractor extends ResourceIndex {
     private static final ResourceRemapper RESOURCE_REMAPPER = new ResourceRemapper();
     private static final boolean REMAP_RESOURCES = false;
 
-    private Set<Class> processedRFiles = new HashSet<Class>();
+    private Class<?> processedRFile = null;
     private Integer maxUsedInt = null;
 
     public ResourceExtractor() {
@@ -23,10 +21,11 @@ public class ResourceExtractor extends ResourceIndex {
     private void addRClass(Class<?> rClass) {
         if (REMAP_RESOURCES) RESOURCE_REMAPPER.remapRClass(rClass);
 
-        if (!processedRFiles.add(rClass)) {
+        if (processedRFile != null) {
             System.out.println("WARN: already extracted resources for " + rClass.getPackage().getName() + ", skipping. You should probably fix this.");
             return;
         }
+        processedRFile = rClass;
         String packageName = rClass.getPackage().getName();
 
         for (Class innerClass : rClass.getClasses()) {
@@ -67,7 +66,7 @@ public class ResourceExtractor extends ResourceIndex {
     @Override
     public synchronized Integer getResourceId(ResName resName) {
         Integer id = resourceNameToId.get(resName);
-        if (id == null && "android".equals(resName.namespace)) {
+        if (id == null && ("android".equals(resName.namespace) || "".equals(resName.namespace))) {
             if (maxUsedInt == null) {
                 maxUsedInt = resourceIdToResName.isEmpty() ? 0 : Collections.max(resourceIdToResName.keySet());
             }
@@ -82,5 +81,11 @@ public class ResourceExtractor extends ResourceIndex {
     @Override
     public synchronized ResName getResName(int resourceId) {
         return resourceIdToResName.get(resourceId);
+    }
+
+    @Override public String toString() {
+        return "ResourceExtractor{" +
+                "package=" + processedRFile +
+                '}';
     }
 }

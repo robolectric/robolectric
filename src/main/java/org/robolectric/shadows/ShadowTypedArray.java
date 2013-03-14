@@ -36,12 +36,14 @@ public class ShadowTypedArray implements UsesResources {
     }
 
     @Implementation
-    public int getIndexCount() {
+    synchronized public int getIndexCount() {
+        if (presentAttrs == null) populatePresent();
         return presentAttrs.length;
     }
 
     @Implementation
-    public int getIndex(int at) {
+    synchronized public int getIndex(int at) {
+        if (presentAttrs == null) populatePresent();
         return presentAttrs[at];
     }
 
@@ -123,7 +125,7 @@ public class ShadowTypedArray implements UsesResources {
         return null;
     }
 
-  private ResName getResName(int index) {
+    private ResName getResName(int index) {
         return resourceIndex.getResName(attrs[index]);
     }
 
@@ -131,7 +133,9 @@ public class ShadowTypedArray implements UsesResources {
         if (this.values != null || this.attrs != null) throw new IllegalStateException();
         this.values = set;
         this.attrs = attrs;
+    }
 
+    synchronized private void populatePresent() {
         Set<Integer> attrsPresent = new HashSet<Integer>();
         int count = values.getAttributeCount();
         for (int i = 0; i < count; i++) {

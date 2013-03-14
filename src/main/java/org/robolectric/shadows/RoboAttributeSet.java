@@ -217,7 +217,7 @@ public class RoboAttributeSet implements AttributeSet {
     }
 
     private Attribute findByName(String packageName, String attrName) {
-        String namespace = null;
+        String namespace;
         try {
             namespace = URLEncoder.encode(packageName, "UTF-8");
         } catch (UnsupportedEncodingException e) {
