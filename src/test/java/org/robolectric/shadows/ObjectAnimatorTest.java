@@ -33,7 +33,7 @@ public class ObjectAnimatorTest {
 
     @Test
     public void floatAnimator_shouldSetTheStartingAndEndingValues() throws Exception {
-        View target = new View(null);
+        View target = new View(Robolectric.application);
         ObjectAnimator animator = ObjectAnimator.ofFloat(target, "translationX", 0.5f, 0.4f);
         animator.setDuration(1000);
 
@@ -48,7 +48,7 @@ public class ObjectAnimatorTest {
 
     @Test
     public void intAnimator_shouldSetTheStartingAndEndingValues() throws Exception {
-        View target = new View(null);
+        View target = new View(Robolectric.application);
         ObjectAnimator animator = ObjectAnimator.ofInt(target, "bottom", 1, 4);
         animator.setDuration(1000);
 
@@ -60,7 +60,7 @@ public class ObjectAnimatorTest {
 
     @Test
     public void shouldCallAnimationListenerAtStartAndEnd() throws Exception {
-        View target = new View(null);
+        View target = new View(Robolectric.application);
         ObjectAnimator animator = ObjectAnimator.ofFloat(target, "translationX", 0.5f, 0.4f);
         animator.setDuration(1);
         TestAnimatorListener startListener = new TestAnimatorListener();
@@ -77,7 +77,7 @@ public class ObjectAnimatorTest {
 
     @Test
     public void getAnimatorsFor_shouldReturnAMapOfAnimatorsCreatedForTarget() throws Exception {
-        View target = new View(null);
+        View target = new View(Robolectric.application);
         ObjectAnimator expectedAnimator = ObjectAnimator.ofFloat(target, "translationX", 0f, 1f);
 
         assertThat(ShadowObjectAnimator.getAnimatorsFor(target).get("translationX")).isSameAs(expectedAnimator);
@@ -85,7 +85,7 @@ public class ObjectAnimatorTest {
 
     @Test
     public void testIsRunning() throws Exception {
-        View target = new View(null);
+        View target = new View(Robolectric.application);
         ObjectAnimator expectedAnimator = ObjectAnimator.ofFloat(target, "translationX", 0f, 1f);
         long duration = 70;
         expectedAnimator.setDuration(duration);
@@ -99,7 +99,7 @@ public class ObjectAnimatorTest {
 
     @Test
     public void pauseAndRunEndNotifications() throws Exception {
-        View target = new View(null);
+        View target = new View(Robolectric.application);
         ObjectAnimator animator = ObjectAnimator.ofFloat(target, "translationX", 0.5f, 0.4f);
         animator.setDuration(1);
         TestAnimatorListener endListener = new TestAnimatorListener();

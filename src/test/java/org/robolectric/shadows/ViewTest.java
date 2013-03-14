@@ -70,7 +70,7 @@ public class ViewTest {
 
     @Test
     public void measuredDimensions() throws Exception {
-        View view1 = new View(null) {
+        View view1 = new View(Robolectric.application) {
             {
                 setMeasuredDimension(123, 456);
             }
@@ -81,7 +81,7 @@ public class ViewTest {
 
     @Test
     public void layout_shouldCallOnLayoutOnlyIfChanged() throws Exception {
-        View view1 = new View(null) {
+        View view1 = new View(Robolectric.application) {
             @Override
             protected void onLayout(boolean changed, int left, int top, int right, int bottom) {
                 transcript.add("onLayout " + changed + " " + left + " " + top + " " + right + " " + bottom);
@@ -138,10 +138,10 @@ public class ViewTest {
     public void shouldKnowIfThisOrAncestorsAreVisible() throws Exception {
         assertTrue(view.isShown());
 
-        ViewGroup parent = new LinearLayout(null);
+        ViewGroup parent = new LinearLayout(Robolectric.application);
         parent.addView(view);
 
-        ViewGroup grandParent = new LinearLayout(null);
+        ViewGroup grandParent = new LinearLayout(Robolectric.application);
         grandParent.addView(parent);
 
         grandParent.setVisibility(View.GONE);
@@ -151,7 +151,7 @@ public class ViewTest {
 
     @Test
     public void shouldInflateMergeRootedLayoutAndNotCreateReferentialLoops() throws Exception {
-        LinearLayout root = new LinearLayout(null);
+        LinearLayout root = new LinearLayout(Robolectric.application);
         root.inflate(new Activity(), R.layout.inner_merge, root);
         for (int i = 0; i < root.getChildCount(); i++) {
             View child = root.getChildAt(i);
@@ -179,8 +179,8 @@ public class ViewTest {
 
     @Test(expected = RuntimeException.class)
     public void checkedClick_shouldThrowIfViewIsNotVisible() throws Exception {
-        ViewGroup grandParent = new LinearLayout(null);
-        ViewGroup parent = new LinearLayout(null);
+        ViewGroup grandParent = new LinearLayout(Robolectric.application);
+        ViewGroup parent = new LinearLayout(Robolectric.application);
         grandParent.addView(parent);
         parent.addView(view);
         grandParent.setVisibility(View.GONE);
@@ -277,9 +277,9 @@ public class ViewTest {
 
     @Test
     public void shouldSupportAllConstructors() throws Exception {
-        new View(null);
-        new View(null, null);
-        new View(null, null, 0);
+        new View(Robolectric.application);
+        new View(Robolectric.application, null);
+        new View(Robolectric.application, null, 0);
     }
 
     @Test
@@ -295,7 +295,7 @@ public class ViewTest {
       RoboAttributeSet attrs = new RoboAttributeSet(new ArrayList<Attribute>(), new EmptyResourceLoader(), null);
       attrs.put("android:attr/onClick", "clickMe", R.class.getPackage().getName());
 
-      view = new View(null, attrs);
+      view = new View(Robolectric.application, attrs);
       assertNotNull(shadowOf(view).getOnClickListener());
     }
 
@@ -402,7 +402,7 @@ public class ViewTest {
 
     @Test
     public void dispatchTouchEvent_sendsMotionEventToOnTouchEvent() throws Exception {
-        TouchableView touchableView = new TouchableView(null);
+        TouchableView touchableView = new TouchableView(Robolectric.application);
         MotionEvent event = MotionEvent.obtain(0L, 0L, MotionEvent.ACTION_DOWN, 12f, 34f, 0);
         touchableView.dispatchTouchEvent(event);
         assertThat(touchableView.event).isSameAs(event);

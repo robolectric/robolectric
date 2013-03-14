@@ -4,6 +4,7 @@ import android.widget.ProgressBar;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -17,7 +18,7 @@ public class ProgressBarTest {
 
     @Before
     public void setUp() {
-        progressBar = new ProgressBar(null);
+        progressBar = new ProgressBar(Robolectric.application);
     }
 
     @Test

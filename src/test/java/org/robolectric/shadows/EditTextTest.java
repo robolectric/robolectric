@@ -25,15 +25,15 @@ public class EditTextTest {
 
     @Test
     public void shouldBeFocusableByDefault() throws Exception {
-        assertTrue(new EditText(null).isFocusable());
-        assertTrue(new EditText(null).isFocusableInTouchMode());
+        assertTrue(new EditText(Robolectric.application).isFocusable());
+        assertTrue(new EditText(Robolectric.application).isFocusableInTouchMode());
     }
 
     @Test
     public void givenInitializingWithAttributeSet_whenMaxLengthDefined_thenRestrictTextLengthToMaxLength() {
         int maxLength = anyInteger();
         AttributeSet attrs = attributeSetWithMaxLength(maxLength);
-        EditText editText = new EditText(null, attrs);
+        EditText editText = new EditText(Robolectric.application, attrs);
         String excessiveInput = stringOfLength(maxLength * 2);
 
         editText.setText(excessiveInput);
@@ -44,7 +44,7 @@ public class EditTextTest {
     @Test
     public void givenInitializingWithAttributeSet_whenMaxLengthNotDefined_thenTextLengthShouldHaveNoRestrictions() {
         AttributeSet attrs = attributeSetWithoutMaxLength();
-        EditText editText = new EditText(null, attrs);
+        EditText editText = new EditText(Robolectric.application, attrs);
         String input = anyString();
 
         editText.setText(input);
@@ -54,7 +54,7 @@ public class EditTextTest {
 
     @Test
     public void whenInitializingWithoutAttributeSet_thenTextLengthShouldHaveNoRestrictions() {
-        EditText editText = new EditText(null);
+        EditText editText = new EditText(Robolectric.application);
         String input = anyString();
 
         editText.setText(input);
@@ -64,7 +64,7 @@ public class EditTextTest {
 
     @Test
     public void testSelectAll() {
-        EditText editText = new EditText(null);
+        EditText editText = new EditText(Robolectric.application);
         editText.setText("foo");
 
         editText.selectAll();

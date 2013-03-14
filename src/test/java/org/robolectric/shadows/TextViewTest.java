@@ -51,7 +51,7 @@ public class TextViewTest {
 
     @Test
     public void shouldTriggerTheImeListener() {
-        TextView textView = new TextView(null);
+        TextView textView = new TextView(Robolectric.application);
         TestOnEditorActionListener actionListener = new TestOnEditorActionListener();
         textView.setOnEditorActionListener(actionListener);
 
@@ -100,7 +100,7 @@ public class TextViewTest {
 
     @Test
     public void testGetTextAppearanceId() throws Exception {
-        TextView textView = new TextView(null);
+        TextView textView = new TextView(Robolectric.application);
         textView.setTextAppearance(null, 5);
 
         assertThat(shadowOf(textView).getTextAppearanceId()).isEqualTo(5);

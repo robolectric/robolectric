@@ -22,8 +22,8 @@ public class TestWindowTest {
 
     @Test
     public void decorViewFindViewById__shouldReturnContentWrapper() throws Exception {
-        TestWindow window = new TestWindow(null);
-        View contentView = new View(null);
+        TestWindow window = new TestWindow(Robolectric.application);
+        View contentView = new View(Robolectric.application);
         contentView.setTag("content view");
         window.setContentView(contentView);
 

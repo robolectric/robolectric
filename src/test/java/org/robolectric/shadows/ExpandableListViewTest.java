@@ -5,6 +5,7 @@ import android.widget.ExpandableListView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
@@ -19,7 +20,7 @@ public class ExpandableListViewTest {
 
     @Before
     public void setUp() {
-        expandableListView = new ExpandableListView(null);
+        expandableListView = new ExpandableListView(Robolectric.application);
         transcript = new Transcript();
         myOnChildClickListener = new MyOnChildClickListener();
     }

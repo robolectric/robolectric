@@ -25,7 +25,7 @@ public class WebViewTest {
 
     @Before
     public void setUp() throws Exception {
-        webView = new WebView(null);
+        webView = new WebView(Robolectric.application);
         shadowWebView = Robolectric.shadowOf(webView);
     }
 

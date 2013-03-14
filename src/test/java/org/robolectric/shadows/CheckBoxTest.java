@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.widget.CheckBox;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -11,7 +12,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public class CheckBoxTest {
     @Test
     public void testWorks() throws Exception {
-        CheckBox checkBox = new CheckBox(null);
+        CheckBox checkBox = new CheckBox(Robolectric.application);
         assertThat(checkBox.isChecked()).isFalse();
 
         checkBox.setChecked(true);

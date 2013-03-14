@@ -39,7 +39,7 @@ public class PopupWindowTest {
 
         @Test
         public void testSetContentView() {
-            View contentView = new View(null);
+            View contentView = new View(Robolectric.application);
             popupWindow.setContentView(contentView);
 
             assertThat(popupWindow.getContentView()).isSameAs(contentView);

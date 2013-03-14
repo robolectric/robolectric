@@ -60,7 +60,7 @@ public class RobolectricTest {
     public void shouldLogMissingInvokedShadowMethodsWhenRequested() throws Exception {
         Robolectric.logMissingInvokedShadowMethods();
 
-        View aView = new View(null);
+        View aView = new View(Robolectric.application);
         // There's a shadow method for this in ShadowView but not TestShadowView
         aView.getContext();
         String output = buff.toString();
@@ -76,7 +76,7 @@ public class RobolectricTest {
     @Test // This is nasty because it depends on the test above having run first in order to fail
     @Ignore // we aren't running that test right now...
     public void shouldNotLogMissingInvokedShadowMethodsByDefault() throws Exception {
-        View aView = new View(null);
+        View aView = new View(Robolectric.application);
         aView.findViewById(27);
         String output = buff.toString();
 
@@ -85,7 +85,7 @@ public class RobolectricTest {
 
     @Test(expected = RuntimeException.class)
     public void clickOn_shouldThrowIfViewIsDisabled() throws Exception {
-        View view = new View(null);
+        View view = new View(Robolectric.application);
         view.setEnabled(false);
         Robolectric.clickOn(view);
     }
@@ -167,7 +167,7 @@ public class RobolectricTest {
 
     @Test
     public void clickOn_shouldCallClickListener() throws Exception {
-        View view = new View(null);
+        View view = new View(Robolectric.application);
         TestOnClickListener testOnClickListener = new TestOnClickListener();
         view.setOnClickListener(testOnClickListener);
         Robolectric.clickOn(view);

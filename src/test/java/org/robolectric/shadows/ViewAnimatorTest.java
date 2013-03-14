@@ -6,6 +6,7 @@ import android.widget.ViewAnimator;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertEquals;
@@ -15,11 +16,10 @@ import static org.junit.Assert.assertSame;
 public class ViewAnimatorTest {
 
     ViewAnimator viewAnimator;
-    Application application;
+    final Application application = Robolectric.application;
 
     @Before
     public void setUp() {
-        application = new Application();
         viewAnimator = new ViewAnimator(application);
     }
 

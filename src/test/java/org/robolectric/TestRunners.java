@@ -82,27 +82,6 @@ public class TestRunners {
         }
     }
 
-    public static class RealApisWithDefaults extends RobolectricTestRunner {
-        public RealApisWithDefaults(Class<?> testClass) throws InitializationError {
-            super(testClass);
-        }
-
-        @Override
-        protected AndroidManifest createAppManifest() {
-            return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
-        }
-
-        @Override
-        public Setup createSetup() {
-            return new Setup() {
-                @Override
-                public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz, String methodName, Class<?>[] paramClasses) {
-                    return true;
-                }
-            };
-        }
-    }
-
     public static class RealApisWithoutDefaults extends RobolectricTestRunner {
         public RealApisWithoutDefaults(Class<?> testClass) throws InitializationError {
             super(testClass);

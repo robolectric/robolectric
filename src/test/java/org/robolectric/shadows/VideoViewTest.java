@@ -17,7 +17,7 @@ public class VideoViewTest {
     private VideoView view;
 
     @Before public void setUp() throws Exception {
-        view = new VideoView(null);
+        view = new VideoView(Robolectric.application);
     }
     
     @Test

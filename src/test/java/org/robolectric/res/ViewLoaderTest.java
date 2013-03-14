@@ -259,7 +259,7 @@ public class ViewLoaderTest {
 
     @Test
     public void shouldInflateMergeLayoutIntoParent() throws Exception {
-        View innerMerge = new LayoutBuilder(resourceLoader).inflateView(context, R.layout.inner_merge, new LinearLayout(null), "");
+        View innerMerge = new LayoutBuilder(resourceLoader).inflateView(context, R.layout.inner_merge, new LinearLayout(Robolectric.application), "");
         assertNotNull(innerMerge);
     }
 

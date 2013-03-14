@@ -10,23 +10,21 @@ import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertSame;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class LinearLayoutTest {
     private LinearLayout linearLayout;
-    private LinearLayout contextFreeLinearLayout;
 
     @Before
     public void setup() throws Exception {
         linearLayout = new LinearLayout(Robolectric.application);
-        contextFreeLinearLayout = new LinearLayout(null);
     }
 
     @Test
     public void getLayoutParams_shouldReturnLinearLayoutParams() throws Exception {
-        ViewGroup.LayoutParams layoutParams =contextFreeLinearLayout.getLayoutParams();
+        ViewGroup.LayoutParams layoutParams = linearLayout.getLayoutParams();
 
         assertThat(layoutParams).isInstanceOf(LinearLayout.LayoutParams.class);
     }
@@ -34,10 +32,9 @@ public class LinearLayoutTest {
     @Test
     public void getLayoutParams_shouldReturnTheSameLinearLayoutParamsFromTheSetter() throws Exception {
         LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(1, 2);
+        linearLayout.setLayoutParams(params);
 
-        contextFreeLinearLayout.setLayoutParams(params);
-
-        assertTrue(contextFreeLinearLayout.getLayoutParams() == params);
+        assertSame(params, linearLayout.getLayoutParams());
     }
 
     @Test

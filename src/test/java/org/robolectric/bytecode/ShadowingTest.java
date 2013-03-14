@@ -17,7 +17,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Config;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
@@ -168,8 +167,8 @@ public class ShadowingTest {
 
     @Test
     public void testDirectlyOn_InstanceChecking() throws Exception {
-        View view1 = new View(null);
-        View view2 = new View(null);
+        View view1 = new View(Robolectric.application);
+        View view2 = new View(Robolectric.application);
 
         Exception e = null;
         try {
@@ -247,17 +246,17 @@ public class ShadowingTest {
 
     @Test
     public void shouldDelegateToObjectToStringIfShadowHasNone() throws Exception {
-        assertTrue(new View(null).toString().startsWith("android.view.View@"));
+        assertTrue(new View(Robolectric.application).toString().startsWith("android.view.View@"));
     }
 
     @Test
     public void shouldDelegateToObjectHashCodeIfShadowHasNone() throws Exception {
-        assertFalse(new View(null).hashCode() == 0);
+        assertFalse(new View(Robolectric.application).hashCode() == 0);
     }
 
     @Test
     public void shouldDelegateToObjectEqualsIfShadowHasNone() throws Exception {
-        View view = new View(null);
+        View view = new View(Robolectric.application);
         assertEquals(view, view);
     }
 

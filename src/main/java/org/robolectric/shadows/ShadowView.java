@@ -111,6 +111,8 @@ public class ShadowView {
     }
 
     public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
+        if (context == null) throw new NullPointerException("no context");
+
         this.context = context;
         this.attributeSet = attributeSet;
 

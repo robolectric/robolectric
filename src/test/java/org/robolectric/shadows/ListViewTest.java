@@ -11,6 +11,7 @@ import android.widget.ListView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.util.Transcript;
 
@@ -37,7 +38,7 @@ public class ListViewTest {
     @Before
     public void setUp() throws Exception {
         transcript = new Transcript();
-        listView = new ListView(null);
+        listView = new ListView(Robolectric.application);
     }
 
     @Test
@@ -65,14 +66,14 @@ public class ListViewTest {
     public void addHeaderView_ShouldThrowIfAdapterIsAlreadySet() throws Exception {
         listView.setAdapter(new CountingAdapter(1));
         try {
-            listView.addHeaderView(new View(null));
+            listView.addHeaderView(new View(Robolectric.application));
             fail();
         } catch (java.lang.IllegalStateException exception) {
             assertThat(exception.getMessage()).isEqualTo("Cannot add header view to list -- setAdapter has already been called");
         }
 
         try {
-            listView.addHeaderView(new View(null), null, false);
+            listView.addHeaderView(new View(Robolectric.application), null, false);
             fail();
         } catch (java.lang.IllegalStateException exception) {
             assertThat(exception.getMessage()).isEqualTo("Cannot add header view to list -- setAdapter has already been called");
@@ -81,13 +82,13 @@ public class ListViewTest {
 
     @Test
     public void addHeaderView_ShouldRecordHeaders() throws Exception {
-        View view0 = new View(null);
+        View view0 = new View(Robolectric.application);
         view0.setId(0);
-        View view1 = new View(null);
+        View view1 = new View(Robolectric.application);
         view1.setId(1);
-        View view2 = new View(null);
+        View view2 = new View(Robolectric.application);
         view2.setId(2);
-        View view3 = new View(null);
+        View view3 = new View(Robolectric.application);
         view3.setId(3);
         listView.addHeaderView(view0);
         listView.addHeaderView(view1);
@@ -107,7 +108,7 @@ public class ListViewTest {
 
     @Test
     public void addHeaderView_shouldAttachTheViewToTheList() throws Exception {
-        View view = new View(null);
+        View view = new View(Robolectric.application);
         view.setId(42);
 
         listView.addHeaderView(view);
@@ -119,7 +120,7 @@ public class ListViewTest {
     public void addFooterView_ShouldThrowIfAdapterIsAlreadySet() throws Exception {
         listView.setAdapter(new CountingAdapter(1));
         try {
-            listView.addFooterView(new View(null));
+            listView.addFooterView(new View(Robolectric.application));
             fail();
         } catch (java.lang.IllegalStateException exception) {
             assertThat(exception.getMessage()).isEqualTo("Cannot add footer view to list -- setAdapter has already been called");
@@ -129,8 +130,8 @@ public class ListViewTest {
 
     @Test
     public void addFooterView_ShouldRecordFooters() throws Exception {
-        View view0 = new View(null);
-        View view1 = new View(null);
+        View view0 = new View(Robolectric.application);
+        View view1 = new View(Robolectric.application);
         listView.addFooterView(view0);
         listView.addFooterView(view1);
         assertThat(shadowOf(listView).getFooterViews().get(0)).isSameAs(view0);
@@ -139,7 +140,7 @@ public class ListViewTest {
 
     @Test
     public void addFooterView_shouldAttachTheViewToTheList() throws Exception {
-        View view = new View(null);
+        View view = new View(Robolectric.application);
         view.setId(42);
 
         listView.addFooterView(view);
@@ -149,9 +150,9 @@ public class ListViewTest {
 
     @Test
     public void setAdapter_shouldNotClearHeaderOrFooterViews() throws Exception {
-        View header = new View(null);
+        View header = new View(Robolectric.application);
         listView.addHeaderView(header);
-        View footer = new View(null);
+        View footer = new View(Robolectric.application);
         listView.addFooterView(footer);
 
         prepareListWithThreeItems();
@@ -163,9 +164,9 @@ public class ListViewTest {
 
     @Test
     public void testGetFooterViewsCount() throws Exception {
-        listView.addHeaderView(new View(null));
-        listView.addFooterView(new View(null));
-        listView.addFooterView(new View(null));
+        listView.addHeaderView(new View(Robolectric.application));
+        listView.addFooterView(new View(Robolectric.application));
+        listView.addFooterView(new View(Robolectric.application));
 
         prepareListWithThreeItems();
 
@@ -314,7 +315,7 @@ public class ListViewTest {
 
     @Test(expected = UnsupportedOperationException.class)
     public void removeView_shouldThrowAnException() throws Exception {
-        listView.removeView(new View(null));
+        listView.removeView(new View(Robolectric.application));
     }
 
     @Test(expected = UnsupportedOperationException.class)
@@ -332,7 +333,7 @@ public class ListViewTest {
     @Test
     public void getPositionForView_shouldReturnInvalidPostionForViewThatIsNotFound() throws Exception {
         prepareWithListAdapter();
-        assertThat(listView.getPositionForView(new View(null))).isEqualTo(AdapterView.INVALID_POSITION);
+        assertThat(listView.getPositionForView(new View(Robolectric.application))).isEqualTo(AdapterView.INVALID_POSITION);
     }
 
     @Test
@@ -508,8 +509,8 @@ public class ListViewTest {
 
         @Override
         public View getView(int position, View convertView, ViewGroup parent) {
-            LinearLayout linearLayout = new LinearLayout(null);
-            linearLayout.addView(new View(null));
+            LinearLayout linearLayout = new LinearLayout(Robolectric.application);
+            linearLayout.addView(new View(Robolectric.application));
             return linearLayout;
         }
     }

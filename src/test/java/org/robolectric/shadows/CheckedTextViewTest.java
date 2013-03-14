@@ -5,6 +5,7 @@ import android.widget.CheckedTextView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.junit.Assert.assertFalse;
@@ -39,7 +40,7 @@ public class CheckedTextViewTest {
     }
 
     @Test public void toggle_shouldChangeCheckedness() throws Exception {
-        CheckedTextView view = new CheckedTextView(null);
+        CheckedTextView view = new CheckedTextView(Robolectric.application);
         assertFalse(view.isChecked());
         view.toggle();
         assertTrue(view.isChecked());

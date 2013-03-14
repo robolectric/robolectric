@@ -22,6 +22,7 @@ import static junit.framework.Assert.assertFalse;
 import static junit.framework.Assert.assertNull;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
+import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -29,7 +30,7 @@ public class AlertDialogTest {
 
     @Test
     public void testBuilder() throws Exception {
-        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));
+        AlertDialog.Builder builder = new AlertDialog.Builder(application);
         builder.setTitle("title").setMessage("message");
         builder.setCancelable(true);
         AlertDialog alert = builder.create();
@@ -47,7 +48,7 @@ public class AlertDialogTest {
 
     @Test
     public void nullTitleAndMessageAreOkay() throws Exception {
-        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null)) //
+        AlertDialog.Builder builder = new AlertDialog.Builder(application) //
                 .setTitle(null) //
                 .setMessage(null);
         ShadowAlertDialog shadowAlertDialog = shadowOf(builder.create());
@@ -59,13 +60,13 @@ public class AlertDialogTest {
     public void getLatestAlertDialog_shouldReturnARealAlertDialog() throws Exception {
         assertThat(ShadowAlertDialog.getLatestAlertDialog()).isNull();
 
-        AlertDialog dialog = new AlertDialog.Builder(new ContextWrapper(null)).show();
+        AlertDialog dialog = new AlertDialog.Builder(application).show();
         assertThat(ShadowAlertDialog.getLatestAlertDialog()).isSameAs(dialog);
     }
 
     @Test
     public void shouldOnlyCreateRequestedButtons() throws Exception {
-        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));
+        AlertDialog.Builder builder = new AlertDialog.Builder(application);
         builder.setPositiveButton("OK", null);
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -75,7 +76,7 @@ public class AlertDialogTest {
 
     @Test
     public void shouldAllowNullButtonListeners() throws Exception {
-        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));
+        AlertDialog.Builder builder = new AlertDialog.Builder(application);
         builder.setPositiveButton("OK", null);
         AlertDialog dialog = builder.create();
         dialog.show();
@@ -84,7 +85,7 @@ public class AlertDialogTest {
 
     @Test
     public void testSetMessageAfterCreation() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));
+        AlertDialog.Builder builder = new AlertDialog.Builder(application);
         builder.setTitle("title").setMessage("message");
         AlertDialog alert = builder.create();
 
@@ -110,29 +111,27 @@ public class AlertDialogTest {
 
     @Test
     public void shouldSetView() throws Exception {
-        ContextWrapper context = new ContextWrapper(null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        EditText view = new EditText(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(application);
+        EditText view = new EditText(application);
         builder.setView(view);
 
         AlertDialog alert = builder.create();
-        assertThat(shadowOf(alert).getView()).isEqualTo((View) view);
+        assertThat(shadowOf(alert).getView()).isEqualTo(view);
     }
 
     @Test
     public void shouldSetCustomTitleView() throws Exception {
-        ContextWrapper context = new ContextWrapper(null);
-        AlertDialog.Builder builder = new AlertDialog.Builder(context);
-        View view = new View(context);
+        AlertDialog.Builder builder = new AlertDialog.Builder(application);
+        View view = new View(application);
         assertThat(builder.setCustomTitle(view)).isSameAs(builder);
 
         AlertDialog alert = builder.create();
-        assertThat(shadowOf(alert).getCustomTitleView()).isEqualTo((View) view);
+        assertThat(shadowOf(alert).getCustomTitleView()).isEqualTo(view);
     }
     
     @Test
     public void shouldSetThePositiveButtonAfterCreation() throws Exception {
-        final AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
+        final AlertDialog alertDialog = new AlertDialog.Builder(application)
             .setPositiveButton("Positive", null).create();
         
         TestDialogOnClickListener listener = new TestDialogOnClickListener();
@@ -147,7 +146,7 @@ public class AlertDialogTest {
     
     @Test
     public void shouldSetTheNegativeButtonAfterCreation() throws Exception {
-        final AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
+        final AlertDialog alertDialog = new AlertDialog.Builder(application)
             .setNegativeButton("Negative", null).create();
         
         TestDialogOnClickListener listener = new TestDialogOnClickListener();
@@ -162,7 +161,7 @@ public class AlertDialogTest {
     
     @Test
     public void shouldSetTheNeutralButtonAfterCreation() throws Exception {
-        final AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
+        final AlertDialog alertDialog = new AlertDialog.Builder(application)
             .setNegativeButton("Neutral", null).create();
         
         TestDialogOnClickListener listener = new TestDialogOnClickListener();
@@ -177,7 +176,7 @@ public class AlertDialogTest {
 
     @Test
     public void clickingPositiveButtonDismissesDialog() throws Exception {
-        AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
+        AlertDialog alertDialog = new AlertDialog.Builder(application)
                 .setPositiveButton("Positive", null).create();
         alertDialog.show();
 
@@ -188,7 +187,7 @@ public class AlertDialogTest {
 
     @Test
     public void clickingNeutralButtonDismissesDialog() throws Exception {
-        AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
+        AlertDialog alertDialog = new AlertDialog.Builder(application)
                 .setNeutralButton("Neutral", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -203,7 +202,7 @@ public class AlertDialogTest {
 
     @Test
     public void clickingNegativeButtonDismissesDialog() throws Exception {
-        AlertDialog alertDialog = new AlertDialog.Builder(new ContextWrapper(null))
+        AlertDialog alertDialog = new AlertDialog.Builder(application)
                 .setNegativeButton("Negative", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -258,7 +257,7 @@ public class AlertDialogTest {
         list.add(77);
         ArrayAdapter<Integer> adapter = new ArrayAdapter<Integer>(Robolectric.application, R.layout.main, R.id.title, list);
 
-        AlertDialog.Builder builder = new AlertDialog.Builder(new ContextWrapper(null));
+        AlertDialog.Builder builder = new AlertDialog.Builder(application);
         builder.setSingleChoiceItems(adapter, -1, new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int item) {
@@ -356,12 +355,11 @@ public class AlertDialogTest {
 
     @Test
     public void shouldFindViewsByIdIfAViewIsSet() throws Exception {
-        ContextWrapper context = new ContextWrapper(null);
-        AlertDialog dialog = new AlertDialog.Builder(context).create();
+        AlertDialog dialog = new AlertDialog.Builder(application).create();
 
         assertThat(dialog.findViewById(99)).isNull();
 
-        View view = new View(context);
+        View view = new View(application);
         view.setId(99);
         dialog.setView(view);
         assertThat(dialog.findViewById(99)).isSameAs(view);

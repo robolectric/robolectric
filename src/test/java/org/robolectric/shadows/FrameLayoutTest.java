@@ -6,6 +6,7 @@ import android.widget.FrameLayout;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -21,7 +22,7 @@ public class FrameLayoutTest {
 
     @Before
     public void setUp() throws Exception {
-        frameLayout = new FrameLayout(null);
+        frameLayout = new FrameLayout(Robolectric.application);
     }
 
     @Test
@@ -31,14 +32,14 @@ public class FrameLayoutTest {
 
     @Test
     public void getLayoutParamsShouldReturnInstanceOfMarginLayoutParams() {
-        FrameLayout frameLayout = new FrameLayout(null);
+        FrameLayout frameLayout = new FrameLayout(Robolectric.application);
         ViewGroup.LayoutParams layoutParams = frameLayout.getLayoutParams();
         assertThat(layoutParams).isInstanceOf(ViewGroup.MarginLayoutParams.class);
     }
 
     @Test
     public void getLayoutParams_shouldReturnFrameLayoutParams() throws Exception {
-        ViewGroup.LayoutParams layoutParams = new FrameLayout(null).getLayoutParams();
+        ViewGroup.LayoutParams layoutParams = new FrameLayout(Robolectric.application).getLayoutParams();
 
         assertThat(layoutParams).isInstanceOf(FrameLayout.LayoutParams.class);
     }
