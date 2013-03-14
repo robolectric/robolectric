@@ -14,16 +14,29 @@ public class ShadowMap {
 
     private final Map<String, ShadowConfig> map;
 
-    private ShadowMap(Map<String, ShadowConfig> map) {
+    ShadowMap(Map<String, ShadowConfig> map) {
         this.map = new HashMap<String, ShadowConfig>(map);
     }
 
-    public ShadowConfig get(String name) {
-        return map.get(name);
+    public ShadowConfig get(String className) {
+        return map.get(className);
+    }
+
+    public ShadowConfig get(Class<?> clazz) {
+        return get(clazz.getName());
     }
 
     public Builder newBuilder() {
         return new Builder(this);
+    }
+
+    String getShadowClassName(Class clazz) {
+        ShadowConfig shadowConfig = null;
+        while (shadowConfig == null && clazz != null) {
+            shadowConfig = get(clazz.getName());
+            clazz = clazz.getSuperclass();
+        }
+        return shadowConfig == null ? null : shadowConfig.shadowClassName;
     }
 
     public static class Builder {

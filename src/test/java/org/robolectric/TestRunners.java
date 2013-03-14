@@ -87,16 +87,6 @@ public class TestRunners {
             super(testClass);
         }
 
-        @Override
-        public Setup createSetup() {
-            return new Setup() {
-                @Override
-                public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz, String methodName, Class<?>[] paramClasses) {
-                    return true;
-                }
-            };
-        }
-
         @Override protected ShadowMap createShadowMap() {
             // Don't do any class binding, because that's what we're trying to test here.
             return ShadowMap.EMPTY;

@@ -4,7 +4,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Config;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
 
@@ -13,9 +12,13 @@ import static org.junit.Assert.assertEquals;
 @RunWith(TestRunners.RealApisWithoutDefaults.class)
 public class RealApisTest {
     @Test
-    @Config(shadows = {Pony.ShadowPony.class})
+    @Config(shadows = {ShimmeryShadowPony.class})
     public void whenShadowHandlerIsInRealityBasedMode_shouldNotCallRealForUnshadowedMethod() throws Exception {
         assertEquals("Off I saunter to the salon!", new Pony("abc").saunter("the salon"));
+    }
+
+    @Implements(value = Pony.class, callThroughByDefault = true)
+    public static class ShimmeryShadowPony extends Pony.ShadowPony {
     }
 
     @Test
@@ -34,7 +37,7 @@ public class RealApisTest {
         }
     }
 
-    @Implements(ClassWithSomeConstructors.class)
+    @Implements(value = ClassWithSomeConstructors.class, callThroughByDefault = true)
     public static class ShadowOfClassWithSomeConstructors {
     }
 }

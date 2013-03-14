@@ -6,7 +6,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.annotation.Config;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
@@ -43,7 +42,7 @@ public class AndroidTranslatorClassInstrumentedTest {
      * in the InstrumentingClassLoader CustomClassNames arrayList
      */
     @Test
-    @Config(shadows = ShadowCustomPaint.class)
+    @Config(shadows = {ShadowCustomPaint.class, ShadowPaintForTests.class})
     public void testCustomMethodShadowed() throws Exception {
         CustomPaint customPaint = new CustomPaint();
         assertThat(customPaint.getColor()).isEqualTo(10);
@@ -55,7 +54,7 @@ public class AndroidTranslatorClassInstrumentedTest {
      * not in the InstrumentingClassLoader CustomClassNames arrayList
      */
     @Test
-    @Config(shadows = ShadowCustomXmasPaint.class)
+    @Config(shadows = {ShadowCustomXmasPaint.class, ShadowPaintForTests.class})
     public void testCustomMethodNotShadowed() throws Exception {
         CustomXmasPaint customXmasPaint = new CustomXmasPaint();
         assertThat(customXmasPaint.getColor()).isEqualTo(999);
@@ -109,7 +108,7 @@ public class AndroidTranslatorClassInstrumentedTest {
     }
 
     @Implements(CustomPaint.class)
-    public static class ShadowCustomPaint {
+    public static class ShadowCustomPaint extends ShadowPaintForTests {
 
         @Implementation
         public int getColor() {
@@ -136,7 +135,7 @@ public class AndroidTranslatorClassInstrumentedTest {
     }
 
     @Implements(CustomXmasPaint.class)
-    public static class ShadowCustomXmasPaint {
+    public static class ShadowCustomXmasPaint extends ShadowPaintForTests {
 
         @Implementation
         public int getColor() {

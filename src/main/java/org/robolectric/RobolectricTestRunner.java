@@ -125,7 +125,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         return new RobolectricContext(appManifest, classHandler, robolectricClassLoader);
     }
 
-    private ClassHandler createClassHandler(Setup setup) {
+    protected ClassHandler createClassHandler(Setup setup) {
         return new ShadowWrangler(setup);
     }
 

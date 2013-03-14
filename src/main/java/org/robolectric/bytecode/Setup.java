@@ -79,20 +79,6 @@ public class Setup {
         return CLASSES_TO_ALWAYS_DELEGATE;
     }
 
-
-    public boolean invokeApiMethodBodiesWhenShadowMethodIsMissing(Class clazz, String methodName, Class<?>[] paramClasses) {
-        if (clazz.getName().startsWith("android.support")) {
-            return true;
-        }
-
-        if (clazz.getName().equals("android.app.PendingIntent")) return false; // todo: grot as we remove some more shadows
-        if (methodName.equals("equals") && paramClasses.length == 1 && paramClasses[0] == Object.class) return true;
-        if (methodName.equals("hashCode") && paramClasses.length == 0) return true;
-        if (methodName.equals("toString") && paramClasses.length == 0) return true;
-
-        return !isFromAndroidSdk(clazz);
-    }
-
     public boolean shouldInstrument(ClassInfo classInfo) {
         if (classInfo.isInterface() || classInfo.isAnnotation() || classInfo.hasAnnotation(DoNotInstrument.class)) {
             return false;

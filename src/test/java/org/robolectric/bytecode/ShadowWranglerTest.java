@@ -179,7 +179,10 @@ public class ShadowWranglerTest {
     }
 
     @Implements(TextFoo.class)
-    public static class ShadowTextFoo {
+    public static class ShadowTextFoo extends ShadowFoo{
+        public ShadowTextFoo(Foo foo) {
+            super(foo);
+        }
     }
 
     @Instrument
