@@ -17,7 +17,7 @@ import static org.robolectric.Robolectric.shadowOf;
  * Shadow for {@code ViewGroup} that simulates its implementation
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(ViewGroup.class)
+@Implements(value = ViewGroup.class, inheritImplementationMethods = true)
 public class ShadowViewGroup extends ShadowView {
     private ArrayList<View> children = new ArrayList<View>();
     private AnimationListener animListener;

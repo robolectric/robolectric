@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -18,6 +19,7 @@ import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
 import org.fest.reflect.core.Reflection;
 import org.robolectric.Robolectric;
+import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
@@ -119,6 +121,8 @@ public class ShadowView {
         if (attributeSet != null) {
             applyAttributes();
         }
+
+        RobolectricInternals.getConstructor(View.class, realView, Context.class).invoke(context);
     }
 
     public void applyAttributes() {
@@ -482,7 +486,7 @@ public class ShadowView {
     }
 
     @Implementation
-    public final void layout(int l, int t, int r, int b) {
+    public void layout(int l, int t, int r, int b) {
         if (l != left || r != right || t != top || b != bottom) {
             left = l;
             top = t;
@@ -706,7 +710,7 @@ public class ShadowView {
     }
 
     protected void dumpAttribute(PrintStream out, String name, String value) {
-        out.print(" " + name + "=\"" + (value == null ? null : ShadowTextUtils.htmlEncode(value)) + "\"");
+        out.print(" " + name + "=\"" + (value == null ? null : TextUtils.htmlEncode(value)) + "\"");
     }
 
     protected void dumpIndent(PrintStream out, int indent) {

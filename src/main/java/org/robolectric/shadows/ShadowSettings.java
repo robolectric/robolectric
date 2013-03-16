@@ -17,7 +17,7 @@ import java.util.WeakHashMap;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Settings.class)
 public class ShadowSettings {
-    @Implements(Settings.class)
+    @Implements(Settings.System.class)
     public static class SettingsImpl {
         private static final WeakHashMap<ContentResolver, Map<String, Object>> dataMap = new WeakHashMap<ContentResolver, Map<String, Object>>();
 
@@ -119,11 +119,11 @@ public class ShadowSettings {
         }
     }
 
-    @Implements(Settings.System.class)
+    @Implements(value = Settings.System.class, inheritImplementationMethods = true)
     public static class ShadowSystem extends SettingsImpl {
     }
 
-    @Implements(Settings.Secure.class)
+    @Implements(value = Settings.Secure.class, inheritImplementationMethods = true)
     public static class ShadowSecure extends SettingsImpl {
     }
 

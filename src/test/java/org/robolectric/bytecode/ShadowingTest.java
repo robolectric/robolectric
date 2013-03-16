@@ -151,8 +151,8 @@ public class ShadowingTest {
 
     @Test
     @Config(shadows = {Pony.ShadowPony.class})
-    public void whenShadowHandlerIsInClassicMode_shouldNotCallRealForUnshadowedMethod() throws Exception {
-        assertEquals(null, new Pony().saunter("the salon"));
+    public void shouldCallRealForUnshadowedMethod() throws Exception {
+        assertEquals("Off I saunter to the salon!", new Pony().saunter("the salon"));
     }
 
     @Implements(TextView.class)
@@ -163,6 +163,7 @@ public class ShadowingTest {
     }
 
     @Test
+    @Config(shadows = ShadowOfClassWithSomeConstructors.class)
     public void shouldGenerateSeparatedConstructorBodies() throws Exception {
         ClassWithSomeConstructors o = new ClassWithSomeConstructors("my name");
         assertNull(o.name);
@@ -184,6 +185,9 @@ public class ShadowingTest {
 
     @Implements(ClassWithSomeConstructors.class)
     public static class ShadowOfClassWithSomeConstructors {
+        @SuppressWarnings("UnusedDeclaration")
+        public void __constructor__(String s) {
+        }
     }
 
     @Test

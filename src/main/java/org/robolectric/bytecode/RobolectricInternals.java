@@ -1,6 +1,5 @@
 package org.robolectric.bytecode;
 
-import android.view.View;
 import org.fest.reflect.method.Invoker;
 
 import java.lang.reflect.Constructor;
@@ -181,7 +180,19 @@ public class RobolectricInternals {
         }
     }
 
-    public static Invoker<Void> getConstructor(Class<?> clazz, View realView, Class... parameterTypes) {
+    public static Invoker<Void> getConstructor(Class<?> clazz, Object instance, String... parameterTypes) {
+        Class[] parameterClasses = new Class[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            try {
+                parameterClasses[i] = clazz.getClassLoader().loadClass(parameterTypes[i]);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return getConstructor(clazz, instance, parameterClasses);
+    }
+
+    public static Invoker<Void> getConstructor(Class<?> clazz, Object realView, Class... parameterTypes) {
         String name = directMethodName(clazz.getName(), InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME);
         return method(name).withParameterTypes(parameterTypes).in(realView);
     }

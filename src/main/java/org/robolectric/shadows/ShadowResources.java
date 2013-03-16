@@ -122,7 +122,7 @@ public class ShadowResources {
 
     @Implementation
     public ColorStateList getColorStateList(int id) {
-        return new ColorStateList(null, null);
+        return new ColorStateList(new int[0][0], new int[0]);
     }
 
     @Implementation

@@ -36,7 +36,7 @@ public class AndroidManifestTest {
         assertEquals("org.robolectric.AndroidManifestTest.ConfigTestReceiver", config.getReceiverClassName(1));
         assertEquals("org.robolectric.ACTION2", config.getReceiverIntentFilterActions(1).get(0));
 
-        assertEquals("org.robolectric.test.ConfigTestReceiver", config.getReceiverClassName(2));
+        assertEquals("org.robolectric.tester.ConfigTestReceiver", config.getReceiverClassName(2));
         assertEquals("org.robolectric.ACTION_SUPERSET_PACKAGE", config.getReceiverIntentFilterActions(2).get(0));
 
         assertEquals("org.robolectric.ConfigTestReceiver", config.getReceiverClassName(3));

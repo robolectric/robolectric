@@ -11,7 +11,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(ListView.class)
+@Implements(value = ListView.class, inheritImplementationMethods = true)
 public class ShadowListView extends ShadowAbsListView {
     @RealObject private ListView realListView;
 
@@ -87,21 +87,6 @@ public class ShadowListView extends ShadowAbsListView {
     @Implementation
     public void addFooterView(View footerView) {
         addFooterView(footerView, null, false);
-    }
-
-    @Implementation
-    public void removeAllViews() {
-        throw new UnsupportedOperationException();
-    }
-
-    @Implementation
-    public void removeView(View view) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Implementation
-    public void removeViewAt(int index) {
-        throw new UnsupportedOperationException();
     }
 
     private void ensureAdapterNotSet(String view) {

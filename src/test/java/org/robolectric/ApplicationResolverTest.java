@@ -48,7 +48,7 @@ public class ApplicationResolverTest {
     public void shouldRegisterReceiversFromTheManifest() throws Exception {
         Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithReceivers.xml")).resolveApplication();
         List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
-        assertEquals(7, receivers.size());
+        assertEquals(6, receivers.size());
         assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));
     }
 }

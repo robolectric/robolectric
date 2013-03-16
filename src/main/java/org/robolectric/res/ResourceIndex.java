@@ -4,8 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class ResourceIndex {
-    final Map<ResName, Integer> resourceNameToId = new HashMap<ResName, Integer>();
-    final Map<Integer, ResName> resourceIdToResName = new HashMap<Integer, ResName>();
+    protected final Map<ResName, Integer> resourceNameToId = new HashMap<ResName, Integer>();
+    protected final Map<Integer, ResName> resourceIdToResName = new HashMap<Integer, ResName>();
 
     public abstract Integer getResourceId(ResName resName);
 

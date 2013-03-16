@@ -40,7 +40,7 @@ import static org.robolectric.util.SQLite.*;
  * Implemented as a wrapper around an embedded SQL database, accessed via JDBC.  The JDBC connection is
  * made available to test cases for use in fixture setup and assertions.
  */
-@Implements(SQLiteDatabase.class)
+@Implements(value = SQLiteDatabase.class, inheritImplementationMethods = true)
 public class ShadowSQLiteDatabase extends ShadowSQLiteCloseable {
 
     public static final android.database.sqlite.SQLiteDatabase.CursorFactory DEFAULT_CURSOR_FACTORY = new SQLiteDatabase.CursorFactory() {

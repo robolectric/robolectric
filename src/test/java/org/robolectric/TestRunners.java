@@ -8,6 +8,7 @@ import org.robolectric.bytecode.Setup;
 import org.robolectric.bytecode.ShadowMap;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.shadows.ShadowSystemProperties;
 
 import java.io.File;
 import java.lang.reflect.Method;
@@ -47,8 +48,10 @@ public class TestRunners {
         }
 
         @Override protected ShadowMap createShadowMap() {
-            // Don't do any class binding, because that's what we're trying to test here.
-            return ShadowMap.EMPTY;
+            // Don't do any class binding except the bare minimum, because that's what we're trying to test here.
+            return new ShadowMap.Builder()
+                    .addShadowClass(ShadowSystemProperties.class)
+                    .build();
         }
 
         @Override protected AndroidManifest createAppManifest(File baseDir) {

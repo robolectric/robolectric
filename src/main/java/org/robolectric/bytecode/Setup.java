@@ -86,10 +86,7 @@ public class Setup {
             return false;
         }
 
-        if (isFromAndroidSdk(classInfo)) {
-            return true;
-        }
-
+        if (isFromAndroidSdk(classInfo)) return true;
         return false;
     }
 
@@ -145,7 +142,9 @@ public class Setup {
                 new MethodRef("android.os.StrictMode", "trackActivity"),
                 new MethodRef("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", "*"),
                 new MethodRef("com.android.i18n.phonenumbers.PhoneNumberUtil", "*"),
-                new MethodRef("dalvik.system.CloseGuard", "get")
+                new MethodRef("dalvik.system.CloseGuard", "get"),
+                new MethodRef("java.lang.AutoCloseable", "*"),
+                new MethodRef("android.util.LocaleUtil", "getLayoutDirectionFromLocale")
         )));
     }
 
@@ -161,6 +160,7 @@ public class Setup {
         map.put("com.android.i18n.phonenumbers.PhoneNumberUtil$PhoneNumberFormat", FakeClass.FakeInnerClass.class.getName());
         map.put("com.android.i18n.phonenumbers.Phonenumber$PhoneNumber", FakeClass.class.getName());
         map.put("dalvik.system.CloseGuard", Object.class.getName());
+        map.put("java.lang.AutoCloseable", Object.class.getName());
         return map;
     }
 

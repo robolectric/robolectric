@@ -27,5 +27,7 @@ public class ColorTest {
         assertEquals(-1, Color.parseColor("#ffffffff"));
         assertEquals(0, Color.parseColor("#00000000"));
         assertEquals(-5588020, Color.parseColor("#ffaabbcc"));
+        assertEquals(-5588020, Color.parseColor("#fabc"));
+        assertEquals(-5588020, Color.parseColor("#abc"));
     }
 }

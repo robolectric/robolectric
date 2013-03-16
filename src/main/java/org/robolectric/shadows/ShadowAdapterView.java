@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import android.database.DataSetObserver;
 import android.os.Handler;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Adapter;
 import android.widget.AdapterView;
 import org.robolectric.internal.Implementation;
@@ -15,7 +16,7 @@ import java.util.List;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(AdapterView.class)
+@Implements(value = AdapterView.class, inheritImplementationMethods = true)
 public class ShadowAdapterView extends ShadowViewGroup {
     private static int ignoreRowsAtEndOfList = 0;
     private static boolean automaticallyUpdateRowViews = true;
@@ -302,6 +303,36 @@ public class ShadowAdapterView extends ShadowViewGroup {
         addViews();
     }
 
+    @Implementation
+    @Override
+    public void addView(View child) {
+        super.addView(child);
+    }
+
+    @Implementation
+    @Override
+    public void addView(View child, int index) {
+        super.addView(child, index);
+    }
+
+    @Implementation
+    @Override
+    public void addView(View child, int index, ViewGroup.LayoutParams params) {
+        super.addView(child, index, params);
+    }
+
+    @Implementation
+    @Override
+    public void addView(View child, ViewGroup.LayoutParams params) {
+        super.addView(child, params);
+    }
+
+    @Implementation
+    @Override
+    public void addView(View child, int width, int height) {
+        super.addView(child, width, height);
+    }
+
     protected void addViews() {
         Adapter adapter = getAdapter();
         if (adapter != null) {
@@ -324,6 +355,24 @@ public class ShadowAdapterView extends ShadowViewGroup {
             }
             previousItems = newItems;
         }
+    }
+
+    @Implementation
+    @Override
+    public void removeView(View child) {
+        throw new UnsupportedOperationException("removeView(View) is not supported in AdapterView");
+    }
+
+    @Implementation
+    @Override
+    public void removeViewAt(int index) {
+        throw new UnsupportedOperationException("removeViewAt(int) is not supported in AdapterView");
+    }
+
+    @Implementation
+    @Override
+    public void removeAllViews() {
+        throw new UnsupportedOperationException("removeAllViews() is not supported in AdapterView");
     }
 
     /**

@@ -123,6 +123,9 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     private ResourceLoader pickFor(String namespace) {
+        if (namespace.equals("android.internal")) {
+            return new NullResourceLoader();
+        }
         ResourceLoader resourceLoader = resourceLoaders.get(namespace);
         if (resourceLoader == null) {
             throw new RuntimeException("no ResourceLoader found for " + namespace);
@@ -135,8 +138,7 @@ public class RoutingResourceLoader implements ResourceLoader {
             super(null);
         }
 
-        @Override
-        void doInitialize() {
+        @Override void doInitialize() {
         }
 
         @Override

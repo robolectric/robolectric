@@ -1,7 +1,5 @@
 package org.robolectric.bytecode;
 
-import org.objectweb.asm.Type;
-
 import java.util.Arrays;
 
 class InvocationProfile {
@@ -9,25 +7,18 @@ class InvocationProfile {
     final String methodName;
     final boolean isStatic;
     final String[] paramTypes;
-    private final boolean isSpecial;
+    private final boolean isDeclaredOnObject;
 
-    public InvocationProfile(String methodSignature, boolean isStatic, ClassLoader classLoader) {
-        int parenStart = methodSignature.indexOf('(');
-        int methodStart = methodSignature.lastIndexOf('/', parenStart);
-        String className = methodSignature.substring(0, methodStart).replace('/', '.');
-        this.clazz = loadClass(classLoader, className);
-        this.methodName = methodSignature.substring(methodStart + 1, parenStart);
-
-        Type[] argumentTypes = Type.getArgumentTypes(methodSignature.substring(parenStart));
-        this.paramTypes = new String[argumentTypes.length];
-        for (int i = 0; i < argumentTypes.length; i++) {
-            paramTypes[i] = argumentTypes[i].getClassName();
-        }
+    public InvocationProfile(String methodSignatureString, boolean isStatic, ClassLoader classLoader) {
+        MethodSignature methodSignature = MethodSignature.parse(methodSignatureString);
+        this.clazz = loadClass(classLoader, methodSignature.className);
+        this.methodName = methodSignature.methodName;
+        this.paramTypes = methodSignature.paramTypes;
         this.isStatic = isStatic;
 
-        this.isSpecial = methodSignature.endsWith("/equals(Ljava/lang/Object;)Z")
-                || methodSignature.endsWith("/hashCode()I")
-                || methodSignature.endsWith("/toString()Ljava/lang/String;");
+        this.isDeclaredOnObject = methodSignatureString.endsWith("/equals(Ljava/lang/Object;)Z")
+                || methodSignatureString.endsWith("/hashCode()I")
+                || methodSignatureString.endsWith("/toString()Ljava/lang/String;");
     }
 
     public Class<?>[] getParamClasses(ClassLoader classLoader) throws ClassNotFoundException {
@@ -54,7 +45,7 @@ class InvocationProfile {
 
         InvocationProfile that = (InvocationProfile) o;
 
-        if (isSpecial != that.isSpecial) return false;
+        if (isDeclaredOnObject != that.isDeclaredOnObject) return false;
         if (isStatic != that.isStatic) return false;
         if (clazz != null ? !clazz.equals(that.clazz) : that.clazz != null) return false;
         if (methodName != null ? !methodName.equals(that.methodName) : that.methodName != null) return false;
@@ -69,11 +60,11 @@ class InvocationProfile {
         result = 31 * result + (methodName != null ? methodName.hashCode() : 0);
         result = 31 * result + (isStatic ? 1 : 0);
         result = 31 * result + (paramTypes != null ? Arrays.hashCode(paramTypes) : 0);
-        result = 31 * result + (isSpecial ? 1 : 0);
+        result = 31 * result + (isDeclaredOnObject ? 1 : 0);
         return result;
     }
 
-    public boolean isSpecial() {
-        return isSpecial;
+    public boolean isDeclaredOnObject() {
+        return isDeclaredOnObject;
     }
 }

@@ -14,14 +14,21 @@ import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.os.Looper;
+import android.view.View;
 import org.robolectric.AndroidManifest;
+import org.robolectric.internal.HiddenApi;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
+import org.robolectric.res.Attribute;
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.tester.android.content.TestSharedPreferences;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,6 +61,85 @@ public class ShadowContextWrapper extends ShadowContext {
     @Implementation
     public Resources.Theme getTheme() {
         return getResources().newTheme();
+    }
+
+    @Implementation
+    @Override public File getFilesDir() {
+        return super.getFilesDir();
+    }
+
+    @Implementation
+    @Override public File getCacheDir() {
+        return super.getCacheDir();
+    }
+
+    @HiddenApi @Implementation
+    @Override public RoboAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
+        return super.createAttributeSet(attributes, viewClass);
+    }
+
+    @Implementation
+    @Override public String[] fileList() {
+        return super.fileList();
+    }
+
+    @Implementation
+    @Override public File getDatabasePath(String name) {
+        return super.getDatabasePath(name);
+    }
+
+    @Implementation
+    @Override public File getDir(String name, int mode) {
+        return super.getDir(name, mode);
+    }
+
+    @Implementation
+    @Override public File getFileStreamPath(String name) {
+        return super.getFileStreamPath(name);
+    }
+
+    @Override public ResourceLoader getResourceLoader() {
+        return super.getResourceLoader();
+    }
+
+    @Implementation
+    @Override public String getString(int resId) {
+        return super.getString(resId);
+    }
+
+    @Implementation
+    @Override public String getString(int resId, Object... formatArgs) {
+        return super.getString(resId, formatArgs);
+    }
+
+    @Implementation
+    @Override public CharSequence getText(int resId) {
+        return super.getText(resId);
+    }
+
+    @Implementation
+    @Override public File getExternalCacheDir() {
+        return super.getExternalCacheDir();
+    }
+
+    @Implementation
+    @Override public File getExternalFilesDir(String type) {
+        return super.getExternalFilesDir(type);
+    }
+
+    @Implementation
+    @Override public FileInputStream openFileInput(String path) throws FileNotFoundException {
+        return super.openFileInput(path);
+    }
+
+    @Implementation
+    @Override public FileOutputStream openFileOutput(String path, int mode) throws FileNotFoundException {
+        return super.openFileOutput(path, mode);
+    }
+
+    @Implementation
+    @Override public boolean deleteFile(String name) {
+        return super.deleteFile(name);
     }
 
     @Implementation
@@ -93,6 +179,11 @@ public class ShadowContextWrapper extends ShadowContext {
     @Implementation
     public void unregisterReceiver(BroadcastReceiver broadcastReceiver) {
         getApplicationContext().unregisterReceiver(broadcastReceiver);
+    }
+
+    @Implementation
+    public ClassLoader getClassLoader() {
+        return getClass().getClassLoader();
     }
 
     @Implementation

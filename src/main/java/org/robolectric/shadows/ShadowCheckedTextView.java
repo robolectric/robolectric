@@ -6,7 +6,7 @@ import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(CheckedTextView.class)
+@Implements(value = CheckedTextView.class, inheritImplementationMethods = true)
 public class ShadowCheckedTextView extends ShadowTextView {
     @RealObject CheckedTextView realCheckedTextView;
     private boolean checked;

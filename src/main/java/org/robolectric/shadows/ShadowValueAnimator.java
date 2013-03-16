@@ -33,4 +33,9 @@ public class ShadowValueAnimator extends ShadowAnimator {
     public boolean isRunning() {
         return false;
     }
+
+    @Implementation @Override
+    public long getDuration() {
+        return super.getDuration();
+    }
 }

@@ -7,7 +7,11 @@ public class PackageResourceLoader extends XResourceLoader {
     ResourceIndex resourceIndex;
 
     public PackageResourceLoader(ResourcePath resourcePath) {
-        super(new ResourceExtractor(resourcePath));
+        this(resourcePath, new ResourceExtractor(resourcePath));
+    }
+
+    public PackageResourceLoader(ResourcePath resourcePath, ResourceIndex resourceIndex) {
+        super(resourceIndex);
         this.resourcePath = resourcePath;
     }
 
