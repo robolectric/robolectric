@@ -2,17 +2,16 @@ package com.xtremelabs.robolectric.util;
 
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 
 public class Scheduler {
 	private final static long DEFAULT_TIMEOUT_MS = 10000; //10sec
-    private final LinkedBlockingQueue<PostedRunnable> postedRunnables = new LinkedBlockingQueue<PostedRunnable>();
+    private final LinkedBlockingDeque<PostedRunnable> postedRunnables = new LinkedBlockingDeque<PostedRunnable>();
     private long currentTime = 0;
     private boolean paused = false;
     private final Thread associatedThread = Thread.currentThread();
     private boolean isConstantlyIdling = false;
-    private int front = -1;
 
     public synchronized long getCurrentTime() {
         return currentTime;
@@ -56,8 +55,7 @@ public class Scheduler {
     
     public synchronized void postAtFrontOfQueue(final Runnable runnable) {
         if (paused || Thread.currentThread() != associatedThread) {
-        	postDelayed(runnable, front--);
-        	//postedRunnables.add(new PostedRunnable(runnable, currentTime - front++));
+        	postedRunnables.addFirst(new PostedRunnable(runnable, currentTime));
         } else {
             runnable.run();
         }
