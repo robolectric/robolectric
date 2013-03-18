@@ -133,14 +133,6 @@ public class Scheduler {
         return runTasks(1, timeoutMs);
     }
 
-	public boolean runTasks(final int howMany) {
-    	if (enqueuedTaskCount() < howMany) {
-    		return false;
-    	}
-
-    	return runTasks(howMany, DEFAULT_TIMEOUT_MS);
-    }
-
 	public boolean runTasks(int howMany, final long timeoutMs) {
         try {
 			while (howMany > 0) {

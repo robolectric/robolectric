@@ -1,10 +1,14 @@
 package com.xtremelabs.robolectric.util;
 
+import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.junit.Before;
 import org.junit.Test;
-
-import static org.hamcrest.CoreMatchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 public class SchedulerTest {
     private Transcript transcript;
@@ -107,7 +111,7 @@ public class SchedulerTest {
     @Test
     public void removeShouldRemoveAllInstancesOfRunnableFromQueue() throws Exception {
         scheduler.post(new TestRunnable());
-        TestRunnable runnable = new TestRunnable();
+        final TestRunnable runnable = new TestRunnable();
         scheduler.post(runnable);
         scheduler.post(runnable);
         assertThat(scheduler.enqueuedTaskCount(), equalTo(3));
@@ -121,7 +125,7 @@ public class SchedulerTest {
     public void resetShouldUnPause() throws Exception {
         scheduler.pause();
 
-        TestRunnable runnable = new TestRunnable();
+        final TestRunnable runnable = new TestRunnable();
         scheduler.post(runnable);
 
         assertThat(runnable.wasRun, equalTo(false));
@@ -135,24 +139,42 @@ public class SchedulerTest {
     public void resetShouldClearPendingRunnables() throws Exception {
         scheduler.pause();
 
-        TestRunnable runnable1 = new TestRunnable();
+        final TestRunnable runnable1 = new TestRunnable();
         scheduler.post(runnable1);
 
         assertThat(runnable1.wasRun, equalTo(false));
 
         scheduler.reset();
 
-        TestRunnable runnable2 = new TestRunnable();
+        final TestRunnable runnable2 = new TestRunnable();
         scheduler.post(runnable2);
 
         assertThat(runnable1.wasRun, equalTo(false));
         assertThat(runnable2.wasRun, equalTo(true));
     }
 
-    private class AddToTranscript implements Runnable {
-        private String event;
+	@Test
+	public void testWaitOnPostFromBackgroundThread() throws Exception {
+		final TestRunnable runnable = new TestRunnable();
+		new Timer().schedule(new TimerTask() {
 
-        public AddToTranscript(String event) {
+			@Override
+			public void run() {
+				runnable.run();
+			}
+		}, 100);
+
+		// new Thread(runnable).start();
+
+		scheduler.runOneTask(5000);
+
+		assertThat(runnable.wasRun, is(equalTo(true)));
+	}
+
+    private class AddToTranscript implements Runnable {
+        private final String event;
+
+        public AddToTranscript(final String event) {
             this.event = event;
         }
 
