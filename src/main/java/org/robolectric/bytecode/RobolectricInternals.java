@@ -13,7 +13,7 @@ import java.util.Map;
 
 @SuppressWarnings({"UnusedDeclaration"})
 public class RobolectricInternals {
-    // initialized via magic by RobolectricContext
+    // initialized via magic by SdkEnvironment
     private static ClassHandler classHandler;
     private static final Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
 

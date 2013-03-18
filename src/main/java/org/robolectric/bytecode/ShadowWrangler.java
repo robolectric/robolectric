@@ -27,8 +27,6 @@ public class ShadowWrangler implements ClassHandler {
     private static final int MAX_CALL_DEPTH = 200;
     private static final boolean STRIP_SHADOW_STACK_TRACES = true;
 
-    private final Setup setup;
-
     public boolean debug = false;
     private boolean strictI18n = false;
 
@@ -39,7 +37,7 @@ public class ShadowWrangler implements ClassHandler {
         }
     };
     private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
-    private ShadowMap shadowClassMap = null;
+    private final ShadowMap shadowMap;
     private boolean logMissingShadowMethods = false;
     private static ThreadLocal<Info> infos = new ThreadLocal<Info>() {
         @Override
@@ -48,16 +46,12 @@ public class ShadowWrangler implements ClassHandler {
         }
     };
 
-    public void setShadowMap(ShadowMap shadowMap) {
-        this.shadowClassMap = shadowMap;
-    }
-
     private static class Info {
         private int callDepth = 0;
     }
 
-    public ShadowWrangler(Setup setup) {
-        this.setup = setup;
+    public ShadowWrangler(ShadowMap shadowMap) {
+        this.shadowMap = shadowMap;
     }
 
     @Override
@@ -77,9 +71,7 @@ public class ShadowWrangler implements ClassHandler {
                 method.setAccessible(true);
                 method.invoke(null);
             } catch (NoSuchMethodException e) {
-                if (setup.shouldPerformStaticInitializationIfShadowIsMissing()) {
-                    RobolectricInternals.performStaticInitialization(clazz);
-                }
+                RobolectricInternals.performStaticInitialization(clazz);
             } catch (InvocationTargetException e) {
                 throw new RuntimeException(e);
             } catch (IllegalAccessException e) {
@@ -152,7 +144,7 @@ public class ShadowWrangler implements ClassHandler {
         synchronized (invocationPlans) {
             InvocationPlan invocationPlan = invocationPlans.get(invocationProfile);
             if (invocationPlan == null) {
-                invocationPlan = new InvocationPlan(shadowClassMap, invocationProfile);
+                invocationPlan = new InvocationPlan(shadowMap, invocationProfile);
                 invocationPlans.put(invocationProfile, invocationPlan);
             }
             return invocationPlan;
@@ -243,7 +235,7 @@ public class ShadowWrangler implements ClassHandler {
             return shadow;
         }
 
-        String shadowClassName = shadowClassMap.getShadowClassName(instance.getClass());
+        String shadowClassName = shadowMap.getShadowClassName(instance.getClass());
 
         if (shadowClassName == null) return new Object();
 
@@ -290,7 +282,7 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     private Class<?> findDirectShadowClass(Class<?> originalClass) {
-        ShadowConfig shadowConfig = shadowClassMap.get(originalClass.getName());
+        ShadowConfig shadowConfig = shadowMap.get(originalClass.getName());
         if (shadowConfig == null) {
             return null;
         }

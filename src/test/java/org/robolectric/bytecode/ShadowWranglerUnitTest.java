@@ -14,7 +14,7 @@ public class ShadowWranglerUnitTest {
 
     @Before
     public void setup() throws Exception {
-        shadowWrangler = new ShadowWrangler(null);
+        shadowWrangler = new ShadowWrangler(ShadowMap.EMPTY);
     }
 
     @Test

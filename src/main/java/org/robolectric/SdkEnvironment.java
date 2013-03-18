@@ -1,27 +1,28 @@
 package org.robolectric;
 
 import org.robolectric.bytecode.ClassHandler;
+import org.robolectric.bytecode.ShadowMap;
+import org.robolectric.bytecode.ShadowWrangler;
 import org.robolectric.res.AndroidSdkFinder;
 import org.robolectric.res.ResourcePath;
 
-public class RobolectricContext {
+import java.util.HashMap;
+import java.util.Map;
+
+public class SdkEnvironment {
     private final AndroidManifest appManifest;
     private final ClassLoader robolectricClassLoader;
-    private final ClassHandler classHandler;
     private ResourcePath systemResourcePath;
+    public final Map<ShadowMap, ShadowWrangler> classHandlersByShadowMap = new HashMap<ShadowMap, ShadowWrangler>();
+    private ClassHandler currentClassHandler;
 
-    public RobolectricContext(AndroidManifest appManifest, ClassHandler classHandler, ClassLoader robolectricClassLoader) {
+    public SdkEnvironment(AndroidManifest appManifest, ClassLoader robolectricClassLoader) {
         this.appManifest = appManifest;
-        this.classHandler = classHandler;
         this.robolectricClassLoader = robolectricClassLoader;
     }
 
     public AndroidManifest getAppManifest() {
         return appManifest;
-    }
-
-    public ClassHandler getClassHandler() {
-        return classHandler;
     }
 
     public synchronized ResourcePath getSystemResourcePath() {
@@ -49,5 +50,13 @@ public class RobolectricContext {
      */
     public static void setStaticValue(Class<?> clazz, String fieldName, Object value) {
         Robolectric.Reflection.setFinalStaticField(clazz, fieldName, value);
+    }
+
+    public ClassHandler getCurrentClassHandler() {
+        return currentClassHandler;
+    }
+
+    public void setCurrentClassHandler(ClassHandler currentClassHandler) {
+        this.currentClassHandler = currentClassHandler;
     }
 }

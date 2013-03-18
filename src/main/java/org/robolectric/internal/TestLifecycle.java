@@ -1,17 +1,15 @@
 package org.robolectric.internal;
 
-import org.robolectric.RobolectricContext;
+import org.robolectric.AndroidManifest;
 
 import java.lang.reflect.Method;
 
 public interface TestLifecycle<T> {
-    void init(RobolectricContext robolectricContext);
-
     void beforeTest(Method method);
 
     void prepareTest(Object test);
 
-    T createApplication(Method method);
+    T createApplication(Method method, AndroidManifest appManifest);
 
     void afterTest(Method method);
 }

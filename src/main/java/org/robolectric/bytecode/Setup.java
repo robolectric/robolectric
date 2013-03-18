@@ -4,8 +4,8 @@ import android.R;
 import android.net.Uri__FromAndroid;
 import org.robolectric.AndroidManifest;
 import org.robolectric.RobolectricBase;
-import org.robolectric.RobolectricContext;
 import org.robolectric.RobolectricTestRunner;
+import org.robolectric.SdkEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
@@ -16,6 +16,7 @@ import org.robolectric.internal.Instrument;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.RealObject;
 import org.robolectric.internal.TestLifecycle;
+import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.util.DatabaseConfig;
 import org.robolectric.util.I18nException;
@@ -47,10 +48,11 @@ public class Setup {
             org.robolectric.bytecode.InstrumentingClassLoader.class,
             org.robolectric.bytecode.JavassistInstrumentingClassLoader.class,
             org.robolectric.bytecode.AsmInstrumentingClassLoader.class,
-            RobolectricContext.class,
+            SdkEnvironment.class,
             RobolectricTestRunner.class,
             RobolectricTestRunner.HelperTestRunner.class,
             ResourcePath.class,
+            ResourceLoader.class,
             AndroidTranslator.class,
             ClassHandler.class,
             Implements.class,
@@ -107,10 +109,6 @@ public class Setup {
                 || className.startsWith("libcore.")
                 || className.startsWith("com.google.android.maps.")
                 || className.startsWith("org.apache.http.impl.client.DefaultRequestDirector");
-    }
-
-    public boolean shouldPerformStaticInitializationIfShadowIsMissing() {
-        return true;
     }
 
     public boolean shouldAcquire(String name) {

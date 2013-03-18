@@ -39,6 +39,23 @@ public class ShadowMap {
         return shadowConfig == null ? null : shadowConfig.shadowClassName;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        ShadowMap shadowMap = (ShadowMap) o;
+
+        if (!map.equals(shadowMap.map)) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode() {
+        return map.hashCode();
+    }
+
     public static class Builder {
         private static final Set<String> unloadableClassNames = new HashSet<String>();
 

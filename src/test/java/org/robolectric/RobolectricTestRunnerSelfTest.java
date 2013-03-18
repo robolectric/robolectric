@@ -42,7 +42,7 @@ public class RobolectricTestRunnerSelfTest {
 
     @Test
     public void setStaticValue_shouldIgnoreFinalModifier() {
-        RobolectricContext.setStaticValue(android.os.Build.class, "MODEL", "expected value");
+        SdkEnvironment.setStaticValue(android.os.Build.class, "MODEL", "expected value");
 
         assertEquals("expected value", android.os.Build.MODEL);
     }
@@ -101,7 +101,7 @@ public class RobolectricTestRunnerSelfTest {
         }
 
         public static class MyTestLifecycle extends DefaultTestLifecycle {
-            @Override public Application createApplication(Method method) {
+            @Override public Application createApplication(Method method, AndroidManifest appManifest) {
                 return new MyTestApplication();
             }
         }

@@ -1,6 +1,6 @@
 package org.robolectric.internal;
 
-import org.robolectric.RobolectricContext;
+import org.robolectric.SdkEnvironment;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.DatabaseConfig;
 
@@ -11,5 +11,5 @@ public interface ParallelUniverseInterface {
 
     void setDatabaseMap(DatabaseConfig.DatabaseMap databaseMap);
 
-    void setupApplicationState(Method method, TestLifecycle testLifecycle, RobolectricContext robolectricContext, boolean strictI18n, ResourceLoader systemResourceLoader);
+    void setupApplicationState(Method method, TestLifecycle testLifecycle, SdkEnvironment sdkEnvironment, boolean strictI18n, ResourceLoader systemResourceLoader);
 }

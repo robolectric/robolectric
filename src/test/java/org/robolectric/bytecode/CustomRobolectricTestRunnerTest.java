@@ -8,6 +8,7 @@ import org.junit.runner.Result;
 import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
+import org.robolectric.AndroidManifest;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
@@ -126,7 +127,7 @@ public class CustomRobolectricTestRunnerTest {
                 afterTestMethod = method;
             }
 
-            @Override public Application createApplication(Method method) {
+            @Override public Application createApplication(Method method, AndroidManifest appManifest) {
                 return new CustomApplication();
             }
         }

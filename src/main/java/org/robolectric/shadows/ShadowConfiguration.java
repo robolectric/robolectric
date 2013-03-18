@@ -1,13 +1,10 @@
 package org.robolectric.shadows;
 
 import android.content.res.Configuration;
+import java.util.Locale;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-
-import java.util.Locale;
-
-import static org.robolectric.Robolectric.directlyOn;
 
 @Implements(Configuration.class)
 public class ShadowConfiguration {

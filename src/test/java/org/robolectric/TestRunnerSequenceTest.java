@@ -9,6 +9,7 @@ import org.robolectric.bytecode.Setup;
 import org.robolectric.internal.TestLifecycle;
 import org.robolectric.util.Transcript;
 
+import java.io.File;
 import java.lang.reflect.Method;
 
 import static org.junit.Assert.assertTrue;
@@ -61,7 +62,7 @@ public class TestRunnerSequenceTest {
         }
 
         @Override
-        protected AndroidManifest createAppManifest() {
+        protected AndroidManifest createAppManifest(File baseDir) {
             return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
         }
 
@@ -69,16 +70,16 @@ public class TestRunnerSequenceTest {
             return MyTestLifecycle.class;
         }
 
-        @Override protected void configureShadows(Config config) {
+        @Override protected void configureShadows(SdkEnvironment sdkEnvironment, Config config) {
             StateHolder.transcript.add("configureShadows");
-            super.configureShadows(config);
+            super.configureShadows(sdkEnvironment, config);
         }
     }
 
     public static class MyTestLifecycle extends DefaultTestLifecycle {
-        @Override public Application createApplication(Method method) {
+        @Override public Application createApplication(Method method, AndroidManifest appManifest) {
             StateHolder.transcript.add("createApplication");
-            return super.createApplication(method);
+            return super.createApplication(method, appManifest);
         }
 
         @Override public void prepareTest(Object test) {

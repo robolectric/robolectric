@@ -8,8 +8,8 @@ import org.robolectric.bytecode.Setup;
 import org.robolectric.bytecode.ShadowMap;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.res.ResourceLoader;
-import org.robolectric.util.DatabaseConfig;
 
+import java.io.File;
 import java.lang.reflect.Method;
 
 import static org.robolectric.util.TestUtil.resourceFile;
@@ -21,7 +21,7 @@ public class TestRunners {
         }
 
         @Override
-        protected AndroidManifest createAppManifest() {
+        protected AndroidManifest createAppManifest(File baseDir) {
             return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
         }
 
@@ -51,12 +51,12 @@ public class TestRunners {
             return ShadowMap.EMPTY;
         }
 
-        @Override protected AndroidManifest createAppManifest() {
+        @Override protected AndroidManifest createAppManifest(File baseDir) {
             return null;
         }
 
         @Override
-        protected void setupApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader) {
+        protected void setupApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, SdkEnvironment sdkEnvironment) {
             // Don't do any resource loading or app init, because that's what we're trying to test here.
         }
     }
@@ -77,7 +77,7 @@ public class TestRunners {
         }
 
         @Override
-        protected AndroidManifest createAppManifest() {
+        protected AndroidManifest createAppManifest(File baseDir) {
             return new AndroidManifest(resourceFile("TestAndroidManifest.xml"), resourceFile("res"), resourceFile("assets"));
         }
     }
@@ -92,9 +92,9 @@ public class TestRunners {
             return ShadowMap.EMPTY;
         }
 
-        @Override
-        public void internalBeforeTest(Method method, DatabaseConfig.DatabaseMap databaseMap, Config config) {
+        @Override public AndroidManifest getAppManifest(Config config) {
             // Don't do any resource loading or app init, because that's what we're trying to test here.
+            return null;
         }
     }
 }
