@@ -276,9 +276,10 @@ public class Robolectric {
                 ShadowNotification.class,
                 ShadowNdefMessage.class,
                 ShadowNdefRecord.class,
+                ShadowNetworkInfo.class,
                 ShadowNfcAdapter.class,
                 ShadowNotificationManager.class,
-                ShadowNetworkInfo.class,
+                ShadowNumberPicker.class,
                 ShadowOverlayItem.class,
                 ShadowObjectAnimator.class,
                 ShadowPagerAdapter.class,
@@ -847,6 +848,10 @@ public class Robolectric {
 
     public static ShadowObjectAnimator shadowOf(ObjectAnimator instance) {
         return (ShadowObjectAnimator) shadowOf_(instance);
+    }
+
+    public static ShadowNumberPicker shadowOf(NumberPicker other) {
+        return (ShadowNumberPicker) Robolectric.shadowOf_(other);
     }
 
     public static ShadowPagerAdapter shadowOf(PagerAdapter instance) {
