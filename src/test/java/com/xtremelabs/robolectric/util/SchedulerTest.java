@@ -160,13 +160,11 @@ public class SchedulerTest {
 
 			@Override
 			public void run() {
-				runnable.run();
+				scheduler.post(runnable);
 			}
 		}, 100);
 
-		// new Thread(runnable).start();
-
-		scheduler.runOneTask(5000);
+		scheduler.runOneTask(3000);
 
 		assertThat(runnable.wasRun, is(equalTo(true)));
 	}
