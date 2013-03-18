@@ -256,38 +256,37 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     }
 
     @Override protected Statement methodBlock(final FrameworkMethod method) {
-        Class bootstrappedTestClass = robolectricContext.bootstrappedClass(getTestClass().getJavaClass());
-        HelperTestRunner helperTestRunner;
-        try {
-            helperTestRunner = new HelperTestRunner(bootstrappedTestClass);
-        } catch (InitializationError initializationError) {
-            throw new RuntimeException(initializationError);
-        }
-
-        setupLogging();
-
-        Config config = getConfig(method.getMethod());
-        configureShadows(config);
-
-
-        final Method bootstrappedMethod;
-        try {
-            //noinspection unchecked
-            bootstrappedMethod = bootstrappedTestClass.getMethod(method.getName());
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
-            internalBeforeTest(bootstrappedMethod, databaseMap, config);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new RuntimeException(e);
-        }
-
-        final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
         return new Statement() {
             @Override public void evaluate() throws Throwable {
+                Class bootstrappedTestClass = robolectricContext.bootstrappedClass(getTestClass().getJavaClass());
+                HelperTestRunner helperTestRunner;
+                try {
+                    helperTestRunner = new HelperTestRunner(bootstrappedTestClass);
+                } catch (InitializationError initializationError) {
+                    throw new RuntimeException(initializationError);
+                }
+
+                final Method bootstrappedMethod;
+                try {
+                    //noinspection unchecked
+                    bootstrappedMethod = bootstrappedTestClass.getMethod(method.getName());
+                } catch (NoSuchMethodException e) {
+                    throw new RuntimeException(e);
+                }
+
+                final Config config = getConfig(method.getMethod());
+                configureShadows(config);
+                setupLogging();
+
+                try {
+                    internalBeforeTest(bootstrappedMethod, databaseMap, config);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    throw new RuntimeException(e);
+                }
+
+                final Statement statement = helperTestRunner.methodBlock(new FrameworkMethod(bootstrappedMethod));
+
                 Map<Field, Object> withConstantAnnos = getWithConstantAnnotations(bootstrappedMethod);
 
                 // todo: this try/finally probably isn't right -- should mimic RunAfters? [xw]
