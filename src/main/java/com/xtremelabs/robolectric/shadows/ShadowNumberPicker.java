@@ -12,6 +12,7 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
     private String[] displayedValues;
     private int minValue;
     private int maxValue;
+    private boolean wrapSelectorWheel;
 
     @Implementation
     public void setValue(int value) {
@@ -44,5 +45,14 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
     @Implementation
     public void setMaxValue(int maxValue) {
         this.maxValue = maxValue;
+    }
+
+    @Implementation
+    public void setWrapSelectorWheel(boolean wrapSelectorWheel) {
+        this.wrapSelectorWheel = wrapSelectorWheel;
+    }
+
+    public boolean getWrapSelectorWheel() {
+        return wrapSelectorWheel;
     }
 }
