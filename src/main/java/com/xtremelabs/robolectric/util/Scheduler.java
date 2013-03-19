@@ -90,7 +90,7 @@ public class Scheduler {
     }
 
 	public boolean advanceToNextPostedRunnable(final long timeoutMs) {
-    	final long scheduledTime = getScheduledTime(timeoutMs);
+    	final long scheduledTime = getScheduledTimeOfFirstTask(timeoutMs);
     	if(scheduledTime == -1){
     		return false;
     	}
@@ -126,10 +126,20 @@ public class Scheduler {
         return runCount > 0;
     }
 
+	/**
+	 * Same as {@link #runOneTask(long)}, only with a default timeout of {@value #DEFAULT_TIMEOUT_MS} milliseconds.
+	 * @return <code>true</code> when task runs
+	 */
 	public boolean runOneTask() {
     	return runOneTask(DEFAULT_TIMEOUT_MS);
     }
 
+	/**
+	 * Runs one task that is (or will be) posted in the queue, waiting up to the specified
+	 * wait time for the task to become available. 
+	 * @param timeoutMs the time to wait
+	 * @return <code>true</code> when task runs
+	 */
 	public boolean runOneTask(final long timeoutMs) {
         return runTasks(1, timeoutMs);
     }
@@ -195,14 +205,14 @@ public class Scheduler {
     }
 
 	private boolean nextTaskIsScheduledBefore(final long endingTime, final long timeoutMs) {
-		final long scheduledTime = getScheduledTime(timeoutMs);
+		final long scheduledTime = getScheduledTimeOfFirstTask(timeoutMs);
 		if(scheduledTime == -1){
 			return false;
 		}
 		return scheduledTime <= endingTime;
     }
 	
-	private synchronized long getScheduledTime(final long timeoutMs) {
+	private synchronized long getScheduledTimeOfFirstTask(final long timeoutMs) {
 		PostedRunnable postedRunnable = null;
 		try {
 			postedRunnable = postedRunnables.poll(timeoutMs, TimeUnit.MILLISECONDS);

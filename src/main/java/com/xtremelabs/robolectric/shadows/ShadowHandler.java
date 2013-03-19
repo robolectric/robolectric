@@ -1,5 +1,11 @@
 package com.xtremelabs.robolectric.shadows;
 
+import static com.xtremelabs.robolectric.Robolectric.shadowOf;
+
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
@@ -8,12 +14,6 @@ import com.xtremelabs.robolectric.Robolectric;
 import com.xtremelabs.robolectric.internal.Implementation;
 import com.xtremelabs.robolectric.internal.Implements;
 import com.xtremelabs.robolectric.internal.RealObject;
-
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.List;
-
-import static com.xtremelabs.robolectric.Robolectric.shadowOf;
 
 /**
  * Shadow for Handler that puts posted {@link Runnable}s into a queue instead of sending them to be handled on a
@@ -27,33 +27,33 @@ public class ShadowHandler {
     @RealObject
     private Handler realHandler;
     private Looper looper = Looper.myLooper();
-    private List<Message> messages = new ArrayList<Message>();
+    private final List<Message> messages = new ArrayList<Message>();
     private Handler.Callback callback;
 
     public void __constructor__() {
         this.looper = Looper.myLooper();
     }
 
-    public void __constructor__(Looper looper) {
+    public void __constructor__(final Looper looper) {
         this.looper = looper;
     }
 
-    public void __constructor__(Handler.Callback callback) {
+    public void __constructor__(final Handler.Callback callback) {
         this.callback = callback;
     }
 
     @Implementation
-    public boolean post(Runnable r) {
+    public boolean post(final Runnable r) {
         return postDelayed(r, 0);
     }
 
     @Implementation
-    public boolean postDelayed(Runnable r, long delayMillis) {
+    public boolean postDelayed(final Runnable r, final long delayMillis) {
         return shadowOf(looper).post(r, delayMillis);
     }
 
     @Implementation
-    public final boolean postAtFrontOfQueue(Runnable runnable) {
+    public final boolean postAtFrontOfQueue(final Runnable runnable) {
         return shadowOf(looper).postAtFrontOfQueue(runnable);
     }
 
@@ -63,23 +63,23 @@ public class ShadowHandler {
     }
 
     @Implementation
-    public Message obtainMessage(int what) {
+    public Message obtainMessage(final int what) {
         return obtainMessage(what, null);
     }
 
     @Implementation
-    public Message obtainMessage(int what, Object obj) {
+    public Message obtainMessage(final int what, final Object obj) {
         return obtainMessage(what, 0, 0, obj);
     }
 
     @Implementation
-    public Message obtainMessage(int what, int arg1, int arg2) {
+    public Message obtainMessage(final int what, final int arg1, final int arg2) {
         return obtainMessage(what, arg1, arg2, null);
     }
 
     @Implementation
-    public Message obtainMessage(int what, int arg1, int arg2, Object obj) {
-        Message message = new Message();
+    public Message obtainMessage(final int what, final int arg1, final int arg2, final Object obj) {
+        final Message message = new Message();
         message.what = what;
         message.arg1 = arg1;
         message.arg2 = arg2;
@@ -94,7 +94,7 @@ public class ShadowHandler {
     }
 
     @Implementation
-    public final boolean sendMessageDelayed(final Message msg, long delayMillis) {
+    public final boolean sendMessageDelayed(final Message msg, final long delayMillis) {
         Robolectric.shadowOf(msg).setWhen(Robolectric.shadowOf(looper).getScheduler().getCurrentTime()+delayMillis);
         messages.add(msg);
         postDelayed(new Runnable() {
@@ -109,7 +109,7 @@ public class ShadowHandler {
         return true;
     }
 
-    private void routeMessage(Message msg) {
+    private void routeMessage(final Message msg) {
         if(callback != null) {
             callback.handleMessage(msg);
         } else {
@@ -118,12 +118,12 @@ public class ShadowHandler {
     }
 
     @Implementation
-    public final boolean sendEmptyMessage(int what) {
+    public final boolean sendEmptyMessage(final int what) {
         return sendEmptyMessageDelayed(what, 0L);
     }
 
     @Implementation
-    public final boolean sendEmptyMessageDelayed(int what, long delayMillis) {
+    public final boolean sendEmptyMessageDelayed(final int what, final long delayMillis) {
         final Message msg = new Message();
         msg.what = what;
         return sendMessageDelayed(msg, delayMillis);
@@ -151,13 +151,13 @@ public class ShadowHandler {
     }
 
     @Implementation
-    public final void removeCallbacks(java.lang.Runnable r) {
+    public final void removeCallbacks(final java.lang.Runnable r) {
         shadowOf(looper).getScheduler().remove(r);
     }
 
     @Implementation
-    public final boolean hasMessages(int what) {
-        for (Message message : messages) {
+    public final boolean hasMessages(final int what) {
+        for (final Message message : messages) {
             if (message.what == what) {
                 return true;
             }
@@ -166,8 +166,8 @@ public class ShadowHandler {
     }
 
     @Implementation
-    public final boolean hasMessages(int what, Object object) {
-        for (Message message : messages) {
+    public final boolean hasMessages(final int what, final Object object) {
+        for (final Message message : messages) {
             if(message.what == what && message.obj == object) {
                 return true;
             }
@@ -177,14 +177,14 @@ public class ShadowHandler {
 
 
     @Implementation
-    public final void removeMessages(int what) {
+    public final void removeMessages(final int what) {
         removeMessages(what, null);
     }
 
     @Implementation
-    public final void removeMessages(int what, Object object) {
-        for (Iterator<Message> iterator = messages.iterator(); iterator.hasNext(); ) {
-            Message message = iterator.next();
+    public final void removeMessages(final int what, final Object object) {
+        for (final Iterator<Message> iterator = messages.iterator(); iterator.hasNext(); ) {
+            final Message message = iterator.next();
             if (message.what == what && (object == null || object.equals(message.obj))) {
                 iterator.remove();
             }
@@ -196,7 +196,8 @@ public class ShadowHandler {
     /**
      * @deprecated use {@link #idleMainLooper()} instead
      */
-    public static void flush() {
+    @Deprecated
+	public static void flush() {
         idleMainLooper();
     }
 
@@ -220,6 +221,14 @@ public class ShadowHandler {
      */
     public static void runMainLooperOneTask() {
         shadowOf(Looper.myLooper()).runOneTask();
+    }
+    
+    /**
+     * @see ShadowLooper#runOneTask() ()
+     * @param timeoutMs time in milliseconds to wait for task to become available
+     */
+    public static void runMainLooperOneTask(final long timeoutMs) {
+    	shadowOf(Looper.myLooper()).runOneTask();
     }
 
     /**

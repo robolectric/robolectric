@@ -151,6 +151,10 @@ public class ShadowLooper {
     public void runOneTask() {
         scheduler.runOneTask();
     }
+    
+    public void runOneTask(final long timeoutMs) {
+    	scheduler.runOneTask(timeoutMs);
+    }
 
     /**
      * Enqueue a task to be run later.
