@@ -52,6 +52,7 @@ public class ShadowNumberPicker extends ShadowLinearLayout {
         this.wrapSelectorWheel = wrapSelectorWheel;
     }
 
+    @Implementation
     public boolean getWrapSelectorWheel() {
         return wrapSelectorWheel;
     }
