@@ -28,6 +28,7 @@ public class ShadowMediaPlayer {
 	private int sourceResId;
 	private MediaPlayer.OnCompletionListener completionListener;
 	private MediaPlayer.OnPreparedListener preparedListener;
+	private MediaPlayer.OnErrorListener errorListener;
 	
 	@Implementation
 	public static MediaPlayer create(Context context, int resId) {
@@ -69,6 +70,13 @@ public class ShadowMediaPlayer {
 	public void setOnPreparedListener(MediaPlayer.OnPreparedListener listener) {
 		preparedListener = listener;
 	}
+	
+	@Implementation
+	public void setOnErrorListener(MediaPlayer.OnErrorListener listener) {
+		errorListener = listener;
+	}
+	
+	
 	
 	@Implementation
 	public boolean isPlaying() {
@@ -180,5 +188,17 @@ public class ShadowMediaPlayer {
     public void invokeCompletionListener() {
     	if (completionListener == null) return;
     	completionListener.onCompletion( player );
-    }    
+    }
+    
+    
+    public void invokeErrorListener(int what,int extra){
+		playing = false;
+		prepared = false;
+    	if (errorListener == null) return;
+    	boolean handled = errorListener.onError(player,what,extra);
+    	if (!handled){
+    		invokeCompletionListener();
+    	}
+    		    
+    }
 }
