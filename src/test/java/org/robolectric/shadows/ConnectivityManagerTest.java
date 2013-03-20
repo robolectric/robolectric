@@ -100,4 +100,17 @@ public class ConnectivityManagerTest {
         shadowConnectivityManager.setActiveNetworkInfo(null);
         assertEquals(0, connectivityManager.getAllNetworkInfo().length);
     }
+
+    @Test
+    public void shouldGetDefaultNetworkPreference() throws Exception {
+        assertEquals(connectivityManager.getNetworkPreference(), ConnectivityManager.DEFAULT_NETWORK_PREFERENCE);
+    }
+    
+    @Test
+    public void shouldGetSetNetworkPreference() throws Exception {
+        connectivityManager.setNetworkPreference(ConnectivityManager.TYPE_MOBILE);
+        assertEquals(connectivityManager.getNetworkPreference(), connectivityManager.getNetworkPreference());
+        connectivityManager.setNetworkPreference(ConnectivityManager.TYPE_WIFI);
+        assertEquals(connectivityManager.getNetworkPreference(), ConnectivityManager.TYPE_WIFI);
+    }
 }
