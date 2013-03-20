@@ -1,9 +1,12 @@
 package org.robolectric.shadows;
 
 import android.media.MediaPlayer;
+
+import org.apache.tools.ant.taskdefs.Length.When;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
@@ -30,4 +33,49 @@ public class MediaPlayerTest {
             assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(position);
         }
     }
+    
+    
+    @Test
+    public void testErrorListenerCalled() {
+		MediaPlayer.OnErrorListener err = Mockito.mock(MediaPlayer.OnErrorListener.class);
+		shadowMediaPlayer.setOnErrorListener(err);
+		shadowMediaPlayer.invokeErrorListener(0,0);
+		Mockito.verify(err).onError(mediaPlayer,0,0);
+    }
+    
+    
+    @Test
+    public void testErrorListenerCalledNoOnCompleteCalledWhenReturnTrue() {
+		MediaPlayer.OnErrorListener err = Mockito.mock(MediaPlayer.OnErrorListener.class);
+		MediaPlayer.OnCompletionListener complete =  Mockito.mock(MediaPlayer.OnCompletionListener.class);
+		Mockito.when(err.onError(mediaPlayer,0,0)).thenReturn(true);
+		shadowMediaPlayer.setOnErrorListener(err);
+		shadowMediaPlayer.setOnCompletionListener(complete);
+		
+		shadowMediaPlayer.invokeErrorListener(0, 0);
+		
+		Mockito.verify(err).onError(mediaPlayer,0,0);
+		Mockito.verifyZeroInteractions(complete);
+		
+    }
+    
+    
+    @Test
+    public void testErrorListenerCalledOnCompleteCalledWhenReturnFalse() {
+		MediaPlayer.OnErrorListener err = Mockito.mock(MediaPlayer.OnErrorListener.class);
+		MediaPlayer.OnCompletionListener complete =  Mockito.mock(MediaPlayer.OnCompletionListener.class);
+		Mockito.when(err.onError(mediaPlayer,0,0)).thenReturn(false);
+		shadowMediaPlayer.setOnErrorListener(err);
+		shadowMediaPlayer.setOnCompletionListener(complete);
+		
+		shadowMediaPlayer.invokeErrorListener(0, 0);
+		
+		Mockito.verify(err).onError(mediaPlayer,0,0);
+		Mockito.verify(complete).onCompletion(mediaPlayer);
+		
+    }
+    
+    
+    
+    
 }
