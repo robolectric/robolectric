@@ -18,6 +18,7 @@ public class ShadowConnectivityManager {
 
     private NetworkInfo activeNetwork;
     private boolean backgroundDataSetting;
+    private int networkPreference = ConnectivityManager.DEFAULT_NETWORK_PREFERENCE;
 
     private Map<Integer, NetworkInfo> networkTypeToNetworkInfo = new HashMap<Integer, NetworkInfo>();
 
@@ -43,6 +44,16 @@ public class ShadowConnectivityManager {
     @Implementation
     public boolean getBackgroundDataSetting() {
         return backgroundDataSetting;
+    }
+
+    @Implementation
+    public void setNetworkPreference(int preference) {
+        networkPreference = preference;
+    }
+
+    @Implementation
+    public int getNetworkPreference() {
+        return networkPreference;
     }
 
     public void setNetworkInfo(int networkType, NetworkInfo networkInfo) {
