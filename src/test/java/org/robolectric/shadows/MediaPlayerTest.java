@@ -1,8 +1,6 @@
 package org.robolectric.shadows;
 
 import android.media.MediaPlayer;
-
-import org.apache.tools.ant.taskdefs.Length.When;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,8 +31,7 @@ public class MediaPlayerTest {
             assertThat(mediaPlayer.getCurrentPosition()).isEqualTo(position);
         }
     }
-    
-    
+
     @Test
     public void testErrorListenerCalled() {
 		MediaPlayer.OnErrorListener err = Mockito.mock(MediaPlayer.OnErrorListener.class);
@@ -42,7 +39,6 @@ public class MediaPlayerTest {
 		shadowMediaPlayer.invokeErrorListener(0,0);
 		Mockito.verify(err).onError(mediaPlayer,0,0);
     }
-    
     
     @Test
     public void testErrorListenerCalledNoOnCompleteCalledWhenReturnTrue() {
@@ -56,10 +52,8 @@ public class MediaPlayerTest {
 		
 		Mockito.verify(err).onError(mediaPlayer,0,0);
 		Mockito.verifyZeroInteractions(complete);
-		
     }
-    
-    
+
     @Test
     public void testErrorListenerCalledOnCompleteCalledWhenReturnFalse() {
 		MediaPlayer.OnErrorListener err = Mockito.mock(MediaPlayer.OnErrorListener.class);
@@ -72,10 +66,5 @@ public class MediaPlayerTest {
 		
 		Mockito.verify(err).onError(mediaPlayer,0,0);
 		Mockito.verify(complete).onCompletion(mediaPlayer);
-		
     }
-    
-    
-    
-    
 }
