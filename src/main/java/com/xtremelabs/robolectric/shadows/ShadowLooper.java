@@ -18,8 +18,8 @@ import com.xtremelabs.robolectric.util.Scheduler;
 @Implements(Looper.class)
 public class ShadowLooper {
     private static ThreadLocal<Looper> looperForThread = makeThreadLocalLoopers();
-    private final Scheduler scheduler = new Scheduler();
-    private final Thread myThread = Thread.currentThread();
+    private Scheduler scheduler = new Scheduler();
+    private Thread myThread = Thread.currentThread();
 
     boolean quit;
 
@@ -50,7 +50,7 @@ public class ShadowLooper {
                     synchronized (looper) {
                         looper.wait();
                     }
-                } catch (final InterruptedException ignore) {
+                } catch (InterruptedException ignore) {
                 }
             }
         }
@@ -80,11 +80,11 @@ public class ShadowLooper {
         return quit;
     }
 
-    public static void pauseLooper(final Looper looper) {
+    public static void pauseLooper(Looper looper) {
         shadowOf(looper).pause();
     }
 
-    public static void unPauseLooper(final Looper looper) {
+    public static void unPauseLooper(Looper looper) {
         shadowOf(looper).unPause();
     }
 
@@ -96,12 +96,12 @@ public class ShadowLooper {
         unPauseLooper(Looper.getMainLooper());
     }
 
-    public static void idleMainLooper(final long interval) {
+    public static void idleMainLooper(long interval) {
         shadowOf(Looper.getMainLooper()).idle(interval);
     }
 
 
-    public static void idleMainLooperConstantly(final boolean shouldIdleConstantly) {
+    public static void idleMainLooperConstantly(boolean shouldIdleConstantly) {
         shadowOf(Looper.getMainLooper()).idleConstantly(shouldIdleConstantly);
     }
 
@@ -119,11 +119,11 @@ public class ShadowLooper {
      *
      * @param intervalMillis milliseconds to advance
      */
-    public void idle(final long intervalMillis) {
+    public void idle(long intervalMillis) {
         scheduler.advanceBy(intervalMillis);
     }
 
-    public void idleConstantly(final boolean shouldIdleConstantly) {
+    public void idleConstantly(boolean shouldIdleConstantly) {
         scheduler.idleConstantly(shouldIdleConstantly);
     }
 
@@ -152,7 +152,7 @@ public class ShadowLooper {
         scheduler.runOneTask();
     }
     
-    public void runOneTask(final long timeoutMs) {
+    public void runOneTask(long timeoutMs) {
     	scheduler.runOneTask(timeoutMs);
     }
 
@@ -162,7 +162,7 @@ public class ShadowLooper {
      * @param runnable    the task to be run
      * @param delayMillis how many milliseconds into the (virtual) future to run it
      */
-    public boolean post(final Runnable runnable, final long delayMillis) {
+    public boolean post(Runnable runnable, long delayMillis) {
         if (!quit) {
             scheduler.postDelayed(runnable, delayMillis);
             return true;
@@ -171,7 +171,7 @@ public class ShadowLooper {
         }
     }
 
-    public boolean postAtFrontOfQueue(final Runnable runnable) {
+    public boolean postAtFrontOfQueue(Runnable runnable) {
         if (!quit) {
             scheduler.postAtFrontOfQueue(runnable);
             return true;

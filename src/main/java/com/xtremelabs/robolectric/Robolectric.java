@@ -197,26 +197,26 @@ public class Robolectric {
     public static Application application;
     public static final int DEFAULT_SDK_VERSION = 16;
 
-    public static <T> T newInstanceOf(final Class<T> clazz) {
+    public static <T> T newInstanceOf(Class<T> clazz) {
         return RobolectricInternals.newInstanceOf(clazz);
     }
 
-    public static Object newInstanceOf(final String className) {
+    public static Object newInstanceOf(String className) {
         try {
-            final Class<?> clazz = Class.forName(className);
+            Class<?> clazz = Class.forName(className);
             if (clazz != null) {
                 return newInstanceOf(clazz);
             }
-        } catch (final ClassNotFoundException e) {
+        } catch (ClassNotFoundException e) {
         }
         return null;
     }
 
-    public static <T> T newInstance(final Class<T> clazz, final Class[] parameterTypes, final Object[] params) {
+    public static <T> T newInstance(Class<T> clazz, Class[] parameterTypes, Object[] params) {
         return RobolectricInternals.newInstance(clazz, parameterTypes, params);
     }
 
-    public static void bindShadowClass(final Class<?> shadowClass) {
+    public static void bindShadowClass(Class<?> shadowClass) {
         RobolectricInternals.bindShadowClass(shadowClass);
     }
 
@@ -224,8 +224,8 @@ public class Robolectric {
         bindShadowClasses(getDefaultShadowClasses());
     }
 
-    public static void bindShadowClasses(final List<Class<?>> shadowClasses) {
-        for (final Class<?> shadowClass : shadowClasses) {
+    public static void bindShadowClasses(List<Class<?>> shadowClasses) {
+        for (Class<?> shadowClass : shadowClasses) {
             bindShadowClass(shadowClass);
         }
     }
@@ -518,738 +518,738 @@ public class Robolectric {
         ShadowTypeface.reset();
     }
 
-    public static <T> T directlyOn(final T shadowedObject) {
+    public static <T> T directlyOn(T shadowedObject) {
         return RobolectricInternals.directlyOn(shadowedObject);
     }
 
-    public static <T> T directlyOnFullStack(final T shadowedObject) {
+    public static <T> T directlyOnFullStack(T shadowedObject) {
         return RobolectricInternals.directlyOnFullStack(shadowedObject);
     }
 
-    public static <T> T directlyOnFullStack(final FullStackDirectCallPolicy.Builder<T> builder) {
+    public static <T> T directlyOnFullStack(FullStackDirectCallPolicy.Builder<T> builder) {
         return RobolectricInternals.directlyOnFullStack(builder);
     }
 
-    public static ShadowAbsListView shadowOf(final AbsListView instance) {
+    public static ShadowAbsListView shadowOf(AbsListView instance) {
         return (ShadowAbsListView) shadowOf_(instance);
     }
 
-    public static ShadowAbsSeekBar shadowOf(final AbsSeekBar instance) {
+    public static ShadowAbsSeekBar shadowOf(AbsSeekBar instance) {
         return (ShadowAbsSeekBar) shadowOf_(instance);
     }
 
-    public static ShadowAccountManager shadowOf(final AccountManager instance) {
+    public static ShadowAccountManager shadowOf(AccountManager instance) {
         return (ShadowAccountManager) shadowOf_(instance);
     }
 
-    public static ShadowActivity shadowOf(final Activity instance) {
+    public static ShadowActivity shadowOf(Activity instance) {
         return (ShadowActivity) shadowOf_(instance);
     }
 
-    public static ShadowActivityGroup shadowOf(final ActivityGroup instance) {
+    public static ShadowActivityGroup shadowOf(ActivityGroup instance) {
         return (ShadowActivityGroup) shadowOf_(instance);
     }
 
-    public static ShadowActivityManager shadowOf(final ActivityManager instance) {
+    public static ShadowActivityManager shadowOf(ActivityManager instance) {
         return (ShadowActivityManager) shadowOf_(instance);
     }
 
-    public static ShadowAdapterView shadowOf(final AdapterView instance) {
+    public static ShadowAdapterView shadowOf(AdapterView instance) {
         return (ShadowAdapterView) shadowOf_(instance);
     }
 
-    public static ShadowAddress shadowOf(final Address instance) {
+    public static ShadowAddress shadowOf(Address instance) {
         return (ShadowAddress) shadowOf_(instance);
     }
 
-    public static ShadowAlarmManager shadowOf(final AlarmManager instance) {
+    public static ShadowAlarmManager shadowOf(AlarmManager instance) {
         return (ShadowAlarmManager) Robolectric.shadowOf_(instance);
     }
 
-    public static ShadowAlertDialog shadowOf(final AlertDialog instance) {
+    public static ShadowAlertDialog shadowOf(AlertDialog instance) {
         return (ShadowAlertDialog) shadowOf_(instance);
     }
 
-    public static ShadowAlphaAnimation shadowOf(final AlphaAnimation instance) {
+    public static ShadowAlphaAnimation shadowOf(AlphaAnimation instance) {
         return (ShadowAlphaAnimation) shadowOf_(instance);
     }
 
-    public static ShadowAnimation shadowOf(final Animation instance) {
+    public static ShadowAnimation shadowOf(Animation instance) {
         return (ShadowAnimation) shadowOf_(instance);
     }
 
-    public static ShadowLayoutAnimationController shadowOf(final LayoutAnimationController instance) {
+    public static ShadowLayoutAnimationController shadowOf(LayoutAnimationController instance) {
         return (ShadowLayoutAnimationController) shadowOf_(instance);
     }
 
-    public static ShadowAnimationDrawable shadowOf(final AnimationDrawable instance) {
+    public static ShadowAnimationDrawable shadowOf(AnimationDrawable instance) {
         return (ShadowAnimationDrawable) shadowOf_(instance);
     }
 
-    public static ShadowAnimationSet shadowOf(final AnimationSet instance) {
+    public static ShadowAnimationSet shadowOf(AnimationSet instance) {
         return (ShadowAnimationSet) shadowOf_(instance);
     }
 
-    public static ShadowAnimationUtils shadowOf(final AnimationUtils instance) {
+    public static ShadowAnimationUtils shadowOf(AnimationUtils instance) {
         return (ShadowAnimationUtils) shadowOf_(instance);
     }
 
-    public static ShadowAnimator shadowOf(final Animator instance) {
+    public static ShadowAnimator shadowOf(Animator instance) {
         return (ShadowAnimator) shadowOf_(instance);
     }
 
-    public static ShadowAnimatorSet shadowOf(final AnimatorSet instance) {
+    public static ShadowAnimatorSet shadowOf(AnimatorSet instance) {
         return (ShadowAnimatorSet) shadowOf_(instance);
     }
 
-    public static ShadowApplication shadowOf(final Application instance) {
+    public static ShadowApplication shadowOf(Application instance) {
         return (ShadowApplication) shadowOf_(instance);
     }
 
-    public static ShadowAppWidgetHost shadowOf(final AppWidgetHost instance) {
+    public static ShadowAppWidgetHost shadowOf(AppWidgetHost instance) {
         return (ShadowAppWidgetHost) shadowOf_(instance);
     }
 
-    public static ShadowAppWidgetHostView shadowOf(final AppWidgetHostView instance) {
+    public static ShadowAppWidgetHostView shadowOf(AppWidgetHostView instance) {
         return (ShadowAppWidgetHostView) shadowOf_(instance);
     }
 
-    public static ShadowAppWidgetManager shadowOf(final AppWidgetManager instance) {
+    public static ShadowAppWidgetManager shadowOf(AppWidgetManager instance) {
         return (ShadowAppWidgetManager) shadowOf_(instance);
     }
 
-    public static ShadowArrayAdapter shadowOf(final ArrayAdapter instance) {
+    public static ShadowArrayAdapter shadowOf(ArrayAdapter instance) {
         return (ShadowArrayAdapter) shadowOf_(instance);
     }
 
-    public static ShadowAssetManager shadowOf(final AssetManager instance) {
+    public static ShadowAssetManager shadowOf(AssetManager instance) {
         return (ShadowAssetManager) Robolectric.shadowOf_(instance);
     }
 
     @SuppressWarnings("rawtypes")
-	public static ShadowAsyncTask shadowOf(final AsyncTask instance){
+	public static ShadowAsyncTask shadowOf(AsyncTask instance){
     	return (ShadowAsyncTask) Robolectric.shadowOf_(instance);
     }
 
-    public static ShadowAudioManager shadowOf(final AudioManager instance) {
+    public static ShadowAudioManager shadowOf(AudioManager instance) {
         return (ShadowAudioManager) shadowOf_(instance);
     }
 
-    public static ShadowBaseAdapter shadowOf(final BaseAdapter other) {
+    public static ShadowBaseAdapter shadowOf(BaseAdapter other) {
         return (ShadowBaseAdapter) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowBitmap shadowOf(final Bitmap other) {
+    public static ShadowBitmap shadowOf(Bitmap other) {
         return (ShadowBitmap) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowBitmapDrawable shadowOf(final BitmapDrawable instance) {
+    public static ShadowBitmapDrawable shadowOf(BitmapDrawable instance) {
         return (ShadowBitmapDrawable) shadowOf_(instance);
     }
 
-    public static ShadowBluetoothAdapter shadowOf(final BluetoothAdapter other) {
+    public static ShadowBluetoothAdapter shadowOf(BluetoothAdapter other) {
         return (ShadowBluetoothAdapter) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowBluetoothDevice shadowOf(final BluetoothDevice other) {
+    public static ShadowBluetoothDevice shadowOf(BluetoothDevice other) {
         return (ShadowBluetoothDevice) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowBundle shadowOf(final Bundle instance) {
+    public static ShadowBundle shadowOf(Bundle instance) {
         return (ShadowBundle) shadowOf_(instance);
     }
 
-    public static ShadowCamera shadowOf(final Camera instance) {
+    public static ShadowCamera shadowOf(Camera instance) {
         return (ShadowCamera) shadowOf_(instance);
     }
 
-    public static ShadowCameraParameters shadowOf(final Camera.Parameters instance) {
+    public static ShadowCameraParameters shadowOf(Camera.Parameters instance) {
         return (ShadowCameraParameters) shadowOf_(instance);
     }
 
-    public static ShadowCameraSize shadowOf(final Camera.Size instance) {
+    public static ShadowCameraSize shadowOf(Camera.Size instance) {
         return (ShadowCameraSize) shadowOf_(instance);
     }
 
-    public static ShadowCanvas shadowOf(final Canvas instance) {
+    public static ShadowCanvas shadowOf(Canvas instance) {
         return (ShadowCanvas) shadowOf_(instance);
     }
 
-    public static ShadowCheckedTextView shadowOf(final CheckedTextView instance) {
+    public static ShadowCheckedTextView shadowOf(CheckedTextView instance) {
         return (ShadowCheckedTextView) shadowOf_(instance);
     }
 
-    public static ShadowClipboardManager shadowOf(final ClipboardManager instance) {
+    public static ShadowClipboardManager shadowOf(ClipboardManager instance) {
         return (ShadowClipboardManager) shadowOf_(instance);
     }
 
-    public static ShadowColor shadowOf(final Color instance) {
+    public static ShadowColor shadowOf(Color instance) {
         return (ShadowColor) shadowOf_(instance);
     }
 
-    public static ShadowColorDrawable shadowOf(final ColorDrawable instance) {
+    public static ShadowColorDrawable shadowOf(ColorDrawable instance) {
         return (ShadowColorDrawable) shadowOf_(instance);
     }
 
-    public static ShadowColorMatrix shadowOf(final ColorMatrix instance) {
+    public static ShadowColorMatrix shadowOf(ColorMatrix instance) {
         return (ShadowColorMatrix) shadowOf_(instance);
     }
 
-    public static ShadowConfiguration shadowOf(final Configuration instance) {
+    public static ShadowConfiguration shadowOf(Configuration instance) {
         return (ShadowConfiguration) Robolectric.shadowOf_(instance);
     }
 
-    public static ShadowConnectivityManager shadowOf(final ConnectivityManager instance) {
+    public static ShadowConnectivityManager shadowOf(ConnectivityManager instance) {
         return (ShadowConnectivityManager) shadowOf_(instance);
     }
 
-    public static ShadowCookieManager shadowOf(final CookieManager instance) {
+    public static ShadowCookieManager shadowOf(CookieManager instance) {
         return (ShadowCookieManager) shadowOf_(instance);
     }
 
-    public static ShadowContentObserver shadowOf(final ContentObserver instance) {
+    public static ShadowContentObserver shadowOf(ContentObserver instance) {
         return (ShadowContentObserver) shadowOf_(instance);
     }
 
-    public static ShadowContentResolver shadowOf(final ContentResolver instance) {
+    public static ShadowContentResolver shadowOf(ContentResolver instance) {
         return (ShadowContentResolver) shadowOf_(instance);
     }
 
-    public static ShadowContentProviderOperation shadowOf(final ContentProviderOperation instance) {
+    public static ShadowContentProviderOperation shadowOf(ContentProviderOperation instance) {
         return (ShadowContentProviderOperation) shadowOf_(instance);
     }
 
-    public static ShadowContentProviderOperationBuilder shadowOf(final ContentProviderOperation.Builder instance) {
+    public static ShadowContentProviderOperationBuilder shadowOf(ContentProviderOperation.Builder instance) {
         return (ShadowContentProviderOperationBuilder) shadowOf_(instance);
     }
 
-    public static ShadowContentProviderResult shadowOf(final ContentProviderResult instance) {
+    public static ShadowContentProviderResult shadowOf(ContentProviderResult instance) {
         return (ShadowContentProviderResult) shadowOf_(instance);
     }
 
-    public static ShadowCookieSyncManager shadowOf(final CookieSyncManager instance) {
+    public static ShadowCookieSyncManager shadowOf(CookieSyncManager instance) {
         return (ShadowCookieSyncManager) shadowOf_(instance);
     }
 
-    public static ShadowContext shadowOf(final Context instance) {
+    public static ShadowContext shadowOf(Context instance) {
         return (ShadowContext) shadowOf_(instance);
     }
 
-    public static ShadowContentValues shadowOf(final ContentValues other) {
+    public static ShadowContentValues shadowOf(ContentValues other) {
         return (ShadowContentValues) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowContextWrapper shadowOf(final ContextWrapper instance) {
+    public static ShadowContextWrapper shadowOf(ContextWrapper instance) {
         return (ShadowContextWrapper) shadowOf_(instance);
     }
 
-    public static ShadowCornerPathEffect shadowOf(final CornerPathEffect instance) {
+    public static ShadowCornerPathEffect shadowOf(CornerPathEffect instance) {
         return (ShadowCornerPathEffect) Robolectric.shadowOf_(instance);
     }
 
-    public static ShadowCountDownTimer shadowOf(final CountDownTimer instance) {
+    public static ShadowCountDownTimer shadowOf(CountDownTimer instance) {
         return (ShadowCountDownTimer) Robolectric.shadowOf_(instance);
     }
 
-    public static ShadowCursorAdapter shadowOf(final CursorAdapter instance) {
+    public static ShadowCursorAdapter shadowOf(CursorAdapter instance) {
         return (ShadowCursorAdapter) shadowOf_(instance);
     }
 
-    public static ShadowCursorLoader shadowOf(final CursorLoader instance) {
+    public static ShadowCursorLoader shadowOf(CursorLoader instance) {
         return (ShadowCursorLoader) shadowOf_(instance);
     }
 
-    public static ShadowCursorWrapper shadowOf(final CursorWrapper instance) {
+    public static ShadowCursorWrapper shadowOf(CursorWrapper instance) {
         return (ShadowCursorWrapper) shadowOf_(instance);
     }
 
-    public static ShadowDateFormat shadowOf(final DateFormat instance) {
+    public static ShadowDateFormat shadowOf(DateFormat instance) {
         return (ShadowDateFormat) shadowOf_(instance);
     }
 
-    public static ShadowDefaultRequestDirector shadowOf(final DefaultRequestDirector instance) {
+    public static ShadowDefaultRequestDirector shadowOf(DefaultRequestDirector instance) {
         return (ShadowDefaultRequestDirector) shadowOf_(instance);
     }
 
-    public static ShadowDialog shadowOf(final Dialog instance) {
+    public static ShadowDialog shadowOf(Dialog instance) {
         return (ShadowDialog) shadowOf_(instance);
     }
 
-    public static ShadowDialogFragment shadowOf(final DialogFragment instance) {
+    public static ShadowDialogFragment shadowOf(DialogFragment instance) {
         return (ShadowDialogFragment) shadowOf_(instance);
     }
 
-    public static ShadowDialogPreference shadowOf(final DialogPreference instance) {
+    public static ShadowDialogPreference shadowOf(DialogPreference instance) {
         return (ShadowDialogPreference) shadowOf_(instance);
     }
 
-    public static ShadowEditTextPreference shadowOf(final EditTextPreference instance) {
+    public static ShadowEditTextPreference shadowOf(EditTextPreference instance) {
         return (ShadowEditTextPreference) shadowOf_(instance);
     }
 
-    public static ShadowDrawable shadowOf(final Drawable instance) {
+    public static ShadowDrawable shadowOf(Drawable instance) {
         return (ShadowDrawable) shadowOf_(instance);
     }
 
-    public static ShadowDisplay shadowOf(final Display instance) {
+    public static ShadowDisplay shadowOf(Display instance) {
         return (ShadowDisplay) shadowOf_(instance);
     }
 
-    public static ShadowExpandableListView shadowOf(final ExpandableListView instance) {
+    public static ShadowExpandableListView shadowOf(ExpandableListView instance) {
         return (ShadowExpandableListView) shadowOf_(instance);
     }
 
-    public static ShadowFilter shadowOf(final Filter instance) {
+    public static ShadowFilter shadowOf(Filter instance) {
         return (ShadowFilter) shadowOf_(instance);
     }
 
-    public static ShadowFragment shadowOf(final Fragment instance) {
+    public static ShadowFragment shadowOf(Fragment instance) {
         return (ShadowFragment) shadowOf_(instance);
     }
 
-    public static ShadowFragmentActivity shadowOf(final FragmentActivity instance) {
+    public static ShadowFragmentActivity shadowOf(FragmentActivity instance) {
         return (ShadowFragmentActivity) shadowOf_(instance);
     }
 
-    public static ShadowFragmentPagerAdapter shadowOf(final FragmentPagerAdapter instance) {
+    public static ShadowFragmentPagerAdapter shadowOf(FragmentPagerAdapter instance) {
         return (ShadowFragmentPagerAdapter) shadowOf_(instance);
     }
 
-    public static ShadowFrameLayout shadowOf(final FrameLayout instance) {
+    public static ShadowFrameLayout shadowOf(FrameLayout instance) {
         return (ShadowFrameLayout) shadowOf_(instance);
     }
 
-    public static ShadowGallery shadowOf(final Gallery instance) {
+    public static ShadowGallery shadowOf(Gallery instance) {
         return (ShadowGallery) shadowOf_(instance);
     }
 
-    public static ShadowGeocoder shadowOf(final Geocoder instance) {
+    public static ShadowGeocoder shadowOf(Geocoder instance) {
         return (ShadowGeocoder) shadowOf_(instance);
     }
 
-    public static ShadowGestureDetector shadowOf(final GestureDetector instance) {
+    public static ShadowGestureDetector shadowOf(GestureDetector instance) {
         return (ShadowGestureDetector) shadowOf_(instance);
     }
 
-    public static ShadowGridView shadowOf(final GridView instance) {
+    public static ShadowGridView shadowOf(GridView instance) {
         return (ShadowGridView) shadowOf_(instance);
     }
 
-    public static ShadowHandler shadowOf(final Handler instance) {
+    public static ShadowHandler shadowOf(Handler instance) {
         return (ShadowHandler) shadowOf_(instance);
     }
 
-    public static ShadowHandlerThread shadowOf(final HandlerThread instance) {
+    public static ShadowHandlerThread shadowOf(HandlerThread instance) {
         return (ShadowHandlerThread) shadowOf_(instance);
     }
 
-    public static ShadowImageView shadowOf(final ImageView instance) {
+    public static ShadowImageView shadowOf(ImageView instance) {
         return (ShadowImageView) shadowOf_(instance);
     }
 
-    public static ShadowInputMethodManager shadowOf(final InputMethodManager instance) {
+    public static ShadowInputMethodManager shadowOf(InputMethodManager instance) {
         return (ShadowInputMethodManager) shadowOf_(instance);
     }
 
-    public static ShadowInputDevice shadowOf(final InputDevice instance) {
+    public static ShadowInputDevice shadowOf(InputDevice instance) {
         return (ShadowInputDevice) shadowOf_(instance);
     }
 
-    public static ShadowIntent shadowOf(final Intent instance) {
+    public static ShadowIntent shadowOf(Intent instance) {
         return (ShadowIntent) shadowOf_(instance);
     }
 
-    public static ShadowJsPromptResult shadowOf(final JsPromptResult instance) {
+    public static ShadowJsPromptResult shadowOf(JsPromptResult instance) {
         return (ShadowJsPromptResult) shadowOf_(instance);
     }
 
-    public static ShadowJsResult shadowOf(final JsResult instance) {
+    public static ShadowJsResult shadowOf(JsResult instance) {
         return (ShadowJsResult) shadowOf_(instance);
     }
 
-    public static ShadowKeyEvent shadowOf(final KeyEvent instance) {
+    public static ShadowKeyEvent shadowOf(KeyEvent instance) {
         return (ShadowKeyEvent) shadowOf_(instance);
     }
 
-    public static ShadowKeyguardManager shadowOf(final KeyguardManager instance) {
+    public static ShadowKeyguardManager shadowOf(KeyguardManager instance) {
         return (ShadowKeyguardManager) shadowOf_(instance);
     }
 
-    public static ShadowKeyGuardLock shadowOf(final KeyguardManager.KeyguardLock instance) {
+    public static ShadowKeyGuardLock shadowOf(KeyguardManager.KeyguardLock instance) {
         return (ShadowKeyGuardLock) shadowOf_(instance);
     }
 
-    public static ShadowLayerDrawable shadowOf(final LayerDrawable instance) {
+    public static ShadowLayerDrawable shadowOf(LayerDrawable instance) {
         return (ShadowLayerDrawable) shadowOf_(instance);
     }
 
-    public static ShadowLayoutInflater shadowOf(final LayoutInflater instance) {
+    public static ShadowLayoutInflater shadowOf(LayoutInflater instance) {
         return (ShadowLayoutInflater) shadowOf_(instance);
     }
 
-    public static ShadowLinearLayout shadowOf(final LinearLayout instance) {
+    public static ShadowLinearLayout shadowOf(LinearLayout instance) {
         return (ShadowLinearLayout) shadowOf_(instance);
     }
 
-    public static ShadowLinearGradient shadowOf(final LinearGradient instance) {
+    public static ShadowLinearGradient shadowOf(LinearGradient instance) {
         return (ShadowLinearGradient) shadowOf_(instance);
     }
 
-    public static ShadowListActivity shadowOf(final ListActivity instance) {
+    public static ShadowListActivity shadowOf(ListActivity instance) {
         return (ShadowListActivity) shadowOf_(instance);
     }
 
-    public static ShadowListPreference shadowOf(final ListPreference instance) {
+    public static ShadowListPreference shadowOf(ListPreference instance) {
         return (ShadowListPreference) shadowOf_(instance);
     }
 
-    public static ShadowListView shadowOf(final ListView instance) {
+    public static ShadowListView shadowOf(ListView instance) {
         return (ShadowListView) shadowOf_(instance);
     }
 
-    public static ShadowLocationManager shadowOf(final LocationManager instance) {
+    public static ShadowLocationManager shadowOf(LocationManager instance) {
         return (ShadowLocationManager) shadowOf_(instance);
     }
 
-    public static ShadowLooper shadowOf(final Looper instance) {
+    public static ShadowLooper shadowOf(Looper instance) {
         return (ShadowLooper) shadowOf_(instance);
     }
 
-    public static ShadowMatrix shadowOf(final Matrix other) {
+    public static ShadowMatrix shadowOf(Matrix other) {
         return (ShadowMatrix) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowMediaPlayer shadowOf(final MediaPlayer instance) {
+    public static ShadowMediaPlayer shadowOf(MediaPlayer instance) {
         return (ShadowMediaPlayer) shadowOf_(instance);
     }
 
-    public static ShadowMediaRecorder shadowOf(final MediaRecorder instance) {
+    public static ShadowMediaRecorder shadowOf(MediaRecorder instance) {
         return (ShadowMediaRecorder) shadowOf_(instance);
     }
 
-    public static ShadowMenuInflater shadowOf(final MenuInflater instance) {
+    public static ShadowMenuInflater shadowOf(MenuInflater instance) {
         return (ShadowMenuInflater) shadowOf_(instance);
     }
 
-    public static ShadowMergeCursor shadowOf(final MergeCursor instance) {
+    public static ShadowMergeCursor shadowOf(MergeCursor instance) {
         return (ShadowMergeCursor) shadowOf_(instance);
     }
 
-    public static ShadowMessage shadowOf(final Message instance) {
+    public static ShadowMessage shadowOf(Message instance) {
         return (ShadowMessage) shadowOf_(instance);
     }
 
-    public static ShadowMimeTypeMap shadowOf(final MimeTypeMap instance) {
+    public static ShadowMimeTypeMap shadowOf(MimeTypeMap instance) {
         return (ShadowMimeTypeMap) shadowOf_(instance);
     }
 
-    public static ShadowMotionEvent shadowOf(final MotionEvent other) {
+    public static ShadowMotionEvent shadowOf(MotionEvent other) {
         return (ShadowMotionEvent) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowNetworkInfo shadowOf(final NetworkInfo instance) {
+    public static ShadowNetworkInfo shadowOf(NetworkInfo instance) {
         return (ShadowNetworkInfo) shadowOf_(instance);
     }
 
-    public static ShadowNotification shadowOf(final Notification other) {
+    public static ShadowNotification shadowOf(Notification other) {
         return (ShadowNotification) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowNotificationManager shadowOf(final NotificationManager other) {
+    public static ShadowNotificationManager shadowOf(NotificationManager other) {
         return (ShadowNotificationManager) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowObjectAnimator shadowOf(final ObjectAnimator instance) {
+    public static ShadowObjectAnimator shadowOf(ObjectAnimator instance) {
         return (ShadowObjectAnimator) shadowOf_(instance);
     }
 
-    public static ShadowPagerAdapter shadowOf(final PagerAdapter instance) {
+    public static ShadowPagerAdapter shadowOf(PagerAdapter instance) {
         return (ShadowPagerAdapter) shadowOf_(instance);
     }
 
-    public static ShadowPaint shadowOf(final Paint instance) {
+    public static ShadowPaint shadowOf(Paint instance) {
         return (ShadowPaint) shadowOf_(instance);
     }
 
-    public static ShadowParcel shadowOf(final Parcel instance) {
+    public static ShadowParcel shadowOf(Parcel instance) {
         return (ShadowParcel) shadowOf_(instance);
     }
 
-    public static ShadowPasswordTransformationMethod shadowOf(final PasswordTransformationMethod instance) {
+    public static ShadowPasswordTransformationMethod shadowOf(PasswordTransformationMethod instance) {
         return (ShadowPasswordTransformationMethod) shadowOf_(instance);
     }
 
-    public static ShadowPath shadowOf(final Path instance) {
+    public static ShadowPath shadowOf(Path instance) {
         return (ShadowPath) shadowOf_(instance);
     }
 
-    public static ShadowPendingIntent shadowOf(final PendingIntent instance) {
+    public static ShadowPendingIntent shadowOf(PendingIntent instance) {
         return (ShadowPendingIntent) shadowOf_(instance);
     }
 
-    public static ShadowPhoneNumberUtils shadowOf(final PhoneNumberUtils instance) {
+    public static ShadowPhoneNumberUtils shadowOf(PhoneNumberUtils instance) {
         return (ShadowPhoneNumberUtils) shadowOf_(instance);
     }
 
-    public static ShadowPopupWindow shadowOf(final PopupWindow instance) {
+    public static ShadowPopupWindow shadowOf(PopupWindow instance) {
         return (ShadowPopupWindow) shadowOf_(instance);
     }
 
-    public static ShadowPowerManager shadowOf(final PowerManager instance) {
+    public static ShadowPowerManager shadowOf(PowerManager instance) {
         return (ShadowPowerManager) shadowOf_(instance);
     }
 
-    public static ShadowPreference shadowOf(final Preference instance) {
+    public static ShadowPreference shadowOf(Preference instance) {
         return (ShadowPreference) shadowOf_(instance);
     }
 
-    public static ShadowPreferenceActivity shadowOf(final PreferenceActivity instance) {
+    public static ShadowPreferenceActivity shadowOf(PreferenceActivity instance) {
         return (ShadowPreferenceActivity) shadowOf_(instance);
     }
 
-    public static ShadowPreferenceCategory shadowOf(final PreferenceCategory instance) {
+    public static ShadowPreferenceCategory shadowOf(PreferenceCategory instance) {
         return (ShadowPreferenceCategory) shadowOf_(instance);
     }
 
-    public static ShadowPreferenceGroup shadowOf(final PreferenceGroup instance) {
+    public static ShadowPreferenceGroup shadowOf(PreferenceGroup instance) {
         return (ShadowPreferenceGroup) shadowOf_(instance);
     }
 
-    public static ShadowPreferenceScreen shadowOf(final PreferenceScreen instance) {
+    public static ShadowPreferenceScreen shadowOf(PreferenceScreen instance) {
         return (ShadowPreferenceScreen) shadowOf_(instance);
     }
 
-    public static ShadowProgressBar shadowOf(final ProgressBar instance) {
+    public static ShadowProgressBar shadowOf(ProgressBar instance) {
         return (ShadowProgressBar) shadowOf_(instance);
     }
 
-    public static ShadowProgressDialog shadowOf(final ProgressDialog instance) {
+    public static ShadowProgressDialog shadowOf(ProgressDialog instance) {
         return (ShadowProgressDialog) shadowOf_(instance);
     }
 
-    public static ShadowRect shadowOf(final Rect instance) {
+    public static ShadowRect shadowOf(Rect instance) {
         return (ShadowRect) shadowOf_(instance);
     }
 
-    public static ShadowRatingBar shadowOf(final RatingBar instance) {
+    public static ShadowRatingBar shadowOf(RatingBar instance) {
         return (ShadowRatingBar) shadowOf_(instance);
     }
 
-    public static ShadowRemoteViews shadowOf(final RemoteViews instance) {
+    public static ShadowRemoteViews shadowOf(RemoteViews instance) {
         return (ShadowRemoteViews) shadowOf_(instance);
     }
 
-    public static ShadowResolveInfo shadowOf(final ResolveInfo instance) {
+    public static ShadowResolveInfo shadowOf(ResolveInfo instance) {
         return (ShadowResolveInfo) shadowOf_(instance);
     }
 
-    public static ShadowResourceCursorAdapter shadowOf(final ResourceCursorAdapter instance) {
+    public static ShadowResourceCursorAdapter shadowOf(ResourceCursorAdapter instance) {
         return (ShadowResourceCursorAdapter) shadowOf_(instance);
     }
 
-    public static ShadowResources shadowOf(final Resources instance) {
+    public static ShadowResources shadowOf(Resources instance) {
         return (ShadowResources) shadowOf_(instance);
     }
 
-    public static ShadowResultReceiver shadowOf(final ResultReceiver instance) {
+    public static ShadowResultReceiver shadowOf(ResultReceiver instance) {
         return (ShadowResultReceiver) shadowOf_(instance);
     }
 
-    public static ShadowScaleGestureDetector shadowOf(final ScaleGestureDetector instance) {
+    public static ShadowScaleGestureDetector shadowOf(ScaleGestureDetector instance) {
         return (ShadowScaleGestureDetector) shadowOf_(instance);
     }
 
-    public static ShadowScanResult shadowOf(final ScanResult instance) {
+    public static ShadowScanResult shadowOf(ScanResult instance) {
         return (ShadowScanResult) shadowOf_(instance);
     }
 
-    public static ShadowScroller shadowOf(final Scroller instance) {
+    public static ShadowScroller shadowOf(Scroller instance) {
         return (ShadowScroller) shadowOf_(instance);
     }
 
-    public static ShadowScrollView shadowOf(final ScrollView instance) {
+    public static ShadowScrollView shadowOf(ScrollView instance) {
         return (ShadowScrollView) shadowOf_(instance);
     }
 
-    public static ShadowSeekBar shadowOf(final SeekBar instance) {
+    public static ShadowSeekBar shadowOf(SeekBar instance) {
         return (ShadowSeekBar) shadowOf_(instance);
     }
 
-    public static ShadowSensorManager shadowOf(final SensorManager instance) {
+    public static ShadowSensorManager shadowOf(SensorManager instance) {
         return (ShadowSensorManager) shadowOf_(instance);
     }
 
-    public static ShadowService shadowOf(final Service instance) {
+    public static ShadowService shadowOf(Service instance) {
         return (ShadowService) shadowOf_(instance);
     }
 
-    public static ShadowShapeDrawable shadowOf(final ShapeDrawable instance) {
+    public static ShadowShapeDrawable shadowOf(ShapeDrawable instance) {
         return (ShadowShapeDrawable) shadowOf_(instance);
     }
 
-    public static ShadowSimpleCursorAdapter shadowOf(final SimpleCursorAdapter instance) {
+    public static ShadowSimpleCursorAdapter shadowOf(SimpleCursorAdapter instance) {
         return (ShadowSimpleCursorAdapter) shadowOf_(instance);
     }
 
-    public static ShadowSmsManager shadowOf(final SmsManager instance) {
+    public static ShadowSmsManager shadowOf(SmsManager instance) {
         return (ShadowSmsManager) shadowOf_(instance);
     }
 
-    public static ShadowSpannableStringBuilder shadowOf(final SpannableStringBuilder instance) {
+    public static ShadowSpannableStringBuilder shadowOf(SpannableStringBuilder instance) {
         return (ShadowSpannableStringBuilder) shadowOf_(instance);
     }
 
-    public static <E> ShadowSparseArray<E> shadowOf(final SparseArray<E> other) {
+    public static <E> ShadowSparseArray<E> shadowOf(SparseArray<E> other) {
         //noinspection unchecked
         return (ShadowSparseArray<E>) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowSparseBooleanArray shadowOf(final SparseBooleanArray other) {
+    public static ShadowSparseBooleanArray shadowOf(SparseBooleanArray other) {
         return (ShadowSparseBooleanArray) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowSparseIntArray shadowOf(final SparseIntArray other) {
+    public static ShadowSparseIntArray shadowOf(SparseIntArray other) {
         return (ShadowSparseIntArray) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowSQLiteCursor shadowOf(final SQLiteCursor other) {
+    public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
         return (ShadowSQLiteCursor) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowSQLiteDatabase shadowOf(final SQLiteDatabase other) {
+    public static ShadowSQLiteDatabase shadowOf(SQLiteDatabase other) {
         return (ShadowSQLiteDatabase) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowSQLiteOpenHelper shadowOf(final SQLiteOpenHelper other) {
+    public static ShadowSQLiteOpenHelper shadowOf(SQLiteOpenHelper other) {
         return (ShadowSQLiteOpenHelper) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowSQLiteProgram shadowOf(final SQLiteProgram other) {
+    public static ShadowSQLiteProgram shadowOf(SQLiteProgram other) {
         return (ShadowSQLiteProgram) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowSQLiteQueryBuilder shadowOf(final SQLiteQueryBuilder other) {
+    public static ShadowSQLiteQueryBuilder shadowOf(SQLiteQueryBuilder other) {
         return (ShadowSQLiteQueryBuilder) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowSQLiteStatement shadowOf(final SQLiteStatement other) {
+    public static ShadowSQLiteStatement shadowOf(SQLiteStatement other) {
         return (ShadowSQLiteStatement) Robolectric.shadowOf_(other);
     }
 
-    public static ShadowSslErrorHandler shadowOf(final SslErrorHandler instance) {
+    public static ShadowSslErrorHandler shadowOf(SslErrorHandler instance) {
         return (ShadowSslErrorHandler) shadowOf_(instance);
     }
 
-    public static ShadowStateListDrawable shadowOf(final StateListDrawable instance) {
+    public static ShadowStateListDrawable shadowOf(StateListDrawable instance) {
         return (ShadowStateListDrawable) shadowOf_(instance);
     }
 
-    public static ShadowTabHost shadowOf(final TabHost instance) {
+    public static ShadowTabHost shadowOf(TabHost instance) {
         return (ShadowTabHost) shadowOf_(instance);
     }
 
-    public static ShadowTabSpec shadowOf(final TabHost.TabSpec instance) {
+    public static ShadowTabSpec shadowOf(TabHost.TabSpec instance) {
         return (ShadowTabSpec) shadowOf_(instance);
     }
 
-    public static ShadowTelephonyManager shadowOf(final TelephonyManager instance) {
+    public static ShadowTelephonyManager shadowOf(TelephonyManager instance) {
         return (ShadowTelephonyManager) shadowOf_(instance);
     }
 
-    public static ShadowTextPaint shadowOf(final TextPaint instance) {
+    public static ShadowTextPaint shadowOf(TextPaint instance) {
         return (ShadowTextPaint) shadowOf_(instance);
     }
 
-    public static ShadowTextView shadowOf(final TextView instance) {
+    public static ShadowTextView shadowOf(TextView instance) {
         return (ShadowTextView) shadowOf_(instance);
     }
 
-    public static ShadowToast shadowOf(final Toast instance) {
+    public static ShadowToast shadowOf(Toast instance) {
         return (ShadowToast) shadowOf_(instance);
     }
 
-    public static ShadowTouchDelegate shadowOf(final TouchDelegate instance) {
+    public static ShadowTouchDelegate shadowOf(TouchDelegate instance) {
         return (ShadowTouchDelegate) shadowOf_(instance);
     }
 
-    public static ShadowTranslateAnimation shadowOf(final TranslateAnimation instance) {
+    public static ShadowTranslateAnimation shadowOf(TranslateAnimation instance) {
         return (ShadowTranslateAnimation) shadowOf_(instance);
     }
 
-    public static ShadowTypedArray shadowOf(final TypedArray instance) {
+    public static ShadowTypedArray shadowOf(TypedArray instance) {
         return (ShadowTypedArray) shadowOf_(instance);
     }
 
-    public static ShadowTypeface shadowOf(final Typeface instance) {
+    public static ShadowTypeface shadowOf(Typeface instance) {
         return (ShadowTypeface) shadowOf_(instance);
     }
 
-    public static ShadowUriMatcher shadowOf(final UriMatcher instance) {
+    public static ShadowUriMatcher shadowOf(UriMatcher instance) {
         return (ShadowUriMatcher) shadowOf_(instance);
     }
 
-    public static ShadowView shadowOf(final View instance) {
+    public static ShadowView shadowOf(View instance) {
         return (ShadowView) shadowOf_(instance);
     }
 
-    public static ShadowViewAnimator shadowOf(final ViewAnimator instance) {
+    public static ShadowViewAnimator shadowOf(ViewAnimator instance) {
         return (ShadowViewAnimator) shadowOf_(instance);
     }
 
-    public static ShadowViewConfiguration shadowOf(final ViewConfiguration instance) {
+    public static ShadowViewConfiguration shadowOf(ViewConfiguration instance) {
         return (ShadowViewConfiguration) shadowOf_(instance);
     }
 
-    public static ShadowViewFlipper shadowOf(final ViewFlipper instance) {
+    public static ShadowViewFlipper shadowOf(ViewFlipper instance) {
         return (ShadowViewFlipper) shadowOf_(instance);
     }
 
-    public static ShadowViewPager shadowOf(final ViewPager instance) {
+    public static ShadowViewPager shadowOf(ViewPager instance) {
         return (ShadowViewPager) shadowOf_(instance);
     }
 
-    public static ShadowViewTreeObserver shadowOf(final ViewTreeObserver instance) {
+    public static ShadowViewTreeObserver shadowOf(ViewTreeObserver instance) {
         return (ShadowViewTreeObserver) shadowOf_(instance);
     }
 
-    public static ShadowViewGroup shadowOf(final ViewGroup instance) {
+    public static ShadowViewGroup shadowOf(ViewGroup instance) {
         return (ShadowViewGroup) shadowOf_(instance);
     }
 
-    public static ShadowVibrator shadowOf(final Vibrator instance) {
+    public static ShadowVibrator shadowOf(Vibrator instance) {
         return (ShadowVibrator) shadowOf_(instance);
     }
 
-    public static ShadowVideoView shadowOf(final VideoView instance) {
+    public static ShadowVideoView shadowOf(VideoView instance) {
         return (ShadowVideoView) shadowOf_(instance);
     }
 
-    public static ShadowWebView shadowOf(final WebView instance) {
+    public static ShadowWebView shadowOf(WebView instance) {
         return (ShadowWebView) shadowOf_(instance);
     }
 
-    public static ShadowWifiConfiguration shadowOf(final WifiConfiguration instance) {
+    public static ShadowWifiConfiguration shadowOf(WifiConfiguration instance) {
         return (ShadowWifiConfiguration) shadowOf_(instance);
     }
 
-    public static ShadowWifiInfo shadowOf(final WifiInfo instance) {
+    public static ShadowWifiInfo shadowOf(WifiInfo instance) {
         return (ShadowWifiInfo) shadowOf_(instance);
     }
 
-    public static ShadowWifiManager shadowOf(final WifiManager instance) {
+    public static ShadowWifiManager shadowOf(WifiManager instance) {
         return (ShadowWifiManager) shadowOf_(instance);
     }
 
-    public static ShadowWindow shadowOf(final Window instance) {
+    public static ShadowWindow shadowOf(Window instance) {
         return (ShadowWindow) shadowOf_(instance);
     }
 
-    public static ShadowZoomButtonsController shadowOf(final ZoomButtonsController instance) {
+    public static ShadowZoomButtonsController shadowOf(ZoomButtonsController instance) {
         return (ShadowZoomButtonsController) shadowOf_(instance);
     }
 
     @SuppressWarnings({"unchecked"})
-    public static <P, R> P shadowOf_(final R instance) {
+    public static <P, R> P shadowOf_(R instance) {
         return (P) ShadowWrangler.getInstance().shadowOf(instance);
     }
 
@@ -1263,7 +1263,7 @@ public class Robolectric {
         getBackgroundScheduler().advanceBy(0);
     }
     
-    public static void runBackgroundTasks(final long timeoutMs) {
+    public static void runBackgroundTasks(long timeoutMs) {
     	getBackgroundScheduler().advanceBy(0, timeoutMs);
     }
 
@@ -1282,7 +1282,7 @@ public class Robolectric {
      * Blocks up to the timeout if necessary for the tasks to become available to run.
      * @param timeoutMs
      */
-    public static void runUiThreadTasks(final long timeoutMs) {
+    public static void runUiThreadTasks(long timeoutMs) {
     	getUiThreadScheduler().advanceBy(0, timeoutMs);
     }
 
@@ -1290,7 +1290,7 @@ public class Robolectric {
         getUiThreadScheduler().advanceToLastPostedRunnable();
     }
     
-    public static void runUiThreadTasksIncludingDelayedTasks(final long timeoutMs) {
+    public static void runUiThreadTasksIncludingDelayedTasks(long timeoutMs) {
     	getUiThreadScheduler().advanceToLastPostedRunnable(timeoutMs);
     }
 
@@ -1301,7 +1301,7 @@ public class Robolectric {
      * @param responseBody the body of the response
      * @param headers      optional headers for the request
      */
-    public static void addPendingHttpResponse(final int statusCode, final String responseBody, final Header... headers) {
+    public static void addPendingHttpResponse(int statusCode, String responseBody, Header... headers) {
         getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody, headers);
     }
 
@@ -1314,7 +1314,7 @@ public class Robolectric {
      * @deprecated use {@link #addPendingHttpResponse(int, String, Header...)} instead
      */
     @Deprecated
-	public static void addPendingHttpResponseWithContentType(final int statusCode, final String responseBody, final Header contentType) {
+	public static void addPendingHttpResponseWithContentType(int statusCode, String responseBody, Header contentType) {
         getFakeHttpLayer().addPendingHttpResponse(statusCode, responseBody, contentType);
     }
 
@@ -1323,7 +1323,7 @@ public class Robolectric {
      *
      * @param httpResponse the response
      */
-    public static void addPendingHttpResponse(final HttpResponse httpResponse) {
+    public static void addPendingHttpResponse(HttpResponse httpResponse) {
         getFakeHttpLayer().addPendingHttpResponse(httpResponse);
     }
 
@@ -1332,7 +1332,7 @@ public class Robolectric {
      *
      * @param httpResponseGenerator an HttpResponseGenerator that will provide responses
      */
-    public static void addPendingHttpResponse(final HttpResponseGenerator httpResponseGenerator) {
+    public static void addPendingHttpResponse(HttpResponseGenerator httpResponseGenerator) {
         getFakeHttpLayer().addPendingHttpResponse(httpResponseGenerator);
     }
 
@@ -1342,7 +1342,7 @@ public class Robolectric {
      * @param index index of the request to retrieve.
      * @return the requested request.
      */
-    public static HttpRequest getSentHttpRequest(final int index) {
+    public static HttpRequest getSentHttpRequest(int index) {
         return ShadowDefaultRequestDirector.getSentHttpRequest(index);
     }
 
@@ -1359,7 +1359,7 @@ public class Robolectric {
         return getShadowApplication().getFakeHttpLayer().hasRequestInfos();
     }
 
-    public static boolean httpRequestWasMade(final String uri) {
+    public static boolean httpRequestWasMade(String uri) {
         return getShadowApplication().getFakeHttpLayer().hasRequestMatchingRule(new FakeHttpLayer.UriRequestMatcher(uri));
     }
 
@@ -1369,7 +1369,7 @@ public class Robolectric {
      * @param index index of the request to retrieve.
      * @return the requested request metadata.
      */
-    public static HttpRequestInfo getSentHttpRequestInfo(final int index) {
+    public static HttpRequestInfo getSentHttpRequestInfo(int index) {
         return ShadowDefaultRequestDirector.getSentHttpRequestInfo(index);
     }
 
@@ -1380,7 +1380,7 @@ public class Robolectric {
      * @param uri      uri to match.
      * @param response response to return when a match is found.
      */
-    public static void addHttpResponseRule(final String method, final String uri, final HttpResponse response) {
+    public static void addHttpResponseRule(String method, String uri, HttpResponse response) {
         getFakeHttpLayer().addHttpResponseRule(method, uri, response);
     }
 
@@ -1390,7 +1390,7 @@ public class Robolectric {
      * @param uri      uri to match.
      * @param response response to return when a match is found.
      */
-    public static void addHttpResponseRule(final String uri, final HttpResponse response) {
+    public static void addHttpResponseRule(String uri, HttpResponse response) {
         getFakeHttpLayer().addHttpResponseRule(uri, response);
     }
 
@@ -1400,7 +1400,7 @@ public class Robolectric {
      * @param uri      uri to match.
      * @param response response to return when a match is found.
      */
-    public static void addHttpResponseRule(final String uri, final String response) {
+    public static void addHttpResponseRule(String uri, String response) {
         getFakeHttpLayer().addHttpResponseRule(uri, response);
     }
 
@@ -1410,7 +1410,7 @@ public class Robolectric {
      * @param requestMatcher custom {@code RequestMatcher}.
      * @param response       response to return when a match is found.
      */
-    public static void addHttpResponseRule(final RequestMatcher requestMatcher, final HttpResponse response) {
+    public static void addHttpResponseRule(RequestMatcher requestMatcher, HttpResponse response) {
         getFakeHttpLayer().addHttpResponseRule(requestMatcher, response);
     }
 
@@ -1422,7 +1422,7 @@ public class Robolectric {
      * @param requestMatcher custom {@code RequestMatcher}.
      * @param responses      responses to return in order when a match is found.
      */
-    public static void addHttpResponseRule(final RequestMatcher requestMatcher, final List<? extends HttpResponse> responses) {
+    public static void addHttpResponseRule(RequestMatcher requestMatcher, List<? extends HttpResponse> responses) {
         getFakeHttpLayer().addHttpResponseRule(requestMatcher, responses);
     }
 
@@ -1430,11 +1430,11 @@ public class Robolectric {
         return getShadowApplication().getFakeHttpLayer();
     }
 
-    public static void setDefaultHttpResponse(final int statusCode, final String responseBody) {
+    public static void setDefaultHttpResponse(int statusCode, String responseBody) {
         getFakeHttpLayer().setDefaultHttpResponse(statusCode, responseBody);
     }
 
-    public static void setDefaultHttpResponse(final HttpResponse defaultHttpResponse) {
+    public static void setDefaultHttpResponse(HttpResponse defaultHttpResponse) {
         getFakeHttpLayer().setDefaultHttpResponse(defaultHttpResponse);
     }
 
@@ -1446,11 +1446,11 @@ public class Robolectric {
         getFakeHttpLayer().clearPendingHttpResponses();
     }
 
-    public static void pauseLooper(final Looper looper) {
+    public static void pauseLooper(Looper looper) {
         ShadowLooper.pauseLooper(looper);
     }
 
-    public static void unPauseLooper(final Looper looper) {
+    public static void unPauseLooper(Looper looper) {
         ShadowLooper.unPauseLooper(looper);
     }
 
@@ -1462,11 +1462,11 @@ public class Robolectric {
         ShadowLooper.unPauseMainLooper();
     }
 
-    public static void idleMainLooper(final long interval) {
+    public static void idleMainLooper(long interval) {
         ShadowLooper.idleMainLooper(interval);
     }
 
-    public static void idleMainLooperConstantly(final boolean shouldIdleConstantly) {
+    public static void idleMainLooperConstantly(boolean shouldIdleConstantly) {
         ShadowLooper.idleMainLooperConstantly(shouldIdleConstantly);
     }
 
@@ -1482,11 +1482,11 @@ public class Robolectric {
         return shadowOf(Robolectric.application);
     }
 
-    public static void setDisplayMetricsDensity(final float densityMultiplier) {
+    public static void setDisplayMetricsDensity(float densityMultiplier) {
         shadowOf(getShadowApplication().getResources()).setDensity(densityMultiplier);
     }
 
-    public static void setDefaultDisplay(final Display display) {
+    public static void setDefaultDisplay(Display display) {
         shadowOf(getShadowApplication().getResources()).setDisplay(display);
     }
 
@@ -1498,7 +1498,7 @@ public class Robolectric {
      * @return true if {@code View.OnClickListener}s were found and fired, false otherwise.
      * @throws RuntimeException if the preconditions are not met.
      */
-    public static boolean clickOn(final View view) {
+    public static boolean clickOn(View view) {
         return shadowOf(view).checkedPerformClick();
     }
 
@@ -1507,8 +1507,8 @@ public class Robolectric {
      *
      * @param view the view to visualize
      */
-    public static String visualize(final View view) {
-        final Canvas canvas = new Canvas();
+    public static String visualize(View view) {
+        Canvas canvas = new Canvas();
         view.draw(canvas);
         return shadowOf(canvas).getDescription();
     }
@@ -1518,7 +1518,7 @@ public class Robolectric {
      *
      * @param canvas the canvas to visualize
      */
-    public static String visualize(final Canvas canvas) {
+    public static String visualize(Canvas canvas) {
         return shadowOf(canvas).getDescription();
     }
 
@@ -1527,7 +1527,7 @@ public class Robolectric {
      *
      * @param bitmap the bitmap to visualize
      */
-    public static String visualize(final Bitmap bitmap) {
+    public static String visualize(Bitmap bitmap) {
         return shadowOf(bitmap).getDescription();
     }
 
@@ -1536,7 +1536,7 @@ public class Robolectric {
      *
      * @param view the view to dump
      */
-    public static void dump(final View view) {
+    public static void dump(View view) {
         shadowOf(view).dump();
     }
 
@@ -1545,7 +1545,7 @@ public class Robolectric {
      *
      * @param view the view to scan for text
      */
-    public static String innerText(final View view) {
+    public static String innerText(View view) {
         return shadowOf(view).innerText();
     }
 
@@ -1553,38 +1553,38 @@ public class Robolectric {
      * Reflection helper methods.
      */
     public static class Reflection {
-        public static <T> T newInstanceOf(final Class<T> clazz) {
+        public static <T> T newInstanceOf(Class<T> clazz) {
             return Robolectric.newInstanceOf(clazz);
         }
 
-        public static Object newInstanceOf(final String className) {
+        public static Object newInstanceOf(String className) {
             return Robolectric.newInstanceOf(className);
         }
 
-        public static void setFinalStaticField(final Class classWhichContainsField, final String fieldName, final Object newValue) {
+        public static void setFinalStaticField(Class classWhichContainsField, String fieldName, Object newValue) {
             try {
-                final Field field = classWhichContainsField.getDeclaredField(fieldName);
+                Field field = classWhichContainsField.getDeclaredField(fieldName);
                 setFinalStaticField(field, newValue);
-            } catch (final NoSuchFieldException e) {
+            } catch (NoSuchFieldException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        public static Object setFinalStaticField(final Field field, final Object newValue) {
+        public static Object setFinalStaticField(Field field, Object newValue) {
             Object oldValue = null;
 
             try {
                 field.setAccessible(true);
 
-                final Field modifiersField = Field.class.getDeclaredField("modifiers");
+                Field modifiersField = Field.class.getDeclaredField("modifiers");
                 modifiersField.setAccessible(true);
                 modifiersField.setInt(field, field.getModifiers() & ~Modifier.FINAL);
 
                 oldValue = field.get(null);
                 field.set(null, newValue);
-            } catch (final NoSuchFieldException e) {
+            } catch (NoSuchFieldException e) {
                 throw new RuntimeException(e);
-            } catch (final IllegalAccessException e) {
+            } catch (IllegalAccessException e) {
                 throw new RuntimeException(e);
             }
 

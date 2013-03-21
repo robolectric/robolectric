@@ -111,7 +111,7 @@ public class SchedulerTest {
     @Test
     public void removeShouldRemoveAllInstancesOfRunnableFromQueue() throws Exception {
         scheduler.post(new TestRunnable());
-        final TestRunnable runnable = new TestRunnable();
+        TestRunnable runnable = new TestRunnable();
         scheduler.post(runnable);
         scheduler.post(runnable);
         assertThat(scheduler.enqueuedTaskCount(), equalTo(3));
@@ -125,7 +125,7 @@ public class SchedulerTest {
     public void resetShouldUnPause() throws Exception {
         scheduler.pause();
 
-        final TestRunnable runnable = new TestRunnable();
+        TestRunnable runnable = new TestRunnable();
         scheduler.post(runnable);
 
         assertThat(runnable.wasRun, equalTo(false));
@@ -139,14 +139,14 @@ public class SchedulerTest {
     public void resetShouldClearPendingRunnables() throws Exception {
         scheduler.pause();
 
-        final TestRunnable runnable1 = new TestRunnable();
+        TestRunnable runnable1 = new TestRunnable();
         scheduler.post(runnable1);
 
         assertThat(runnable1.wasRun, equalTo(false));
 
         scheduler.reset();
 
-        final TestRunnable runnable2 = new TestRunnable();
+        TestRunnable runnable2 = new TestRunnable();
         scheduler.post(runnable2);
 
         assertThat(runnable1.wasRun, equalTo(false));
@@ -170,9 +170,9 @@ public class SchedulerTest {
 	}
 
     private class AddToTranscript implements Runnable {
-        private final String event;
+        private String event;
 
-        public AddToTranscript(final String event) {
+        public AddToTranscript(String event) {
             this.event = event;
         }
 
