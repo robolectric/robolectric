@@ -4,4 +4,5 @@
     <integer name="test_integer1">2000</integer>
     <integer name="test_integer2">9</integer>
     <integer name="test_large_hex">0xFFFF0000</integer>
+    <integer name="test_value_with_zero">07210</integer>
 </resources>
