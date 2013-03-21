@@ -164,6 +164,7 @@ public class RobolectricBase {
             ShadowNfcAdapter.class,
             ShadowNotificationManager.class,
             ShadowNetworkInfo.class,
+            ShadowNumberPicker.class,
             ShadowObservable.class,
             ShadowOverlayItem.class,
             ShadowObjectAnimator.class,
