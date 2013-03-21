@@ -19,7 +19,10 @@ import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.res.EmptyResourceLoader;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
+
+import java.io.InputStream;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertSame;
@@ -213,4 +216,10 @@ public class ResourcesTest {
         resources.getXml(0);
     }
 
+    @Test
+    public void shouldLoadRawResources() throws Exception {
+        InputStream resourceStream = resources.openRawResource(R.raw.raw_resource);
+        assertThat(resourceStream).isNotNull();
+        assertThat(TestUtil.readString(resourceStream)).isEqualTo("raw txt file contents");
+    }
 }

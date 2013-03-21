@@ -26,7 +26,7 @@ public interface ResourceLoader {
 
     DrawableNode getDrawableNode(ResName resName, String qualifiers);
 
-    InputStream getRawValue(int id);
+    InputStream getRawValue(ResName resName);
 
     String[] getStringArrayValue(ResName resName, String qualifiers);
 

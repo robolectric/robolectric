@@ -68,8 +68,8 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public InputStream getRawValue(int id) {
-        return pickFor(id).getRawValue(id);
+    public InputStream getRawValue(ResName resName) {
+        return pickFor(resName).getRawValue(resName);
     }
 
     @Override

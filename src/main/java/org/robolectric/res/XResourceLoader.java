@@ -114,11 +114,11 @@ abstract class XResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public InputStream getRawValue(int id) {
+    public InputStream getRawValue(ResName resName) {
         initialize();
 
         for (RawResourceLoader rawResourceLoader : rawResourceLoaders) {
-            InputStream stream = rawResourceLoader.getValue(id);
+            InputStream stream = rawResourceLoader.getValue(resName);
             if (stream != null) return stream;
         }
 
@@ -190,6 +190,10 @@ abstract class XResourceLoader implements ResourceLoader {
     public String convertValueToEnum(Class<? extends View> viewClass, String namespace, String attribute, String part) {
         initialize();
         return attrResourceLoader.convertValueToEnum(viewClass, namespace, attribute, part);
+    }
+
+    public List<RawResourceLoader> getRawResourceLoaders() {
+        return rawResourceLoaders;
     }
 
     abstract static class Resolver<T> extends ResBundle<String> {

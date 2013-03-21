@@ -44,7 +44,7 @@ public class PackageResourceLoader extends XResourceLoader {
 
         loadOtherResources(resourcePath);
 
-        rawResourceLoaders.add(new RawResourceLoader(resourceIndex, resourcePath.resourceBase));
+        rawResourceLoaders.add(new RawResourceLoader(resourcePath.resourceBase));
     }
 
     protected void loadOtherResources(ResourcePath resourcePath) {

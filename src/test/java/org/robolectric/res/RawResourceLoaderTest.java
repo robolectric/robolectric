@@ -17,20 +17,22 @@ import static org.robolectric.util.TestUtil.testResources;
 public class RawResourceLoaderTest {
 
     private RawResourceLoader rawResourceLoader;
+    private ResourceExtractor resourceIndex;
 
     @Before public void setUp() throws Exception {
-        rawResourceLoader = new RawResourceLoader(new ResourceExtractor(testResources()), resourceFile("res"));
+        resourceIndex = new ResourceExtractor(testResources());
+        rawResourceLoader = new RawResourceLoader(resourceFile("res"));
     }
 
     @Test
     public void shouldReturnRawResourcesWithExtensions() throws Exception {
-        InputStream is = rawResourceLoader.getValue(R.raw.raw_resource);
+        InputStream is = rawResourceLoader.getValue(resourceIndex.getResName(R.raw.raw_resource));
         assertEquals("raw txt file contents", TestUtil.readString(is));
     }
 
     @Test
     public void shouldReturnRawResourcesWithoutExtensions() throws Exception {
-        InputStream is = rawResourceLoader.getValue(R.raw.raw_no_ext);
+        InputStream is = rawResourceLoader.getValue(resourceIndex.getResName(R.raw.raw_no_ext));
         assertEquals("no ext file contents", TestUtil.readString(is));
     }
 }

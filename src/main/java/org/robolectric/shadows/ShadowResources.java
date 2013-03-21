@@ -1,11 +1,6 @@
 package org.robolectric.shadows;
 
-import android.content.res.AssetManager;
-import android.content.res.ColorStateList;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
-import android.content.res.XmlResourceParser;
+import android.content.res.*;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -14,11 +9,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-import org.robolectric.res.Attribute;
-import org.robolectric.res.DrawableNode;
-import org.robolectric.res.ResName;
-import org.robolectric.res.ResourceIndex;
-import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.*;
 import org.robolectric.res.builder.DrawableBuilder;
 import org.robolectric.res.builder.XmlFileBuilder;
 import org.w3c.dom.Document;
@@ -154,7 +145,7 @@ public class ShadowResources {
 
     @Implementation
     public InputStream openRawResource(int id) throws Resources.NotFoundException {
-        return resourceLoader.getRawValue(id);
+        return resourceLoader.getRawValue(getResName(id));
     }
 
     @Implementation
