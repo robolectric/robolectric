@@ -257,7 +257,6 @@ public class RobolectricBase {
             ShadowUri.class,
             ShadowURLSpan.class,
             ShadowValueAnimator.class,
-            ShadowVibrator.class,
             ShadowVideoView.class,
             ShadowView.class,
             ShadowViewAnimator.class,

@@ -797,10 +797,6 @@ public class Robolectric {
         return (ShadowViewGroup) shadowOf_(instance);
     }
 
-    public static ShadowVibrator shadowOf(Vibrator instance) {
-        return (ShadowVibrator) shadowOf_(instance);
-    }
-
     public static ShadowVideoView shadowOf(VideoView instance) {
         return (ShadowVideoView) shadowOf_(instance);
     }
