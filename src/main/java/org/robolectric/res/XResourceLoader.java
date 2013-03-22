@@ -3,14 +3,15 @@ package org.robolectric.res;
 import android.view.View;
 import org.w3c.dom.Document;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 abstract class XResourceLoader implements ResourceLoader {
     private final ResourceIndex resourceIndex;
-
-    final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
 
     boolean isInitialized = false;
 
@@ -26,6 +27,7 @@ abstract class XResourceLoader implements ResourceLoader {
     final ResBundle<DrawableNode> drawableNodes = new ResBundle<DrawableNode>();
     final ResBundle<PreferenceNode> preferenceNodes = new ResBundle<PreferenceNode>();
     final ResBundle<Document> xmlDocuments = new ResBundle<Document>();
+    final ResBundle<File> rawResourceFiles = new ResBundle<File>();
 
     protected XResourceLoader(ResourceIndex resourceIndex) {
         this.resourceIndex = resourceIndex;
@@ -53,6 +55,7 @@ abstract class XResourceLoader implements ResourceLoader {
         drawableNodes.makeImmutable();
         preferenceNodes.makeImmutable();
         xmlDocuments.makeImmutable();
+        rawResourceFiles.makeImmutable();
     }
 
     @Override
@@ -117,12 +120,12 @@ abstract class XResourceLoader implements ResourceLoader {
     public InputStream getRawValue(ResName resName) {
         initialize();
 
-        for (RawResourceLoader rawResourceLoader : rawResourceLoaders) {
-            InputStream stream = rawResourceLoader.getValue(resName);
-            if (stream != null) return stream;
+        File file = rawResourceFiles.get(resName, "");
+        try {
+            return file == null ? null : new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
-
-        return null;
     }
 
     @Override
@@ -190,10 +193,6 @@ abstract class XResourceLoader implements ResourceLoader {
     public String convertValueToEnum(Class<? extends View> viewClass, String namespace, String attribute, String part) {
         initialize();
         return attrResourceLoader.convertValueToEnum(viewClass, namespace, attribute, part);
-    }
-
-    public List<RawResourceLoader> getRawResourceLoaders() {
-        return rawResourceLoaders;
     }
 
     abstract static class Resolver<T> extends ResBundle<String> {

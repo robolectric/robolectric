@@ -41,10 +41,9 @@ public class PackageResourceLoader extends XResourceLoader {
         new DocumentLoader(drawableResourceLoader).loadResourceXmlSubDirs(resourcePath, "drawable");
         new DocumentLoader(new PreferenceLoader(preferenceNodes)).loadResourceXmlSubDirs(resourcePath, "xml");
         new DocumentLoader(new XmlFileLoader(xmlDocuments)).loadResourceXmlSubDirs(resourcePath, "xml");
+        new RawResourceLoader(rawResourceFiles).loadFrom(resourcePath);
 
         loadOtherResources(resourcePath);
-
-        rawResourceLoaders.add(new RawResourceLoader(resourcePath.resourceBase));
     }
 
     protected void loadOtherResources(ResourcePath resourcePath) {
