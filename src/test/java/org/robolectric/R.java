@@ -190,6 +190,7 @@ public final class R {
     public static final class raw {
         public static final int raw_resource = 0x10800;
         public static final int raw_no_ext = 0x10801;
+        public static final int lib_raw_resource = 0x10802;
     }
 
     public static final class attr {

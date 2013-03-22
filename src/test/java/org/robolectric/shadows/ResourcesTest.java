@@ -222,4 +222,11 @@ public class ResourcesTest {
         assertThat(resourceStream).isNotNull();
         assertThat(TestUtil.readString(resourceStream)).isEqualTo("raw txt file contents");
     }
+
+    @Test
+    public void shouldLoadRawResourcesFromLibraries() throws Exception {
+        InputStream resourceStream = resources.openRawResource(R.raw.lib_raw_resource);
+        assertThat(resourceStream).isNotNull();
+        assertThat(TestUtil.readString(resourceStream)).isEqualTo("from lib3");
+    }
 }
