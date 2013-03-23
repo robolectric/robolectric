@@ -41,8 +41,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.fest.reflect.core.Reflection.staticField;
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.reflect.core.Reflection.staticField;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.directlyOn;
 
@@ -391,7 +391,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "forgettableMethod"))));
         Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
         Object instance = theClass.newInstance();
-        Object output = theClass.getMethod("interactWithForgettableClass").invoke(directlyOn(instance));
+        Object output = theClass.getMethod("interactWithForgettableClass").invoke(directlyOn(instance, (Class<Object>) theClass));
         assertEquals("null, get this!", output);
     }
 
@@ -400,7 +400,7 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "forgettableStaticMethod"))));
         Class<?> theClass = loadClass(AClassThatRefersToAForgettableClass.class);
         Object instance = theClass.newInstance();
-        Object output = theClass.getMethod("interactWithForgettableStaticMethod").invoke(directlyOn(instance));
+        Object output = theClass.getMethod("interactWithForgettableStaticMethod").invoke(directlyOn(instance, (Class<Object>) theClass));
         assertEquals("yess? forget this: null", output);
     }
 
@@ -409,8 +409,8 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
         Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
         Object instance = theClass.newInstance();
-        assertEquals((byte) 0, theClass.getMethod("byteMethod").invoke(directlyOn(instance)));
-        assertNull(theClass.getMethod("byteArrayMethod").invoke(directlyOn(instance)));
+        assertEquals((byte) 0, theClass.getMethod("byteMethod").invoke(directlyOn(instance, (Class<Object>) theClass)));
+        assertNull(theClass.getMethod("byteArrayMethod").invoke(directlyOn(instance, (Class<Object>) theClass)));
     }
 
     @Test
@@ -418,8 +418,8 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
         Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
         Object instance = theClass.newInstance();
-        assertEquals(0, theClass.getMethod("intMethod").invoke(directlyOn(instance)));
-        assertNull(theClass.getMethod("intArrayMethod").invoke(directlyOn(instance)));
+        assertEquals(0, theClass.getMethod("intMethod").invoke(directlyOn(instance, (Class<Object>) theClass)));
+        assertNull(theClass.getMethod("intArrayMethod").invoke(directlyOn(instance, (Class<Object>) theClass)));
     }
 
     @Test
@@ -427,15 +427,15 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         setClassLoader(createClassLoader(new MethodInterceptingSetup(new Setup.MethodRef(AClassToForget.class, "*"))));
         Class<?> theClass = loadClass(AClassThatRefersToAForgettableClassInMethodCallsReturningPrimitive.class);
         Object instance = theClass.newInstance();
-        assertEquals(0L, theClass.getMethod("longMethod").invoke(directlyOn(instance)));
-        assertNull(theClass.getMethod("longArrayMethod").invoke(directlyOn(instance)));
+        assertEquals(0L, theClass.getMethod("longMethod").invoke(directlyOn(instance, (Class<Object>) theClass)));
+        assertNull(theClass.getMethod("longArrayMethod").invoke(directlyOn(instance, (Class<Object>) theClass)));
     }
 
     @Test
     public void shouldRemapClassesWhileInterceptingMethods() throws Exception {
         setClassLoader(createClassLoader(new MethodInterceptingClassRemappingSetup(new Setup.MethodRef(AClassThatCallsAMethodReturningAForgettableClass.class, "getAForgettableClass"))));
         Class<?> theClass = loadClass(AClassThatCallsAMethodReturningAForgettableClass.class);
-        theClass.getMethod("callSomeMethod").invoke(directlyOn(theClass.newInstance()));
+        theClass.getMethod("callSomeMethod").invoke(directlyOn(theClass.newInstance(), (Class<Object>) theClass));
     }
 
     @Test

@@ -38,11 +38,11 @@ public class ShadowService extends ShadowContextWrapper {
         assertNoBroadcastListenersRegistered();
     }
     
-    @Implementation 
+    @Override @Implementation
     public void unbindService(ServiceConnection conn) {
-    	if (unbindServiceShouldThrowIllegalArgument) {
-    		throw new IllegalArgumentException();
-    	}
+        if (unbindServiceShouldThrowIllegalArgument) {
+            throw new IllegalArgumentException();
+        }
     }
     
     @Implementation

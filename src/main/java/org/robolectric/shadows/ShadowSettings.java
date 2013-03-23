@@ -18,7 +18,7 @@ import java.util.WeakHashMap;
 @Implements(Settings.class)
 public class ShadowSettings {
     @Implements(Settings.class)
-    private static class SettingsImpl {
+    public static class SettingsImpl {
         private static final WeakHashMap<ContentResolver, Map<String, Object>> dataMap = new WeakHashMap<ContentResolver, Map<String, Object>>();
 
         @Implementation

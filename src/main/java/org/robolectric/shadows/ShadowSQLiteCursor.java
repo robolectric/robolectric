@@ -4,7 +4,6 @@ import android.database.sqlite.SQLiteCursor;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
-import java.sql.Clob;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -17,7 +16,7 @@ import java.util.Map;
  * Simulates an Android Cursor object, by wrapping a JDBC ResultSet.
  */
 @Implements(SQLiteCursor.class)
-public class ShadowSQLiteCursor extends ShadowAbstractCursor {
+public class ShadowSQLiteCursor extends ShadowAbstractWindowedCursor {
 
     private ResultSet resultSet;
     
@@ -40,9 +39,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
         }
     }
     
-   
 
-  
     private Integer getColIndex(String columnName) {
         if (columnName == null) {
             return -1;
@@ -97,69 +94,7 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     	return super.moveToPosition(pos);
     }
 
-    @Implementation
-    public byte[] getBlob(int columnIndex) {
-    	checkPosition();
-        return (byte[]) this.currentRow.get(getColumnNames()[columnIndex]);
-    }
-
-    @Implementation
-    public String getString(int columnIndex) {
-        checkPosition();
-        Object value = this.currentRow.get(getColumnNames()[columnIndex]);
-        if (value instanceof Clob) {
-            try {
-                return ((Clob) value).getSubString(1, (int)((Clob) value).length());
-            } catch (SQLException x) {
-                throw new RuntimeException(x);
-            }
-        } else {
-            return (String)value;
-        }
-    }
-	
-	@Implementation
-	public short getShort(int columnIndex) {
-		checkPosition();
-		Object o =this.currentRow.get(getColumnNames()[columnIndex]);
-    	if (o==null) return 0;
-        return new Short(o.toString());
-	}
-	
-    @Implementation
-    public int getInt(int columnIndex) {
-    	checkPosition();
-    	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
-    	if (o==null) return 0;
-        return new Integer(o.toString());
-    }
-
-    @Implementation
-    public long getLong(int columnIndex) {
-    	checkPosition();
-    	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
-    	if (o==null) return 0;
-        return new Long(o.toString());
-    }
-
-    @Implementation
-    public float getFloat(int columnIndex) {
-    	checkPosition();
-    	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
-    	if (o==null) return 0;
-        return new Float(o.toString());
-        
-    }
-
-    @Implementation
-    public double getDouble(int columnIndex) {
-    	checkPosition();
-    	Object o =this.currentRow.get(getColumnNames()[columnIndex]);
-    	if (o==null) return 0;
-    	return new Double(o.toString());
-    }
-    
-    private void checkPosition() {
+    public void checkPosition() {
         if (-1 == currentRowNumber || getCount() == currentRowNumber) {      
             throw new IndexOutOfBoundsException(currentRowNumber + " " + getCount());
         }
@@ -184,12 +119,6 @@ public class ShadowSQLiteCursor extends ShadowAbstractCursor {
     @Implementation
     public boolean isClosed() {
         return (resultSet == null);
-    }
-
-    @Implementation
-    public boolean isNull(int columnIndex) {
-        Object o = this.currentRow.get(getColumnNames()[columnIndex]);
-        return o == null;
     }
 
     /**

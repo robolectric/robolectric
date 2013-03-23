@@ -41,7 +41,7 @@ import static org.robolectric.util.SQLite.*;
  * made available to test cases for use in fixture setup and assertions.
  */
 @Implements(SQLiteDatabase.class)
-public class ShadowSQLiteDatabase  {
+public class ShadowSQLiteDatabase extends ShadowSQLiteCloseable {
     @RealObject	SQLiteDatabase realSQLiteDatabase;
     private static Connection connection;
     private final ReentrantLock mLock = new ReentrantLock(true);

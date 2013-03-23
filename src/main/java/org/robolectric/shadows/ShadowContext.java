@@ -122,7 +122,7 @@ abstract public class ShadowContext {
         DATABASE_DIR.mkdirs();
         return new File(DATABASE_DIR, name);
     }
-    
+
     @Implementation
     public File getExternalCacheDir() {
         EXTERNAL_CACHE_DIR.mkdir();

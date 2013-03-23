@@ -260,6 +260,11 @@ public class ShadowContextWrapper extends ShadowContext {
         return getShadowApplication().bindService(intent, serviceConnection, i);
     }
 
+    @Implementation
+    public void unbindService(final ServiceConnection serviceConnection) {
+        getShadowApplication().unbindService(serviceConnection);
+    }
+
     /**
      * Non-Android accessor that is used to grant permissions checked via
      * {@link android.content.ContextWrapper#checkPermission(String, int, int)}

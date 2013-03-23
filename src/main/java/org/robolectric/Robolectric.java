@@ -172,6 +172,7 @@ import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
+import org.fest.reflect.method.Invoker;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.bytecode.ShadowWrangler;
 import org.robolectric.res.ResourceLoader;
@@ -363,6 +364,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.List;
 
+import static org.fest.reflect.core.Reflection.method;
+
 public class Robolectric {
     public static Application application;
     public static final int DEFAULT_SDK_VERSION = 16;
@@ -411,6 +414,11 @@ public class Robolectric {
 
     public static <T> T directlyOn(T shadowedObject, Class<T> clazz) {
         return RobolectricInternals.directlyOn(shadowedObject, clazz);
+    }
+
+    public static <T> Invoker directlyOn(T shadowedObject, Class<T> clazz, String methodName, Class<T>... paramTypes) {
+        String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
+        return method(directMethodName).withReturnType(Object.class).withParameterTypes(paramTypes).in(shadowedObject);
     }
 
     public static ShadowAbsListView shadowOf(AbsListView instance) {

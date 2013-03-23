@@ -9,14 +9,6 @@ import org.robolectric.internal.RealObject;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(AbsoluteLayout.class)
 public class ShadowAbsoluteLayout extends ShadowViewGroup {
-    private AbsoluteLayout.LayoutParams layoutParams = new AbsoluteLayout.LayoutParams(0, 0, 0, 0);
-
-    @Implementation
-    @Override
-    public ViewGroup.LayoutParams getLayoutParams() {
-        return layoutParams;
-    }
-
     @Implements(AbsoluteLayout.LayoutParams.class)
     public static class ShadowLayoutParams extends org.robolectric.shadows.ShadowLayoutParams {
         @RealObject

@@ -13,7 +13,11 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public class AbsoluteLayoutTest {
     @Test
     public void getLayoutParams_shouldReturnAbsoluteLayoutParams() throws Exception {
-        ViewGroup.LayoutParams layoutParams = new AbsoluteLayout(Robolectric.application).getLayoutParams();
+        ViewGroup.LayoutParams layoutParams = (new AbsoluteLayout(Robolectric.application) {
+            @Override protected ViewGroup.LayoutParams generateDefaultLayoutParams() {
+                return super.generateDefaultLayoutParams();
+            }
+        }).generateDefaultLayoutParams();
 
         assertThat(layoutParams).isInstanceOf(AbsoluteLayout.LayoutParams.class);
     }

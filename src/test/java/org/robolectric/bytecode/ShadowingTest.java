@@ -64,7 +64,7 @@ public class ShadowingTest {
     @Implements(ClassWithProtectedMethod.class)
     public static class ShadowClassWithProtectedMethod {
         @Implementation
-        protected String getName() {
+        public String getName() {
             return "shadow name";
         }
     }
@@ -144,7 +144,7 @@ public class ShadowingTest {
         Pony pony = new Pony();
 
         assertEquals("Fake whinny! You're on my neck!", pony.ride("neck"));
-        assertEquals("Whinny! You're on my neck!", directlyOn(pony).ride("neck"));
+        assertEquals("Whinny! You're on my neck!", directlyOn(pony, Pony.class).ride("neck"));
 
         assertEquals("Fake whinny! You're on my haunches!", pony.ride("haunches"));
     }
@@ -247,7 +247,7 @@ public class ShadowingTest {
 
     @Test
     public void shouldDelegateToObjectToStringIfShadowHasNone() throws Exception {
-        assertTrue(new View(Robolectric.application).toString().startsWith("android.view.View@"));
+        assertThat(new View(Robolectric.application).toString()).startsWith("android.view.View@");
     }
 
     @Test

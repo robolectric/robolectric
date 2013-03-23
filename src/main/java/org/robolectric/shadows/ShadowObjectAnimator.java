@@ -145,7 +145,7 @@ public class ShadowObjectAnimator extends ShadowValueAnimator {
         }, duration);
     }
 
-    @Implementation
+    @Override @Implementation
     public boolean isRunning() {
         return isRunning;
     }

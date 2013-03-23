@@ -24,7 +24,7 @@ public class ShadowAbstractCursor {
     protected Map<Integer, Map<String, Object>> rows = new HashMap<Integer, Map<String, Object>>();
     protected int rowCount;
     protected Uri notificationUri;
-	protected boolean mClosed;
+    protected boolean mClosed;
 
     @Implementation
     public int getCount() {
@@ -39,11 +39,11 @@ public class ShadowAbstractCursor {
 
     @Implementation
     public boolean moveToLast() {
-    	if( realAbstractCursor.getCount() == 0 ) {
-    		return false;
-    	}
-    	setPosition( realAbstractCursor.getCount() - 1 );
-    	return true;
+        if (realAbstractCursor.getCount() == 0) {
+            return false;
+        }
+        setPosition(realAbstractCursor.getCount() - 1);
+        return true;
     }
 
     @Implementation
@@ -112,7 +112,7 @@ public class ShadowAbstractCursor {
 
     @Implementation
     public int getColumnIndex(String columnName) {
-        for (int i=0; i<columnNameArray.length; i++) {
+        for (int i = 0; i < columnNameArray.length; i++) {
             if (columnName.equals(columnNameArray[i])) return i;
         }
         return -1;
@@ -121,7 +121,8 @@ public class ShadowAbstractCursor {
     @Implementation
     public int getColumnIndexOrThrow(String columnName) {
         int idx = getColumnIndex(columnName);
-        if (idx >= 0) return idx; else throw new IllegalArgumentException("column does not exist");
+        if (idx >= 0) return idx;
+        else throw new IllegalArgumentException("column does not exist");
     }
 
     @Implementation
@@ -154,17 +155,17 @@ public class ShadowAbstractCursor {
         notificationUri = notifyUri;
     }
 
-	@Implementation
-	public boolean isClosed() {
-		return mClosed;
-	}
+    @Implementation
+    public boolean isClosed() {
+        return mClosed;
+    }
 
-	@Implementation
-	public void close() {
-		mClosed = true;
-	}
+    @Implementation
+    public void close() {
+        mClosed = true;
+    }
 
-	/**
+    /**
      * Returns the Uri set by {@code setNotificationUri()}.  Method included for testing
      * pre-API 11 projects.
      */

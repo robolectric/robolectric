@@ -19,7 +19,6 @@ package org.robolectric.shadows;
 import android.util.SparseArray;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.junit.Assert.*;
@@ -41,7 +40,6 @@ public class SparseArrayTest {
 
     @Test
     public void testSparseArrayWithDefaultCapacity() {
-        Robolectric.logMissingInvokedShadowMethods();
         SparseArray<Integer> sparseArray = new SparseArray<Integer>();
         assertEquals(0, sparseArray.size());
 

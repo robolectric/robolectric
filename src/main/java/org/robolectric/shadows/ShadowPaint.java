@@ -253,4 +253,9 @@ public class ShadowPaint {
         this.pathEffect = effect;
         return effect;
     }
+
+    @Implementation
+    public float measureText(String text) {
+        return text.length();
+    }
 }

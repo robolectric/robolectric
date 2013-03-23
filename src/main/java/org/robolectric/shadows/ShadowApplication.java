@@ -45,7 +45,7 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     static {
         // note that these are different!
-    	// They specify concrete classes within Robolectric for interfaces or abstract classes defined by Android
+        // They specify concrete classes within Robolectric for interfaces or abstract classes defined by Android
         SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "org.robolectric.tester.android.view.TestWindowManager");
         SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.content.ClipboardManager");
         SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.TestSensorManager");
@@ -237,7 +237,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         return true;
     }
 
-    @Implementation
+    @Override @Implementation
     public void unbindService(final ServiceConnection serviceConnection) {
         unboundServiceConnections.add(serviceConnection);
         shadowOf(Looper.getMainLooper()).post(new Runnable() {

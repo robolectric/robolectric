@@ -11,7 +11,7 @@ import org.robolectric.internal.RealObject;
 
 import java.lang.reflect.Field;
 
-import static org.junit.Assert.assertSame;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.directlyOn;
 import static org.robolectric.Robolectric.shadowOf_;
 
@@ -30,7 +30,7 @@ public class ThreadSafetyTest {
 
             instrumentedThread.join();
             Object shadowFromOtherThread = field.get(instrumentedThread);
-            assertSame(shadowFromThisThread, shadowFromOtherThread);
+            assertThat(shadowFromThisThread).isSameAs(shadowFromOtherThread);
         }
     }
 
@@ -49,7 +49,7 @@ public class ThreadSafetyTest {
         @RealObject InstrumentedThread realObject;
         @Implementation
         public void run() {
-            directlyOn(realObject).run();
+            directlyOn(realObject, InstrumentedThread.class, "run").invoke();
         }
     }
 }

@@ -75,7 +75,7 @@ public abstract class DatabaseTestBase {
         database.close();
     }
 
-    @Test()
+    @Test
     public void testInsertAndQuery() throws Exception {
         String stringColumnValue = "column_value";
         byte[] byteColumnValue = new byte[]{1, 2, 3};
