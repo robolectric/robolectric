@@ -40,10 +40,7 @@ import java.util.ListIterator;
 import java.util.Map;
 import java.util.Set;
 
-import static org.objectweb.asm.Type.ARRAY;
-import static org.objectweb.asm.Type.OBJECT;
-import static org.objectweb.asm.Type.VOID;
-import static org.objectweb.asm.Type.getType;
+import static org.objectweb.asm.Type.*;
 import static org.robolectric.util.Util.readBytes;
 import static org.robolectric.util.Util.reverse;
 
