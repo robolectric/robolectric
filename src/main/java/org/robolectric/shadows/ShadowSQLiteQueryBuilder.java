@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.database.sqlite.SQLiteQueryBuilder;
+import android.text.TextUtils;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.util.Join;
@@ -22,7 +23,7 @@ public class ShadowSQLiteQueryBuilder {
             sb.append("DISTINCT ");
         }
 
-        if (columns != null) {
+        if (columns != null && columns.length != 0) {
             sb.append(Join.join(", ", (Object[]) columns));
         } else {
             sb.append("*");
@@ -40,8 +41,8 @@ public class ShadowSQLiteQueryBuilder {
         return sb.toString();
     }
 
-    private static void conditionallyAppend(StringBuilder sb, String keyword, String value) {
-        if (value != null) {
+    static void conditionallyAppend(StringBuilder sb, String keyword, String value) {
+        if (!TextUtils.isEmpty(value)) {
             sb.append(keyword);
             sb.append(value);
         }
