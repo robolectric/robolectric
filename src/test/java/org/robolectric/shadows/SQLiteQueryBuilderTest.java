@@ -60,6 +60,15 @@ public class SQLiteQueryBuilderTest {
     }
 
     @Test
+    public void testSelectAllColumnsWithEmptyString(){
+        String sql = SQLiteQueryBuilder.buildQueryString(
+                false,
+                "table_name",
+                new String[]{}, null, null, null, null, null);
+        assertThat(sql).isEqualTo("SELECT * FROM table_name");
+    }
+
+    @Test
     public void testWhereClause() {
         String sql = SQLiteQueryBuilder.buildQueryString(
                 false,
@@ -148,4 +157,29 @@ public class SQLiteQueryBuilderTest {
                 "(id = 2 AND name = 'Chuck')", "person", "SUM(hours) < 20", "id ASC", "10");
         assertThat(sql).isEqualTo("SELECT person, department, division FROM table_name WHERE (id = 2 AND name = 'Chuck') GROUP BY person HAVING SUM(hours) < 20 ORDER BY id ASC LIMIT 10");
     }
+
+    @Test
+    public void testNullOnConditionallyAppend(){
+        StringBuilder sb = new StringBuilder("SELECT * FROM table");
+        ShadowSQLiteQueryBuilder.conditionallyAppend(sb, " WHERE ", null);
+        assertThat(sb.toString()).isEqualTo("SELECT * FROM table");
+    }
+
+    @Test
+    public void testEmptyStringConditionallyAppend(){
+        StringBuilder sb = new StringBuilder("SELECT * FROM table");
+        ShadowSQLiteQueryBuilder.conditionallyAppend(sb, " WHERE ", "");
+        assertThat(sb.toString()).isEqualTo("SELECT * FROM table");
+    }
+
+    @Test
+    public void testSelectColumnWithEmptyStrings() {
+        String sql = SQLiteQueryBuilder.buildQueryString(
+                false,
+                "table_name",
+                new String[]{"id"},
+                "", "", "", "", "");
+        assertThat(sql).isEqualTo("SELECT id FROM table_name");
+    }
+
 }
