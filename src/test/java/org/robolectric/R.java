@@ -250,6 +250,7 @@ public final class R {
         public static final int loneliest_number = 0x10d05;
         public static final int there_can_be_only = 0x10d06;
         public static final int hex_int = 0x10d07;
+        public static final int test_value_with_zero = 0x10d08;
     }
 
     public static final class bool {

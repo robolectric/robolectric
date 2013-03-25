@@ -11,10 +11,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 abstract class XResourceLoader implements ResourceLoader {
-    private final ResourceIndex resourceIndex;
-
-    boolean isInitialized = false;
-
     final AttrResourceLoader attrResourceLoader = new AttrResourceLoader();
     final Resolver<Boolean> booleanResolver = new BooleanResolver();
     final Resolver<Integer> colorResolver = new ColorResolver();
@@ -28,6 +24,8 @@ abstract class XResourceLoader implements ResourceLoader {
     final ResBundle<PreferenceNode> preferenceNodes = new ResBundle<PreferenceNode>();
     final ResBundle<Document> xmlDocuments = new ResBundle<Document>();
     final ResBundle<File> rawResourceFiles = new ResBundle<File>();
+    private final ResourceIndex resourceIndex;
+    boolean isInitialized = false;
 
     protected XResourceLoader(ResourceIndex resourceIndex) {
         this.resourceIndex = resourceIndex;
@@ -256,14 +254,14 @@ abstract class XResourceLoader implements ResourceLoader {
     }
 
     private static class DimenResolver extends Resolver<Float> {
-        private static final String[] UNITS = { "dp", "dip", "pt", "px", "sp" };
+        private static final String[] UNITS = {"dp", "dip", "pt", "px", "sp"};
 
         @Override
         Float convert(String rawValue) {
             int end = rawValue.length();
-            for ( int i = 0; i < UNITS.length; i++ ) {
+            for (int i = 0; i < UNITS.length; i++) {
                 int index = rawValue.indexOf(UNITS[i]);
-                if ( index >= 0 && end > index ) {
+                if (index >= 0 && end > index) {
                     end = index;
                 }
             }
@@ -279,9 +277,15 @@ abstract class XResourceLoader implements ResourceLoader {
                 // Decode into long, because there are some large hex values in the android resource files
                 // (e.g. config_notificationsBatteryLowARGB = 0xFFFF0000 in sdk 14).
                 // Integer.decode() does not support large, i.e. negative values in hex numbers.
-                return (int) Long.decode(rawValue).longValue();
+                // try parsing decimal number
+                return (int) Long.parseLong(rawValue);
             } catch (NumberFormatException nfe) {
-                throw new RuntimeException(rawValue + " is not an integer.", nfe);
+                // try parsing hex number
+                try {
+                    return Long.decode(rawValue).intValue();
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException(rawValue + " is not an integer.", nfe);
+                }
             }
         }
     }
