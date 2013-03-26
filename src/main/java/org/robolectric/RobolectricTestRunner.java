@@ -45,11 +45,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
-import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -73,6 +73,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     private final EnvHolder envHolder;
     private DatabaseMap databaseMap;
     private TestLifecycle<Application> testLifecycle;
+
+    static {
+        new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
+    }
 
     /**
      * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
