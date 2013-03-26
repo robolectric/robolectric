@@ -2,6 +2,8 @@ package org.robolectric;
 
 import android.app.Application;
 import org.junit.Test;
+import org.junit.runner.Result;
+import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
@@ -12,6 +14,7 @@ import org.robolectric.util.Transcript;
 import java.io.File;
 import java.lang.reflect.Method;
 
+import static org.fest.assertions.api.Assertions.fail;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.resourceFile;
 
@@ -22,7 +25,7 @@ public class TestRunnerSequenceTest {
 
     @Test public void shouldRunThingsInTheRightOrder() throws Exception {
         StateHolder.transcript = new Transcript();
-        new Runner(SimpleTest.class).run(new RunNotifier());
+        assertNoFailures(run(new Runner(SimpleTest.class)));
         StateHolder.transcript.assertEventsSoFar(
                 "configureShadows",
 //                "resetStaticState", // no longer an overridable hook
@@ -37,11 +40,11 @@ public class TestRunnerSequenceTest {
 
     @Test public void whenNoAppManifest_shouldRunThingsInTheRightOrder() throws Exception {
         StateHolder.transcript = new Transcript();
-        new Runner(SimpleTest.class) {
+        assertNoFailures(run(new Runner(SimpleTest.class) {
             @Override protected AndroidManifest createAppManifest(File baseDir) {
                 return null;
             }
-        }.run(new RunNotifier());
+        }));
         StateHolder.transcript.assertEventsSoFar(
                 "configureShadows",
                 "createApplication",
@@ -61,6 +64,22 @@ public class TestRunnerSequenceTest {
     public static class SimpleTest {
         @Test public void shouldDoNothingMuch() throws Exception {
             StateHolder.transcript.add("TEST!");
+        }
+    }
+
+    private Result run(Runner runner) throws InitializationError {
+        RunNotifier notifier = new RunNotifier();
+        Result result = new Result();
+        notifier.addListener(result.createListener());
+        runner.run(notifier);
+        return result;
+    }
+
+    private void assertNoFailures(Result result) {
+        if (!result.wasSuccessful()) {
+            for (Failure failure : result.getFailures()) {
+                fail(failure.getMessage(), failure.getException());
+            }
         }
     }
 

@@ -16,26 +16,32 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.ApplicationResolver;
+import org.robolectric.AndroidManifest;
+import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.shadows.testing.OnMethodTestActivity;
+import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.TestRunnable;
 import org.robolectric.util.Transcript;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.application;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.util.TestUtil.newConfig;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ActivityTest {
+    @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Test(expected = IllegalStateException.class)
     public void shouldComplainIfActivityIsDestroyedWithRegisteredBroadcastReceivers() throws Exception {
         DialogLifeCycleActivity activity = new DialogLifeCycleActivity();
@@ -182,7 +188,7 @@ public class ActivityTest {
 
     @Test
     public void shouldRetrievePackageNameFromTheManifest() throws Exception {
-        Robolectric.application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
+        Robolectric.application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""));
         assertThat("com.wacka.wa").isEqualTo(new Activity().getPackageName());
     }
 
@@ -704,10 +710,20 @@ public class ActivityTest {
         assertEquals(ActivityInfo.SCREEN_ORIENTATION_REVERSE_LANDSCAPE, parentActivity.getRequestedOrientation());
     }
 
-    private static class MyActivity extends Activity {
-        @Override protected void onDestroy() {
-            super.onDestroy();
-        }
+    /////////////////////////////
+
+    public AndroidManifest newConfigWith(String contents) throws IOException {
+        return newConfigWith("org.robolectric", contents);
+    }
+
+    private AndroidManifest newConfigWith(String packageName, String contents) throws IOException {
+        File f = temporaryFolder.newFile("whatever.xml",
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "          package=\"" + packageName + "\">\n" +
+                        "    " + contents + "\n" +
+                        "</manifest>\n");
+        return new AndroidManifest(f, null, null);
     }
 
     private static class DialogCreatingActivity extends Activity {

@@ -14,9 +14,11 @@ import android.os.IInterface;
 import android.os.Parcel;
 import android.os.RemoteException;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.ApplicationResolver;
+import org.robolectric.AndroidManifest;
+import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
@@ -25,18 +27,22 @@ import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceIndex;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.test.TemporaryFolder;
 import org.robolectric.util.TestBroadcastReceiver;
 
+import java.io.File;
 import java.io.FileDescriptor;
+import java.io.IOException;
 import java.util.List;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.shadowOf;
-import static org.robolectric.util.TestUtil.newConfig;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ApplicationTest {
+    @Rule public TemporaryFolder temporaryFolder = new TemporaryFolder();
+
     @Before
     public void setUp() throws Exception {
         Robolectric.application = new Application();
@@ -96,13 +102,13 @@ public class ApplicationTest {
 
     @Test
     public void packageManager_shouldKnowPackageName() throws Exception {
-        Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
+        Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""));
         assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo("com.wacka.wa", 0).packageName);
     }
 
     @Test
     public void packageManager_shouldKnowApplicationName() throws Exception {
-        Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithAppName.xml")).resolveApplication();
+        Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>"));
         assertEquals("org.robolectric.TestApplication",
                 application.getPackageManager().getApplicationInfo("org.robolectric", 0).name);
     }
@@ -310,16 +316,32 @@ public class ApplicationTest {
 
     @Test
     public void shouldRememberResourcesAfterLazilyLoading() throws Exception {
-        Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
+        Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""));
         assertSame(application.getResources(), application.getResources());
     }
 
     @Test
     public void shouldBeAbleToResetResources() throws Exception {
-        Application application = new ApplicationResolver(newConfig("TestAndroidManifestWithPackageName.xml")).resolveApplication();
+        Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""));
         Resources res = application.getResources();
         shadowOf(application).resetResources();
         assertFalse(res == application.getResources());
+    }
+
+    /////////////////////////////
+
+    public AndroidManifest newConfigWith(String contents) throws IOException {
+        return newConfigWith("org.robolectric", contents);
+    }
+
+    private AndroidManifest newConfigWith(String packageName, String contents) throws IOException {
+        File f = temporaryFolder.newFile("whatever.xml",
+                "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n" +
+                        "<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\"\n" +
+                        "          package=\"" + packageName + "\">\n" +
+                        "    " + contents + "\n" +
+                        "</manifest>\n");
+        return new AndroidManifest(f, null, null);
     }
 
     private static class ImperviousResourceExtractor extends ResourceExtractor {

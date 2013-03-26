@@ -1,9 +1,12 @@
 package org.robolectric;
 
 import android.app.Application;
+import org.robolectric.internal.ClassNameResolver;
 import org.robolectric.internal.TestLifecycle;
 
 import java.lang.reflect.Method;
+
+import static org.robolectric.Robolectric.shadowOf;
 
 public class DefaultTestLifecycle implements TestLifecycle {
     /**
@@ -36,6 +39,50 @@ public class DefaultTestLifecycle implements TestLifecycle {
      *         Application if not specified.
      */
     public Application createApplication(Method method, AndroidManifest appManifest) {
-        return new ApplicationResolver(appManifest).resolveApplication();
+        String applicationName = appManifest == null ? Application.class.getName() : appManifest.getApplicationName();
+        Application application;
+        if (applicationName != null) {
+            Class<? extends Application> applicationClass = null;
+
+            String packageName = appManifest == null ? null : appManifest.getPackageName();
+            try {
+                applicationClass = new ClassNameResolver<Application>(packageName, getTestApplicationName(applicationName)).resolve();
+            } catch (ClassNotFoundException e) {
+                // no problem
+            }
+
+            if (applicationClass == null) {
+                try {
+                    applicationClass = new ClassNameResolver<Application>(packageName, applicationName).resolve();
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            try {
+                application = applicationClass.newInstance();
+            } catch (InstantiationException e) {
+                throw new RuntimeException(e);
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        } else {
+            application = new Application();
+        }
+
+        if (appManifest != null) {
+            shadowOf(application).injectShadow(application, appManifest);
+        }
+
+        return application;
+    }
+
+    public String getTestApplicationName(String applicationName) {
+        int lastDot = applicationName.lastIndexOf('.');
+        if (lastDot > -1) {
+            return applicationName.substring(0, lastDot) + ".Test" + applicationName.substring(lastDot + 1);
+        } else {
+            return "Test" + applicationName;
+        }
     }
 }

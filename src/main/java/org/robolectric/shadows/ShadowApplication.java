@@ -26,6 +26,7 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.util.Scheduler;
 
@@ -126,6 +127,37 @@ public class ShadowApplication extends ShadowContextWrapper {
         shadowApplication.appManifest = appManifest;
         shadowApplication.resourceLoader = resourceLoader;
         return application;
+    }
+
+    public void injectShadow(Application application, AndroidManifest androidManifest) {
+        setPackageName(androidManifest.getPackageName());
+        setApplicationName(androidManifest.getApplicationName());
+
+        setPackageManager(new RobolectricPackageManager(application, androidManifest));
+        this.registerBroadcastReceivers(androidManifest);
+    }
+
+    private void registerBroadcastReceivers(AndroidManifest androidManifest) {
+        for (int i = 0; i < androidManifest.getReceiverCount(); i++) {
+            IntentFilter filter = new IntentFilter();
+            for (String action : androidManifest.getReceiverIntentFilterActions(i)) {
+                filter.addAction(action);
+            }
+            String receiverClassName = replaceLastDotWith$IfInnerStaticClass(androidManifest.getReceiverClassName(i));
+            registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
+        }
+    }
+
+    private static String replaceLastDotWith$IfInnerStaticClass(String receiverClassName) {
+        String[] splits = receiverClassName.split("\\.");
+        String staticInnerClassRegex = "[A-Z][a-zA-Z]*";
+        if (splits[splits.length - 1].matches(staticInnerClassRegex) && splits[splits.length - 2].matches(staticInnerClassRegex)) {
+            int lastDotIndex = receiverClassName.lastIndexOf(".");
+            StringBuilder buffer = new StringBuilder(receiverClassName);
+            buffer.setCharAt(lastDotIndex, '$');
+            return buffer.toString();
+        }
+        return receiverClassName;
     }
 
     public List<Toast> getShownToasts() {
