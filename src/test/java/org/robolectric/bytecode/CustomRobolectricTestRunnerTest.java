@@ -11,14 +11,18 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.AndroidManifest;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
+import org.robolectric.SdkEnvironment;
 import org.robolectric.TestRunners;
+import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.TestLifecycle;
+import org.robolectric.res.ResourceLoader;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.assertions.api.Assertions.fail;
+import static org.fest.reflect.core.Reflection.field;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
@@ -86,6 +90,52 @@ public class CustomRobolectricTestRunnerTest {
     public static class TestBeforeAndAfter {
         @Test
         public void properMethodName() throws Exception {
+        }
+    }
+    
+    @Test public void shouldAlwaysRunAfterTestEvenIfOnTerminateFails() throws Exception {
+        MyTestRunner testRunner = new MyTestRunner(TestBeforeAndAfter.class);
+        testRunner.run(new MyRunNotifier(result));
+        assertThat(testRunner.afterTestCalled).isTrue();
+        assertThat(field("terminated").ofType(boolean.class).in(testRunner.application).get()).isTrue();
+    }
+
+    public static class MyApplication extends Application {
+        private boolean terminated = false;
+
+        @Override public void onTerminate() {
+            terminated = true;
+            throw new RuntimeException("fake exception");
+        }
+    }
+
+    public static class X extends DefaultTestLifecycle {
+        @Override public Application createApplication(Method method, AndroidManifest appManifest) {
+            return new MyApplication();
+        }
+    }
+
+    public static class MyTestRunner extends CustomRobolectricTestRunner {
+        public boolean afterTestCalled = false;
+        private Object application;
+
+        public MyTestRunner(Class<?> testClass) throws InitializationError {
+            super(testClass);
+        }
+
+        @Override protected Class<? extends TestLifecycle> getTestLifecycleClass() {
+            return X.class;
+        }
+
+        @Override
+        protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, SdkEnvironment sdkEnvironment) {
+            super.setUpApplicationState(method, parallelUniverseInterface, strictI18n, systemResourceLoader, sdkEnvironment);
+            this.application = parallelUniverseInterface.getCurrentApplication();
+        }
+
+        @Override public void internalAfterTest(Method method) {
+            afterTestCalled = true;
+            super.internalAfterTest(method);
         }
     }
 

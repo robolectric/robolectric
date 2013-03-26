@@ -22,7 +22,7 @@ public class RobolectricTestRunnerSelfTest {
     public void shouldInitializeAndBindApplicationButNotCallOnCreate() throws Exception {
         assertNotNull(Robolectric.application);
         assertEquals(MyTestApplication.class, Robolectric.application.getClass());
-        assertFalse(((MyTestApplication) Robolectric.application).onCreateWasCalled);
+        assertTrue(((MyTestApplication) Robolectric.application).onCreateWasCalled);
         assertNotNull(shadowOf(Robolectric.application).getResourceLoader());
     }
 

@@ -6,8 +6,6 @@ import org.robolectric.internal.TestLifecycle;
 
 import java.lang.reflect.Method;
 
-import static org.robolectric.Robolectric.shadowOf;
-
 public class DefaultTestLifecycle implements TestLifecycle {
     /**
      * Called before each test method is run.
@@ -68,10 +66,6 @@ public class DefaultTestLifecycle implements TestLifecycle {
             }
         } else {
             application = new Application();
-        }
-
-        if (appManifest != null) {
-            shadowOf(application).injectShadow(application, appManifest);
         }
 
         return application;

@@ -31,9 +31,11 @@ public class TestRunnerSequenceTest {
 //                "resetStaticState", // no longer an overridable hook
 //                "setupApplicationState", // no longer an overridable hook
                 "createApplication",
+                "onCreate",
                 "beforeTest",
                 "prepareTest",
                 "TEST!",
+                "onTerminate",
                 "afterTest"
         );
     }
@@ -48,9 +50,11 @@ public class TestRunnerSequenceTest {
         StateHolder.transcript.assertEventsSoFar(
                 "configureShadows",
                 "createApplication",
+                "onCreate",
                 "beforeTest",
                 "prepareTest",
                 "TEST!",
+                "onTerminate",
                 "afterTest"
         );
     }
@@ -115,7 +119,15 @@ public class TestRunnerSequenceTest {
     public static class MyTestLifecycle extends DefaultTestLifecycle {
         @Override public Application createApplication(Method method, AndroidManifest appManifest) {
             StateHolder.transcript.add("createApplication");
-            return super.createApplication(method, appManifest);
+            return new Application() {
+                @Override public void onCreate() {
+                    StateHolder.transcript.add("onCreate");
+                }
+
+                @Override public void onTerminate() {
+                    StateHolder.transcript.add("onTerminate");
+                }
+            };
         }
 
         @Override public void prepareTest(Object test) {

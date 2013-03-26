@@ -11,5 +11,9 @@ public interface ParallelUniverseInterface {
 
     void setDatabaseMap(DatabaseConfig.DatabaseMap databaseMap);
 
-    void setupApplicationState(Method method, TestLifecycle testLifecycle, SdkEnvironment sdkEnvironment, boolean strictI18n, ResourceLoader systemResourceLoader);
+    void setUpApplicationState(Method method, TestLifecycle testLifecycle, SdkEnvironment sdkEnvironment, boolean strictI18n, ResourceLoader systemResourceLoader);
+
+    void tearDownApplication();
+
+    Object getCurrentApplication();
 }

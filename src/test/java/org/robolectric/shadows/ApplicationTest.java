@@ -65,8 +65,10 @@ public class ApplicationTest {
             @Override public ResourceIndex getResourceIndex() { return new ImperviousResourceExtractor(); }
         };
 
-        Application app1 = ShadowApplication.bind(new Application(), null, resourceLoader1);
-        Application app2 = ShadowApplication.bind(new Application(), null, resourceLoader2);
+        final Application app1 = new Application();
+        final Application app2 = new Application();
+        shadowOf(app1).bind(null, resourceLoader1);
+        shadowOf(app2).bind(null, resourceLoader2);
 
         assertEquals("title from resourceLoader1", new ContextWrapper(app1).getResources().getString(R.string.howdy));
         assertEquals("title from resourceLoader2", new ContextWrapper(app2).getResources().getString(R.string.howdy));
@@ -102,13 +104,19 @@ public class ApplicationTest {
 
     @Test
     public void packageManager_shouldKnowPackageName() throws Exception {
-        Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("com.wacka.wa", ""));
+        AndroidManifest appManifest = newConfigWith("com.wacka.wa", "");
+        Application application = new DefaultTestLifecycle().createApplication(null, appManifest);
+        shadowOf(application).bind(appManifest, null);
+
         assertEquals("com.wacka.wa", application.getPackageManager().getPackageInfo("com.wacka.wa", 0).packageName);
     }
 
     @Test
     public void packageManager_shouldKnowApplicationName() throws Exception {
-        Application application = new DefaultTestLifecycle().createApplication(null, newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>"));
+        AndroidManifest appManifest = newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>");
+        Application application = new DefaultTestLifecycle().createApplication(null, appManifest);
+        shadowOf(application).bind(appManifest, null);
+
         assertEquals("org.robolectric.TestApplication",
                 application.getPackageManager().getApplicationInfo("org.robolectric", 0).name);
     }

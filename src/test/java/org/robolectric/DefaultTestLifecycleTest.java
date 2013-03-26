@@ -43,21 +43,29 @@ public class DefaultTestLifecycleTest {
 
     @Test
     public void shouldAssignThePackageNameFromTheManifest() throws Exception {
-        Application application = defaultTestLifecycle.createApplication(null, newConfigWith("com.wacka.wa", ""));
+        AndroidManifest appManifest = newConfigWith("com.wacka.wa", "");
+        Application application = defaultTestLifecycle.createApplication(null, appManifest);
+        shadowOf(application).bind(appManifest, null);
+
         assertThat(application.getPackageName()).isEqualTo("com.wacka.wa");
         assertThat(application).isExactlyInstanceOf(Application.class);
     }
 
     @Test
     public void shouldAssignTheApplicationNameFromTheManifest() throws Exception {
-        Application application = defaultTestLifecycle.createApplication(null,
-                newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>"));
+        AndroidManifest appManifest = newConfigWith("<application android:name=\"org.robolectric.TestApplication\"/>");
+        Application application = defaultTestLifecycle.createApplication(null, appManifest);
+        shadowOf(application).bind(appManifest, null);
+
         assertThat(application.getApplicationInfo().name).isEqualTo("org.robolectric.TestApplication");
     }
 
     @Test
     public void shouldRegisterReceiversFromTheManifest() throws Exception {
-        Application application = defaultTestLifecycle.createApplication(null, newConfig("TestAndroidManifestWithReceivers.xml"));
+        AndroidManifest appManifest = newConfig("TestAndroidManifestWithReceivers.xml");
+        Application application = defaultTestLifecycle.createApplication(null, appManifest);
+        shadowOf(application).bind(appManifest, null);
+
         List<ShadowApplication.Wrapper> receivers = shadowOf(application).getRegisteredReceivers();
         assertThat(receivers.size()).isEqualTo(6);
         assertTrue(receivers.get(0).intentFilter.matchAction("org.robolectric.ACTION1"));

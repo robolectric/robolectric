@@ -113,28 +113,21 @@ public class ShadowApplication extends ShadowContextWrapper {
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
      *
-     *
-     *
-     * @param application    application
      * @param appManifest
      * @param resourceLoader resource loader
-     * @return the application
-     *         todo: make this non-static?
      */
-    public static Application bind(Application application, AndroidManifest appManifest, ResourceLoader resourceLoader) {
-        ShadowApplication shadowApplication = shadowOf(application);
-        if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
-        shadowApplication.appManifest = appManifest;
-        shadowApplication.resourceLoader = resourceLoader;
-        return application;
-    }
+    public void bind(AndroidManifest appManifest, ResourceLoader resourceLoader) {
+        if (this.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
+        this.appManifest = appManifest;
+        this.resourceLoader = resourceLoader;
 
-    public void injectShadow(Application application, AndroidManifest androidManifest) {
-        setPackageName(androidManifest.getPackageName());
-        setApplicationName(androidManifest.getApplicationName());
+        if (appManifest != null) {
+            setPackageName(appManifest.getPackageName());
+            setApplicationName(appManifest.getApplicationName());
 
-        setPackageManager(new RobolectricPackageManager(application, androidManifest));
-        this.registerBroadcastReceivers(androidManifest);
+            setPackageManager(new RobolectricPackageManager(realApplication, appManifest));
+            this.registerBroadcastReceivers(appManifest);
+        }
     }
 
     private void registerBroadcastReceivers(AndroidManifest androidManifest) {
