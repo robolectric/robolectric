@@ -64,10 +64,14 @@ import static org.fest.reflect.core.Reflection.staticField;
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
+    private static final Project PROJECT = new Project();
     private static final Map<Class<? extends RobolectricTestRunner>, EnvHolder> envHoldersByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, EnvHolder>();
     private static final Map<AndroidManifest, ResourceLoader> resourceLoadersByAppManifest = new HashMap<AndroidManifest, ResourceLoader>();
     private static final Map<ResourcePath, ResourceLoader> systemResourceLoaders = new HashMap<ResourcePath, ResourceLoader>();
-    public static final Project PROJECT = new Project();
+
+    private static Class<? extends RobolectricTestRunner> lastTestRunnerClass;
+    private static SdkConfig lastSdkConfig;
+    private static SdkEnvironment lastSdkEnvironment;
 
     private static ShadowMap mainShadowMap;
 
@@ -289,9 +293,6 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
                     boolean strictI18n = RobolectricTestRunner.determineI18nStrictState(bootstrappedMethod);
                     
-                    ClassHandler classHandler = sdkEnvironment.getCurrentClassHandler();
-                    classHandler.setStrictI18n(strictI18n);
-
                     int sdkVersion = pickReportedSdkVersion(config, sdkEnvironment);
                     Class<?> versionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
                     staticField("SDK_INT").ofType(int.class).in(versionClass).set(sdkVersion);
@@ -335,11 +336,22 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
     private SdkEnvironment getEnvironment(final AndroidManifest appManifest, final Config config) {
         final SdkConfig sdkConfig = pickSdkVersion(appManifest, config);
-        return envHolder.getSdkEnvironment(sdkConfig, new SdkEnvironment.Factory() {
+
+        // keep the most recently-used SdkEnvironment strongly reachable to prevent thrashing in low-memory situations.
+        if (getClass().equals(lastTestRunnerClass) && sdkConfig.equals(sdkConfig)) {
+            return lastSdkEnvironment;
+        }
+
+        lastTestRunnerClass = null;
+        lastSdkConfig = null;
+        lastSdkEnvironment = envHolder.getSdkEnvironment(sdkConfig, new SdkEnvironment.Factory() {
             @Override public SdkEnvironment create() {
                 return createSdkEnvironment(appManifest, config, sdkConfig);
             }
         });
+        lastTestRunnerClass = getClass();
+        lastSdkConfig = sdkConfig;
+        return lastSdkEnvironment;
     }
 
     protected SdkConfig pickSdkVersion(AndroidManifest appManifest, Config config) {

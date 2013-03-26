@@ -2,7 +2,6 @@ package org.robolectric;
 
 import android.app.Application;
 import android.content.res.Resources;
-import android.widget.TextView;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.model.InitializationError;
@@ -73,19 +72,6 @@ public class RobolectricTestRunnerSelfTest {
     @Test
     public void internalBeforeTest_doesNotSetI18nStrictModeFromSystemIfPropertyAbsent() {
         assertFalse(Robolectric.getShadowApplication().isStrictI18n());
-    }
-
-    @Test
-    @EnableStrictI18n
-    public void methodBlock_setsI18nStrictModeForClassHandler() {
-        TextView tv = new TextView(Robolectric.application);
-        try {
-            tv.setText("Foo");
-            fail("TextView#setText(String) should produce an i18nException");
-        } catch (Exception e) {
-            // Compare exception name because it was loaded in the instrumented classloader
-            assertEquals("org.robolectric.util.I18nException", e.getClass().getName());
-        }
     }
 
     public static class RunnerForTesting extends TestRunners.WithDefaults {

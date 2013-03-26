@@ -9,9 +9,6 @@ public interface ClassHandler {
 
     Object intercept(String signature, Object instance, Object[] paramTypes, Class theClass) throws Throwable;
 
-    // todo: definitely shouldn't live here
-    void setStrictI18n(boolean strictI18n);
-
     <T extends Throwable> T stripStackTrace(T throwable);
 
     public interface Plan {

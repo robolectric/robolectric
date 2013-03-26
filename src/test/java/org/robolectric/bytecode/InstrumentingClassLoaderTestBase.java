@@ -523,10 +523,6 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
             return null;
         }
 
-        @Override
-        public void setStrictI18n(boolean strictI18n) {
-        }
-
         @Override public <T extends Throwable> T stripStackTrace(T throwable) {
             return throwable;
         }

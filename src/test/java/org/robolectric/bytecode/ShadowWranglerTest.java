@@ -3,16 +3,13 @@ package org.robolectric.bytecode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.bytecode.testing.Foo;
 import org.robolectric.bytecode.testing.ShadowFoo;
-import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
 import org.robolectric.internal.RealObject;
-import org.robolectric.util.I18nException;
 
 import java.io.IOException;
 
@@ -192,14 +189,6 @@ public class ShadowWranglerTest {
     public static class ShadowThrowInRealMethod {
     }
 
-    @Test(expected = I18nException.class)
-    @Config(shadows = ShadowWranglerTest.ShadowFooI18n.class)
-    public void shouldThrowExceptionOnI18nStrictMode() {
-        Robolectric.getShadowWrangler().setStrictI18n(true);
-        Foo foo = new Foo(null);
-        foo.getName();
-    }
-
     private ShadowFoo shadowOf(Foo foo) {
         return (ShadowFoo) shadowOf_(foo);
     }
@@ -242,20 +231,6 @@ public class ShadowWranglerTest {
     public static class TextFoo extends Foo {
         public TextFoo(String s) {
             super(s);
-        }
-    }
-
-    @Implements(Foo.class)
-    public static class ShadowFooI18n {
-        String name;
-
-        public void __constructor__(String name) {
-            this.name = name;
-        }
-
-        @Implementation(i18nSafe = false)
-        public String getName() {
-            return name;
         }
     }
 

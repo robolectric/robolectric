@@ -34,7 +34,6 @@ public class ShadowWrangler implements ClassHandler {
     };
 
     public boolean debug = false;
-    boolean strictI18n = false;
 
     private final ShadowMap shadowMap;
     private final Map<Class, MetaShadow> metaShadowMap = new HashMap<Class, MetaShadow>();
@@ -46,11 +45,6 @@ public class ShadowWrangler implements ClassHandler {
 
     public ShadowWrangler(ShadowMap shadowMap) {
         this.shadowMap = shadowMap;
-    }
-
-    @Override
-    public void setStrictI18n(boolean strictI18n) {
-        this.strictI18n = strictI18n;
     }
 
     @Override
