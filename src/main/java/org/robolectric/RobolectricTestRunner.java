@@ -279,10 +279,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                 configureShadows(sdkEnvironment, config);
                 setupLogging();
 
+                ParallelUniverseInterface parallelUniverseInterface;
                 try {
                     assureTestLifecycle(sdkEnvironment);
 
-                    ParallelUniverseInterface parallelUniverseInterface = getHooksInterface(sdkEnvironment);
+                    parallelUniverseInterface = getHooksInterface(sdkEnvironment);
                     parallelUniverseInterface.resetStaticState();
                     parallelUniverseInterface.setDatabaseMap(databaseMap); //Set static DatabaseMap in DBConfig
 
@@ -323,6 +324,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                     }
                 } finally {
                     internalAfterTest(bootstrappedMethod);
+
+                    parallelUniverseInterface.resetStaticState(); // afterward too, so stuff doesn't hold on to classes?
+                    // todo: is this really needed?
+                    Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
                 }
             }
         };
