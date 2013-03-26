@@ -100,9 +100,9 @@ public class ShadowMap {
             }
 
             try {
-                String className = implementsAnnotation.value().getName();
-                if (!implementsAnnotation.className().isEmpty()) {
-                    className = implementsAnnotation.className();
+                String className = implementsAnnotation.className();
+                if (className.isEmpty()) {
+                    className = implementsAnnotation.value().getName();
                 }
                 addShadowClass(className, shadowClass, implementsAnnotation.callThroughByDefault());
             } catch (TypeNotPresentException typeLoadingException) {

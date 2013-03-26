@@ -333,21 +333,13 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         };
     }
 
-    private SdkEnvironment getEnvironment(AndroidManifest appManifest, Config config) {
-        SdkConfig sdkVersion = pickSdkVersion(appManifest, config);
-        synchronized (envHolder) {
-            SoftReference<SdkEnvironment> reference = envHolder.sdkToEnvironment.get(sdkVersion);
-            SdkEnvironment sdkEnvironment = reference == null ? null : reference.get();
-            if (sdkEnvironment == null) {
-                if (reference != null) {
-                    System.out.println("DEBUG: ********************* GC'ed SdkEnvironment reused!");
-                }
-
-                sdkEnvironment = createSdkEnvironment(appManifest, config, sdkVersion);
-                envHolder.sdkToEnvironment.put(sdkVersion, new SoftReference<SdkEnvironment>(sdkEnvironment));
+    private SdkEnvironment getEnvironment(final AndroidManifest appManifest, final Config config) {
+        final SdkConfig sdkConfig = pickSdkVersion(appManifest, config);
+        return envHolder.getSdkEnvironment(sdkConfig, new SdkEnvironment.Factory() {
+            @Override public SdkEnvironment create() {
+                return createSdkEnvironment(appManifest, config, sdkConfig);
             }
-            return sdkEnvironment;
-        }
+        });
     }
 
     protected SdkConfig pickSdkVersion(AndroidManifest appManifest, Config config) {

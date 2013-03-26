@@ -394,22 +394,8 @@ public class Robolectric {
         return ((ShadowWrangler) RobolectricInternals.getClassHandler());
     }
 
-    /**
-     * Invoke this utility method in tests to reveal which Android api classes and methods are being invoked
-     * for which there are no shadows or shadow methods. This helps expose which methods are being invoked
-     * either by a third party library or application code which need new shadow methods to be written. Generates
-     * output for the current test only.
-     */
-    public static void logMissingInvokedShadowMethods() {
-        getShadowWrangler().logMissingInvokedShadowMethods();
-    }
-
     public static List<Class<?>> getDefaultShadowClasses() {
         return RobolectricBase.DEFAULT_SHADOW_CLASSES;
-    }
-
-    public static <T> T directlyOn(T shadowedObject) {
-        return RobolectricInternals.directlyOn(shadowedObject);
     }
 
     public static <T> T directlyOn(T shadowedObject, Class<T> clazz) {
@@ -1434,7 +1420,6 @@ public class Robolectric {
     }
 
     public static void reset() {
-        Robolectric.getShadowWrangler().silence();
         Robolectric.application = null;
         ShadowAccountManager.reset();
         ShadowBitmapFactory.reset();
@@ -1474,7 +1459,7 @@ public class Robolectric {
         }
 
         public static Object setFinalStaticField(Field field, Object newValue) {
-        	Object oldValue = null;
+        	Object oldValue;
         	
             try {
                 field.setAccessible(true);

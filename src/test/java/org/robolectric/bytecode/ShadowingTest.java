@@ -151,53 +151,8 @@ public class ShadowingTest {
 
     @Test
     @Config(shadows = {Pony.ShadowPony.class})
-    public void testDirectlyOn_Statics() throws Exception {
-        assertEquals("I'm shadily prancing to market!", Pony.prance("market"));
-
-        directlyOn(Pony.class);
-        assertEquals("I'm prancing to market!", Pony.prance("market"));
-
-        assertEquals("I'm shadily prancing to market!", Pony.prance("market"));
-    }
-
-    @Test
-    @Config(shadows = {Pony.ShadowPony.class})
     public void whenShadowHandlerIsInClassicMode_shouldNotCallRealForUnshadowedMethod() throws Exception {
         assertEquals(null, new Pony().saunter("the salon"));
-    }
-
-    @Test
-    public void testDirectlyOn_InstanceChecking() throws Exception {
-        View view1 = new View(Robolectric.application);
-        View view2 = new View(Robolectric.application);
-
-        Exception e = null;
-        try {
-            directlyOn(view1);
-            view2.bringToFront();
-        } catch (RuntimeException e1) {
-            e = e1;
-        }
-        assertNotNull(e);
-        String message = e.getMessage().replaceAll("0x[0-9a-z]+", "0xXXXXXXXX");
-        assertThat(message).isEqualTo("expected to perform direct call on instance 0xXXXXXXXX of android.view.View but got instance 0xXXXXXXXX of android.view.View");
-    }
-
-    @Test
-    @Config(shadows = {TextViewWithDummyGetTextColorsMethod.class})
-    public void testDirectlyOn_Statics_InstanceChecking() throws Exception {
-        assertNotNull(TextView.getTextColors(null, null)); // the real implementation would asplode
-
-        Exception e = null;
-        try {
-            directlyOn(View.class);
-            TextView.getTextColors(null, null);
-        } catch (RuntimeException e1) {
-            e = e1;
-        }
-
-        assertNotNull(e);
-        assertThat(e.getMessage()).isEqualTo("expected to perform direct call on class android.view.View but got class android.widget.TextView");
     }
 
     @Implements(TextView.class)
@@ -205,20 +160,6 @@ public class ShadowingTest {
         public static ColorStateList getTextColors(Context context, TypedArray attrs) {
             return new ColorStateList(new int[0][0], new int[0]);
         }
-    }
-
-    @Test
-    public void testDirectlyOn_CallTwiceChecking() throws Exception {
-        directlyOn(View.class);
-
-        Exception e = null;
-        try {
-            directlyOn(View.class);
-        } catch (RuntimeException e1) {
-            e = e1;
-        }
-        assertNotNull(e);
-        assertThat(e.getMessage()).isEqualTo("already expecting a direct call on <class android.view.View> but here's a new request for <class android.view.View>");
     }
 
     @Test
