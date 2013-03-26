@@ -64,6 +64,12 @@ public class ShadowAbsListView extends ShadowAdapterView {
     }
 
     @Implementation
+    public int getCheckedItemCount() {
+        SparseBooleanArray checkedItemPositions = getCheckedItemPositions();
+        return checkedItemPositions == null ? 0 : checkedItemPositions.size();
+    }
+
+    @Implementation
     public void setItemChecked(int position, boolean value) {
         if (choiceMode == ListView.CHOICE_MODE_SINGLE) {
             checkedItemPositions.clear();
