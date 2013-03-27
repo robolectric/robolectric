@@ -111,18 +111,24 @@
             <version>r7</version>
         </dependency>
 
-        <!-- this needs to come above fest-reflect or we pick up the wrong org.fest.util.Strings -->
         <dependency>
             <groupId>org.easytesting</groupId>
             <artifactId>fest-assert-core</artifactId>
-            <version>2.0M9</version>
+            <version>2.0M10</version>
             <scope>test</scope>
         </dependency>
 
         <dependency>
             <groupId>org.easytesting</groupId>
             <artifactId>fest-reflect</artifactId>
-            <version>1.4</version>
+            <version>1.4.1</version>
+            <exclusions>
+                <!-- To resolve conflicts between different transitive dependency to fest-util from from fest-assert-core and fest-reflect -->
+                <exclusion>
+                    <groupId>org.easytesting</groupId>
+                    <artifactId>fest-util</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
 
         <dependency>
