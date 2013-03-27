@@ -16,11 +16,11 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
+import org.fest.reflect.core.Reflection;
 import org.robolectric.Robolectric;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-import org.robolectric.util.ReflectionUtil;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -490,9 +490,8 @@ public class ShadowView {
             bottom = b;
 
             realView.invalidate();
-            ReflectionUtil.invoke(realView, "onLayout",
-                new Class<?>[]{Boolean.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE},
-                true, l, t, r, b);
+            Reflection.method("onLayout").withParameterTypes(boolean.class, int.class, int.class, int.class, int.class)
+                    .in(realView).invoke(true, l, t, r, b);
         }
     }
 

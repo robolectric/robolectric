@@ -106,4 +106,11 @@ public class ImageViewTest {
         imageView.setImageLevel(2);
         assertThat(shadowOf(imageView).getImageLevel()).isEqualTo(2);
     }
+
+    @Test
+    public void testCallingLayoutOnParent(){
+        imageView.layout(1,2,3,4);
+        ShadowImageView shadowImageView = Robolectric.shadowOf(imageView);
+        assertTrue(shadowImageView.onLayoutWasCalled());
+    }
 }
