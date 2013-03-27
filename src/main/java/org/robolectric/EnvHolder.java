@@ -14,7 +14,7 @@ public class EnvHolder {
         SdkEnvironment sdkEnvironment = reference == null ? null : reference.get();
         if (sdkEnvironment == null) {
             if (reference != null) {
-                System.out.println("DEBUG: ********************* GC'ed SdkEnvironment reused!");
+                System.out.println("[DEBUG] ********************* GC'ed SdkEnvironment reused!");
             }
 
             sdkEnvironment = factory.create();
