@@ -1,5 +1,6 @@
 package org.robolectric.bytecode;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
@@ -31,15 +32,17 @@ public class ClassicSuperHandlingTest {
         assertEquals("1s-boof", new Grandparent().method("boof"));
     }
 
+    @Ignore("this doesn't make sense until call-through is turned on by default for unshadowed classes")
     @Test
     @Config(shadows = {ParentShadow.class, GrandparentShadow.class})
-    public void shadowInvocationWhenChildIsInstrmentedButUnshadowed() throws Exception {
+    public void shadowInvocationWhenChildIsInstrumentedButUnshadowed() throws Exception {
         System.out.println("ShadowWrangler is " + Robolectric.getShadowWrangler() + " from " + RobolectricInternals.class.getClassLoader());
         assertEquals("2s-1s-boof", new Child().method("boof"));
         assertEquals("2s-1s-boof", new Parent().method("boof"));
         assertEquals("1s-boof", new Grandparent().method("boof"));
     }
 
+    @Ignore("this doesn't make sense until call-through is turned on by default for unshadowed classes")
     @Test
     @Config(shadows = {ParentShadow.class})
     public void whenIntermediateIsShadowed() throws Exception {

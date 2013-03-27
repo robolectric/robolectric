@@ -41,8 +41,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import static org.fest.assertions.api.Assertions.assertThat;
 import static org.fest.reflect.core.Reflection.staticField;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.directlyOn;
 
@@ -484,7 +484,10 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         public void classInitializing(Class clazz) {
         }
 
-        @Override
+        @Override public Object initializing(Object instance) {
+            return null;
+        }
+
         public Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Throwable {
             StringBuilder buf = new StringBuilder();
             buf.append("methodInvoked: ").append(clazz.getSimpleName()).append(".").append(methodName).append("(");
@@ -502,12 +505,26 @@ abstract public class InstrumentingClassLoaderTestBase { // don't end in "Test" 
         }
 
         @Override
-        public Object intercept(String clazzName, String methodName, Object instance, Object[] paramTypes, Object[] params) throws Throwable {
-            return null;
+        public Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
+            final InvocationProfile invocationProfile = new InvocationProfile(signature, isStatic, getClass().getClassLoader());
+            return new Plan() {
+                @Override public Object run(Object instance, Object[] params) throws Exception {
+                    try {
+                        return methodInvoked(invocationProfile.clazz, invocationProfile.methodName, instance, invocationProfile.paramTypes, params);
+                    } catch (Throwable throwable) {
+                        throw new RuntimeException(throwable);
+                    }
+                }
+            };
         }
 
         @Override
-        public void setStrictI18n(boolean strictI18n) {
+        public Object intercept(String clazzName, Object instance, Object[] paramTypes, Class theClass) throws Throwable {
+            return null;
+        }
+
+        @Override public <T extends Throwable> T stripStackTrace(T throwable) {
+            return throwable;
         }
     }
 

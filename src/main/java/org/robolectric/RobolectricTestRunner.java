@@ -45,11 +45,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.lang.annotation.Annotation;
-import java.lang.ref.SoftReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Hashtable;
@@ -64,15 +64,24 @@ import static org.fest.reflect.core.Reflection.staticField;
  * provide a simulation of the Android runtime environment.
  */
 public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
+    private static final Project PROJECT = new Project();
     private static final Map<Class<? extends RobolectricTestRunner>, EnvHolder> envHoldersByTestRunner = new HashMap<Class<? extends RobolectricTestRunner>, EnvHolder>();
     private static final Map<AndroidManifest, ResourceLoader> resourceLoadersByAppManifest = new HashMap<AndroidManifest, ResourceLoader>();
     private static final Map<ResourcePath, ResourceLoader> systemResourceLoaders = new HashMap<ResourcePath, ResourceLoader>();
+
+    private static Class<? extends RobolectricTestRunner> lastTestRunnerClass;
+    private static SdkConfig lastSdkConfig;
+    private static SdkEnvironment lastSdkEnvironment;
 
     private static ShadowMap mainShadowMap;
 
     private final EnvHolder envHolder;
     private DatabaseMap databaseMap;
     private TestLifecycle<Application> testLifecycle;
+
+    static {
+        new SecureRandom(); // this starts up the Poller SunPKCS11-Darwin thread early, outside of any Robolectric classloader
+    }
 
     /**
      * Creates a runner to run {@code testClass}. Looks in your working directory for your AndroidManifest.xml file
@@ -190,15 +199,14 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     private URL[] artifactUrls(Dependency... dependencies) {
         DependenciesTask dependenciesTask = new DependenciesTask();
         configureMaven(dependenciesTask);
-        Project project = new Project();
-        dependenciesTask.setProject(project);
+        dependenciesTask.setProject(PROJECT);
         for (Dependency dependency : dependencies) {
             dependenciesTask.addDependency(dependency);
         }
         dependenciesTask.execute();
 
         @SuppressWarnings("unchecked")
-        Hashtable<String, String> artifacts = project.getProperties();
+        Hashtable<String, String> artifacts = PROJECT.getProperties();
         URL[] urls = new URL[artifacts.size()];
         int i = 0;
         for (String path : artifacts.values()) {
@@ -275,18 +283,16 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                 configureShadows(sdkEnvironment, config);
                 setupLogging();
 
+                ParallelUniverseInterface parallelUniverseInterface;
                 try {
                     assureTestLifecycle(sdkEnvironment);
 
-                    ParallelUniverseInterface parallelUniverseInterface = getHooksInterface(sdkEnvironment);
+                    parallelUniverseInterface = getHooksInterface(sdkEnvironment);
                     parallelUniverseInterface.resetStaticState();
                     parallelUniverseInterface.setDatabaseMap(databaseMap); //Set static DatabaseMap in DBConfig
 
                     boolean strictI18n = RobolectricTestRunner.determineI18nStrictState(bootstrappedMethod);
                     
-                    ClassHandler classHandler = sdkEnvironment.getCurrentClassHandler();
-                    classHandler.setStrictI18n(strictI18n);
-
                     int sdkVersion = pickReportedSdkVersion(config, sdkEnvironment);
                     Class<?> versionClass = sdkEnvironment.bootstrappedClass(Build.VERSION.class);
                     staticField("SDK_INT").ofType(int.class).in(versionClass).set(sdkVersion);
@@ -319,26 +325,33 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                     }
                 } finally {
                     internalAfterTest(bootstrappedMethod);
+
+                    parallelUniverseInterface.resetStaticState(); // afterward too, so stuff doesn't hold on to classes?
+                    // todo: is this really needed?
+                    Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
                 }
             }
         };
     }
 
-    private SdkEnvironment getEnvironment(AndroidManifest appManifest, Config config) {
-        SdkConfig sdkVersion = pickSdkVersion(appManifest, config);
-        synchronized (envHolder) {
-            SoftReference<SdkEnvironment> reference = envHolder.sdkToEnvironment.get(sdkVersion);
-            SdkEnvironment sdkEnvironment = reference == null ? null : reference.get();
-            if (sdkEnvironment == null) {
-                if (reference != null) {
-                    System.out.println("DEBUG: ********************* GC'ed SdkEnvironment reused!");
-                }
+    private SdkEnvironment getEnvironment(final AndroidManifest appManifest, final Config config) {
+        final SdkConfig sdkConfig = pickSdkVersion(appManifest, config);
 
-                sdkEnvironment = createSdkEnvironment(appManifest, config, sdkVersion);
-                envHolder.sdkToEnvironment.put(sdkVersion, new SoftReference<SdkEnvironment>(sdkEnvironment));
-            }
-            return sdkEnvironment;
+        // keep the most recently-used SdkEnvironment strongly reachable to prevent thrashing in low-memory situations.
+        if (getClass().equals(lastTestRunnerClass) && sdkConfig.equals(sdkConfig)) {
+            return lastSdkEnvironment;
         }
+
+        lastTestRunnerClass = null;
+        lastSdkConfig = null;
+        lastSdkEnvironment = envHolder.getSdkEnvironment(sdkConfig, new SdkEnvironment.Factory() {
+            @Override public SdkEnvironment create() {
+                return createSdkEnvironment(appManifest, config, sdkConfig);
+            }
+        });
+        lastTestRunnerClass = getClass();
+        lastSdkConfig = sdkConfig;
+        return lastSdkEnvironment;
     }
 
     protected SdkConfig pickSdkVersion(AndroidManifest appManifest, Config config) {

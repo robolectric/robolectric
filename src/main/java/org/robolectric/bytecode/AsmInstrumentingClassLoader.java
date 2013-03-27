@@ -49,6 +49,15 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     private static final Type OBJECT_TYPE = getType(Object.class);
     private static final Type STRING_TYPE = getType(String.class);
     private static final Type ROBOLECTRIC_INTERNALS_TYPE = Type.getType(RobolectricInternals.class);
+    private static final Type PLAN_TYPE = Type.getType(ClassHandler.Plan.class);
+    private static final Method PLAN_RUN_METHOD = new Method("run", OBJECT_TYPE, new Type[]{OBJECT_TYPE, Type.getType(Object[].class)});
+    private static final Type THROWABLE_TYPE = Type.getType(Throwable.class);
+    private static final Method INITIALIZING_METHOD = new Method("initializing", "(Ljava/lang/Object;)Ljava/lang/Object;");
+    private static final Method METHOD_INVOKED_METHOD = new Method("methodInvoked", "(Ljava/lang/String;ZLjava/lang/Class;)L" + PLAN_TYPE.getInternalName() + ";");
+    private static final Method HANDLE_EXCEPTION_METHOD = new Method("cleanStackTrace", THROWABLE_TYPE, new Type[]{THROWABLE_TYPE});
+    private static final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
+    private static final String INIT_METHOD_NAME = "$$robo$init";
+    static final String GET_ROBO_DATA_METHOD_NAME = "$$robo$getData";
 
     private static boolean debug = false;
 
@@ -57,8 +66,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
     private final Map<String, Class> classes = new HashMap<String, Class>();
     private final Set<Setup.MethodRef> methodsToIntercept;
     private final Map<String, String> classesToRemap;
+    private int number = 0;
 
-    public static final String DIRECT_OBJECT_MARKER_TYPE_DESC = Type.getObjectType(DirectObjectMarker.class.getName().replace('.', '/')).getDescriptor();
 
     public AsmInstrumentingClassLoader(Setup setup, URL... urls) {
         super(AsmInstrumentingClassLoader.class.getClassLoader());
@@ -139,9 +148,13 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                 } else {
                     bytes = origClassBytes;
                 }
+//                System.out.println("[DEBUG] Defining " + classFilename + " (" + bytes.length + ") in " + this + ": class" + number++);
                 return defineClass(className, bytes, 0, bytes.length);
             } catch (Exception e) {
                 throw new ClassNotFoundException("couldn't load " + className, e);
+            } catch (OutOfMemoryError e) {
+                System.err.println("[ERROR] couldn't load " + className + " in " + this);
+                throw e;
             }
         } else {
             throw new IllegalStateException("how did we get here? " + className);
@@ -228,8 +241,8 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                 FileOutputStream fileOutputStream = new FileOutputStream("tmp/" + className + ".class");
                 fileOutputStream.write(classBytes);
                 fileOutputStream.close();
-                CheckClassAdapter.verify(new ClassReader(classBytes), false, new PrintWriter(new FileWriter("tmp/" + className + ".analysis", true)));
-                new ClassReader(classBytes).accept(new TraceClassVisitor(new PrintWriter(new FileWriter("tmp/" + className + ".java", true))), 0);
+                CheckClassAdapter.verify(new ClassReader(classBytes), true, new PrintWriter(new FileWriter("tmp/" + className + ".analysis", false)));
+                new ClassReader(classBytes).accept(new TraceClassVisitor(new PrintWriter(new FileWriter("tmp/" + className + ".dis", false))), 0);
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -296,6 +309,33 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                 visitMethodInsn(INVOKESPECIAL, internalClassName, methodName, methodDesc);
             }
         }
+
+        public TryCatch tryStart(Type exceptionType) {
+            return new TryCatch(this, exceptionType);
+        }
+    }
+
+    public static class TryCatch {
+        private final Label start;
+        private final Label end;
+        private final Label handler;
+        private final GeneratorAdapter generatorAdapter;
+
+        public TryCatch(GeneratorAdapter generatorAdapter, Type type) {
+            this.generatorAdapter = generatorAdapter;
+            this.start = generatorAdapter.mark();
+            this.end = new Label();
+            this.handler = new Label();
+            generatorAdapter.visitTryCatchBlock(start, end, handler, type.getInternalName());
+        }
+
+        public void end() {
+            generatorAdapter.mark(end);
+        }
+
+        public void handler() {
+            generatorAdapter.mark(handler);
+        }
     }
 
     private Map<String, String> convertToSlashes(Map<String, String> map) {
@@ -356,16 +396,16 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                 }
             }
 
-            classNode.fields.add(new FieldNode(ACC_PUBLIC, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
+            classNode.fields.add(0, new FieldNode(ACC_PUBLIC, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_DESC, OBJECT_DESC, null));
 
             if (!foundMethods.contains("<init>()V")) {
                 MethodNode defaultConstructor = new MethodNode(ACC_PUBLIC, "<init>", "()V", "()V", null);
                 MyGenerator m = new MyGenerator(defaultConstructor);
                 m.loadThis();
                 m.visitMethodInsn(INVOKESPECIAL, classNode.superName, "<init>", "()V");
+                m.loadThis();
+                m.invokeVirtual(classType, new Method(INIT_METHOD_NAME, "()V"));
                 generateCallToClassHandler(defaultConstructor, CONSTRUCTOR_METHOD_NAME, m);
-                m.pop();
-                m.returnValue();
                 m.endMethod();
                 classNode.methods.add(defaultConstructor);
             }
@@ -400,6 +440,33 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 //                System.out.println("method = " + method.name + method.desc);
 //            }
 
+            {
+                MethodNode initMethodNode = new MethodNode(ACC_PROTECTED, INIT_METHOD_NAME, "()V", null, null);
+                MyGenerator m = new MyGenerator(initMethodNode);
+                Label alreadyInitialized = new Label();
+                m.loadThis();                                         // this
+                m.getField(classType, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+                m.ifNonNull(alreadyInitialized);
+                m.loadThis();                                         // this
+                m.loadThis();                                         // this, this
+                m.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, INITIALIZING_METHOD); // this, __robo_data__
+                m.putField(classType, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);
+                m.mark(alreadyInitialized);
+                m.returnValue();
+                m.endMethod();
+                classNode.methods.add(initMethodNode);
+            }
+
+            {
+                MethodNode initMethodNode = new MethodNode(ACC_PRIVATE, GET_ROBO_DATA_METHOD_NAME, "()Ljava/lang/Object;", null, null);
+                MyGenerator m = new MyGenerator(initMethodNode);
+                m.loadThis();                                         // this
+                m.getField(classType, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+                m.returnValue();
+                m.endMethod();
+                classNode.methods.add(initMethodNode);
+            }
+
             if (className.equals("android.os.Build$VERSION")) {
                 for (Object field : classNode.fields) {
                     FieldNode fieldNode = (FieldNode) field;
@@ -416,8 +483,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             if (!foundMethods.contains(methodName + methodDesc)) {
                 MethodNode methodNode = new MethodNode(ACC_PUBLIC, methodName, methodDesc, null, null);
                 MyGenerator m = new MyGenerator(methodNode);
-                m.loadThis();
-                m.loadArgs();
                 m.invokeMethod("java/lang/Object", methodNode);
                 m.returnValue();
                 m.endMethod();
@@ -450,8 +515,9 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
             methodNode.instructions = removedInstructions;
 
+            m.loadThis();
+            m.invokeVirtual(classType, new Method(INIT_METHOD_NAME, "()V"));
             generateCallToClassHandler(method, CONSTRUCTOR_METHOD_NAME, m);
-            m.returnValue();
 
             m.endMethod();
             classNode.methods.add(methodNode);
@@ -533,48 +599,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
 
             MyGenerator m = new MyGenerator(delegatorMethodNode);
 
-            Label callDirect = new Label();
-            Label callClassHandler = new Label();
-
-            if (!m.isStatic) {
-                m.loadThis();                                         // this
-                m.getField(classType, "__robo_data__", OBJECT_TYPE);  // contents of __robo_data__
-                m.instanceOf(classType);                              // is instance of same class?
-                m.visitJumpInsn(IFNE, callDirect); // jump if yes (is instance)
-            }
-
-            if (m.isStatic) {
-                m.push(classType);                                    // my class
-            } else {
-                m.loadThis();                                         // this
-            }
-            m.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, new Method("shouldCallDirectly", "(Ljava/lang/Object;)Z"));
-            // args, should call directly?
-            m.visitJumpInsn(IFEQ, callClassHandler); // jump if no (should not call directly)
-
-            m.invokeMethod(internalClassName, method);
-            m.returnValue();
-
-            // callDirect...
-            m.mark(callDirect);
-
-            // call direct method and return
-            if (m.isStatic()) {
-                m.loadArgs();                                             // this, [args]
-                m.visitMethodInsn(INVOKESTATIC, internalClassName, method.name, method.desc);
-            } else {
-                m.loadThis();
-                m.getField(classType, "__robo_data__", OBJECT_TYPE);      // __robo_data__ instance
-                m.checkCast(classType);
-                m.loadArgs();                                             // __robo_data__ instance, [args]
-                m.visitMethodInsn(INVOKESPECIAL, internalClassName, method.name, method.desc);
-            }
-            m.returnValue();
-
-            // callClassHandler...
-            m.mark(callClassHandler);
             generateCallToClassHandler(method, originalName, m);
-            m.returnValue();
 
             m.endMethod();
 
@@ -586,7 +611,6 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             redirector.access = method.access & ~(ACC_NATIVE | ACC_ABSTRACT | ACC_FINAL);
             makePrivate(redirector);
             MyGenerator m = new MyGenerator(redirector);
-
             m.invokeMethod(internalClassName, method);
             m.returnValue();
             return redirector;
@@ -635,30 +659,26 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         private void interceptNastyMethod(ListIterator<AbstractInsnNode> instructions, MethodNode callingMethod, MethodInsnNode targetMethod) {
             boolean isStatic = targetMethod.getOpcode() == INVOKESTATIC;
 
-            instructions.remove();
+            instructions.remove(); // remove the method invocation
 
             // first, throw away arguments (ugh)
             for (Type type : reverse(Type.getArgumentTypes(targetMethod.desc))) {
                 instructions.add(type.getSize() == 2 ? new InsnNode(POP2) : new InsnNode(POP));
             }
 
-            instructions.add(new LdcInsnNode(targetMethod.owner)); // class name
-            if (!isStatic) instructions.add(new InsnNode(SWAP));
-
-            instructions.add(new LdcInsnNode(targetMethod.name));  // method name
+            instructions.add(new LdcInsnNode(targetMethod.owner + "/" + targetMethod.name + targetMethod.desc)); // target method signature
             if (isStatic) {
-                instructions.add(new InsnNode(ACONST_NULL));    // target object or null for static
+                instructions.add(new InsnNode(Opcodes.ACONST_NULL));  // self or null if static
             } else {
-                instructions.add(new InsnNode(SWAP));
+                instructions.add(new InsnNode(SWAP)); // keep instance at the top of the stack
             }
 
             instructions.add(new LdcInsnNode(0));
             instructions.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
-            instructions.add(new LdcInsnNode(0));
-            instructions.add(new TypeInsnNode(ANEWARRAY, "java/lang/Object"));
+            instructions.add(new LdcInsnNode(classType));
             instructions.add(new MethodInsnNode(INVOKESTATIC,
                     Type.getType(RobolectricInternals.class).getInternalName(), "intercept",
-                    "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;"));
+                    "(Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;Ljava/lang/Class;)Ljava/lang/Object;"));
             Type returnType = Type.getReturnType(targetMethod.desc);
             // todo: make this honor the return value if somebody cares about what intercept returns
             switch (returnType.getSort()) {
@@ -666,7 +686,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                     instructions.add(new TypeInsnNode(CHECKCAST, remapType(returnType.getInternalName())));
                     break;
                 case ARRAY:
-                     // wrong
+                    // wrong
                     instructions.add(new InsnNode(POP));
                     instructions.add(new InsnNode(ACONST_NULL));
                     break;
@@ -679,20 +699,20 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                     instructions.add(new InsnNode(LCONST_0));
                     break;
                 case Type.FLOAT:
-                     // wrong
+                    // wrong
                     instructions.add(new InsnNode(POP));
                     instructions.add(new InsnNode(FCONST_0));
                     break;
                 case Type.DOUBLE:
-                     // wrong
+                    // wrong
                     instructions.add(new InsnNode(POP));
                     instructions.add(new InsnNode(DCONST_0));
                     break;
                 default:
-                     // wrong
+                    // wrong
                     instructions.add(new InsnNode(POP));
                     instructions.add(new InsnNode(ICONST_0));
-                break;
+                    break;
             }
         }
 
@@ -718,50 +738,114 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
             return methodNode;
         }
 
-        private void generateCallToClassHandler(MethodNode method, String originalMethodName, MyGenerator m) {
-            // prepare for call to classHandler.methodInvoked()
-            m.push(classType);                                         // my class
-            m.push(originalMethodName);                                // my class, method name
-            m.loadThisOrNull();                                        // my class, method name, this
-//
-//            // load param types
-            Type[] argumentTypes = Type.getArgumentTypes(method.desc);
-            m.push(argumentTypes.length);
-            m.newArray(STRING_TYPE);                                   // my class, method name, this, String[n]{nulls}
-            for (int i = 0; i < argumentTypes.length; i++) {
-                Type argumentType = argumentTypes[i];
-                m.dup();
-                m.push(i);
-                m.push(argumentType.getClassName());
-                m.arrayStore(STRING_TYPE);
+        private void generateCallToClassHandler(MethodNode originalMethod, String originalMethodName, MyGenerator m) {
+            int planLocalVar = m.newLocal(PLAN_TYPE);
+            int exceptionLocalVar = m.newLocal(THROWABLE_TYPE);
+            Label directCall = new Label();
+
+            boolean isNormalInstanceMethod = !m.isStatic && !originalMethodName.equals(InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME);
+
+            // maybe perform proxy call...
+            if (isNormalInstanceMethod) {
+                Label notInstanceOfThis = new Label();
+
+                m.loadThis();                                         // this
+                m.getField(classType, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+                m.instanceOf(classType);                              // __robo_data__, is instance of same class?
+                m.visitJumpInsn(IFEQ, notInstanceOfThis); // jump if no (is not instance)
+
+                TryCatch tryCatchForProxyCall = m.tryStart(THROWABLE_TYPE);
+                m.loadThis();                                         // this
+                m.getField(classType, CLASS_HANDLER_DATA_FIELD_NAME, OBJECT_TYPE);  // contents of __robo_data__
+                m.checkCast(classType);                               // __robo_data__ but cast to my class
+                m.loadArgs();                                         // __robo_data__ instance, [args]
+
+                m.visitMethodInsn(INVOKESPECIAL, internalClassName, originalMethod.name, originalMethod.desc);
+                tryCatchForProxyCall.end();
+
+                m.returnValue();
+
+                // catch(Throwable)
+                tryCatchForProxyCall.handler();
+                m.storeLocal(exceptionLocalVar);
+                m.loadLocal(exceptionLocalVar);
+                m.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, HANDLE_EXCEPTION_METHOD);
+                m.throwException();
+
+                // callClassHandler...
+                m.mark(notInstanceOfThis);
             }
-            // my class, method name, this, String[n]{param class names}
 
+            // prepare for call to classHandler.methodInvoked(String signature, boolean isStatic)
+            m.push(classType.getInternalName() + "/" + originalMethodName + originalMethod.desc);
+            m.push(m.isStatic());
+            m.push(classType);                                         // my class
+            m.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, METHOD_INVOKED_METHOD);
+            m.storeLocal(planLocalVar);
+
+            m.loadLocal(planLocalVar); // plan
+            m.ifNull(directCall);
+
+            // prepare for call to plan.run(Object instance, Object[] params)
+            TryCatch tryCatchForHandler = m.tryStart(THROWABLE_TYPE);
+            m.loadLocal(planLocalVar); // plan
+            m.loadThisOrNull();
             m.loadArgArray();
-
-            m.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, new Method("methodInvoked", "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/String;[Ljava/lang/Object;)Ljava/lang/Object;"));
+            m.invokeInterface(PLAN_TYPE, PLAN_RUN_METHOD);
 
             Type returnType = m.getReturnType();
             int sort = returnType.getSort();
-            if (sort != VOID)
-                if (sort == OBJECT || sort == ARRAY) {
-                    m.checkCast(returnType);
-                } else {
-                    Label notNull = m.newLabel();
-                    Label finished = m.newLabel();
-                    m.dup();
-                    m.ifNonNull(notNull);
-//                if (returnType.getSize() == 2) {
-//                    m.pop2();
-//                } else {
+            switch (sort) {
+                case VOID:
                     m.pop();
-//                }
-                    m.pushZero(returnType);
-                    m.goTo(finished);
-                    m.visitLabel(notNull);
+                    break;
+                case OBJECT:
+                case ARRAY:
+                    m.checkCast(returnType);
+                    break;
+                default:
+                    int unboxLocalVar = m.newLocal(OBJECT_TYPE);
+                    m.storeLocal(unboxLocalVar);
+                    m.loadLocal(unboxLocalVar);
+                    Label notNull = m.newLabel();
+                    Label afterward = m.newLabel();
+                    m.ifNonNull(notNull);
+                    m.pushZero(returnType); // return zero, false, whatever
+                    m.goTo(afterward);
+
+                    m.mark(notNull);
+                    m.loadLocal(unboxLocalVar);
                     m.unbox(returnType);
-                    m.visitLabel(finished);
-                }
+                    m.mark(afterward);
+                    break;
+            }
+            tryCatchForHandler.end();
+            m.returnValue();
+
+            // catch(Throwable)
+            tryCatchForHandler.handler();
+            m.storeLocal(exceptionLocalVar);
+            m.loadLocal(exceptionLocalVar);
+            m.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, HANDLE_EXCEPTION_METHOD);
+            m.throwException();
+
+
+            if (originalMethod.name.equals("<init>")) {
+                m.returnValue();
+            } else {
+                m.mark(directCall);
+                TryCatch tryCatchForDirect = m.tryStart(THROWABLE_TYPE);
+                m.invokeMethod(classType.getInternalName(), originalMethod.name, originalMethod.desc);
+                tryCatchForDirect.end();
+                m.returnValue();
+
+                // catch(Throwable)
+                tryCatchForDirect.handler();
+                m.storeLocal(exceptionLocalVar);
+                m.loadLocal(exceptionLocalVar);
+                m.invokeStatic(ROBOLECTRIC_INTERNALS_TYPE, HANDLE_EXCEPTION_METHOD);
+                m.throwException();
+            }
         }
 
         private boolean isEnum() {

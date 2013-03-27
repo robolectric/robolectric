@@ -19,7 +19,8 @@ public class ShadowWranglerUnitTest {
 
     @Test
     public void getInterceptionHandler_whenCallIsNotRecognized_shouldReturnDoNothingHandler() throws Exception {
-        Function<Object,Object> handler = shadowWrangler.getInterceptionHandler("unrecognizedClass", "nonMethod");
+        Function<Object,Object> handler = shadowWrangler.getInterceptionHandler(
+                new InvocationProfile("java/lang/Object/unknownMethod()V", false, getClass().getClassLoader()));
 
         assertThat(handler)
                 .isNotNull()
@@ -29,7 +30,8 @@ public class ShadowWranglerUnitTest {
 
     @Test
     public void getInterceptionHandler_whenInterceptingElderOnLinkedHashMap_shouldReturnNonDoNothingHandler() throws Exception {
-        Function<Object,Object> handler = shadowWrangler.getInterceptionHandler("java/util/LinkedHashMap", "eldest");
+        Function<Object,Object> handler = shadowWrangler.getInterceptionHandler(
+                new InvocationProfile("java/util/LinkedHashMap/eldest()Ljava/lang/Object;", false, getClass().getClassLoader()));
 
         assertThat(handler).isNotSameAs(ShadowWrangler.DO_NOTHING_HANDLER);
     }
@@ -40,7 +42,9 @@ public class ShadowWranglerUnitTest {
         map.put(1, "one");
         map.put(2, "two");
 
-        Map.Entry<Integer, String> result = (Map.Entry<Integer, String>) shadowWrangler.intercept("java/util/LinkedHashMap", "eldest", map, null, null);
+        @SuppressWarnings("unchecked")
+        Map.Entry<Integer, String> result = (Map.Entry<Integer, String>)
+                shadowWrangler.intercept("java/util/LinkedHashMap/eldest()Ljava/lang/Object;", map, null, getClass());
 
         Map.Entry<Integer, String> eldestMember = map.entrySet().iterator().next();
         assertThat(result).isEqualTo(eldestMember);

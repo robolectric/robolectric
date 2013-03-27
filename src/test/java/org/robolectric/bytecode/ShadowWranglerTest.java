@@ -3,16 +3,13 @@ package org.robolectric.bytecode;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
 import org.robolectric.bytecode.testing.Foo;
 import org.robolectric.bytecode.testing.ShadowFoo;
-import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
 import org.robolectric.internal.RealObject;
-import org.robolectric.util.I18nException;
 
 import java.io.IOException;
 
@@ -154,12 +151,42 @@ public class ShadowWranglerTest {
     }
 
 
-    @Test(expected = I18nException.class)
-    @Config(shadows = ShadowWranglerTest.ShadowFooI18n.class)
-    public void shouldThrowExceptionOnI18nStrictMode() {
-        Robolectric.getShadowWrangler().setStrictI18n(true);
-        Foo foo = new Foo(null);
-        foo.getName();
+    @Test
+    @Config(shadows = ShadowThrowInRealMethod.class)
+    public void shouldRemoveNoiseFromUnshadowedStackTraces() throws Exception {
+        ThrowInRealMethod instance = new ThrowInRealMethod();
+
+        Exception e = null;
+        try {
+            instance.method();
+        } catch (Exception e1) {
+            e = e1;
+        }
+
+        assertNotNull(e);
+        assertEquals(IOException.class, e.getClass());
+        assertEquals("fake exception", e.getMessage());
+//        e.printStackTrace();
+        StackTraceElement[] stackTrace = e.getStackTrace();
+
+        assertThat(stackTrace[0].getClassName()).isEqualTo(ThrowInRealMethod.class.getName());
+        assertThat(stackTrace[0].getMethodName()).isEqualTo("method");
+        assertThat(stackTrace[0].getLineNumber()).isGreaterThan(0);
+
+        assertThat(stackTrace[1].getClassName()).isEqualTo(ShadowWranglerTest.class.getName());
+        assertThat(stackTrace[1].getMethodName()).isEqualTo("shouldRemoveNoiseFromUnshadowedStackTraces");
+        assertThat(stackTrace[1].getLineNumber()).isGreaterThan(0);
+    }
+
+    @Instrument
+    public static class ThrowInRealMethod {
+        public void method() throws IOException {
+            throw new IOException("fake exception");
+        }
+    }
+
+    @Implements(value = ThrowInRealMethod.class, callThroughByDefault = true)
+    public static class ShadowThrowInRealMethod {
     }
 
     private ShadowFoo shadowOf(Foo foo) {
@@ -204,20 +231,6 @@ public class ShadowWranglerTest {
     public static class TextFoo extends Foo {
         public TextFoo(String s) {
             super(s);
-        }
-    }
-
-    @Implements(Foo.class)
-    public static class ShadowFooI18n {
-        String name;
-
-        public void __constructor__(String name) {
-            this.name = name;
-        }
-
-        @Implementation(i18nSafe = false)
-        public String getName() {
-            return name;
         }
     }
 

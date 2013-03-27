@@ -59,4 +59,8 @@ public class SdkEnvironment {
     public void setCurrentClassHandler(ClassHandler currentClassHandler) {
         this.currentClassHandler = currentClassHandler;
     }
+
+    public interface Factory {
+        public SdkEnvironment create();
+    }
 }
