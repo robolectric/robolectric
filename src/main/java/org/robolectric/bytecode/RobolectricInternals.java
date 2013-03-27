@@ -105,8 +105,7 @@ public class RobolectricInternals {
     }
 
     public static Throwable cleanStackTrace(Throwable exception) throws Throwable {
-//        return classHandler.stripStackTrace(exception);
-        return exception;
+        return classHandler.stripStackTrace(exception);
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
