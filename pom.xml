@@ -101,7 +101,7 @@
         <dependency>
             <groupId>com.google.android.maps</groupId>
             <artifactId>maps</artifactId>
-            <version>16_r2</version>
+            <version>16_r3</version>
             <scope>provided</scope>
         </dependency>
 
@@ -136,6 +136,12 @@
             <artifactId>mockito-core</artifactId>
             <version>1.9.5</version>
             <scope>test</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.googlecode.catch-exception</groupId>
+            <artifactId>catch-exception</artifactId>
+            <version>1.0.4</version>
         </dependency>
 
         <dependency>

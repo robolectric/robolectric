@@ -42,6 +42,16 @@ import static org.robolectric.util.SQLite.*;
  */
 @Implements(SQLiteDatabase.class)
 public class ShadowSQLiteDatabase extends ShadowSQLiteCloseable {
+
+    public static final android.database.sqlite.SQLiteDatabase.CursorFactory DEFAULT_CURSOR_FACTORY = new SQLiteDatabase.CursorFactory() {
+        @Override
+        public Cursor newCursor(SQLiteDatabase db,
+                                SQLiteCursorDriver masterQuery, String editTable, SQLiteQuery query) {
+            return new SQLiteCursor(db, masterQuery, editTable, query);
+        }
+
+    };
+
     @RealObject	SQLiteDatabase realSQLiteDatabase;
     private static Connection connection;
     private final ReentrantLock mLock = new ReentrantLock(true);
@@ -249,14 +259,7 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteCloseable {
 
     @Implementation
     public Cursor rawQuery (String sql, String[] selectionArgs) {
-        return rawQueryWithFactory( new SQLiteDatabase.CursorFactory() {
-            @Override
-            public Cursor newCursor(SQLiteDatabase db,
-                    SQLiteCursorDriver masterQuery, String editTable, SQLiteQuery query) {
-                return new SQLiteCursor(db, masterQuery, editTable, query);
-            }
-            
-        }, sql, selectionArgs, null );
+        return rawQueryWithFactory(DEFAULT_CURSOR_FACTORY, sql, selectionArgs, null );
     }
 
     @Implementation
@@ -265,7 +268,11 @@ public class ShadowSQLiteDatabase extends ShadowSQLiteCloseable {
         if (sql != null) {
             sqlBody = buildWhereClause(sql, selectionArgs);
         }
-        
+
+        if(cursorFactory == null){
+            cursorFactory = DEFAULT_CURSOR_FACTORY;
+        }
+
         ResultSet resultSet;
         try {
             SQLiteStatement stmt = compileStatement(sql);
