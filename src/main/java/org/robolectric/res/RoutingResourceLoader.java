@@ -28,7 +28,7 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public int getColorValue(ResName resName, String qualifiers) {
+    public String getColorValue(ResName resName, String qualifiers) {
         return pickFor(resName).getColorValue(resName, qualifiers);
     }
 
@@ -43,7 +43,7 @@ public class RoutingResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public float getDimenValue(ResName resName, String qualifiers) {
+    public String getDimenValue(ResName resName, String qualifiers) {
         return pickFor(resName).getDimenValue(resName, qualifiers);
     }
 
