@@ -207,6 +207,24 @@ public class ApplicationTest {
     }
 
     @Test
+    public void shouldHaveStoppedServiceByStartedComponent() {
+        ShadowApplication shadowApplication = shadowOf(Robolectric.application);
+
+        Activity activity = new Activity();
+
+        ComponentName componentName = new ComponentName("package.test", "package.test.TestClass");
+        Intent startServiceIntent = new Intent().setComponent(componentName);
+
+        ComponentName startedComponent = activity.startService(startServiceIntent);
+
+        Intent stopServiceIntent = new Intent().setComponent(startedComponent);
+        boolean wasRunning = activity.stopService(stopServiceIntent);
+
+        assertTrue(wasRunning);
+        assertEquals(startServiceIntent, shadowApplication.getNextStoppedService());
+    }
+
+    @Test
     public void shouldClearStartedServiceIntents() {
         ShadowApplication shadowApplication = shadowOf(Robolectric.application);
         shadowApplication.startService(getSomeActionIntent("some.action"));
