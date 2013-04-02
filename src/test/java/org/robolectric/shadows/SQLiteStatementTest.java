@@ -80,7 +80,7 @@ public class SQLiteStatementTest {
         Statement statement = shadowOf(database).getConnection().createStatement();
         ResultSet resultSet = statement.executeQuery("SELECT `name` FROM `routine`");
         assertThat(resultSet.next()).isTrue();
-        assertThat(resultSet.getString(0)).isEqualTo("Head Press");
+        assertThat(resultSet.getString(1)).isEqualTo("Head Press");
     }
 
     @Test
