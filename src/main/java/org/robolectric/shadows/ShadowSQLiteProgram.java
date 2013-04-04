@@ -12,7 +12,7 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
-@Implements(SQLiteProgram.class)
+@Implements(value = SQLiteProgram.class, inheritImplementationMethods = true)
 public abstract class ShadowSQLiteProgram extends ShadowSQLiteCloseable {
 	@RealObject	SQLiteProgram realSQLiteProgram;
 	protected SQLiteDatabase mDatabase;

@@ -9,7 +9,7 @@ import org.robolectric.internal.Implements;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-@Implements(SQLiteStatement.class)
+@Implements(value = SQLiteStatement.class, inheritImplementationMethods = true)
 public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
     String mSql;
 

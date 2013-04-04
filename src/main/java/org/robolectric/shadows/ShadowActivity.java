@@ -35,7 +35,7 @@ import java.util.Map;
 import static org.robolectric.Robolectric.shadowOf;
 
 @Implements(Activity.class)
-public class ShadowActivity extends ShadowContextWrapper {
+public class ShadowActivity extends ShadowContextThemeWrapper {
     @RealObject
     protected Activity realActivity;
 
@@ -153,6 +153,12 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public final Application getApplicationContext() {
         return getApplication();
+    }
+
+    @Override
+    @Implementation
+    public Object getSystemService(String name) {
+        return getApplicationContext().getSystemService(name);
     }
 
     @Implementation
@@ -321,6 +327,10 @@ public class ShadowActivity extends ShadowContextWrapper {
         Robolectric.getUiThreadScheduler().post(action);
     }
 
+    @Implementation
+    public void onCreate(Bundle savedInstanceState) {
+    }
+
     /**
      * Checks to see if {@code BroadcastListener}s are still registered.
      *
@@ -360,9 +370,14 @@ public class ShadowActivity extends ShadowContextWrapper {
         }
     }
 
+  @Implementation
+    public int getTaskId() {
+      return 0;
+    }
+
     @Implementation
     public SharedPreferences getPreferences(int mode) {
-    	return ShadowPreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        return ShadowPreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     }
 
     /**
@@ -621,6 +636,10 @@ public class ShadowActivity extends ShadowContextWrapper {
         invoker.call("onResume").withNothing();
     }
     
+    @Implementation
+    public void onSaveInstanceState(Bundle outState) {
+    }
+
     @Implementation
     public void startManagingCursor(Cursor c) {
     	managedCusors.add(c);

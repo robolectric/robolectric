@@ -11,7 +11,7 @@ import java.util.ArrayList;
 
 import static org.robolectric.Robolectric.shadowOf;
 
-@Implements(RelativeLayout.class)
+@Implements(value = RelativeLayout.class, inheritImplementationMethods = true)
 public class ShadowRelativeLayout extends ShadowViewGroup {
 
     public void __constructor__(Context context) {

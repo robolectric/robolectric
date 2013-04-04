@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProviderInfo;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ContextWrapper;
+import android.os.Parcel;
 import android.view.View;
 import android.widget.RemoteViews;
 import android.widget.TextView;
@@ -98,7 +99,7 @@ public class AppWidgetManagerTest {
 
     @Test
     public void getAppWidgetInfo_shouldReturnSpecifiedAppWidgetInfo() throws Exception {
-        AppWidgetProviderInfo expectedWidgetInfo = new AppWidgetProviderInfo(null);
+        AppWidgetProviderInfo expectedWidgetInfo = new AppWidgetProviderInfo(Parcel.obtain());
         shadowAppWidgetManager.addBoundWidget(26, expectedWidgetInfo);
 
         assertEquals(expectedWidgetInfo, appWidgetManager.getAppWidgetInfo(26));

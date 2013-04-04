@@ -19,13 +19,15 @@ public class ApplicationResolver {
 
     public Application resolveApplication() {
         Application application;
-        if (androidManifest.getApplicationName() != null) {
+        if (androidManifest != null && androidManifest.getApplicationName() != null) {
             application = newApplicationInstance();
         } else {
             application = new Application();
         }
 
-        injectShadow(application);
+        if (androidManifest != null) {
+            injectShadow(application);
+        }
 
         return application;
     }

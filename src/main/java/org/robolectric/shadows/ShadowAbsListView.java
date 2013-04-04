@@ -7,7 +7,7 @@ import android.widget.ListView;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
-@Implements(AbsListView.class)
+@Implements(value = AbsListView.class, inheritImplementationMethods = true)
 public class ShadowAbsListView extends ShadowAdapterView {
     private AbsListView.OnScrollListener onScrollListener;
     private int smoothScrolledPosition;

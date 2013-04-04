@@ -21,18 +21,18 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public class AbsSpinnerTest {
     private Context context;
     private AdapterView adapterView;
-	private Spinner spinner;
-	private ShadowAbsSpinner shadowSpinner;
-	private ArrayAdapter<String> arrayAdapter;
+    private Spinner spinner;
+    private ShadowAbsSpinner shadowSpinner;
+    private ArrayAdapter<String> arrayAdapter;
 
     @Before
     public void setUp() throws Exception {
         context = new Activity();
         adapterView = new Gallery(context);
-		spinner = new Spinner(context);
-		shadowSpinner = (ShadowAbsSpinner) Robolectric.shadowOf(spinner);
-		String [] testItems = {"foo", "bar"};
-		arrayAdapter = new MyArrayAdapter(this.context, testItems);
+        spinner = new Spinner(context);
+        shadowSpinner = (ShadowAbsSpinner) Robolectric.shadowOf(spinner);
+        String [] testItems = {"foo", "bar"};
+        arrayAdapter = new MyArrayAdapter(this.context, testItems);
     }
 
     @Test
@@ -40,44 +40,44 @@ public class AbsSpinnerTest {
         AdapterViewBehavior.shouldActAsAdapterView(adapterView);
     }
 
-	@Test
-	public void checkSetAdapter() {
-		spinner.setAdapter(arrayAdapter);
-	}
+    @Test
+    public void checkSetAdapter() {
+        spinner.setAdapter(arrayAdapter);
+    }
 
-	@Test
-	public void getSelectedItemShouldReturnCorrectValue(){
-		spinner.setAdapter(arrayAdapter);
-		spinner.setSelection(0);
+    @Test
+    public void getSelectedItemShouldReturnCorrectValue(){
+        spinner.setAdapter(arrayAdapter);
+        spinner.setSelection(0);
         assertThat((String) spinner.getSelectedItem()).isEqualTo("foo");
         assertThat((String) spinner.getSelectedItem()).isNotEqualTo("bar");
-		
-		spinner.setSelection(1);
+
+        spinner.setSelection(1);
         assertThat((String) spinner.getSelectedItem()).isEqualTo("bar");
-		assertThat((String) spinner.getSelectedItem()).isNotEqualTo("foo");
-	}
-	
-	@Test
-	public void getSelectedItemShouldReturnNull_NoAdapterSet(){
+        assertThat((String) spinner.getSelectedItem()).isNotEqualTo("foo");
+    }
+
+    @Test
+    public void getSelectedItemShouldReturnNull_NoAdapterSet(){
         assertThat(spinner.getSelectedItem()).isNull();
-	}
-	
-	@Test (expected = IndexOutOfBoundsException.class)	
-	public void getSelectedItemShouldThrowException_EmptyArray(){
-		spinner.setAdapter(new MyArrayAdapter(context, new String[]{}));
-		spinner.getSelectedItem();		
-	}
-	
-	@Test
-	public void setSelectionWithAnimatedTransition() {		
-		spinner.setAdapter(arrayAdapter);
-		spinner.setSelection(0, true);
+    }
+
+    @Test (expected = IndexOutOfBoundsException.class)
+    public void getSelectedItemShouldThrowException_EmptyArray(){
+        spinner.setAdapter(new MyArrayAdapter(context, new String[]{}));
+        spinner.getSelectedItem();
+    }
+
+    @Test
+    public void setSelectionWithAnimatedTransition() {
+        spinner.setAdapter(arrayAdapter);
+        spinner.setSelection(0, true);
 
         assertThat((String) spinner.getSelectedItem()).isEqualTo("foo");
         assertThat((String) spinner.getSelectedItem()).isNotEqualTo("bar");
 
         assertThat(shadowSpinner.isAnimatedTransition()).isTrue();
-	}
+    }
 
     private static class MyArrayAdapter extends ArrayAdapter<String> {
         public MyArrayAdapter(Context context, String[] testItems) {

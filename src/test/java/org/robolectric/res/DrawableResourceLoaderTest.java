@@ -62,7 +62,8 @@ public class DrawableResourceLoaderTest {
     @Test
     public void testGetDrawable_rainbow() throws Exception {
         ResName resName = getResName(R.drawable.rainbow);
-        assertNotNull(drawableBuilder.getDrawable(resName, mock(Resources.class), drawableNodes.get(resName, "")));
+        assertNotNull(drawableBuilder.getDrawable(resName, Robolectric.getShadowApplication().getResources(),
+                drawableNodes.get(resName, "")));
     }
 
     @Test
@@ -94,11 +95,12 @@ public class DrawableResourceLoaderTest {
     @Test
     public void testLayerDrawable() {
         ResName resName = getResName(R.drawable.rainbow);
-        Drawable drawable = drawableBuilder.getDrawable(resName, mock(Resources.class), drawableNodes.get(resName, ""));
+        Resources resources = Robolectric.getShadowApplication().getResources();
+        Drawable drawable = drawableBuilder.getDrawable(resName, resources, drawableNodes.get(resName, ""));
         assertThat(drawable).isInstanceOf(LayerDrawable.class);
         assertEquals(8, ((LayerDrawable) drawable).getNumberOfLayers());
 
-        assertEquals(6, ((LayerDrawable) drawableBuilder.getDrawable(resName, mock(Resources.class), drawableNodes.get(resName, "xlarge"))).getNumberOfLayers());
+        assertEquals(6, ((LayerDrawable) drawableBuilder.getDrawable(resName, resources, drawableNodes.get(resName, "xlarge"))).getNumberOfLayers());
     }
 
     @Test

@@ -17,8 +17,6 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.annotation.Config;
-import org.robolectric.res.EmptyResourceLoader;
-import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.TestUtil;
 import org.xmlpull.v1.XmlPullParser;
 
@@ -76,10 +74,6 @@ public class ResourcesTest {
 
     @Test(expected = Resources.NotFoundException.class)
     public void testGetDrawableNullRClass() throws Exception {
-        ResourceLoader resourceLoader = new EmptyResourceLoader();
-        resources = new Resources(null, null, null);
-        ShadowResources.bind(resources, resourceLoader);
-
         assertThat(resources.getDrawable(-12345)).isInstanceOf(BitmapDrawable.class);
     }
 

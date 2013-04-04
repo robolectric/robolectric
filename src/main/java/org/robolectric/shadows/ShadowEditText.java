@@ -11,7 +11,7 @@ import org.robolectric.internal.Implements;
  * A shadow for EditText that provides support for listeners
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(EditText.class)
+@Implements(value = EditText.class, inheritImplementationMethods = true)
 public class ShadowEditText extends ShadowTextView {
 
     private int maxLength = Integer.MAX_VALUE;

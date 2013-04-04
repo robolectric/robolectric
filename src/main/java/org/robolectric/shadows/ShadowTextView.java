@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.text.InputFilter;
@@ -9,6 +10,7 @@ import android.text.SpannableString;
 import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.text.TextWatcher;
+import android.text.method.KeyListener;
 import android.text.method.MovementMethod;
 import android.text.method.TransformationMethod;
 import android.text.style.URLSpan;
@@ -30,7 +32,7 @@ import static org.robolectric.Robolectric.shadowOf;
 import static org.robolectric.Robolectric.shadowOf_;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(TextView.class)
+@Implements(value = TextView.class, inheritImplementationMethods = true)
 public class ShadowTextView extends ShadowView {
     private CharSequence text = "";
     private TextView.BufferType bufferType = TextView.BufferType.NORMAL;
@@ -167,6 +169,11 @@ public class ShadowTextView extends ShadowView {
     @Implementation
     public void setTypeface(Typeface typeface) {
         this.typeface = typeface;
+    }
+
+    @Implementation
+    public void setTypeface(Typeface tf, int style) {
+        this.typeface = tf;
     }
 
     @Implementation
@@ -360,6 +367,10 @@ public class ShadowTextView extends ShadowView {
     }
 
     @Implementation
+    public void setKeyListener(KeyListener input) {
+    }
+
+    @Implementation
     public int getGravity() {
         return gravity;
     }
@@ -443,7 +454,7 @@ public class ShadowTextView extends ShadowView {
     private void applyTextAttribute() {
         String text = attributeSet.getAttributeValue("android", "text");
         if (text != null) {
-            if (text.startsWith("@string/")) {
+            if (text.startsWith("@")) {
                 int textResId = attributeSet.getAttributeResourceValue("android", "text", 0);
                 text = context.getResources().getString(textResId);
             }
@@ -454,12 +465,13 @@ public class ShadowTextView extends ShadowView {
     private void applyTextColorAttribute() {
         String colorValue = attributeSet.getAttributeValue("android", "textColor");
         if (colorValue != null) {
-            if (colorValue.startsWith("@color/") || colorValue.startsWith("@android:color/")) {
+            if (colorValue.startsWith("@")) {
                 int colorResId = attributeSet.getAttributeResourceValue("android", "textColor", 0);
                 setTextColor(context.getResources().getColor(colorResId));
-            } else if (colorValue.startsWith("#")) {
-                int colorFromHex = (int) Long.valueOf(colorValue.replaceAll("#", ""), 16).longValue();
-                setTextColor(colorFromHex);
+            } else if (colorValue.startsWith("?")) {
+                // ignore for now... todo fix
+            } else {
+                setTextColor(Color.parseColor(colorValue));
             }
         }
     }
@@ -467,10 +479,9 @@ public class ShadowTextView extends ShadowView {
     private void applyHintAttribute() {
         String hint = attributeSet.getAttributeValue("android", "hint");
         if (hint != null) {
-            if (hint.startsWith("@string/")) {
+            if (hint.startsWith("@")) {
                 int textResId = attributeSet.getAttributeResourceValue("android", "hint", 0);
                 hint = context.getResources().getString(textResId);
-
             }
             setHint(hint);
         }
@@ -479,12 +490,13 @@ public class ShadowTextView extends ShadowView {
     private void applyHintColorAttribute() {
         String colorValue = attributeSet.getAttributeValue("android", "hintColor");
         if (colorValue != null) {
-            if (colorValue.startsWith("@color/") || colorValue.startsWith("@android:color/")) {
+            if (colorValue.startsWith("@")) {
                 int colorResId = attributeSet.getAttributeResourceValue("android", "hintColor", 0);
                 setHintTextColor(context.getResources().getColor(colorResId));
-            } else if (colorValue.startsWith("#")) {
-                int colorFromHex = (int) Long.valueOf(colorValue.replaceAll("#", ""), 16).longValue();
-                setHintTextColor(colorFromHex);
+            } else if (colorValue.startsWith("?")) {
+                // ignore for now... todo fix
+            } else {
+                setHintTextColor(Color.parseColor(colorValue));
             }
         }
     }

@@ -7,8 +7,6 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -16,6 +14,8 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.Properties;
 import java.util.TimeZone;
+
+import static org.fest.reflect.core.Reflection.constructor;
 
 @Implements(Time.class)
 public class ShadowTime {
@@ -244,19 +244,8 @@ public class ShadowTime {
     }
 
     private void throwTimeFormatException() {
-        try {
-            Constructor<TimeFormatException> c = TimeFormatException.class.getDeclaredConstructor();
-            c.setAccessible(true);
-            throw c.newInstance();
-        } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
-        } catch (InstantiationException e) {
-            throw new RuntimeException(e);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
-        }
+        throw constructor().withParameterTypes(String.class).in(TimeFormatException.class)
+                .newInstance("fail");
     }
 
     private Calendar getCalendar() {

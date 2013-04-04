@@ -20,7 +20,7 @@ public class WithConstantStringTest {
 
     @Test
     public void testWithoutConstantString() {
-        assertThat(Build.MANUFACTURER).isNull();
+        assertThat(Build.MANUFACTURER).isEqualTo(Build.UNKNOWN);
     }
 
 }

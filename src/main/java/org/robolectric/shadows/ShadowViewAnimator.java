@@ -8,7 +8,7 @@ import org.robolectric.internal.Implements;
 /**
  * Shadow of {@link android.widget.ViewAnimator}
  */
-@Implements(ViewAnimator.class)
+@Implements(value = ViewAnimator.class, inheritImplementationMethods = true)
 public class ShadowViewAnimator extends ShadowFrameLayout {
 
     private int currentChild = 0;

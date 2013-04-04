@@ -22,27 +22,32 @@ public class ShadowAlarmManager {
 
     @Implementation
     public void set(int type, long triggerAtTime, PendingIntent operation) {
-	    internalSet(type, triggerAtTime, 0L, operation);
+        internalSet(type, triggerAtTime, 0L, operation);
     }
 
-	@Implementation
-	public void setRepeating (int type, long triggerAtTime, long interval, PendingIntent operation){
-		internalSet(type, triggerAtTime, interval, operation);
-	}
+    @Implementation
+    public void setRepeating(int type, long triggerAtTime, long interval, PendingIntent operation) {
+        internalSet(type, triggerAtTime, interval, operation);
+    }
 
-	private void internalSet(int type, long triggerAtTime, long interval, PendingIntent operation) {
-		Intent intent = shadowOf(operation).getSavedIntent();
-		for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
-			Intent scheduledIntent = shadowOf(scheduledAlarm.operation).getSavedIntent();
-			if (scheduledIntent.filterEquals(intent)) {
-				scheduledAlarms.remove(scheduledAlarm);
-				break;
-			}
-		}
-		scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, interval, operation));
-	}
+    @Implementation
+    public void setInexactRepeating(int type, long triggerAtMillis, long intervalMillis, PendingIntent operation) {
+        internalSet(type, triggerAtMillis, intervalMillis, operation);
+    }
 
-	/**
+    private void internalSet(int type, long triggerAtTime, long interval, PendingIntent operation) {
+        Intent intent = shadowOf(operation).getSavedIntent();
+        for (ScheduledAlarm scheduledAlarm : scheduledAlarms) {
+            Intent scheduledIntent = shadowOf(scheduledAlarm.operation).getSavedIntent();
+            if (scheduledIntent.filterEquals(intent)) {
+                scheduledAlarms.remove(scheduledAlarm);
+                break;
+            }
+        }
+        scheduledAlarms.add(new ScheduledAlarm(type, triggerAtTime, interval, operation));
+    }
+
+    /**
      * Non-Android accessor consumes and returns the next scheduled alarm on the
      * AlarmManager's stack.
      *

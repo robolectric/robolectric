@@ -12,7 +12,7 @@ import org.robolectric.internal.RealObject;
 import java.lang.ref.WeakReference;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(ViewStub.class)
+@Implements(value = ViewStub.class, inheritImplementationMethods = true)
 public class ShadowViewStub extends ShadowView {
     @RealObject ViewStub viewStub;
 

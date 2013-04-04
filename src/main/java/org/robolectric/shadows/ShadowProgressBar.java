@@ -4,7 +4,7 @@ import android.widget.ProgressBar;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
-@Implements(ProgressBar.class)
+@Implements(value = ProgressBar.class, inheritImplementationMethods = true)
 public class ShadowProgressBar extends ShadowView {
 
     private int progress;

@@ -40,6 +40,7 @@ public class ShadowDrawable {
         BitmapDrawable drawable = new BitmapDrawable(Robolectric.newInstanceOf(Bitmap.class));
         shadowOf(drawable).setSource(srcName);
         shadowOf(drawable).setInputStream(is);
+        shadowOf(drawable).validate(); // start off not invalidated
         return drawable;
     }
 
@@ -47,6 +48,7 @@ public class ShadowDrawable {
     public static Drawable createFromPath(String pathName) {
         BitmapDrawable drawable = new BitmapDrawable(Robolectric.newInstanceOf(Bitmap.class));
         shadowOf(drawable).setPath(pathName);
+        shadowOf(drawable).validate(); // start off not invalidated
         return drawable;
     }
 
@@ -54,6 +56,7 @@ public class ShadowDrawable {
         Bitmap bitmap = Robolectric.newInstanceOf(Bitmap.class);
         shadowOf(bitmap).setLoadedFromResourceId(resourceId);
         BitmapDrawable drawable = new BitmapDrawable(bitmap);
+        shadowOf(drawable).validate(); // start off not invalidated
         return drawable;
     }
 
@@ -186,5 +189,9 @@ public class ShadowDrawable {
 
     public boolean wasInvalidated() {
         return wasInvalidated;
+    }
+
+    public void validate() {
+        wasInvalidated = false;
     }
 }

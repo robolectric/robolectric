@@ -31,6 +31,8 @@ import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.TestLifecycle;
 import org.robolectric.res.OverlayResourceLoader;
 import org.robolectric.res.PackageResourceLoader;
+import org.robolectric.res.ResName;
+import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.res.RoutingResourceLoader;
@@ -146,7 +148,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         URL[] urls = artifactUrls(realAndroidDependency("android-base", sdkConfig),
                 realAndroidDependency("android-kxml2", sdkConfig),
                 realAndroidDependency("android-luni", sdkConfig),
-                createDependency("org.json", "json", "20080701", "jar", null)
+                createDependency("org.json", "json", "20080701", "jar", null),
+                createDependency("org.ccil.cowan.tagsoup", "tagsoup", "1.2", "jar", null)
         );
         ClassLoader robolectricClassLoader;
         if (useAsm()) {
@@ -180,7 +183,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         return true;
     }
 
-    private void injectClassHandler(ClassLoader robolectricClassLoader, ClassHandler classHandler) {
+    public static void injectClassHandler(ClassLoader robolectricClassLoader, ClassHandler classHandler) {
         try {
             String className = RobolectricInternals.class.getName();
             Class<?> robolectricInternalsClass = robolectricClassLoader.loadClass(className);
@@ -299,9 +302,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
                     ResourcePath systemResourcePath = sdkEnvironment.getSystemResourcePath();
                     ResourceLoader systemResourceLoader = getSystemResourceLoader(systemResourcePath);
-                    if (appManifest != null) {
-                        setupApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, sdkEnvironment);
-                    }
+                    setupApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, sdkEnvironment);
                     testLifecycle.beforeTest(bootstrappedMethod);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -615,7 +616,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     public static ResourceLoader getSystemResourceLoader(ResourcePath systemResourcePath) {
         ResourceLoader systemResourceLoader = systemResourceLoaders.get(systemResourcePath);
         if (systemResourceLoader == null) {
-            systemResourceLoader = createResourceLoader(systemResourcePath);
+            systemResourceLoader = createSystemResourceLoader(systemResourcePath);
             systemResourceLoaders.put(systemResourcePath, systemResourceLoader);
         }
         return systemResourceLoader;
@@ -634,7 +635,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
     protected static ResourceLoader createAppResourceLoader(ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
         List<PackageResourceLoader> appAndLibraryResourceLoaders = new ArrayList<PackageResourceLoader>();
         for (ResourcePath resourcePath : appManifest.getIncludedResourcePaths()) {
-            appAndLibraryResourceLoaders.add(new PackageResourceLoader(resourcePath));
+            appAndLibraryResourceLoaders.add(createResourceLoader(resourcePath));
         }
         OverlayResourceLoader overlayResourceLoader = new OverlayResourceLoader(appManifest.getPackageName(), appAndLibraryResourceLoaders);
 
@@ -646,6 +647,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
     public static PackageResourceLoader createResourceLoader(ResourcePath systemResourcePath) {
         return new PackageResourceLoader(systemResourcePath);
+    }
+
+    public static PackageResourceLoader createSystemResourceLoader(ResourcePath systemResourcePath) {
+        return new PackageResourceLoader(systemResourcePath, new SystemResourceExtractor(systemResourcePath));
     }
 
     /*
@@ -704,6 +709,33 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                 }
             }
             ShadowLog.stream = stream;
+        }
+    }
+
+    private static class SystemResourceExtractor extends ResourceExtractor {
+        public SystemResourceExtractor(ResourcePath systemResourcePath) {
+            super(systemResourcePath);
+        }
+
+        @Override public synchronized ResName getResName(int resourceId) {
+            ResName resName = super.getResName(resourceId);
+
+            if (resName == null) {
+                // todo: pull in android.internal.R, remove this, and remove the "synchronized" on methods since we should then be immutable...
+                if ((resourceId & 0xfff00000) == 0x01000000) {
+                    new RuntimeException("WARN: couldn't find a name for resource id " + resourceId).printStackTrace(System.out);
+                    ResName internalResName = new ResName("android.internal", "unknown", resourceId + "");
+                    resourceNameToId.put(internalResName, resourceId);
+                    resourceIdToResName.put(resourceId, internalResName);
+                    return internalResName;
+                }
+            }
+
+            return resName;
+        }
+
+        @Override public synchronized Integer getResourceId(ResName resName) {
+            return super.getResourceId(resName);
         }
     }
 

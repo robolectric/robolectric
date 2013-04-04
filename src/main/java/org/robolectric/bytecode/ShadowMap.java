@@ -104,7 +104,9 @@ public class ShadowMap {
                 if (className.isEmpty()) {
                     className = implementsAnnotation.value().getName();
                 }
-                addShadowClass(className, shadowClass, implementsAnnotation.callThroughByDefault());
+                addShadowClass(className, shadowClass,
+                        implementsAnnotation.callThroughByDefault(),
+                        implementsAnnotation.inheritImplementationMethods());
             } catch (TypeNotPresentException typeLoadingException) {
                 String unloadableClassName = shadowClass.getSimpleName();
                 if (typeLoadingException.typeName().startsWith("com.google.android.maps")) {
@@ -120,18 +122,18 @@ public class ShadowMap {
             return this;
         }
 
-        public Builder addShadowClass(String realClassName, Class<?> shadowClass, boolean callThroughByDefault) {
-            addShadowClass(realClassName, shadowClass.getName(), callThroughByDefault);
+        public Builder addShadowClass(String realClassName, Class<?> shadowClass, boolean callThroughByDefault, boolean inheritImplementationMethods) {
+            addShadowClass(realClassName, shadowClass.getName(), callThroughByDefault, inheritImplementationMethods);
             return this;
         }
 
-        public Builder addShadowClass(Class<?> realClass, Class<?> shadowClass, boolean callThroughByDefault) {
-            addShadowClass(realClass.getName(), shadowClass.getName(), callThroughByDefault);
+        public Builder addShadowClass(Class<?> realClass, Class<?> shadowClass, boolean callThroughByDefault, boolean inheritImplementationMethods) {
+            addShadowClass(realClass.getName(), shadowClass.getName(), callThroughByDefault, inheritImplementationMethods);
             return this;
         }
 
-        public Builder addShadowClass(String realClassName, String shadowClassName, boolean callThroughByDefault) {
-            map.put(realClassName, new ShadowConfig(shadowClassName, callThroughByDefault));
+        public Builder addShadowClass(String realClassName, String shadowClassName, boolean callThroughByDefault, boolean inheritImplementationMethods) {
+            map.put(realClassName, new ShadowConfig(shadowClassName, callThroughByDefault, inheritImplementationMethods));
             return this;
         }
 

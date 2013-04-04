@@ -235,7 +235,7 @@ public class ViewGroupTest {
                 "  <FrameLayout id=\"org.robolectric:id/snippet_text\">\n" +
                 "    <View/>\n" +
                 "    <View visibility=\"GONE\"/>\n" +
-                "    <TextView visibility=\"INVISIBLE\" text=\"Here&apos;s some text!\"/>\n" +
+                "    <TextView visibility=\"INVISIBLE\" text=\"Here&#39;s some text!\"/>\n" +
                 "  </FrameLayout>\n" +
                 "</FrameLayout>\n", out.toString());
     }

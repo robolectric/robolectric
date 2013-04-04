@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.app.Application;
+import android.app.SearchManager;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -12,9 +13,11 @@ import android.content.ServiceConnection;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.os.storage.StorageManager;
 import android.view.LayoutInflater;
 import android.widget.Toast;
 import org.robolectric.AndroidManifest;
@@ -32,6 +35,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static org.fest.reflect.core.Reflection.constructor;
 import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -179,21 +183,32 @@ public class ShadowApplication extends ShadowContextWrapper {
     public Object getSystemService(String name) {
         if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
             return LayoutInflater.from(realApplication);
-        } else {
-            Object service = systemServices.get(name);
-            if (service == null) {
-                String serviceClassName = SYSTEM_SERVICE_MAP.get(name);
-                if (serviceClassName != null) {
-                    try {
-                        service = newInstanceOf(Class.forName(serviceClassName));
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException(e);
-                    }
-                    systemServices.put(name, service);
+        }
+
+        Object service = systemServices.get(name);
+        if (service == null) {
+            String serviceClassName = SYSTEM_SERVICE_MAP.get(name);
+            if (serviceClassName == null) {
+                System.err.println("WARNING: unknown service " + name);
+                return null;
+            }
+
+            if (serviceClassName.equals(SearchManager.class.getName())) {
+                service = constructor().withParameterTypes(Context.class, Handler.class).in(SearchManager.class)
+                        .newInstance(realApplication, null);
+            } else if (serviceClassName.equals(StorageManager.class.getName())) {
+                service = constructor().withParameterTypes(Looper.class).in(StorageManager.class)
+                        .newInstance((Object) null);
+            } else {
+                try {
+                    service = newInstanceOf(Class.forName(serviceClassName));
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
                 }
             }
-            return service;
+            systemServices.put(name, service);
         }
+        return service;
     }
     
     @Implementation

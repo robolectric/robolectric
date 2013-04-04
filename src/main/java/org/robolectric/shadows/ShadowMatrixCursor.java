@@ -8,7 +8,7 @@ import org.robolectric.internal.Implements;
 import java.util.ArrayList;
 import java.util.List;
 
-@Implements(MatrixCursor.class)
+@Implements(value = MatrixCursor.class, inheritImplementationMethods = true)
 public class ShadowMatrixCursor extends ShadowAbstractCursor {
     private List<Object[]> data = new ArrayList<Object[]>();
 
@@ -70,6 +70,12 @@ public class ShadowMatrixCursor extends ShadowAbstractCursor {
     @Implementation
     public boolean isNull(int column) {
         return get(column) == null;
+    }
+
+    @Implementation
+    @Override
+    public int getCount() {
+        return super.getCount();
     }
 
     private Object get(int column) {

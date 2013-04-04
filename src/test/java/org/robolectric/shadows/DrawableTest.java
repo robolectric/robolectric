@@ -103,9 +103,9 @@ public class DrawableTest {
     public void testWasSelfInvalidated() throws Exception {
         Drawable drawable = ShadowDrawable.createFromResourceId(34758);
         ShadowDrawable shadowDrawable = shadowOf(drawable);
-        assertFalse(shadowDrawable.wasInvalidated());
+        assertThat(shadowDrawable.wasInvalidated()).isFalse();
         drawable.invalidateSelf();
-        assertTrue(shadowDrawable.wasInvalidated());
+        assertThat(shadowDrawable.wasInvalidated()).isTrue();
     }
 
     private static class TestDrawable extends Drawable {

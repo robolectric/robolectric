@@ -89,7 +89,7 @@ abstract public class ShadowContext {
     public final TypedArray obtainStyledAttributes(
             AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
         return getTheme().obtainStyledAttributes(
-            set, attrs, defStyleAttr, defStyleRes);
+                set, attrs, defStyleAttr, defStyleRes);
     }
 
     public RoboAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
@@ -98,6 +98,11 @@ abstract public class ShadowContext {
             attributeSet.validateStrictI18n();
         }
         return attributeSet;
+    }
+
+    @Implementation
+    public Resources getResources() {
+        throw new RuntimeException("you should override me in a subclass!");
     }
 
     @Implementation

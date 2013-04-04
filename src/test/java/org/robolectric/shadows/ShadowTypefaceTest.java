@@ -1,6 +1,7 @@
 // Not in master, can maybe be deleted
 package org.robolectric.shadows;
 
+import android.content.res.AssetManager;
 import android.graphics.Typeface;
 import org.junit.After;
 import org.junit.Before;
@@ -35,8 +36,9 @@ public class ShadowTypefaceTest {
 
     @Test
     public void canAnswerAssetUsedDuringCreation() throws Exception {
-        Typeface typeface = Typeface.createFromAsset(Robolectric.application.getAssets(), "myFont.ttf");
-        assertThat(shadowOf(typeface).getAssetPath()).isEqualTo("myFont.ttf");
+        AssetManager assetManager = Robolectric.application.getAssets();
+        Typeface typeface = Typeface.createFromAsset(assetManager, "myFont.ttf");
+        assertThat(shadowOf(typeface).getAssetPath()).isEqualTo(fontFile.getPath());
     }
 
     @Test(expected = RuntimeException.class)
