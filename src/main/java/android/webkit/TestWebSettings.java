@@ -25,6 +25,7 @@ public class TestWebSettings extends WebSettings {
     private WebSettings.PluginState pluginState = WebSettings.PluginState.OFF;
     private boolean supportMultipleWindows = false;
     private boolean supportZoom = true;
+    private String userAgentString = "Mozilla/5.0 (Linux; U; Android 4.0.3; ko-kr; LG-L160L Build/IML74K) AppleWebkit/534.30 (KHTML, like Gecko) Version/4.0 Mobile Safari/534.30";
 
     public TestWebSettings() {
     }
@@ -180,5 +181,15 @@ public class TestWebSettings extends WebSettings {
     @Implementation
     public void setSupportZoom(boolean support) {
         supportZoom = support;
+    }
+
+    @Implementation
+    public synchronized void setUserAgentString(String ua) {
+        userAgentString = ua;
+    }
+
+    @Implementation
+    public synchronized String getUserAgentString() {
+        return userAgentString;
     }
 }
