@@ -158,7 +158,7 @@ public class ShadowActivity extends ShadowContextThemeWrapper {
     @Override
     @Implementation
     public Object getSystemService(String name) {
-        return super.getSystemService(name);
+        return getApplicationContext().getSystemService(name);
     }
 
     @Implementation

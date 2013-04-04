@@ -302,9 +302,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
                     ResourcePath systemResourcePath = sdkEnvironment.getSystemResourcePath();
                     ResourceLoader systemResourceLoader = getSystemResourceLoader(systemResourcePath);
-                    if (appManifest != null) {
-                        setupApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, sdkEnvironment);
-                    }
+                    setupApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, sdkEnvironment);
                     testLifecycle.beforeTest(bootstrappedMethod);
                 } catch (Exception e) {
                     e.printStackTrace();

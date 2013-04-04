@@ -35,6 +35,23 @@ public class TestRunnerSequenceTest {
         );
     }
 
+    @Test public void whenNoAppManifest_shouldRunThingsInTheRightOrder() throws Exception {
+        StateHolder.transcript = new Transcript();
+        new Runner(SimpleTest.class) {
+            @Override protected AndroidManifest createAppManifest(File baseDir) {
+                return null;
+            }
+        }.run(new RunNotifier());
+        StateHolder.transcript.assertEventsSoFar(
+                "configureShadows",
+                "createApplication",
+                "beforeTest",
+                "prepareTest",
+                "TEST!",
+                "afterTest"
+        );
+    }
+
     @Test public void shouldReleaseAllStateAfterClassSoWeDontLeakMemory() throws Exception {
         RobolectricTestRunner robolectricTestRunner = new Runner(SimpleTest.class);
         robolectricTestRunner.run(new RunNotifier());
