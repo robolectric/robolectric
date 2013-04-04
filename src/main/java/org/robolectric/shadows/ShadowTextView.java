@@ -468,6 +468,8 @@ public class ShadowTextView extends ShadowView {
             if (colorValue.startsWith("@")) {
                 int colorResId = attributeSet.getAttributeResourceValue("android", "textColor", 0);
                 setTextColor(context.getResources().getColor(colorResId));
+            } else if (colorValue.startsWith("?")) {
+                // ignore for now... todo fix
             } else {
                 setTextColor(Color.parseColor(colorValue));
             }
@@ -491,6 +493,8 @@ public class ShadowTextView extends ShadowView {
             if (colorValue.startsWith("@")) {
                 int colorResId = attributeSet.getAttributeResourceValue("android", "hintColor", 0);
                 setHintTextColor(context.getResources().getColor(colorResId));
+            } else if (colorValue.startsWith("?")) {
+                // ignore for now... todo fix
             } else {
                 setHintTextColor(Color.parseColor(colorValue));
             }
