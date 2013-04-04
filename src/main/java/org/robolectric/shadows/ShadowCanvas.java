@@ -51,6 +51,11 @@ public class ShadowCanvas {
     }
 
     @Implementation
+    public void setBitmap(Bitmap bitmap) {
+        targetBitmap = bitmap;
+    }
+
+    @Implementation
     public void drawText(String text, float x, float y, Paint paint) {
         drawnTextEventHistory.add(new TextHistoryEvent(x, y, paint, text));
     }
