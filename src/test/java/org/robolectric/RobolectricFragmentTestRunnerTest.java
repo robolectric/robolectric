@@ -13,7 +13,7 @@ import static org.hamcrest.CoreMatchers.notNullValue;
 import static org.junit.Assert.assertThat;
 import static org.robolectric.RobolectricFragmentTestRunner.startFragment;
 
-@RunWith(RobolectricFragmentTestRunner.class)
+@RunWith(TestingRobolectricFragmentTestRunner.class)
 public class RobolectricFragmentTestRunnerTest {
     private LoginFragment fragment;
 
