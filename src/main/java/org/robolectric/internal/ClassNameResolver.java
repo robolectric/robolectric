@@ -9,19 +9,20 @@ public class ClassNameResolver<T> {
         this.className = className;
     }
 
-    public Class<? extends T> resolve() {
+    public Class<? extends T> resolve() throws ClassNotFoundException {
         Class<? extends T> aClass;
         if (looksFullyQualified(className)) {
             aClass = safeClassForName(className);
         } else {
-            aClass = safeClassForName(packageName + "." + className);
-            if (aClass == null) {
+            if (className.startsWith(".")) {
                 aClass = safeClassForName(packageName + className);
+            } else {
+                aClass = safeClassForName(packageName + "." + className);
             }
         }
 
         if (aClass == null) {
-            throw new RuntimeException("Could not find a class for package: "
+            throw new ClassNotFoundException("Could not find a class for package: "
                     + packageName + " and class name: " + className);
         }
         return aClass;
