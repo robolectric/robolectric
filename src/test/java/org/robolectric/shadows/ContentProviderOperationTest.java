@@ -36,7 +36,7 @@ public class ContentProviderOperationTest {
         Builder builder = ContentProviderOperation.newInsert(URI);
         builder.withValueBackReference("my_id", 0);
         ContentProviderOperation operation = builder.build();
-        ShadowContentProviderOperationBuilder shadowBuilder = Robolectric.shadowOf(builder);
+        ShadowContentProviderOperation.ShadowBuilder shadowBuilder = Robolectric.shadowOf(builder);
         ShadowContentProviderOperation shadowOperation = Robolectric.shadowOf(operation);
         assertThat(shadowBuilder.getWithValueBackReference("my_id")).isEqualTo(0);
         assertThat(shadowOperation.getWithValueBackReference("my_id")).isEqualTo(0);

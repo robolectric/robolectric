@@ -75,7 +75,7 @@ public class TabSpecTest {
                     }
                 });
 
-        ShadowTabSpec shadowFoo = shadowOf(foo);
+        ShadowTabHost.ShadowTabSpec shadowFoo = shadowOf(foo);
         TextView textView = (TextView) shadowFoo.getContentView();
 
 
@@ -87,7 +87,7 @@ public class TabSpecTest {
         TabHost.TabSpec foo = new TabHost(Robolectric.application).newTabSpec("Foo")
                 .setContent(R.id.title);
 
-        ShadowTabSpec shadowFoo = shadowOf(foo);
+        ShadowTabHost.ShadowTabSpec shadowFoo = shadowOf(foo);
         int viewId = shadowFoo.getContentViewId();
 
         assertThat(viewId).isEqualTo(R.id.title);

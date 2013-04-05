@@ -46,8 +46,6 @@ import org.robolectric.shadows.ShadowBluetoothDevice;
 import org.robolectric.shadows.ShadowBundle;
 import org.robolectric.shadows.ShadowButton;
 import org.robolectric.shadows.ShadowCamera;
-import org.robolectric.shadows.ShadowCameraParameters;
-import org.robolectric.shadows.ShadowCameraSize;
 import org.robolectric.shadows.ShadowCanvas;
 import org.robolectric.shadows.ShadowCheckedTextView;
 import org.robolectric.shadows.ShadowClipboardManager;
@@ -63,7 +61,6 @@ import org.robolectric.shadows.ShadowConnectivityManager;
 import org.robolectric.shadows.ShadowContentObserver;
 import org.robolectric.shadows.ShadowContentProvider;
 import org.robolectric.shadows.ShadowContentProviderOperation;
-import org.robolectric.shadows.ShadowContentProviderOperationBuilder;
 import org.robolectric.shadows.ShadowContentProviderResult;
 import org.robolectric.shadows.ShadowContentResolver;
 import org.robolectric.shadows.ShadowContentUris;
@@ -116,18 +113,15 @@ import org.robolectric.shadows.ShadowInputEvent;
 import org.robolectric.shadows.ShadowInputMethodManager;
 import org.robolectric.shadows.ShadowIntent;
 import org.robolectric.shadows.ShadowIntentFilter;
-import org.robolectric.shadows.ShadowIntentFilterAuthorityEntry;
 import org.robolectric.shadows.ShadowIntentSender;
 import org.robolectric.shadows.ShadowItemizedOverlay;
 import org.robolectric.shadows.ShadowJsPromptResult;
 import org.robolectric.shadows.ShadowJsResult;
 import org.robolectric.shadows.ShadowKeyEvent;
-import org.robolectric.shadows.ShadowKeyGuardLock;
 import org.robolectric.shadows.ShadowKeyguardManager;
 import org.robolectric.shadows.ShadowLayerDrawable;
 import org.robolectric.shadows.ShadowLayoutAnimationController;
 import org.robolectric.shadows.ShadowLayoutInflater;
-import org.robolectric.shadows.ShadowLayoutParams;
 import org.robolectric.shadows.ShadowLinearGradient;
 import org.robolectric.shadows.ShadowLinearLayout;
 import org.robolectric.shadows.ShadowLinkMovementMethod;
@@ -140,13 +134,12 @@ import org.robolectric.shadows.ShadowLocation;
 import org.robolectric.shadows.ShadowLocationManager;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
+import org.robolectric.shadows.ShadowLruCache;
 import org.robolectric.shadows.ShadowMapActivity;
 import org.robolectric.shadows.ShadowMapController;
 import org.robolectric.shadows.ShadowMapView;
-import org.robolectric.shadows.ShadowMarginLayoutParams;
 import org.robolectric.shadows.ShadowMatrix;
 import org.robolectric.shadows.ShadowMatrixCursor;
-import org.robolectric.shadows.ShadowMeasureSpec;
 import org.robolectric.shadows.ShadowMediaPlayer;
 import org.robolectric.shadows.ShadowMediaRecorder;
 import org.robolectric.shadows.ShadowMediaScannerConnection;
@@ -158,12 +151,10 @@ import org.robolectric.shadows.ShadowMessenger;
 import org.robolectric.shadows.ShadowMimeTypeMap;
 import org.robolectric.shadows.ShadowMockPackageManager;
 import org.robolectric.shadows.ShadowMotionEvent;
-import org.robolectric.shadows.ShadowNativeLruCache;
 import org.robolectric.shadows.ShadowNdefMessage;
 import org.robolectric.shadows.ShadowNdefRecord;
 import org.robolectric.shadows.ShadowNetworkInfo;
 import org.robolectric.shadows.ShadowNfcAdapter;
-import org.robolectric.shadows.ShadowNotFoundException;
 import org.robolectric.shadows.ShadowNotification;
 import org.robolectric.shadows.ShadowNotificationManager;
 import org.robolectric.shadows.ShadowNumberPicker;
@@ -197,14 +188,13 @@ import org.robolectric.shadows.ShadowRatingBar;
 import org.robolectric.shadows.ShadowRect;
 import org.robolectric.shadows.ShadowRectF;
 import org.robolectric.shadows.ShadowRelativeLayout;
-import org.robolectric.shadows.ShadowRelativeLayoutParams;
 import org.robolectric.shadows.ShadowRemoteCallbackList;
 import org.robolectric.shadows.ShadowRemoteViews;
 import org.robolectric.shadows.ShadowResolveInfo;
 import org.robolectric.shadows.ShadowResourceCursorAdapter;
 import org.robolectric.shadows.ShadowResources;
 import org.robolectric.shadows.ShadowResultReceiver;
-import org.robolectric.shadows.ShadowSQLiteCloseable;
+import org.robolectric.shadows.ShadowSQLiteClosable;
 import org.robolectric.shadows.ShadowSQLiteCursor;
 import org.robolectric.shadows.ShadowSQLiteDatabase;
 import org.robolectric.shadows.ShadowSQLiteOpenHelper;
@@ -234,11 +224,11 @@ import org.robolectric.shadows.ShadowStateListDrawable;
 import org.robolectric.shadows.ShadowSurface;
 import org.robolectric.shadows.ShadowSurfaceView;
 import org.robolectric.shadows.ShadowSyncResult;
+import org.robolectric.shadows.ShadowSyncStats;
 import org.robolectric.shadows.ShadowSystemClock;
 import org.robolectric.shadows.ShadowSystemProperties;
 import org.robolectric.shadows.ShadowTabActivity;
 import org.robolectric.shadows.ShadowTabHost;
-import org.robolectric.shadows.ShadowTabSpec;
 import org.robolectric.shadows.ShadowTabWidget;
 import org.robolectric.shadows.ShadowTelephonyManager;
 import org.robolectric.shadows.ShadowTextPaint;
@@ -261,7 +251,6 @@ import org.robolectric.shadows.ShadowViewAnimator;
 import org.robolectric.shadows.ShadowViewConfiguration;
 import org.robolectric.shadows.ShadowViewFlipper;
 import org.robolectric.shadows.ShadowViewGroup;
-import org.robolectric.shadows.ShadowViewMeasureSpec;
 import org.robolectric.shadows.ShadowViewStub;
 import org.robolectric.shadows.ShadowViewTreeObserver;
 import org.robolectric.shadows.ShadowWebSyncManager;
@@ -326,8 +315,8 @@ public class RobolectricBase {
             ShadowBundle.class,
             ShadowButton.class,
             ShadowCamera.class,
-            ShadowCameraParameters.class,
-            ShadowCameraSize.class,
+            ShadowCamera.ShadowParameters.class,
+            ShadowCamera.ShadowSize.class,
             ShadowCanvas.class,
             ShadowCheckedTextView.class,
             ShadowClipboardManager.class,
@@ -343,7 +332,7 @@ public class RobolectricBase {
             ShadowContentObserver.class,
             ShadowContentProvider.class,
             ShadowContentProviderOperation.class,
-            ShadowContentProviderOperationBuilder.class,
+            ShadowContentProviderOperation.ShadowBuilder.class,
             ShadowContentProviderResult.class,
             ShadowContentResolver.class,
             ShadowContentUris.class,
@@ -398,7 +387,7 @@ public class RobolectricBase {
             ShadowInputEvent.class,
             ShadowIntent.class,
             ShadowIntentFilter.class,
-            ShadowIntentFilterAuthorityEntry.class,
+            ShadowIntentFilter.ShadowAuthorityEntry.class,
             ShadowIntentSender.class,
             ShadowItemizedOverlay.class,
             ShadowLayoutAnimationController.class,
@@ -406,10 +395,10 @@ public class RobolectricBase {
             ShadowJsResult.class,
             ShadowKeyEvent.class,
             ShadowKeyguardManager.class,
-            ShadowKeyGuardLock.class,
+            ShadowKeyguardManager.ShadowKeyguardLock.class,
             ShadowLayerDrawable.class,
             ShadowLayoutInflater.class,
-            ShadowLayoutParams.class,
+            ShadowViewGroup.ShadowLayoutParams.class,
             ShadowLinearGradient.class,
             ShadowLinearLayout.class,
             ShadowLinkMovementMethod.class,
@@ -425,10 +414,10 @@ public class RobolectricBase {
             ShadowMapController.class,
             ShadowMapActivity.class,
             ShadowMapView.class,
-            ShadowMarginLayoutParams.class,
+            ShadowViewGroup.ShadowMarginLayoutParams.class,
             ShadowMatrix.class,
             ShadowMatrixCursor.class,
-            ShadowMeasureSpec.class,
+            ShadowView.ShadowMeasureSpec.class,
             ShadowMediaPlayer.class,
             ShadowMediaRecorder.class,
             ShadowMediaScannerConnection.class,
@@ -440,7 +429,7 @@ public class RobolectricBase {
             ShadowMimeTypeMap.class,
             ShadowMockPackageManager.class,
             ShadowMotionEvent.class,
-            ShadowNativeLruCache.class,
+            ShadowLruCache.class,
             ShadowNotification.class,
             ShadowNdefMessage.class,
             ShadowNdefRecord.class,
@@ -479,14 +468,14 @@ public class RobolectricBase {
             ShadowRect.class,
             ShadowRectF.class,
             ShadowRelativeLayout.class,
-            ShadowRelativeLayoutParams.class,
+            ShadowRelativeLayout.ShadowLayoutParams.class,
             ShadowResolveInfo.class,
             ShadowRemoteCallbackList.class,
             ShadowRemoteViews.class,
             ShadowResultReceiver.class,
             ShadowResourceCursorAdapter.class,
             ShadowResources.class,
-            ShadowNotFoundException.class,
+            ShadowResources.ShadowNotFoundException.class,
             ShadowResources.ShadowTheme.class,
             ShadowScaleGestureDetector.class,
             ShadowScanResult.class,
@@ -508,9 +497,9 @@ public class RobolectricBase {
             ShadowSparseIntArray.class,
             ShadowSpinner.class,
             ShadowSyncResult.class,
-            ShadowSyncResult.ShadowSyncStats.class,
+            ShadowSyncStats.class,
             ShadowSQLiteProgram.class,
-            ShadowSQLiteCloseable.class,
+            ShadowSQLiteClosable.class,
             ShadowSQLiteDatabase.class,
             ShadowSQLiteCursor.class,
             ShadowSQLiteOpenHelper.class,
@@ -525,7 +514,7 @@ public class RobolectricBase {
             ShadowSystemProperties.class,
             ShadowTabActivity.class,
             ShadowTabHost.class,
-            ShadowTabSpec.class,
+            ShadowTabHost.ShadowTabSpec.class,
             ShadowTabWidget.class,
             ShadowTelephonyManager.class,
             ShadowTextPaint.class,
@@ -548,7 +537,7 @@ public class RobolectricBase {
             ShadowViewConfiguration.class,
             ShadowViewGroup.class,
             ShadowViewFlipper.class,
-            ShadowViewMeasureSpec.class,
+            ShadowView.ShadowMeasureSpec.class,
             ShadowViewStub.class,
             ShadowViewTreeObserver.class,
             ShadowWebView.class,

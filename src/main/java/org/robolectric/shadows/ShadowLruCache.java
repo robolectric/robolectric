@@ -4,5 +4,5 @@ import android.util.LruCache;
 import org.robolectric.internal.Implements;
 
 @Implements(value = LruCache.class, callThroughByDefault = true)
-public class ShadowNativeLruCache {
+public class ShadowLruCache {
 }

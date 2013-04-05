@@ -13,7 +13,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 @Implements(value = SQLiteProgram.class, inheritImplementationMethods = true)
-public abstract class ShadowSQLiteProgram extends ShadowSQLiteCloseable {
+public abstract class ShadowSQLiteProgram extends ShadowSQLiteClosable {
 	@RealObject	SQLiteProgram realSQLiteProgram;
 	protected SQLiteDatabase mDatabase;
 	Connection connection;
