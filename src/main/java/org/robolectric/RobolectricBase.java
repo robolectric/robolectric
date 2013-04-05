@@ -105,7 +105,6 @@ import org.robolectric.shadows.ShadowGestureDetector;
 import org.robolectric.shadows.ShadowGridView;
 import org.robolectric.shadows.ShadowHandler;
 import org.robolectric.shadows.ShadowHandlerThread;
-import org.robolectric.shadows.ShadowHtml;
 import org.robolectric.shadows.ShadowImageButton;
 import org.robolectric.shadows.ShadowImageView;
 import org.robolectric.shadows.ShadowInputDevice;
@@ -379,7 +378,6 @@ public class RobolectricBase {
             ShadowGridView.class,
             ShadowHandler.class,
             ShadowHandlerThread.class,
-            ShadowHtml.class,
             ShadowImageButton.class,
             ShadowImageView.class,
             ShadowInputMethodManager.class,
