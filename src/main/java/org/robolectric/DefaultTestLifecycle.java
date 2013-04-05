@@ -7,25 +7,6 @@ import java.lang.reflect.Method;
 
 public class DefaultTestLifecycle implements TestLifecycle {
     /**
-     * Called before each test method is run.
-     *
-     * @param method the test method about to be run
-     */
-    public void beforeTest(final Method method) {
-    }
-
-    /**
-     * Called after each test method is run.
-     *
-     * @param method the test method that just ran.
-     */
-    public void afterTest(final Method method) {
-    }
-
-    public void prepareTest(final Object test) {
-    }
-
-    /**
      * Override this method if you want to provide your own implementation of Application.
      * <p/>
      * This method attempts to instantiate an application instance as specified by the AndroidManifest.xml.
@@ -68,6 +49,34 @@ public class DefaultTestLifecycle implements TestLifecycle {
         }
 
         return application;
+    }
+
+    /**
+     * Called before each test method is run.
+     *
+     * @param method the test method about to be run
+     */
+    public void beforeTest(final Method method) {
+        if (Robolectric.application instanceof TestLifecycleApplication) {
+            ((TestLifecycleApplication) Robolectric.application).beforeTest(method);
+        }
+    }
+
+    public void prepareTest(final Object test) {
+        if (Robolectric.application instanceof TestLifecycleApplication) {
+            ((TestLifecycleApplication) Robolectric.application).prepareTest(test);
+        }
+    }
+
+    /**
+     * Called after each test method is run.
+     *
+     * @param method the test method that just ran.
+     */
+    public void afterTest(final Method method) {
+        if (Robolectric.application instanceof TestLifecycleApplication) {
+            ((TestLifecycleApplication) Robolectric.application).afterTest(method);
+        }
     }
 
     public String getTestApplicationName(String applicationName) {

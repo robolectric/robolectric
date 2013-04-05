@@ -30,12 +30,15 @@ public class TestRunnerSequenceTest {
 //                "resetStaticState", // no longer an overridable hook
 //                "setupApplicationState", // no longer an overridable hook
                 "createApplication",
-                "onCreate",
+                "application.onCreate",
                 "beforeTest",
+                "application.beforeTest",
                 "prepareTest",
+                "application.prepareTest",
                 "TEST!",
-                "onTerminate",
-                "afterTest"
+                "application.onTerminate",
+                "afterTest",
+                "application.afterTest"
         );
     }
 
@@ -49,12 +52,15 @@ public class TestRunnerSequenceTest {
         StateHolder.transcript.assertEventsSoFar(
                 "configureShadows",
                 "createApplication",
-                "onCreate",
+                "application.onCreate",
                 "beforeTest",
+                "application.beforeTest",
                 "prepareTest",
+                "application.prepareTest",
                 "TEST!",
-                "onTerminate",
-                "afterTest"
+                "application.onTerminate",
+                "afterTest",
+                "application.afterTest"
         );
     }
 
@@ -118,27 +124,44 @@ public class TestRunnerSequenceTest {
     public static class MyTestLifecycle extends DefaultTestLifecycle {
         @Override public Application createApplication(Method method, AndroidManifest appManifest) {
             StateHolder.transcript.add("createApplication");
-            return new Application() {
-                @Override public void onCreate() {
-                    StateHolder.transcript.add("onCreate");
-                }
-
-                @Override public void onTerminate() {
-                    StateHolder.transcript.add("onTerminate");
-                }
-            };
-        }
-
-        @Override public void prepareTest(Object test) {
-            StateHolder.transcript.add("prepareTest");
+            return new MyApplication();
         }
 
         @Override public void beforeTest(Method method) {
             StateHolder.transcript.add("beforeTest");
+            super.beforeTest(method);
+        }
+
+        @Override public void prepareTest(Object test) {
+            StateHolder.transcript.add("prepareTest");
+            super.prepareTest(test);
         }
 
         @Override public void afterTest(Method method) {
             StateHolder.transcript.add("afterTest");
+            super.afterTest(method);
+        }
+
+        private static class MyApplication extends Application implements TestLifecycleApplication {
+            @Override public void onCreate() {
+                StateHolder.transcript.add("application.onCreate");
+            }
+
+            @Override public void beforeTest(Method method) {
+                StateHolder.transcript.add("application.beforeTest");
+            }
+
+            @Override public void prepareTest(Object test) {
+                StateHolder.transcript.add("application.prepareTest");
+            }
+
+            @Override public void afterTest(Method method) {
+                StateHolder.transcript.add("application.afterTest");
+            }
+
+            @Override public void onTerminate() {
+                StateHolder.transcript.add("application.onTerminate");
+            }
         }
     }
 }
