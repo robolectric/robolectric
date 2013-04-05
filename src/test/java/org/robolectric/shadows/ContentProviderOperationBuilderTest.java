@@ -15,7 +15,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 @RunWith(TestRunners.WithDefaults.class)
 public class ContentProviderOperationBuilderTest {
     private Builder builder;
-    private ShadowContentProviderOperationBuilder shadowBuilder;
+    private ShadowContentProviderOperation.ShadowBuilder shadowBuilder;
     
     @Before
     public void before() {

@@ -209,8 +209,6 @@ import org.robolectric.shadows.ShadowBluetoothAdapter;
 import org.robolectric.shadows.ShadowBluetoothDevice;
 import org.robolectric.shadows.ShadowBundle;
 import org.robolectric.shadows.ShadowCamera;
-import org.robolectric.shadows.ShadowCameraParameters;
-import org.robolectric.shadows.ShadowCameraSize;
 import org.robolectric.shadows.ShadowCanvas;
 import org.robolectric.shadows.ShadowCheckedTextView;
 import org.robolectric.shadows.ShadowClipboardManager;
@@ -221,7 +219,6 @@ import org.robolectric.shadows.ShadowConfiguration;
 import org.robolectric.shadows.ShadowConnectivityManager;
 import org.robolectric.shadows.ShadowContentObserver;
 import org.robolectric.shadows.ShadowContentProviderOperation;
-import org.robolectric.shadows.ShadowContentProviderOperationBuilder;
 import org.robolectric.shadows.ShadowContentProviderResult;
 import org.robolectric.shadows.ShadowContentResolver;
 import org.robolectric.shadows.ShadowContentValues;
@@ -257,7 +254,6 @@ import org.robolectric.shadows.ShadowIntent;
 import org.robolectric.shadows.ShadowJsPromptResult;
 import org.robolectric.shadows.ShadowJsResult;
 import org.robolectric.shadows.ShadowKeyEvent;
-import org.robolectric.shadows.ShadowKeyGuardLock;
 import org.robolectric.shadows.ShadowKeyguardManager;
 import org.robolectric.shadows.ShadowLayerDrawable;
 import org.robolectric.shadows.ShadowLayoutAnimationController;
@@ -330,7 +326,6 @@ import org.robolectric.shadows.ShadowSslErrorHandler;
 import org.robolectric.shadows.ShadowStatFs;
 import org.robolectric.shadows.ShadowStateListDrawable;
 import org.robolectric.shadows.ShadowTabHost;
-import org.robolectric.shadows.ShadowTabSpec;
 import org.robolectric.shadows.ShadowTelephonyManager;
 import org.robolectric.shadows.ShadowTextPaint;
 import org.robolectric.shadows.ShadowTextView;
@@ -538,12 +533,12 @@ public class Robolectric {
         return (ShadowCamera) shadowOf_(instance);
     }
 
-    public static ShadowCameraParameters shadowOf(Camera.Parameters instance) {
-        return (ShadowCameraParameters) shadowOf_(instance);
+    public static ShadowCamera.ShadowParameters shadowOf(Camera.Parameters instance) {
+        return (ShadowCamera.ShadowParameters) shadowOf_(instance);
     }
 
-    public static ShadowCameraSize shadowOf(Camera.Size instance) {
-        return (ShadowCameraSize) shadowOf_(instance);
+    public static ShadowCamera.ShadowSize shadowOf(Camera.Size instance) {
+        return (ShadowCamera.ShadowSize) shadowOf_(instance);
     }
 
     public static ShadowCanvas shadowOf(Canvas instance) {
@@ -594,8 +589,8 @@ public class Robolectric {
         return (ShadowContentProviderOperation) shadowOf_(instance);
     }
 
-    public static ShadowContentProviderOperationBuilder shadowOf(ContentProviderOperation.Builder instance) {
-        return (ShadowContentProviderOperationBuilder) shadowOf_(instance);
+    public static ShadowContentProviderOperation.ShadowBuilder shadowOf(ContentProviderOperation.Builder instance) {
+        return (ShadowContentProviderOperation.ShadowBuilder) shadowOf_(instance);
     }
 
     public static ShadowContentProviderResult shadowOf(ContentProviderResult instance) {
@@ -738,8 +733,8 @@ public class Robolectric {
         return (ShadowKeyguardManager) shadowOf_(instance);
     }
 
-    public static ShadowKeyGuardLock shadowOf(KeyguardManager.KeyguardLock instance) {
-        return (ShadowKeyGuardLock) shadowOf_(instance);
+    public static ShadowKeyguardManager.ShadowKeyguardLock shadowOf(KeyguardManager.KeyguardLock instance) {
+        return (ShadowKeyguardManager.ShadowKeyguardLock) shadowOf_(instance);
     }
 
     public static ShadowLayerDrawable shadowOf(LayerDrawable instance) {
@@ -1007,8 +1002,8 @@ public class Robolectric {
         return (ShadowTabHost) shadowOf_(instance);
     }
 
-    public static ShadowTabSpec shadowOf(TabHost.TabSpec instance) {
-        return (ShadowTabSpec) shadowOf_(instance);
+    public static ShadowTabHost.ShadowTabSpec shadowOf(TabHost.TabSpec instance) {
+        return (ShadowTabHost.ShadowTabSpec) shadowOf_(instance);
     }
 
     public static ShadowTelephonyManager shadowOf(TelephonyManager instance) {

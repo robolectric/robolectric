@@ -677,8 +677,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             if (mainShadowMap != null) return mainShadowMap;
 
             mainShadowMap = new ShadowMap.Builder()
-                    .addShadowClasses(RobolectricBase.DEFAULT_SHADOW_CLASSES)
+                    //.addShadowClasses(RobolectricBase.DEFAULT_SHADOW_CLASSES)
                     .build();
+            //mainShadowMap = new ShadowMap.Builder()
+            //        .addShadowClasses(RobolectricBase.DEFAULT_SHADOW_CLASSES)
+            //        .build();
             return mainShadowMap;
         }
     }
