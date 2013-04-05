@@ -184,8 +184,6 @@ import org.robolectric.shadows.ShadowProgressDialog;
 import org.robolectric.shadows.ShadowRadioButton;
 import org.robolectric.shadows.ShadowRadioGroup;
 import org.robolectric.shadows.ShadowRatingBar;
-import org.robolectric.shadows.ShadowRect;
-import org.robolectric.shadows.ShadowRectF;
 import org.robolectric.shadows.ShadowRelativeLayout;
 import org.robolectric.shadows.ShadowRemoteCallbackList;
 import org.robolectric.shadows.ShadowRemoteViews;
@@ -463,8 +461,6 @@ public class RobolectricBase {
             ShadowRadioButton.class,
             ShadowRadioGroup.class,
             ShadowRatingBar.class,
-            ShadowRect.class,
-            ShadowRectF.class,
             ShadowRelativeLayout.class,
             ShadowRelativeLayout.ShadowLayoutParams.class,
             ShadowResolveInfo.class,

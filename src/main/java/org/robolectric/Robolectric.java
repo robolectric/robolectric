@@ -54,7 +54,6 @@ import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
@@ -297,7 +296,6 @@ import org.robolectric.shadows.ShadowPreferenceScreen;
 import org.robolectric.shadows.ShadowProgressBar;
 import org.robolectric.shadows.ShadowProgressDialog;
 import org.robolectric.shadows.ShadowRatingBar;
-import org.robolectric.shadows.ShadowRect;
 import org.robolectric.shadows.ShadowRemoteViews;
 import org.robolectric.shadows.ShadowResolveInfo;
 import org.robolectric.shadows.ShadowResourceCursorAdapter;
@@ -885,10 +883,6 @@ public class Robolectric {
         return (ShadowProgressDialog) shadowOf_(instance);
     }
 
-    public static ShadowRect shadowOf(Rect instance) {
-        return (ShadowRect) shadowOf_(instance);
-    }
-
     public static ShadowRatingBar shadowOf(RatingBar instance) {
         return (ShadowRatingBar) shadowOf_(instance);
     }
@@ -1194,7 +1188,7 @@ public class Robolectric {
 
     public static boolean httpRequestWasMade(String uri) {
         return getShadowApplication().getFakeHttpLayer().hasRequestMatchingRule(
-            new FakeHttpLayer.UriRequestMatcher(uri));
+                new FakeHttpLayer.UriRequestMatcher(uri));
     }
 
     /**
