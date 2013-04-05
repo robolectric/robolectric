@@ -1,6 +1,4 @@
-package org.robolectric.internal;
-
-import org.robolectric.AndroidManifest;
+package org.robolectric;
 
 import java.lang.reflect.Method;
 

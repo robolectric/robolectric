@@ -1,6 +1,7 @@
 package org.robolectric.internal;
 
 import org.robolectric.SdkEnvironment;
+import org.robolectric.TestLifecycle;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.util.DatabaseConfig;
 

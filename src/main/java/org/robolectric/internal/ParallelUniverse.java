@@ -6,6 +6,7 @@ import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
 import org.robolectric.SdkEnvironment;
+import org.robolectric.TestLifecycle;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowResources;
 import org.robolectric.util.DatabaseConfig;

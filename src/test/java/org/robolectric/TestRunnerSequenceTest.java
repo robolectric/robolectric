@@ -8,7 +8,6 @@ import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.bytecode.Setup;
-import org.robolectric.internal.TestLifecycle;
 import org.robolectric.util.Transcript;
 
 import java.io.File;

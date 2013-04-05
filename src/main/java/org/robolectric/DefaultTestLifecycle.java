@@ -2,7 +2,6 @@ package org.robolectric;
 
 import android.app.Application;
 import org.robolectric.internal.ClassNameResolver;
-import org.robolectric.internal.TestLifecycle;
 
 import java.lang.reflect.Method;
 

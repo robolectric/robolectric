@@ -15,7 +15,7 @@ import org.robolectric.internal.Implements;
 import org.robolectric.internal.Instrument;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.internal.RealObject;
-import org.robolectric.internal.TestLifecycle;
+import org.robolectric.TestLifecycle;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.util.DatabaseConfig;

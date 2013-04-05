@@ -14,7 +14,7 @@ import org.robolectric.Robolectric;
 import org.robolectric.SdkEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.TestLifecycle;
+import org.robolectric.TestLifecycle;
 import org.robolectric.res.ResourceLoader;
 
 import java.lang.reflect.InvocationTargetException;
