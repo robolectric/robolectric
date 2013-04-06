@@ -247,7 +247,8 @@ public class RobolectricPackageManager extends StubPackageManager {
 
         PackageInfo packageInfo = new PackageInfo();
         packageInfo.packageName = contextWrapper.getPackageName();
-        packageInfo.versionName = "1.0";
+        packageInfo.versionName = androidManifest.getVersionName();
+        packageInfo.versionCode = androidManifest.getVersionCode();
 
         packageList = new HashMap<String, PackageInfo>();
         addPackage(packageInfo);
