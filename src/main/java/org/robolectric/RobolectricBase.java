@@ -157,7 +157,6 @@ import org.robolectric.shadows.ShadowNotification;
 import org.robolectric.shadows.ShadowNotificationManager;
 import org.robolectric.shadows.ShadowNumberPicker;
 import org.robolectric.shadows.ShadowObjectAnimator;
-import org.robolectric.shadows.ShadowObservable;
 import org.robolectric.shadows.ShadowOverlayItem;
 import org.robolectric.shadows.ShadowPaint;
 import org.robolectric.shadows.ShadowParcel;
@@ -428,7 +427,6 @@ public class RobolectricBase {
             ShadowNotificationManager.class,
             ShadowNetworkInfo.class,
             ShadowNumberPicker.class,
-            ShadowObservable.class,
             ShadowOverlayItem.class,
             ShadowObjectAnimator.class,
             ShadowPaint.class,
