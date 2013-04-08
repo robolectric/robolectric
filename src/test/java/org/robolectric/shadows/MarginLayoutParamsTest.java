@@ -8,7 +8,7 @@ import org.robolectric.TestRunners;
 import static org.fest.assertions.api.Assertions.assertThat;
 
 /**
- * {@link ShadowMarginLayoutParams} test suite.
+ * {@link org.robolectric.shadows.ShadowViewGroup.ShadowMarginLayoutParams} test suite.
  */
 @RunWith(TestRunners.WithDefaults.class)
 public class MarginLayoutParamsTest  {

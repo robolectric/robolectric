@@ -17,7 +17,7 @@ import static org.fest.assertions.api.Assertions.assertThat;
 public class CameraParametersTest {
 
     private Camera.Parameters parameters;
-    private ShadowCameraParameters shadowParameters;
+    private ShadowCamera.ShadowParameters shadowParameters;
 
     @Before
     public void setUp() throws Exception {

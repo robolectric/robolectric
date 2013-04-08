@@ -48,6 +48,12 @@ public class RobolectricWiringTest {
             }
         }
 
+
+        String expectedName = ShadowMap.convertToShadowName(implementedClass.getName());
+        if (!shadowClass.getName().equals(expectedName)) {
+            mismatches.add("Shadow class " + shadowClass.getName() + " didn't have the expected name, should be " + expectedName);
+        }
+
         for (Method shadowMethod : shadowClass.getDeclaredMethods()) {
             verifyMethod(implementedClass, shadowMethod);
         }

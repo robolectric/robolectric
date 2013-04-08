@@ -30,4 +30,23 @@ public class ShadowKeyguardManager {
     public void setinRestrictedInputMode(boolean restricted) {
         inRestrictedInputMode = restricted;
     }
+
+    @Implements(KeyguardManager.KeyguardLock.class)
+    public static class ShadowKeyguardLock {
+        private boolean keyguardEnabled = true;
+
+        @Implementation
+        public void disableKeyguard() {
+            keyguardEnabled = false;
+        }
+
+        @Implementation
+        public void reenableKeyguard() {
+            keyguardEnabled = true;
+        }
+
+        public boolean isEnabled() {
+            return keyguardEnabled;
+        }
+    }
 }

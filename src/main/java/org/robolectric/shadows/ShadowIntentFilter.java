@@ -149,4 +149,29 @@ public class ShadowIntentFilter {
         result = 31 * result + authoritites.hashCode();
         return result;
     }
+
+    @Implements(IntentFilter.AuthorityEntry.class)
+    public static class ShadowAuthorityEntry {
+        private String host;
+        private int port;
+
+        public void __constructor__(String host, String port) {
+            this.host = host;
+            if (port == null) {
+                this.port = -1;
+            } else {
+                this.port = Integer.parseInt(port);
+            }
+        }
+
+        @Implementation
+        public String getHost() {
+            return host;
+        }
+
+        @Implementation
+        public int getPort() {
+            return port;
+        }
+    }
 }

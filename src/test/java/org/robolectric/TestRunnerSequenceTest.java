@@ -2,16 +2,18 @@ package org.robolectric;
 
 import android.app.Application;
 import org.junit.Test;
+import org.junit.runner.Result;
+import org.junit.runner.notification.Failure;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.bytecode.Setup;
-import org.robolectric.internal.TestLifecycle;
 import org.robolectric.util.Transcript;
 
 import java.io.File;
 import java.lang.reflect.Method;
 
+import static org.fest.assertions.api.Assertions.fail;
 import static org.junit.Assert.assertTrue;
 import static org.robolectric.util.TestUtil.resourceFile;
 
@@ -22,33 +24,43 @@ public class TestRunnerSequenceTest {
 
     @Test public void shouldRunThingsInTheRightOrder() throws Exception {
         StateHolder.transcript = new Transcript();
-        new Runner(SimpleTest.class).run(new RunNotifier());
+        assertNoFailures(run(new Runner(SimpleTest.class)));
         StateHolder.transcript.assertEventsSoFar(
                 "configureShadows",
 //                "resetStaticState", // no longer an overridable hook
 //                "setupApplicationState", // no longer an overridable hook
                 "createApplication",
+                "application.onCreate",
                 "beforeTest",
+                "application.beforeTest",
                 "prepareTest",
+                "application.prepareTest",
                 "TEST!",
-                "afterTest"
+                "application.onTerminate",
+                "afterTest",
+                "application.afterTest"
         );
     }
 
     @Test public void whenNoAppManifest_shouldRunThingsInTheRightOrder() throws Exception {
         StateHolder.transcript = new Transcript();
-        new Runner(SimpleTest.class) {
+        assertNoFailures(run(new Runner(SimpleTest.class) {
             @Override protected AndroidManifest createAppManifest(File baseDir) {
                 return null;
             }
-        }.run(new RunNotifier());
+        }));
         StateHolder.transcript.assertEventsSoFar(
                 "configureShadows",
                 "createApplication",
+                "application.onCreate",
                 "beforeTest",
+                "application.beforeTest",
                 "prepareTest",
+                "application.prepareTest",
                 "TEST!",
-                "afterTest"
+                "application.onTerminate",
+                "afterTest",
+                "application.afterTest"
         );
     }
 
@@ -61,6 +73,22 @@ public class TestRunnerSequenceTest {
     public static class SimpleTest {
         @Test public void shouldDoNothingMuch() throws Exception {
             StateHolder.transcript.add("TEST!");
+        }
+    }
+
+    private Result run(Runner runner) throws InitializationError {
+        RunNotifier notifier = new RunNotifier();
+        Result result = new Result();
+        notifier.addListener(result.createListener());
+        runner.run(notifier);
+        return result;
+    }
+
+    private void assertNoFailures(Result result) {
+        if (!result.wasSuccessful()) {
+            for (Failure failure : result.getFailures()) {
+                fail(failure.getMessage(), failure.getException());
+            }
         }
     }
 
@@ -96,19 +124,44 @@ public class TestRunnerSequenceTest {
     public static class MyTestLifecycle extends DefaultTestLifecycle {
         @Override public Application createApplication(Method method, AndroidManifest appManifest) {
             StateHolder.transcript.add("createApplication");
-            return super.createApplication(method, appManifest);
-        }
-
-        @Override public void prepareTest(Object test) {
-            StateHolder.transcript.add("prepareTest");
+            return new MyApplication();
         }
 
         @Override public void beforeTest(Method method) {
             StateHolder.transcript.add("beforeTest");
+            super.beforeTest(method);
+        }
+
+        @Override public void prepareTest(Object test) {
+            StateHolder.transcript.add("prepareTest");
+            super.prepareTest(test);
         }
 
         @Override public void afterTest(Method method) {
             StateHolder.transcript.add("afterTest");
+            super.afterTest(method);
+        }
+
+        private static class MyApplication extends Application implements TestLifecycleApplication {
+            @Override public void onCreate() {
+                StateHolder.transcript.add("application.onCreate");
+            }
+
+            @Override public void beforeTest(Method method) {
+                StateHolder.transcript.add("application.beforeTest");
+            }
+
+            @Override public void prepareTest(Object test) {
+                StateHolder.transcript.add("application.prepareTest");
+            }
+
+            @Override public void afterTest(Method method) {
+                StateHolder.transcript.add("application.afterTest");
+            }
+
+            @Override public void onTerminate() {
+                StateHolder.transcript.add("application.onTerminate");
+            }
         }
     }
 }

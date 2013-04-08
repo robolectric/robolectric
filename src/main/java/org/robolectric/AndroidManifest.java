@@ -1,7 +1,5 @@
 package org.robolectric;
 
-import android.app.Application;
-import org.robolectric.internal.ClassNameResolver;
 import org.robolectric.res.ResourcePath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -324,18 +322,6 @@ public class AndroidManifest {
             }
         }
         return null;
-    }
-
-    private static Application newApplicationInstance(final String packageName, final String applicationName) {
-        Application application;
-        try {
-            Class<? extends Application> applicationClass =
-                    new ClassNameResolver<Application>(packageName, applicationName).resolve();
-            application = applicationClass.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return application;
     }
 
     @Override

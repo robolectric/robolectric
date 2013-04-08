@@ -324,7 +324,7 @@ public class ShadowWrangler implements ClassHandler {
     }
 
     private Class<?> findDirectShadowClass(Class<?> originalClass) {
-        ShadowConfig shadowConfig = shadowMap.get(originalClass.getName());
+        ShadowConfig shadowConfig = shadowMap.get(originalClass);
         if (shadowConfig == null) {
             return null;
         }

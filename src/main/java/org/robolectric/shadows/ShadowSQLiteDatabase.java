@@ -41,7 +41,7 @@ import static org.robolectric.util.SQLite.*;
  * made available to test cases for use in fixture setup and assertions.
  */
 @Implements(value = SQLiteDatabase.class, inheritImplementationMethods = true)
-public class ShadowSQLiteDatabase extends ShadowSQLiteCloseable {
+public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
 
     public static final android.database.sqlite.SQLiteDatabase.CursorFactory DEFAULT_CURSOR_FACTORY = new SQLiteDatabase.CursorFactory() {
         @Override

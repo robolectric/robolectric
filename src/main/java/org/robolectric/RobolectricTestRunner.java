@@ -28,7 +28,6 @@ import org.robolectric.bytecode.ShadowWrangler;
 import org.robolectric.bytecode.ZipClassCache;
 import org.robolectric.internal.ParallelUniverse;
 import org.robolectric.internal.ParallelUniverseInterface;
-import org.robolectric.internal.TestLifecycle;
 import org.robolectric.res.OverlayResourceLoader;
 import org.robolectric.res.PackageResourceLoader;
 import org.robolectric.res.ResName;
@@ -286,11 +285,10 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                 configureShadows(sdkEnvironment, config);
                 setupLogging();
 
-                ParallelUniverseInterface parallelUniverseInterface;
+                ParallelUniverseInterface parallelUniverseInterface = getHooksInterface(sdkEnvironment);
                 try {
                     assureTestLifecycle(sdkEnvironment);
 
-                    parallelUniverseInterface = getHooksInterface(sdkEnvironment);
                     parallelUniverseInterface.resetStaticState();
                     parallelUniverseInterface.setDatabaseMap(databaseMap); //Set static DatabaseMap in DBConfig
 
@@ -302,7 +300,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
 
                     ResourcePath systemResourcePath = sdkEnvironment.getSystemResourcePath();
                     ResourceLoader systemResourceLoader = getSystemResourceLoader(systemResourcePath);
-                    setupApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, sdkEnvironment);
+                    setUpApplicationState(bootstrappedMethod, parallelUniverseInterface, strictI18n, systemResourceLoader, sdkEnvironment);
                     testLifecycle.beforeTest(bootstrappedMethod);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -325,11 +323,17 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
                         }
                     }
                 } finally {
-                    internalAfterTest(bootstrappedMethod);
-
-                    parallelUniverseInterface.resetStaticState(); // afterward too, so stuff doesn't hold on to classes?
-                    // todo: is this really needed?
-                    Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
+                    try {
+                        parallelUniverseInterface.tearDownApplication();
+                    } finally {
+                        try {
+                            internalAfterTest(bootstrappedMethod);
+                        } finally {
+                            parallelUniverseInterface.resetStaticState(); // afterward too, so stuff doesn't hold on to classes?
+                            // todo: is this really needed?
+                            Thread.currentThread().setContextClassLoader(RobolectricTestRunner.class.getClassLoader());
+                        }
+                    }
                 }
             }
         };
@@ -424,8 +428,8 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         return classHandler;
     }
 
-    protected void setupApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, SdkEnvironment sdkEnvironment) {
-        parallelUniverseInterface.setupApplicationState(method, testLifecycle, sdkEnvironment, strictI18n, systemResourceLoader);
+    protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, SdkEnvironment sdkEnvironment) {
+        parallelUniverseInterface.setUpApplicationState(method, testLifecycle, sdkEnvironment, strictI18n, systemResourceLoader);
     }
 
     private int getTargetSdkVersion(SdkEnvironment sdkEnvironment) {
@@ -677,8 +681,11 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
             if (mainShadowMap != null) return mainShadowMap;
 
             mainShadowMap = new ShadowMap.Builder()
-                    .addShadowClasses(RobolectricBase.DEFAULT_SHADOW_CLASSES)
+                    //.addShadowClasses(RobolectricBase.DEFAULT_SHADOW_CLASSES)
                     .build();
+            //mainShadowMap = new ShadowMap.Builder()
+            //        .addShadowClasses(RobolectricBase.DEFAULT_SHADOW_CLASSES)
+            //        .build();
             return mainShadowMap;
         }
     }

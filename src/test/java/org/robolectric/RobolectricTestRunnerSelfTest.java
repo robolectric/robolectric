@@ -8,7 +8,6 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.annotation.Config;
 import org.robolectric.annotation.DisableStrictI18n;
 import org.robolectric.annotation.EnableStrictI18n;
-import org.robolectric.internal.TestLifecycle;
 
 import java.lang.reflect.Method;
 
@@ -22,7 +21,7 @@ public class RobolectricTestRunnerSelfTest {
     public void shouldInitializeAndBindApplicationButNotCallOnCreate() throws Exception {
         assertNotNull(Robolectric.application);
         assertEquals(MyTestApplication.class, Robolectric.application.getClass());
-        assertFalse(((MyTestApplication) Robolectric.application).onCreateWasCalled);
+        assertTrue(((MyTestApplication) Robolectric.application).onCreateWasCalled);
         assertNotNull(shadowOf(Robolectric.application).getResourceLoader());
     }
 
