@@ -2,7 +2,6 @@ package org.robolectric.shadows;
 
 import android.app.Application;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.util.AttributeSet;
@@ -91,11 +90,6 @@ abstract public class ShadowContext {
             AttributeSet set, int[] attrs, int defStyleAttr, int defStyleRes) {
         return getTheme().obtainStyledAttributes(
                 set, attrs, defStyleAttr, defStyleRes);
-    }
-
-    @Implementation
-    public int checkCallingPermission(String permission) {
-        return PackageManager.PERMISSION_GRANTED;
     }
 
     public RoboAttributeSet createAttributeSet(List<Attribute> attributes, Class<? extends View> viewClass) {
