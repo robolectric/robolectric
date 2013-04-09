@@ -213,7 +213,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         int i = 0;
         for (String path : artifacts.values()) {
             try {
-                urls[i++] = new URL("file:/" + path);
+                urls[i++] = new URL("file:/" + (path.startsWith("/") ? "/" + path : path));
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
