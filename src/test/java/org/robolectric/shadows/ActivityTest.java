@@ -542,6 +542,11 @@ public class ActivityTest {
         assertThat(shadow.getManagedCursors().size()).isEqualTo(0);
     }
 
+    @org.junit.Test
+    public void should() throws Exception {
+        new Activity().checkCallingPermission("");
+    }
+
     private static class TestActivity extends Activity {
         Transcript transcript = new Transcript();
 
