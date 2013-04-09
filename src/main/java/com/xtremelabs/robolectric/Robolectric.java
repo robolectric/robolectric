@@ -378,6 +378,7 @@ public class Robolectric {
                 ShadowViewStub.class,
                 ShadowViewTreeObserver.class,
                 ShadowWebView.class,
+                ShadowWebViewDatabase.class,
                 ShadowWifiConfiguration.class,
                 ShadowWifiInfo.class,
                 ShadowWifiManager.class,
@@ -1117,6 +1118,10 @@ public class Robolectric {
 
     public static ShadowWebView shadowOf(WebView instance) {
         return (ShadowWebView) shadowOf_(instance);
+    }
+
+    public static ShadowWebViewDatabase shadowOf(WebViewDatabase instance) {
+        return (ShadowWebViewDatabase) shadowOf_(instance);
     }
 
     public static ShadowWifiConfiguration shadowOf(WifiConfiguration instance) {
