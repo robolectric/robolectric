@@ -9,12 +9,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
-import org.robolectric.RobolectricTestRunner;
+import org.robolectric.TestRunners;
 
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
 
-@RunWith(RobolectricTestRunner.class)
+@RunWith(TestRunners.WithDefaults.class)
 public class FragmentTestUtilTest {
     private LoginFragment fragment;
 
