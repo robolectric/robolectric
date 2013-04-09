@@ -13,6 +13,7 @@ import org.robolectric.TestRunners;
 
 import static org.hamcrest.core.IsNull.notNullValue;
 import static org.junit.Assert.assertThat;
+import static org.robolectric.util.FragmentTestUtil.startFragment;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class FragmentTestUtilTest {
@@ -21,7 +22,7 @@ public class FragmentTestUtilTest {
     @Before
     public void setUp() {
         fragment = new LoginFragment();
-        FragmentTestUtil.startFragment(fragment);
+        startFragment(fragment);
 
         assertThat(fragment.getActivity(), notNullValue());
         assertThat(fragment.getView(), notNullValue());
