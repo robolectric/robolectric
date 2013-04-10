@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 
 public class Util {
     public static void copy(InputStream in, OutputStream out) throws IOException {
@@ -44,5 +46,9 @@ public class Util {
             f = new File(f, pathPart);
         }
         return f;
+    }
+
+    public static URL url(String path) throws MalformedURLException {
+        return new URL("file:" + (path.startsWith("/") ? path : "/" + path));
     }
 }
