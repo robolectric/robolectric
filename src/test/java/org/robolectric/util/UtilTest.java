@@ -15,12 +15,10 @@ public class UtilTest {
     public void urlShouldReturnCorrectURL() throws Exception {
 
         final String windowsPath = "E:\\Test\\Path With Spaces\\MyFile.jar";
-        final URL windowsUrl = Util.url(windowsPath);
-        assertThat(windowsUrl.toString()).isEqualTo("file:/" + windowsPath.replace('\\', '/'));
+        assertThat(Util.url(windowsPath)).isEqualTo(new URL("file:/" + windowsPath));
 
         final String unixPath = "/opt/test/myfile.jar";
-        final URL unixUrl = Util.url(unixPath);
-        assertThat(unixUrl.toString()).isEqualTo("file:" + unixPath);
+        assertThat(Util.url(unixPath)).isEqualTo(new URL("file://" + unixPath));
 
     }
 }

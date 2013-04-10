@@ -49,6 +49,6 @@ public class Util {
     }
 
     public static URL url(String path) throws MalformedURLException {
-        return new URL("file:" + (path.startsWith("/") ? path : "/" + path));
+        return new URL("file:/" + (path.startsWith("/") ? "/" + path : path));
     }
 }
