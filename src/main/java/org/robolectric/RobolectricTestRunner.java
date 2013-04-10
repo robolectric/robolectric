@@ -40,6 +40,7 @@ import org.robolectric.util.AnnotationUtil;
 import org.robolectric.util.DatabaseConfig.DatabaseMap;
 import org.robolectric.util.DatabaseConfig.UsingDatabaseMap;
 import org.robolectric.util.SQLiteMap;
+import org.robolectric.util.Util;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -213,7 +214,7 @@ public class RobolectricTestRunner extends BlockJUnit4ClassRunner {
         int i = 0;
         for (String path : artifacts.values()) {
             try {
-                urls[i++] = new URL("file://" + path);
+                urls[i++] = Util.url(path);
             } catch (MalformedURLException e) {
                 throw new RuntimeException(e);
             }
