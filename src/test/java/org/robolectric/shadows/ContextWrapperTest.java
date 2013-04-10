@@ -198,4 +198,9 @@ public class ContextWrapperTest {
     public void packageManagerShouldNotBeNullWhenWrappingAnApplication() {
         assertThat(new Application().getPackageManager()).isNotNull();
     }
+
+    @Test
+    public void checkCallingPermissionShouldGrantPermissionByDefault() throws Exception {
+        assertThat(contextWrapper.checkCallingPermission("")).isEqualTo(PERMISSION_GRANTED);
+    }
 }
