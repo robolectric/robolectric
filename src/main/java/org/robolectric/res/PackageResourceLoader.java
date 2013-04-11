@@ -28,7 +28,8 @@ public class PackageResourceLoader extends XResourceLoader {
     private void loadEverything() throws Exception {
         System.out.println("DEBUG: Loading resources for " + resourcePath.getPackageName() + " from " + resourcePath.resourceBase + "...");
 
-        new DocumentLoader(
+        DocumentLoader documentLoader = new DocumentLoader(resourcePath);
+        documentLoader.loadResourceXmlSubDirs("values",
                 new ValueResourceLoader(booleanData, "bool", false),
                 new ValueResourceLoader(colorData, "color", false),
                 new ValueResourceLoader(dimenData, "dimen", false),
@@ -36,16 +37,16 @@ public class PackageResourceLoader extends XResourceLoader {
                 new PluralResourceLoader(resourceIndex, pluralsData),
                 new ValueResourceLoader(stringData, "string", true),
                 attrResourceLoader
-        ).loadResourceXmlSubDirs(resourcePath, "values");
+        );
 
-        new DocumentLoader(new ViewLoader(layoutData)).loadResourceXmlSubDirs(resourcePath, "layout");
-        new DocumentLoader(new MenuLoader(menuData)).loadResourceXmlSubDirs(resourcePath, "menu");
+        documentLoader.loadResourceXmlSubDirs("layout", new ViewLoader(layoutData));
+        documentLoader.loadResourceXmlSubDirs("menu", new MenuLoader(menuData));
         DrawableResourceLoader drawableResourceLoader = new DrawableResourceLoader(drawableData);
         drawableResourceLoader.findNinePatchResources(resourcePath);
-        new DocumentLoader(drawableResourceLoader).loadResourceXmlSubDirs(resourcePath, "drawable");
-        new DocumentLoader(new PreferenceLoader(preferenceData)).loadResourceXmlSubDirs(resourcePath, "xml");
-        new DocumentLoader(new XmlFileLoader(xmlDocuments)).loadResourceXmlSubDirs(resourcePath, "xml");
-        new RawResourceLoader(rawResourceFiles).loadFrom(resourcePath);
+        documentLoader.loadResourceXmlSubDirs("drawable", drawableResourceLoader);
+        documentLoader.loadResourceXmlSubDirs("xml", new PreferenceLoader(preferenceData));
+        documentLoader.loadResourceXmlSubDirs("xml", new XmlFileLoader(xmlDocuments));
+        new RawResourceLoader(resourcePath).loadTo(rawResources);
 
         loadOtherResources(resourcePath);
     }

@@ -53,7 +53,7 @@ public class XmlFileLoaderTest {
     public void setUp() throws Exception {
         resBundle = new ResBundle<Document>();
         xmlFileLoader = new XmlFileLoader(resBundle);
-        new DocumentLoader(xmlFileLoader).loadResourceXmlDir(testResources(), "xml");
+        new DocumentLoader(testResources()).loadResourceXmlDir("xml", xmlFileLoader);
         xmlFileBuilder = new XmlFileBuilder();
 
         Document document = resBundle.get(new ResName(TEST_PACKAGE, "xml", "preferences"), "");

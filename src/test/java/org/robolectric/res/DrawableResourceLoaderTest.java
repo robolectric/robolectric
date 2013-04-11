@@ -33,10 +33,8 @@ public class DrawableResourceLoaderTest {
     public void setup() throws Exception {
         drawableNodes = new ResBundle<DrawableNode>();
         drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
-        DocumentLoader documentLoader = new DocumentLoader(drawableResourceLoader);
-
-        documentLoader.loadResourceXmlSubDirs(testResources(), "drawable");
-        documentLoader.loadResourceXmlSubDirs(systemResources(), "drawable");
+        new DocumentLoader(testResources()).loadResourceXmlSubDirs("drawable", drawableResourceLoader);
+        new DocumentLoader(systemResources()).loadResourceXmlSubDirs("drawable", drawableResourceLoader);
 
         resourceIndex = new MergedResourceIndex(
                 new ResourceExtractor(testResources()),
@@ -50,9 +48,8 @@ public class DrawableResourceLoaderTest {
     public void testProcessResourceXml() throws Exception {
         drawableNodes = new ResBundle<DrawableNode>();
         drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
-        DocumentLoader documentLoader = new DocumentLoader(drawableResourceLoader);
 
-        documentLoader.loadResourceXmlSubDirs(testResources(), "drawable");
+        new DocumentLoader(testResources()).loadResourceXmlSubDirs("drawable", drawableResourceLoader);
         drawableResourceLoader.findNinePatchResources(testResources());
 
         assertNotNull(drawableNodes.get(new ResName(TEST_PACKAGE, "drawable", "rainbow"), ""));
