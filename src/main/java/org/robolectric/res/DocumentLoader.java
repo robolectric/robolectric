@@ -9,6 +9,8 @@ import java.io.File;
 import java.io.FileFilter;
 
 public class DocumentLoader {
+    public static boolean DEBUG_PERF = false;
+
     private static final FileFilter ENDS_WITH_XML = new FileFilter() {
         @Override public boolean accept(@NotNull File file) {
             return file.getName().endsWith(".xml");
@@ -28,14 +30,18 @@ public class DocumentLoader {
     }
 
     public void loadResourceXmlSubDirs(String folderBaseName, XmlLoader... xmlLoaders) throws Exception {
+        long startTime = System.currentTimeMillis();
+
         File[] files = resourcePath.resourceBase.listFiles(new DirectoryMatchingFileFilter(folderBaseName));
         if (files == null) {
             throw new RuntimeException(resourcePath.resourceBase + " is not a directory");
         }
         for (File dir : files) {
-            for (XmlLoader xmlLoader : xmlLoaders) {
-                loadResourceXmlDir(dir, xmlLoader);
-            }
+            loadResourceXmlDir(dir, xmlLoaders);
+        }
+
+        if (DEBUG_PERF) {
+            System.out.println(String.format("%4dms spent in " + folderBaseName, System.currentTimeMillis() - startTime));
         }
     }
 
@@ -54,9 +60,15 @@ public class DocumentLoader {
     }
 
     private void loadResourceXmlFile(File file, String packageName, XmlLoader... xmlLoaders) throws Exception {
+        long startTime = System.currentTimeMillis();
+
         Document document = parse(file);
         for (XmlLoader xmlLoader : xmlLoaders) {
             xmlLoader.processResourceXml(file, document, packageName);
+        }
+
+        if (DEBUG_PERF) {
+            System.out.println(String.format("  %4dms spent on " + file, System.currentTimeMillis() - startTime));
         }
     }
 

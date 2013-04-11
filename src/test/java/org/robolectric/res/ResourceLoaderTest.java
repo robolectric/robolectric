@@ -25,8 +25,6 @@ import static org.robolectric.util.TestUtil.resourceFile;
 public class ResourceLoaderTest {
     private ResourcePath resourcePath;
 
-
-
     @Before
     public void setUp() throws Exception {
         resourcePath = new ResourcePath(R.class, resourceFile("res"), resourceFile("assets"));
