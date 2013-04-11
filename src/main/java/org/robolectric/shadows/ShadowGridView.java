@@ -7,7 +7,7 @@ import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(GridView.class)
+@Implements(value = GridView.class, inheritImplementationMethods = true)
 public class ShadowGridView extends ShadowAdapterView {
     @RealObject private GridView realGridView;
 

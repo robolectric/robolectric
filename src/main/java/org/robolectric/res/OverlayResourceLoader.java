@@ -21,17 +21,18 @@ public class OverlayResourceLoader extends XResourceLoader {
         for (PackageResourceLoader subResourceLoader : subResourceLoaders) {
             subResourceLoader.initialize();
 
-            booleanResolver.mergeLibraryStyle(subResourceLoader.booleanResolver, packageName);
-            colorResolver.mergeLibraryStyle(subResourceLoader.colorResolver, packageName);
-            dimenResolver.mergeLibraryStyle(subResourceLoader.dimenResolver, packageName);
-            integerResolver.mergeLibraryStyle(subResourceLoader.integerResolver, packageName);
-            pluralsResolver.mergeLibraryStyle(subResourceLoader.pluralsResolver, packageName);
-            stringResolver.mergeLibraryStyle(subResourceLoader.stringResolver, packageName);
-            viewNodes.mergeLibraryStyle(subResourceLoader.viewNodes, packageName);
-            menuNodes.mergeLibraryStyle(subResourceLoader.menuNodes, packageName);
-            drawableNodes.mergeLibraryStyle(subResourceLoader.drawableNodes, packageName);
-            preferenceNodes.mergeLibraryStyle(subResourceLoader.preferenceNodes, packageName);
+            booleanData.mergeLibraryStyle(subResourceLoader.booleanData, packageName);
+            colorData.mergeLibraryStyle(subResourceLoader.colorData, packageName);
+            dimenData.mergeLibraryStyle(subResourceLoader.dimenData, packageName);
+            integerData.mergeLibraryStyle(subResourceLoader.integerData, packageName);
+            pluralsData.mergeLibraryStyle(subResourceLoader.pluralsData, packageName);
+            stringData.mergeLibraryStyle(subResourceLoader.stringData, packageName);
+            layoutData.mergeLibraryStyle(subResourceLoader.layoutData, packageName);
+            menuData.mergeLibraryStyle(subResourceLoader.menuData, packageName);
+            drawableData.mergeLibraryStyle(subResourceLoader.drawableData, packageName);
+            preferenceData.mergeLibraryStyle(subResourceLoader.preferenceData, packageName);
             xmlDocuments.mergeLibraryStyle(subResourceLoader.xmlDocuments, packageName);
+            rawResourceFiles.mergeLibraryStyle(subResourceLoader.rawResourceFiles, packageName);
         }
     }
 

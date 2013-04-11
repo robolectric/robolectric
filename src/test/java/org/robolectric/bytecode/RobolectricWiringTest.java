@@ -4,10 +4,12 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.robolectric.Robolectric;
+import org.robolectric.internal.HiddenApi;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.util.Join;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -46,6 +48,12 @@ public class RobolectricWiringTest {
             }
         }
 
+
+        String expectedName = ShadowMap.convertToShadowName(implementedClass.getName());
+        if (!shadowClass.getName().equals(expectedName)) {
+            mismatches.add("Shadow class " + shadowClass.getName() + " didn't have the expected name, should be " + expectedName);
+        }
+
         for (Method shadowMethod : shadowClass.getDeclaredMethods()) {
             verifyMethod(implementedClass, shadowMethod);
         }
@@ -62,7 +70,9 @@ public class RobolectricWiringTest {
                 implementedMember = findMethod(implementedClass, shadowMethod);
             }
             if (implementedMember == null) {
-                mismatches.add(shadowMethod.toGenericString() + " doesn't match a real method");
+                if (!isAnnotatedHiddenApi(shadowMethod)) {
+                    mismatches.add(shadowMethod.toGenericString() + " doesn't match a real method");
+                }
             } else if (staticMismatch(shadowMethod, implementedMember)) {
                 mismatches.add(shadowMethod.toGenericString() + " doesn't match the staticness of the real method");
             }
@@ -81,10 +91,19 @@ public class RobolectricWiringTest {
         }
     }
 
+    private boolean isAnnotatedHiddenApi(Method shadowMethod) {
+        return isAnnotated(shadowMethod, HiddenApi.class);
+    }
+
     private boolean isAnnotatedImplementation(Method shadowMethod) {
+        return isAnnotated(shadowMethod, Implementation.class);
+
+    }
+
+    private boolean isAnnotated(Method shadowMethod, Class<? extends Annotation> annotationClass) {
         // works around a weird bug causing overridden methods to show no annotations
         try {
-            return shadowMethod.getDeclaringClass().getDeclaredMethod(shadowMethod.getName(), shadowMethod.getParameterTypes()).isAnnotationPresent(Implementation.class);
+            return shadowMethod.getDeclaringClass().getDeclaredMethod(shadowMethod.getName(), shadowMethod.getParameterTypes()).isAnnotationPresent(annotationClass);
         } catch (NoSuchMethodException e) {
             throw new RuntimeException(e);
         }

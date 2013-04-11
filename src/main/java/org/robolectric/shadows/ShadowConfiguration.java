@@ -1,18 +1,17 @@
 package org.robolectric.shadows;
 
 import android.content.res.Configuration;
+import java.util.Locale;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-
-import java.util.Locale;
 
 @Implements(Configuration.class)
 public class ShadowConfiguration {
 
     @RealObject
     private Configuration realConfiguration;
-    
+
     public int screenLayout;
     public int touchscreen;
     public int orientation;
@@ -146,11 +145,6 @@ public class ShadowConfiguration {
                 Configuration.SCREENLAYOUT_SIZE_NORMAL;
     }
 
-    @Implementation
-    public String toString() {
-        return realConfiguration.toString();
-    }
-    
     public void setLocale( Locale l ) {
     	realConfiguration.locale = l;
     }

@@ -6,12 +6,12 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(AbsSpinner.class)
+@Implements(value = AbsSpinner.class, inheritImplementationMethods = true)
 public class ShadowAbsSpinner extends ShadowAdapterView {
 
-	private boolean animatedTransition;
+    private boolean animatedTransition;
 
-	@Implementation
+    @Implementation
     public void setAdapter(SpinnerAdapter adapter) {
         super.setAdapter(adapter);
     }
@@ -23,12 +23,12 @@ public class ShadowAbsSpinner extends ShadowAdapterView {
 
     @Implementation
     public void setSelection(int position, boolean animate) {
-    	super.setSelection(position);
-    	animatedTransition = animate;
+        super.setSelection(position);
+        animatedTransition = animate;
     }
 
     // Non-implementation helper method
     public boolean isAnimatedTransition() {
-    	return animatedTransition;
+        return animatedTransition;
     }
 }

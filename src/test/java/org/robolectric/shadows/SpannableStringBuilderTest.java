@@ -6,10 +6,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
-import static junit.framework.Assert.assertNull;
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.assertSame;
-import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class SpannableStringBuilderTest {
@@ -65,15 +62,13 @@ public class SpannableStringBuilderTest {
     @Test
     public void setSpan_canAssignSpanToSubsequence() throws Exception {
         SpannableStringBuilder builder = new SpannableStringBuilder("abcd");
-        ShadowSpannableStringBuilder shadowBuilder = shadowOf(builder);
         TypefaceSpan typeface1 = new TypefaceSpan("foo");
         TypefaceSpan typeface2 = new TypefaceSpan("foo");
         builder.setSpan(typeface1, 0, 2, 0);
         builder.setSpan(typeface2, 3, 3, 0);
-        assertSame(typeface1, shadowBuilder.getSpanAt(0));
-        assertSame(typeface1, shadowBuilder.getSpanAt(1));
-        assertSame(typeface1, shadowBuilder.getSpanAt(2));
-        assertSame(typeface2, shadowBuilder.getSpanAt(3));
+
+        assertThat(builder.getSpans(0, 2, Object.class)).containsExactly(typeface1);
+        assertThat(builder.getSpans(3, 3, Object.class)).containsExactly(typeface2);
     }
 
     @Test
@@ -81,12 +76,14 @@ public class SpannableStringBuilderTest {
         SpannableStringBuilder builder = new SpannableStringBuilder("abcd");
         TypefaceSpan typeface1 = new TypefaceSpan("foo");
         builder.setSpan(typeface1, 2, 3, 0);
-        assertNull(shadowOf(builder).getSpanAt(0));
+        Object[] spans = builder.getSpans(0, builder.length(), Object.class);
+        assertThat(spans).containsExactly(typeface1);
     }
 
     @Test
     public void getSpanAt_returnsNullIfNoSpanAssigned() throws Exception {
         SpannableStringBuilder builder = new SpannableStringBuilder("abcd");
-        assertNull(shadowOf(builder).getSpanAt(4));
+        Object[] spans = builder.getSpans(0, builder.length(), Object.class);
+        assertThat(spans).isEmpty();
     }
 }

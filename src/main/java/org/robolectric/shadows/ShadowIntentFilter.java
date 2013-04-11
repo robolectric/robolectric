@@ -26,11 +26,11 @@ public class ShadowIntentFilter {
         }
     }
 
-	List<String> actions = new ArrayList<String>();
+    List<String> actions = new ArrayList<String>();
     List<String> schemes = new ArrayList<String>();
     List<IntentFilter.AuthorityEntry> authoritites = new ArrayList<IntentFilter.AuthorityEntry>();
     List<String> categories = new ArrayList<String>();
-    
+
     public void __constructor__(String action) {
         actions.add(action);
     }
@@ -83,37 +83,49 @@ public class ShadowIntentFilter {
     public String getDataScheme(int index) {
         return schemes.get(index);
     }
-    
+
     @Implementation
     public void addCategory( String category ) {
-    	categories.add( category );
+        categories.add( category );
     }
-    
+
     @Implementation
     public boolean hasCategory( String category ) {
-    	return categories.contains( category );
+        return categories.contains( category );
     }
-    
+
     @Implementation
     public Iterator<String> categoriesIterator() {
-    	return categories.iterator();
+        return categories.iterator();
     }
-    
+
     @Implementation
     public String getCategory( int index ) {
-    	return categories.get( index );
+        return categories.get( index );
     }
-    
+
     @Implementation
-    public boolean matchCategories(Set<String> categories){
-    	for( String category: this.categories ){
-    		if( !categories.contains( category ) ){
-    			return false;
-    		}
-    	}
-    	return true;
+    public String matchCategories(Set<String> categories){
+        if (categories == null) {
+            return null;
+        }
+
+        Iterator<String> it = categories.iterator();
+
+        if (this.categories == null) {
+            return it.hasNext() ? it.next() : null;
+        }
+
+        while (it.hasNext()) {
+            final String category = it.next();
+            if (!this.categories.contains(category)) {
+                return category;
+            }
+        }
+
+        return null;
     }
-    
+
     @Override @Implementation
     public boolean equals(Object o) {
         if (o == null) return false;
@@ -125,7 +137,7 @@ public class ShadowIntentFilter {
         ShadowIntentFilter that = (ShadowIntentFilter) o;
 
         return actions.equals( that.actions ) && categories.equals( that.categories )
-        		&& schemes.equals( that.schemes ) && authoritites.equals( that.authoritites );
+                && schemes.equals( that.schemes ) && authoritites.equals( that.authoritites );
     }
 
     @Override @Implementation
@@ -136,5 +148,30 @@ public class ShadowIntentFilter {
         result = 31 * result + schemes.hashCode();
         result = 31 * result + authoritites.hashCode();
         return result;
+    }
+
+    @Implements(IntentFilter.AuthorityEntry.class)
+    public static class ShadowAuthorityEntry {
+        private String host;
+        private int port;
+
+        public void __constructor__(String host, String port) {
+            this.host = host;
+            if (port == null) {
+                this.port = -1;
+            } else {
+                this.port = Integer.parseInt(port);
+            }
+        }
+
+        @Implementation
+        public String getHost() {
+            return host;
+        }
+
+        @Implementation
+        public int getPort() {
+            return port;
+        }
     }
 }

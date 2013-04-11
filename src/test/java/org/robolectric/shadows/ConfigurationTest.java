@@ -46,4 +46,7 @@ public class ConfigurationTest {
         assertThat(configuration).isEqualTo(clone);
     }
 
+    @Test public void testToString_shouldntExplode() throws Exception {
+        assertThat(new Configuration().toString()).contains("mcc");
+    }
 }

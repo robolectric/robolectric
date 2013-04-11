@@ -4,13 +4,14 @@ import android.preference.PreferenceActivity;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.TextView;
+import junit.framework.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
-import org.robolectric.annotation.Values;
+import org.robolectric.annotation.Config;
 import org.robolectric.res.builder.LayoutBuilder;
 import org.robolectric.util.I18nException;
 
@@ -23,6 +24,8 @@ import static org.robolectric.util.TestUtil.resourceFile;
 @RunWith(TestRunners.WithDefaults.class)
 public class ResourceLoaderTest {
     private ResourcePath resourcePath;
+
+
 
     @Before
     public void setUp() throws Exception {
@@ -46,7 +49,7 @@ public class ResourceLoaderTest {
         assertEquals("Local Copy", stringValue);
     }
 
-    @Test(expected=I18nException.class)
+    @Test(expected = I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflateView() throws Exception {
         shadowOf(Robolectric.application).setStrictI18n(true);
         ResourceLoader resourceLoader = shadowOf(Robolectric.application).getResourceLoader();
@@ -54,7 +57,7 @@ public class ResourceLoaderTest {
         new LayoutBuilder(resourceLoader).inflateView(Robolectric.application, R.layout.text_views, vg, "");
     }
 
-    @Test(expected=I18nException.class)
+    @Test(expected = I18nException.class)
     public void shouldThrowExceptionOnI18nStrictModeInflatePreferences() throws Exception {
         shadowOf(Robolectric.application).setStrictI18n(true);
         PreferenceActivity preferenceActivity = new PreferenceActivity() {
@@ -62,7 +65,8 @@ public class ResourceLoaderTest {
         preferenceActivity.addPreferencesFromResource(R.xml.preferences);
     }
 
-    @Test @Values(qualifiers = "doesnotexist-land-xlarge")
+    @Test
+    @Config(qualifiers = "doesnotexist-land-xlarge")
     public void testChoosesLayoutBasedOnSearchPath_respectsOrderOfPath() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
         ViewGroup viewGroup = new FrameLayout(Robolectric.application);
@@ -89,7 +93,7 @@ public class ResourceLoaderTest {
         assertThat(textView.getText().toString()).isEqualTo("default");
         Robolectric.shadowOf(Robolectric.getShadowApplication().getResources().getConfiguration()).overrideQualifiers("land"); // testing if this pollutes the other test
     }
-    
+
     @Test
     public void testStringsAreResolved() throws Exception {
         ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
@@ -127,9 +131,31 @@ public class ResourceLoaderTest {
         assertThat(resourceLoader.getIntegerArrayValue(resourceLoader.getResourceIndex().getResName(R.array.with_references_int_array), "")).isEqualTo(new int[]{0, 2000, 1});
     }
 
-    @Test public void shouldLoadForAllQualifiers() throws Exception {
+    @Test
+    public void shouldLoadForAllQualifiers() throws Exception {
         ResourceLoader resourceLoader = new PackageResourceLoader(resourcePath);
         assertThat(resourceLoader.getStringValue(resourceLoader.getResourceIndex().getResName(R.string.hello), "")).isEqualTo("Hello");
         assertThat(resourceLoader.getStringValue(resourceLoader.getResourceIndex().getResName(R.string.hello), "fr")).isEqualTo("Bonjour");
     }
+
+    @Test
+    public void shouldReadSimpleIntegerValue() {
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+        Assert.assertEquals(2000, resourceLoader.getIntegerValue(resourceLoader.getResourceIndex().getResName(R.integer.test_integer1), ""));
+        Assert.assertEquals(9, resourceLoader.getIntegerValue(resourceLoader.getResourceIndex().getResName(R.integer.test_integer2), ""));
+    }
+
+    @Test
+    public void shouldReadHexNumber() {
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+        Assert.assertEquals(-65536, resourceLoader.getIntegerValue(resourceLoader.getResourceIndex().getResName(R.integer.test_large_hex), ""));
+    }
+
+    @Test
+    public void shouldReadValueStartingWithZero() {
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+        int integerValue = resourceLoader.getIntegerValue(resourceLoader.getResourceIndex().getResName(R.integer.test_value_with_zero), "");
+        Assert.assertEquals(7210, integerValue);
+    }
+
 }

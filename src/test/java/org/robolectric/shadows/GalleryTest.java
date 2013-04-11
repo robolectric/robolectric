@@ -6,6 +6,7 @@ import android.widget.Gallery;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -19,7 +20,7 @@ public class GalleryTest {
 
     @Before
     public void setUp() throws Exception {
-        gallery = new Gallery(null);
+        gallery = new Gallery(Robolectric.application);
         listener = new TestOnKeyListener();
         gallery.setOnKeyListener(listener);
         event = new KeyEvent(1, 2);

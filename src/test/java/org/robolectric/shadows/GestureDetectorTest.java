@@ -19,7 +19,7 @@ public class GestureDetectorTest {
 
     @Before
     public void setUp() throws Exception {
-        detector = new GestureDetector(null);
+        detector = new GestureDetector(new TestOnGestureListener());
         motionEvent = MotionEvent.obtain(-1, -1, MotionEvent.ACTION_UP, 100, 30, -1);
     }
 
@@ -58,15 +58,15 @@ public class GestureDetectorTest {
 
     @Test
     public void canAnswerLastGestureDetector() throws Exception {
-        GestureDetector newDetector = new GestureDetector(Robolectric.application, null);
+        GestureDetector newDetector = new GestureDetector(Robolectric.application, new TestOnGestureListener());
         assertNotSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
-        newDetector.onTouchEvent(null);
+        newDetector.onTouchEvent(Robolectric.newInstanceOf(MotionEvent.class));
         assertSame(newDetector, ShadowGestureDetector.getLastActiveDetector());
     }
 
     @Test
     public void getOnDoubleTapListener_shouldReturnSetDoubleTapListener() throws Exception {
-        GestureDetector subject = new GestureDetector(Robolectric.application, null);
+        GestureDetector subject = new GestureDetector(Robolectric.application, new TestOnGestureListener());
         GestureDetector.OnDoubleTapListener onDoubleTapListener = new GestureDetector.OnDoubleTapListener() {
             @Override
             public boolean onSingleTapConfirmed(MotionEvent e) {

@@ -8,7 +8,7 @@ import android.view.SurfaceView;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
-@Implements(SurfaceView.class)
+@Implements(value = SurfaceView.class, inheritImplementationMethods = true)
 @SuppressWarnings({"UnusedDeclaration"})
 public class ShadowSurfaceView extends ShadowView {
     @Implementation

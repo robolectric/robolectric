@@ -116,7 +116,9 @@ public class RoboAttributeSet implements AttributeSet {
 
     @Override
     public int getAttributeNameResource(int index) {
-        throw new UnsupportedOperationException();
+        ResName resName = attributes.get(index).resName;
+        Integer resourceId = resourceLoader.getResourceIndex().getResourceId(resName);
+        return resourceId == null ? 0 : resourceId;
     }
 
     @Override
@@ -216,7 +218,7 @@ public class RoboAttributeSet implements AttributeSet {
     }
 
     private Attribute findByName(String packageName, String attrName) {
-        String namespace = null;
+        String namespace;
         try {
             namespace = URLEncoder.encode(packageName, "UTF-8");
         } catch (UnsupportedEncodingException e) {

@@ -23,13 +23,13 @@ public class ListActivityTest {
 
     @Before
     public void setUp() throws Exception {
+        listActivity = new ListActivity();
         listView = new ListView(listActivity);
         listView.setId(android.R.id.list);
 
         content = new FrameLayout(listActivity);
         content.addView(listView);
 
-        listActivity = new ListActivity();
         listActivity.setContentView(content);
     }
 

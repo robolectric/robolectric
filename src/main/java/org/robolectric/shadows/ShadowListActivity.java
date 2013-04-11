@@ -74,4 +74,8 @@ public class ShadowListActivity extends ShadowActivity {
 
         return listView;
     }
+
+    @Implementation
+    public void onContentChanged() {
+    }
 }

@@ -10,13 +10,13 @@ public interface ResourceLoader {
 
     String getNameForId(int id);
 
-    int getColorValue(ResName resName, String qualifiers);
+    String getColorValue(ResName resName, String qualifiers);
 
     String getStringValue(ResName resName, String qualifiers);
 
     String getPluralStringValue(ResName resName, int quantity, String qualifiers);
 
-    float getDimenValue(ResName resName, String qualifiers);
+    String getDimenValue(ResName resName, String qualifiers);
 
     int getIntegerValue(ResName resName, String qualifiers);
 
@@ -26,7 +26,7 @@ public interface ResourceLoader {
 
     DrawableNode getDrawableNode(ResName resName, String qualifiers);
 
-    InputStream getRawValue(int id);
+    InputStream getRawValue(ResName resName);
 
     String[] getStringArrayValue(ResName resName, String qualifiers);
 

@@ -9,6 +9,7 @@ import com.google.android.maps.MapView;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.bytecode.ShadowingTest;
 
@@ -103,7 +104,7 @@ public class MapViewTest {
     }
 
     private void initMapForDrag() {
-        mapView = new MapView(null, "");
+        mapView = new MapView(Robolectric.application, "");
         mapView.layout(0, 0, 50, 50);
         mapView.getController().setCenter(new GeoPoint(toE6(25), toE6(25)));
         mapView.getController().zoomToSpan(toE6(50), toE6(50));
@@ -145,7 +146,7 @@ public class MapViewTest {
         mapView.dispatchTouchEvent(MotionEvent.obtain(0, 0, action, x, y, 0));
     }
 
-    private static class MyOnTouchListener implements View.OnTouchListener {
+    public static class MyOnTouchListener implements View.OnTouchListener {
         private MotionEvent lastMotionEvent;
 
         @Override public boolean onTouch(View v, MotionEvent event) {

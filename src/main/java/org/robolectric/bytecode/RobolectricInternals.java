@@ -1,5 +1,7 @@
 package org.robolectric.bytecode;
 
+import org.fest.reflect.method.Invoker;
+
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -7,9 +9,12 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 
+import static org.fest.reflect.core.Reflection.method;
+
 @SuppressWarnings({"UnusedDeclaration"})
 public class RobolectricInternals {
-    // initialized via magic by RobolectricContext
+    public static final String ROBO_PREFIX = "$$robo$$";
+    // initialized via magic by SdkEnvironment
     private static ClassHandler classHandler;
     private static final Map<Class, Field> shadowFieldMap = new HashMap<Class, Field>();
 
@@ -54,41 +59,6 @@ public class RobolectricInternals {
                 new Object[]{DirectObjectMarker.INSTANCE, shadowedObject});
     }
 
-    public static <T> T directlyOn(T shadowedObject) {
-        Vars vars = getVars();
-
-        if (vars.callDirectly != null) {
-            Object expectedInstance = vars.callDirectly;
-            vars.callDirectly = null;
-            throw new RuntimeException("already expecting a direct call on <" + desc(expectedInstance) + "> but here's a new request for <" + desc(shadowedObject) + ">", vars.stackTraceThrowable);
-        }
-
-        vars.callDirectly = shadowedObject;
-        vars.stackTraceThrowable = new Throwable("original call to directlyOn()");
-        return shadowedObject;
-    }
-
-    private static Vars getVars() {
-        return Vars.ALL_VARS.get();
-    }
-
-    public static boolean shouldCallDirectly(Object directInstance) {
-        Vars vars = getVars();
-        if (vars.callDirectly != null) {
-            if (vars.callDirectly != directInstance) {
-                Object expectedInstance = vars.callDirectly;
-                vars.callDirectly = null;
-                throw new RuntimeException("expected to perform direct call on " + desc(expectedInstance)
-                        + " but got " + desc(directInstance), vars.stackTraceThrowable);
-            } else {
-                vars.callDirectly = null;
-            }
-            return true;
-        } else {
-            return false;
-        }
-    }
-
     private static String desc(Object o) {
         return o == null ? "null" : (
                 (o instanceof Class)
@@ -116,23 +86,26 @@ public class RobolectricInternals {
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
-    public static Object methodInvoked(Class clazz, String methodName, Object instance, String[] paramTypes, Object[] params) throws Throwable {
-        try {
-          return classHandler.methodInvoked(clazz, methodName, instance, paramTypes, params);
-        } catch(java.lang.LinkageError e) {
-          throw new Exception(e);
-        }
+    public static Object initializing(Object instance) throws Exception {
+        return classHandler.initializing(instance);
+    }
+
+    public static ClassHandler.Plan methodInvoked(String signature, boolean isStatic, Class<?> theClass) {
+        return classHandler.methodInvoked(signature, isStatic, theClass);
     }
 
     @SuppressWarnings({"UnusedDeclaration"})
-    public static Object intercept(String className, String methodName, Object instance, Object[] paramTypes, Object[] params) throws Throwable {
+    public static Object intercept(String signature, Object instance, Object[] params, Class theClass) throws Throwable {
         try {
-            return classHandler.intercept(className, methodName, instance, paramTypes, params);
+            return classHandler.intercept(signature, instance, params, theClass);
         } catch(java.lang.LinkageError e) {
             throw new Exception(e);
         }
     }
 
+    public static Throwable cleanStackTrace(Throwable exception) throws Throwable {
+        return classHandler.stripStackTrace(exception);
+    }
 
     @SuppressWarnings({"UnusedDeclaration"})
     public static Object autobox(Object o) {
@@ -180,7 +153,7 @@ public class RobolectricInternals {
     }
 
     public static String directMethodName(String methodName) {
-        return String.format("$$robo$$%s", methodName);
+        return String.format(ROBO_PREFIX + "%s", methodName);
     }
 
     public static String directMethodName(String className, String methodName) {
@@ -189,7 +162,7 @@ public class RobolectricInternals {
         if (lastDotIndex != -1) simpleName = simpleName.substring(lastDotIndex + 1);
         int lastDollarIndex = simpleName.lastIndexOf("$");
         if (lastDollarIndex != -1) simpleName = simpleName.substring(lastDollarIndex + 1);
-        return String.format("$$robo$$%s_%04x_%s", simpleName, className.hashCode() & 0xffff, methodName);
+        return String.format(ROBO_PREFIX + "%s_%04x_%s", simpleName, className.hashCode() & 0xffff, methodName);
     }
 
     // we need a better spot for these methods that don't rely on being in the same classloader as their operands
@@ -205,5 +178,22 @@ public class RobolectricInternals {
         } catch (IllegalAccessException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public static Invoker<Void> getConstructor(Class<?> clazz, Object instance, String... parameterTypes) {
+        Class[] parameterClasses = new Class[parameterTypes.length];
+        for (int i = 0; i < parameterTypes.length; i++) {
+            try {
+                parameterClasses[i] = clazz.getClassLoader().loadClass(parameterTypes[i]);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return getConstructor(clazz, instance, parameterClasses);
+    }
+
+    public static Invoker<Void> getConstructor(Class<?> clazz, Object realView, Class... parameterTypes) {
+        String name = directMethodName(clazz.getName(), InstrumentingClassLoader.CONSTRUCTOR_METHOD_NAME);
+        return method(name).withParameterTypes(parameterTypes).in(realView);
     }
 }

@@ -1,7 +1,5 @@
 package org.robolectric;
 
-import android.app.Application;
-import org.robolectric.internal.ClassNameResolver;
 import org.robolectric.res.ResourcePath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -31,6 +29,8 @@ public class AndroidManifest {
     private boolean manifestIsParsed = false;
     private Integer targetSdkVersion;
     private Integer minSdkVersion;
+    private int versionCode;
+    private String versionName;
     private int applicationFlags;
     private final List<ReceiverAndIntentFilter> receivers = new ArrayList<ReceiverAndIntentFilter>();
     private List<AndroidManifest> libraryManifests;
@@ -93,6 +93,8 @@ public class AndroidManifest {
             Document manifestDocument = db.parse(androidManifestFile);
 
             packageName = getTagAttributeText(manifestDocument, "manifest", "package");
+            versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
+            versionName = getTagAttributeText(manifestDocument, "manifest", "android:versionName");
             rClassName = packageName + ".R";
             applicationName = getTagAttributeText(manifestDocument, "application", "android:name");
             minSdkVersion = getTagAttributeIntValue(manifestDocument, "uses-sdk", "android:minSdkVersion");
@@ -191,6 +193,14 @@ public class AndroidManifest {
     public String getPackageName() {
         parseAndroidManifest();
         return packageName;
+    }
+
+    public int getVersionCode() {
+        return versionCode;
+    }
+
+    public String getVersionName() {
+        return versionName;
     }
 
     public int getMinSdkVersion() {
@@ -324,18 +334,6 @@ public class AndroidManifest {
             }
         }
         return null;
-    }
-
-    private static Application newApplicationInstance(final String packageName, final String applicationName) {
-        Application application;
-        try {
-            Class<? extends Application> applicationClass =
-                    new ClassNameResolver<Application>(packageName, applicationName).resolve();
-            application = applicationClass.newInstance();
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-        return application;
     }
 
     @Override

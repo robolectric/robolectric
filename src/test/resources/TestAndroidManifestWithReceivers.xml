@@ -15,7 +15,7 @@
             </intent-filter>
         </receiver>
 
-        <receiver android:name="org.robolectric.test.ConfigTestReceiver">
+        <receiver android:name="org.robolectric.tester.ConfigTestReceiver">
             <intent-filter>
                 <action android:name="org.robolectric.ACTION_SUPERSET_PACKAGE"/>
             </intent-filter>

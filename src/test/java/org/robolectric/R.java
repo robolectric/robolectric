@@ -190,6 +190,7 @@ public final class R {
     public static final class raw {
         public static final int raw_resource = 0x10800;
         public static final int raw_no_ext = 0x10801;
+        public static final int lib_raw_resource = 0x10802;
     }
 
     public static final class attr {
@@ -249,6 +250,7 @@ public final class R {
         public static final int loneliest_number = 0x10d05;
         public static final int there_can_be_only = 0x10d06;
         public static final int hex_int = 0x10d07;
+        public static final int test_value_with_zero = 0x10d08;
     }
 
     public static final class bool {

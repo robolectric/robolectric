@@ -7,7 +7,11 @@ public class PackageResourceLoader extends XResourceLoader {
     ResourceIndex resourceIndex;
 
     public PackageResourceLoader(ResourcePath resourcePath) {
-        super(new ResourceExtractor(resourcePath));
+        this(resourcePath, new ResourceExtractor(resourcePath));
+    }
+
+    public PackageResourceLoader(ResourcePath resourcePath, ResourceIndex resourceIndex) {
+        super(resourceIndex);
         this.resourcePath = resourcePath;
     }
 
@@ -25,26 +29,25 @@ public class PackageResourceLoader extends XResourceLoader {
         System.out.println("DEBUG: Loading resources for " + resourcePath.getPackageName() + " from " + resourcePath.resourceBase + "...");
 
         new DocumentLoader(
-                new ValueResourceLoader(booleanResolver, "bool", false),
-                new ValueResourceLoader(colorResolver, "color", false),
-                new ValueResourceLoader(dimenResolver, "dimen", false),
-                new ValueResourceLoader(integerResolver, "integer", true),
-                new PluralResourceLoader(resourceIndex, pluralsResolver),
-                new ValueResourceLoader(stringResolver, "string", true),
+                new ValueResourceLoader(booleanData, "bool", false),
+                new ValueResourceLoader(colorData, "color", false),
+                new ValueResourceLoader(dimenData, "dimen", false),
+                new ValueResourceLoader(integerData, "integer", true),
+                new PluralResourceLoader(resourceIndex, pluralsData),
+                new ValueResourceLoader(stringData, "string", true),
                 attrResourceLoader
         ).loadResourceXmlSubDirs(resourcePath, "values");
 
-        new DocumentLoader(new ViewLoader(viewNodes)).loadResourceXmlSubDirs(resourcePath, "layout");
-        new DocumentLoader(new MenuLoader(menuNodes)).loadResourceXmlSubDirs(resourcePath, "menu");
-        DrawableResourceLoader drawableResourceLoader = new DrawableResourceLoader(drawableNodes);
+        new DocumentLoader(new ViewLoader(layoutData)).loadResourceXmlSubDirs(resourcePath, "layout");
+        new DocumentLoader(new MenuLoader(menuData)).loadResourceXmlSubDirs(resourcePath, "menu");
+        DrawableResourceLoader drawableResourceLoader = new DrawableResourceLoader(drawableData);
         drawableResourceLoader.findNinePatchResources(resourcePath);
         new DocumentLoader(drawableResourceLoader).loadResourceXmlSubDirs(resourcePath, "drawable");
-        new DocumentLoader(new PreferenceLoader(preferenceNodes)).loadResourceXmlSubDirs(resourcePath, "xml");
+        new DocumentLoader(new PreferenceLoader(preferenceData)).loadResourceXmlSubDirs(resourcePath, "xml");
         new DocumentLoader(new XmlFileLoader(xmlDocuments)).loadResourceXmlSubDirs(resourcePath, "xml");
+        new RawResourceLoader(rawResourceFiles).loadFrom(resourcePath);
 
         loadOtherResources(resourcePath);
-
-        rawResourceLoaders.add(new RawResourceLoader(resourceIndex, resourcePath.resourceBase));
     }
 
     protected void loadOtherResources(ResourcePath resourcePath) {

@@ -23,7 +23,7 @@
          -->
     <!-- this should match whatever is defined in Robolectic.DEFAULT_SDK_VERSION -->
     <property name="default.sdk.version" value="16"/>
-    <property name="default.sdk.revision" value="16_r2"/>
+    <property name="default.sdk.revision" value="16_r3"/>
 
     <property file="build.properties"/>
     <!-- The default.properties file is created and updated by the 'android' tool, as well
@@ -228,7 +228,7 @@
     </target>
 
     <target name="maven-install-jars"
-			depends="findMavenUnix, findMavenWindows"
+			depends="findMavenUnix, findMavenWindows, findAndroidUnix, findAndroidWindows"
 			description="Install the jar files that Maven can't find for itself">
         <exec executable="${maven}">
             <arg line="install:install-file -DgroupId=com.google.android.maps -DartifactId=maps -Dversion=${default.sdk.revision} -Dpackaging=jar -Dfile=${sdk.dir}/add-ons/addon_google_apis_google_inc_${default.sdk.version}/libs/maps.jar" />

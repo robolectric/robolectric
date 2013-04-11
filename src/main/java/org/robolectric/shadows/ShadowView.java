@@ -6,6 +6,7 @@ import android.graphics.Bitmap;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
+import android.text.TextUtils;
 import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -16,11 +17,12 @@ import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.ViewTreeObserver;
 import android.view.animation.Animation;
+import org.fest.reflect.core.Reflection;
 import org.robolectric.Robolectric;
+import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
-import org.robolectric.util.ReflectionUtil;
 
 import java.io.PrintStream;
 import java.lang.reflect.InvocationTargetException;
@@ -111,12 +113,16 @@ public class ShadowView {
     }
 
     public void __constructor__(Context context, AttributeSet attributeSet, int defStyle) {
+        if (context == null) throw new NullPointerException("no context");
+
         this.context = context;
         this.attributeSet = attributeSet;
 
         if (attributeSet != null) {
             applyAttributes();
         }
+
+        RobolectricInternals.getConstructor(View.class, realView, Context.class).invoke(context);
     }
 
     public void applyAttributes() {
@@ -480,7 +486,7 @@ public class ShadowView {
     }
 
     @Implementation
-    public final void layout(int l, int t, int r, int b) {
+    public void layout(int l, int t, int r, int b) {
         if (l != left || r != right || t != top || b != bottom) {
             left = l;
             top = t;
@@ -488,9 +494,8 @@ public class ShadowView {
             bottom = b;
 
             realView.invalidate();
-            ReflectionUtil.invoke(realView, "onLayout",
-                new Class<?>[]{Boolean.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE},
-                true, l, t, r, b);
+            Reflection.method("onLayout").withParameterTypes(boolean.class, int.class, int.class, int.class, int.class)
+                    .in(realView).invoke(true, l, t, r, b);
         }
     }
 
@@ -705,7 +710,7 @@ public class ShadowView {
     }
 
     protected void dumpAttribute(PrintStream out, String name, String value) {
-        out.print(" " + name + "=\"" + (value == null ? null : ShadowTextUtils.htmlEncode(value)) + "\"");
+        out.print(" " + name + "=\"" + (value == null ? null : TextUtils.htmlEncode(value)) + "\"");
     }
 
     protected void dumpIndent(PrintStream out, int indent) {
@@ -1228,5 +1233,54 @@ public class ShadowView {
 
     public int lastHapticFeedbackPerformed() {
         return hapticFeedbackPerformed;
+    }
+
+    @SuppressWarnings({"UnusedDeclaration"})
+    /**
+     * Shadow for {@code View.MeasureSpec} inner class.
+     *
+     * As the implementation is very simple, it is taken from the AOSP source.
+     */
+    @Implements(MeasureSpec.class)
+    public static class ShadowMeasureSpec {
+
+        private static final int MODE_SHIFT = 30;
+        private static final int MODE_MASK = 0x3 << MODE_SHIFT;
+
+        @Implementation
+        public static int getMode (int measureSpec) {
+            return (measureSpec & MODE_MASK);
+        }
+
+        @Implementation
+        public static int getSize (int measureSpec) {
+            return (measureSpec & ~MODE_MASK);
+        }
+
+        @Implementation
+        public static int makeMeasureSpec (int size, int mode) {
+            return size + mode;
+        }
+
+        @Implementation
+        public static String toString (int measureSpec) {
+            int mode = getMode(measureSpec);
+            int size = getSize(measureSpec);
+
+            StringBuilder sb = new StringBuilder("MeasureSpec: ");
+
+            if (mode == MeasureSpec.UNSPECIFIED)
+                sb.append("UNSPECIFIED ");
+            else if (mode == MeasureSpec.EXACTLY)
+                sb.append("EXACTLY ");
+            else if (mode == MeasureSpec.AT_MOST)
+                sb.append("AT_MOST ");
+            else
+                sb.append(mode).append(" ");
+
+            sb.append(size);
+            return sb.toString();
+        }
+
     }
 }

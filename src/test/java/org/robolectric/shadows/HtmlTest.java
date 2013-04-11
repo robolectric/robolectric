@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 import org.robolectric.TestRunners;
 
 import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class HtmlTest {
@@ -28,14 +27,14 @@ public class HtmlTest {
     public void shouldBeAbleToGetTextFromTextViewAfterUsingSetTextWithHtmlDotFromHtml() throws Exception {
         TextView textView = new TextView(context);
         textView.setText(Html.fromHtml("<b>some</b> html text"));
-        assertThat(textView.getText().toString()).isEqualTo("<b>some</b> html text");
+        assertThat(textView.getText().toString()).isEqualTo("some html text");
     }
 
     @Test
     public void shouldBeAbleToGetTextFromEditTextAfterUsingSetTextWithHtmlDotFromHtml() throws Exception {
         EditText editText = new EditText(context);
         editText.setText(Html.fromHtml("<b>some</b> html text"));
-        assertThat(editText.getText().toString()).isEqualTo("<b>some</b> html text");
+        assertThat(editText.getText().toString()).isEqualTo("some html text");
     }
 
     @Test(expected = NullPointerException.class)
@@ -43,9 +42,10 @@ public class HtmlTest {
         Html.fromHtml(null);
     }
 
+    @Test
     public void fromHtml_shouldJustReturnArgByDefault() {
         String text = "<b>foo</b>";
         Spanned spanned = Html.fromHtml(text);
-        assertEquals(text, spanned.toString());
+        assertThat(spanned.toString()).isEqualTo("foo");
     }
 }

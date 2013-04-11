@@ -21,7 +21,6 @@ public class SmsManagerTest {
 	
 	@Before
 	public void setup() {
-		Robolectric.bindShadowClass(ShadowSmsManager.class);
 		smsManager = SmsManager.getDefault();
 		shadowSmsManager = Robolectric.shadowOf(smsManager);
 	}

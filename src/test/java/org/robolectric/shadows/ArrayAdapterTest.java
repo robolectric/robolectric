@@ -18,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -35,7 +36,7 @@ public class ArrayAdapterTest {
 
     @Test
     public void verifyContext() {
-        assertEquals(Robolectric.application, arrayAdapter.getContext());
+        assertThat(arrayAdapter.getContext()).isSameAs(Robolectric.application);
     }
 
     @Test

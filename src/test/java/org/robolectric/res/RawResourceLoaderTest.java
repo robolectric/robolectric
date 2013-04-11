@@ -5,32 +5,36 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.R;
 import org.robolectric.TestRunners;
-import org.robolectric.util.TestUtil;
 
-import java.io.InputStream;
+import java.io.File;
 
 import static org.junit.Assert.assertEquals;
-import static org.robolectric.util.TestUtil.resourceFile;
+import static org.robolectric.util.TestUtil.TEST_RESOURCE_PATH;
 import static org.robolectric.util.TestUtil.testResources;
+import static org.robolectric.util.Util.file;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class RawResourceLoaderTest {
 
-    private RawResourceLoader rawResourceLoader;
+    private ResourceExtractor resourceIndex;
+    private ResBundle<File> rawResourceFiles;
 
     @Before public void setUp() throws Exception {
-        rawResourceLoader = new RawResourceLoader(new ResourceExtractor(testResources()), resourceFile("res"));
+        resourceIndex = new ResourceExtractor(testResources());
+        rawResourceFiles = new ResBundle<File>();
+        RawResourceLoader rawResourceLoader = new RawResourceLoader(rawResourceFiles);
+        rawResourceLoader.loadFrom(TEST_RESOURCE_PATH);
     }
 
     @Test
     public void shouldReturnRawResourcesWithExtensions() throws Exception {
-        InputStream is = rawResourceLoader.getValue(R.raw.raw_resource);
-        assertEquals("raw txt file contents", TestUtil.readString(is));
+        File f = rawResourceFiles.get(resourceIndex.getResName(R.raw.raw_resource), "");
+        assertEquals(file(TEST_RESOURCE_PATH.rawDir, "raw_resource.txt"), f);
     }
 
     @Test
     public void shouldReturnRawResourcesWithoutExtensions() throws Exception {
-        InputStream is = rawResourceLoader.getValue(R.raw.raw_no_ext);
-        assertEquals("no ext file contents", TestUtil.readString(is));
+        File f = rawResourceFiles.get(resourceIndex.getResName(R.raw.raw_no_ext), "");
+        assertEquals(file(TEST_RESOURCE_PATH.rawDir, "raw_no_ext"), f);
     }
 }

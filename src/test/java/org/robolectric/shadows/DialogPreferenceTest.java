@@ -46,14 +46,14 @@ public class DialogPreferenceTest {
         preference = new TestDialogPreference(context, attrs, defStyle);
         shadow = Robolectric.shadowOf(preference);
         assertThat(shadow.getContext()).isSameAs(context);
-        assertThat(shadow.getAttrs()).isSameAs((AttributeSet) attrs);
+        assertThat(shadow.getAttrs()).isSameAs(attrs);
         assertThat(shadow.getDefStyle()).isEqualTo(defStyle);
 
         preference = new TestDialogPreference(context, attrs);
         shadow = Robolectric.shadowOf(preference);
         assertThat(shadow.getContext()).isSameAs(context);
-        assertThat(shadow.getAttrs()).isSameAs((AttributeSet) attrs);
-        assertThat(shadow.getDefStyle()).isEqualTo(0);
+        assertThat(shadow.getAttrs()).isSameAs(attrs);
+        assertThat(shadow.getDefStyle()).isGreaterThan(7);
     }
 
     @Test

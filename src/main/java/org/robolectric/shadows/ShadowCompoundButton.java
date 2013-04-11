@@ -11,7 +11,7 @@ import org.robolectric.internal.Implements;
  * Keeps track of whether or not its "checked" state is set and deals with listeners in an appropriate way.
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(CompoundButton.class)
+@Implements(value = CompoundButton.class, inheritImplementationMethods = true)
 public class ShadowCompoundButton extends ShadowTextView implements Checkable {
     private boolean checked;
     private CompoundButton.OnCheckedChangeListener onCheckedChangeListener;

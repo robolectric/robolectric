@@ -118,4 +118,10 @@ class OverlayResourceIndex extends ResourceIndex {
             this.value = value;
         }
     }
+
+    @Override public String toString() {
+        return "OverlayResourceIndex{" +
+                "package='" + packageName + '\'' +
+                '}';
+    }
 }

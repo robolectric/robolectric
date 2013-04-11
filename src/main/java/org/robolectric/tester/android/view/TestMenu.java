@@ -179,4 +179,14 @@ public class TestMenu implements Menu {
         }
         return null;
     }
+
+    public TestMenuItem findMenuItemContaining(CharSequence desiredText) {
+        for (int i = 0; i < size(); i++) {
+            TestMenuItem menuItem = (TestMenuItem) getItem(i);
+            if (menuItem.getTitle().toString().contains(desiredText)) {
+                return menuItem;
+            }
+        }
+        return null;
+    }
 }

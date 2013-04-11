@@ -38,9 +38,7 @@ import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.database.ContentObserver;
 import android.database.CursorWrapper;
-import android.database.DataSetObservable;
 import android.database.MergeCursor;
-import android.database.Observable;
 import android.database.sqlite.SQLiteCursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
@@ -56,7 +54,6 @@ import android.graphics.LinearGradient;
 import android.graphics.Matrix;
 import android.graphics.Paint;
 import android.graphics.Path;
-import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.BitmapDrawable;
@@ -90,7 +87,6 @@ import android.os.Message;
 import android.os.Parcel;
 import android.os.PowerManager;
 import android.os.ResultReceiver;
-import android.os.Vibrator;
 import android.preference.DialogPreference;
 import android.preference.EditTextPreference;
 import android.preference.ListPreference;
@@ -104,7 +100,6 @@ import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
-import android.text.SpannableStringBuilder;
 import android.text.TextPaint;
 import android.text.format.DateFormat;
 import android.text.method.PasswordTransformationMethod;
@@ -154,6 +149,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
+import android.widget.NumberPicker;
 import android.widget.PopupWindow;
 import android.widget.ProgressBar;
 import android.widget.RatingBar;
@@ -174,29 +170,22 @@ import org.apache.http.Header;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.client.DefaultRequestDirector;
-import org.robolectric.bytecode.IgnorableClassNotFoundException;
+import org.fest.reflect.method.Invoker;
 import org.robolectric.bytecode.RobolectricInternals;
 import org.robolectric.bytecode.ShadowWrangler;
-import org.robolectric.internal.Implements;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.HttpResponseGenerator;
 import org.robolectric.shadows.ShadowAbsListView;
 import org.robolectric.shadows.ShadowAbsSeekBar;
-import org.robolectric.shadows.ShadowAbsSpinner;
-import org.robolectric.shadows.ShadowAbsoluteLayout;
-import org.robolectric.shadows.ShadowAbstractCursor;
-import org.robolectric.shadows.ShadowAccount;
 import org.robolectric.shadows.ShadowAccountManager;
 import org.robolectric.shadows.ShadowActivity;
 import org.robolectric.shadows.ShadowActivityGroup;
-import org.robolectric.shadows.ShadowActivityInfo;
 import org.robolectric.shadows.ShadowActivityManager;
 import org.robolectric.shadows.ShadowAdapterView;
 import org.robolectric.shadows.ShadowAddress;
 import org.robolectric.shadows.ShadowAlarmManager;
 import org.robolectric.shadows.ShadowAlertDialog;
 import org.robolectric.shadows.ShadowAlphaAnimation;
-import org.robolectric.shadows.ShadowAndroidHttpClient;
 import org.robolectric.shadows.ShadowAnimation;
 import org.robolectric.shadows.ShadowAnimationDrawable;
 import org.robolectric.shadows.ShadowAnimationSet;
@@ -211,163 +200,107 @@ import org.robolectric.shadows.ShadowArrayAdapter;
 import org.robolectric.shadows.ShadowAssetManager;
 import org.robolectric.shadows.ShadowAsyncTask;
 import org.robolectric.shadows.ShadowAudioManager;
-import org.robolectric.shadows.ShadowBase64;
 import org.robolectric.shadows.ShadowBaseAdapter;
-import org.robolectric.shadows.ShadowBinder;
 import org.robolectric.shadows.ShadowBitmap;
 import org.robolectric.shadows.ShadowBitmapDrawable;
 import org.robolectric.shadows.ShadowBitmapFactory;
 import org.robolectric.shadows.ShadowBluetoothAdapter;
 import org.robolectric.shadows.ShadowBluetoothDevice;
 import org.robolectric.shadows.ShadowBundle;
-import org.robolectric.shadows.ShadowButton;
 import org.robolectric.shadows.ShadowCamera;
-import org.robolectric.shadows.ShadowCameraParameters;
-import org.robolectric.shadows.ShadowCameraSize;
 import org.robolectric.shadows.ShadowCanvas;
 import org.robolectric.shadows.ShadowCheckedTextView;
 import org.robolectric.shadows.ShadowClipboardManager;
 import org.robolectric.shadows.ShadowColor;
 import org.robolectric.shadows.ShadowColorDrawable;
 import org.robolectric.shadows.ShadowColorMatrix;
-import org.robolectric.shadows.ShadowColorMatrixColorFilter;
-import org.robolectric.shadows.ShadowColorStateList;
-import org.robolectric.shadows.ShadowComponentName;
-import org.robolectric.shadows.ShadowCompoundButton;
 import org.robolectric.shadows.ShadowConfiguration;
 import org.robolectric.shadows.ShadowConnectivityManager;
 import org.robolectric.shadows.ShadowContentObserver;
-import org.robolectric.shadows.ShadowContentProvider;
 import org.robolectric.shadows.ShadowContentProviderOperation;
-import org.robolectric.shadows.ShadowContentProviderOperationBuilder;
 import org.robolectric.shadows.ShadowContentProviderResult;
 import org.robolectric.shadows.ShadowContentResolver;
-import org.robolectric.shadows.ShadowContentUris;
 import org.robolectric.shadows.ShadowContentValues;
 import org.robolectric.shadows.ShadowContext;
-import org.robolectric.shadows.ShadowContextThemeWrapper;
 import org.robolectric.shadows.ShadowContextWrapper;
 import org.robolectric.shadows.ShadowCookieManager;
 import org.robolectric.shadows.ShadowCookieSyncManager;
 import org.robolectric.shadows.ShadowCornerPathEffect;
 import org.robolectric.shadows.ShadowCountDownTimer;
-import org.robolectric.shadows.ShadowCriteria;
 import org.robolectric.shadows.ShadowCursorAdapter;
 import org.robolectric.shadows.ShadowCursorLoader;
 import org.robolectric.shadows.ShadowCursorWrapper;
-import org.robolectric.shadows.ShadowDatabaseUtils;
 import org.robolectric.shadows.ShadowDateFormat;
 import org.robolectric.shadows.ShadowDefaultRequestDirector;
 import org.robolectric.shadows.ShadowDialog;
 import org.robolectric.shadows.ShadowDialogPreference;
 import org.robolectric.shadows.ShadowDisplay;
-import org.robolectric.shadows.ShadowDownloadManager;
 import org.robolectric.shadows.ShadowDrawable;
-import org.robolectric.shadows.ShadowEditText;
 import org.robolectric.shadows.ShadowEditTextPreference;
-import org.robolectric.shadows.ShadowEnvironment;
 import org.robolectric.shadows.ShadowExpandableListView;
 import org.robolectric.shadows.ShadowFilter;
-import org.robolectric.shadows.ShadowFloatMath;
 import org.robolectric.shadows.ShadowFrameLayout;
 import org.robolectric.shadows.ShadowGallery;
-import org.robolectric.shadows.ShadowGeoPoint;
 import org.robolectric.shadows.ShadowGeocoder;
 import org.robolectric.shadows.ShadowGestureDetector;
 import org.robolectric.shadows.ShadowGridView;
 import org.robolectric.shadows.ShadowHandler;
 import org.robolectric.shadows.ShadowHandlerThread;
-import org.robolectric.shadows.ShadowHtml;
-import org.robolectric.shadows.ShadowImageButton;
 import org.robolectric.shadows.ShadowImageView;
 import org.robolectric.shadows.ShadowInputDevice;
-import org.robolectric.shadows.ShadowInputEvent;
 import org.robolectric.shadows.ShadowInputMethodManager;
 import org.robolectric.shadows.ShadowIntent;
-import org.robolectric.shadows.ShadowIntentFilter;
-import org.robolectric.shadows.ShadowIntentFilterAuthorityEntry;
-import org.robolectric.shadows.ShadowItemizedOverlay;
 import org.robolectric.shadows.ShadowJsPromptResult;
 import org.robolectric.shadows.ShadowJsResult;
 import org.robolectric.shadows.ShadowKeyEvent;
-import org.robolectric.shadows.ShadowKeyGuardLock;
 import org.robolectric.shadows.ShadowKeyguardManager;
 import org.robolectric.shadows.ShadowLayerDrawable;
 import org.robolectric.shadows.ShadowLayoutAnimationController;
 import org.robolectric.shadows.ShadowLayoutInflater;
-import org.robolectric.shadows.ShadowLayoutParams;
 import org.robolectric.shadows.ShadowLinearGradient;
 import org.robolectric.shadows.ShadowLinearLayout;
-import org.robolectric.shadows.ShadowLinkMovementMethod;
 import org.robolectric.shadows.ShadowListActivity;
 import org.robolectric.shadows.ShadowListPreference;
 import org.robolectric.shadows.ShadowListView;
-import org.robolectric.shadows.ShadowLocalActivityManager;
-import org.robolectric.shadows.ShadowLocalBroadcastManager;
 import org.robolectric.shadows.ShadowLocation;
 import org.robolectric.shadows.ShadowLocationManager;
 import org.robolectric.shadows.ShadowLog;
 import org.robolectric.shadows.ShadowLooper;
-import org.robolectric.shadows.ShadowMapActivity;
-import org.robolectric.shadows.ShadowMapController;
-import org.robolectric.shadows.ShadowMapView;
-import org.robolectric.shadows.ShadowMarginLayoutParams;
 import org.robolectric.shadows.ShadowMatrix;
-import org.robolectric.shadows.ShadowMatrixCursor;
-import org.robolectric.shadows.ShadowMeasureSpec;
 import org.robolectric.shadows.ShadowMediaPlayer;
 import org.robolectric.shadows.ShadowMediaRecorder;
 import org.robolectric.shadows.ShadowMediaStore;
 import org.robolectric.shadows.ShadowMenuInflater;
 import org.robolectric.shadows.ShadowMergeCursor;
 import org.robolectric.shadows.ShadowMessage;
-import org.robolectric.shadows.ShadowMessenger;
 import org.robolectric.shadows.ShadowMimeTypeMap;
 import org.robolectric.shadows.ShadowMotionEvent;
-import org.robolectric.shadows.ShadowNativeLruCache;
-import org.robolectric.shadows.ShadowNdefMessage;
-import org.robolectric.shadows.ShadowNdefRecord;
 import org.robolectric.shadows.ShadowNetworkInfo;
-import org.robolectric.shadows.ShadowNfcAdapter;
-import org.robolectric.shadows.ShadowNotFoundException;
 import org.robolectric.shadows.ShadowNotification;
 import org.robolectric.shadows.ShadowNotificationManager;
+import org.robolectric.shadows.ShadowNumberPicker;
 import org.robolectric.shadows.ShadowObjectAnimator;
-import org.robolectric.shadows.ShadowOverlayItem;
 import org.robolectric.shadows.ShadowPaint;
-import org.robolectric.shadows.ShadowPair;
 import org.robolectric.shadows.ShadowParcel;
 import org.robolectric.shadows.ShadowPasswordTransformationMethod;
 import org.robolectric.shadows.ShadowPath;
 import org.robolectric.shadows.ShadowPendingIntent;
-import org.robolectric.shadows.ShadowPeriodicSync;
 import org.robolectric.shadows.ShadowPhoneNumberUtils;
-import org.robolectric.shadows.ShadowPoint;
-import org.robolectric.shadows.ShadowPointF;
 import org.robolectric.shadows.ShadowPopupWindow;
 import org.robolectric.shadows.ShadowPowerManager;
 import org.robolectric.shadows.ShadowPreference;
 import org.robolectric.shadows.ShadowPreferenceActivity;
 import org.robolectric.shadows.ShadowPreferenceCategory;
 import org.robolectric.shadows.ShadowPreferenceGroup;
-import org.robolectric.shadows.ShadowPreferenceManager;
 import org.robolectric.shadows.ShadowPreferenceScreen;
 import org.robolectric.shadows.ShadowProgressBar;
 import org.robolectric.shadows.ShadowProgressDialog;
-import org.robolectric.shadows.ShadowRadioButton;
-import org.robolectric.shadows.ShadowRadioGroup;
 import org.robolectric.shadows.ShadowRatingBar;
-import org.robolectric.shadows.ShadowRect;
-import org.robolectric.shadows.ShadowRectF;
-import org.robolectric.shadows.ShadowRelativeLayout;
-import org.robolectric.shadows.ShadowRelativeLayoutParams;
-import org.robolectric.shadows.ShadowRemoteCallbackList;
 import org.robolectric.shadows.ShadowRemoteViews;
 import org.robolectric.shadows.ShadowResolveInfo;
 import org.robolectric.shadows.ShadowResourceCursorAdapter;
 import org.robolectric.shadows.ShadowResources;
 import org.robolectric.shadows.ShadowResultReceiver;
-import org.robolectric.shadows.ShadowSQLiteCloseable;
 import org.robolectric.shadows.ShadowSQLiteCursor;
 import org.robolectric.shadows.ShadowSQLiteDatabase;
 import org.robolectric.shadows.ShadowSQLiteOpenHelper;
@@ -381,53 +314,32 @@ import org.robolectric.shadows.ShadowScroller;
 import org.robolectric.shadows.ShadowSeekBar;
 import org.robolectric.shadows.ShadowSensorManager;
 import org.robolectric.shadows.ShadowService;
-import org.robolectric.shadows.ShadowSettings;
 import org.robolectric.shadows.ShadowShapeDrawable;
 import org.robolectric.shadows.ShadowSimpleCursorAdapter;
 import org.robolectric.shadows.ShadowSmsManager;
-import org.robolectric.shadows.ShadowSpannableString;
-import org.robolectric.shadows.ShadowSpannableStringBuilder;
-import org.robolectric.shadows.ShadowSpannableStringInternal;
-import org.robolectric.shadows.ShadowSpannedString;
 import org.robolectric.shadows.ShadowSparseArray;
 import org.robolectric.shadows.ShadowSparseBooleanArray;
 import org.robolectric.shadows.ShadowSparseIntArray;
-import org.robolectric.shadows.ShadowSpinner;
 import org.robolectric.shadows.ShadowSslErrorHandler;
 import org.robolectric.shadows.ShadowStatFs;
 import org.robolectric.shadows.ShadowStateListDrawable;
-import org.robolectric.shadows.ShadowSurfaceView;
-import org.robolectric.shadows.ShadowSyncResult;
-import org.robolectric.shadows.ShadowSystemProperties;
-import org.robolectric.shadows.ShadowTabActivity;
 import org.robolectric.shadows.ShadowTabHost;
-import org.robolectric.shadows.ShadowTabSpec;
 import org.robolectric.shadows.ShadowTelephonyManager;
 import org.robolectric.shadows.ShadowTextPaint;
-import org.robolectric.shadows.ShadowTextUtils;
 import org.robolectric.shadows.ShadowTextView;
-import org.robolectric.shadows.ShadowTime;
 import org.robolectric.shadows.ShadowToast;
 import org.robolectric.shadows.ShadowTouchDelegate;
 import org.robolectric.shadows.ShadowTranslateAnimation;
 import org.robolectric.shadows.ShadowTypedArray;
-import org.robolectric.shadows.ShadowTypedValue;
 import org.robolectric.shadows.ShadowTypeface;
-import org.robolectric.shadows.ShadowURLSpan;
-import org.robolectric.shadows.ShadowUri;
 import org.robolectric.shadows.ShadowUriMatcher;
-import org.robolectric.shadows.ShadowValueAnimator;
-import org.robolectric.shadows.ShadowVibrator;
 import org.robolectric.shadows.ShadowVideoView;
 import org.robolectric.shadows.ShadowView;
 import org.robolectric.shadows.ShadowViewAnimator;
 import org.robolectric.shadows.ShadowViewConfiguration;
 import org.robolectric.shadows.ShadowViewFlipper;
 import org.robolectric.shadows.ShadowViewGroup;
-import org.robolectric.shadows.ShadowViewMeasureSpec;
-import org.robolectric.shadows.ShadowViewStub;
 import org.robolectric.shadows.ShadowViewTreeObserver;
-import org.robolectric.shadows.ShadowWebSyncManager;
 import org.robolectric.shadows.ShadowWebView;
 import org.robolectric.shadows.ShadowWifiConfiguration;
 import org.robolectric.shadows.ShadowWifiInfo;
@@ -441,15 +353,13 @@ import org.robolectric.util.Scheduler;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
-import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+
+import static org.fest.reflect.core.Reflection.method;
 
 public class Robolectric {
     public static Application application;
     public static final int DEFAULT_SDK_VERSION = 16;
-    private static Set<String> unloadableClassNames = new HashSet<String>();
 
     public static <T> T newInstanceOf(Class<T> clazz) {
         return RobolectricInternals.newInstanceOf(clazz);
@@ -470,375 +380,22 @@ public class Robolectric {
         return RobolectricInternals.newInstance(clazz, parameterTypes, params);
     }
 
-    public static void bindShadowClass(Class<?> shadowClass) {
-        Implements implementsAnnotation = shadowClass.getAnnotation(Implements.class);
-        if (implementsAnnotation == null) {
-            throw new IllegalArgumentException(shadowClass + " is not annotated with @Implements");
-        }
-
-        try {
-            String className = implementsAnnotation.value().getName();
-            if (!implementsAnnotation.className().isEmpty()) {
-                className = implementsAnnotation.className();
-            }
-            getShadowWrangler().bindShadowClass(className, shadowClass, implementsAnnotation.callThroughByDefault());
-        } catch (TypeNotPresentException typeLoadingException) {
-            String unloadableClassName = shadowClass.getSimpleName();
-            if (typeLoadingException.typeName().startsWith("com.google.android.maps")) {
-                warnAbout(unloadableClassName);
-                return;
-            } else if (isIgnorableClassLoadingException(typeLoadingException)) {
-                //this allows users of the robolectric.jar file to use the non-Google APIs version of the api
-                warnAbout(unloadableClassName);
-            } else {
-                throw typeLoadingException;
-            }
-        }
-    }
-
-    private static void warnAbout(String unloadableClassName) {
-        if (unloadableClassNames.add(unloadableClassName)) {
-            System.out.println("Warning: an error occurred while binding shadow class: " + unloadableClassName);
-        }
-    }
-
     // todo: make private
     public static ShadowWrangler getShadowWrangler() {
         return ((ShadowWrangler) RobolectricInternals.getClassHandler());
     }
 
-    private static boolean isIgnorableClassLoadingException(Throwable typeLoadingException) {
-        if (typeLoadingException != null) {
-            // instanceof doesn't work here. Are we in different classloaders?
-            if (typeLoadingException.getClass().getName().equals(IgnorableClassNotFoundException.class.getName())) {
-                return true;
-            }
-
-            if (typeLoadingException instanceof NoClassDefFoundError
-                    || typeLoadingException instanceof ClassNotFoundException
-                    || typeLoadingException instanceof TypeNotPresentException) {
-                return isIgnorableClassLoadingException(typeLoadingException.getCause());
-            }
-        }
-        return false;
-    }
-
-    public static void bindDefaultShadowClasses() {
-        bindShadowClasses(getDefaultShadowClasses());
-    }
-
-    public static void bindShadowClasses(List<Class<?>> shadowClasses) {
-        for (Class<?> shadowClass : shadowClasses) {
-            bindShadowClass(shadowClass);
-        }
-    }
-
-    /**
-     * Invoke this utility method in tests to reveal which Android api classes and methods are being invoked
-     * for which there are no shadows or shadow methods. This helps expose which methods are being invoked
-     * either by a third party library or application code which need new shadow methods to be written. Generates
-     * output for the current test only.
-     */
-    public static void logMissingInvokedShadowMethods() {
-        getShadowWrangler().logMissingInvokedShadowMethods();
-    }
-
     public static List<Class<?>> getDefaultShadowClasses() {
-        return Arrays.asList(
-                ShadowAbsListView.class,
-                ShadowAbsoluteLayout.class,
-                ShadowAbsoluteLayout.ShadowLayoutParams.class,
-                ShadowAbsSeekBar.class,
-                ShadowAbsSpinner.class,
-                ShadowAbstractCursor.class,
-                ShadowAccount.class,
-                ShadowAccountManager.class,
-                ShadowActivity.class,
-                ShadowActivityInfo.class,
-                ShadowActivityGroup.class,
-                ShadowActivityManager.class,
-                ShadowAdapterView.class,
-                ShadowAddress.class,
-                ShadowAlarmManager.class,
-                ShadowAlertDialog.class,
-                ShadowAlertDialog.ShadowBuilder.class,
-                ShadowAlphaAnimation.class,
-                ShadowAndroidHttpClient.class,
-                ShadowAnimation.class,
-                ShadowAnimationDrawable.class,
-                ShadowAnimationSet.class,
-                ShadowAnimationUtils.class,
-                ShadowAnimator.class,
-                ShadowAnimatorSet.class,
-                ShadowApplication.class,
-                ShadowAppWidgetHost.class,
-                ShadowAppWidgetHostView.class,
-                ShadowAppWidgetManager.class,
-                ShadowArrayAdapter.class,
-                ShadowAssetManager.class,
-                ShadowAsyncTask.class,
-                ShadowAudioManager.class,
-                ShadowBaseAdapter.class,
-                ShadowBase64.class,
-                ShadowBinder.class,
-                ShadowBitmap.class,
-                ShadowBitmapDrawable.class,
-                ShadowBitmapFactory.class,
-                ShadowBluetoothAdapter.class,
-                ShadowBluetoothDevice.class,
-                ShadowBundle.class,
-                ShadowButton.class,
-                ShadowCamera.class,
-                ShadowCameraParameters.class,
-                ShadowCameraSize.class,
-                ShadowCanvas.class,
-                ShadowCheckedTextView.class,
-                ShadowClipboardManager.class,
-                ShadowColor.class,
-                ShadowColorDrawable.class,
-                ShadowColorMatrix.class,
-                ShadowColorMatrixColorFilter.class,
-                ShadowColorStateList.class,
-                ShadowComponentName.class,
-                ShadowCompoundButton.class,
-                ShadowConfiguration.class,
-                ShadowConnectivityManager.class,
-                ShadowContentObserver.class,
-                ShadowContentProvider.class,
-                ShadowContentProviderOperation.class,
-                ShadowContentProviderOperationBuilder.class,
-                ShadowContentProviderResult.class,
-                ShadowContentResolver.class,
-                ShadowContentUris.class,
-                ShadowContentValues.class,
-                ShadowContext.class,
-                ShadowContextWrapper.class,
-                ShadowContextThemeWrapper.class,
-                ShadowCookieManager.class,
-                ShadowCookieSyncManager.class,
-                ShadowCornerPathEffect.class,
-                ShadowCountDownTimer.class,
-                ShadowCriteria.class,
-                ShadowCursorAdapter.class,
-                ShadowCursorLoader.class,
-                ShadowCursorWrapper.class,
-                ShadowDatabaseUtils.class,
-                ShadowDataSetObservable.class,
-                ShadowDateFormat.class,
-                ShadowDefaultRequestDirector.class,
-                ShadowDisplay.class,
-                ShadowDrawable.class,
-                ShadowDialog.class,
-                ShadowDialogPreference.class,
-                ShadowDownloadManager.class,
-                ShadowDownloadManager.ShadowRequest.class,
-                ShadowDownloadManager.ShadowQuery.class,
-                ShadowEditText.class,
-                ShadowEditTextPreference.class,
-                ShadowEnvironment.class,
-                ShadowExpandableListView.class,
-                ShadowFilter.class,
-                ShadowFloatMath.class,
-                ShadowFrameLayout.class,
-                ShadowGallery.class,
-                ShadowGeocoder.class,
-                ShadowGeoPoint.class,
-                ShadowGestureDetector.class,
-                ShadowGridView.class,
-                ShadowHandler.class,
-                ShadowHandlerThread.class,
-                ShadowHtml.class,
-                ShadowImageButton.class,
-                ShadowImageView.class,
-                ShadowInputMethodManager.class,
-                ShadowInputDevice.class,
-                ShadowInputEvent.class,
-                ShadowIntent.class,
-                ShadowIntentFilter.class,
-                ShadowIntentFilterAuthorityEntry.class,
-                ShadowItemizedOverlay.class,
-                ShadowLayoutAnimationController.class,
-                ShadowJsPromptResult.class,
-                ShadowJsResult.class,
-                ShadowKeyEvent.class,
-                ShadowKeyguardManager.class,
-                ShadowKeyGuardLock.class,
-                ShadowLayerDrawable.class,
-                ShadowLayoutInflater.class,
-                ShadowLayoutParams.class,
-                ShadowLinearGradient.class,
-                ShadowLinearLayout.class,
-                ShadowLinkMovementMethod.class,
-                ShadowListActivity.class,
-                ShadowListPreference.class,
-                ShadowListView.class,
-                ShadowLocalActivityManager.class,
-                ShadowLocalBroadcastManager.class,
-                ShadowLocation.class,
-                ShadowLocationManager.class,
-                ShadowLog.class,
-                ShadowLooper.class,
-                ShadowMapController.class,
-                ShadowMapActivity.class,
-                ShadowMapView.class,
-                ShadowMarginLayoutParams.class,
-                ShadowMatrix.class,
-                ShadowMatrixCursor.class,
-                ShadowMeasureSpec.class,
-                ShadowMediaPlayer.class,
-                ShadowMediaRecorder.class,
-                ShadowMediaStore.ShadowImages.ShadowMedia.class,
-                ShadowMenuInflater.class,
-                ShadowMergeCursor.class,
-                ShadowMessage.class,
-                ShadowMessenger.class,
-                ShadowMimeTypeMap.class,
-                ShadowMotionEvent.class,
-                ShadowNativeLruCache.class,
-                ShadowNotification.class,
-                ShadowNdefMessage.class,
-                ShadowNdefRecord.class,
-                ShadowNfcAdapter.class,
-                ShadowNotificationManager.class,
-                ShadowNetworkInfo.class,
-                ShadowObservable.class,
-                ShadowOverlayItem.class,
-                ShadowObjectAnimator.class,
-                ShadowPaint.class,
-                ShadowPair.class,
-                ShadowParcel.class,
-                ShadowPasswordTransformationMethod.class,
-                ShadowPath.class,
-                ShadowPendingIntent.class,
-                ShadowPeriodicSync.class,
-                ShadowPhoneNumberUtils.class,
-                ShadowPoint.class,
-                ShadowPointF.class,
-                ShadowPopupWindow.class,
-                ShadowPowerManager.class,
-                ShadowPowerManager.ShadowWakeLock.class,
-                ShadowPreference.class,
-                ShadowPreferenceActivity.class,
-                ShadowPreferenceCategory.class,
-                ShadowPreferenceGroup.class,
-                ShadowPreferenceManager.class,
-                ShadowPreferenceScreen.class,
-                ShadowProgressBar.class,
-                ShadowProgressDialog.class,
-                ShadowRadioButton.class,
-                ShadowRadioGroup.class,
-                ShadowRatingBar.class,
-                ShadowRect.class,
-                ShadowRectF.class,
-                ShadowRelativeLayout.class,
-                ShadowRelativeLayoutParams.class,
-                ShadowResolveInfo.class,
-                ShadowRemoteCallbackList.class,
-                ShadowRemoteViews.class,
-                ShadowResultReceiver.class,
-                ShadowResourceCursorAdapter.class,
-                ShadowResources.class,
-                ShadowNotFoundException.class,
-                ShadowResources.ShadowTheme.class,
-                ShadowScaleGestureDetector.class,
-                ShadowScanResult.class,
-                ShadowScrollView.class,
-                ShadowScroller.class,
-                ShadowSeekBar.class,
-                ShadowSensorManager.class,
-                ShadowService.class,
-                ShadowSettings.class,
-                ShadowSettings.ShadowSecure.class,
-                ShadowSettings.ShadowSystem.class,
-                ShadowSimpleCursorAdapter.class,
-                ShadowShapeDrawable.class,
-                ShadowSmsManager.class,
-                ShadowSpannableString.class,
-                ShadowSpannableStringBuilder.class,
-                ShadowSpannableStringInternal.class,
-                ShadowSpannedString.class,
-                ShadowSparseArray.class,
-                ShadowSparseBooleanArray.class,
-                ShadowSparseIntArray.class,
-                ShadowSpinner.class,
-                ShadowSyncResult.class,
-                ShadowSyncResult.ShadowSyncStats.class,
-                ShadowSQLiteProgram.class,
-                ShadowSQLiteCloseable.class,
-                ShadowSQLiteDatabase.class,
-                ShadowSQLiteCursor.class,
-                ShadowSQLiteOpenHelper.class,
-                ShadowSQLiteStatement.class,
-                ShadowSQLiteQueryBuilder.class,
-                ShadowSslErrorHandler.class,
-                ShadowStateListDrawable.class,
-                ShadowStatFs.class,
-                ShadowSurfaceView.class,
-                ShadowSystemProperties.class,
-                ShadowTabActivity.class,
-                ShadowTabHost.class,
-                ShadowTabSpec.class,
-                ShadowTelephonyManager.class,
-                ShadowTextPaint.class,
-                ShadowTextUtils.class,
-                ShadowTextView.class,
-                ShadowTime.class,
-                ShadowToast.class,
-                ShadowTouchDelegate.class,
-                ShadowTranslateAnimation.class,
-                ShadowTypedArray.class,
-                ShadowTypedValue.class,
-                ShadowTypeface.class,
-                ShadowUriMatcher.class,
-                ShadowUri.class,
-                ShadowURLSpan.class,
-                ShadowValueAnimator.class,
-                ShadowVibrator.class,
-                ShadowVideoView.class,
-                ShadowView.class,
-                ShadowViewAnimator.class,
-                ShadowViewConfiguration.class,
-                ShadowViewGroup.class,
-                ShadowViewFlipper.class,
-                ShadowViewMeasureSpec.class,
-                ShadowViewStub.class,
-                ShadowViewTreeObserver.class,
-                ShadowWebView.class,
-                ShadowWebSyncManager.class,
-                ShadowWifiConfiguration.class,
-                ShadowWifiInfo.class,
-                ShadowWifiManager.class,
-                ShadowWifiManager.ShadowWifiLock.class,
-                ShadowWindow.class,
-                ShadowZoomButtonsController.class
-        );
-    }
-
-    public static void resetStaticState() {
-        getShadowWrangler().silence();
-        Robolectric.application = null;
-        ShadowAccountManager.reset();
-        ShadowBitmapFactory.reset();
-        ShadowDrawable.reset();
-        ShadowMediaStore.reset();
-        ShadowLog.reset();
-        ShadowContext.clearFilesAndCache();
-        ShadowLooper.resetThreadLoopers();
-        ShadowDialog.reset();
-        ShadowContentResolver.reset();
-//        ShadowLocalBroadcastManager.reset();
-        ShadowMimeTypeMap.reset();
-        ShadowPowerManager.reset();
-        ShadowStatFs.reset();
-        ShadowTypeface.reset();
-    }
-
-    public static <T> T directlyOn(T shadowedObject) {
-        return RobolectricInternals.directlyOn(shadowedObject);
+        return RobolectricBase.DEFAULT_SHADOW_CLASSES;
     }
 
     public static <T> T directlyOn(T shadowedObject, Class<T> clazz) {
         return RobolectricInternals.directlyOn(shadowedObject, clazz);
+    }
+
+    public static <T> Invoker directlyOn(T shadowedObject, Class<T> clazz, String methodName, Class<T>... paramTypes) {
+        String directMethodName = RobolectricInternals.directMethodName(clazz.getName(), methodName);
+        return method(directMethodName).withReturnType(Object.class).withParameterTypes(paramTypes).in(shadowedObject);
     }
 
     public static ShadowAbsListView shadowOf(AbsListView instance) {
@@ -974,12 +531,12 @@ public class Robolectric {
         return (ShadowCamera) shadowOf_(instance);
     }
 
-    public static ShadowCameraParameters shadowOf(Camera.Parameters instance) {
-        return (ShadowCameraParameters) shadowOf_(instance);
+    public static ShadowCamera.ShadowParameters shadowOf(Camera.Parameters instance) {
+        return (ShadowCamera.ShadowParameters) shadowOf_(instance);
     }
 
-    public static ShadowCameraSize shadowOf(Camera.Size instance) {
-        return (ShadowCameraSize) shadowOf_(instance);
+    public static ShadowCamera.ShadowSize shadowOf(Camera.Size instance) {
+        return (ShadowCamera.ShadowSize) shadowOf_(instance);
     }
 
     public static ShadowCanvas shadowOf(Canvas instance) {
@@ -1030,8 +587,8 @@ public class Robolectric {
         return (ShadowContentProviderOperation) shadowOf_(instance);
     }
 
-    public static ShadowContentProviderOperationBuilder shadowOf(ContentProviderOperation.Builder instance) {
-        return (ShadowContentProviderOperationBuilder) shadowOf_(instance);
+    public static ShadowContentProviderOperation.ShadowBuilder shadowOf(ContentProviderOperation.Builder instance) {
+        return (ShadowContentProviderOperation.ShadowBuilder) shadowOf_(instance);
     }
 
     public static ShadowContentProviderResult shadowOf(ContentProviderResult instance) {
@@ -1174,8 +731,8 @@ public class Robolectric {
         return (ShadowKeyguardManager) shadowOf_(instance);
     }
 
-    public static ShadowKeyGuardLock shadowOf(KeyguardManager.KeyguardLock instance) {
-        return (ShadowKeyGuardLock) shadowOf_(instance);
+    public static ShadowKeyguardManager.ShadowKeyguardLock shadowOf(KeyguardManager.KeyguardLock instance) {
+        return (ShadowKeyguardManager.ShadowKeyguardLock) shadowOf_(instance);
     }
 
     public static ShadowLayerDrawable shadowOf(LayerDrawable instance) {
@@ -1258,6 +815,10 @@ public class Robolectric {
         return (ShadowNotificationManager) Robolectric.shadowOf_(other);
     }
 
+    public static ShadowNumberPicker shadowOf(NumberPicker other) {
+        return (ShadowNumberPicker) Robolectric.shadowOf_(other);
+    }
+
     public static ShadowObjectAnimator shadowOf(ObjectAnimator instance) {
         return (ShadowObjectAnimator) shadowOf_(instance);
     }
@@ -1320,10 +881,6 @@ public class Robolectric {
 
     public static ShadowProgressDialog shadowOf(ProgressDialog instance) {
         return (ShadowProgressDialog) shadowOf_(instance);
-    }
-
-    public static ShadowRect shadowOf(Rect instance) {
-        return (ShadowRect) shadowOf_(instance);
     }
 
     public static ShadowRatingBar shadowOf(RatingBar instance) {
@@ -1390,10 +947,6 @@ public class Robolectric {
         return (ShadowSmsManager) shadowOf_(instance);
     }
 
-    public static ShadowSpannableStringBuilder shadowOf(SpannableStringBuilder instance) {
-        return (ShadowSpannableStringBuilder) shadowOf_(instance);
-    }
-
     public static <E> ShadowSparseArray<E> shadowOf(SparseArray<E> other) {
         //noinspection unchecked
         return (ShadowSparseArray<E>) Robolectric.shadowOf_(other);
@@ -1443,8 +996,8 @@ public class Robolectric {
         return (ShadowTabHost) shadowOf_(instance);
     }
 
-    public static ShadowTabSpec shadowOf(TabHost.TabSpec instance) {
-        return (ShadowTabSpec) shadowOf_(instance);
+    public static ShadowTabHost.ShadowTabSpec shadowOf(TabHost.TabSpec instance) {
+        return (ShadowTabHost.ShadowTabSpec) shadowOf_(instance);
     }
 
     public static ShadowTelephonyManager shadowOf(TelephonyManager instance) {
@@ -1509,10 +1062,6 @@ public class Robolectric {
 
     public static ShadowViewGroup shadowOf(ViewGroup instance) {
         return (ShadowViewGroup) shadowOf_(instance);
-    }
-
-    public static ShadowVibrator shadowOf(Vibrator instance) {
-        return (ShadowVibrator) shadowOf_(instance);
     }
 
     public static ShadowVideoView shadowOf(VideoView instance) {
@@ -1639,7 +1188,7 @@ public class Robolectric {
 
     public static boolean httpRequestWasMade(String uri) {
         return getShadowApplication().getFakeHttpLayer().hasRequestMatchingRule(
-            new FakeHttpLayer.UriRequestMatcher(uri));
+                new FakeHttpLayer.UriRequestMatcher(uri));
     }
 
     /**
@@ -1853,6 +1402,24 @@ public class Robolectric {
         return shadowOf(context.getApplicationContext()).getResourceLoader();
     }
 
+    public static void reset() {
+        Robolectric.application = null;
+        ShadowAccountManager.reset();
+        ShadowBitmapFactory.reset();
+        ShadowDrawable.reset();
+        ShadowMediaStore.reset();
+        ShadowLog.reset();
+        ShadowContext.clearFilesAndCache();
+        ShadowLooper.resetThreadLoopers();
+        ShadowDialog.reset();
+        ShadowContentResolver.reset();
+//        ShadowLocalBroadcastManager.reset();
+        ShadowMimeTypeMap.reset();
+        ShadowPowerManager.reset();
+        ShadowStatFs.reset();
+        ShadowTypeface.reset();
+    }
+
     /**
      * Reflection helper methods.
      */
@@ -1875,7 +1442,7 @@ public class Robolectric {
         }
 
         public static Object setFinalStaticField(Field field, Object newValue) {
-        	Object oldValue = null;
+        	Object oldValue;
         	
             try {
                 field.setAccessible(true);
@@ -1898,13 +1465,5 @@ public class Robolectric {
 
     // marker for shadow classes when the implementation class is unlinkable
     public interface Anything {
-    }
-
-    @Implements(value = DataSetObservable.class, callThroughByDefault = true)
-    public static class ShadowDataSetObservable extends ShadowObservable {
-    }
-
-    @Implements(value = Observable.class, callThroughByDefault = true)
-    public static class ShadowObservable {
     }
 }

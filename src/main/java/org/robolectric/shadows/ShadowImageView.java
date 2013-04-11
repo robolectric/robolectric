@@ -11,7 +11,7 @@ import org.robolectric.internal.Implements;
 
 import static org.robolectric.Robolectric.shadowOf;
 
-@Implements(ImageView.class)
+@Implements(value = ImageView.class, inheritImplementationMethods = true)
 public class ShadowImageView extends ShadowView {
     private Drawable imageDrawable;
     private int resourceId;

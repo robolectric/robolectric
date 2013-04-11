@@ -51,20 +51,20 @@ public class AppWidgetHostTest {
 
     @Test
     public void createView_shouldSetViewsAppWidgetId() throws Exception {
-        AppWidgetHostView hostView = appWidgetHost.createView(null, 765, null);
+        AppWidgetHostView hostView = appWidgetHost.createView(context, 765, null);
         assertThat(hostView.getAppWidgetId()).isEqualTo(765);
     }
 
     @Test
     public void createView_shouldSetViewsAppWidgetInfo() throws Exception {
         AppWidgetProviderInfo info = new AppWidgetProviderInfo();
-        AppWidgetHostView hostView = appWidgetHost.createView(null, 0, info);
+        AppWidgetHostView hostView = appWidgetHost.createView(context, 0, info);
         assertThat(hostView.getAppWidgetInfo()).isSameAs(info);
     }
 
     @Test
     public void createView_shouldSetHostViewsHost() throws Exception {
-        AppWidgetHostView hostView = appWidgetHost.createView(null, 0, null);
+        AppWidgetHostView hostView = appWidgetHost.createView(context, 0, null);
         assertThat(shadowOf(hostView).getHost()).isSameAs(appWidgetHost);
     }
 }

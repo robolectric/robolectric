@@ -51,7 +51,7 @@ public class TextViewTest {
 
     @Test
     public void shouldTriggerTheImeListener() {
-        TextView textView = new TextView(null);
+        TextView textView = new TextView(Robolectric.application);
         TestOnEditorActionListener actionListener = new TestOnEditorActionListener();
         textView.setOnEditorActionListener(actionListener);
 
@@ -100,7 +100,7 @@ public class TextViewTest {
 
     @Test
     public void testGetTextAppearanceId() throws Exception {
-        TextView textView = new TextView(null);
+        TextView textView = new TextView(Robolectric.application);
         textView.setTextAppearance(null, 5);
 
         assertThat(shadowOf(textView).getTextAppearanceId()).isEqualTo(5);
@@ -113,7 +113,7 @@ public class TextViewTest {
 
         TextView black = (TextView) activity.findViewById(R.id.black_text_view);
         assertThat(black.getText().toString()).isEqualTo("Black Text");
-        assertThat(shadowOf(black).getTextColorHexValue()).isEqualTo(0);
+        assertThat(shadowOf(black).getTextColorHexValue()).isEqualTo(0xff000000);
 
         TextView white = (TextView) activity.findViewById(R.id.white_text_view);
         assertThat(white.getText().toString()).isEqualTo("White Text");
@@ -131,7 +131,7 @@ public class TextViewTest {
 
         TextView black = (TextView) activity.findViewById(R.id.black_text_view_hint);
         assertThat(black.getHint().toString()).isEqualTo("Black Hint");
-        assertThat(shadowOf(black).getHintColorHexValue()).isEqualTo(0);
+        assertThat(shadowOf(black).getHintColorHexValue()).isEqualTo(0xff000000);
 
         TextView white = (TextView) activity.findViewById(R.id.white_text_view_hint);
         assertThat(white.getHint().toString()).isEqualTo("White Hint");

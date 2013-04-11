@@ -6,6 +6,7 @@ import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.content.res.XmlResourceParser;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -98,7 +99,13 @@ public class ShadowResources {
 
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
-        return resourceLoader.getColorValue(getResName(id), getQualifiers());
+        String colorValue = resourceLoader.getColorValue(getResName(id), getQualifiers());
+        if (isEmpty(colorValue)) throw new Resources.NotFoundException(notFound(id));
+        return Color.parseColor(colorValue);
+    }
+
+    private boolean isEmpty(String s) {
+        return s == null || s.length() == 0;
     }
 
     private ResName getResName(int id) {
@@ -115,7 +122,7 @@ public class ShadowResources {
 
     @Implementation
     public ColorStateList getColorStateList(int id) {
-        return new ColorStateList(null, null);
+        return new ColorStateList(new int[0][0], new int[0]);
     }
 
     @Implementation
@@ -154,7 +161,7 @@ public class ShadowResources {
 
     @Implementation
     public InputStream openRawResource(int id) throws Resources.NotFoundException {
-        return resourceLoader.getRawValue(id);
+        return resourceLoader.getRawValue(getResName(id));
     }
 
     @Implementation
@@ -213,7 +220,23 @@ public class ShadowResources {
 
     @Implementation
     public float getDimension(int id) throws Resources.NotFoundException {
-        return resourceLoader.getDimenValue(getResName(id), getQualifiers());
+        String dimenValue = resourceLoader.getDimenValue(getResName(id), getQualifiers());
+        if (dimenValue == null) throw new Resources.NotFoundException(notFound(id));
+//        DimensionConverter.stringToDimension(dimenValue, displayMetrics);
+        return temporaryDimenConverter(dimenValue);
+    }
+
+    private static final String[] UNITS = {"dp", "dip", "pt", "px", "sp"};
+    Float temporaryDimenConverter(String rawValue) {
+        int end = rawValue.length();
+        for (String unit : UNITS) {
+            int index = rawValue.indexOf(unit);
+            if (index >= 0 && end > index) {
+                end = index;
+            }
+        }
+
+        return Float.parseFloat(rawValue.substring(0, end));
     }
 
     @Implementation
@@ -224,9 +247,7 @@ public class ShadowResources {
     @Implementation
     public int[] getIntArray(int id) throws Resources.NotFoundException {
         int[] arrayValue = resourceLoader.getIntegerArrayValue(getResName(id), getQualifiers());
-        if (arrayValue == null) {
-            throw new Resources.NotFoundException(notFound(id));
-        }
+        if (arrayValue == null) throw new Resources.NotFoundException(notFound(id));
         return arrayValue;
     }
 
@@ -317,5 +338,24 @@ public class ShadowResources {
             ((UsesResources) shadow).injectResources(resources);
         }
         return instance;
+    }
+
+    @Implements(Resources.NotFoundException.class)
+    public static class ShadowNotFoundException {
+        @RealObject Resources.NotFoundException realObject;
+
+        private String message;
+
+        public void __constructor__() {
+        }
+
+        public void __constructor__(String name) {
+            this.message = name;
+        }
+
+        @Implementation
+        public String toString() {
+            return realObject.getClass().getName() + ": " + message;
+        }
     }
 }

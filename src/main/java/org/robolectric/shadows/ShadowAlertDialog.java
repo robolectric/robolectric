@@ -13,6 +13,7 @@ import android.widget.FrameLayout;
 import android.widget.ListAdapter;
 import android.widget.ListView;
 import org.robolectric.Robolectric;
+import org.robolectric.internal.HiddenApi;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
@@ -23,7 +24,7 @@ import static org.robolectric.Robolectric.getShadowApplication;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(AlertDialog.class)
+@Implements(value = AlertDialog.class, callThroughByDefault = false, inheritImplementationMethods = true)
 public class ShadowAlertDialog extends ShadowDialog {
     @RealObject
     private AlertDialog realAlertDialog;
@@ -53,6 +54,21 @@ public class ShadowAlertDialog extends ShadowDialog {
     public static AlertDialog getLatestAlertDialog() {
         ShadowAlertDialog dialog = Robolectric.getShadowApplication().getLatestAlertDialog();
         return dialog == null ? null : dialog.realAlertDialog;
+    }
+
+    @HiddenApi
+    public void __constructor__(Context context, int theme, boolean createContextWrapper) {
+        this.context = context;
+    }
+
+    @HiddenApi
+    public void __constructor__(Context context, boolean cancelable, DialogInterface.OnCancelListener cancelListener) {
+        this.context = context;
+    }
+
+    @HiddenApi @Implementation
+    public static int resolveDialogTheme(Context context, int resid) {
+        return 0;
     }
 
     @Override
@@ -282,6 +298,10 @@ public class ShadowAlertDialog extends ShadowDialog {
          * @param context the context
          */
         public void __constructor__(Context context) {
+            this.context = context;
+        }
+
+        public void __constructor__(Context context, int themeId) {
             this.context = context;
         }
 

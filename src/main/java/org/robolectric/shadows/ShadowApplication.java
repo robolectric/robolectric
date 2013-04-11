@@ -1,6 +1,7 @@
 package org.robolectric.shadows;
 
 import android.app.Application;
+import android.app.SearchManager;
 import android.appwidget.AppWidgetManager;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -12,9 +13,11 @@ import android.content.ServiceConnection;
 import android.content.res.AssetManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.PowerManager;
+import android.os.storage.StorageManager;
 import android.view.LayoutInflater;
 import android.widget.Toast;
 import org.robolectric.AndroidManifest;
@@ -23,6 +26,7 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 import org.robolectric.res.ResourceLoader;
+import org.robolectric.res.builder.RobolectricPackageManager;
 import org.robolectric.tester.org.apache.http.FakeHttpLayer;
 import org.robolectric.util.Scheduler;
 
@@ -32,6 +36,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import static org.fest.reflect.core.Reflection.constructor;
 import static org.robolectric.Robolectric.newInstanceOf;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -45,11 +50,11 @@ public class ShadowApplication extends ShadowContextWrapper {
 
     static {
         // note that these are different!
-    	// They specify concrete classes within Robolectric for interfaces or abstract classes defined by Android
+        // They specify concrete classes within Robolectric for interfaces or abstract classes defined by Android
         SYSTEM_SERVICE_MAP.put(Context.WINDOW_SERVICE, "org.robolectric.tester.android.view.TestWindowManager");
         SYSTEM_SERVICE_MAP.put(Context.CLIPBOARD_SERVICE, "android.content.ClipboardManager");
         SYSTEM_SERVICE_MAP.put(Context.SENSOR_SERVICE, "android.hardware.TestSensorManager");
-        SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.TestVibrator");
+        SYSTEM_SERVICE_MAP.put(Context.VIBRATOR_SERVICE, "android.os.RoboVibrator");
         
         // the rest are as mapped in docs...
         SYSTEM_SERVICE_MAP.put(Context.LAYOUT_INFLATER_SERVICE, "android.view.LayoutInflater");
@@ -108,20 +113,44 @@ public class ShadowApplication extends ShadowContextWrapper {
     /**
      * Associates a {@code ResourceLoader} with an {@code Application} instance
      *
-     *
-     *
-     * @param application    application
      * @param appManifest
      * @param resourceLoader resource loader
-     * @return the application
-     *         todo: make this non-static?
      */
-    public static Application bind(Application application, AndroidManifest appManifest, ResourceLoader resourceLoader) {
-        ShadowApplication shadowApplication = shadowOf(application);
-        if (shadowApplication.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
-        shadowApplication.appManifest = appManifest;
-        shadowApplication.resourceLoader = resourceLoader;
-        return application;
+    public void bind(AndroidManifest appManifest, ResourceLoader resourceLoader) {
+        if (this.resourceLoader != null) throw new RuntimeException("ResourceLoader already set!");
+        this.appManifest = appManifest;
+        this.resourceLoader = resourceLoader;
+
+        if (appManifest != null) {
+            setPackageName(appManifest.getPackageName());
+            setApplicationName(appManifest.getApplicationName());
+
+            setPackageManager(new RobolectricPackageManager(realApplication, appManifest));
+            this.registerBroadcastReceivers(appManifest);
+        }
+    }
+
+    private void registerBroadcastReceivers(AndroidManifest androidManifest) {
+        for (int i = 0; i < androidManifest.getReceiverCount(); i++) {
+            IntentFilter filter = new IntentFilter();
+            for (String action : androidManifest.getReceiverIntentFilterActions(i)) {
+                filter.addAction(action);
+            }
+            String receiverClassName = replaceLastDotWith$IfInnerStaticClass(androidManifest.getReceiverClassName(i));
+            registerReceiver((BroadcastReceiver) newInstanceOf(receiverClassName), filter);
+        }
+    }
+
+    private static String replaceLastDotWith$IfInnerStaticClass(String receiverClassName) {
+        String[] splits = receiverClassName.split("\\.");
+        String staticInnerClassRegex = "[A-Z][a-zA-Z]*";
+        if (splits[splits.length - 1].matches(staticInnerClassRegex) && splits[splits.length - 2].matches(staticInnerClassRegex)) {
+            int lastDotIndex = receiverClassName.lastIndexOf(".");
+            StringBuilder buffer = new StringBuilder(receiverClassName);
+            buffer.setCharAt(lastDotIndex, '$');
+            return buffer.toString();
+        }
+        return receiverClassName;
     }
 
     public List<Toast> getShownToasts() {
@@ -179,21 +208,32 @@ public class ShadowApplication extends ShadowContextWrapper {
     public Object getSystemService(String name) {
         if (name.equals(Context.LAYOUT_INFLATER_SERVICE)) {
             return LayoutInflater.from(realApplication);
-        } else {
-            Object service = systemServices.get(name);
-            if (service == null) {
-                String serviceClassName = SYSTEM_SERVICE_MAP.get(name);
-                if (serviceClassName != null) {
-                    try {
-                        service = newInstanceOf(Class.forName(serviceClassName));
-                    } catch (ClassNotFoundException e) {
-                        throw new RuntimeException(e);
-                    }
-                    systemServices.put(name, service);
+        }
+
+        Object service = systemServices.get(name);
+        if (service == null) {
+            String serviceClassName = SYSTEM_SERVICE_MAP.get(name);
+            if (serviceClassName == null) {
+                System.err.println("WARNING: unknown service " + name);
+                return null;
+            }
+
+            if (serviceClassName.equals(SearchManager.class.getName())) {
+                service = constructor().withParameterTypes(Context.class, Handler.class).in(SearchManager.class)
+                        .newInstance(realApplication, null);
+            } else if (serviceClassName.equals(StorageManager.class.getName())) {
+                service = constructor().withParameterTypes(Looper.class).in(StorageManager.class)
+                        .newInstance((Object) null);
+            } else {
+                try {
+                    service = newInstanceOf(Class.forName(serviceClassName));
+                } catch (ClassNotFoundException e) {
+                    throw new RuntimeException(e);
                 }
             }
-            return service;
+            systemServices.put(name, service);
         }
+        return service;
     }
     
     @Implementation
@@ -237,7 +277,7 @@ public class ShadowApplication extends ShadowContextWrapper {
         return true;
     }
 
-    @Implementation
+    @Override @Implementation
     public void unbindService(final ServiceConnection serviceConnection) {
         unboundServiceConnections.add(serviceConnection);
         shadowOf(Looper.getMainLooper()).post(new Runnable() {

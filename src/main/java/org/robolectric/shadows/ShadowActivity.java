@@ -8,6 +8,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.text.Selection;
@@ -35,7 +36,7 @@ import java.util.Map;
 import static org.robolectric.Robolectric.shadowOf;
 
 @Implements(Activity.class)
-public class ShadowActivity extends ShadowContextWrapper {
+public class ShadowActivity extends ShadowContextThemeWrapper {
     @RealObject
     protected Activity realActivity;
 
@@ -153,6 +154,12 @@ public class ShadowActivity extends ShadowContextWrapper {
     @Implementation
     public final Application getApplicationContext() {
         return getApplication();
+    }
+
+    @Override
+    @Implementation
+    public Object getSystemService(String name) {
+        return getApplicationContext().getSystemService(name);
     }
 
     @Implementation
@@ -321,6 +328,10 @@ public class ShadowActivity extends ShadowContextWrapper {
         Robolectric.getUiThreadScheduler().post(action);
     }
 
+    @Implementation
+    public void onCreate(Bundle savedInstanceState) {
+    }
+
     /**
      * Checks to see if {@code BroadcastListener}s are still registered.
      *
@@ -360,9 +371,14 @@ public class ShadowActivity extends ShadowContextWrapper {
         }
     }
 
+  @Implementation
+    public int getTaskId() {
+      return 0;
+    }
+
     @Implementation
     public SharedPreferences getPreferences(int mode) {
-    	return ShadowPreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        return ShadowPreferenceManager.getDefaultSharedPreferences(getApplicationContext());
     }
 
     /**
@@ -622,6 +638,10 @@ public class ShadowActivity extends ShadowContextWrapper {
     }
     
     @Implementation
+    public void onSaveInstanceState(Bundle outState) {
+    }
+
+    @Implementation
     public void startManagingCursor(Cursor c) {
     	managedCusors.add(c);
     }    
@@ -630,7 +650,7 @@ public class ShadowActivity extends ShadowContextWrapper {
     public void stopManagingCursor(Cursor c) {
     	managedCusors.remove(c);
     }
-    
+
     public List<Cursor> getManagedCursors() {
     	return managedCusors;
     }

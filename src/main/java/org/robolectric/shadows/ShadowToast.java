@@ -26,6 +26,9 @@ public class ShadowToast {
 
     @RealObject Toast toast;
 
+    public void __constructor__(Context context) {
+    }
+
     @Implementation
     public static Toast makeText(Context context, int resId, int duration) {
         return makeText(context, context.getResources().getString(resId), duration);
@@ -33,7 +36,7 @@ public class ShadowToast {
 
     @Implementation(i18nSafe=false)
     public static Toast makeText(Context context, CharSequence text, int duration) {
-        Toast toast = new Toast(null);
+        Toast toast = new Toast(context);
         toast.setDuration(duration);
         shadowOf(toast).text = text.toString();
         return toast;
@@ -72,6 +75,10 @@ public class ShadowToast {
     @Implementation
     public int getDuration() {
         return duration;
+    }
+
+    @Implementation
+    public void cancel() {
     }
 
     /**

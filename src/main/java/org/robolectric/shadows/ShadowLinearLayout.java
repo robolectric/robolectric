@@ -6,7 +6,7 @@ import android.widget.LinearLayout;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
-@Implements(LinearLayout.class)
+@Implements(value = LinearLayout.class, inheritImplementationMethods = true)
 public class ShadowLinearLayout extends ShadowViewGroup {
     private int orientation;
     private int gravity = Gravity.TOP | Gravity.START;

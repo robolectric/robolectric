@@ -40,8 +40,18 @@ import static org.robolectric.util.SQLite.*;
  * Implemented as a wrapper around an embedded SQL database, accessed via JDBC.  The JDBC connection is
  * made available to test cases for use in fixture setup and assertions.
  */
-@Implements(SQLiteDatabase.class)
-public class ShadowSQLiteDatabase  {
+@Implements(value = SQLiteDatabase.class, inheritImplementationMethods = true)
+public class ShadowSQLiteDatabase extends ShadowSQLiteClosable {
+
+    public static final android.database.sqlite.SQLiteDatabase.CursorFactory DEFAULT_CURSOR_FACTORY = new SQLiteDatabase.CursorFactory() {
+        @Override
+        public Cursor newCursor(SQLiteDatabase db,
+                                SQLiteCursorDriver masterQuery, String editTable, SQLiteQuery query) {
+            return new SQLiteCursor(db, masterQuery, editTable, query);
+        }
+
+    };
+
     @RealObject	SQLiteDatabase realSQLiteDatabase;
     private static Connection connection;
     private final ReentrantLock mLock = new ReentrantLock(true);
@@ -249,14 +259,7 @@ public class ShadowSQLiteDatabase  {
 
     @Implementation
     public Cursor rawQuery (String sql, String[] selectionArgs) {
-        return rawQueryWithFactory( new SQLiteDatabase.CursorFactory() {
-            @Override
-            public Cursor newCursor(SQLiteDatabase db,
-                    SQLiteCursorDriver masterQuery, String editTable, SQLiteQuery query) {
-                return new SQLiteCursor(db, masterQuery, editTable, query);
-            }
-            
-        }, sql, selectionArgs, null );
+        return rawQueryWithFactory(DEFAULT_CURSOR_FACTORY, sql, selectionArgs, null );
     }
 
     @Implementation
@@ -265,7 +268,11 @@ public class ShadowSQLiteDatabase  {
         if (sql != null) {
             sqlBody = buildWhereClause(sql, selectionArgs);
         }
-        
+
+        if(cursorFactory == null){
+            cursorFactory = DEFAULT_CURSOR_FACTORY;
+        }
+
         ResultSet resultSet;
         try {
             SQLiteStatement stmt = compileStatement(sql);

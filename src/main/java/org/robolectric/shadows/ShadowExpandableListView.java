@@ -8,7 +8,7 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 
-@Implements(ExpandableListView.class)
+@Implements(value = ExpandableListView.class, inheritImplementationMethods = true)
 public class ShadowExpandableListView extends ShadowListView {
     @RealObject private ExpandableListView mExpandable;
     private OnChildClickListener mChildClickListener;

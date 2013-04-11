@@ -82,7 +82,7 @@ public class ShadowSparseBooleanArray {
         if (o == null || o.getClass() != realObject.getClass())
             return false;
 
-        ShadowSparseBooleanArray target = (ShadowSparseBooleanArray) shadowOf((SparseBooleanArray) o);
+        ShadowSparseBooleanArray target = shadowOf((SparseBooleanArray) o);
         return sparseArray.equals(target.sparseArray);
     }
 }

@@ -28,4 +28,14 @@ public class ShadowValueAnimator extends ShadowAnimator {
     public static ValueAnimator ofInt (int... values){
     	return new ValueAnimator();
     }
+
+    @Implementation
+    public boolean isRunning() {
+        return false;
+    }
+
+    @Implementation @Override
+    public long getDuration() {
+        return super.getDuration();
+    }
 }

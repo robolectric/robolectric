@@ -49,6 +49,16 @@ public class TypedArrayTest {
     }
 
     @Test
+    public void getResourceId_shouldReturnActualValue() throws Exception {
+        Resources resources = Robolectric.application.getResources();
+        RoboAttributeSet attributeSet = new RoboAttributeSet(
+                asList(new Attribute("android:attr/id", "@+id/snippet_text", TestUtil.TEST_PACKAGE)
+                ), shadowOf(resources).getResourceLoader(), null);
+        TypedArray typedArray = ShadowTypedArray.create(resources, attributeSet, new int[]{android.R.attr.id});
+        assertThat(typedArray.getResourceId(0, -1)).isEqualTo(R.id.snippet_text);
+    }
+
+    @Test
     public void getDimension_shouldReturnDefaultValue() throws Exception {
         assertThat(context.obtainStyledAttributes(new int[]{android.R.attr.alpha}).getDimension(0, -1f)).isEqualTo(-1f);
     }
@@ -57,7 +67,7 @@ public class TypedArrayTest {
     public void getTextArray_whenNoSuchAttribute_shouldReturnNull() throws Exception {
         Resources resources = Robolectric.application.getResources();
         RoboAttributeSet attributeSet = new RoboAttributeSet(
-                asList(new Attribute(TestUtil.TEST_PACKAGE + ":attr/not_items", "@array/greetings", TestUtil.TEST_PACKAGE)
+                asList(new Attribute(TestUtil.TEST_PACKAGE + ":attr/keycode", "@array/greetings", TestUtil.TEST_PACKAGE)
                 ), shadowOf(resources).getResourceLoader(), null);
         TypedArray typedArray = ShadowTypedArray.create(resources, attributeSet, new int[]{R.attr.items});
         assertNull(typedArray.getTextArray(0));
@@ -71,5 +81,16 @@ public class TypedArrayTest {
                 ), shadowOf(resources).getResourceLoader(), null);
         TypedArray typedArray = ShadowTypedArray.create(resources, attributeSet, new int[]{R.attr.items});
         assertThat(typedArray.getTextArray(0)).containsExactly("hola", "Hello");
+    }
+
+    @Test public void shouldEnumeratePresentValues() throws Exception {
+        Resources resources = Robolectric.application.getResources();
+        RoboAttributeSet attributeSet = new RoboAttributeSet(
+                asList(new Attribute(TestUtil.TEST_PACKAGE + ":attr/items", "@array/greetings", TestUtil.TEST_PACKAGE),
+                        new Attribute(TestUtil.TEST_PACKAGE + ":attr/aspectRatio", "1", TestUtil.TEST_PACKAGE)
+                ), shadowOf(resources).getResourceLoader(), null);
+        TypedArray typedArray = ShadowTypedArray.create(resources, attributeSet, new int[]{R.attr.scrollBars, R.attr.items, R.attr.isSugary});
+        assertThat(typedArray.getIndexCount()).isEqualTo(1);
+        assertThat(typedArray.getIndex(0)).isEqualTo(1);
     }
 }

@@ -2,6 +2,7 @@ package org.robolectric.shadows;
 
 import android.content.res.AssetManager;
 import org.robolectric.AndroidManifest;
+import org.robolectric.internal.HiddenApi;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 
@@ -41,4 +42,19 @@ public final class ShadowAssetManager {
         return new FileInputStream(new File(appManifest.getAssetsDirectory(), fileName));
     }
 
+    @HiddenApi @Implementation
+    public void setConfiguration(int mcc, int mnc, String locale,
+                                              int orientation, int touchscreen, int density, int keyboard,
+                                              int keyboardHidden, int navigation, int screenWidth, int screenHeight,
+                                              int smallestScreenWidthDp, int screenWidthDp, int screenHeightDp,
+                                              int screenLayout, int uiMode, int majorVersion) {
+    }
+
+    @HiddenApi @Implementation
+    public void ensureStringBlocks() {
+    }
+
+    public File getAssetsDirectory() {
+        return appManifest.getAssetsDirectory();
+    }
 }

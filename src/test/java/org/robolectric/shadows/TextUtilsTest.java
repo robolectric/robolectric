@@ -15,7 +15,7 @@ import static org.junit.Assert.assertArrayEquals;
 public class TextUtilsTest {
     @Test
     public void testExpandTemplate() throws Exception {
-        assertThat((String) TextUtils.expandTemplate("a^1b^2c^3d", "A", "B", "C", "D")).isEqualTo("aAbBcCd");
+        assertThat(TextUtils.expandTemplate("a^1b^2c^3d", "A", "B", "C", "D").toString()).isEqualTo("aAbBcCd");
     }
 
     @Test

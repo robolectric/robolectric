@@ -3,29 +3,29 @@ package org.robolectric.res;
 import android.view.View;
 import org.w3c.dom.Document;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 abstract class XResourceLoader implements ResourceLoader {
-    private final ResourceIndex resourceIndex;
-
-    final List<RawResourceLoader> rawResourceLoaders = new ArrayList<RawResourceLoader>();
-
-    boolean isInitialized = false;
-
     final AttrResourceLoader attrResourceLoader = new AttrResourceLoader();
-    final Resolver<Boolean> booleanResolver = new BooleanResolver();
-    final Resolver<Integer> colorResolver = new ColorResolver();
-    final Resolver<Float> dimenResolver = new DimenResolver();
-    final Resolver<Integer> integerResolver = new IntegerResolver();
-    final PluralsResolver pluralsResolver = new PluralsResolver();
-    final Resolver<String> stringResolver = new StringResolver();
-    final ResBundle<ViewNode> viewNodes = new ResBundle<ViewNode>();
-    final ResBundle<MenuNode> menuNodes = new ResBundle<MenuNode>();
-    final ResBundle<DrawableNode> drawableNodes = new ResBundle<DrawableNode>();
-    final ResBundle<PreferenceNode> preferenceNodes = new ResBundle<PreferenceNode>();
+    final ResBundle<String> booleanData = new ResBundle<String>();
+    final ResBundle<String> colorData = new ResBundle<String>();
+    final ResBundle<String> dimenData = new ResBundle<String>();
+    final ResBundle<String> integerData = new ResBundle<String>();
+    final ResBundle<PluralResourceLoader.PluralRules> pluralsData = new ResBundle<PluralResourceLoader.PluralRules>();
+    final ResBundle<String> stringData = new ResBundle<String>();
+    final ResBundle<ViewNode> layoutData = new ResBundle<ViewNode>();
+    final ResBundle<MenuNode> menuData = new ResBundle<MenuNode>();
+    final ResBundle<DrawableNode> drawableData = new ResBundle<DrawableNode>();
+    final ResBundle<PreferenceNode> preferenceData = new ResBundle<PreferenceNode>();
     final ResBundle<Document> xmlDocuments = new ResBundle<Document>();
+    final ResBundle<File> rawResourceFiles = new ResBundle<File>();
+    private final ResourceIndex resourceIndex;
+    boolean isInitialized = false;
 
     protected XResourceLoader(ResourceIndex resourceIndex) {
         this.resourceIndex = resourceIndex;
@@ -42,17 +42,18 @@ abstract class XResourceLoader implements ResourceLoader {
     }
 
     protected void makeImmutable() {
-        booleanResolver.makeImmutable();
-        colorResolver.makeImmutable();
-        dimenResolver.makeImmutable();
-        integerResolver.makeImmutable();
-        pluralsResolver.makeImmutable();
-        stringResolver.makeImmutable();
-        viewNodes.makeImmutable();
-        menuNodes.makeImmutable();
-        drawableNodes.makeImmutable();
-        preferenceNodes.makeImmutable();
+        booleanData.makeImmutable();
+        colorData.makeImmutable();
+        dimenData.makeImmutable();
+        integerData.makeImmutable();
+        pluralsData.makeImmutable();
+        stringData.makeImmutable();
+        layoutData.makeImmutable();
+        menuData.makeImmutable();
+        drawableData.makeImmutable();
+        preferenceData.makeImmutable();
         xmlDocuments.makeImmutable();
+        rawResourceFiles.makeImmutable();
     }
 
     @Override
@@ -61,45 +62,44 @@ abstract class XResourceLoader implements ResourceLoader {
     }
 
     @Override
-    public int getColorValue(ResName resName, String qualifiers) {
+    public String getColorValue(ResName resName, String qualifiers) {
         initialize();
-        Integer value = colorResolver.resolve(resName, qualifiers);
-        return value == null ? -1 : value;
+        return new BasicResolver(colorData).resolve(resName, qualifiers);
     }
 
     @Override
     public String getStringValue(ResName resName, String qualifiers) {
         initialize();
-        return stringResolver.resolve(resName, qualifiers);
+        return new BasicResolver(stringData).resolve(resName, qualifiers);
     }
 
     @Override
     public String getPluralStringValue(ResName resName, int quantity, String qualifiers) {
         initialize();
-        PluralResourceLoader.PluralRules pluralRules = pluralsResolver.get(resName, qualifiers);
+        PluralResourceLoader.PluralRules pluralRules = pluralsData.get(resName, qualifiers);
         if (pluralRules == null) return null;
 
         PluralResourceLoader.Plural plural = pluralRules.find(quantity);
         if (plural == null) return null;
-        return stringResolver.resolveValue(qualifiers, plural.string, resName.namespace);
+        return new BasicResolver(stringData).resolveValue(qualifiers, plural.string, resName.namespace);
     }
 
     @Override
-    public float getDimenValue(ResName resName, String qualifiers) {
+    public String getDimenValue(ResName resName, String qualifiers) {
         initialize();
-        return dimenResolver.resolve(resName, qualifiers);
+        return new BasicResolver(dimenData).resolve(resName, qualifiers);
     }
 
     @Override
     public int getIntegerValue(ResName resName, String qualifiers) {
         initialize();
-        return integerResolver.resolve(resName, qualifiers);
+        return new IntegerResolver(integerData).resolve(resName, qualifiers);
     }
 
     @Override
     public boolean getBooleanValue(ResName resName, String qualifiers) {
         initialize();
-        return booleanResolver.resolve(resName, qualifiers);
+        return new BooleanResolver(booleanData).resolve(resName, qualifiers);
     }
 
     @Override
@@ -110,19 +110,19 @@ abstract class XResourceLoader implements ResourceLoader {
 
     @Override
     public DrawableNode getDrawableNode(ResName resName, String qualifiers) {
-        return drawableNodes.get(resName, qualifiers);
+        return drawableData.get(resName, qualifiers);
     }
 
     @Override
-    public InputStream getRawValue(int id) {
+    public InputStream getRawValue(ResName resName) {
         initialize();
 
-        for (RawResourceLoader rawResourceLoader : rawResourceLoaders) {
-            InputStream stream = rawResourceLoader.getValue(id);
-            if (stream != null) return stream;
+        File file = rawResourceFiles.get(resName, "");
+        try {
+            return file == null ? null : new FileInputStream(file);
+        } catch (FileNotFoundException e) {
+            throw new RuntimeException(e);
         }
-
-        return null;
     }
 
     @Override
@@ -131,7 +131,7 @@ abstract class XResourceLoader implements ResourceLoader {
 
         if (resName == null) return null;
         resName = new ResName(resName.namespace, "string-array", resName.name); // ugh
-        List<String> strings = stringResolver.resolveArray(resName, qualifiers);
+        List<String> strings = new BasicResolver(stringData).resolveArray(resName, qualifiers);
         return strings == null ? null : strings.toArray(new String[strings.size()]);
     }
 
@@ -141,7 +141,7 @@ abstract class XResourceLoader implements ResourceLoader {
 
         if (resName == null) return null;
         resName = new ResName(resName.namespace, "integer-array", resName.name); // ugh
-        List<Integer> ints = integerResolver.resolveArray(resName, qualifiers);
+        List<Integer> ints = new IntegerResolver(integerData).resolveArray(resName, qualifiers);
         return ints == null ? null : toIntArray(ints);
     }
 
@@ -158,21 +158,21 @@ abstract class XResourceLoader implements ResourceLoader {
     public PreferenceNode getPreferenceNode(ResName resName, String qualifiers) {
         initialize();
 
-        return preferenceNodes.get(resName, qualifiers);
+        return preferenceData.get(resName, qualifiers);
     }
 
     @Override
     public ViewNode getLayoutViewNode(ResName resName, String qualifiers) {
         initialize();
         if (resName == null) return null;
-        return viewNodes.get(resName, qualifiers);
+        return layoutData.get(resName, qualifiers);
     }
 
     @Override
     public MenuNode getMenuNode(ResName resName, String qualifiers) {
         initialize();
         if (resName == null) return null;
-        return menuNodes.get(resName, qualifiers);
+        return menuData.get(resName, qualifiers);
     }
 
     @Override
@@ -192,15 +192,21 @@ abstract class XResourceLoader implements ResourceLoader {
         return attrResourceLoader.convertValueToEnum(viewClass, namespace, attribute, part);
     }
 
-    abstract static class Resolver<T> extends ResBundle<String> {
+    abstract static class Resolver<T> {
+        private final ResBundle<String> resBundle;
+
+        protected Resolver(ResBundle<String> resBundle) {
+            this.resBundle = resBundle;
+        }
+
         public T resolve(ResName resName, String qualifiers) {
-            Value<String> value = getValue(resName, qualifiers);
+            ResBundle.Value<String> value = resBundle.getValue(resName, qualifiers);
             if (value == null) return null;
             return resolveValue(qualifiers, value.value, value.xmlContext.packageName);
         }
 
         public List<T> resolveArray(ResName resName, String qualifiers) {
-            Value<List<String>> value = getListValue(resName, qualifiers);
+            ResBundle.Value<List<String>> value = resBundle.getListValue(resName, qualifiers);
             if (value == null) return null;
 
             List<T> items = new ArrayList<T>();
@@ -224,6 +230,10 @@ abstract class XResourceLoader implements ResourceLoader {
     }
 
     private static class BooleanResolver extends Resolver<Boolean> {
+        private BooleanResolver(ResBundle<String> resBundle) {
+            super(resBundle);
+        }
+
         @Override
         Boolean convert(String rawValue) {
             if ("true".equalsIgnoreCase(rawValue)) {
@@ -241,62 +251,38 @@ abstract class XResourceLoader implements ResourceLoader {
         }
     }
 
-    private static class ColorResolver extends Resolver<Integer> {
-        @Override
-        Integer convert(String rawValue) {
-            if (rawValue.startsWith("#")) {
-                long color = Long.parseLong(rawValue.substring(1), 16);
-                return (int) color;
-            }
-            return null;
-        }
-    }
-
-    private static class DimenResolver extends Resolver<Float> {
-        private static final String[] UNITS = { "dp", "dip", "pt", "px", "sp" };
-
-        @Override
-        Float convert(String rawValue) {
-            int end = rawValue.length();
-            for ( int i = 0; i < UNITS.length; i++ ) {
-                int index = rawValue.indexOf(UNITS[i]);
-                if ( index >= 0 && end > index ) {
-                    end = index;
-                }
-            }
-
-            return Float.parseFloat(rawValue.substring(0, end));
-        }
-    }
-
     private static class IntegerResolver extends Resolver<Integer> {
+        private IntegerResolver(ResBundle<String> resBundle) {
+            super(resBundle);
+        }
+
         @Override
         Integer convert(String rawValue) {
             try {
                 // Decode into long, because there are some large hex values in the android resource files
                 // (e.g. config_notificationsBatteryLowARGB = 0xFFFF0000 in sdk 14).
                 // Integer.decode() does not support large, i.e. negative values in hex numbers.
-                return (int) Long.decode(rawValue).longValue();
+                // try parsing decimal number
+                return (int) Long.parseLong(rawValue);
             } catch (NumberFormatException nfe) {
-                throw new RuntimeException(rawValue + " is not an integer.", nfe);
+                // try parsing hex number
+                try {
+                    return Long.decode(rawValue).intValue();
+                } catch (NumberFormatException e) {
+                    throw new RuntimeException(rawValue + " is not an integer.", nfe);
+                }
             }
         }
     }
 
-    static class PluralsResolver extends ResBundle<PluralResourceLoader.PluralRules> {
-    }
+    static class BasicResolver extends Resolver<String> {
+        BasicResolver(ResBundle<String> resBundle) {
+            super(resBundle);
+        }
 
-    static class StringResolver extends Resolver<String> {
         @Override
         String convert(String rawValue) {
             return rawValue;
-        }
-    }
-
-    private static class StringArrayResolver extends Resolver<String[]> {
-        @Override
-        String[] convert(String rawValue) {
-            return new String[0];
         }
     }
 }

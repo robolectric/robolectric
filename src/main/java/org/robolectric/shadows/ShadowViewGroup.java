@@ -7,6 +7,7 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.LayoutAnimationController;
 import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
+import org.robolectric.internal.RealObject;
 
 import java.io.PrintStream;
 import java.util.ArrayList;
@@ -17,7 +18,7 @@ import static org.robolectric.Robolectric.shadowOf;
  * Shadow for {@code ViewGroup} that simulates its implementation
  */
 @SuppressWarnings({"UnusedDeclaration"})
-@Implements(ViewGroup.class)
+@Implements(value = ViewGroup.class, inheritImplementationMethods = true)
 public class ShadowViewGroup extends ShadowView {
     private ArrayList<View> children = new ArrayList<View>();
     private AnimationListener animListener;
@@ -300,4 +301,37 @@ public class ShadowViewGroup extends ShadowView {
         return false;
     }
 
+    @SuppressWarnings({"UnusedDeclaration"})
+    @Implements(ViewGroup.LayoutParams.class)
+    public static class ShadowLayoutParams {
+        @RealObject private ViewGroup.LayoutParams realLayoutParams;
+
+        public void __constructor__(int w, int h) {
+            realLayoutParams.width = w;
+            realLayoutParams.height = h;
+        }
+
+        public void __constructor__(ViewGroup.LayoutParams source) {
+            __constructor__(source.width, source.height);
+        }
+    }
+
+    /**
+     * Shadow for {@link android.view.ViewGroup.MarginLayoutParams} that simulates its implementation.
+     */
+    @SuppressWarnings("UnusedDeclaration")
+    @Implements(ViewGroup.MarginLayoutParams.class)
+    public static class ShadowMarginLayoutParams extends ShadowLayoutParams {
+
+        @RealObject
+        private ViewGroup.MarginLayoutParams realMarginLayoutParams;
+
+        @Implementation
+        public void setMargins(int left, int top, int right, int bottom) {
+            realMarginLayoutParams.leftMargin = left;
+            realMarginLayoutParams.topMargin = top;
+            realMarginLayoutParams.rightMargin = right;
+            realMarginLayoutParams.bottomMargin = bottom;
+        }
+    }
 }

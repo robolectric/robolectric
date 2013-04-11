@@ -160,24 +160,28 @@ public class LayoutBuilder {
     private View constructView(ViewNode viewNode, Context context) {
         Class<? extends View> clazz = pickViewClass(viewNode);
         try {
+            Constructor<? extends View> constructor;
             try {
                 RoboAttributeSet attributeSet = shadowOf(context).createAttributeSet(viewNode.getAttributes(), View.class);
-                return ((Constructor<? extends View>) clazz.getConstructor(Context.class, AttributeSet.class)).newInstance(context, attributeSet);
+                constructor = clazz.getConstructor(Context.class, AttributeSet.class);
+                return constructor.newInstance(context, attributeSet);
             } catch (NoSuchMethodException e) {
                 try {
-                    return ((Constructor<? extends View>) clazz.getConstructor(Context.class)).newInstance(context);
+                    constructor = clazz.getConstructor(Context.class);
+                    return constructor.newInstance(context);
                 } catch (NoSuchMethodException e1) {
-                    return ((Constructor<? extends View>) clazz.getConstructor(Context.class, String.class)).newInstance(context, "");
+                    constructor = clazz.getConstructor(Context.class, String.class);
+                    return constructor.newInstance(context, "");
                 }
             }
         } catch (InstantiationException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to create a " + clazz.getName(), e);
         } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to create a " + clazz.getName(), e);
         } catch (InvocationTargetException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to create a " + clazz.getName(), e);
         } catch (NoSuchMethodException e) {
-            throw new RuntimeException(e);
+            throw new RuntimeException("Failed to create a " + clazz.getName(), e);
         }
     }
 

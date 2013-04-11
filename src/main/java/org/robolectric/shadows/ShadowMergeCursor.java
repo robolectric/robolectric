@@ -8,7 +8,7 @@ import org.robolectric.internal.Implements;
 /**
  * Implementation for Android {@code MergeCursor} class.
  */
-@Implements(MergeCursor.class)
+@Implements(value = MergeCursor.class, inheritImplementationMethods = true)
 public class ShadowMergeCursor extends ShadowAbstractCursor {
 	
 	private Cursor [] cursors;
