@@ -39,7 +39,7 @@ public class PackageResourceLoader extends XResourceLoader {
                 attrResourceLoader
         );
 
-        documentLoader.loadResourceXmlSubDirs("layout", new ViewLoader(layoutData));
+        documentLoader.loadResourceXmlSubDirs("layout", new LayoutLoader(layoutData));
         documentLoader.loadResourceXmlSubDirs("menu", new MenuLoader(menuData));
         DrawableResourceLoader drawableResourceLoader = new DrawableResourceLoader(drawableData);
         drawableResourceLoader.findNinePatchResources(resourcePath);

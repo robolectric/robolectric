@@ -1,12 +1,13 @@
 package org.robolectric.res;
 
+import com.ximpleware.VTDGen;
+import com.ximpleware.VTDNav;
 import org.jetbrains.annotations.NotNull;
-import org.w3c.dom.Document;
+import org.robolectric.util.Util;
 
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
 import java.io.FileFilter;
+import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -14,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 public class DocumentLoader {
-    public static boolean DEBUG_PERF = true;
+    public static boolean DEBUG_PERF = false;
     private Map<String, Long> perfResponsibleParties = new HashMap<String, Long>();
 
     private static final FileFilter ENDS_WITH_XML = new FileFilter() {
@@ -24,15 +25,11 @@ public class DocumentLoader {
     };
 
     private final ResourcePath resourcePath;
-    private final DocumentBuilderFactory documentBuilderFactory;
+    private final VTDGen vtdGen;
 
     public DocumentLoader(ResourcePath resourcePath) {
         this.resourcePath = resourcePath;
-
-        documentBuilderFactory = DocumentBuilderFactory.newInstance();
-        documentBuilderFactory.setNamespaceAware(true);
-        documentBuilderFactory.setIgnoringComments(true);
-        documentBuilderFactory.setIgnoringElementContentWhitespace(true);
+        vtdGen = new VTDGen();
     }
 
     public void loadResourceXmlSubDirs(String folderBaseName, XmlLoader... xmlLoaders) throws Exception {
@@ -73,12 +70,12 @@ public class DocumentLoader {
 
     private void loadResourceXmlFile(File file, String packageName, XmlLoader... xmlLoaders) throws Exception {
         long startTime = DEBUG_PERF ? System.currentTimeMillis() : 0;
-        Document document = parse(file);
+        VTDNav vtdNav = parse(file);
         if (DEBUG_PERF) perfBlame("DocumentLoader.parse", startTime);
 
         for (XmlLoader xmlLoader : xmlLoaders) {
             startTime = DEBUG_PERF ? System.currentTimeMillis() : 0;
-            xmlLoader.processResourceXml(file, document, packageName);
+            xmlLoader.processResourceXml(file, vtdNav, packageName);
             if (DEBUG_PERF) perfBlame(xmlLoader.getClass().getName(), startTime);
         }
     }
@@ -89,9 +86,11 @@ public class DocumentLoader {
         perfResponsibleParties.put(responsibleParty, totalElapsedMs == null ? myElapsedMs : totalElapsedMs + myElapsedMs);
     }
 
-    private Document parse(File xmlFile) throws Exception {
-        DocumentBuilder documentBuilder = documentBuilderFactory.newDocumentBuilder();
-        return documentBuilder.parse(xmlFile);
-    }
+    private VTDNav parse(File xmlFile) throws Exception {
+        byte[] bytes = Util.readBytes(new FileInputStream(xmlFile));
+        vtdGen.setDoc(bytes);
+        vtdGen.parse(true);
 
+        return vtdGen.getNav();
+    }
 }
