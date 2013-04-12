@@ -4,8 +4,6 @@ import android.content.res.Resources;
 import android.content.res.XmlResourceParser;
 import org.w3c.dom.Document;
 
-import java.io.File;
-
 /**
  * Loader for xml property files.
  * <p/>
@@ -25,7 +23,7 @@ public class XmlFileLoader extends XmlLoader {
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+    protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
         resBundle.put("xml", xmlFile.getName().replace(".xml", ""), parse(xmlFile), xmlContext);
     }
 }

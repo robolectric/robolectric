@@ -4,7 +4,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -16,7 +15,7 @@ public class MenuLoader extends XmlLoader {
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+    protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
         MenuNode topLevelNode = new MenuNode("top-level", new ArrayList<Attribute>());
 
         NodeList items = parse(xmlFile).getChildNodes();

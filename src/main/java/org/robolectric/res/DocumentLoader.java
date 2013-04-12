@@ -3,11 +3,9 @@ package org.robolectric.res;
 import com.ximpleware.VTDGen;
 import com.ximpleware.VTDNav;
 import org.jetbrains.annotations.NotNull;
-import org.robolectric.util.Util;
 
 import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -24,24 +22,26 @@ public class DocumentLoader {
         }
     };
 
-    private final ResourcePath resourcePath;
+    private final Fs resourceFs;
+    private final String packageName;
     private final VTDGen vtdGen;
 
     public DocumentLoader(ResourcePath resourcePath) {
-        this.resourcePath = resourcePath;
+        this.resourceFs = new Fs(resourcePath.resourceBase);
+        this.packageName = resourcePath.getPackageName();
         vtdGen = new VTDGen();
     }
 
-    public void loadResourceXmlSubDirs(String folderBaseName, XmlLoader... xmlLoaders) throws Exception {
+    public void load(String folderBaseName, XmlLoader... xmlLoaders) throws Exception {
         long startTime = System.currentTimeMillis();
         if (DEBUG_PERF) perfResponsibleParties.clear();
 
-        File[] files = resourcePath.resourceBase.listFiles(new DirectoryMatchingFileFilter(folderBaseName));
+        FsFile[] files = resourceFs.listFiles(new DirectoryMatchingFileFilter(folderBaseName));
         if (files == null) {
-            throw new RuntimeException(resourcePath.resourceBase + " is not a directory");
+            throw new RuntimeException(resourceFs.join(folderBaseName) + " is not a directory");
         }
-        for (File dir : files) {
-            loadResourceXmlDir(dir, xmlLoaders);
+        for (FsFile dir : files) {
+            loadFile(dir, xmlLoaders);
         }
 
         if (DEBUG_PERF) {
@@ -54,28 +54,24 @@ public class DocumentLoader {
         }
     }
 
-    public void loadResourceXmlDir(String dirName, XmlLoader... xmlLoaders) throws Exception {
-        loadResourceXmlDir(new File(resourcePath.resourceBase, dirName), xmlLoaders);
-    }
-
-    private void loadResourceXmlDir(File dir, XmlLoader... xmlLoaders) throws Exception {
+    private void loadFile(FsFile dir, XmlLoader[] xmlLoaders) throws Exception {
         if (!dir.exists()) {
             throw new RuntimeException("no such directory " + dir);
         }
 
-        for (File file : dir.listFiles(ENDS_WITH_XML)) {
-            loadResourceXmlFile(file, resourcePath.getPackageName(), xmlLoaders);
+        for (FsFile file : dir.listFiles(ENDS_WITH_XML)) {
+            loadResourceXmlFile(file, xmlLoaders);
         }
     }
 
-    private void loadResourceXmlFile(File file, String packageName, XmlLoader... xmlLoaders) throws Exception {
+    private void loadResourceXmlFile(FsFile fsFile, XmlLoader... xmlLoaders) throws Exception {
         long startTime = DEBUG_PERF ? System.currentTimeMillis() : 0;
-        VTDNav vtdNav = parse(file);
+        VTDNav vtdNav = parse(fsFile);
         if (DEBUG_PERF) perfBlame("DocumentLoader.parse", startTime);
 
         for (XmlLoader xmlLoader : xmlLoaders) {
             startTime = DEBUG_PERF ? System.currentTimeMillis() : 0;
-            xmlLoader.processResourceXml(file, vtdNav, packageName);
+            xmlLoader.processResourceXml(fsFile, vtdNav, packageName);
             if (DEBUG_PERF) perfBlame(xmlLoader.getClass().getName(), startTime);
         }
     }
@@ -86,8 +82,8 @@ public class DocumentLoader {
         perfResponsibleParties.put(responsibleParty, totalElapsedMs == null ? myElapsedMs : totalElapsedMs + myElapsedMs);
     }
 
-    private VTDNav parse(File xmlFile) throws Exception {
-        byte[] bytes = Util.readBytes(new FileInputStream(xmlFile));
+    private VTDNav parse(FsFile xmlFile) throws Exception {
+        byte[] bytes = xmlFile.getBytes();
         vtdGen.setDoc(bytes);
         vtdGen.parse(true);
 

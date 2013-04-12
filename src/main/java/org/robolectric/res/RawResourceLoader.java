@@ -17,7 +17,7 @@ public class RawResourceLoader {
                     String name = file.getName();
                     int dotIndex = name.indexOf(".");
                     String fileBaseName = dotIndex >= 0 ? name.substring(0, dotIndex) : name;
-                    rawResourceFiles.put("raw", fileBaseName, file, new XmlLoader.XmlContext(resourcePath.getPackageName(), file));
+                    rawResourceFiles.put("raw", fileBaseName, file, new XmlLoader.XmlContext(resourcePath.getPackageName(), new FsFile(file)));
                 }
             }
         }

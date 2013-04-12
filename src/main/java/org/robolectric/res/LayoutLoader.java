@@ -5,7 +5,6 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -19,7 +18,7 @@ public class LayoutLoader extends XmlLoader {
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+    protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
         Document document = parse(xmlFile);
 
         ViewNode topLevelNode = new ViewNode("top-level", new ArrayList<Attribute>(), xmlContext);
