@@ -23,6 +23,7 @@ import org.robolectric.R;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 import org.robolectric.res.EmptyResourceLoader;
+import org.robolectric.res.Fs;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceExtractor;
 import org.robolectric.res.ResourceIndex;
@@ -349,7 +350,7 @@ public class ApplicationTest {
                         "          package=\"" + packageName + "\">\n" +
                         "    " + contents + "\n" +
                         "</manifest>\n");
-        return new AndroidManifest(f, null, null);
+        return new AndroidManifest(Fs.newFile(f), null, null);
     }
 
     private static class ImperviousResourceExtractor extends ResourceExtractor {

@@ -2,14 +2,12 @@
 
 ANDROID_SOURCES_BASE=/Volumes/android
 ANDROID_VERSION=4.1.2_r1
-OUT=/tmp/android-1234
+OUT=`mktemp -t mavenize-android -d`
 
 SRC_JAR=$OUT/android-base-sources.jar
 
 BASE_DIR=$ANDROID_SOURCES_BASE/frameworks/base
 
-rm -rf $OUT
-mkdir -p $OUT
 ( cd $OUT && mkdir from )
 ( cd $OUT/from && jar cf $SRC_JAR . )
 
@@ -47,11 +45,33 @@ mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
     -Dfile=$ANDROID_SOURCES_BASE/out/target/common/obj/JAVA_LIBRARIES/framework_intermediates/classes.jar
 
 
+echo "building jar for android-res..."
+( cd $BASE_DIR/core/res && jar cf $OUT/android-res-$ANDROID_VERSION.jar . )
+
+# install android-luni
+mvn install:install-file \
+    -Dfile=$OUT/android-res-$ANDROID_VERSION.jar \
+    -DgroupId=org.robolectric \
+    -DartifactId=android-res \
+    -Dversion=$ANDROID_VERSION \
+    -Dpackaging=jar \
+    -Dclassifier=real
+
+mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
+    -DgroupId=org.robolectric \
+    -DartifactId=android-res \
+    -Dversion=${ANDROID_VERSION}_rc \
+    -Dpackaging=jar \
+    -Dclassifier=real \
+    -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases \
+    -DrepositoryId=square-nexus \
+    -Dfile=$OUT/android-res-$ANDROID_VERSION.jar
 
 
 echo "building jar for libcore luni..."
 
-cd $ANDROID_SOURCES_BASE/libcore/luni/src/main/java && javac -cp /tmp -d /tmp/out \
+mkdir $OUT/luni
+( cd $ANDROID_SOURCES_BASE/libcore/luni/src/main/java && javac -cp $OUT -d $OUT/luni \
     libcore/icu/CollationElementIteratorICU.java \
     libcore/icu/CollationKeyICU.java \
     libcore/icu/ErrorCode.java \
@@ -68,14 +88,13 @@ cd $ANDROID_SOURCES_BASE/libcore/luni/src/main/java && javac -cp /tmp -d /tmp/ou
     libcore/util/BasicLruCache.java \
     libcore/util/Objects.java \
     java/util/LinkedHashMap.java \
-    java/util/HashMap.java
+    java/util/HashMap.java )
 
-cd /tmp/out
-jar cf /tmp/android-luni-$ANDROID_VERSION.jar .
+( cd $OUT/luni && jar cf $OUT/android-luni-$ANDROID_VERSION.jar . )
 
 # install android-luni
 mvn install:install-file \
-    -Dfile=/tmp/android-luni-$ANDROID_VERSION.jar \
+    -Dfile=$OUT/android-luni-$ANDROID_VERSION.jar \
     -DgroupId=org.robolectric \
     -DartifactId=android-luni \
     -Dversion=$ANDROID_VERSION \
@@ -90,7 +109,7 @@ mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
     -Dclassifier=real \
     -Durl=http://data01.mtv.squareup.com/nexus/content/repositories/releases \
     -DrepositoryId=square-nexus \
-    -Dfile=/tmp/android-luni-$ANDROID_VERSION.jar
+    -Dfile=$OUT/android-luni-$ANDROID_VERSION.jar
 
 
 # install android-kxml2
@@ -117,13 +136,13 @@ mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
 edit poms
 
 version=4.1.2_r1_rc
-for artifactId in "android-base" "android-luni" "android-kxml2"; do
+for artifactId in "android-base" "android-luni" "android-kxml2" "android-res"; do
   echo cd ~/.m2/org/robolectric/$artifactId/$version
   cd ~/.m2/repository/org/robolectric/$artifactId/$version
 
   for ext in ".jar" "-javadoc.jar" "-sources.jar"; do
-    echo cp /tmp/empty.jar $artifactId-$version$ext
-    cp /tmp/empty.jar $artifactId-$version$ext
+    echo cp $OUT/empty.jar $artifactId-$version$ext
+    cp $OUT/empty.jar $artifactId-$version$ext
   done
 
   ls
@@ -139,11 +158,12 @@ done
 mvn repository:bundle-pack -DgroupId=org.robolectric -DartifactId=android-base -Dversion=4.1.2_r1_rc
 mvn repository:bundle-pack -DgroupId=org.robolectric -DartifactId=android-luni -Dversion=4.1.2_r1_rc
 mvn repository:bundle-pack -DgroupId=org.robolectric -DartifactId=android-kxml2 -Dversion=4.1.2_r1_rc
+mvn repository:bundle-pack -DgroupId=org.robolectric -DartifactId=android-res -Dversion=4.1.2_r1_rc
 
 cd ~/.m2/org/robolectric/android-base/4.1.2_r1_rc
 gpg -ab android-base-4.1.2_r1_rc-real.jar
 gpg -ab android-base-4.1.2_r1_rc.pom
-cp /tmp/empty.jar android-base-4.1.2_r1_rc-javadoc.jar
-cp /tmp/empty.jar android-base-4.1.2_r1_rc-sources.jar
+cp $OUT/empty.jar android-base-4.1.2_r1_rc-javadoc.jar
+cp $OUT/empty.jar android-base-4.1.2_r1_rc-sources.jar
 gpg -ab android-base-4.1.2_r1_rc-sources.jar
 

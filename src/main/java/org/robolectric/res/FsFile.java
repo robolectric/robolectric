@@ -1,51 +1,37 @@
 package org.robolectric.res;
 
-import org.robolectric.util.Util;
-
-import java.io.File;
 import java.io.FileFilter;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-public class FsFile {
-    private File file;
+public interface FsFile {
+    boolean exists();
 
-    public FsFile(File file) {
-        this.file = file;
-    }
+    boolean isDirectory();
 
-    public boolean exists() {
-        return file.exists();
-    }
+    boolean isFile();
 
-    public FsFile[] listFiles(FileFilter fileFilter) {
-        File[] files = file.listFiles(fileFilter);
-        FsFile[] fsFiles = new FsFile[files.length];
-        for (int i = 0; i < files.length; i++) {
-            fsFiles[i] = new FsFile(files[i]);
-        }
-        return fsFiles;
-    }
+    FsFile[] listFiles();
 
-    public FsFile getParentFile() {
-        File parentFile = file.getParentFile();
-        return parentFile == null ? null : new FsFile(parentFile);
-    }
+    FsFile[] listFiles(FileFilter fileFilter);
 
-    public String getName() {
-        return file.getName();
-    }
+    String[] listFileNames();
 
-    public InputStream getInputStream() throws IOException {
-        return new FileInputStream(file);
-    }
+    FsFile getParent();
 
-    public byte[] getBytes() throws IOException {
-        return Util.readBytes(new FileInputStream(file));
-    }
+    String getName();
 
-    public FsFile join(String path) {
-        return new FsFile(new File(file, path));
-    }
+    InputStream getInputStream() throws IOException;
+
+    byte[] getBytes() throws IOException;
+
+    FsFile join(String... pathParts);
+
+    @Override String toString();
+
+    @Override boolean equals(Object o);
+
+    @Override int hashCode();
+
+    String getBaseName();
 }

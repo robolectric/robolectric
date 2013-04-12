@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.res.FileFsFile;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -22,7 +23,7 @@ public class ShadowTypefaceTest {
 
     @Before
     public void setup() throws Exception {
-        File assetsBase = shadowOf(Robolectric.application).getAppManifest().getAssetsDirectory();
+        File assetsBase = ((FileFsFile) shadowOf(Robolectric.application).getAppManifest().getAssetsDirectory()).getFile();
         fontFile = new File(assetsBase, "myFont.ttf");
         FileWriter fileWriter = new FileWriter(fontFile);
         fileWriter.write("fontdata");

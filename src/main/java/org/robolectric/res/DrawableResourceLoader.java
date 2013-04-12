@@ -1,7 +1,5 @@
 package org.robolectric.res;
 
-import java.io.File;
-
 /**
  * DrawableResourceLoader
  */
@@ -38,19 +36,18 @@ public class DrawableResourceLoader extends XmlLoader {
         listNinePatchResources(resourcePath, resourcePath.resourceBase);
     }
 
-    private void listNinePatchResources(ResourcePath resourcePath, File dir) {
-        DirectoryMatchingFileFilter drawableFilter = new DirectoryMatchingFileFilter("drawable");
-        File[] files = dir.listFiles();
+    private void listNinePatchResources(ResourcePath resourcePath, FsFile dir) {
+        FsFile[] files = dir.listFiles();
         if (files != null) {
-            for (File f : files) {
-                if (f.isDirectory() && drawableFilter.accept(f)) {
+            for (FsFile f : files) {
+                if (f.isDirectory() && f.toString().contains("/drawable")) {
                     listNinePatchResources(resourcePath, f);
                 } else {
                     String name = f.getName();
                     if (name.endsWith(".9.png")) {
                         String[] tokens = name.split("\\.9\\.png$");
                         String shortName = tokens[0];
-                        XmlContext fakeXmlContext = new XmlContext(resourcePath.getPackageName(), new FsFile(f));
+                        XmlContext fakeXmlContext = new XmlContext(resourcePath.getPackageName(), f);
                         drawableNodes.put("drawable", shortName, new DrawableNode.ImageFile(true), fakeXmlContext);
                     }
                 }

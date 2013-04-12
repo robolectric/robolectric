@@ -1,5 +1,7 @@
 package org.robolectric;
 
+import org.robolectric.res.Fs;
+import org.robolectric.res.FsFile;
 import org.robolectric.res.ResourcePath;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
@@ -8,9 +10,8 @@ import org.w3c.dom.NodeList;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -19,9 +20,9 @@ import java.util.Properties;
 import static android.content.pm.ApplicationInfo.*;
 
 public class AndroidManifest {
-    private final File androidManifestFile;
-    private final File resDirectory;
-    private final File assetsDirectory;
+    private final FsFile androidManifestFile;
+    private final FsFile resDirectory;
+    private final FsFile assetsDirectory;
     private String rClassName;
     private String packageName;
     private String processName;
@@ -43,11 +44,15 @@ public class AndroidManifest {
      * @param baseDir the base directory of your Android project
      */
     public AndroidManifest(final File baseDir) {
-        this(new File(baseDir, "AndroidManifest.xml"), new File(baseDir, "res"), new File(baseDir, "assets"));
+        this(Fs.newFile(baseDir));
     }
 
-    public AndroidManifest(final File androidManifestFile, final File resDirectory) {
-        this(androidManifestFile, resDirectory, new File(resDirectory.getParent(), "assets"));
+    public AndroidManifest(final FsFile androidManifestFile, final FsFile resDirectory) {
+        this(androidManifestFile, resDirectory, resDirectory.getParent().join("assets"));
+    }
+
+    public AndroidManifest(final FsFile baseDir) {
+        this(baseDir.join("AndroidManifest.xml"), baseDir.join("res"), baseDir.join("assets"));
     }
 
     /**
@@ -57,7 +62,7 @@ public class AndroidManifest {
      * @param resDirectory        location of the res directory
      * @param assetsDirectory     location of the assets directory
      */
-    public AndroidManifest(File androidManifestFile, File resDirectory, File assetsDirectory) {
+    public AndroidManifest(FsFile androidManifestFile, FsFile resDirectory, FsFile assetsDirectory) {
         this.androidManifestFile = androidManifestFile;
         this.resDirectory = resDirectory;
         this.assetsDirectory = assetsDirectory;
@@ -79,7 +84,7 @@ public class AndroidManifest {
 
     public void validate() {
         if (!androidManifestFile.exists() || !androidManifestFile.isFile()) {
-            throw new RuntimeException(androidManifestFile.getAbsolutePath() + " not found or not a file; it should point to your project's AndroidManifest.xml");
+            throw new RuntimeException(androidManifestFile + " not found or not a file; it should point to your project's AndroidManifest.xml");
         }
     }
 
@@ -90,7 +95,9 @@ public class AndroidManifest {
         DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
         try {
             DocumentBuilder db = dbf.newDocumentBuilder();
-            Document manifestDocument = db.parse(androidManifestFile);
+            InputStream inputStream = androidManifestFile.getInputStream();
+            Document manifestDocument = db.parse(inputStream);
+            inputStream.close();
 
             packageName = getTagAttributeText(manifestDocument, "manifest", "package");
             versionCode = getTagAttributeIntValue(manifestDocument, "manifest", "android:versionCode", 0);
@@ -239,25 +246,25 @@ public class AndroidManifest {
 
     protected void createLibraryManifests() {
         libraryManifests = new ArrayList<AndroidManifest>();
-        List<File> libraryBaseDirs = findLibraries();
+        List<FsFile> libraryBaseDirs = findLibraries();
 
-        for (File libraryBaseDir : libraryBaseDirs) {
+        for (FsFile libraryBaseDir : libraryBaseDirs) {
             AndroidManifest libraryManifest = createLibraryAndroidManifest(libraryBaseDir);
             libraryManifest.createLibraryManifests();
             libraryManifests.add(libraryManifest);
         }
     }
 
-    protected List<File> findLibraries() {
-        File baseDir = getBaseDir();
-        List<File> libraryBaseDirs = new ArrayList<File>();
+    protected List<FsFile> findLibraries() {
+        FsFile baseDir = getBaseDir();
+        List<FsFile> libraryBaseDirs = new ArrayList<FsFile>();
 
-        Properties properties = getProperties(new File(baseDir, "project.properties"));
+        Properties properties = getProperties(baseDir.join("project.properties"));
         if (properties != null) {
             int libRef = 1;
             String lib;
             while ((lib = properties.getProperty("android.library.reference." + libRef)) != null) {
-                File libraryBaseDir = new File(baseDir, lib);
+                FsFile libraryBaseDir = baseDir.join(lib);
                 libraryBaseDirs.add(libraryBaseDir);
                 libRef++;
             }
@@ -265,11 +272,11 @@ public class AndroidManifest {
         return libraryBaseDirs;
     }
 
-    protected File getBaseDir() {
-        return getResDirectory().getParentFile();
+    protected FsFile getBaseDir() {
+        return getResDirectory().getParent();
     }
 
-    protected AndroidManifest createLibraryAndroidManifest(File libraryBaseDir) {
+    protected AndroidManifest createLibraryAndroidManifest(FsFile libraryBaseDir) {
         return new AndroidManifest(libraryBaseDir);
     }
 
@@ -278,14 +285,14 @@ public class AndroidManifest {
         return Collections.unmodifiableList(libraryManifests);
     }
 
-    private static Properties getProperties(File propertiesFile) {
+    private static Properties getProperties(FsFile propertiesFile) {
         if (!propertiesFile.exists()) return null;
 
         Properties properties = new Properties();
-        FileInputStream stream;
+        InputStream stream;
         try {
-            stream = new FileInputStream(propertiesFile);
-        } catch (FileNotFoundException e) {
+            stream = propertiesFile.getInputStream();
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
@@ -301,11 +308,11 @@ public class AndroidManifest {
         return properties;
     }
 
-    public File getResDirectory() {
+    public FsFile getResDirectory() {
         return resDirectory;
     }
 
-    public File getAssetsDirectory() {
+    public FsFile getAssetsDirectory() {
         return assetsDirectory;
     }
 

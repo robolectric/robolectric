@@ -16,6 +16,7 @@ import org.robolectric.res.builder.LayoutBuilder;
 import org.robolectric.util.I18nException;
 
 import static org.fest.assertions.api.Assertions.assertThat;
+import static org.fest.reflect.core.Reflection.field;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.robolectric.Robolectric.shadowOf;
@@ -156,4 +157,17 @@ public class ResourceLoaderTest {
         Assert.assertEquals(7210, integerValue);
     }
 
+    @Test
+    public void shouldMakeInternalResourcesAvailable() throws Exception {
+        ResourceLoader resourceLoader = Robolectric.getShadowApplication().getResourceLoader();
+        ResName internalResource = new ResName("android", "string", "badPin");
+        Integer resId = resourceLoader.getResourceIndex().getResourceId(internalResource);
+        assertThat(resId).isNotNull();
+        assertThat(resourceLoader.getResourceIndex().getResName(resId)).isEqualTo(internalResource);
+
+        Class<?> internalRIdClass = Robolectric.class.getClassLoader().loadClass("com.android.internal.R$" + internalResource.type);
+        assertThat(resId).isEqualTo(field(internalResource.name).ofType(int.class).in(internalRIdClass).get());
+
+        assertThat(resourceLoader.getStringValue(internalResource, "")).isEqualTo("The old PIN you typed isn\\'t correct.");
+    }
 }

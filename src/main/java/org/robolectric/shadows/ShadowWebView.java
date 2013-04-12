@@ -22,6 +22,7 @@ import static org.fest.reflect.core.Reflection.field;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(value = WebView.class, inheritImplementationMethods = true)
 public class ShadowWebView extends ShadowAbsoluteLayout {
+    public static boolean DEBUG = false;
 
     private String lastUrl;
     private HashMap<String, Object> javascriptInterfaces = new HashMap<String, Object>();
@@ -56,7 +57,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
         if (mProviderField.get() == null) {
             Object provider = Proxy.newProxyInstance(classLoader, new Class[]{webViewProviderClass}, new InvocationHandler() {
                 @Override public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                    System.out.println("[DEBUG] WebView: " + method);
+                    if (DEBUG) System.out.println("[DEBUG] WebView: " + method);
 
                     if (method.getName().equals("getViewDelegate") || method.getName().equals("getScrollDelegate")) {
                         return Proxy.newProxyInstance(classLoader, new Class[]{
@@ -65,7 +66,7 @@ public class ShadowWebView extends ShadowAbsoluteLayout {
                         }, new InvocationHandler() {
                             @Override
                             public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-                                System.out.println("[DEBUG] WebView delegate: " + method);
+                                if (DEBUG) System.out.println("[DEBUG] WebView delegate: " + method);
                                 return nullish(method);
                             }
                         });

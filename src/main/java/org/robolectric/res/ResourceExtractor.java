@@ -8,59 +8,81 @@ public class ResourceExtractor extends ResourceIndex {
     private static final ResourceRemapper RESOURCE_REMAPPER = new ResourceRemapper();
     private static final boolean REMAP_RESOURCES = false;
 
-    private Class<?> processedRFile = null;
+    private final Class<?> processedRFile;
     private Integer maxUsedInt = null;
 
     public ResourceExtractor() {
+        processedRFile = null;
+    }
+
+    public ResourceExtractor(ClassLoader classLoader) {
+        Class<?> androidRClass;
+        try {
+            androidRClass = classLoader.loadClass("android.R");
+            Class<?> androidInternalRClass = classLoader.loadClass("com.android.internal.R");
+
+            process(androidRClass, "android", true);
+            process(androidInternalRClass, "android", false);
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
+        processedRFile = androidRClass;
     }
 
     public ResourceExtractor(ResourcePath resourcePath) {
-        addRClass(resourcePath.rClass);
+        if (REMAP_RESOURCES) RESOURCE_REMAPPER.remapRClass(resourcePath.rClass);
+        processedRFile = resourcePath.rClass;
+        String packageName = packageNameFor(resourcePath.rClass);
+        process(resourcePath.rClass, packageName, true);
     }
 
-    private void addRClass(Class<?> rClass) {
-        if (REMAP_RESOURCES) RESOURCE_REMAPPER.remapRClass(rClass);
-
-        if (processedRFile != null) {
-            System.out.println("WARN: already extracted resources for " + rClass.getPackage().getName() + ", skipping. You should probably fix this.");
-            return;
-        }
-        processedRFile = rClass;
-        String packageName = rClass.getPackage().getName();
-
+    private void process(Class<?> rClass, String packageName, boolean checkForCollisions) {
         for (Class innerClass : rClass.getClasses()) {
             for (Field field : innerClass.getDeclaredFields()) {
                 if (field.getType().equals(Integer.TYPE) && Modifier.isStatic(field.getModifiers())) {
-                  String section = innerClass.getSimpleName();
-                  int value;
-                  try {
-                    value = field.getInt(null);
-                  } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                  }
-
-                  if (!section.equals("styleable")) {
-                    String fieldName = field.getName();
-                    ResName resName = new ResName(packageName, section, fieldName);
-
-                    resourceNameToId.put(resName, value);
-
-                    if (resourceIdToResName.containsKey(value)) {
-                      String message =
-                          value + " is already defined with name: " + resourceIdToResName.get(
-                              value) + " can't also call it: " + resName;
-                      if (REMAP_RESOURCES) {
-                        throw new RuntimeException(message);
-                      } else {
-                        System.err.println(message);
-                      }
+                    String section = innerClass.getSimpleName();
+                    int value;
+                    try {
+                        value = field.getInt(null);
+                    } catch (IllegalAccessException e) {
+                        throw new RuntimeException(e);
                     }
 
-                    resourceIdToResName.put(value, resName);
-                  }
+                    if (!section.equals("styleable")) {
+                        String fieldName = field.getName();
+                        if (fieldName.equals("ellipsis") || fieldName.equals("soundEffectVolumeDb")) {
+                            System.out.println("found: " + field + ": " + value);
+                        }
+                        ResName resName = new ResName(packageName, section, fieldName);
+
+                        resourceNameToId.put(resName, value);
+
+                        if (checkForCollisions && resourceIdToResName.containsKey(value)) {
+                            String message =
+                                    value + " is already defined with name: " + resourceIdToResName.get(
+                                            value) + " can't also call it: " + resName;
+                            if (REMAP_RESOURCES) {
+                                throw new RuntimeException(message);
+                            } else {
+                                System.err.println(message);
+                            }
+                        }
+
+                        resourceIdToResName.put(value, resName);
+                    }
                 }
             }
         }
+    }
+
+    private String packageNameFor(Class<?> rClass) {
+        String name = rClass.getCanonicalName();
+        if (name == null) {
+            throw new RuntimeException("weirdly-named class " + rClass);
+        }
+        int lastDot = name.lastIndexOf(".");
+        if (lastDot < 0) throw new RuntimeException("weirdly-named class " + rClass);
+        return name.substring(0, lastDot);
     }
 
     @Override
@@ -81,6 +103,10 @@ public class ResourceExtractor extends ResourceIndex {
     @Override
     public synchronized ResName getResName(int resourceId) {
         return resourceIdToResName.get(resourceId);
+    }
+
+    public Class<?> getProcessedRFile() {
+        return processedRFile;
     }
 
     @Override public String toString() {

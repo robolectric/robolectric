@@ -64,7 +64,7 @@ public abstract class XmlLoader {
         }
 
         public String getQualifiers() {
-            String parentDir = xmlFile.getParentFile().getName();
+            String parentDir = xmlFile.getParent().getName();
             Matcher matcher = DIR_QUALIFIER_PATTERN.matcher(parentDir);
             if (!matcher.find()) throw new IllegalStateException(parentDir);
             return matcher.group(1);

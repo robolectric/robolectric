@@ -22,12 +22,12 @@ public class DocumentLoader {
         }
     };
 
-    private final Fs resourceFs;
+    private final FsFile resourceBase;
     private final String packageName;
     private final VTDGen vtdGen;
 
     public DocumentLoader(ResourcePath resourcePath) {
-        this.resourceFs = new Fs(resourcePath.resourceBase);
+        this.resourceBase = resourcePath.resourceBase;
         this.packageName = resourcePath.getPackageName();
         vtdGen = new VTDGen();
     }
@@ -36,9 +36,9 @@ public class DocumentLoader {
         long startTime = System.currentTimeMillis();
         if (DEBUG_PERF) perfResponsibleParties.clear();
 
-        FsFile[] files = resourceFs.listFiles(new DirectoryMatchingFileFilter(folderBaseName));
+        FsFile[] files = resourceBase.listFiles(new DirectoryMatchingFileFilter(folderBaseName));
         if (files == null) {
-            throw new RuntimeException(resourceFs.join(folderBaseName) + " is not a directory");
+            throw new RuntimeException(resourceBase.join(folderBaseName) + " is not a directory");
         }
         for (FsFile dir : files) {
             loadFile(dir, xmlLoaders);
