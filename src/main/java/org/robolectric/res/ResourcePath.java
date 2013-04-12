@@ -1,20 +1,16 @@
 package org.robolectric.res;
 
-import java.io.File;
-
-import static org.robolectric.util.Util.file;
-
 public class ResourcePath {
     public final Class<?> rClass;
-    public final File resourceBase;
-    public final File assetsDir;
-    public final File rawDir;
+    public final FsFile resourceBase;
+    public final FsFile assetsDir;
+    public final FsFile rawDir;
 
-    public ResourcePath(Class<?> rClass, File resourceBase, File assetsDir) {
+    public ResourcePath(Class<?> rClass, FsFile resourceBase, FsFile assetsDir) {
         this.rClass = rClass;
         this.resourceBase = resourceBase;
         this.assetsDir = assetsDir;
-        File rawDir = file(resourceBase, "raw");
+        FsFile rawDir = resourceBase.join("raw");
         this.rawDir = rawDir.exists() ? rawDir : null;
     }
 

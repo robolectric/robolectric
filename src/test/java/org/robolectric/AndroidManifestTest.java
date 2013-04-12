@@ -6,6 +6,7 @@ import android.content.Intent;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.res.Fs;
 import org.robolectric.res.ResourcePath;
 import org.robolectric.test.TemporaryFolder;
 
@@ -97,7 +98,7 @@ public class AndroidManifestTest {
                         "          package=\"org.robolectric\">\n" +
                         "    <uses-sdk " + usesSdkAttrs + "/>\n" +
                         "</manifest>\n");
-        return new AndroidManifest(f, null, null);
+        return new AndroidManifest(Fs.newFile(f), null, null);
     }
 
     private List<String> stringify(List<ResourcePath> resourcePaths) {

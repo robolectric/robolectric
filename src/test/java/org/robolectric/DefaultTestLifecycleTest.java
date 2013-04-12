@@ -4,6 +4,7 @@ import android.app.Application;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.res.Fs;
 import org.robolectric.shadows.ShadowApplication;
 import org.robolectric.test.TemporaryFolder;
 
@@ -100,6 +101,6 @@ public class DefaultTestLifecycleTest {
                         "          package=\"" + packageName + "\">\n" +
                         "    " + contents + "\n" +
                         "</manifest>\n");
-        return new AndroidManifest(f, null, null);
+        return new AndroidManifest(Fs.newFile(f), null, null);
     }
 }

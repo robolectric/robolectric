@@ -1,7 +1,5 @@
 package org.robolectric.res;
 
-import java.io.File;
-
 public class RawResourceLoader {
     private final ResourcePath resourcePath;
 
@@ -9,15 +7,13 @@ public class RawResourceLoader {
         this.resourcePath = resourcePath;
     }
 
-    public void loadTo(ResBundle<File> rawResourceFiles) {
+    public void loadTo(ResBundle<FsFile> rawResourceFiles) {
         if (resourcePath.rawDir != null) {
-            File[] files = resourcePath.rawDir.listFiles();
+            FsFile[] files = resourcePath.rawDir.listFiles();
             if (files != null) {
-                for (File file : files) {
-                    String name = file.getName();
-                    int dotIndex = name.indexOf(".");
-                    String fileBaseName = dotIndex >= 0 ? name.substring(0, dotIndex) : name;
-                    rawResourceFiles.put("raw", fileBaseName, file, new XmlLoader.XmlContext(resourcePath.getPackageName(), new FsFile(file)));
+                for (FsFile file : files) {
+                    String fileBaseName = file.getBaseName();
+                    rawResourceFiles.put("raw", fileBaseName, file, new XmlLoader.XmlContext(resourcePath.getPackageName(), file));
                 }
             }
         }

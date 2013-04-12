@@ -5,7 +5,6 @@ import android.content.res.Resources;
 import org.robolectric.AndroidManifest;
 import org.robolectric.Robolectric;
 import org.robolectric.RobolectricTestRunner;
-import org.robolectric.SdkEnvironment;
 import org.robolectric.TestLifecycle;
 import org.robolectric.res.ResourceLoader;
 import org.robolectric.shadows.ShadowResources;
@@ -24,20 +23,19 @@ public class ParallelUniverse implements ParallelUniverseInterface {
         DatabaseConfig.setDatabaseMap(databaseMap);
     }
 
-    @Override public void setUpApplicationState(Method method, TestLifecycle testLifecycle, SdkEnvironment sdkEnvironment, boolean strictI18n, ResourceLoader systemResourceLoader) {
+    @Override public void setUpApplicationState(Method method, TestLifecycle testLifecycle, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
         Robolectric.application = null;
 
         ShadowResources.setSystemResources(systemResourceLoader);
         String qualifiers = RobolectricTestRunner.determineResourceQualifiers(method);
         shadowOf(Resources.getSystem().getConfiguration()).overrideQualifiers(qualifiers);
 
-        AndroidManifest appManifest = sdkEnvironment.getAppManifest();
         ResourceLoader resourceLoader = null;
         if (appManifest != null) {
             resourceLoader = RobolectricTestRunner.getAppResourceLoader(systemResourceLoader, appManifest);
         }
 
-        final Application application = (Application) testLifecycle.createApplication(method, sdkEnvironment.getAppManifest());
+        final Application application = (Application) testLifecycle.createApplication(method, appManifest);
         if (application != null) {
             shadowOf(application).bind(appManifest, resourceLoader);
             shadowOf(application.getResources().getConfiguration()).overrideQualifiers(qualifiers);
