@@ -17,7 +17,7 @@ public class MergedResourceIndex extends ResourceIndex {
         int expected = map1.size() + map2.size();
         map1.putAll(map2);
         if (map1.size() != expected) {
-//            throw new IllegalStateException("there must have been some overlap for " + name + "! expected " + expected + " but got " + map1.size());
+            throw new IllegalStateException("there must have been some overlap for " + name + "! expected " + expected + " but got " + map1.size());
         }
     }
 
