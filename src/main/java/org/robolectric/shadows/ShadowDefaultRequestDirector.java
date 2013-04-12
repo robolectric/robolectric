@@ -3,6 +3,7 @@ package org.robolectric.shadows;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.http.ConnectionReuseStrategy;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpException;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpRequest;
@@ -14,6 +15,8 @@ import org.apache.http.client.UserTokenHandler;
 import org.apache.http.conn.ClientConnectionManager;
 import org.apache.http.conn.ConnectionKeepAliveStrategy;
 import org.apache.http.conn.routing.HttpRoutePlanner;
+import org.apache.http.entity.BasicHttpEntity;
+import org.apache.http.entity.HttpEntityWrapper;
 import org.apache.http.impl.client.DefaultRequestDirector;
 import org.apache.http.params.HttpParams;
 import org.apache.http.protocol.HttpContext;
@@ -24,8 +27,12 @@ import org.robolectric.internal.Implementation;
 import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 import org.robolectric.tester.org.apache.http.HttpRequestInfo;
+import org.robolectric.util.Util;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Field;
 
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(DefaultRequestDirector.class)
@@ -156,6 +163,11 @@ public class ShadowDefaultRequestDirector {
         } else {
             Robolectric.getFakeHttpLayer().addRequestInfo(new HttpRequestInfo(httpRequest, httpHost, httpContext, redirector));
             HttpResponse response = redirector.execute(httpHost, httpRequest, httpContext);
+
+            if (Robolectric.getFakeHttpLayer().isInterceptingResponseContent()) {
+                interceptResponseContent(response);
+            }
+
             Robolectric.getFakeHttpLayer().addHttpResponse(response);
             return response;
         }
@@ -211,5 +223,34 @@ public class ShadowDefaultRequestDirector {
 
     public HttpParams getHttpParams() {
         return httpParams;
+    }
+
+    private void interceptResponseContent(HttpResponse response) {
+        HttpEntity entity = response.getEntity();
+        if (entity instanceof HttpEntityWrapper) {
+            HttpEntityWrapper entityWrapper = (HttpEntityWrapper) entity;
+            try {
+                Field wrappedEntity = HttpEntityWrapper.class.getDeclaredField("wrappedEntity");
+                wrappedEntity.setAccessible(true);
+                entity = (HttpEntity) wrappedEntity.get(entityWrapper);
+            } catch (Exception e) {
+                // fail to record
+            }
+        }
+        if (entity instanceof BasicHttpEntity) {
+            BasicHttpEntity basicEntity = (BasicHttpEntity) entity;
+            try {
+                Field contentField = BasicHttpEntity.class.getDeclaredField("content");
+                contentField.setAccessible(true);
+                InputStream content = (InputStream) contentField.get(basicEntity);
+
+                byte[] buffer = Util.readBytes(content);
+
+                Robolectric.getFakeHttpLayer().addHttpResponseContent(buffer);
+                contentField.set(basicEntity, new ByteArrayInputStream(buffer));
+            } catch (Exception e) {
+                // fail to record
+            }
+        }
     }
 }

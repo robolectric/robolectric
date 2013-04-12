@@ -32,6 +32,8 @@ public class FakeHttpLayer {
     private HttpResponse defaultResponse;
     private boolean interceptHttpRequests = true;
     private boolean logHttpRequests = false;
+    private List<byte[]> httpResposeContent = new ArrayList<byte[]>();
+    private boolean interceptResponseContent;
 
     public HttpRequestInfo getLastSentHttpRequestInfo() {
         List<HttpRequestInfo> requestInfos = Robolectric.getFakeHttpLayer().getSentHttpRequestInfos();
@@ -231,6 +233,14 @@ public class FakeHttpLayer {
         this.httpResponses.add(response);
     }
 
+    public void addHttpResponseContent(byte[] content) {
+        this.httpResposeContent.add(content);
+    }
+
+    public List<byte[]> getHttpResposeContentList() {
+        return httpResposeContent;
+    }
+
     /**
      * Helper method that returns the latest received response from the server.
      * @return The latest HTTP response or null, if no responses are available
@@ -260,6 +270,14 @@ public class FakeHttpLayer {
 
     public boolean isInterceptingHttpRequests() {
         return interceptHttpRequests;
+    }
+
+    public void interceptResponseContent(boolean interceptResponseContent) {
+        this.interceptResponseContent = interceptResponseContent;
+    }
+
+    public boolean isInterceptingResponseContent() {
+        return interceptResponseContent;
     }
 
     public static class RequestMatcherResponseRule implements HttpEntityStub.ResponseRule {

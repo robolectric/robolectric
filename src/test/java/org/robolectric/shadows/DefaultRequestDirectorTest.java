@@ -26,8 +26,7 @@ import org.robolectric.tester.org.apache.http.RequestMatcher;
 import org.robolectric.tester.org.apache.http.TestHttpResponse;
 import org.robolectric.util.Strings;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.net.URI;
 
 import static org.fest.assertions.api.Assertions.assertThat;
@@ -377,6 +376,27 @@ public class DefaultRequestDirectorTest {
 
         assertNotNull(Robolectric.getFakeHttpLayer().getLastSentHttpRequestInfo());
         assertNotNull(Robolectric.getFakeHttpLayer().getLastHttpResponse());
+    }
+
+    @Test
+    public void realHttpRequestsShouldMakeContentDataAvailable() throws Exception {
+        Robolectric.getFakeHttpLayer().interceptHttpRequests(false);
+        Robolectric.getFakeHttpLayer().interceptResponseContent(true);
+        DefaultHttpClient client = new DefaultHttpClient();
+
+        client.execute(new HttpGet("http://google.com"));
+
+        byte[] cachedContent = Robolectric.getFakeHttpLayer().getHttpResposeContentList().get(0);
+        assertThat(cachedContent.length).isNotEqualTo(0);
+
+        InputStream content = Robolectric.getFakeHttpLayer().getLastHttpResponse().getEntity().getContent();
+        BufferedReader contentReader = new BufferedReader(new InputStreamReader(content));
+        String firstLineOfContent = contentReader.readLine();
+        assertThat(firstLineOfContent).contains("Google");
+
+        BufferedReader cacheReader = new BufferedReader(new InputStreamReader(new ByteArrayInputStream(cachedContent)));
+        String firstLineOfCachedContent = cacheReader.readLine();
+        assertThat(firstLineOfCachedContent).isEqualTo(firstLineOfContent);
     }
 
     @Test
