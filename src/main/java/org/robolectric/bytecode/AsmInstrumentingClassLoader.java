@@ -149,6 +149,7 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
                     bytes = origClassBytes;
                 }
 //                System.out.println("[DEBUG] Defining " + classFilename + " (" + bytes.length + ") in " + this + ": class" + number++);
+                ensurePackage(className);
                 return defineClass(className, bytes, 0, bytes.length);
             } catch (Exception e) {
                 throw new ClassNotFoundException("couldn't load " + className, e);
@@ -162,6 +163,17 @@ public class AsmInstrumentingClassLoader extends ClassLoader implements Opcodes,
         }
     }
 
+    private void ensurePackage(final String className) {
+        int lastDotIndex = className.lastIndexOf('.');
+        if (lastDotIndex != -1) {
+            String pckgName = className.substring(0, lastDotIndex);
+            Package pckg = getPackage(pckgName);
+            if (pckg == null) {
+                definePackage(pckgName, null, null, null, null, null, null, null);
+            }
+        }
+    }
+    
     private String remapParams(String desc) {
         StringBuilder buf = new StringBuilder();
         buf.append("(");
