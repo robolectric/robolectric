@@ -1,7 +1,5 @@
 package org.robolectric.res;
 
-import org.w3c.dom.Document;
-
 import java.io.File;
 
 /**
@@ -14,21 +12,10 @@ public class DrawableResourceLoader extends XmlLoader {
         this.drawableNodes = drawableNodes;
     }
 
-    /**
-     * Store document locally keyed by resource name.
-     *
-     *
-     *
-     * @param xmlFile  Xml file
-     * @param document Document
-     * @param xmlContext System resource
-     * @throws Exception
-     * @see XmlLoader#processResourceXml(java.io.File, org.w3c.dom.Document, XmlContext)
-     */
     @Override
-    protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
+    protected void processResourceXml(File xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
         String name = toResourceName(xmlFile);
-        drawableNodes.put("drawable", name, new DrawableNode.Xml(document, xmlContext), xmlContext);
+        drawableNodes.put("drawable", name, new DrawableNode.Xml(parse(xmlFile), xmlContext), xmlContext);
     }
 
     /**

@@ -1,6 +1,5 @@
 package org.robolectric.res;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -17,10 +16,10 @@ public class MenuLoader extends XmlLoader {
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
+    protected void processResourceXml(File xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
         MenuNode topLevelNode = new MenuNode("top-level", new ArrayList<Attribute>());
 
-        NodeList items = document.getChildNodes();
+        NodeList items = parse(xmlFile).getChildNodes();
         if (items.getLength() != 1)
             throw new RuntimeException("Expected only one top-level item in menu file " + xmlFile.getName());
         if (items.item(0).getNodeName().compareTo("menu") != 0)
