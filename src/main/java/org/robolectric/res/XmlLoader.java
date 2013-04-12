@@ -7,8 +7,8 @@ import org.xml.sax.SAXException;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -23,34 +23,42 @@ public abstract class XmlLoader {
 
     private DocumentBuilder documentBuilder;
 
-    synchronized protected Document parse(File xmlFile) {
+    synchronized protected Document parse(FsFile xmlFile) {
+        InputStream inputStream = null;
         try {
             if (documentBuilder == null) {
                 documentBuilder = documentBuilderFactory.newDocumentBuilder();
             }
-            return documentBuilder.parse(xmlFile);
+            inputStream = xmlFile.getInputStream();
+            return documentBuilder.parse(inputStream);
         } catch (ParserConfigurationException e) {
             throw new RuntimeException(e);
         } catch (SAXException e) {
             throw new RuntimeException(e);
         } catch (IOException e) {
             throw new RuntimeException(e);
+        } finally {
+            if (inputStream != null) try {
+                inputStream.close();
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
         }
     }
 
-    protected void processResourceXml(File xmlFile, VTDNav vtdNav, String packageName) throws Exception {
+    protected void processResourceXml(FsFile xmlFile, VTDNav vtdNav, String packageName) throws Exception {
         processResourceXml(xmlFile, new XpathResourceXmlLoader.XmlNode(vtdNav), new XmlContext(packageName, xmlFile));
     }
 
-    protected abstract void processResourceXml(File xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception;
+    protected abstract void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception;
 
     public static class XmlContext {
         public static final Pattern DIR_QUALIFIER_PATTERN = Pattern.compile("^[^-]+(?:-(.*))?$");
 
         public final String packageName;
-        private final File xmlFile;
+        private final FsFile xmlFile;
 
-        public XmlContext(String packageName, File xmlFile) {
+        public XmlContext(String packageName, FsFile xmlFile) {
             this.packageName = packageName;
             this.xmlFile = xmlFile;
         }

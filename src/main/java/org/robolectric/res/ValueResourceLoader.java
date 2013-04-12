@@ -1,7 +1,6 @@
 package org.robolectric.res;
 
 import javax.xml.xpath.XPathExpressionException;
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,7 +17,7 @@ class ValueResourceLoader extends XpathResourceXmlLoader {
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+    protected void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) throws Exception {
         super.processResourceXml(xmlFile, xmlNode, xmlContext);
 
         if (arraysToo) {

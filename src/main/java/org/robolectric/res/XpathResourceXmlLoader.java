@@ -8,7 +8,6 @@ import com.ximpleware.XPathParseException;
 import org.jetbrains.annotations.NotNull;
 
 import javax.xml.xpath.XPathExpressionException;
-import java.io.File;
 
 public abstract class XpathResourceXmlLoader extends XmlLoader {
     private String expression;
@@ -19,7 +18,7 @@ public abstract class XpathResourceXmlLoader extends XmlLoader {
         this.attrType = attrType;
     }
 
-    @Override protected void processResourceXml(File xmlFile, XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+    @Override protected void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) throws Exception {
         for (XmlNode node : xmlNode.selectByXpath(expression)) {
             String name = node.getAttrValue("name");
             processNode(name, node, xmlContext, attrType);

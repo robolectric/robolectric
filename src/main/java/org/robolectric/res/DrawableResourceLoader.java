@@ -13,7 +13,7 @@ public class DrawableResourceLoader extends XmlLoader {
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+    protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
         String name = toResourceName(xmlFile);
         drawableNodes.put("drawable", name, new DrawableNode.Xml(parse(xmlFile), xmlContext), xmlContext);
     }
@@ -24,7 +24,7 @@ public class DrawableResourceLoader extends XmlLoader {
      * @param xmlFile Xml File
      * @return Resource name
      */
-    private String toResourceName(File xmlFile) {
+    private String toResourceName(FsFile xmlFile) {
         return xmlFile.getName().replaceAll("\\..+$", "");
     }
 
@@ -50,7 +50,7 @@ public class DrawableResourceLoader extends XmlLoader {
                     if (name.endsWith(".9.png")) {
                         String[] tokens = name.split("\\.9\\.png$");
                         String shortName = tokens[0];
-                        XmlContext fakeXmlContext = new XmlContext(resourcePath.getPackageName(), f);
+                        XmlContext fakeXmlContext = new XmlContext(resourcePath.getPackageName(), new FsFile(f));
                         drawableNodes.put("drawable", shortName, new DrawableNode.ImageFile(true), fakeXmlContext);
                     }
                 }

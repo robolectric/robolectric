@@ -2,7 +2,6 @@ package org.robolectric.res;
 
 import android.view.View;
 
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -33,7 +32,7 @@ public class AttrResourceLoader extends XmlLoader {
         }
     }
 
-    @Override protected void processResourceXml(File xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+    @Override protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
         // Pick up inline enum definitions
         {
             for (XpathResourceXmlLoader.XmlNode node : xmlNode.selectByXpath("/resources/declare-styleable/attr/enum|/resources/declare-styleable/attr/flag")) {
