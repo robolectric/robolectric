@@ -136,7 +136,7 @@ mvn org.apache.maven.plugins:maven-deploy-plugin:2.7:deploy-file \
 edit poms
 
 version=4.1.2_r1_rc
-for artifactId in "android-base" "android-luni" "android-kxml2"; do
+for artifactId in "android-base" "android-luni" "android-kxml2" "android-res"; do
   echo cd ~/.m2/org/robolectric/$artifactId/$version
   cd ~/.m2/repository/org/robolectric/$artifactId/$version
 
@@ -158,6 +158,7 @@ done
 mvn repository:bundle-pack -DgroupId=org.robolectric -DartifactId=android-base -Dversion=4.1.2_r1_rc
 mvn repository:bundle-pack -DgroupId=org.robolectric -DartifactId=android-luni -Dversion=4.1.2_r1_rc
 mvn repository:bundle-pack -DgroupId=org.robolectric -DartifactId=android-kxml2 -Dversion=4.1.2_r1_rc
+mvn repository:bundle-pack -DgroupId=org.robolectric -DartifactId=android-res -Dversion=4.1.2_r1_rc
 
 cd ~/.m2/org/robolectric/android-base/4.1.2_r1_rc
 gpg -ab android-base-4.1.2_r1_rc-real.jar
