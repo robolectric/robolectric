@@ -14,7 +14,7 @@ import java.util.Map;
 public class MavenCentral {
     private final Project project = new Project();
 
-    public Map<String, URL> artifactUrls(RobolectricTestRunner robolectricTestRunner, Dependency... dependencies) {
+    public Map<String, URL> getLocalArtifactUrls(RobolectricTestRunner robolectricTestRunner, Dependency... dependencies) {
         DependenciesTask dependenciesTask = new DependenciesTask();
         if (robolectricTestRunner != null) {
             robolectricTestRunner.configureMaven(dependenciesTask);
@@ -39,8 +39,8 @@ public class MavenCentral {
         return urls;
     }
 
-    public URL artifactUrl(RobolectricTestRunner robolectricTestRunner, Dependency dependency) {
-        Map<String, URL> map = artifactUrls(robolectricTestRunner, dependency);
+    public URL getLocalArtifactUrl(RobolectricTestRunner robolectricTestRunner, Dependency dependency) {
+        Map<String, URL> map = getLocalArtifactUrls(robolectricTestRunner, dependency);
         return map.get(dependency.getGroupId() + ":" + dependency.getArtifactId() + ":" + dependency.getType() + ":" + dependency.getClassifier());
     }
 }
