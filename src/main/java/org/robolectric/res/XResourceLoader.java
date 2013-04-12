@@ -23,7 +23,7 @@ abstract class XResourceLoader implements ResourceLoader {
     final ResBundle<DrawableNode> drawableData = new ResBundle<DrawableNode>();
     final ResBundle<PreferenceNode> preferenceData = new ResBundle<PreferenceNode>();
     final ResBundle<Document> xmlDocuments = new ResBundle<Document>();
-    final ResBundle<File> rawResourceFiles = new ResBundle<File>();
+    final ResBundle<File> rawResources = new ResBundle<File>();
     private final ResourceIndex resourceIndex;
     boolean isInitialized = false;
 
@@ -53,7 +53,7 @@ abstract class XResourceLoader implements ResourceLoader {
         drawableData.makeImmutable();
         preferenceData.makeImmutable();
         xmlDocuments.makeImmutable();
-        rawResourceFiles.makeImmutable();
+        rawResources.makeImmutable();
     }
 
     @Override
@@ -117,7 +117,7 @@ abstract class XResourceLoader implements ResourceLoader {
     public InputStream getRawValue(ResName resName) {
         initialize();
 
-        File file = rawResourceFiles.get(resName, "");
+        File file = rawResources.get(resName, "");
         try {
             return file == null ? null : new FileInputStream(file);
         } catch (FileNotFoundException e) {

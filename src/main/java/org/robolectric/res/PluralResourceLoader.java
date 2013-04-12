@@ -1,12 +1,6 @@
 package org.robolectric.res;
 
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
-
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -18,14 +12,11 @@ public class PluralResourceLoader extends XpathResourceXmlLoader {
         this.pluralRulesResBundle = pluralRulesResBundle;
     }
 
-    @Override protected void processNode(Node node, String name, XmlContext xmlContext, String attrType) throws XPathExpressionException {
-        XPathExpression itemXPath = XPathFactory.newInstance().newXPath().compile("item");
-        NodeList childNodes = (NodeList) itemXPath.evaluate(node, XPathConstants.NODESET);
+    @Override protected void processNode(String name, XmlNode xmlNode, XmlContext xmlContext, String attrType) throws XPathExpressionException {
         PluralRules rules = new PluralRules();
-        for (int j = 0; j < childNodes.getLength(); j++) {
-            Node childNode = childNodes.item(j);
-            String value = childNode.getTextContent();
-            String quantity = childNode.getAttributes().getNamedItem("quantity").getTextContent();
+        for (XmlNode item : xmlNode.selectElements("item")) {
+            String value = item.getTextContent();
+            String quantity = item.getAttrValue("quantity");
             rules.add(new Plural(quantity, value));
         }
         pluralRulesResBundle.put(attrType, name, rules, xmlContext);

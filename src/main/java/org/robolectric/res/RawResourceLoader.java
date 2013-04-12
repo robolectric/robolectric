@@ -3,13 +3,13 @@ package org.robolectric.res;
 import java.io.File;
 
 public class RawResourceLoader {
-    private final ResBundle<File> rawResourceFiles;
+    private final ResourcePath resourcePath;
 
-    public RawResourceLoader(ResBundle<File> rawResourceFiles) {
-        this.rawResourceFiles = rawResourceFiles;
+    public RawResourceLoader(ResourcePath resourcePath) {
+        this.resourcePath = resourcePath;
     }
 
-    public void loadFrom(ResourcePath resourcePath) {
+    public void loadTo(ResBundle<File> rawResourceFiles) {
         if (resourcePath.rawDir != null) {
             File[] files = resourcePath.rawDir.listFiles();
             if (files != null) {

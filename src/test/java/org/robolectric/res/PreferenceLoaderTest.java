@@ -30,7 +30,7 @@ public class PreferenceLoaderTest {
     public void setUp() throws Exception {
         resBundle = new ResBundle<PreferenceNode>();
         prefLoader = new PreferenceLoader(resBundle);
-        new DocumentLoader(prefLoader).loadResourceXmlDir(testResources(), "xml");
+        new DocumentLoader(testResources()).loadResourceXmlDir("xml", prefLoader);
 
         preferenceBuilder = new PreferenceBuilder();
     }

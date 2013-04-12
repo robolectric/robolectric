@@ -45,7 +45,7 @@ import static org.robolectric.util.TestUtil.TEST_PACKAGE;
 import static org.robolectric.util.TestUtil.assertInstanceOf;
 
 @RunWith(TestRunners.WithDefaults.class)
-public class ViewLoaderTest {
+public class LayoutLoaderTest {
     private Activity context;
     private ResourceLoader resourceLoader;
 

@@ -25,7 +25,7 @@ public class XmlFileLoader extends XmlLoader {
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
-        resBundle.put("xml", xmlFile.getName().replace(".xml", ""), document, xmlContext);
+    protected void processResourceXml(File xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+        resBundle.put("xml", xmlFile.getName().replace(".xml", ""), parse(xmlFile), xmlContext);
     }
 }
