@@ -50,9 +50,6 @@ public class ResourceExtractor extends ResourceIndex {
 
                     if (!section.equals("styleable")) {
                         String fieldName = field.getName();
-                        if (fieldName.equals("ellipsis") || fieldName.equals("soundEffectVolumeDb")) {
-                            System.out.println("found: " + field + ": " + value);
-                        }
                         ResName resName = new ResName(packageName, section, fieldName);
 
                         resourceNameToId.put(resName, value);
