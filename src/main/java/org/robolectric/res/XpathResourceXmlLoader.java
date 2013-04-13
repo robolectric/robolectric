@@ -1,14 +1,13 @@
 package org.robolectric.res;
 
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
+import com.ximpleware.AutoPilot;
+import com.ximpleware.NavException;
+import com.ximpleware.VTDNav;
+import com.ximpleware.XPathEvalException;
+import com.ximpleware.XPathParseException;
+import org.jetbrains.annotations.NotNull;
 
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-import java.io.File;
 
 public abstract class XpathResourceXmlLoader extends XmlLoader {
     private String expression;
@@ -19,15 +18,117 @@ public abstract class XpathResourceXmlLoader extends XmlLoader {
         this.attrType = attrType;
     }
 
-    @Override protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
-        XPathExpression xPath = XPathFactory.newInstance().newXPath().compile(expression);
-        NodeList nodes = (NodeList) xPath.evaluate(document, XPathConstants.NODESET);
-        for (int i = 0; i < nodes.getLength(); i++) {
-            Node node = nodes.item(i);
-            String name = node.getAttributes().getNamedItem("name").getNodeValue();
-            processNode(node, name, xmlContext, attrType);
+    @Override protected void processResourceXml(FsFile xmlFile, XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+        for (XmlNode node : xmlNode.selectByXpath(expression)) {
+            String name = node.getAttrValue("name");
+            processNode(name, node, xmlContext, attrType);
         }
     }
 
-    protected abstract void processNode(Node node, String name, XmlContext xmlContext, String attrType) throws XPathExpressionException;
+    protected abstract void processNode(String name, XmlNode xmlNode, XmlContext xmlContext, String attrType) throws XPathExpressionException;
+
+    public static class XmlNode {
+        private final VTDNav vtdNav;
+
+        public XmlNode(VTDNav vtdNav) {
+            this.vtdNav = vtdNav;
+        }
+
+        public String getTextContent() {
+            try {
+                return vtdNav.getXPathStringVal();
+            } catch (NavException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public Iterable<XmlNode> selectByXpath(String expr) throws XPathParseException {
+            VTDNav cloneVtdNav = vtdNav.cloneNav();
+            final AutoPilot ap = new AutoPilot(cloneVtdNav);
+            ap.selectXPath(expr);
+            return returnIterable(new Iterator(ap, cloneVtdNav) {
+                @Override boolean doHasNext() throws XPathEvalException, NavException {
+                    int result = ap.evalXPath();
+                    if (result == -1) {
+                        ap.resetXPath();
+                    }
+                    return result != -1;
+                }
+            });
+        }
+
+        public Iterable<XmlNode> selectElements(String name) {
+            VTDNav cloneVtdNav = vtdNav.cloneNav();
+            final AutoPilot ap = new AutoPilot(cloneVtdNav);
+            ap.selectElement(name);
+            return returnIterable(new Iterator(ap, cloneVtdNav) {
+                @Override boolean doHasNext() throws XPathEvalException, NavException {
+                    return ap.iterate();
+                }
+            });
+        }
+
+        private Iterable<XmlNode> returnIterable(final Iterator iterator) {
+            return new Iterable<XmlNode>() {
+                @NotNull @Override public java.util.Iterator<XmlNode> iterator() {
+                    return iterator;
+                }
+            };
+        }
+
+        public String getAttrValue(String attrName) {
+            try {
+                int nameIndex = vtdNav.getAttrVal(attrName);
+                return nameIndex == -1 ? null : vtdNav.toNormalizedString(nameIndex);
+            } catch (NavException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        public void pushLocation() {
+            vtdNav.push();
+        }
+
+        public void popLocation() {
+            vtdNav.pop();
+        }
+
+        public boolean moveToParent() {
+            try {
+                return vtdNav.toElement(VTDNav.PARENT);
+            } catch (NavException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        private abstract class Iterator implements java.util.Iterator<XmlNode> {
+            private final AutoPilot ap;
+            private final VTDNav vtdNav;
+
+            public Iterator(AutoPilot ap, VTDNav vtdNav) {
+                this.ap = ap;
+                this.vtdNav = vtdNav;
+            }
+
+            @Override public boolean hasNext() {
+                try {
+                    return doHasNext();
+                } catch (XPathEvalException e) {
+                    throw new RuntimeException(e);
+                } catch (NavException e) {
+                    throw new RuntimeException(e);
+                }
+            }
+
+            abstract boolean doHasNext() throws XPathEvalException, NavException;
+
+            @Override public XmlNode next() {
+                return new XmlNode(vtdNav);
+            }
+
+            @Override public void remove() {
+                throw new UnsupportedOperationException();
+            }
+        }
+    }
 }

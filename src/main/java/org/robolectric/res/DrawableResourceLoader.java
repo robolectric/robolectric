@@ -1,9 +1,5 @@
 package org.robolectric.res;
 
-import org.w3c.dom.Document;
-
-import java.io.File;
-
 /**
  * DrawableResourceLoader
  */
@@ -14,21 +10,10 @@ public class DrawableResourceLoader extends XmlLoader {
         this.drawableNodes = drawableNodes;
     }
 
-    /**
-     * Store document locally keyed by resource name.
-     *
-     *
-     *
-     * @param xmlFile  Xml file
-     * @param document Document
-     * @param xmlContext System resource
-     * @throws Exception
-     * @see XmlLoader#processResourceXml(java.io.File, org.w3c.dom.Document, XmlContext)
-     */
     @Override
-    protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
+    protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
         String name = toResourceName(xmlFile);
-        drawableNodes.put("drawable", name, new DrawableNode.Xml(document, xmlContext), xmlContext);
+        drawableNodes.put("drawable", name, new DrawableNode.Xml(parse(xmlFile), xmlContext), xmlContext);
     }
 
     /**
@@ -37,7 +22,7 @@ public class DrawableResourceLoader extends XmlLoader {
      * @param xmlFile Xml File
      * @return Resource name
      */
-    private String toResourceName(File xmlFile) {
+    private String toResourceName(FsFile xmlFile) {
         return xmlFile.getName().replaceAll("\\..+$", "");
     }
 
@@ -51,12 +36,11 @@ public class DrawableResourceLoader extends XmlLoader {
         listNinePatchResources(resourcePath, resourcePath.resourceBase);
     }
 
-    private void listNinePatchResources(ResourcePath resourcePath, File dir) {
-        DirectoryMatchingFileFilter drawableFilter = new DirectoryMatchingFileFilter("drawable");
-        File[] files = dir.listFiles();
+    private void listNinePatchResources(ResourcePath resourcePath, FsFile dir) {
+        FsFile[] files = dir.listFiles();
         if (files != null) {
-            for (File f : files) {
-                if (f.isDirectory() && drawableFilter.accept(f)) {
+            for (FsFile f : files) {
+                if (f.isDirectory() && f.toString().contains("/drawable")) {
                     listNinePatchResources(resourcePath, f);
                 } else {
                     String name = f.getName();

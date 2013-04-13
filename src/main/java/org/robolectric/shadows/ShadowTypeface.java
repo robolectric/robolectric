@@ -53,7 +53,7 @@ public class ShadowTypeface {
 
     @HiddenApi @Implementation
     public static int nativeCreateFromAsset(AssetManager mgr, String path) {
-        return nativeCreateFromFile(new File(shadowOf(mgr).getAssetsDirectory(), path).getPath());
+        return nativeCreateFromFile(shadowOf(mgr).getAssetsDirectory().join(path).toString());
     }
 
     @HiddenApi @Implementation

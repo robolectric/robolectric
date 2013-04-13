@@ -11,7 +11,6 @@ import org.junit.runners.model.InitializationError;
 import org.robolectric.AndroidManifest;
 import org.robolectric.DefaultTestLifecycle;
 import org.robolectric.Robolectric;
-import org.robolectric.SdkEnvironment;
 import org.robolectric.TestRunners;
 import org.robolectric.internal.ParallelUniverseInterface;
 import org.robolectric.TestLifecycle;
@@ -128,8 +127,8 @@ public class CustomRobolectricTestRunnerTest {
         }
 
         @Override
-        protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, SdkEnvironment sdkEnvironment) {
-            super.setUpApplicationState(method, parallelUniverseInterface, strictI18n, systemResourceLoader, sdkEnvironment);
+        protected void setUpApplicationState(Method method, ParallelUniverseInterface parallelUniverseInterface, boolean strictI18n, ResourceLoader systemResourceLoader, AndroidManifest appManifest) {
+            super.setUpApplicationState(method, parallelUniverseInterface, strictI18n, systemResourceLoader, appManifest);
             this.application = parallelUniverseInterface.getCurrentApplication();
         }
 

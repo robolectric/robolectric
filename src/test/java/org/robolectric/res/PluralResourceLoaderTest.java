@@ -17,7 +17,7 @@ public class PluralResourceLoaderTest {
         pluralRulesResBundle = new ResBundle<PluralResourceLoader.PluralRules>();
         PluralResourceLoader pluralResourceLoader = new PluralResourceLoader(extractor, pluralRulesResBundle);
 
-        new DocumentLoader(testResources()).loadResourceXmlDir("values", pluralResourceLoader);
+        new DocumentLoader(testResources()).load("values", pluralResourceLoader);
     }
 
     @Test

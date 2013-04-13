@@ -1,15 +1,7 @@
 package org.robolectric.res;
 
 import android.view.View;
-import org.w3c.dom.Document;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 
-import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-import javax.xml.xpath.XPathFactory;
-import java.io.File;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -40,17 +32,20 @@ public class AttrResourceLoader extends XmlLoader {
         }
     }
 
-    @Override protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
-
+    @Override protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
         // Pick up inline enum definitions
         {
-            NodeList nodeList = findNodes(document, "/resources/declare-styleable/attr/enum|/resources/declare-styleable/attr/flag");
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node node = nodeList.item(i);
-                String viewName = node.getParentNode().getParentNode().getAttributes().getNamedItem("name").getNodeValue();
-                String enumName = enumName(node.getParentNode().getAttributes().getNamedItem("name").getNodeValue(), xmlContext.packageName);
-                String name = node.getAttributes().getNamedItem("name").getNodeValue();
-                String value = node.getAttributes().getNamedItem("value").getNodeValue();
+            for (XpathResourceXmlLoader.XmlNode node : xmlNode.selectByXpath("/resources/declare-styleable/attr/enum|/resources/declare-styleable/attr/flag")) {
+                String name = node.getAttrValue("name");
+                String value = node.getAttrValue("value");
+
+                node.pushLocation();
+                node.moveToParent();
+                String enumName = enumName(node.getAttrValue("name"), xmlContext.packageName);
+
+                node.moveToParent();
+                String viewName = node.getAttrValue("name");
+                node.popLocation();
 
                 classEnumToValue.put(key(viewName, enumName, name), value);
                 knownClassEnums.add(key(viewName, enumName));
@@ -59,29 +54,31 @@ public class AttrResourceLoader extends XmlLoader {
 
         // Look for any global enum definitions.
         {
-            NodeList nodeList = findNodes(document, "/resources/attr/enum|/resources/attr/flag");
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node node = nodeList.item(i);
+            for (XpathResourceXmlLoader.XmlNode node : xmlNode.selectByXpath("/resources/attr/enum|/resources/attr/flag")) {
+                String name = node.getAttrValue("name");
+                String value = node.getAttrValue("value");
 
-                String enumName = enumName(node.getParentNode().getAttributes().getNamedItem("name").getNodeValue(), xmlContext.packageName);
+                node.pushLocation();
+                node.moveToParent();
+                String enumName = enumName(node.getAttrValue("name"), xmlContext.packageName);
+                node.popLocation();
                 EnumDef enumDef = enums.get(enumName);
                 if (enumDef == null) {
                     enumDef = new EnumDef(enumName);
                     enums.put(enumName, enumDef);
                 }
-                enumDef.values.put(node.getAttributes().getNamedItem("name").getNodeValue(),
-                        node.getAttributes().getNamedItem("value").getNodeValue());
+                enumDef.values.put(name, value);
             }
         }
 
         // Note uses of system enums and top level local enums by childless attr nodes
         {
-            NodeList nodeList = findNodes(document, "/resources/declare-styleable/attr[not(node())]");
-            for (int i = 0; i < nodeList.getLength(); i++) {
-                Node node = nodeList.item(i);
-
-                String viewName = node.getParentNode().getAttributes().getNamedItem("name").getNodeValue();
-                String enumName = enumName(node.getAttributes().getNamedItem("name").getNodeValue(), xmlContext.packageName);
+            for (XpathResourceXmlLoader.XmlNode node : xmlNode.selectByXpath("/resources/declare-styleable/attr[not(node())]")) {
+                String enumName = enumName(node.getAttrValue("name"), xmlContext.packageName);
+                node.pushLocation();
+                node.moveToParent();
+                String viewName = node.getAttrValue("name");
+                node.popLocation();
 
                 enumRefs.put(key(viewName, enumName), new EnumRef(viewName, enumName));
             }
@@ -107,11 +104,6 @@ public class AttrResourceLoader extends XmlLoader {
 
     private String enumName(String name, String packageName) {
         return packageName + ":" + name;
-    }
-
-    private NodeList findNodes(Document document, String path) throws XPathExpressionException {
-        XPathExpression nestedEnumsXPath = XPathFactory.newInstance().newXPath().compile(path);
-        return (NodeList) nestedEnumsXPath.evaluate(document, XPathConstants.NODESET);
     }
 
     private void resolveReferences() {
@@ -147,7 +139,7 @@ public class AttrResourceLoader extends XmlLoader {
         return viewName + "#" + enumName + "#" + name;
     }
 
-    private String key(String viewName, String enunName) {
-        return viewName + "#" + enunName;
+    private String key(String viewName, String enumName) {
+        return viewName + "#" + enumName;
     }
 }

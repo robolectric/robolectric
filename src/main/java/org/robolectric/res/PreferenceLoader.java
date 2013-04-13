@@ -1,11 +1,9 @@
 package org.robolectric.res;
 
-import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,9 +15,9 @@ public class PreferenceLoader extends XmlLoader {
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
+    protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
         PreferenceNode topLevelNode = new PreferenceNode("top-level", new ArrayList<Attribute>());
-        processChildren(document.getChildNodes(), topLevelNode, xmlContext);
+        processChildren(parse(xmlFile).getChildNodes(), topLevelNode, xmlContext);
         resBundle.put("xml", xmlFile.getName().replace(".xml", ""), topLevelNode.getChildren().get(0), xmlContext);
     }
 

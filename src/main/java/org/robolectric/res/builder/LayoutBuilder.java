@@ -243,7 +243,7 @@ public class LayoutBuilder {
     }
 
     /**
-     * Create a new ViewLoader with the given attributes merged in. If there's a layout attribute, it'll be excluded.
+     * Create a new ViewNode with the given attributes merged in. If there's a layout attribute, it'll be excluded.
      */
     public ViewNode plusAttributes(ViewNode viewNode, List<Attribute> attributes) {
         if (attributes.size() == 0 || attributes.size() == 1 && attributes.get(0).resName.equals(LayoutBuilder.ATTR_LAYOUT)) {

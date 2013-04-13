@@ -5,21 +5,22 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ViewLoader extends XmlLoader {
+public class LayoutLoader extends XmlLoader {
     public static final String XMLNS_URI = "http://www.w3.org/2000/xmlns/";
 
     private final ResBundle<ViewNode> resBundle;
 
-    public ViewLoader(ResBundle<ViewNode> resBundle) {
+    public LayoutLoader(ResBundle<ViewNode> resBundle) {
         this.resBundle = resBundle;
     }
 
     @Override
-    protected void processResourceXml(File xmlFile, Document document, XmlContext xmlContext) throws Exception {
+    protected void processResourceXml(FsFile xmlFile, XpathResourceXmlLoader.XmlNode xmlNode, XmlContext xmlContext) throws Exception {
+        Document document = parse(xmlFile);
+
         ViewNode topLevelNode = new ViewNode("top-level", new ArrayList<Attribute>(), xmlContext);
         processChildren(document.getChildNodes(), topLevelNode, xmlContext);
         String name = xmlFile.getName().replace(".xml", "");
