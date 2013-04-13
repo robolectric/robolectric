@@ -47,6 +47,15 @@ public class ShadowSQLiteStatement extends ShadowSQLiteProgram {
     }
 
     @Implementation
+    public int executeUpdateDelete() {
+        try {
+            return actualDBstatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Implementation
     public long simpleQueryForLong() {
         ResultSet rs;
         try {
