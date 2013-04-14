@@ -103,7 +103,6 @@ public class ShadowResources {
         return index;
     }
 
-
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {
         String colorValue = resourceLoader.getColorValue(getResName(id), getQualifiers());
