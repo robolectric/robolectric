@@ -95,9 +95,6 @@ public class ShadowResources {
         if (!name.contains("/") && defType != null) {
             name = defType + "/" + name;
         }
-        if (!name.contains(":") && defPackage != null) {
-            name = defPackage + ":" + name;
-        }
 
         Integer index = ResName.getResourceId(resourceIndex, name, defPackage);
         if (index == null) {
