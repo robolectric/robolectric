@@ -90,7 +90,7 @@ public class ShadowResources {
     public int getIdentifier(String name, String defType, String defPackage) {
         ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
 
-        // Probably ResName should be refactored to accept partially qualified names.
+        // Probably ResName should be refactored to accept partial names.
         // ResName should act as a qualifiedName parser in this case.
         if (!name.contains("/") && defType != null) {
             name = defType + "/" + name;
