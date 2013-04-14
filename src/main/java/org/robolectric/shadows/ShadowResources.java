@@ -90,12 +90,22 @@ public class ShadowResources {
     public int getIdentifier(String name, String defType, String defPackage) {
         ResourceIndex resourceIndex = resourceLoader.getResourceIndex();
 
-        Integer index = ResName.getResourceId(resourceIndex, defType + "/" + name, defPackage);
+        // Probably ResName should be refactored to accept partially qualified names.
+        // ResName should act as a qualifiedName parser in this case.
+        if (!name.contains("/") && defType != null) {
+            name = defType + "/" + name;
+        }
+        if (!name.contains(":") && defPackage != null) {
+            name = defPackage + ":" + name;
+        }
+
+        Integer index = ResName.getResourceId(resourceIndex, name, defPackage);
         if (index == null) {
             return 0;
         }
         return index;
     }
+
 
     @Implementation
     public int getColor(int id) throws Resources.NotFoundException {

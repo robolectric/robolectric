@@ -140,6 +140,26 @@ public class ResourcesTest {
     }
 
     @Test
+    public void testGetIdentifier() throws Exception {
+
+        final String resourceType = "string";
+        final String packageName = Robolectric.application.getPackageName();
+
+        final String resourceName = "hello";
+        final int resId1 = resources.getIdentifier(resourceName, resourceType, packageName);
+        assertThat(resId1).isEqualTo(R.string.hello);
+
+        final String typedResourceName = resourceType + "/" + resourceName;
+        final int resId2 = resources.getIdentifier(typedResourceName, resourceType, packageName);
+        assertThat(resId2).isEqualTo(R.string.hello);
+
+        final String fqn = packageName + ":" + typedResourceName;
+        final int resId3 = resources.getIdentifier(fqn, resourceType, packageName);
+        assertThat(resId3).isEqualTo(R.string.hello);
+
+    }
+
+    @Test
     public void testDensity() {
         Activity activity = new Activity();
         assertThat(activity.getResources().getDisplayMetrics().density).isEqualTo(1f);
