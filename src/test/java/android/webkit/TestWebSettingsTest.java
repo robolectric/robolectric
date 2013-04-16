@@ -175,4 +175,10 @@ public class TestWebSettingsTest {
             assertThat(webSettings.getSupportZoom()).isEqualTo(value);
         }
     }
+
+    @Test
+    public void testSetCacheMode() throws Exception {
+        webSettings.setCacheMode(7);
+        assertThat(webSettings.getCacheMode()).isEqualTo(7);
+    }
 }
