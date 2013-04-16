@@ -1,18 +1,11 @@
 package org.robolectric.shadows;
 
-import android.content.BroadcastReceiver;
-import android.content.ComponentName;
-import android.content.ContentResolver;
-import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.ServiceConnection;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Looper;
 import android.view.View;
 import org.robolectric.AndroidManifest;
@@ -35,6 +28,7 @@ import java.util.Set;
 
 import static android.content.pm.PackageManager.PERMISSION_DENIED;
 import static android.content.pm.PackageManager.PERMISSION_GRANTED;
+import static android.database.sqlite.SQLiteDatabase.CursorFactory;
 import static org.robolectric.Robolectric.shadowOf;
 
 @SuppressWarnings({"UnusedDeclaration"})
@@ -371,5 +365,10 @@ public class ShadowContextWrapper extends ShadowContext {
         for (String permissionName : permissionNames) {
             grantedPermissions.add(permissionName);
         }
+    }
+
+    @Implementation
+    public SQLiteDatabase openOrCreateDatabase(String name, int mode, CursorFactory factory) {
+        return SQLiteDatabase.openDatabase(name, factory, 0);
     }
 }

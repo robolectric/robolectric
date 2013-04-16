@@ -203,4 +203,9 @@ public class ContextWrapperTest {
     public void checkCallingPermissionShouldGrantPermissionByDefault() throws Exception {
         assertThat(contextWrapper.checkCallingPermission("")).isEqualTo(PERMISSION_GRANTED);
     }
+
+    @Test
+    public void openOrCreateDatabaseShouldAlwaysReturnSameDatabase() throws Exception {
+        assertThat(contextWrapper.openOrCreateDatabase("db", 0, null)).isNotNull();
+    }
 }
