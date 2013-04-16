@@ -1,12 +1,16 @@
 package org.robolectric.shadows;
 
+import android.app.Application;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.os.Looper;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
+import org.robolectric.util.Scheduler;
 
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -115,5 +119,20 @@ public class LooperTest {
     @Test
     public void testLoopThread() {
     	assertTrue(shadowOf(Looper.getMainLooper()).getThread() == Thread.currentThread());
+    }
+
+    @Test public void soStaticRefsToLoopersInAppWorksAcrossTests_shouldRetainSameLooperForMainThreadBetweenResetsButGiveItAFreshScheduler() throws Exception {
+        Looper mainLooper = Looper.getMainLooper();
+        Scheduler scheduler = shadowOf(mainLooper).getScheduler();
+        shadowOf(mainLooper).quit = true;
+        assertThat(Robolectric.application.getMainLooper()).isSameAs(mainLooper);
+
+        ShadowLooper.resetThreadLoopers();
+        Robolectric.application = new Application();
+
+        assertThat(Looper.getMainLooper()).isSameAs(mainLooper);
+        assertThat(Robolectric.application.getMainLooper()).isSameAs(mainLooper);
+        assertThat(shadowOf(mainLooper).getScheduler()).isNotSameAs(scheduler);
+        assertThat(shadowOf(mainLooper).hasQuit()).isFalse();
     }
 }
