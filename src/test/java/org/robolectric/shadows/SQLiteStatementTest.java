@@ -66,6 +66,24 @@ public class SQLiteStatementTest {
     }
 
     @Test
+    public void testExecuteUpdateDelete() throws Exception {
+
+        SQLiteStatement insertStatement = database.compileStatement("INSERT INTO `routine` (`name`) VALUES (?)");
+        insertStatement.bindString(1, "Hand Press");
+        long pkeyOne = insertStatement.executeInsert();
+
+        SQLiteStatement updateStatement = database.compileStatement("UPDATE `routine` SET `name`=? WHERE `id`=?");
+        updateStatement.bindString(1, "Head Press");
+        updateStatement.bindLong(2, pkeyOne);
+        assertThat(updateStatement.executeUpdateDelete()).isEqualTo(1);
+
+        Statement statement = shadowOf(database).getConnection().createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT `name` FROM `routine`");
+        assertThat(resultSet.next()).isTrue();
+        assertThat(resultSet.getString(1)).isEqualTo("Head Press");
+    }
+
+    @Test
     public void simpleQueryTest() throws Exception {
 
         SQLiteStatement stmt = database.compileStatement("SELECT count(*) FROM `countme`");
