@@ -12,7 +12,7 @@ import org.junit.runner.RunWith;
 import org.robolectric.Robolectric;
 import org.robolectric.TestRunners;
 
-import static org.junit.Assert.*;
+import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
@@ -37,7 +37,7 @@ public class SensorManagerTest {
 	public void shouldReturnHasListenerAfterRegisteringListener() {
 		SensorEventListener listener = registerListener();
 
-		assertTrue(shadow.hasListener(listener));
+		assertThat(shadow.hasListener(listener)).isTrue();
 	}
 	
 	private SensorEventListener registerListener() {
@@ -53,26 +53,31 @@ public class SensorManagerTest {
 		SensorEventListener listener = registerListener();
 		sensorManager.unregisterListener(listener, sensorManager.getDefaultSensor(SensorManager.SENSOR_ACCELEROMETER));
 		
-		assertFalse(shadow.hasListener(listener));
+		assertThat(shadow.hasListener(listener)).isFalse();
 	}
 	
 	@Test
 	public void shouldReturnHasNoListenerByDefault() {
 		SensorEventListener listener = new TestSensorEventListener();
 		
-		assertFalse(shadow.hasListener(listener));
+		assertThat(shadow.hasListener(listener)).isFalse();
 	}
 	
 	@Test 
 	public void shouldCreateSensorEvent() {
-		assertTrue(shadow.createSensorEvent() instanceof SensorEvent);
+		assertThat(shadow.createSensorEvent() instanceof SensorEvent).isTrue();
 	}
 	
     @Test
     public void getSensor_shouldBeConfigurable() {
         Sensor sensor = Robolectric.newInstanceOf(Sensor.class);
         shadowOf(sensorManager).addSensor(Sensor.TYPE_ACCELEROMETER, sensor);
-        assertSame(sensor, sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+        assertThat(sensor).isSameAs(sensorManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER));
+    }
+
+    @Test
+    public void shouldReturnASensorList() throws Exception {
+        assertThat(sensorManager.getSensorList(0)).isNotNull();
     }
 
 	private class TestSensorEventListener implements SensorEventListener {
