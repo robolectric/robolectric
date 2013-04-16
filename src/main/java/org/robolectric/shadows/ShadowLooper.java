@@ -7,6 +7,8 @@ import org.robolectric.internal.Implements;
 import org.robolectric.internal.RealObject;
 import org.robolectric.util.Scheduler;
 
+import java.lang.ref.SoftReference;
+
 import static org.robolectric.Robolectric.shadowOf;
 
 /**
@@ -18,24 +20,36 @@ import static org.robolectric.Robolectric.shadowOf;
 @SuppressWarnings({"UnusedDeclaration"})
 @Implements(Looper.class)
 public class ShadowLooper {
-    private static ThreadLocal<Looper> looperForThread = makeThreadLocalLoopers();
+    private static final Thread MAIN_THREAD = Thread.currentThread();
+    private static ThreadLocal<SoftReference<Looper>> looperForThread = makeThreadLocalLoopers();
     private Scheduler scheduler = new Scheduler();
     private Thread myThread = Thread.currentThread();
     private @RealObject Looper realObject;
 
     boolean quit;
 
-    private static ThreadLocal<Looper> makeThreadLocalLoopers() {
-        return new ThreadLocal<Looper>() {
+    private static ThreadLocal<SoftReference<Looper>> makeThreadLocalLoopers() {
+        return new ThreadLocal<SoftReference<Looper>>() {
             @Override
-            protected Looper initialValue() {
-                return Robolectric.Reflection.newInstanceOf(Looper.class);
+            protected SoftReference<Looper> initialValue() {
+                return new SoftReference<Looper>(createLooper());
             }
         };
     }
 
+    private static Looper createLooper() {
+        return Robolectric.Reflection.newInstanceOf(Looper.class);
+    }
+
     public static synchronized void resetThreadLoopers() {
+        if (Thread.currentThread() != MAIN_THREAD) {
+            throw new RuntimeException("you should only be calling this from the main thread!");
+        }
+
+        Looper mainLooper = myLooper();
         looperForThread = makeThreadLocalLoopers();
+        looperForThread.set(new SoftReference<Looper>(mainLooper));
+        shadowOf(mainLooper).reset();
     }
 
     @Implementation
@@ -50,7 +64,15 @@ public class ShadowLooper {
 
     @Implementation
     public static synchronized Looper myLooper() {
-        return looperForThread.get();
+        // Blech. We need to share the main looper because somebody might refer to it in a static
+        // field. We also need to keep it in a soft reference so we don't max out permgen.
+        SoftReference<Looper> looperSoftReference = looperForThread.get();
+        Looper looper = looperSoftReference.get();
+        if (looper == null) {
+            looper = createLooper();
+            looperForThread.set(new SoftReference<Looper>(looper));
+        }
+        return looper;
     }
 
     public void __constructor__() {
@@ -195,10 +217,11 @@ public class ShadowLooper {
     }
 
     /**
-     * Causes all enqueued tasks to be discarded
+     * Causes all enqueued tasks to be discarded, and pause state to be reset
      */
     public void reset() {
-        scheduler.reset();
+        scheduler = new Scheduler();
+        quit = false;
     }
 
     /**
