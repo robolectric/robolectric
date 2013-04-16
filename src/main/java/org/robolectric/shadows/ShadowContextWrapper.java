@@ -53,6 +53,11 @@ public class ShadowContextWrapper extends ShadowContext {
     }
 
     @Implementation
+    public int checkCallingOrSelfPermission(String permission) {
+        return PackageManager.PERMISSION_GRANTED;
+    }
+
+    @Implementation
     public Context getApplicationContext() {
         return baseContext.getApplicationContext();
     }
