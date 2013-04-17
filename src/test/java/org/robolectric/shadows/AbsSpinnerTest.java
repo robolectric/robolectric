@@ -36,11 +36,6 @@ public class AbsSpinnerTest {
     }
 
     @Test
-    public void shouldHaveAdapterViewCommonBehavior() throws Exception {
-        AdapterViewBehavior.shouldActAsAdapterView(adapterView);
-    }
-
-    @Test
     public void checkSetAdapter() {
         spinner.setAdapter(arrayAdapter);
     }

@@ -199,11 +199,6 @@ public class ListViewTest {
     }
 
     @Test
-    public void shouldHaveAdapterViewCommonBehavior() throws Exception {
-        AdapterViewBehavior.shouldActAsAdapterView(listView);
-    }
-
-    @Test
     public void findItemContainingText_shouldFindChildByString() throws Exception {
         ShadowListView shadowListView = prepareListWithThreeItems();
         View item1 = shadowListView.findItemContainingText("Item 1");
