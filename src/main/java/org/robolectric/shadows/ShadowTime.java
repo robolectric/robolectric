@@ -224,7 +224,11 @@ public class ShadowTime {
 
     @Implementation
     public String format2445() {
-        return format("%Y%m%dT%H%M%S");
+        String value = format("%Y%m%dT%H%M%S");
+        if ( "UTC".equals(time.timezone)){
+            value += "Z";
+        }
+        return value;
     }
 
     @Implementation
