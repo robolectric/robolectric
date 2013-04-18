@@ -15,11 +15,13 @@ http://ci.robolectric.org
 
 
 ### Known compile issues
-If your build fails because of maps.jar is missing then install all the android extra and run:
+If your build fails because the Google Maps dependency is missing then download the Google APIs for Android 4.1
+using the Android SDK Manager and run:
 
 ```
-git clone https://github.com/mosabua/maven-android-sdk-deployer.git
-cd maven-android-sdk-deployer/
-maven install -P <ANDROID_VERSION>
+mvn install:install-file -DgroupId=com.google.android.maps \
+  -DartifactId=maps \
+  -Dversion=16_r3 \
+  -Dpackaging=jar \
+  -Dfile="$ANDROID_HOME/add-ons/addon-google_apis-google-16/libs/maps.jar"
 ```
-
