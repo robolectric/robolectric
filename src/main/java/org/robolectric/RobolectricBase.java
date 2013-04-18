@@ -53,7 +53,6 @@ import org.robolectric.shadows.ShadowColorDrawable;
 import org.robolectric.shadows.ShadowColorMatrix;
 import org.robolectric.shadows.ShadowColorMatrixColorFilter;
 import org.robolectric.shadows.ShadowColorStateList;
-import org.robolectric.shadows.ShadowComponentName;
 import org.robolectric.shadows.ShadowCompoundButton;
 import org.robolectric.shadows.ShadowConfiguration;
 import org.robolectric.shadows.ShadowConnectivityManager;
@@ -205,9 +204,6 @@ import org.robolectric.shadows.ShadowSettings;
 import org.robolectric.shadows.ShadowShapeDrawable;
 import org.robolectric.shadows.ShadowSimpleCursorAdapter;
 import org.robolectric.shadows.ShadowSmsManager;
-import org.robolectric.shadows.ShadowSparseArray;
-import org.robolectric.shadows.ShadowSparseBooleanArray;
-import org.robolectric.shadows.ShadowSparseIntArray;
 import org.robolectric.shadows.ShadowSpinner;
 import org.robolectric.shadows.ShadowSslErrorHandler;
 import org.robolectric.shadows.ShadowStatFs;
@@ -229,7 +225,6 @@ import org.robolectric.shadows.ShadowToast;
 import org.robolectric.shadows.ShadowTouchDelegate;
 import org.robolectric.shadows.ShadowTranslateAnimation;
 import org.robolectric.shadows.ShadowTypedArray;
-import org.robolectric.shadows.ShadowTypedValue;
 import org.robolectric.shadows.ShadowTypeface;
 import org.robolectric.shadows.ShadowURLSpan;
 import org.robolectric.shadows.ShadowUri;
@@ -316,7 +311,6 @@ public class RobolectricBase {
             ShadowColorMatrix.class,
             ShadowColorMatrixColorFilter.class,
             ShadowColorStateList.class,
-            ShadowComponentName.class,
             ShadowCompoundButton.class,
             ShadowConfiguration.class,
             ShadowConnectivityManager.class,
@@ -475,9 +469,6 @@ public class RobolectricBase {
             ShadowSimpleCursorAdapter.class,
             ShadowShapeDrawable.class,
             ShadowSmsManager.class,
-            ShadowSparseArray.class,
-            ShadowSparseBooleanArray.class,
-            ShadowSparseIntArray.class,
             ShadowSpinner.class,
             ShadowSyncResult.class,
             ShadowSyncStats.class,
@@ -507,7 +498,6 @@ public class RobolectricBase {
             ShadowTouchDelegate.class,
             ShadowTranslateAnimation.class,
             ShadowTypedArray.class,
-            ShadowTypedValue.class,
             ShadowTypeface.class,
             ShadowUriMatcher.class,
             ShadowUri.class,
