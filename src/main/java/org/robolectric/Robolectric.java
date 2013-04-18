@@ -96,7 +96,6 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceGroup;
 import android.preference.PreferenceScreen;
 import android.support.v4.content.CursorLoader;
-import android.telephony.PhoneNumberUtils;
 import android.telephony.SmsManager;
 import android.telephony.TelephonyManager;
 import android.text.ClipboardManager;
@@ -286,7 +285,6 @@ import org.robolectric.shadows.ShadowParcel;
 import org.robolectric.shadows.ShadowPasswordTransformationMethod;
 import org.robolectric.shadows.ShadowPath;
 import org.robolectric.shadows.ShadowPendingIntent;
-import org.robolectric.shadows.ShadowPhoneNumberUtils;
 import org.robolectric.shadows.ShadowPopupWindow;
 import org.robolectric.shadows.ShadowPowerManager;
 import org.robolectric.shadows.ShadowPreference;
@@ -843,10 +841,6 @@ public class Robolectric {
 
     public static ShadowPendingIntent shadowOf(PendingIntent instance) {
         return (ShadowPendingIntent) shadowOf_(instance);
-    }
-
-    public static ShadowPhoneNumberUtils shadowOf(PhoneNumberUtils instance) {
-        return (ShadowPhoneNumberUtils) shadowOf_(instance);
     }
 
     public static ShadowPopupWindow shadowOf(PopupWindow instance) {
