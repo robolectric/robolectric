@@ -1,5 +1,25 @@
 package org.robolectric.shadows;
 
+import static java.util.Arrays.asList;
+import static org.fest.assertions.api.Assertions.assertThat;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.fail;
+import static org.robolectric.Robolectric.application;
+import static org.robolectric.Robolectric.shadowOf;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Random;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
+import org.robolectric.TestRunners;
+import org.robolectric.util.Transcript;
+
 import android.util.SparseBooleanArray;
 import android.view.View;
 import android.view.ViewGroup;
@@ -8,23 +28,6 @@ import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
 import android.widget.LinearLayout;
 import android.widget.ListView;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.robolectric.Robolectric;
-import org.robolectric.TestRunners;
-import org.robolectric.util.Transcript;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Random;
-
-import static java.util.Arrays.asList;
-import static org.fest.assertions.api.Assertions.assertThat;
-import static org.junit.Assert.*;
-import static org.robolectric.Robolectric.application;
-import static org.robolectric.Robolectric.shadowOf;
 
 @RunWith(TestRunners.WithDefaults.class)
 public class ListViewTest {
@@ -399,16 +402,18 @@ public class ListViewTest {
     public void givenChoiceModeIsMultipleAndMultipleItemsAreChecked_whenGettingCheckedItemPositions_thenReturnCheckedPositions() {
         prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE).withAnyItemsChecked();
 
-        assertThat(listView.getCheckedItemPositions()).isEqualTo(checkedItemPositions);
+        assertThat(listView.getCheckedItemCount()).isEqualTo(checkedItemPositions.size());
+        for (int i = 0; i < checkedItemPositions.size(); i++) {
+        	assertThat(listView.getCheckedItemPositions().get(i)).isTrue();
+        }
     }
 
     @Test
     public void givenChoiceModeIsSingleAndMultipleItemsAreChecked_whenGettingCheckedItemPositions_thenReturnOnlyTheLastCheckedPosition() {
         prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_SINGLE).withAnyItemsChecked();
-        SparseBooleanArray expectedCheckedItemPositions = new SparseBooleanArray();
-        expectedCheckedItemPositions.put(lastCheckedPosition, true);
 
-        assertThat(listView.getCheckedItemPositions()).isEqualTo(expectedCheckedItemPositions);
+        assertThat(listView.getCheckedItemPositions().get(lastCheckedPosition)).isTrue();
+        assertThat(listView.getCheckedItemCount()).isEqualTo(1);
     }
 
     @Test
@@ -441,12 +446,11 @@ public class ListViewTest {
     public void givenItemIsNotCheckedAndChoiceModeIsMultiple_whenPerformingItemClick_thenItemShouldBeChecked() {
         prepareListAdapter().withChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
         int positionToClick = anyListIndex();
-        SparseBooleanArray expectedCheckedItemPositions = new SparseBooleanArray();
-        expectedCheckedItemPositions.put(positionToClick, true);
 
         listView.performItemClick(null, positionToClick, 0);
 
-        assertThat(listView.getCheckedItemPositions()).isEqualTo(expectedCheckedItemPositions);
+        assertThat(listView.getCheckedItemPositions().get(positionToClick)).isTrue();
+        assertThat(listView.getCheckedItemCount()).isEqualTo(1);
     }
 
     @Test

@@ -316,9 +316,6 @@ import org.robolectric.shadows.ShadowService;
 import org.robolectric.shadows.ShadowShapeDrawable;
 import org.robolectric.shadows.ShadowSimpleCursorAdapter;
 import org.robolectric.shadows.ShadowSmsManager;
-import org.robolectric.shadows.ShadowSparseArray;
-import org.robolectric.shadows.ShadowSparseBooleanArray;
-import org.robolectric.shadows.ShadowSparseIntArray;
 import org.robolectric.shadows.ShadowSslErrorHandler;
 import org.robolectric.shadows.ShadowStatFs;
 import org.robolectric.shadows.ShadowStateListDrawable;
@@ -943,19 +940,6 @@ public class Robolectric {
         return (ShadowSmsManager) shadowOf_(instance);
     }
 
-    public static <E> ShadowSparseArray<E> shadowOf(SparseArray<E> other) {
-        //noinspection unchecked
-        return (ShadowSparseArray<E>) Robolectric.shadowOf_(other);
-    }
-
-    public static ShadowSparseBooleanArray shadowOf(SparseBooleanArray other) {
-        return (ShadowSparseBooleanArray) Robolectric.shadowOf_(other);
-    }
-    
-    public static ShadowSparseIntArray shadowOf(SparseIntArray other){
-    	return (ShadowSparseIntArray) Robolectric.shadowOf_(other);
-    }
-
     public static ShadowSQLiteCursor shadowOf(SQLiteCursor other) {
         return (ShadowSQLiteCursor) Robolectric.shadowOf_(other);
     }
@@ -1443,7 +1427,7 @@ public class Robolectric {
 
         public static Object setFinalStaticField(Field field, Object newValue) {
         	Object oldValue;
-        	
+
             try {
                 field.setAccessible(true);
 
